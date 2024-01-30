@@ -44,6 +44,12 @@ enum Option {
     OPERATION(true),
 
     /**
+     * Use the inverse of the coordinate operation. The transform will be inverted <em>after</em> all
+     * other options ({@link #OPERATION}, {@link #SOURCE_CRS} and {@link #TARGET_CRS}) have been applied.
+     */
+    INVERSE(false),
+
+    /**
      * Relative path to an auxiliary metadata file.
      */
     METADATA(true),

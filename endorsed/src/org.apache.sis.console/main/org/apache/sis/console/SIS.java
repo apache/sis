@@ -656,6 +656,16 @@ public final class SIS extends Static {
         }
 
         /**
+         * Use the inverse of the coordinate operation. The transform will be inverted <em>after</em> all
+         * other options ({@code operation}, {@code sourceCRS} and {@code targetCRS}) have been applied.
+         *
+         * @return a new builder or {@code this}, for method call chaining.
+         */
+        public Transform inverse() {
+            return set(Option.INVERSE, null);
+        }
+
+        /**
          * Sets the locale to use for the command output.
          *
          * @param  value  the language and country code.

@@ -21,13 +21,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Locale;
+import java.util.logging.Logger;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.BufferedReader;
 import java.text.NumberFormat;
-import static java.util.logging.Logger.getLogger;
 import javax.measure.Unit;
 import javax.measure.IncommensurableException;
 import org.opengis.metadata.Metadata;
@@ -50,6 +50,7 @@ import org.opengis.referencing.operation.ConcatenatedOperation;
 import org.opengis.referencing.operation.PassThroughOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.CRS;
@@ -105,9 +106,31 @@ import org.opengis.referencing.ObjectDomain;
  */
 final class TransformCommand extends FormattedOutputCommand {
     /**
+     * The logger for command-line tools.
+     * Currently defined in this class because it is the only one to use directly this logger.
+     */
+    private static final Logger LOGGER = Logger.getLogger(Modules.CONSOLE);
+
+    /**
      * The coordinate operation from the given source CRS to target CRS.
+     * This is always the forward operation. The inverse needs to be used
+     * if the {@link #inverse} flag is {@code true}.
      */
     private CoordinateOperation operation;
+
+    /**
+     * The user-supplied or inferred source and target CRS. They are not necessarily the source and target CRS of
+     * the transform to apply on coordinate tuples, because they need to be swapped if {@link #inverse} is true.
+     *
+     * @see #getEffectiveCRS(boolean)
+     */
+    private CoordinateReferenceSystem sourceCRS, targetCRS;
+
+    /**
+     * Whether to use the inverse of the transform given by {@link #operation}.
+     * The transform will be inverted after all other options have been applied.
+     */
+    private final boolean inverse;
 
     /**
      * The transformation from source CRS to the domain of validity CRS, or {@code null} if none.
@@ -158,7 +181,7 @@ final class TransformCommand extends FormattedOutputCommand {
      * Returns valid options for the {@code "transform"} commands.
      */
     private static EnumSet<Option> options() {
-        return EnumSet.of(Option.SOURCE_CRS, Option.TARGET_CRS, Option.OPERATION, Option.VERBOSE,
+        return EnumSet.of(Option.SOURCE_CRS, Option.TARGET_CRS, Option.OPERATION, Option.INVERSE, Option.VERBOSE,
                 Option.LOCALE, Option.TIMEZONE, Option.ENCODING, Option.COLORS, Option.HELP, Option.DEBUG);
     }
 
@@ -168,6 +191,7 @@ final class TransformCommand extends FormattedOutputCommand {
     TransformCommand(final int commandIndex, final Object[] args) throws InvalidOptionException {
         super(commandIndex, args, options(), OutputFormat.WKT, OutputFormat.TEXT);
         resources = Vocabulary.forLocale(locale);
+        inverse = options.containsKey(Option.INVERSE);
     }
 
     /**
@@ -249,8 +273,8 @@ final class TransformCommand extends FormattedOutputCommand {
     @Override
     public int run() throws Exception {
         fetchOperation(options.get(Option.OPERATION));
-        CoordinateReferenceSystem sourceCRS = fetchCRS(Option.SOURCE_CRS, operation == null);
-        CoordinateReferenceSystem targetCRS = fetchCRS(Option.TARGET_CRS, operation == null);
+        sourceCRS = fetchCRS(Option.SOURCE_CRS, operation == null);
+        targetCRS = fetchCRS(Option.TARGET_CRS, operation == null);
         if (sourceCRS == null) sourceCRS = operation.getSourceCRS();    // May still be null.
         if (targetCRS == null) targetCRS = operation.getTargetCRS();
         /*
@@ -274,9 +298,10 @@ final class TransformCommand extends FormattedOutputCommand {
                 }
             }
             try {
-                final GeographicCRS domainOfValidityCRS = ReferencingUtilities.toNormalizedGeographicCRS(sourceCRS, false, false);
+                final CoordinateReferenceSystem crs = getEffectiveCRS(false);
+                final GeographicCRS domainOfValidityCRS = ReferencingUtilities.toNormalizedGeographicCRS(crs, false, false);
                 if (domainOfValidityCRS != null) {
-                    toDomainOfValidity = CRS.findOperation(sourceCRS, domainOfValidityCRS, null).getMathTransform();
+                    toDomainOfValidity = CRS.findOperation(crs, domainOfValidityCRS, null).getMathTransform();
                     areaOfInterest = computeAreaOfInterest(points);
                 }
             } catch (FactoryException e) {
@@ -313,13 +338,21 @@ final class TransformCommand extends FormattedOutputCommand {
             }
         }
         /*
+         * At this point, the coordinate operation has been fully constructed. Replace the source and target CRS
+         * by the ones specified in the operation because they may have more accurate metadata (name, identifier)
+         * if they were fetched from the EPSG database.
+         */
+        CoordinateReferenceSystem crs;
+        if ((crs = operation.getSourceCRS()) != null) sourceCRS = crs;
+        if ((crs = operation.getTargetCRS()) != null) targetCRS = crs;
+        /*
          * Prints the header: source CRS, target CRS, operation steps and positional accuracy.
          */
         outHeader = new TableAppender(new LineAppender(out), " ");
         outHeader.setMultiLinesCells(true);
-        printHeader(Vocabulary.Keys.Source);      printNameAndIdentifier(operation.getSourceCRS(), false);
-        printHeader(Vocabulary.Keys.Destination); printNameAndIdentifier(operation.getTargetCRS(), false);
-        printHeader(Vocabulary.Keys.Operations);  printOperations (operation, false);
+        printHeader(Vocabulary.Keys.Source);      printNameAndIdentifier(getEffectiveCRS(false), false);
+        printHeader(Vocabulary.Keys.Destination); printNameAndIdentifier(getEffectiveCRS(true),  false);
+        printHeader(Vocabulary.Keys.Operations);  printOperations(operation, false);
         outHeader.nextLine();
         printDomainOfValidity(operation.getDomains());
         printAccuracy(CRS.getLinearAccuracy(operation));
@@ -336,9 +369,10 @@ final class TransformCommand extends FormattedOutputCommand {
             coordinateWidth  = 15;          // Must be set before computeNumFractionDigits(…).
             coordinateFormat = NumberFormat.getInstance(Locale.US);
             coordinateFormat.setGroupingUsed(false);
-            computeNumFractionDigits(operation.getTargetCRS().getCoordinateSystem());
+            final CoordinateSystem cs = getEffectiveCRS(true).getCoordinateSystem();
+            computeNumFractionDigits(cs);
             out.println();
-            printAxes(operation.getTargetCRS().getCoordinateSystem());
+            printAxes(cs);
             out.println();
             transform(points);
             if (errorMessage != null) {
@@ -491,11 +525,11 @@ final class TransformCommand extends FormattedOutputCommand {
      * Prints the coordinate operation or math transform in Well Known Text format.
      * This information is printed only if the {@code --verbose} option was specified.
      */
-    private void printDetails() throws IOException {
+    private void printDetails() throws IOException, NoninvertibleTransformException {
         final WKTFormat f = new WKTFormat(locale, timezone);
         if (colors) f.setColors(Colors.DEFAULT);
         f.setConvention(convention);
-        CharSequence[] lines = CharSequences.splitOnEOL(f.format(debug ? operation.getMathTransform() : operation));
+        CharSequence[] lines = CharSequences.splitOnEOL(f.format(debug ? getMathTransform() : operation));
         for (int i=0; i<lines.length; i++) {
             if (i == 0) {
                 printHeader(Vocabulary.Keys.Details);
@@ -657,11 +691,30 @@ final class TransformCommand extends FormattedOutputCommand {
     }
 
     /**
+     * Returns the source or target CRS, taking in account whether the inverse transform is requested.
+     *
+     * @param  target  {@code false} for the source CRS, or {@code true} for the target CRS.
+     * @return the source or target CRS.
+     */
+    private CoordinateReferenceSystem getEffectiveCRS(final boolean target) {
+        return (target ^ inverse) ? targetCRS : sourceCRS;
+    }
+
+    /**
+     * {@return the math transform of the operation, inverted if requested by user}.
+     */
+    private MathTransform getMathTransform() throws NoninvertibleTransformException {
+        MathTransform mt = operation.getMathTransform();
+        if (inverse) mt = mt.inverse();
+        return mt;
+    }
+
+    /**
      * Transforms the given coordinates.
      */
     private void transform(final List<double[]> points) throws TransformException {
-        final int dimension    = operation.getSourceCRS().getCoordinateSystem().getDimension();
-        final MathTransform mt = operation.getMathTransform();
+        final MathTransform mt = getMathTransform();
+        final int dimension    = mt.getSourceDimensions();
         final double[] result  = new double[mt.getTargetDimensions()];
         final double[] domainCoordinate;
         final DirectPositionView positionInDomain;
@@ -679,7 +732,7 @@ final class TransformCommand extends FormattedOutputCommand {
         for (final double[] coordinates : points) {
             if (coordinates.length != dimension) {
                 throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimensionForCRS_3,
-                            operation.getSourceCRS().getName().getCode(), dimension, coordinates.length));
+                            getEffectiveCRS(false).getName().getCode(), dimension, coordinates.length));
             }
             /*
              * At this point we got the coordinates and they have the expected number of dimensions.
@@ -733,6 +786,6 @@ final class TransformCommand extends FormattedOutputCommand {
      * considered as an indication that the point is outside the domain of validity.
      */
     private static void warning(final Exception e) {
-        Logging.recoverableException(getLogger(Modules.CONSOLE), TransformCommand.class, "run", e);
+        Logging.recoverableException(LOGGER, TransformCommand.class, "run", e);
     }
 }
