@@ -181,7 +181,7 @@ final class TransformCommand extends FormattedOutputCommand {
      * Returns valid options for the {@code "transform"} commands.
      */
     private static EnumSet<Option> options() {
-        return EnumSet.of(Option.SOURCE_CRS, Option.TARGET_CRS, Option.OPERATION, Option.INVERSE, Option.VERBOSE,
+        return EnumSet.of(Option.INVERSE, Option.SOURCE_CRS, Option.TARGET_CRS, Option.OPERATION, Option.VERBOSE,
                 Option.LOCALE, Option.TIMEZONE, Option.ENCODING, Option.COLORS, Option.HELP, Option.DEBUG);
     }
 
