@@ -30,15 +30,16 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.xml.XML;
+import org.apache.sis.xml.util.URISource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.UnsupportedStorageException;
+import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.system.Loggers;
-import org.apache.sis.storage.base.URIDataStore;
-import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.referencing.util.DefinitionVerifier;
 import org.apache.sis.setup.OptionKey;
 
@@ -85,11 +86,13 @@ final class Store extends URIDataStore implements Filter {
         super(provider, connector);
         final InputStream in = connector.getStorageAs(InputStream.class);
         if (in != null) {
-            source = new StreamSource(in);
+            source = URISource.create(in, location);
         } else {
             final Reader reader = connector.getStorageAs(Reader.class);
             if (reader != null) {
-                source = new StreamSource(reader);
+                var s = URISource.create(null, location);
+                s.setReader(reader);
+                source = s;
             }
         }
         final Closeable c = input(source);

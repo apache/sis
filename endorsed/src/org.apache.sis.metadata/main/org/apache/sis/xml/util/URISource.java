@@ -73,9 +73,11 @@ public final class URISource extends StreamSource {
     }
 
     /**
-     * Creates a new source.
+     * Creates a new source from the given input stream.
+     * The input should not be null, unless it will be specified later
+     * by a call to {@code setInputStream(…)} or {@code setReader(…)}.
      *
-     * @param  input   stream of the XML document.
+     * @param  input   stream of the XML document, or {@code null} if none.
      * @param  source  URL of the XML document, or {@code null} if none.
      * @return the given input stream as a source.
      */
@@ -94,7 +96,7 @@ public final class URISource extends StreamSource {
      * @return the URI, or {@code null} if not applicable for reading the document.
      */
     public URI getReadableURI() {
-        return getInputStream() == null ? document : null;
+        return (getInputStream() == null && getReader() == null) ? document : null;
     }
 
     /**
@@ -116,6 +118,7 @@ public final class URISource extends StreamSource {
      */
     @Override
     public String toString() {
-        return Strings.toString(getClass(), "document", document, "fragment", fragment, "inputStream", getInputStream());
+        return Strings.toString(getClass(), "document", document, "fragment", fragment,
+                                "inputStream", getInputStream(), "reader", getReader());
     }
 }

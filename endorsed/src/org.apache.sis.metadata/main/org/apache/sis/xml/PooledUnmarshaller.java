@@ -126,7 +126,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
         final Context context = begin(linkHandler);
         final Object object;
         try {
-            object = unmarshaller.unmarshal(input);
+            object = resolve(unmarshaller.unmarshal(input), linkHandler, context);
         } finally {
             context.finish();
         }
@@ -169,7 +169,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
         } else {
             final Context context = begin(linkHandler);
             try {
-                return unmarshaller.unmarshal(input);
+                return resolve(unmarshaller.unmarshal(input), linkHandler, context);
             } finally {
                 context.finish();
             }
@@ -219,7 +219,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
                 } else {
                     final Context context = begin(linkHandler);
                     try {
-                        return unmarshaller.unmarshal(s);
+                        return resolve(unmarshaller.unmarshal(s), linkHandler, context);
                     } finally {
                         context.finish();
                     }
@@ -246,6 +246,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
         } else {
             final Context context = begin(linkHandler);
             try {
+                // No need to invoke `resolve(…)` because a file cannot have a fragment.
                 return unmarshaller.unmarshal(input);
             } finally {
                 context.finish();
@@ -267,7 +268,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
         } else {
             final Context context = begin(linkHandler);
             try {
-                return unmarshaller.unmarshal(input);
+                return resolve(unmarshaller.unmarshal(input), linkHandler, context);
             } finally {
                 context.finish();
             }
@@ -288,7 +289,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
         } else {
             final Context context = begin(linkHandler);
             try {
-                return unmarshaller.unmarshal(input);
+                return resolve(unmarshaller.unmarshal(input), linkHandler, context);
             } finally {
                 context.finish();
             }
@@ -309,7 +310,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
         } else {
             final Context context = begin(linkHandler);
             try {
-                return unmarshaller.unmarshal(input);
+                return resolve(unmarshaller.unmarshal(input), linkHandler, context);
             } finally {
                 context.finish();
             }
@@ -351,7 +352,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
         } else {
             final Context context = begin(linkHandler);
             try {
-                return unmarshaller.unmarshal(input);
+                return resolve(unmarshaller.unmarshal(input), linkHandler, context);
             } finally {
                 context.finish();
             }
@@ -393,7 +394,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
         } else {
             final Context context = begin(linkHandler);
             try {
-                return unmarshaller.unmarshal(input);
+                return resolve(unmarshaller.unmarshal(input), linkHandler, context);
             } finally {
                 context.finish();
             }
@@ -438,7 +439,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
         }
         final Context context = begin(linkHandler);
         try {
-            return unmarshaller.unmarshal(input);
+            return resolve(unmarshaller.unmarshal(input), linkHandler, context);
         } finally {
             context.finish();
         }
@@ -465,6 +466,30 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
         } finally {
             context.finish();
         }
+    }
+
+    /**
+     * If the input is a fragment, returns the object referenced by the fragment.
+     * Otherwise returns the given object unchanged.
+     *
+     * @param  object       the object parsed from the whole document.
+     * @param  linkHandler  the document-dependent resolver of relative URIs, or {@code null}.
+     * @param  context      the marshalling context, or {@code null}.
+     * @return object referenced by the fragment, or the given {@code object} if no fragment was specified.
+     */
+    private static Object resolve(final Object object, final ExternalLinkHandler linkHandler, final Context context) {
+        if (linkHandler != null) {
+            final String fragment = linkHandler.getFragment();
+            if (fragment != null) {
+                final Object r = Context.getObjectForID(context, fragment);
+                if (r != null) {
+                    return r;
+                }
+                Context.warningOccured(context, PooledUnmarshaller.class, "unmarshal",
+                        Errors.class, Errors.Keys.NotABackwardReference_1, fragment);
+            }
+        }
+        return object;
     }
 
     /**

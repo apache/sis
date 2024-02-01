@@ -677,10 +677,12 @@ public final class Context extends MarshalContext {
         if (context != null) {
             final Object existing = context.xmlidToObject.putIfAbsent(id, object);
             if (existing != null) {
+                // Note: `existing.equals(object)` would be unreliable because object construction is unfinished.
                 return existing == object;
             }
             if (context.objectToXmlid.put(object, id) != null) {
-                throw new CorruptedObjectException(id);    // Should never happen since all put calls are in this method.
+                // Should never happen because all put calls are in this method.
+                throw new CorruptedObjectException(id);
             }
         }
         return true;

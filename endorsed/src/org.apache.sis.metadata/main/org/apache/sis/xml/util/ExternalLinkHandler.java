@@ -123,6 +123,27 @@ public class ExternalLinkHandler {
     }
 
     /**
+     * Returns the fragment (without leading dash) from a {@link URL}, {@link URI} or {@link CharSequence} instance.
+     * If no fragment is found, or if the {@linkplain #base} does not support fragments, return {@code null}.
+     *
+     * @return the fragment in the base URI, or {@code null} if none.
+     */
+    public final String getFragment() {
+        if (base instanceof URI) {
+            return ((URI) base).getFragment();
+        } else if (base instanceof URL) {
+            return ((URL) base).getRef();
+        } else if (base instanceof String) {
+            final var b = (String) base;
+            final int s = b.lastIndexOf('#');
+            if (s >= 0) {
+                return b.substring(s+1);
+            }
+        }
+        return null;
+    }
+
+    /**
      * {@return the base URI of the link handler}. This is the same value as {@link #getBase()},
      * but converted to an {@link URI} object when first invoked.
      */
