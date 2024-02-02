@@ -274,7 +274,7 @@ public class ExternalLinkHandler {
         }
         final XMLResolver resolver = (XMLResolver) property;
         return new ExternalLinkHandler(base) {
-            @Override public Source openReader(final URI path) throws XMLStreamException {
+            @Override public Source openReader(final URI path) throws Exception {
                 /*
                  * According StAX specification, the return type can be either InputStream,
                  * XMLStreamReader or XMLEventReader. We additionally accept Source as well.

@@ -23,6 +23,7 @@ import java.io.Closeable;
 import java.io.Reader;
 import java.io.InputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import javax.xml.transform.stream.StreamSource;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.Metadata;
@@ -80,9 +81,12 @@ final class Store extends URIDataStore implements Filter {
      *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
+     * @throws URISyntaxException if an error occurred while normalizing the URI.
      * @throws DataStoreException if an error occurred while opening the stream.
      */
-    public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
+    public Store(final StoreProvider provider, final StorageConnector connector)
+            throws URISyntaxException, DataStoreException
+    {
         super(provider, connector);
         final InputStream in = connector.getStorageAs(InputStream.class);
         if (in != null) {

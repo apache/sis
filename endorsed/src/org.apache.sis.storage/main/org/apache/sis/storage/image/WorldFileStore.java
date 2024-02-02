@@ -29,6 +29,7 @@ import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.StandardOpenOption;
+import java.net.URISyntaxException;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.spi.ImageReaderSpi;
@@ -330,10 +331,11 @@ public class WorldFileStore extends PRJDataStore {
      * </ol>
      *
      * @return the "World file" content as an affine transform, or {@code null} if none was found.
+     * @throws URISyntaxException if an error occurred while normalizing the URI.
      * @throws IOException if an I/O error occurred.
      * @throws DataStoreException if the auxiliary file content cannot be parsed.
      */
-    private AffineTransform2D readWorldFile() throws IOException, DataStoreException {
+    private AffineTransform2D readWorldFile() throws URISyntaxException, IOException, DataStoreException {
         IOException warning = null;
         final String preferred = getWorldFileSuffix();
 loop:   for (int convention=0;; convention++) {
@@ -369,10 +371,13 @@ loop:   for (int convention=0;; convention++) {
      *
      * @param  wld  suffix of the auxiliary file.
      * @return the "World file" content as an affine transform, or {@code null} if none was found.
+     * @throws URISyntaxException if an error occurred while normalizing the URI.
      * @throws IOException if an I/O error occurred.
      * @throws DataStoreException if the file content cannot be parsed.
      */
-    private AffineTransform2D readWorldFile(final String wld) throws IOException, DataStoreException {
+    private AffineTransform2D readWorldFile(final String wld)
+            throws URISyntaxException, IOException, DataStoreException
+    {
         final AuxiliaryContent content = readAuxiliaryFile(wld, false);
         if (content == null) {
             cannotReadAuxiliaryFile(WorldFileStore.class, "getGridGeometry", wld, null, true);
@@ -448,7 +453,7 @@ loop:   for (int convention=0;; convention++) {
     public synchronized Path[] getComponentFiles() throws DataStoreException {
         if (suffixWLD == null) try {
             getGridGeometry(MAIN_IMAGE);                // Will compute `suffixWLD` as a side effect.
-        } catch (IOException e) {
+        } catch (URISyntaxException | IOException e) {
             throw new DataStoreException(e);
         }
         return listComponentFiles(suffixWLD, PRJ);      // `suffixWLD` still null if file was not found.
@@ -461,10 +466,11 @@ loop:   for (int convention=0;; convention++) {
      * @param  index  index of the image for which to read the grid geometry.
      * @return grid geometry of the image at the given index.
      * @throws IndexOutOfBoundsException if the image index is out of bounds.
+     * @throws URISyntaxException if an error occurred while normalizing the URI.
      * @throws IOException if an I/O error occurred.
      * @throws DataStoreException if the {@code *.prj} or {@code *.tfw} auxiliary file content cannot be parsed.
      */
-    final GridGeometry getGridGeometry(final int index) throws IOException, DataStoreException {
+    final GridGeometry getGridGeometry(final int index) throws URISyntaxException, IOException, DataStoreException {
         assert Thread.holdsLock(this);
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ImageReader reader = reader();
@@ -495,7 +501,9 @@ loop:   for (int convention=0;; convention++) {
      * @param  gg     the new grid geometry.
      * @return suffix of the "world file", or {@code null} if the image cannot be written.
      */
-    String setGridGeometry(final int index, final GridGeometry gg) throws IOException, DataStoreException {
+    String setGridGeometry(final int index, final GridGeometry gg)
+            throws URISyntaxException, IOException, DataStoreException
+    {
         if (index != MAIN_IMAGE) {
             return null;
         }
@@ -540,7 +548,7 @@ loop:   for (int convention=0;; convention++) {
             builder.addTitleOrIdentifier(getFilename(), MetadataBuilder.Scope.ALL);
             builder.setISOStandards(false);
             metadata = builder.buildAndFreeze();
-        } catch (IOException e) {
+        } catch (URISyntaxException | IOException e) {
             throw new DataStoreException(e);
         }
         return metadata;
@@ -672,7 +680,7 @@ loop:   for (int convention=0;; convention++) {
                     images[index] = image;
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
-                } catch (DataStoreException e) {
+                } catch (URISyntaxException | DataStoreException e) {
                     throw new BackingStoreException(e);
                 }
                 return image;
@@ -741,8 +749,11 @@ loop:   for (int convention=0;; convention++) {
      * @param  index  index of the image for which to create a resource.
      * @return resource for the image identified by the given index.
      * @throws IndexOutOfBoundsException if the image index is out of bounds.
+     * @throws URISyntaxException if an error occurred while normalizing the URI.
      */
-    WorldFileResource createImageResource(final int index) throws DataStoreException, IOException {
+    WorldFileResource createImageResource(final int index)
+            throws DataStoreException, URISyntaxException, IOException
+    {
         return new WorldFileResource(this, listeners, index, getGridGeometry(index));
     }
 

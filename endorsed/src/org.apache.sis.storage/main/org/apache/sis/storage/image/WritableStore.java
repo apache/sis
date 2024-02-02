@@ -20,6 +20,7 @@ import java.util.function.BiConsumer;
 import java.io.IOException;
 import java.io.BufferedWriter;
 import java.nio.file.StandardOpenOption;
+import java.net.URISyntaxException;
 import java.awt.geom.AffineTransform;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -202,7 +203,9 @@ class WritableStore extends WorldFileStore {
      * @see #getGridGeometry(int)
      */
     @Override
-    String setGridGeometry(final int index, GridGeometry gg) throws IOException, DataStoreException {
+    String setGridGeometry(final int index, GridGeometry gg)
+            throws URISyntaxException, IOException, DataStoreException
+    {
         assert Thread.holdsLock(this);
         /*
          * Make sure that the grid geometry starts at (0,0).
@@ -274,7 +277,7 @@ writeCoeffs:    for (int i=0;; i++) {
      * @throws IndexOutOfBoundsException if the image index is out of bounds.
      */
     @Override
-    WorldFileResource createImageResource(final int index) throws DataStoreException, IOException {
+    WorldFileResource createImageResource(final int index) throws DataStoreException, URISyntaxException, IOException {
         return new WritableResource(this, listeners, index, getGridGeometry(index));
     }
 
@@ -313,7 +316,7 @@ writeCoeffs:    for (int i=0;; i++) {
             components.added(image);        // Must be invoked only after above succeeded.
             numImages++;
             return image;
-        } catch (IOException | RuntimeException e) {
+        } catch (URISyntaxException | IOException | RuntimeException e) {
             cause = e;
         }
         throw new DataStoreException(resources().getString(Resources.Keys.CanNotWriteResource_1, label(resource)), cause);

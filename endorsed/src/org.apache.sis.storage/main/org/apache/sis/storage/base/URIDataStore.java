@@ -374,10 +374,13 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
      * @param  input   the input stream of the XML document. Will be closed by this method.
      * @param  source  the source of the XML document to read.
      * @return the unmarshalled object.
+     * @throws URISyntaxException if an error occurred while normalizing the URI.
      * @throws JAXBException if an error occurred while parsing the XML document.
      * @throws IOException if an error occurred while closing the input stream.
      */
-    protected final Object readXML(final InputStream input, final URI source) throws IOException, JAXBException {
+    protected final Object readXML(final InputStream input, final URI source)
+            throws URISyntaxException, IOException, JAXBException
+    {
         try (input) {
             return readXML(URISource.create(input, source));
         }
@@ -423,11 +426,12 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
      * @return the file content together with the source, or {@code null} if none. Should be short-lived.
      * @throws NoSuchFileException if the auxiliary file has not been found (when opened from path).
      * @throws FileNotFoundException if the auxiliary file has not been found (when opened from URL).
+     * @throws URISyntaxException if an error occurred while normalizing the URI.
      * @throws IOException if another error occurred while opening the stream.
      * @throws DataStoreException if the auxiliary file content seems too large.
      */
     protected final AuxiliaryContent readAuxiliaryFile(final String extension, final boolean acceptXML)
-            throws IOException, DataStoreException
+            throws URISyntaxException, IOException, DataStoreException
     {
         /*
          * Try to open the stream using the storage type (Path or URL) closest to the type

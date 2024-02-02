@@ -17,6 +17,7 @@
 package org.apache.sis.storage.image;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.awt.image.RenderedImage;
 import javax.imageio.ImageWriter;
 import org.apache.sis.coverage.grid.GridCoverage;
@@ -67,7 +68,7 @@ final class WritableResource extends WorldFileResource implements WritableGridCo
                 final ImageWriter writer = store.writer();                      // Should be after `setGridGeometry(…)`.
                 writer.write(data);
             }
-        } catch (IOException | RuntimeException e) {
+        } catch (URISyntaxException | IOException | RuntimeException e) {
             throw new DataStoreException(store.resources().getString(Resources.Keys.CanNotWriteResource_1, store.getDisplayName()), e);
         }
     }

@@ -48,8 +48,8 @@ public final class URISource extends StreamSource {
      * Creates a source from an URI. This constructor separates the fragment from the path.
      * The URI stored by this constructor in {@link #document} excludes the fragment part.
      *
-     * @param source  URI to the XML document.
-     * @throws URISyntaxException if the URI is not valid.
+     * @param  source  URI to the XML document.
+     * @throws URISyntaxException if an error occurred while normalizing the URI.
      */
     URISource(URI source) throws URISyntaxException {
         source = source.normalize();
@@ -60,19 +60,6 @@ public final class URISource extends StreamSource {
     }
 
     /**
-     * Creates a new source from an input stream.
-     *
-     * @param input   stream of the XML document.
-     * @param source  URL of the XML document.
-     */
-    private URISource(final InputStream input, final URI source) {
-        super(input);
-        // SystemId will be computed only if requested.
-        document = source.normalize();
-        fragment = null;
-    }
-
-    /**
      * Creates a new source from the given input stream.
      * The input should not be null, unless it will be specified later
      * by a call to {@code setInputStream(…)} or {@code setReader(…)}.
@@ -80,10 +67,13 @@ public final class URISource extends StreamSource {
      * @param  input   stream of the XML document, or {@code null} if none.
      * @param  source  URL of the XML document, or {@code null} if none.
      * @return the given input stream as a source.
+     * @throws URISyntaxException if an error occurred while normalizing the URI.
      */
-    public static StreamSource create(final InputStream input, final URI source) {
+    public static StreamSource create(final InputStream input, final URI source) throws URISyntaxException {
         if (source != null) {
-            return new URISource(input, source);
+            var s = new URISource(source);
+            s.setInputStream(input);
+            return s;
         } else {
             return new StreamSource(input);
         }

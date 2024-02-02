@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
+import java.net.URISyntaxException;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
@@ -226,7 +227,7 @@ final class RawRasterStore extends RasterStore {
     public synchronized GridGeometry getGridGeometry() throws DataStoreException {
         if (reader == null) try {
             readHeader();
-        } catch (IOException e) {
+        } catch (URISyntaxException | IOException e) {
             throw new DataStoreException(canNotRead(), e);
         } catch (RuntimeException e) {
             throw new DataStoreContentException(canNotRead(), e);
@@ -251,7 +252,7 @@ final class RawRasterStore extends RasterStore {
             }
             loadBandDescriptions(input.filename, reader.layout);
             sampleDimensions = super.getSampleDimensions();
-        } catch (IOException e) {
+        } catch (URISyntaxException | IOException e) {
             throw new DataStoreException(canNotRead(), e);
         } catch (RuntimeException e) {
             throw new DataStoreContentException(canNotRead(), e);
@@ -329,13 +330,14 @@ final class RawRasterStore extends RasterStore {
      * <p>Note: we don't do this initialization in the constructor
      * for giving a chance for users to register listeners first.</p>
      *
+     * @throws URISyntaxException if an error occurred while normalizing the URI.
      * @throws IOException if the auxiliary file cannot be found or read.
      * @throws DataStoreException if the auxiliary file cannot be parsed.
      * @throws RasterFormatException if the number of bits or the signed/unsigned property is invalid.
      * @throws ArithmeticException if image size of pixel/line/band stride is too large.
      * @throws IllegalArgumentException if {@link SampleModel} constructor rejects some argument values.
      */
-    private void readHeader() throws IOException, DataStoreException {
+    private void readHeader() throws URISyntaxException, IOException, DataStoreException {
         assert Thread.holdsLock(this);
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ChannelDataInput input = this.input;

@@ -18,6 +18,7 @@ package org.apache.sis.storage.xml;
 
 import java.util.Map;
 import java.util.logging.Logger;
+import java.net.URISyntaxException;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -82,7 +83,11 @@ public final class StoreProvider extends AbstractProvider {
      */
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
-        return new Store(this, connector);
+        try {
+            return new Store(this, connector);
+        } catch (URISyntaxException e) {
+            throw new DataStoreException(e);
+        }
     }
 
     /**

@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.net.URISyntaxException;
 import java.awt.image.ColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
@@ -194,11 +195,12 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
      * @return the color model, or {@code null} if the file does not contain enough entries.
      * @throws NoSuchFileException if the auxiliary file has not been found (when opened from path).
      * @throws FileNotFoundException if the auxiliary file has not been found (when opened from URL).
+     * @throws URISyntaxException if an error occurred while normalizing the URI.
      * @throws IOException if another error occurred while opening the stream.
      * @throws NumberFormatException if a number cannot be parsed.
      */
     private ColorModel readColorMap(final int dataType, final int mapSize, final int numBands)
-            throws DataStoreException, IOException
+            throws DataStoreException, URISyntaxException, IOException
     {
         final int maxSize;
         switch (dataType) {
@@ -272,11 +274,12 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
      * @return statistics for each band. Some elements may be null if not specified in the file.
      * @throws NoSuchFileException if the auxiliary file has not been found (when opened from path).
      * @throws FileNotFoundException if the auxiliary file has not been found (when opened from URL).
+     * @throws URISyntaxException if an error occurred while normalizing the URI.
      * @throws IOException if another error occurred while opening the stream.
      * @throws NumberFormatException if a number cannot be parsed.
      */
     private Statistics[] readStatistics(final String name, final SampleModel sm)
-            throws DataStoreException, IOException
+            throws DataStoreException, URISyntaxException, IOException
     {
         final Statistics[] stats = new Statistics[sm.getNumBands()];
         for (final CharSequence line : CharSequences.splitOnEOL(readAuxiliaryFile(STX, false))) {
@@ -332,7 +335,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
          */
         try {
             stats = readStatistics(name, sm);
-        } catch (IOException | NumberFormatException e) {
+        } catch (URISyntaxException | IOException | NumberFormatException e) {
             cannotReadAuxiliaryFile(STX, e);
         }
         /*
@@ -401,7 +404,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
                 } else {
                     try {
                         colorModel = readColorMap(dataType, (int) (maximum + 1), bands.length);
-                    } catch (IOException | NumberFormatException e) {
+                    } catch (URISyntaxException | IOException | NumberFormatException e) {
                         cannotReadAuxiliaryFile(CLR, e);
                     }
                     if (colorModel == null) {

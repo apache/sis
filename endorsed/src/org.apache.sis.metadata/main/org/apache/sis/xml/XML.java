@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;             // For javadoc
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.io.File;
 import java.io.IOException;
@@ -619,7 +620,7 @@ public final class XML extends Static {
         final Object object;
         try (InputStream in = new BufferedInputStream(Files.newInputStream(input, StandardOpenOption.READ))) {
             object = unmarshal(URISource.create(in, input.toUri()), null);
-        } catch (IOException e) {
+        } catch (URISyntaxException | IOException e) {
             throw new JAXBException(Errors.format(Errors.Keys.CanNotRead_1, input), e);
         }
         return object;

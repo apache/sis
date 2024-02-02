@@ -175,7 +175,7 @@ public abstract class PRJDataStore extends URIDataStore {
         } catch (NoSuchFileException | FileNotFoundException e) {
             cannotReadAuxiliaryFile(caller, method, extension, e, true);
             return Optional.empty();
-        } catch (IOException | ParseException | ClassCastException e) {
+        } catch (URISyntaxException | IOException | ParseException | ClassCastException e) {
             cause = e;
         }
         final var e = new DataStoreReferencingException(cannotReadAuxiliaryFile(extension), cause);
