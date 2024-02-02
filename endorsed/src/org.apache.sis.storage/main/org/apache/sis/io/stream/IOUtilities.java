@@ -303,19 +303,18 @@ public final class IOUtilities extends Static {
 
     /**
      * Encodes the characters that are not legal for the {@link URI#URI(String)} constructor.
-     * Note that in addition to unreserved characters ("{@code _-!.~'()*}"), the reserved
-     * characters ("{@code ?/[]@}") and the punctuation characters ("{@code ,;:$&+=}")
-     * are left unchanged, so they will be processed with their special meaning by the
-     * URI constructor.
+     * The current implementation replaces only the space characters, the control characters,
+     * and the {@code %} and {@code \\} characters. All other characters are left unchanged.
+     * In particular, the unreserved characters ("{@code _-!.~'()*}"), the reserved characters
+     * ("{@code ?/[]@}") and the punctuation characters ("{@code ,;:$&+=}") will be processed
+     * with their special meaning by the URI constructor.
      *
-     * <p>The current implementations replaces only the space characters, control characters
-     * and the {@code %} character. Future versions may replace more characters as we learn
-     * from experience.</p>
+     * <p>Future versions may replace more characters as we learn from experience.</p>
      *
      * @param  path  the path to encode, or {@code null}.
      * @return the encoded path, or {@code null} if and only if the given path was null.
      */
-    static String encodeURI(final String path) {
+    public static String encodeURI(final String path) {
         if (path == null) {
             return null;
         }
@@ -323,16 +322,8 @@ public final class IOUtilities extends Static {
         final int length = path.length();
         for (int i=0; i<length;) {
             final int c = path.codePointAt(i);
-            final int n = Character.charCount(c);
-            if (!Character.isSpaceChar(c) && !Character.isISOControl(c) && c != '%') {
-                /*
-                 * The character is valid, or is punction character, or is a reserved character.
-                 * All those characters should be handled properly by the URI(String) constructor.
-                 */
-                if (buffer != null) {
-                    buffer.appendCodePoint(c);
-                }
-            } else {
+            final int e = Character.charCount(c) + i;
+            if (Character.isSpaceChar(c) || Character.isISOControl(c) || c == '%' || c == '\\') {
                 /*
                  * The character is invalid, so we need to escape it. Note that the encoding
                  * is fixed to UTF-8 as of java.net.URI specification (see its class javadoc).
@@ -341,7 +332,7 @@ public final class IOUtilities extends Static {
                     buffer = new StringBuilder(path);
                     buffer.setLength(i);
                 }
-                for (final byte b : path.substring(i, i+n).getBytes(StandardCharsets.UTF_8)) {
+                for (final byte b : path.substring(i, e).getBytes(StandardCharsets.UTF_8)) {
                     buffer.append('%');
                     final String hex = Integer.toHexString(Byte.toUnsignedInt(b)).toUpperCase(Locale.ROOT);
                     if (hex.length() < 2) {
@@ -349,8 +340,14 @@ public final class IOUtilities extends Static {
                     }
                     buffer.append(hex);
                 }
+            } else if (buffer != null) {
+                /*
+                 * The character is valid, or is punction character, or is a reserved character.
+                 * All those characters should be handled properly by the URI(String) constructor.
+                 */
+                buffer.appendCodePoint(c);
             }
-            i += n;
+            i = e;
         }
         return (buffer != null) ? buffer.toString() : path;
     }
