@@ -361,6 +361,8 @@ public final class IOUtilities extends Static {
      * <h4>Rational</h4>
      * A URL can represent a file, but {@link URL#openStream()} appears to return a {@code BufferedInputStream}
      * wrapping the {@link FileInputStream}, which is not a desirable feature when we want to obtain a channel.
+     * Another reason is that {@link File} can be relative to the current working directory, while {@link URI}
+     * can be {@linkplain URI#resolve(URI) resolved} only against absolute URI.
      *
      * @param  path      the path to convert, or {@code null}.
      * @param  encoding  if the URL is encoded in a {@code application/x-www-form-urlencoded} MIME format,
@@ -399,9 +401,13 @@ public final class IOUtilities extends Static {
         IllegalArgumentException suppressed = null;
         try {
             final URI uri = new URI(path);
-            final String scheme = uri.getScheme();
-            if (scheme != null && scheme.equalsIgnoreCase("file")) try {
-                return new File(uri);
+            if ("file".equalsIgnoreCase(uri.getScheme())) try {
+                if (uri.isOpaque() && uri.getRawFragment() == null) {
+                    // Case where the path is only "file:something" without "/" or "///" characters.
+                    return new File(uri.getSchemeSpecificPart());
+                } else {
+                    return new File(uri);
+                }
             } catch (IllegalArgumentException e) {
                 suppressed = e;
             }

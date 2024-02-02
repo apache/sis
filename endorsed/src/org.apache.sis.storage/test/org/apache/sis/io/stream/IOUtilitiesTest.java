@@ -163,14 +163,27 @@ public final class IOUtilitiesTest extends TestCase {
     @Test
     @DependsOnMethod("testToFileFromUTF8")
     public void testToFileOrURL() throws IOException {
-        assertEquals(new File("/Users/name/Map.png"),        IOUtilities.toFileOrURL("/Users/name/Map.png", null));
-        assertEquals(new File("/Users/name/Map.png"),        IOUtilities.toFileOrURL("file:/Users/name/Map.png", null));
-        assertEquals(URI.create("http://localhost").toURL(), IOUtilities.toFileOrURL("http://localhost", null));
+        // Absolute file paths
+        File expected = new File("/Users/name/Map.png");
+        assertEquals(expected, IOUtilities.toFileOrURL("/Users/name/Map.png", null));
+        assertEquals(expected, IOUtilities.toFileOrURL("file:/Users/name/Map.png", null));
+        assertEquals(expected, IOUtilities.toFileOrURL("file:///Users/name/Map.png", null));
+
+        // Relative file paths
+        expected = new File("name/Map.png");
+        assertEquals(expected, IOUtilities.toFileOrURL("name/Map.png", null));
+        assertEquals(expected, IOUtilities.toFileOrURL("file:name/Map.png", null));
+
+        // HTTP paths
+        assertEquals(URI.create("http://localhost").toURL(),
+                IOUtilities.toFileOrURL("http://localhost", null));
+
+        // Encoded paths
         assertEquals(new File("/Users/name/Map with spaces.png"),
                 IOUtilities.toFileOrURL("file:/Users/name/Map%20with%20spaces.png", "UTF-8"));
 
         String path = "file:/Users/name/++t--++est.shp";
-        var expected = new File("/Users/name/++t--++est.shp");
+        expected = new File("/Users/name/++t--++est.shp");
         assertEquals(expected, IOUtilities.toFileOrURL(path, null));
 
         path = path.replace("+", "%2B");
