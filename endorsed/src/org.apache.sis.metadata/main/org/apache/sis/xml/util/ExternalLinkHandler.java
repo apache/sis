@@ -56,11 +56,20 @@ public class ExternalLinkHandler {
      * If the conversion fails, then this value is set to {@code null} for avoiding to try again.
      *
      * <p>Note that the URI is a path to the sibling document rather than a path to the parent directory.
-     * This is okay, {@link URI#resolve(URI)} appears to behave as intended for deriving relative paths.</p>
+     * This is okay, {@link URI#resolve(URI)} appears to behave as intended for deriving relative paths.
+     * Fragment (the text after '#'), if any, will be ignored.</p>
      *
      * @see #resolve(URI)
      */
     private Object base;
+
+    /**
+     * The fragment (without leading dash) from a {@link URL}, {@link URI} or {@link CharSequence} instance.
+     * If no fragment is found, or if the {@linkplain #base} does not support fragments, this is {@code null}.
+     *
+     * @see #getFragment()
+     */
+    private String fragment;
 
     /**
      * Creates a new resolver for documents relative to the document in the specified URL.
@@ -77,7 +86,7 @@ public class ExternalLinkHandler {
     /**
      * Creates a new resolver for documents relative to the document in the specified file.
      *
-     * @param  sibling  path to the sibling document, or {@code null} if none.
+     * @param  sibling  path to the sibling document.
      */
     public ExternalLinkHandler(final File sibling) {
         base = sibling;
@@ -86,20 +95,23 @@ public class ExternalLinkHandler {
     /**
      * Creates a new resolver for documents relative to the document at the specified URL.
      *
-     * @param  sibling  URL to the sibling document, or {@code null} if none.
+     * @param  sibling  URL to the sibling document.
      */
     public ExternalLinkHandler(final URL sibling) {
         base = sibling;
+        fragment = sibling.getRef();
     }
 
     /**
      * Creates a new resolver for documents relative to the document read from the specified source.
      *
-     * @param  sibling  source to the sibling document, or {@code null} if none.
+     * @param  sibling  source to the sibling document.
      */
     public ExternalLinkHandler(final Source sibling) {
         if (sibling instanceof URISource) {
-            base = ((URISource) sibling).document;
+            final var s = (URISource) sibling;
+            base = s.document;
+            fragment = s.fragment;
         } else {
             base = sibling.getSystemId();
         }
@@ -108,7 +120,7 @@ public class ExternalLinkHandler {
     /**
      * Creates a new resolver for documents relative to the document written to the specified result.
      *
-     * @param  sibling  result of the sibling document, or {@code null} if none.
+     * @param  sibling  result of the sibling document.
      */
     public ExternalLinkHandler(final Result sibling) {
         base = sibling.getSystemId();
@@ -129,23 +141,20 @@ public class ExternalLinkHandler {
      * @return the fragment in the base URI, or {@code null} if none.
      */
     public final String getFragment() {
-        if (base instanceof URI) {
-            return ((URI) base).getFragment();
-        } else if (base instanceof URL) {
-            return ((URL) base).getRef();
-        } else if (base instanceof String) {
-            final var b = (String) base;
-            final int s = b.lastIndexOf('#');
-            if (s >= 0) {
-                return b.substring(s+1);
+        if (fragment == null) {
+            final URI uri = getURI();
+            if (uri != null) {
+                fragment = uri.getFragment();
             }
         }
-        return null;
+        return fragment;
     }
 
     /**
-     * {@return the base URI of the link handler}. This is the same value as {@link #getBase()},
+     * Returns the base URI of the link handler. This is the same value as {@link #getBase()},
      * but converted to an {@link URI} object when first invoked.
+     *
+     * @return the base URI of the link handler, or {@code null} if none.
      */
     public final URI getURI() {
         final Object b = base;

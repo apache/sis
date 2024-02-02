@@ -16,6 +16,7 @@
  */
 package org.apache.sis.xml.util;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.io.InputStream;
@@ -54,7 +55,17 @@ public final class URISource extends StreamSource {
     URISource(URI source) throws URISyntaxException {
         source = source.normalize();
         // Build a new URI unconditionally because it also decodes escaped characters.
-        final URI c = new URI(source.getScheme(), source.getSchemeSpecificPart(), null);
+        URI c = new URI(source.getScheme(), source.getSchemeSpecificPart(), null);
+        if (c.isOpaque() && "file".equalsIgnoreCase(c.getScheme())) {
+            /*
+             * If the URI is "file:something" without "/" or "///" characters, resolve as an absolute path.
+             * This special case happens if `IOUtilities.toFileOrURI(String)` did not converted a string to
+             * a `java.io.File` because it contains a fragment. Since this constructor removed the fragment,
+             * we can now attempt this conversion again. The result will be an absolute path. This is needed
+             * for `URI.resolve(URI)` to work.
+             */
+            c = new File(c.getSchemeSpecificPart()).toURI();
+        }
         document = source.equals(c) ? source : c;       // Share the existing instance if applicable.
         fragment = Strings.trimOrNull(source.getFragment());
     }
