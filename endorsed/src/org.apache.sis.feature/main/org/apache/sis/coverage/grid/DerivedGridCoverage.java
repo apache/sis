@@ -124,7 +124,7 @@ abstract class DerivedGridCoverage extends GridCoverage {
     public TreeTable toTree(final Locale locale, final int bitmask) {
         final TreeTable tree = super.toTree(locale, bitmask);
         final TreeTable.Node branch = tree.getRoot().newChild();
-        final Vocabulary vocabulary = Vocabulary.getResources(locale);
+        final Vocabulary vocabulary = Vocabulary.forLocale(locale);
         final TableColumn<CharSequence> column = TableColumn.VALUE_AS_TEXT;
         branch.setValue(column, vocabulary.getString(Vocabulary.Keys.Source));
         branch.newChild().setValue(column, summary(source));

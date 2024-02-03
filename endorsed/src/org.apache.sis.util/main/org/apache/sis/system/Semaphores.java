@@ -72,7 +72,7 @@ public final class Semaphores {
 
     /**
      * A flag to indicate that a finer logging level should be used for reporting geodetic object creations.
-     * This flag is used during operations that potentially create a large amount of CRS, for example when
+     * This flag is used during operations that potentially create a large number of CRSs, for example when
      * trying many CRS candidates in search for a CRS compliant with some criteria.
      */
     public static final int FINER_OBJECT_CREATION_LOGS = 32;

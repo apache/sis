@@ -19,8 +19,6 @@ package org.apache.sis.storage.wkt;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
-import java.util.Locale;
-import java.util.TimeZone;
 import java.io.Reader;
 import java.io.IOException;
 import java.text.ParsePosition;
@@ -62,18 +60,6 @@ final class Store extends URIDataStore {
     private volatile Reader source;
 
     /**
-     * The locale for {@link org.opengis.util.InternationalString} localization
-     * or {@code null} for {@link Locale#ROOT} (usually English).
-     * This locale is <strong>not</strong> used for parsing numbers or dates.
-     */
-    private final Locale locale;
-
-    /**
-     * Timezone for dates, or {@code null} for UTC.
-     */
-    private final TimeZone timezone;
-
-    /**
      * The geometry library, or {@code null} for the default.
      */
     private final GeometryLibrary library;
@@ -99,8 +85,6 @@ final class Store extends URIDataStore {
     public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
         objects  = new ArrayList<>();
-        locale   = connector.getOption(OptionKey.LOCALE);       // For `InternationalString`, not for numbers.
-        timezone = connector.getOption(OptionKey.TIMEZONE);
         library  = connector.getOption(OptionKey.GEOMETRY_LIBRARY);
         source   = connector.commit(Reader.class, StoreProvider.NAME);
         listeners.useReadOnlyEvents();
@@ -140,12 +124,12 @@ final class Store extends URIDataStore {
              * definitions.
              */
             final ParsePosition pos = new ParsePosition(0);
-            final StoreFormat parser = new StoreFormat(locale, timezone, library, listeners);
+            final StoreFormat parser = new StoreFormat(dataLocale, timezone, library, listeners);
             do {
                 final Object obj = parser.parse(wkt, pos);
                 objects.add(obj);
                 pos.setIndex(CharSequences.skipLeadingWhitespaces(wkt, pos.getIndex(), wkt.length()));
-                parser.validate(obj);
+                parser.validate(null, Store.class, "getMetadata", obj);
             } while (pos.getIndex() < wkt.length());
         } catch (ParseException e) {
             throw new DataStoreContentException(getLocale(), StoreProvider.NAME, getDisplayName(), in).initCause(e);
@@ -181,10 +165,10 @@ final class Store extends URIDataStore {
             }
             if (count == 1) {                   // Set the citation title only if non-ambiguous.
                 builder.addTitle(name);
-                mergeAuxiliaryMetadata(builder);
+                mergeAuxiliaryMetadata(Store.class, builder);
             } else {
-                mergeAuxiliaryMetadata(builder);
-                addTitleOrIdentifier(builder);
+                mergeAuxiliaryMetadata(Store.class, builder);
+                builder.addTitleOrIdentifier(getFilename(), MetadataBuilder.Scope.ALL);
             }
             metadata = builder.buildAndFreeze();
         }

@@ -311,7 +311,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
             final Level level = Semaphores.query(Semaphores.FINER_OBJECT_CREATION_LOGS) ? Level.FINER : Level.FINE;
             if (LOGGER.isLoggable(level)) {
                 final String id = IdentifiedObjects.toString(IdentifiedObjects.getIdentifier(c, null));
-                final LogRecord record = Messages.getResources(null).getLogRecord(level,
+                final LogRecord record = Messages.forLocale(null).getLogRecord(level,
                         (id != null) ? Messages.Keys.CreatedIdentifiedObject_3
                                      : Messages.Keys.CreatedNamedObject_2,
                         c.getInterface(), c.getName().getCode(), id);
@@ -1619,7 +1619,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
         if (object instanceof CoordinateReferenceSystem) {
             return (CoordinateReferenceSystem) object;
         } else {
-            throw new FactoryException(Errors.getResources(defaultProperties).getString(
+            throw new FactoryException(Errors.forProperties(defaultProperties).getString(
                     Errors.Keys.IllegalClass_2, CoordinateReferenceSystem.class, object.getClass()));
         }
     }
@@ -1665,7 +1665,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * but is sub-optimal if this method is extensively used in a multi-thread environment.
      * Furthermore, this method offers no control on the WKT {@linkplain org.apache.sis.io.wkt.Convention conventions}
      * in use and on the handling of {@linkplain org.apache.sis.io.wkt.Warnings warnings}.
-     * Applications which need to parse a large amount of WKT strings should consider to use
+     * Applications which need to parse a large number of WKT strings should consider to use
      * the {@link org.apache.sis.io.wkt.WKTFormat} class instead of this method.
      *
      * @param  wkt  coordinate system encoded in Well-Known Text format (version 1 or 2).
@@ -1715,7 +1715,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
         if (object instanceof CoordinateReferenceSystem) {
             return (CoordinateReferenceSystem) object;
         } else {
-            throw new FactoryException(Errors.getResources(defaultProperties).getString(
+            throw new FactoryException(Errors.forProperties(defaultProperties).getString(
                     Errors.Keys.IllegalClass_2, CoordinateReferenceSystem.class, object.getClass()));
         }
     }

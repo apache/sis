@@ -32,7 +32,7 @@ import org.apache.sis.feature.FoliationRepresentation;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.StoreMetadata;
-import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.storage.wkt.FirstKeywordPeek;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -51,7 +51,7 @@ import org.apache.sis.util.ArgumentChecks;
                fileSuffixes  = "csv",
                capabilities  = Capability.READ,
                resourceTypes = FeatureSet.class)
-public final class StoreProvider extends URIDataStore.Provider {
+public final class StoreProvider extends URIDataStoreProvider {
     /**
      * The format names for static features and moving features.
      */

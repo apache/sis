@@ -50,7 +50,7 @@ final class RasterGetter extends ValueGetter<GridCoverage> {
 
     /**
      * Creates a new reader. The same instance can be reused for parsing an arbitrary
-     * amount of rasters sharing the same default CRS.
+     * number of rasters sharing the same default CRS.
      *
      * @param  defaultCRS  the CRS to use if none can be mapped from the SRID, or {@code null} if none.
      * @param  encoding    the way binary data are encoded in the raster column.

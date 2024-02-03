@@ -146,7 +146,7 @@ public abstract class OptionalInstallations extends InstallationResources implem
      * Returns the exception to throw for an unsupported authority.
      */
     private IllegalArgumentException unsupported(final String authority) {
-        return new IllegalArgumentException(Errors.getResources(getLocale())
+        return new IllegalArgumentException(Errors.forLocale(getLocale())
                 .getString(Errors.Keys.IllegalArgumentValue_2, "authority", authority));
     }
 
@@ -204,7 +204,7 @@ public abstract class OptionalInstallations extends InstallationResources implem
             }
         }
         // May happen if the URL is wrong.
-        throw new FileNotFoundException(Errors.getResources(getLocale()).getString(Errors.Keys.FileNotFound_1, source));
+        throw new FileNotFoundException(Errors.forLocale(getLocale()).getString(Errors.Keys.FileNotFound_1, source));
     }
 
     /**

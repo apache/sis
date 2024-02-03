@@ -411,7 +411,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
                 final long tileUp = incrementExact(toTileMatrixCoordinate(Math.min(aoiMax, max), i));
                 final long tileLo =                toTileMatrixCoordinate(Math.max(aoiMin, min), i);
                 if (tileUp <= tileLo) {
-                    final String message = Errors.getResources(getLocale())
+                    final String message = Errors.forLocale(getLocale())
                             .getString(Errors.Keys.IllegalRange_2, aoiMin, aoiMax);
                     if (aoiMin > aoiMax) {
                         throw new IllegalArgumentException(message);

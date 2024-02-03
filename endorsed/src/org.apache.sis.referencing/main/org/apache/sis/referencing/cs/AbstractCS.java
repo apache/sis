@@ -393,7 +393,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
     }
 
     /**
-     * {@return whether this coordinate system has the same axes than the specified CS, ignoring axis order}.
+     * {@return whether this coordinate system has the same axes as the specified CS, ignoring axis order}.
      * If true, then the two coordinate systems have the same number of dimensions and the same set of axes.
      * Axis instances are compared by the identity operator ({@code ==}), not by {@code equals(Object)}.
      *

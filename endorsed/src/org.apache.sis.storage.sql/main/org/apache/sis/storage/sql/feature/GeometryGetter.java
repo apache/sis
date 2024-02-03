@@ -72,7 +72,7 @@ final class GeometryGetter<G, V extends G> extends ValueGetter<V> {
 
     /**
      * Creates a new reader. The same instance can be reused for parsing an arbitrary
-     * amount of geometries sharing the same default CRS.
+     * number of geometries sharing the same default CRS.
      *
      * @param  geometryFactory  the factory to use for creating geometries from WKB definitions.
      * @param  geometryClass    the type of geometry to be returned by this {@code ValueGetter}.

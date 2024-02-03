@@ -71,7 +71,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
      * The fallback converter. Its target type should not be assignable from the primary target
      * type, except if both converters have the same target type. We intend {@linkplain #primary}
      * to be the most generic converter, because we assume that if the user wanted a more specific
-     * type he would have asked explicitly for it. In addition this layout reduces the amount of
+     * type he would have asked explicitly for it. In addition this layout reduces the number of
      * exceptions to be thrown and caught before we found a successful conversion.
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.

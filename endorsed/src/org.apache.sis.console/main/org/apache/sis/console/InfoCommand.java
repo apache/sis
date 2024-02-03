@@ -94,7 +94,7 @@ final class InfoCommand extends FormattedOutputCommand {
         } catch (BackingStoreException e) {
             throw e.unwrapOrRethrow(DataStoreException.class);
         }
-        final var tf = new TreeTableFormat(locale, timezone);
+        final var tf = new TreeTableFormat(locale, getTimeZone());
         tf.format(tree, out);
         return 0;
     }
@@ -108,7 +108,7 @@ final class InfoCommand extends FormattedOutputCommand {
      */
     private void define(final TreeTable.Node target, final Resource source) throws DataStoreException {
         String name = source.getIdentifier().map((id) -> id.toInternationalString().toString(locale))
-                .orElseGet(() -> Vocabulary.getResources(locale).getString(Vocabulary.Keys.Unnamed));
+                .orElseGet(() -> Vocabulary.forLocale(locale).getString(Vocabulary.Keys.Unnamed));
         target.setValue(TableColumn.VALUE_AS_TEXT, name);
         if (source instanceof GridCoverageResource) {
             final var grid = (GridCoverageResource) source;
@@ -132,8 +132,8 @@ final class InfoCommand extends FormattedOutputCommand {
     private void toTree(final Iterable<SampleDimension> bands, final TreeTable.Node target,
                         final TableColumn<? super String> column)
     {
-        target.setValue(column, Vocabulary.getResources(locale).getString(Vocabulary.Keys.SampleDimensions));
-        final var rf = new RangeFormat(locale, timezone);
+        target.setValue(column, Vocabulary.forLocale(locale).getString(Vocabulary.Keys.SampleDimensions));
+        final var rf = new RangeFormat(locale, getTimeZone());
         final var sb = new StringBuffer();
         for (SampleDimension band : bands) {
             band = band.forConvertedValues(true);

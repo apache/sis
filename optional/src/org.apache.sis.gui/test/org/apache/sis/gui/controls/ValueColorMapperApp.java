@@ -16,7 +16,6 @@
  */
 package org.apache.sis.gui.controls;
 
-import java.util.Locale;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
@@ -75,7 +74,7 @@ public final class ValueColorMapperApp extends Application {
     private static Region createIsolineTable() {
         final ValueColorMapper handler = new ValueColorMapper(
                 Resources.forLocale(null),
-                Vocabulary.getResources((Locale) null));
+                Vocabulary.forLocale(null));
         handler.getSteps().setAll(
                 new ValueColorMapper.Step( 10, Color.BLUE),
                 new ValueColorMapper.Step( 25, Color.GREEN),

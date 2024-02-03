@@ -182,7 +182,7 @@ public class MonolineFormatter extends Formatter {
     private static final int CONTEXT_STACK_TRACE_ELEMENTS = 2;
 
     /**
-     * Maximal amount of causes to print in stack traces. This is an arbitrary limit.
+     * Maximal number of causes to print in stack traces. This is an arbitrary limit.
      */
     @Configuration
     private static final int MAX_CAUSES = 10;
@@ -222,7 +222,7 @@ public class MonolineFormatter extends Formatter {
     private transient String[] colorSequences;
 
     /**
-     * The minimum amount of characters to use for writing logging level before the message.
+     * The minimum number of characters to use for writing logging level before the message.
      * If the logging level is shorter, remaining characters will be padded with spaces.
      * This is used in order to align the messages.
      *
@@ -759,7 +759,7 @@ loop:   for (int i=0; ; i++) {
             }
             /*
              * Now prepare the LineAppender for the message. We set a line separator prefixed by some
-             * amount of spaces in order to align message body on the column after the level name.
+             * number of spaces in order to align message body on the column after the level name.
              */
             String bodyLineSeparator = writer.getLineSeparator();
             final String lineSeparator = System.lineSeparator();
@@ -792,7 +792,7 @@ loop:   for (int i=0; ; i++) {
              * Now for the message part, we need to use the LineAppender in order to replace EOL
              * and tabulations.
              */
-            writer.setMaximalLineLength(maximalLength);
+            writer.setMaximalLineLength(Math.max(maximalLength - margin - 3, 10));
             writer.setCurrentLineLength(X364.lengthOfPlain(buffer, 0, buffer.length()));
             try {
                 if (message != null) {

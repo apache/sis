@@ -216,7 +216,7 @@ public final class FeatureOperations extends Static {
     {
         ArgumentChecks.ensureNonEmpty("delimiter", delimiter);
         if (delimiter.indexOf(StringJoinOperation.ESCAPE) >= 0) {
-            throw new IllegalArgumentException(Errors.getResources(identification).getString(
+            throw new IllegalArgumentException(Errors.forProperties(identification).getString(
                     Errors.Keys.IllegalCharacter_2, "delimiter", StringJoinOperation.ESCAPE));
         }
         ArgumentChecks.ensureNonEmpty("singleAttributes", singleAttributes);

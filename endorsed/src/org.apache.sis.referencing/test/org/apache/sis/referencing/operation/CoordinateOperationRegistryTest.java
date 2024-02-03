@@ -127,7 +127,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
     @BeforeClass
     public static void createFactory() throws ParseException {
         factory = new DefaultCoordinateOperationFactory();
-        parser  = new WKTFormat(null, null);
+        parser  = new WKTFormat();
         parser.addFragment("NTF",
                 "Datum[“Nouvelle Triangulation Française (Paris)”,\n" +
                 "  Ellipsoid[“Clarke 1880 (IGN)”, 6378249.2, 293.4660212936269]]");

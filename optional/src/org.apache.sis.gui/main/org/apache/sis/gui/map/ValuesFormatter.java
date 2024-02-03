@@ -67,13 +67,13 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
     private static final char SEPARATOR = '\u2003';
 
     /**
-     * Pseudo amount of fraction digits for default format.
+     * Pseudo number of fraction digits for default format.
      * Used when we don't know how many fraction digits to use.
      */
     private static final int DEFAULT_FORMAT = -1;
 
     /**
-     * Pseudo amount of fraction digits for scientific notation.
+     * Pseudo number of fraction digits for scientific notation.
      */
     private static final int SCIENTIFIC_NOTATION = -2;
 

@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.io.IOException;
 import java.nio.ByteOrder;
 import java.nio.file.Path;
+import java.net.URISyntaxException;
 import java.awt.image.DataBuffer;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
@@ -41,6 +42,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.base.AuxiliaryContent;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
@@ -225,7 +227,7 @@ final class RawRasterStore extends RasterStore {
     public synchronized GridGeometry getGridGeometry() throws DataStoreException {
         if (reader == null) try {
             readHeader();
-        } catch (IOException e) {
+        } catch (URISyntaxException | IOException e) {
             throw new DataStoreException(canNotRead(), e);
         } catch (RuntimeException e) {
             throw new DataStoreContentException(canNotRead(), e);
@@ -241,6 +243,7 @@ final class RawRasterStore extends RasterStore {
      */
     @Override
     public synchronized List<SampleDimension> getSampleDimensions() throws DataStoreException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ChannelDataInput input = this.input;
         List<SampleDimension> sampleDimensions = super.getSampleDimensions();
         if (sampleDimensions == null) try {
@@ -249,7 +252,7 @@ final class RawRasterStore extends RasterStore {
             }
             loadBandDescriptions(input.filename, reader.layout);
             sampleDimensions = super.getSampleDimensions();
-        } catch (IOException e) {
+        } catch (URISyntaxException | IOException e) {
             throw new DataStoreException(canNotRead(), e);
         } catch (RuntimeException e) {
             throw new DataStoreContentException(canNotRead(), e);
@@ -261,7 +264,7 @@ final class RawRasterStore extends RasterStore {
      * Returns localized resources for warnings an error messages.
      */
     private Errors errors() {
-        return Errors.getResources(getLocale());
+        return Errors.forLocale(getLocale());
     }
 
     /**
@@ -284,7 +287,7 @@ final class RawRasterStore extends RasterStore {
      */
     private void ignoredProperty(final String keyword, final int value) {
         if (value != 0) {
-            listeners.warning(Messages.getResources(getLocale()).getString(Messages.Keys.IgnoredPropertyValue_1, keyword));
+            listeners.warning(Messages.forLocale(getLocale()).getString(Messages.Keys.IgnoredPropertyValue_1, keyword));
         }
     }
 
@@ -327,14 +330,16 @@ final class RawRasterStore extends RasterStore {
      * <p>Note: we don't do this initialization in the constructor
      * for giving a chance for users to register listeners first.</p>
      *
+     * @throws URISyntaxException if an error occurred while normalizing the URI.
      * @throws IOException if the auxiliary file cannot be found or read.
      * @throws DataStoreException if the auxiliary file cannot be parsed.
      * @throws RasterFormatException if the number of bits or the signed/unsigned property is invalid.
      * @throws ArithmeticException if image size of pixel/line/band stride is too large.
      * @throws IllegalArgumentException if {@link SampleModel} constructor rejects some argument values.
      */
-    private void readHeader() throws IOException, DataStoreException {
+    private void readHeader() throws URISyntaxException, IOException, DataStoreException {
         assert Thread.holdsLock(this);
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ChannelDataInput input = this.input;
         if (input == null) {
             throw new DataStoreClosedException(canNotRead());
@@ -355,7 +360,7 @@ final class RawRasterStore extends RasterStore {
         int     geomask        = 0;   // Mask telling whether ulxmap, ulymap, xdim, ydim were specified (in that order).
         RawRasterLayout layout = RawRasterLayout.BIL;
         ByteOrder byteOrder    = ByteOrder.nativeOrder();
-        final AuxiliaryContent header = readAuxiliaryFile(RawRasterStoreProvider.HDR);
+        final AuxiliaryContent header = readAuxiliaryFile(RawRasterStoreProvider.HDR, false);
         if (header == null) {
             throw new DataStoreException(cannotReadAuxiliaryFile(RawRasterStoreProvider.HDR));
         }
@@ -437,7 +442,7 @@ final class RawRasterStore extends RasterStore {
                 throw missingProperty(header, keyword);
             }
         }
-        readPRJ();
+        readPRJ(RawRasterStore.class, "getGridGeometry");
         final GridGeometry gg = new GridGeometry(new GridExtent(ncols, nrows), CELL_ANCHOR,
                 new AffineTransform2D(xdim, 0, 0, -ydim, ulxmap, ulymap), crs);
         /*

@@ -412,7 +412,7 @@ final class IsolineRenderer {
          * Creates a new snapshot of {@link Band} information.
          *
          * @param  isolines  value of {@link Band#isolines} reference.
-         * @param  capacity  maximal amount of isoline levels that can be {@linkplain #add added}.
+         * @param  capacity  maximal number of isoline levels that can be {@linkplain #add added}.
          */
         private Snapshot(final Map<Double,Shape> isolines, final int capacity) {
             this.isolines = isolines;

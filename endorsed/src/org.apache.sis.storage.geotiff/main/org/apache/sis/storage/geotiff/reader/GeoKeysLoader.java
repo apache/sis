@@ -141,7 +141,7 @@ public class GeoKeysLoader {
             numberOfKeys = 0;
         }
         /*
-         * The key directory may be longer than needed for the amount of keys, but not shorter.
+         * The key directory may be longer than needed for the number of keys, but not shorter.
          * If shorter, report a warning and stop the parsing since we have no way to know if the
          * missing information were essentiel or not.
          *

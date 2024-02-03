@@ -36,7 +36,7 @@ import org.apache.sis.util.internal.Numerics;
 
 
 /**
- * A list of unsigned integer values. This class packs the values in the minimal amount of bits
+ * A list of unsigned integer values. This class packs the values in the minimal number of bits
  * required for storing unsigned integers of the given {@linkplain #maximalValue() maximal value}.
  *
  * <p>This class is <strong>not</strong> thread-safe. Synchronizations (if wanted) are user's responsibility.</p>

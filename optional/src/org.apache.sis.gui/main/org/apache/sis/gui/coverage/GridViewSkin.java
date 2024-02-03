@@ -444,9 +444,9 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
         }
 
         /**
-         * Attempts to scroll horizontally the view by the given amount of pixels.
+         * Attempts to scroll horizontally the view by the given number of pixels.
          *
-         * @param  delta  the amount of pixels to scroll.
+         * @param  delta  the number of pixels to scroll.
          * @return the number of pixels actually moved.
          */
         final double scrollHorizontal(final double delta) {
@@ -625,7 +625,7 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
          * Update position of the highlights at mouse cursor position. Usually the correction computed below is
          * zero and this block does not change any position (but it may change the geographic coordinates shown
          * in status bar). However if the user was scrolling and reached the end of the virtial flow, the last
-         * scrolling action may have caused a displacement which is a fractional amount of cells, in which case
+         * scrolling action may have caused a displacement which is a fractional number of cells, in which case
          * the highlights appear misaligned if we do not apply the correction below.
          */
         if (selection.isVisible()) {

@@ -252,7 +252,7 @@ public final class Warnings implements Localized, Serializable {
             final Exception cause = (Exception) messages.get(index + 1);
             final String[] sources = exceptionSources.get(cause);           // See comment in 'toString(Locale)'.
             if (sources != null) {
-                return Errors.getResources(errorLocale).getString(Errors.Keys.UnparsableStringInElement_2, sources);
+                return Errors.forLocale(errorLocale).getString(Errors.Keys.UnparsableStringInElement_2, sources);
             } else {
                 return cause.toString();
             }
@@ -338,7 +338,7 @@ public final class Warnings implements Localized, Serializable {
     public String toString(final Locale locale) {
         final StringBuilder buffer = new StringBuilder(250);
         final String lineSeparator = System.lineSeparator();
-        final Messages resources   = Messages.getResources(locale);
+        final Messages resources   = Messages.forLocale(locale);
         buffer.append(resources.getString(isParsing ? Messages.Keys.IncompleteParsing_1
                                                     : Messages.Keys.NonConformFormatting_1, root));
         if (messages != null) {
@@ -355,7 +355,7 @@ public final class Warnings implements Localized, Serializable {
                      */
                     final String[] sources = exceptionSources.get(cause);
                     if (sources != null) {
-                        message = Errors.getResources(locale).getString(Errors.Keys.UnparsableStringInElement_2, sources);
+                        message = Errors.forLocale(locale).getString(Errors.Keys.UnparsableStringInElement_2, sources);
                     } else {
                         message = cause.toString();
                         cause = null;
@@ -375,7 +375,7 @@ public final class Warnings implements Localized, Serializable {
          * If the parser found some unknown elements, formats an enclosed bullet list for them.
          */
         if (!ignoredElements.isEmpty()) {
-            final Vocabulary vocabulary = Vocabulary.getResources(locale);
+            final Vocabulary vocabulary = Vocabulary.forLocale(locale);
             buffer.append(lineSeparator).append(" • ").append(resources.getString(Messages.Keys.UnknownElementsInText));
             for (final Map.Entry<String, List<String>> entry : ignoredElements.entrySet()) {
                 buffer.append(lineSeparator).append("    ‣ ").append(vocabulary.getString(Vocabulary.Keys.Quoted_1, entry.getKey()));

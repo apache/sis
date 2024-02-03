@@ -102,7 +102,7 @@ public final class ConsistencyTest extends TestCase {
     public void debug() throws FactoryException {
         final String code = "EPSG::29871";
         final CoordinateReferenceSystem crs = CRS.forCode(code);
-        final WKTFormat format = new WKTFormat(null, null);
+        final WKTFormat format = new WKTFormat();
         format.setConvention(Convention.WKT2);
         lookup(parseAndFormat(format, code, crs), crs);
     }
@@ -114,11 +114,11 @@ public final class ConsistencyTest extends TestCase {
      */
     @Test
     public void testCoordinateReferenceSystems() throws FactoryException {
-        assumeTrue(RUN_EXTENSIVE_TESTS);
-        final WKTFormat v1  = new WKTFormat(null, null);
-        final WKTFormat v1c = new WKTFormat(null, null);
-        final WKTFormat v2  = new WKTFormat(null, null);
-        final WKTFormat v2s = new WKTFormat(null, null);
+        assumeTrue("Extensive tests not enabled.", RUN_EXTENSIVE_TESTS);
+        final WKTFormat v1  = new WKTFormat();
+        final WKTFormat v1c = new WKTFormat();
+        final WKTFormat v2  = new WKTFormat();
+        final WKTFormat v2s = new WKTFormat();
         v1 .setConvention(Convention.WKT1);
         v1c.setConvention(Convention.WKT1_COMMON_UNITS);
         v2 .setConvention(Convention.WKT2);

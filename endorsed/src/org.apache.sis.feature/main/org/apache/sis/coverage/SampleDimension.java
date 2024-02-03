@@ -245,7 +245,7 @@ public class SampleDimension implements Serializable {
      *
      * @return the values to indicate no data values for this sample dimension, or an empty set if none.
      * @throws IllegalStateException if this method cannot expand the range of no data values, for example
-     *         because some ranges contain an infinite amount of values.
+     *         because some ranges contain an infinite number of values.
      *
      * @see #allowsNaN()
      */

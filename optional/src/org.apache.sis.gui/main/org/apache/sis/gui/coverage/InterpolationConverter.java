@@ -80,7 +80,7 @@ final class InterpolationConverter extends StringConverter<Interpolation> {
             if (INTERPOLATIONS[i].equals(item)) {
                 final short key = VOCABULARIES[i];
                 if (key != 0) {
-                    return Vocabulary.getResources(locale).getString(key);
+                    return Vocabulary.forLocale(locale).getString(key);
                 } else if (item == Interpolation.LANCZOS) {
                     return "Lanczos";
                 }
@@ -94,7 +94,7 @@ final class InterpolationConverter extends StringConverter<Interpolation> {
      */
     @Override
     public Interpolation fromString(final String text) {
-        final Vocabulary vocabulary = Vocabulary.getResources(locale);
+        final Vocabulary vocabulary = Vocabulary.forLocale(locale);
         for (int i=0; i<VOCABULARIES.length; i++) {
             final short key = VOCABULARIES[i];
             final Interpolation item = INTERPOLATIONS[i];

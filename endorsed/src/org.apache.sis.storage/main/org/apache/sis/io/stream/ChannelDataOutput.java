@@ -164,7 +164,7 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
                     after -= c;
                 } while (after > buffer.capacity());
                 /*
-                 * We wrote a sufficient amount of bytes - usually all of them, but not necessarily.
+                 * We wrote a sufficient number of bytes - usually all of them, but not necessarily.
                  * If there is some unwritten bytes, move them the beginning of the buffer.
                  */
                 moveBufferForward(buffer.position());
@@ -555,7 +555,7 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
         abstract void transfer(int offset, int length);
 
         /**
-         * Skips the given amount of bytes in the buffer. It is caller responsibility to ensure
+         * Skips the given number of bytes in the buffer. It is caller responsibility to ensure
          * that there is enough bytes remaining in the buffer.
          *
          * @param  nByte  byte shift of buffer position.
@@ -742,7 +742,7 @@ public class ChannelDataOutput extends ChannelData implements DataOutput, Flusha
      * This method can be used for filling a region of the output stream.
      *
      * @param  count  number of bytes to write.
-     * @param  value  the byte to repeat the given amount of times.
+     * @param  value  the byte to repeat the given number of times.
      */
     public final void repeat(long count, final byte value) throws IOException {
         skipRemainingBits();        // Actually needed only if `count` = 0.

@@ -99,7 +99,7 @@ public final class DataStoresTest extends TestCase {
     }
 
     /**
-     * Starts the specified amount of worker threads where each thread ask for the set of providers.
+     * Starts the specified number of worker threads where each thread ask for the set of providers.
      *
      * @param  nbWorkers  number of concurrent threads.
      * @param  executor   the executor to use for running the threads.

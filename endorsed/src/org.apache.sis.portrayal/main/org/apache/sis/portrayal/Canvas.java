@@ -97,7 +97,7 @@ import org.apache.sis.coverage.CannotEvaluateException;
  *   <li>The {@linkplain #getObjectiveCRS objective CRS} is the common CRS in which all data
  *       are converted before to be displayed. If the objective CRS involves a map projection,
  *       it determines the deformation of shapes that user will see on the display device.
- *       The objective CRS should have the same number of dimensions than the display device
+ *       The objective CRS should have the same number of dimensions as the display device
  *       (often 2). Its domain of validity should be wide enough for encompassing all data.
  *       The {@link CRS#suggestCommonTarget CRS.suggestCommonTarget(…)} method may be helpful
  *       for choosing an objective CRS from a set of data CRS.</li>
@@ -1241,6 +1241,6 @@ public class Canvas extends Observable implements Localized {
      * Returns the resources bundle for error messages in the locale of this canvas.
      */
     private Errors errors() {
-        return Errors.getResources(locale);
+        return Errors.forLocale(locale);
     }
 }

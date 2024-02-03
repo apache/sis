@@ -223,7 +223,7 @@ public class TensorParameters<E> implements Serializable {
          * Note: the upper limit given in the operation parameters is arbitrary. A high
          *       value doesn't make much sense anyway since matrix size for projective
          *       transform will usually not be much more than 5, and the storage scheme
-         *       used in this implementation is inefficient for large amount of matrix
+         *       used in this implementation is inefficient for large number of matrix
          *       elements.
          */
         final NumberRange<Integer> valueDomain = NumberRange.create(1, true, 50, true);

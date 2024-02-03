@@ -80,7 +80,7 @@ public class UnparsableObjectException extends ParseException implements Localiz
      * @param  errorOffset  the position where the error is found while parsing.
      */
     UnparsableObjectException(final Locale locale, final short key, final Object[] parameters, final int errorOffset) {
-        super(Errors.getResources(locale).getString(key, parameters), errorOffset);
+        super(Errors.forLocale(locale).getString(key, parameters), errorOffset);
         this.parameters = parameters;
         this.key        = key;
     }

@@ -1234,7 +1234,7 @@ public class StorageConnector implements Serializable {
         } else {
             /*
              * If no ChannelDataInput has been created by the above code, get the input as an ImageInputStream and
-             * read an arbitrary number of bytes. Read only a small amount of bytes because, at the contrary of the
+             * read an arbitrary number of bytes. Read only a small number of bytes because, at the contrary of the
              * buffer created in `createChannelDataInput()`, the buffer created here is unlikely to be used for the
              * reading process after the recognition of the file format.
              */
@@ -1260,7 +1260,7 @@ public class StorageConnector implements Serializable {
      * This method returns {@code true} on success, or {@code false} if input is not a readable
      * channel or stream, we have reached the end of stream, or the buffer is full.
      *
-     * <p>This method is invoked when the amount of bytes in the buffer appears to be insufficient
+     * <p>This method is invoked when the number of bytes in the buffer appears to be insufficient
      * for {@link DataStoreProvider#probeContent(StorageConnector)} purpose.</p>
      *
      * @return {@code true} on success.

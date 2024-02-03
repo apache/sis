@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.util.j2d;
 
-import java.util.Locale;
 import java.util.Collection;
 import java.util.Optional;
 import java.io.Writer;
@@ -674,7 +673,7 @@ public class Tile implements Serializable {
          */
         table.flush();
         if (remaining < 0) {
-            out.write(Vocabulary.getResources((Locale) null).getString(Vocabulary.Keys.More_1, tiles.size() - maximum));
+            out.write(Vocabulary.forLocale(null).getString(Vocabulary.Keys.More_1, tiles.size() - maximum));
             out.write(System.lineSeparator());
         }
     }

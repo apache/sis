@@ -171,11 +171,11 @@ public abstract class AbstractParameterDescriptor extends AbstractIdentifiedObje
         this.minimumOccurs = (short) minimumOccurs;
         this.maximumOccurs = (short) maximumOccurs;
         if (minimumOccurs < 0 || minimumOccurs > maximumOccurs || maximumOccurs == 0) {
-            throw new IllegalArgumentException(Errors.getResources(properties).getString(
+            throw new IllegalArgumentException(Errors.forProperties(properties).getString(
                     Errors.Keys.IllegalRange_2, minimumOccurs, maximumOccurs));
         }
         if (maximumOccurs > 0xFFFE && maximumOccurs != Integer.MAX_VALUE) {
-            throw new IllegalArgumentException(Errors.getResources(properties).getString(
+            throw new IllegalArgumentException(Errors.forProperties(properties).getString(
                     Errors.Keys.TooManyOccurrences_2, 0xFFFE, super.getName().getCode()));
         }
     }

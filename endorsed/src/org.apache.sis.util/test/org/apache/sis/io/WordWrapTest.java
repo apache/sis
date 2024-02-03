@@ -17,12 +17,13 @@
 package org.apache.sis.io;
 
 import java.io.IOException;
+import org.apache.sis.util.Characters;
 import org.apache.sis.util.internal.X364;
-import static org.apache.sis.util.Characters.SOFT_HYPHEN;
 
 // Test dependencies
+import org.junit.Test;
 import org.junit.Before;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 
 
@@ -36,6 +37,11 @@ import org.apache.sis.test.DependsOn;
 @DependsOn(LineAppenderTest.class)
 public class WordWrapTest extends LineAppenderTest {
     /**
+     * The line length used in the tests.
+     */
+    static final int LINE_LENGTH = 11;
+
+    /**
      * Creates a new test case.
      */
     public WordWrapTest() {
@@ -47,7 +53,7 @@ public class WordWrapTest extends LineAppenderTest {
     @Before
     @Override
     public void createLineAppender() {
-        appender = new LineAppender(appender, 10, false);
+        appender = new LineAppender(appender, 11, false);
     }
 
     /**
@@ -70,12 +76,12 @@ public class WordWrapTest extends LineAppenderTest {
     void run(final String lineSeparator) throws IOException {
         final Appendable f = appender;
         if (f instanceof LineAppender) {
-            assertEquals("getMaximalLineLength", 10, ((LineAppender) f).getMaximalLineLength());
+            assertEquals(LINE_LENGTH, ((LineAppender) f).getMaximalLineLength());
         }
         final String BLUE    = X364.FOREGROUND_BLUE   .sequence();
         final String DEFAULT = X364.FOREGROUND_DEFAULT.sequence();
         assertSame(f, f.append("Ah! comme la " + BLUE + "neige" + DEFAULT + " a neigé!" + lineSeparator));
-        assertSame(f, f.append("Ma vitre est un jar" + SOFT_HYPHEN + "din de givre."    + lineSeparator));
+        assertSame(f, f.append("Ma vitre est un jar" + Characters.SOFT_HYPHEN + "din de givre." + lineSeparator));
         /*
          * If our test case is using the wrapper which will send the data once character at time,
          * our LineAppender implementation will not be able to detect the line separator and
@@ -93,8 +99,23 @@ public class WordWrapTest extends LineAppenderTest {
                          + "la " + BLUE + "neige" + DEFAULT + " a" + insertedLineSeparator
                          + "neigé!"                                + expectedLineSeparator
                          + "Ma vitre"                              + insertedLineSeparator
-                         + "est un jar" + SOFT_HYPHEN              + insertedLineSeparator
+                         + "est un jar" + Characters.HYPHEN        + insertedLineSeparator
                          + "din de"                                + insertedLineSeparator
                          + "givre."                                + expectedLineSeparator);
+    }
+
+    /**
+     * Test splitting a long lines into shorter lines.
+     *
+     * @throws IOException should never happen, since we are writing in a {@link StringBuilder}.
+     */
+    @Test
+    public void testLineSplit() throws IOException {
+        final LineAppender f = (LineAppender) appender;
+        final String ls = expectedLineSeparator("\n");
+        f.setLineSeparator("\n");
+        f.setMaximalLineLength(LINE_LENGTH);
+        f.append("bar foo-biz bla\nThisLineIsTooLong");
+        assertOutputEquals("bar foo-" + ls + "biz bla" + ls + "ThisLineIsT" + ls + "ooLong");
     }
 }

@@ -18,6 +18,7 @@ package org.apache.sis.storage.xml;
 
 import java.util.Locale;
 import java.io.StringReader;
+import java.net.URISyntaxException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.*;
 import org.apache.sis.xml.Namespaces;
@@ -27,8 +28,7 @@ import org.apache.sis.xml.util.LegacyNamespaces;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
@@ -94,14 +94,15 @@ public final class StoreTest extends TestCase {
     /**
      * Tests {@link Store#getMetadata()}.
      *
+     * @throws URISyntaxException if an error occurred while normalizing the URI.
      * @throws DataStoreException if en error occurred while reading the XML.
      */
     @Test
-    public void testMetadata() throws DataStoreException {
+    public void testMetadata() throws URISyntaxException, DataStoreException {
         final Metadata metadata;
         try (Store store = new Store(null, new StorageConnector(new StringReader(XML)))) {
             metadata = store.getMetadata();
-            assertSame("Expected cached value.", metadata, store.getMetadata());
+            assertSame(metadata, store.getMetadata(), "Expected cached value.");
         }
         final ResponsibleParty resp     = getSingleton(metadata.getContacts());
         final Contact          contact  = resp.getContactInfo();

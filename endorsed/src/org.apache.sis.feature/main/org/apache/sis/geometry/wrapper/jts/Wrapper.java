@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometry.wrapper.jts;
 
+import java.awt.Shape;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -44,6 +45,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.geometry.DirectPosition2D;
@@ -725,6 +727,31 @@ add:    for (Geometry next = geometry;;) {
              */
             throw new TransformException(e.getMessage(), e);
         }
+    }
+
+    /**
+     * Transforms this geometry using the given transform.
+     * If the transform is {@code null}, then the geometry is returned unchanged.
+     * Otherwise, a new geometry is returned without CRS.
+     *
+     * @param  transform  the math transform to apply, or {@code null}.
+     * @return the transformed geometry (may be the same geometry instance, but never {@code null}).
+     * @throws TransformException if the geometry cannot be transformed.
+     */
+    @Override
+    public GeometryWrapper transform(final MathTransform transform) throws TransformException {
+        return rewrap(JTS.transform(geometry, transform));
+    }
+
+    /**
+     * Returns a view over the JTS geometry as a Java2D shape. Changes in the JTS geometry
+     * after this method call may be reflected in the returned shape in an unspecified way.
+     *
+     * @return a view over the geometry as a Java2D shape.
+     */
+    @Override
+    public Shape toJava2D() {
+        return JTS.asShape(geometry);
     }
 
     /**

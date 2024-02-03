@@ -805,7 +805,7 @@ public final class MathFunctions extends Static {
                 if (index >= primes.length) {
                     int i = primes.length;
                     int n = Short.toUnsignedInt(primes[i - 1]);
-                    // Compute by block of 16 values, for reducing the amount of array resize.
+                    // Compute by block of 16 values, for reducing the number of array resizes.
                     primes = Arrays.copyOf(primes, min((index | 0xF) + 1, PRIMES_LENGTH_16_BITS));
                     do {
 testNextNumber:         while (true) {      // Simulate a "goto" statement (usually not recommanded...)

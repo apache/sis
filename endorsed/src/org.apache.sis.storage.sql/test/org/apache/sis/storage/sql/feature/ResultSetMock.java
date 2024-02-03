@@ -24,7 +24,7 @@ import java.lang.reflect.InvocationHandler;
 
 /**
  * An implementation of {@link ResultSet} where the {@code getBytes(1)} method returns a
- * predefined array of bytes. Because of the large amount of methods in {@code ResultSet},
+ * predefined array of bytes. Because of the large number of methods in {@code ResultSet},
  * this class implements that interface using reflection.
  *
  * @author  Martin Desruisseaux (Geomatys)

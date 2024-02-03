@@ -353,7 +353,7 @@ public final class ChannelDecoder extends Decoder {
      * @return the localized error resource bundle.
      */
     final Errors errors() {
-        return Errors.getResources(listeners.getLocale());
+        return Errors.forLocale(listeners.getLocale());
     }
 
     /**
@@ -381,7 +381,7 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Aligns position in the stream after reading the given amount of bytes.
+     * Aligns position in the stream after reading the given number of bytes.
      * This method should be invoked only for {@link DataType#BYTE} and {@link DataType#CHAR}.
      *
      * <p>The netCDF format adds padding after bytes, characters and short integers in order to align the data

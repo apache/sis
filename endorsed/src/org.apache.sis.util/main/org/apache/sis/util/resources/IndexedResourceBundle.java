@@ -87,7 +87,7 @@ public abstract class IndexedResourceBundle extends ResourceBundle implements Lo
 
     /**
      * Key used in properties map for localizing some aspects of the operation being executed.
-     * The {@code getResources(Map<?,?>)} methods defined in some sub-classes will look for this property.
+     * The {@code forProperties(Map<?,?>)} methods defined in some sub-classes will look for this property.
      *
      * @see org.apache.sis.referencing.AbstractIdentifiedObject#LOCALE_KEY
      */

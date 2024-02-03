@@ -191,7 +191,7 @@ public class ImageProcessor implements Cloneable {
 
         /**
          * Image size can be increased. {@code ImageProcessor} will try to increase
-         * by the smallest amount of pixels allowing the image to be subdivided in tiles.
+         * by the smallest number of pixels allowing the image to be subdivided in tiles.
          */
         EXPAND
     }

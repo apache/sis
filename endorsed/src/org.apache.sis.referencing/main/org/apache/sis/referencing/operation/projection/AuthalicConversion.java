@@ -229,7 +229,7 @@ abstract class AuthalicConversion extends NormalizedProjection {
      * Computes the latitude using equation 3-18 from Snyder, followed by iterative resolution of Snyder 3-16.
      * In theory, the series expansion given by equation 3-18 (φ ≈ c₂⋅sin(2β) + c₄⋅sin(4β) + c₈⋅sin(8β)) should
      * be used in replacement of the iterative method. However, in practice the series expansion seems to not
-     * have a sufficient amount of terms for achieving the centimetric precision, so we "finish" it by the
+     * have a sufficient number of terms for achieving the centimetric precision, so we "finish" it by the
      * iterative method. The series expansion is nevertheless useful for reducing the number of iterations.
      *
      * <h4>Relationship with northing</h4>

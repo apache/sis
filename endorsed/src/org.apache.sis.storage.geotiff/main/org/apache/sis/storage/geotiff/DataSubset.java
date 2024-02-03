@@ -155,7 +155,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
         this.tileByteCounts = tileArrayInfo[1];
         /*
          * "Banks" (in `java.awt.image.DataBuffer` sense) are synonymous to "bands" for planar image only.
-         * Otherwise there is only one bank no matter the amount of bands. Each bank will be read separately.
+         * Otherwise there is only one bank no matter the number of bands. Each bank will be read separately.
          */
         final int maxBank;
         if (model instanceof BandedSampleModel) {

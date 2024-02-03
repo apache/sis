@@ -246,7 +246,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
         ArgumentChecks.ensureNonNull("components", components);
         verify(properties, components);
         if (components.length < 2) {
-            throw new IllegalArgumentException(Errors.getResources(properties).getString(
+            throw new IllegalArgumentException(Errors.forProperties(properties).getString(
                     Errors.Keys.TooFewArguments_2, 2, components.length));
         }
         final CoordinateSystem[] cs = new CoordinateSystem[components.length];

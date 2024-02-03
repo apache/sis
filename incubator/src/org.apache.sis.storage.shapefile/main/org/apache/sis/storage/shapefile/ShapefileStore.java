@@ -19,7 +19,6 @@ package org.apache.sis.storage.shapefile;
 import java.awt.geom.Rectangle2D;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.math.BigInteger;
 import java.nio.channels.SeekableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
@@ -32,14 +31,12 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
@@ -739,7 +736,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
 
                 //write prj
                 try {
-                    final WKTFormat format = new WKTFormat(Locale.ENGLISH, null);
+                    final WKTFormat format = new WKTFormat();
                     format.setConvention(Convention.WKT1_COMMON_UNITS);
                     format.setNameAuthority(Citations.ESRI);
                     format.setIndentation(WKTFormat.SINGLE_LINE);

@@ -190,7 +190,7 @@ public class StandardMetadataTree extends MetadataTree {
                     final String text;
                     try {
                         if (source == copyAsWKT) {                              // Well Known Text.
-                            final WKTFormat f = new WKTFormat(null, null);
+                            final WKTFormat f = new WKTFormat();
                             text = f.format(obj);
                         } else if (source == copyAsXML) {                       // GML or ISO 19115-3:2016.
                             text = XML.marshal(obj);

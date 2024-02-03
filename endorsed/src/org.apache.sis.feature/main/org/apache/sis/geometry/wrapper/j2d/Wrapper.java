@@ -198,6 +198,15 @@ add:    for (;;) {
     }
 
     /**
+     * {@return directly the underlying Java2D geometry}. This method does not copy the shape.
+     * Caller should not modify the returned shape (by casting to an implementation class).
+     */
+    @Override
+    public Shape toJava2D() {
+        return geometry;
+    }
+
+    /**
      * Applies a filter predicate between this geometry and another geometry.
      * This method assumes that the two geometries are in the same CRS (this is not verified).
      */

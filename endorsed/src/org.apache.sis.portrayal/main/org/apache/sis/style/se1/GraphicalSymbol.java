@@ -25,7 +25,7 @@ import org.opengis.metadata.citation.OnlineResource;
 
 /**
  * Common superclass for the types of markers that can appear as children of a graphic object.
- * Each {@link Graphic} instance contains an arbitrary amount of graphical symbols, when can be
+ * Each {@link Graphic} instance contains an arbitrary number of graphical symbols, when can be
  * either well-known shapes ({@link Mark}) or references to image files ({@link ExternalGraphic}).
  * Graphic content should be static.
  *

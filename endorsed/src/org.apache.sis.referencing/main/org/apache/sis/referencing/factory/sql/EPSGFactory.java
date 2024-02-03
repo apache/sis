@@ -409,7 +409,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
                 failure = e;
             }
         } catch (SQLException e) {
-            message = Messages.getResources(locale).getString(Messages.Keys.CanNotCreateSchema_1, Constants.EPSG);
+            message = Messages.forLocale(locale).getString(Messages.Keys.CanNotCreateSchema_1, Constants.EPSG);
             failure = e;
         }
         if (failure != null) {

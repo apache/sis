@@ -20,7 +20,7 @@ import java.io.IOException;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
@@ -75,7 +75,7 @@ public abstract class AppenderTestCase extends TestCase {
         IO.flush(appender);
         final String actual = buffer.toString();
         assertMultilinesEquals("Ignoring line separators.", expected, actual);
-        assertEquals          ("Checking line separators.", expected, actual);
+        assertEquals(expected, actual, "Checking line separators.");
     }
 
     /**

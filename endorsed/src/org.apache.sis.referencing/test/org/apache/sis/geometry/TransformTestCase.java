@@ -147,7 +147,7 @@ public abstract class TransformTestCase<G> extends TestCase {
          * This is what we get without special handling of singularity point.
          * Note that is does not include the South pole as we would expect.
          * The commented out values are what we get by projecting an arbitrary
-         * larger amount of points.
+         * larger number of points.
          */
         G expected = createFromExtremums(targetCRS,
             //  -178.4935231040927  -56.61747883535035          // empirical values

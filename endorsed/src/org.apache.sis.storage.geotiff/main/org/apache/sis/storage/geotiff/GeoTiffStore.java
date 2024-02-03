@@ -50,6 +50,7 @@ import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.storage.base.GridResourceWrapper;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
@@ -254,7 +255,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         location    = connector.getStorageAs(URI.class);
         path        = connector.getStorageAs(Path.class);
         try {
-            if (URIDataStore.Provider.isWritable(connector, true)) {
+            if (URIDataStoreProvider.isWritable(connector, true)) {
                 ChannelDataOutput output = connector.commit(ChannelDataOutput.class, Constants.GEOTIFF);
                 writer = new Writer(this, output, connector.getOption(FormatModifier.OPTION_KEY));
             } else {
@@ -578,7 +579,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
             }
         }
 
-        /** Increments the size by the given amount of images. */
+        /** Increments the size by the given number of images. */
         final void incrementSize(final int n) {
             synchronized (GeoTiffStore.this) {
                 if (size >= 0) {
@@ -771,7 +772,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * Returns the error resources in the current locale.
      */
     private Errors errors() {
-        return Errors.getResources(getLocale());
+        return Errors.forLocale(getLocale());
     }
 
     /**

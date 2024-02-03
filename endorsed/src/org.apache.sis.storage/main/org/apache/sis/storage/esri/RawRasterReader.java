@@ -157,7 +157,7 @@ final class RawRasterReader extends HyperRectangleReader {
              * Take in account the requested domain with the following restrictions:
              *
              * (1) If sample values are stored on 1, 2 or 4 bits, force the sub-region
-             *     to be aligned on an integer amount of sample values.
+             *     to be aligned on an integer number of sample values.
              * (2) If there is more than one band and those bands are stored in pixel
              *     interleaved fashion, we cannot apply subsampling on the X axis.
              * (3) If the layout is BIL, we do not support sub-region and subsampling

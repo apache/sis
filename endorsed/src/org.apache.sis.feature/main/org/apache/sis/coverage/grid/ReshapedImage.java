@@ -38,7 +38,7 @@ import org.apache.sis.util.ArgumentChecks;
  * A view over another image with the origin relocated to a new position.
  * Only the pixel coordinates are changed; the tile indices stay the same.
  * However, the image view may expose less tiles than the wrapped image.
- * This wrapper does not change image size otherwise than by an integer amount of tiles.
+ * This wrapper does not change image size otherwise than by an integer number of tiles.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -64,7 +64,7 @@ final class ReshapedImage extends PlanarImage {
     private final int offsetY;
 
     /**
-     * The image size in pixels. May be smaller than {@link #source} size by an integer amount of tiles.
+     * The image size in pixels. May be smaller than {@link #source} size by an integer number of tiles.
      */
     private final int width, height;
 

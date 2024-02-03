@@ -221,7 +221,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
         } else if (value instanceof CharSequence) {
             formula = new DefaultFormula((CharSequence) value);
         } else {
-            throw new IllegalArgumentException(Errors.getResources(properties)
+            throw new IllegalArgumentException(Errors.forProperties(properties)
                     .getString(Errors.Keys.IllegalPropertyValueClass_2, FORMULA_KEY, value.getClass()));
         }
         this.parameters = parameters;
@@ -559,7 +559,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
             if (name == null) {
                 name = IdentifiedObjects.getName(this, null);
                 if (name == null) {
-                    name = Vocabulary.getResources(formatter.getLocale()).getString(Vocabulary.Keys.Unnamed);
+                    name = Vocabulary.forLocale(formatter.getLocale()).getString(Vocabulary.Keys.Unnamed);
                     kind = ElementKind.NAME;  // Because the "Unnamed" string is not a real OperationMethod name.
                 }
             }

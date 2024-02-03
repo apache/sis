@@ -547,7 +547,7 @@ public class InfoStatements implements Localized, AutoCloseable {
      */
     private WKTFormat wktReader() {
         if (wktReader == null) {
-            wktReader = new WKTFormat(null, null);
+            wktReader = new WKTFormat();
             wktReader.setConvention(Convention.WKT1_COMMON_UNITS);
         }
         return wktReader;

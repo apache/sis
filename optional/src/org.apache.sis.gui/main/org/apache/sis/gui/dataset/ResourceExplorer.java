@@ -176,7 +176,7 @@ public class ResourceExplorer extends Widget {
         resources  = new ResourceTree();
         resources.getSelectionModel().getSelectedItems().addListener(this::onResourceSelected);
         resources.setPrefWidth(400);
-        final Vocabulary vocabulary = Vocabulary.getResources(resources.locale);
+        final Vocabulary vocabulary = Vocabulary.forLocale(resources.locale);
         final TitledPane resourcesPane = new TitledPane(vocabulary.getString(Vocabulary.Keys.Resources), resources);
         controls = new Accordion(resourcesPane);
         controls.setExpandedPane(resourcesPane);

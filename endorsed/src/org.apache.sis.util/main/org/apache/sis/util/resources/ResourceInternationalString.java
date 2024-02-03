@@ -113,10 +113,8 @@ public abstract class ResourceInternationalString extends AbstractInternationalS
      * @return a log record with the message of this international string.
      */
     public final LogRecord toLogRecord(final Level level) {
-        final LogRecord record = new LogRecord(level, getKeyConstants().getKeyName(key));
         final IndexedResourceBundle resources = getBundle(null);
-        record.setResourceBundleName(resources.getClass().getName());
-        record.setResourceBundle(resources);
+        final LogRecord record = resources.getLogRecord(level, key);
         if (hasArguments) {
             record.setParameters(resources.toArray(arguments));
         }

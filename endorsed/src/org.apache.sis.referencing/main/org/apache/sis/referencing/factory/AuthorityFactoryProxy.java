@@ -39,7 +39,7 @@ import org.apache.sis.util.internal.Strings;
  * but some factories are more efficient when we use the most specific {@code create} method.
  * For example, when using a {@linkplain org.apache.sis.referencing.factory.sql.EPSGDataAccess},
  * invoking {@link GeodeticAuthorityFactory#createProjectedCRS(String)} instead of
- * {@code AuthorityFactory.createObject(String)} method reduce the amount of tables to be queried.
+ * {@code AuthorityFactory.createObject(String)} method reduce the number of tables to be queried.
  *
  * <p>This class is useful when the same {@code create} method need to be invoked often, but is unknown at compile time.
  * It may also be used as a workaround for authority factories that do not implement the {@code createObject(String)}

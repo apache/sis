@@ -56,8 +56,8 @@ final class DenseFeature extends AbstractFeature implements CloneAccess {
      *
      * Conceptually, values in this array are {@link Property} instances. However, at first we will store only
      * the property <em>values</em>, and convert to an array of type {@code Property[]} only when at least one
-     * property is requested. The intent is to reduce the amount of allocated objects as much as possible,
-     * because typical SIS applications may create a very large amount of features.
+     * property is requested. The intent is to reduce the number of allocated objects as much as possible,
+     * because typical SIS applications may create a very large number of features.
      */
     @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
     private Object[] properties;

@@ -177,7 +177,7 @@ public final class ComparisonWithEPSG extends TestCase {
         assumeTrue(factory != null);
         CoordinateOperation opFromCode = factory.createCoordinateOperation("5630");
         String wkt = opFromCode.toWKT();
-        WKTFormat parser = new WKTFormat(null, null);
+        WKTFormat parser = new WKTFormat();
         CoordinateOperation opFromWKT = (CoordinateOperation) parser.parseObject(wkt);
         assertEqualsIgnoreMetadata(opFromCode, opFromWKT);
     }

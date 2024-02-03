@@ -164,7 +164,7 @@ final class NonSquareMatrix extends GeneralMatrix {
         final int numCol = this.numCol;
         final int length = numRow * numCol;
         int i  = numCol;
-        int oi = numCol - numRow;       // Initialized to the maximal amount of columns that we may omit.
+        int oi = numCol - numRow;       // Initialized to the maximal number of columns that we may omit.
         final int[] omitted = new int[oi];
 next:   do {
             if (--i < 0) {
@@ -220,7 +220,7 @@ next:   do {
         final int numRow = this.numRow;                     // Protection against accidental changes.
         final int numCol = this.numCol;
         int j  = numRow;
-        int oi = numRow - numCol;   // Initialized to the maximal amount of rows that we may discard.
+        int oi = numRow - numCol;   // Initialized to the maximal number of rows that we may discard.
         final int[] omitted = new int[oi];
         final boolean ignoreTranslation = isAffine(false);
         if (ignoreTranslation) j--;                         // Last row already verified by isAffine().

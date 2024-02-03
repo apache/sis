@@ -721,14 +721,14 @@ public final class Types extends Static {
                 try {
                     locale = Locales.parse(key, s);
                 } catch (IllformedLocaleException e) {
-                    throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                    throw new IllegalArgumentException(Errors.forProperties(properties).getString(
                             Errors.Keys.IllegalLanguageCode_1, '(' + key.substring(0, s) + '）' + key.substring(s), e));
                 }
             }
             final Object value = entry.getValue();
             if (value != null) {
                 if (!(value instanceof CharSequence)) {
-                    throw new IllegalArgumentException(Errors.getResources(properties)
+                    throw new IllegalArgumentException(Errors.forProperties(properties)
                             .getString(Errors.Keys.IllegalPropertyValueClass_2, key, value.getClass()));
                 }
                 if (i18n == null) {
@@ -764,7 +764,7 @@ public final class Types extends Static {
              * may have been ignored. We declare Types.toInternationalString(…) as the source since
              * it is the public facade invoking this method.
              */
-            final LogRecord record = Messages.getResources(null).getLogRecord(Level.WARNING, Messages.Keys.LocalesDiscarded);
+            final LogRecord record = Messages.forLocale(null).getLogRecord(Level.WARNING, Messages.Keys.LocalesDiscarded);
             Logging.completeAndLog(LOGGER, Types.class, "toInternationalString", record);
         }
     }

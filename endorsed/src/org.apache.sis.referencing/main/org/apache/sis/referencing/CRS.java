@@ -326,7 +326,7 @@ public final class CRS extends Static {
      *   <li>No control on the handling of {@linkplain org.apache.sis.io.wkt.Warnings warnings}.</li>
      * </ul>
      *
-     * Applications which need to parse a large amount of WKT strings should consider to use
+     * Applications which need to parse a large number of WKT strings should consider to use
      * the {@link org.apache.sis.io.wkt.WKTFormat} class instead of this method.
      *
      * @param  wkt  coordinate system encoded in Well-Known Text format (version 1 or 2).
@@ -855,7 +855,7 @@ public final class CRS extends Static {
                  * We do not assign WGS84 unconditionally to the geographic bounding box, because
                  * it is not defined to be on a particular datum; it is only approximated bounds.
                  * We try to get the GeographicCRS from the user supplied CRS in order to reduce
-                 * the amount of transformation needed.
+                 * the number of transformations needed.
                  */
                 final SingleCRS targetCRS = getHorizontalComponent(crs);
                 final GeographicCRS sourceCRS = ReferencingUtilities.toNormalizedGeographicCRS(targetCRS, false, false);

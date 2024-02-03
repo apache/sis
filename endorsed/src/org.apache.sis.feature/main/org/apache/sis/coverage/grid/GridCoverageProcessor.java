@@ -289,7 +289,7 @@ public class GridCoverageProcessor implements Cloneable {
          *
          * <h4>Example</h4>
          * If the {@link #resample(GridCoverage, GridGeometry) resample(…)} method is invoked with parameter values
-         * that cause the resampling to be a translation of the grid by an integer amount of cells, then by default
+         * that cause the resampling to be a translation of the grid by an integer number of cells, then by default
          * {@link GridCoverageProcessor} will use the {@link #shiftGrid(GridCoverage, long[]) shiftGrid(…)}
          * algorithm instead. This option can be cleared for forcing a full resampling operation in all cases.
          */
@@ -453,9 +453,9 @@ public class GridCoverageProcessor implements Cloneable {
     }
 
     /**
-     * Translates grid coordinates by the given amount of cells without changing "real world" coordinates.
+     * Translates grid coordinates by the given number of cells without changing "real world" coordinates.
      * The translated grid has the same {@linkplain GridExtent#getSize(int) size} than the source,
-     * i.e. both low and high grid coordinates are displaced by the same amount of cells.
+     * i.e. both low and high grid coordinates are displaced by the same number of cells.
      * The "grid to CRS" transforms are adjusted accordingly in order to map to the same
      * "real world" coordinates.
      *
@@ -873,7 +873,7 @@ public class GridCoverageProcessor implements Cloneable {
      * <ul>
      *   <li>All coverage shall use the same CRS.</li>
      *   <li>All coverage shall use the same <cite>grid to CRS</cite> transform except for translation terms.</li>
-     *   <li>Translation terms in <cite>grid to CRS</cite> can differ only by an integer amount of grid cells.</li>
+     *   <li>Translation terms in <cite>grid to CRS</cite> can differ only by an integer number of grid cells.</li>
      *   <li>The intersection of the domain of all coverages shall be non-empty.</li>
      *   <li>All coverages shall use the same data type in their rendered image.</li>
      * </ul>

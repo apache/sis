@@ -62,24 +62,24 @@ public final class IndexedResourceBundleTest extends TestCase {
     }
 
     /**
-     * Tests the {@link Errors#getResources(Locale)} method on different locales.
+     * Tests the {@link Errors#forLocale(Locale)} method on different locales.
      */
     @Test
-    public void testGetResources() {
-        final Errors english = Errors.getResources(Locale.ENGLISH);
-        final Errors french  = Errors.getResources(Locale.FRENCH);
-        final Errors canada  = Errors.getResources(Locale.CANADA);
-        final Errors quebec  = Errors.getResources(Locale.CANADA_FRENCH);
-        assertSame   (english, Errors.getResources(Locale.US));
-        assertSame   (english, Errors.getResources(Locale.UK));
+    public void testForLocale() {
+        final Errors english = Errors.forLocale(Locale.ENGLISH);
+        final Errors french  = Errors.forLocale(Locale.FRENCH);
+        final Errors canada  = Errors.forLocale(Locale.CANADA);
+        final Errors quebec  = Errors.forLocale(Locale.CANADA_FRENCH);
+        assertSame   (english, Errors.forLocale(Locale.US));
+        assertSame   (english, Errors.forLocale(Locale.UK));
         assertNotSame(english, french);
         assertSame   (english, canada);
         assertSame   (french,  quebec);
 
-        assertSame(english, Errors.getResources(Locale.ENGLISH));
-        assertSame(canada,  Errors.getResources(Locale.CANADA));
-        assertSame(french,  Errors.getResources(Locale.FRENCH));
-        assertSame(quebec,  Errors.getResources(Locale.CANADA_FRENCH));
+        assertSame(english, Errors.forLocale(Locale.ENGLISH));
+        assertSame(canada,  Errors.forLocale(Locale.CANADA));
+        assertSame(french,  Errors.forLocale(Locale.FRENCH));
+        assertSame(quebec,  Errors.forLocale(Locale.CANADA_FRENCH));
     }
 
     /**
@@ -88,10 +88,10 @@ public final class IndexedResourceBundleTest extends TestCase {
      * @throws IOException should never happen since this test writes only in memory.
      */
     @Test
-    @DependsOnMethod("testGetResources")
+    @DependsOnMethod("testForLocale")
     public void testList() throws IOException {
         final StringBuilder buffer = new StringBuilder(4096);
-        Errors.getResources(Locale.ENGLISH).list(buffer);
+        Errors.forLocale(Locale.ENGLISH).list(buffer);
         final String text = buffer.toString();
         final int key     = text.indexOf("NullArgument_1");
         final int value   = text.indexOf("Argument ‘{0}’ shall not be null.");
@@ -103,9 +103,9 @@ public final class IndexedResourceBundleTest extends TestCase {
      * Tests the {@link IndexedResourceBundle#getKeys()} method.
      */
     @Test
-    @DependsOnMethod("testGetResources")
+    @DependsOnMethod("testForLocale")
     public void testGetKeys() {
-        testing = Errors.getResources(Locale.ENGLISH);
+        testing = Errors.forLocale(Locale.ENGLISH);
         final Enumeration<String> e = testing.getKeys();
         int count = 0;
         boolean foundNullArgument_1 = false;
@@ -125,10 +125,10 @@ public final class IndexedResourceBundleTest extends TestCase {
      * Tests the {@link IndexedResourceBundle#getString(short)} method on different locales.
      */
     @Test
-    @DependsOnMethod("testGetResources")
+    @DependsOnMethod("testForLocale")
     public void testGetString() {
-        final Errors english = Errors.getResources(Locale.ENGLISH);
-        final Errors french  = Errors.getResources(Locale.FRENCH);
+        final Errors english = Errors.forLocale(Locale.ENGLISH);
+        final Errors french  = Errors.forLocale(Locale.FRENCH);
 
         assertEquals("Argument ‘{0}’ shall not be null.",      (testing = english).getString(Errors.Keys.NullArgument_1));
         assertEquals("L’argument ‘{0}’ ne doit pas être nul.", (testing = french) .getString(Errors.Keys.NullArgument_1));
@@ -139,10 +139,10 @@ public final class IndexedResourceBundleTest extends TestCase {
      * Tests the {@link IndexedResourceBundle#getString(String)} method on different locales.
      */
     @Test
-    @DependsOnMethod("testGetResources")
+    @DependsOnMethod("testForLocale")
     public void testGetStringByName() {
-        final Errors english = Errors.getResources(Locale.ENGLISH);
-        final Errors french  = Errors.getResources(Locale.FRENCH);
+        final Errors english = Errors.forLocale(Locale.ENGLISH);
+        final Errors french  = Errors.forLocale(Locale.FRENCH);
 
         assertEquals("Argument ‘{0}’ shall not be null.",      (testing = english).getString("NullArgument_1"));
         assertEquals("L’argument ‘{0}’ ne doit pas être nul.", (testing = french) .getString("NullArgument_1"));
@@ -155,9 +155,9 @@ public final class IndexedResourceBundleTest extends TestCase {
     @Test
     @DependsOnMethod("testGetString")
     public void testGetStringWithParameter() {
-        testing = Errors.getResources(Locale.ENGLISH);
+        testing = Errors.forLocale(Locale.ENGLISH);
         assertEquals("Argument ‘CRS’ shall not be null.", testing.getString(Errors.Keys.NullArgument_1, "CRS"));
-        testing = Errors.getResources(Locale.FRENCH);
+        testing = Errors.forLocale(Locale.FRENCH);
         assertEquals("L’argument ‘CRS’ ne doit pas être nul.", testing.getString(Errors.Keys.NullArgument_1, "CRS"));
         testing = null;
     }
@@ -168,9 +168,9 @@ public final class IndexedResourceBundleTest extends TestCase {
     @Test
     @DependsOnMethod("testGetStringWithParameter")
     public void testGetStringWithCodeList() {
-        testing = Errors.getResources(Locale.ENGLISH);
+        testing = Errors.forLocale(Locale.ENGLISH);
         assertEquals("Argument ‘Series’ shall not be null.", testing.getString(Errors.Keys.NullArgument_1, ScopeCode.SERIES));
-        testing = Errors.getResources(Locale.FRENCH);
+        testing = Errors.forLocale(Locale.FRENCH);
         assertEquals("L’argument ‘Série’ ne doit pas être nul.", testing.getString(Errors.Keys.NullArgument_1, ScopeCode.SERIES));
         testing = null;
     }
@@ -179,7 +179,7 @@ public final class IndexedResourceBundleTest extends TestCase {
      * Tests the formatting of an international string.
      */
     @Test
-    @DependsOnMethod("testGetResources")
+    @DependsOnMethod("testForLocale")
     public void testFormatInternational() {
         InternationalString i18n = Errors.formatInternational(Errors.Keys.NullArgument_1);
         assertEquals("Argument ‘{0}’ shall not be null.",      i18n.toString(Locale.ROOT));
@@ -198,9 +198,9 @@ public final class IndexedResourceBundleTest extends TestCase {
      * Tests the {@link IndexedResourceBundle#getLogRecord(Level, short, Object)} method.
      */
     @Test
-    @DependsOnMethod("testGetResources")
+    @DependsOnMethod("testForLocale")
     public void testGetLogRecord() {
-        testing = Errors.getResources(Locale.ENGLISH);
+        testing = Errors.forLocale(Locale.ENGLISH);
         final LogRecord record = testing.getLogRecord(Level.FINE, Errors.Keys.NullArgument_1, "CRS");
         assertEquals("NullArgument_1", record.getMessage());
 

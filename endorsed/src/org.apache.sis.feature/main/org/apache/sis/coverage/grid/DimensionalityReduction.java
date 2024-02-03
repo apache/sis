@@ -888,7 +888,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
      * Axes are copied either from the source CRS or the reduced CRS, depending on
      * whether the corresponding dimension is present in the reduced CRS.
      *
-     * @param  reduced  the CRS to inflate to the same number of dimensions than the source CRS.
+     * @param  reduced  the CRS to inflate to the same number of dimensions as the source CRS.
      * @return the "inflated" CRS.
      */
     private CoordinateReferenceSystem fullCRS(final CoordinateReferenceSystem reduced) throws FactoryException {

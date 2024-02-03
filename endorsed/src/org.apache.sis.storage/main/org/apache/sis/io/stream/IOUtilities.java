@@ -27,6 +27,7 @@ import java.io.DataOutput;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
@@ -206,8 +207,8 @@ public final class IOUtilities extends Static {
      */
     public static String toString(final Object path) {
         /*
-         * For the following types, the string that we want can be obtained only by toString(),
-         * or the class is final so we know that the toString(à behavior cannot be changed.
+         * For the following types, the string that we want can be obtained only by `toString()`,
+         * or the class is final so we know that the `toString()` behavior cannot be changed.
          */
         if (path instanceof CharSequence || path instanceof Path || path instanceof URL || path instanceof URI) {
             return path.toString();
@@ -302,14 +303,13 @@ public final class IOUtilities extends Static {
 
     /**
      * Encodes the characters that are not legal for the {@link URI#URI(String)} constructor.
-     * Note that in addition to unreserved characters ("{@code _-!.~'()*}"), the reserved
-     * characters ("{@code ?/[]@}") and the punctuation characters ("{@code ,;:$&+=}")
-     * are left unchanged, so they will be processed with their special meaning by the
-     * URI constructor.
+     * The current implementation replaces only the space characters, the control characters,
+     * and the {@code %} and {@code \\} characters. All other characters are left unchanged.
+     * In particular, the unreserved characters ("{@code _-!.~'()*}"), the reserved characters
+     * ("{@code ?/[]@}") and the punctuation characters ("{@code ,;:$&+=}") will be processed
+     * with their special meaning by the URI constructor.
      *
-     * <p>The current implementations replaces only the space characters, control characters
-     * and the {@code %} character. Future versions may replace more characters as we learn
-     * from experience.</p>
+     * <p>Future versions may replace more characters as we learn from experience.</p>
      *
      * @param  path  the path to encode, or {@code null}.
      * @return the encoded path, or {@code null} if and only if the given path was null.
@@ -322,16 +322,8 @@ public final class IOUtilities extends Static {
         final int length = path.length();
         for (int i=0; i<length;) {
             final int c = path.codePointAt(i);
-            final int n = Character.charCount(c);
-            if (!Character.isSpaceChar(c) && !Character.isISOControl(c) && c != '%') {
-                /*
-                 * The character is valid, or is punction character, or is a reserved character.
-                 * All those characters should be handled properly by the URI(String) constructor.
-                 */
-                if (buffer != null) {
-                    buffer.appendCodePoint(c);
-                }
-            } else {
+            final int e = Character.charCount(c) + i;
+            if (Character.isSpaceChar(c) || Character.isISOControl(c) || c == '%' || c == '\\') {
                 /*
                  * The character is invalid, so we need to escape it. Note that the encoding
                  * is fixed to UTF-8 as of java.net.URI specification (see its class javadoc).
@@ -340,7 +332,7 @@ public final class IOUtilities extends Static {
                     buffer = new StringBuilder(path);
                     buffer.setLength(i);
                 }
-                for (final byte b : path.substring(i, i+n).getBytes(StandardCharsets.UTF_8)) {
+                for (final byte b : path.substring(i, e).getBytes(StandardCharsets.UTF_8)) {
                     buffer.append('%');
                     final String hex = Integer.toHexString(Byte.toUnsignedInt(b)).toUpperCase(Locale.ROOT);
                     if (hex.length() < 2) {
@@ -348,165 +340,16 @@ public final class IOUtilities extends Static {
                     }
                     buffer.append(hex);
                 }
+            } else if (buffer != null) {
+                /*
+                 * The character is valid, or is punction character, or is a reserved character.
+                 * All those characters should be handled properly by the URI(String) constructor.
+                 */
+                buffer.appendCodePoint(c);
             }
-            i += n;
+            i = e;
         }
         return (buffer != null) ? buffer.toString() : path;
-    }
-
-    /**
-     * Converts a path specified as a character string to an URL.
-     * This method can be used as a replacement for the deprecated {@link URL} constructors.
-     *
-     * @param  url       the path to convert, or {@code null}.
-     * @param  encoding  if the URL is encoded in a {@code application/x-www-form-urlencoded} MIME format,
-     *                   the character encoding (normally {@code "UTF-8"}).
-     *                   If the URL is not encoded, then {@code null}.
-     * @return the path converted to an uRL, or {@code null} if the given path was null.
-     * @throws MalformedURLException if the path cannot be parsed as an URL.
-     * @throws IOException if a non-null {@code encoding} was specified and an encoding error is found.
-     */
-    public static URL toURL(String url, final String encoding) throws IOException {
-        if (url == null) {
-            return null;
-        }
-        if (encoding != null) {
-            url = URLDecoder.decode(url, encoding);
-        }
-        url = encodeURI(url);
-        try {
-            return new URI(url).parseServerAuthority().toURL();
-        } catch (IllegalArgumentException | URISyntaxException cause) {
-            throw (MalformedURLException) new MalformedURLException(malformed(url, cause)).initCause(cause);
-        }
-    }
-
-    /**
-     * Converts a {@link URL} to a {@link URI}. This is equivalent to a call to the standard {@link URL#toURI()}
-     * method, except for the following functionalities:
-     *
-     * <ul>
-     *   <li>Optionally decodes the {@code "%XX"} sequences, where {@code "XX"} is a number.</li>
-     *   <li>Escape spaces and a some other reserved characters.</li>
-     *   <li>Converts exceptions into subclasses of {@link IOException}.</li>
-     * </ul>
-     *
-     * @param  url       the URL to convert, or {@code null}.
-     * @param  encoding  if the URL is encoded in a {@code application/x-www-form-urlencoded} MIME format,
-     *                   the character encoding (normally {@code "UTF-8"}). If the URL is not encoded,
-     *                   then {@code null}.
-     * @return the URI for the given URL, or {@code null} if the given URL was null.
-     * @throws IOException if the URL cannot be converted to a URI.
-     *
-     * @see URI#URI(String)
-     * @see URL#toURI()
-     */
-    public static URI toURI(final URL url, final String encoding) throws IOException {
-        if (url == null) {
-            return null;
-        }
-        /*
-         * Convert the URL to a URI, taking in account the encoding if any. We want to escape
-         * spaces with `encodeURI(…)` before to convert. Invoking `URL.toURI()` is preferable
-         * to `new URI(String)` because the former performs more checks, but is possible only
-         * if the decoding and escaping resulted in no change.
-         */
-        final String specified = url.toExternalForm();
-        String path = specified;
-        if (encoding != null) {
-            path = URLDecoder.decode(path, encoding);
-        }
-        path = encodeURI(path);
-        try {
-            return path.equals(specified) ? url.toURI() : new URI(path);
-        } catch (URISyntaxException cause) {
-            /*
-             * Occurs only if the URL is not compliant with RFC 2396. Otherwise every URL
-             * should succeed, so a failure can actually be considered as a malformed URL.
-             */
-            throw (MalformedURLException) new MalformedURLException(malformed(url, cause)).initCause(cause);
-        }
-    }
-
-    /**
-     * Converts a {@link URL} to a {@link File}. This is equivalent to a call to the standard
-     * {@link URL#toURI()} method followed by a call to the {@link File#File(URI)} constructor,
-     * except that exceptions are converted to {@link IOException}:
-     *
-     * @param  url  the URL to convert, or {@code null}.
-     * @return the file for the given URL, or {@code null} if the given URL was null.
-     * @throws IOException if the URL cannot be converted to a file.
-     *
-     * @see File#File(URI)
-     */
-    public static File toFile(final URL url) throws IOException {
-        if (url == null) {
-            return null;
-        } else try {
-            return new File(url.toURI());
-        } catch (IllegalArgumentException | URISyntaxException cause) {
-            /*
-             * Typically happen when the URI scheme is not "file". But may also happen if the
-             * URI contains fragment that cannot be represented in a File (e.g. a Query part).
-             * The IllegalArgumentException does not allow us to distinguish those cases.
-             */
-            throw new IOException(malformed(url, cause), cause);
-        }
-    }
-
-    /**
-     * Prepares a message for a malformed URL.
-     *
-     * @param url    the malformed URL.
-     * @param cause  the exception thrown.
-     */
-    private static String malformed(final Object url, final Exception cause) {
-        return Exceptions.formatChainedMessages(null,
-                Errors.format(Errors.Keys.IllegalArgumentValue_2, "URL", url), cause);
-    }
-
-    /**
-     * Converts a {@link URL} to a {@link Path}. This is equivalent to a call to the standard
-     * {@link URL#toURI()} method followed by a call to the {@link Path#of(URI)} static method,
-     * except for the following functionalities:
-     *
-     * <ul>
-     *   <li>Optionally decodes the {@code "%XX"} sequences, where {@code "XX"} is a number.</li>
-     *   <li>Converts various exceptions into subclasses of {@link IOException}.</li>
-     * </ul>
-     *
-     * @param  url       the URL to convert, or {@code null}.
-     * @param  encoding  if the URL is encoded in a {@code application/x-www-form-urlencoded} MIME format,
-     *                   the character encoding (normally {@code "UTF-8"}). If the URL is not encoded,
-     *                   then {@code null}.
-     * @return the path for the given URL, or {@code null} if the given URL was null.
-     * @throws IOException if the URL cannot be converted to a path.
-     *
-     * @see Path#of(URI)
-     */
-    public static Path toPath(final URL url, final String encoding) throws IOException {
-        if (url == null) {
-            return null;
-        }
-        final URI uri = toURI(url, encoding);
-        try {
-            return Path.of(uri);
-        } catch (IllegalArgumentException | FileSystemNotFoundException cause) {
-            final String message = malformed(url, cause);
-            /*
-             * If the exception is IllegalArgumentException, then the URI scheme has been recognized
-             * but the URI syntax is illegal for that file system. So we can consider that the URL is
-             * malformed in regard to the rules of that particular file system.
-             */
-            final IOException e;
-            if (cause instanceof IllegalArgumentException) {
-                e = new MalformedURLException(message);
-                e.initCause(cause);
-            } else {
-                e = new IOException(message, cause);
-            }
-            throw e;
-        }
     }
 
     /**
@@ -518,16 +361,20 @@ public final class IOUtilities extends Static {
      * <h4>Rational</h4>
      * A URL can represent a file, but {@link URL#openStream()} appears to return a {@code BufferedInputStream}
      * wrapping the {@link FileInputStream}, which is not a desirable feature when we want to obtain a channel.
+     * Another reason is that {@link File} can be relative to the current working directory, while {@link URI}
+     * can be {@linkplain URI#resolve(URI) resolved} only against absolute URI.
      *
      * @param  path      the path to convert, or {@code null}.
      * @param  encoding  if the URL is encoded in a {@code application/x-www-form-urlencoded} MIME format,
-     *                   the character encoding (normally {@code "UTF-8"}). If the URL is not encoded,
-     *                   then {@code null}. This argument is ignored if the given path does not need
-     *                   to be converted from URL to {@code File}.
-     * @return the path as a {@link File} if possible, or a {@link URL} otherwise.
-     * @throws IOException if the given path is not a file and cannot be parsed as a URL.
+     *         the character encoding (normally {@code "UTF-8"}). If the URL is not encoded, then {@code null}.
+     *         This argument is ignored if the given path does not need to be converted from URL to {@code File}.
+     * @return the path as a {@link File} if possible, or as a {@link URL} otherwise.
+     * @throws UnsupportedEncodingException if the specified encoding is invalid.
+     * @throws MalformedURLException if the given path is not a file and cannot be parsed as a URL.
      */
-    public static Object toFileOrURL(final String path, final String encoding) throws IOException {
+    public static Object toFileOrURL(String path, final String encoding)
+            throws UnsupportedEncodingException, MalformedURLException
+    {
         if (path == null) {
             return null;
         }
@@ -546,17 +393,35 @@ public final class IOUtilities extends Static {
                 return new File(path);
             }
         }
-        final URL url = toURL(path, encoding);
-        final String scheme = url.getProtocol();
-        if (scheme != null && scheme.equalsIgnoreCase("file")) {
-            return toFile(url);
+        if (encoding != null) {
+            path = URLDecoder.decode(path, encoding);       // Replace sequences of the form "%xy".
         }
-        /*
-         * Leave the URL in its original encoding on the assumption that this is the encoding expected by
-         * the server. This is different than the policy for URI, because the latter are always in UTF-8.
-         * If a URI is needed, callers should use toURI(url, encoding).
-         */
-        return url;
+        path = encodeURI(path);                     // Re-encode spaces and a few other characters.
+        MalformedURLException ex;
+        IllegalArgumentException suppressed = null;
+        try {
+            final URI uri = new URI(path);
+            if ("file".equalsIgnoreCase(uri.getScheme())) try {
+                if (uri.isOpaque() && uri.getRawFragment() == null) {
+                    // Case where the path is only "file:something" without "/" or "///" characters.
+                    return new File(uri.getSchemeSpecificPart());
+                } else {
+                    return new File(uri);
+                }
+            } catch (IllegalArgumentException e) {
+                suppressed = e;
+            }
+            return uri.parseServerAuthority().toURL();
+        } catch (MalformedURLException cause) {
+            ex = cause;
+        } catch (IllegalArgumentException | URISyntaxException cause) {
+            ex = (MalformedURLException) new MalformedURLException(Exceptions.formatChainedMessages(null,
+                    Errors.format(Errors.Keys.IllegalArgumentValue_2, "path", path), cause)).initCause(cause);
+        }
+        if (suppressed != null) {
+            ex.addSuppressed(suppressed);
+        }
+        throw ex;
     }
 
     /**

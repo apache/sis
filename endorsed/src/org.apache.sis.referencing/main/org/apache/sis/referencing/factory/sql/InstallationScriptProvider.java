@@ -228,6 +228,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      * Opens the input stream for the SQL script of the given name.
      * This method is invoked by the default implementation of {@link #openScript(String, int)}
      * for all scripts except {@link #PREPARE} and {@link #FINISH}.
+     * The returned input stream does not need to be buffered.
      *
      * <h4>Example 1</h4>
      * if this {@code InstallationScriptProvider} instance gets the SQL scripts from files in a well-known directory
@@ -319,7 +320,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
                                 final String part = resources[FIRST_FILE + i];
                                 if (name.contains(part)) {
                                     if (found[i] != null) {
-                                        log(Errors.getResources(locale)
+                                        log(Errors.forLocale(locale)
                                                   .getLogRecord(Level.WARNING, Errors.Keys.DuplicatedFileReference_1, part));
                                         return;   // Stop the search because of duplicated file.
                                     }
@@ -365,6 +366,7 @@ public abstract class InstallationScriptProvider extends InstallationResources {
 
         /**
          * Opens the input stream for the SQL script of the given name.
+         * The returned input stream does not need to be buffered.
          *
          * @param  name  name of the script file to open.
          * @return an input stream opened of the given script file, or {@code null} if the resource was not found.

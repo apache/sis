@@ -72,7 +72,7 @@ import org.apache.sis.util.logging.Logging;
  * {@link #intValue()} or {@link #doubleValue()} methods. But other types of parameter values are possible
  * and can be handled by the more generic {@link #getValue()} and {@link #setValue(Object)} methods.
  * All {@code xxxValue()} methods in this class are convenience methods converting the value from {@code Object}
- * to some commonly used types. Those types are specified in ISO 19111 as an union of attributes, listed below with
+ * to some commonly used types. Those types are specified in ISO 19111 as a union of attributes, listed below with
  * the corresponding getter and setter methods:
  *
  * <table class="sis">
@@ -672,7 +672,7 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
     @Override
     public void setValue(Object newValue) throws InvalidParameterValueException {
         /*
-         * Try to convert the value only for a limited amount of types. In particular we want to allow conversions
+         * Try to convert the value only for a limited number of types. In particular we want to allow conversions
          * between java.io.File and java.nio.file.Path for easier transition between JDK6 and JDK7. We do not want
          * to allow too many conversions for reducing the risk of unexpected behavior.  If we fail to convert, try
          * to set the value anyway since the user may have redefined the `setValue(Object, Unit)` method.

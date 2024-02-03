@@ -80,7 +80,7 @@ final class WKTPane extends StringConverter<Convention> implements ChangeListene
             Convention.WKT1_COMMON_UNITS
         };
         conventionTexts = new EnumMap<>(Convention.class);
-        final Vocabulary vocabulary = Vocabulary.getResources(locale);
+        final Vocabulary vocabulary = Vocabulary.forLocale(locale);
         for (final Convention c : sc) {
             conventionTexts.put(c, toString(c, vocabulary));
         }

@@ -36,7 +36,7 @@ import java.util.Arrays;
  * easier to ensure thread-safety during concurrent read/write operations.</p>
  *
  * <h2>Design note</h2>
- * Trees may have huge amount of nodes. For that reason, the nodes should contain as few fields as possible.
+ * Trees may have huge number of nodes. For that reason, the nodes should contain as few fields as possible.
  * We should also avoid classes that are just wrappers around arrays. This is the reason why leaf nodes are
  * stored directly as {@link Object[]} arrays instead of using a more object-oriented approach with some
  * {@code TreeNodeLeaf} class.

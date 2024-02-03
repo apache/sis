@@ -20,7 +20,7 @@ import java.io.IOException;
 
 // Test dependencies
 import org.junit.Before;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 
 
@@ -58,7 +58,7 @@ public final class TabulationExpansionTest extends LineAppenderTest {
     void run(final String lineSeparator) throws IOException {
         final Appendable f = appender;
         if (f instanceof LineAppender) {
-            assertEquals("getTabWidth", 8, ((LineAppender) f).getTabulationWidth());
+            assertEquals(8, ((LineAppender) f).getTabulationWidth());
         }
         assertSame(f, f.append("12\t8"   + lineSeparator));
         assertSame(f, f.append("1234\t8" + lineSeparator));

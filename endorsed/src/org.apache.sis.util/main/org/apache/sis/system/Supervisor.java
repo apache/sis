@@ -90,7 +90,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean {
                 name = n;                                    // Store only on success.
                 return;
             } catch (InstanceAlreadyExistsException e) {
-                record = Messages.getResources(null).getLogRecord(Level.CONFIG, Messages.Keys.AlreadyRegistered_2, "MBean", NAME);
+                record = Messages.forLocale(null).getLogRecord(Level.CONFIG, Messages.Keys.AlreadyRegistered_2, "MBean", NAME);
             } catch (JMException e) {
                 record = new LogRecord(Level.WARNING, e.toString());
                 record.setThrown(e);
@@ -219,7 +219,7 @@ public final class Supervisor extends StandardMBean implements SupervisorMBean {
             return null;
         }
         final String[] warnings = new String[threads.size()];
-        final Errors resources = Errors.getResources(locale);
+        final Errors resources = Errors.forLocale(locale);
         for (int i=0; i<warnings.length; i++) {
             final Thread thread = threads.get(i);
             warnings[i] = resources.getString(thread.isAlive() ?

@@ -207,7 +207,7 @@ public class AbstractIdentifiedType implements Deprecable, Serializable {
         ensureNonNull("identification", identification);
         Object value = identification.get(NAME_KEY);
         if (value == null) {
-            throw new IllegalArgumentException(Errors.getResources(identification)
+            throw new IllegalArgumentException(Errors.forProperties(identification)
                     .getString(Errors.Keys.MissingValueForProperty_1, NAME_KEY));
         } else if (value instanceof String) {
             name = createName(DefaultNameFactory.provider(), (String) value);
@@ -235,7 +235,7 @@ public class AbstractIdentifiedType implements Deprecable, Serializable {
     private static IllegalArgumentException illegalPropertyType(final Map<String,?> identification,
             final String key, final Object value)
     {
-        return new IllegalArgumentException(Errors.getResources(identification).getString(
+        return new IllegalArgumentException(Errors.forProperties(identification).getString(
                 Errors.Keys.IllegalPropertyValueClass_2, key, value.getClass()));
     }
 

@@ -58,7 +58,7 @@ import org.apache.sis.util.resources.Errors;
  * such level since it is not the usual way to write XML. In order to get this output with JAXB,
  * we have to wrap metadata object in an additional object. So each {@code PropertyType} subclass
  * is both a JAXB adapter and a wrapper. We have merged those functionalities in order to avoid
- * doubling the amount of classes, which is already large.
+ * doubling the number of classes, which is already large.
  *
  * <p>In ISO 19139 terminology:</p>
  * <ul>

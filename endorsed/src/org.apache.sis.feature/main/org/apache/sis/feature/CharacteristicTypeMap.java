@@ -39,7 +39,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
  * standard {@code HashMap<String,AttributeType>} would work as well or better. However, this level of indirection
  * become useful for {@link CharacteristicMap} (the map returned by {@link AbstractAttribute#characteristics()}),
  * since it allows a more efficient storage. We do this effort because some applications may create a very large
- * amount of attribute instances.
+ * number of attribute instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

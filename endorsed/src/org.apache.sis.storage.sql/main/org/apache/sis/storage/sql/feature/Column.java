@@ -229,7 +229,7 @@ public final class Column {
             defaultCRS = crs;
             return;
         }
-        throw new DataStoreContentException(Errors.getResources(caller.getLocale())
+        throw new DataStoreContentException(Errors.forLocale(caller.getLocale())
                         .getString(Errors.Keys.ValueAlreadyDefined_1, property));
     }
 

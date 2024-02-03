@@ -32,7 +32,7 @@ import org.apache.sis.system.Modules;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public abstract class DocumentedStoreProvider extends URIDataStore.Provider {
+public abstract class DocumentedStoreProvider extends URIDataStoreProvider {
     /**
      * The primary key to use for searching in the {@code MD_Format} table, or {@code null} if none.
      * This primary name is also the value returned by {@link #getShortName()} default implementation.

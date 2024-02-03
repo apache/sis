@@ -16,7 +16,6 @@
  */
 package org.apache.sis.gui.metadata;
 
-import java.util.Locale;
 import java.util.Collection;
 import java.util.StringJoiner;
 import javafx.application.Platform;
@@ -125,7 +124,7 @@ public class MetadataSummary extends Widget {
      * Creates an initially empty metadata overview.
      */
     public MetadataSummary() {
-        vocabulary  = Vocabulary.getResources((Locale) null);
+        vocabulary  = Vocabulary.forLocale(null);
         formats     = new VerboseFormats(vocabulary.getLocale());
         information = new TitledPane[] {
             // If order is modified, revisit `getIdentificationInfo()`.

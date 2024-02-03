@@ -360,7 +360,7 @@ public class ImagePropertyExplorer extends Widget {
      * @param  background  the image background color, or {@code null} if none.
      */
     ImagePropertyExplorer(final Locale locale,  final ObjectProperty<Background> background) {
-        final Vocabulary vocabulary = Vocabulary.getResources(locale);
+        final Vocabulary vocabulary = Vocabulary.forLocale(locale);
         final Resources  resources  = Resources.forLocale(locale);
 
         // Following variables could be class fields, but are not yet needed outside this constructor.

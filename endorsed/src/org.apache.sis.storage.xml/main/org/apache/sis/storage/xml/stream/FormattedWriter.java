@@ -38,7 +38,7 @@ import org.apache.sis.xml.util.StreamWriterDelegate;
  */
 final class FormattedWriter extends StreamWriterDelegate {
     /**
-     * A predefined amount of spaces, used by {@link #indent()} for writing a greater amount of
+     * A predefined number of spaces, used by {@link #indent()} for writing a greater number of
      * spaces in one call to {@link XMLStreamWriter#writeCharacters(char[], int, int)} methods.
      */
     private static final char[] SPACES = new char[12];
@@ -81,7 +81,7 @@ final class FormattedWriter extends StreamWriterDelegate {
     }
 
     /**
-     * Writes a line separator, then the given amount of spaces.
+     * Writes a line separator, then the given number of spaces.
      */
     private void indent() throws XMLStreamException {
         int n = margin;

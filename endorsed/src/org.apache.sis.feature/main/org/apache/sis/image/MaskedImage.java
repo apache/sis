@@ -85,7 +85,7 @@ final class MaskedImage extends SourceAlignedImage {
 
     /**
      * Number of pixels (bits) to skip for reaching the same column of next line (scanline stride).
-     * This is the image width rounded to the next multiple of 8 (integer amount of bytes).
+     * This is the image width rounded to the next multiple of 8 (integer number of bytes).
      */
     private transient int maskScanlineStride;
 

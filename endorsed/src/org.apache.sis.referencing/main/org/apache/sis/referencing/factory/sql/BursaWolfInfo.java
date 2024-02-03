@@ -93,7 +93,7 @@ final class BursaWolfInfo {
         if (target != unit) try {
             value = unit.getConverterToAny(target).convert(value);
         } catch (IncommensurableException e) {
-            throw new FactoryDataException(Errors.getResources(locale).getString(Errors.Keys.IncompatibleUnit_1, unit), e);
+            throw new FactoryDataException(Errors.forLocale(locale).getString(Errors.Keys.IncompatibleUnit_1, unit), e);
         }
         switch (code) {
             case 8605: parameters.tX = value; break;
@@ -103,7 +103,7 @@ final class BursaWolfInfo {
             case 8609: parameters.rY = value; break;
             case 8610: parameters.rZ = value; break;
             case 8611: parameters.dS = value; break;
-            default: throw new FactoryDataException(Errors.getResources(locale)
+            default: throw new FactoryDataException(Errors.forLocale(locale)
                                 .getString(Errors.Keys.UnexpectedParameter_1, code));
         }
     }

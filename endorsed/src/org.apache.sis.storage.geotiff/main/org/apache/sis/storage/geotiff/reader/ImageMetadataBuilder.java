@@ -220,7 +220,7 @@ public final class ImageMetadataBuilder extends MetadataBuilder {
         while (complement != null) try {
             complement = complement.appendTo(this);
         } catch (Exception ex) {
-            listeners.warning(Errors.getResources(listeners.getLocale())
+            listeners.warning(Errors.forLocale(listeners.getLocale())
                     .getString(Errors.Keys.CanNotSetPropertyValue_1, complement.tag()), ex);
         }
     }

@@ -198,7 +198,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
                 csFactory  = (CSFactory)            (value = properties.remove(key = ReferencingFactoryContainer.CS_FACTORY));
                 mtFactory  = (MathTransformFactory) (value = properties.remove(key = ReferencingFactoryContainer.MT_FACTORY));
             } catch (ClassCastException e) {
-                throw new IllegalArgumentException(Errors.getResources(properties)
+                throw new IllegalArgumentException(Errors.forProperties(properties)
                         .getString(Errors.Keys.IllegalPropertyValueClass_2, key, Classes.getClass(value)));
             }
             properties.remove(ReferencingFactoryContainer.DATUM_FACTORY);

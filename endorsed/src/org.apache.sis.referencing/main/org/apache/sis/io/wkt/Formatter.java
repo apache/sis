@@ -282,7 +282,7 @@ public class Formatter implements Localized {
     private int colorApplied;
 
     /**
-     * The amount of spaces to use in indentation, or {@value org.apache.sis.io.wkt.WKTFormat#SINGLE_LINE}
+     * The number of spaces to use in indentation, or {@value org.apache.sis.io.wkt.WKTFormat#SINGLE_LINE}
      * if indentation is disabled.
      *
      * @see #configure(Convention, Citation, Colors, byte, byte, byte, int)
@@ -290,7 +290,7 @@ public class Formatter implements Localized {
     private byte indentation;
 
     /**
-     * The amount of space to write on the left side of each line. This amount is increased
+     * The number of space to write on the left side of each line. This amount is increased
      * by {@code indentation} every time a {@link FormattableObject} is appended in a new
      * indentation level.
      */
@@ -355,7 +355,7 @@ public class Formatter implements Localized {
      *
      * @param  convention   the convention to use.
      * @param  symbols      the symbols.
-     * @param  indentation  the amount of spaces to use in indentation for WKT formatting,
+     * @param  indentation  the number of spaces to use in indentation for WKT formatting,
      *                      or {@link WKTFormat#SINGLE_LINE} for formatting the whole WKT on a single line.
      */
     public Formatter(final Convention convention, final Symbols symbols, final int indentation) {
@@ -424,7 +424,7 @@ public class Formatter implements Localized {
      * @param  colors        the syntax coloring, or {@code null} if none.
      * @param  toUpperCase   whether keywords shall be converted to upper cases.
      * @param  longKeywords  {@code -1} for short keywords, {@code +1} for long keywords or 0 for the default.
-     * @param  indentation   the amount of spaces to use in indentation for WKT formatting, or {@link WKTFormat#SINGLE_LINE}.
+     * @param  indentation   the number of spaces to use in indentation for WKT formatting, or {@link WKTFormat#SINGLE_LINE}.
      * @param  listSizeLimit maximum number of elements to show in lists, or {@link Integer#MAX_VALUE} if unlimited.
      */
     final void configure(Convention convention, final Citation authority, final Colors colors,
@@ -561,7 +561,7 @@ public class Formatter implements Localized {
 
     /**
      * Increases or decreases the indentation. A value of {@code +1} increases
-     * the indentation by the amount of spaces specified at construction time,
+     * the indentation by the number of spaces specified at construction time,
      * and a value of {@code -1} reduces it by the same amount.
      *
      * @param  amount  +1 for increasing the indentation, or -1 for decreasing it, or 0 for no-op.
@@ -674,13 +674,13 @@ public class Formatter implements Localized {
         final int stackDepth = enclosingElements.size();
         for (int i=stackDepth; --i >= 0;) {
             if (enclosingElements.get(i) == object) {
-                throw new IllegalStateException(Errors.getResources(errorLocale)
+                throw new IllegalStateException(Errors.forLocale(errorLocale)
                             .getString(Errors.Keys.CircularReference));
             }
         }
         enclosingElements.add(object);
         if (hasContextualUnit < 0) {                            // Test if leftmost bit is set to 1.
-            throw new IllegalStateException(Errors.getResources(errorLocale)
+            throw new IllegalStateException(Errors.forLocale(errorLocale)
                         .getString(Errors.Keys.TreeDepthExceedsMaximum));
         }
         hasContextualUnit <<= 1;
@@ -714,11 +714,19 @@ public class Formatter implements Localized {
             final Locale syntax = symbols.getLocale();      // Not the same purpose as `this.locale`.
             keyword = (toUpperCase >= 0) ? keyword.toUpperCase(syntax) : keyword.toLowerCase(syntax);
         }
+        /*
+         * If the WKT contains errors or non-standard elements, highlight the keyword (if allowed).
+         * Some buffer indices will need to be shifted for spaces occupied by the X364 color codes:
+         * `base`, `keywordSpaceAt`.
+         */
+        int highlightOffset = 0;
         if (highlightError && colors != null) {
             final String color = colors.getAnsiSequence(ElementKind.ERROR);
             if (color != null) {
-                buffer.insert(base, color + X364.BACKGROUND_DEFAULT.sequence());
-                base += color.length();
+                final String c = color + X364.BACKGROUND_DEFAULT.sequence();
+                highlightOffset = c.length();
+                buffer.insert(base, c);
+                base += color.length();         // Insert keyword before `BACKGROUND_DEFAULT`.
             }
         }
         highlightError = false;
@@ -736,7 +744,7 @@ public class Formatter implements Localized {
             final int n = keywordSpaceAt.size();
             for (int i=0; i<n;) {
                 int p = keywordSpaceAt.getInt(i);
-                p += (++i * length);                    // Take in account spaces added previously.
+                p += highlightOffset + (++i * length);      // Take in account spaces added previously.
                 buffer.insert(p, additionalMargin);
             }
             keywordSpaceAt.clear();
@@ -1278,7 +1286,7 @@ public class Formatter implements Localized {
          * If the rows are going to be formatted on many lines, then we will need to put some margin before each row.
          * If the first row starts on its own line, then the margin will be the usual indentation. But if the first
          * row starts on the same line as previous elements (or the keyword of this element, e.g. "BOX["), then we
-         * will need a different amount of spaces if we want to have the numbers properly aligned.
+         * will need a different number of spaces if we want to have the numbers properly aligned.
          */
         final int numRows = rows.length;
         final boolean isMultiLines = (indentation > WKTFormat.SINGLE_LINE) && (numRows > 1);
@@ -1294,20 +1302,23 @@ public class Formatter implements Localized {
                     if (Characters.isLineOrParagraphSeparator(c)) break;
                     i -= Character.charCount(c);
                 }
-                currentLineLength = buffer.codePointCount(i, length);
+                currentLineLength = X364.lengthOfPlain(buffer, i, length);
             }
             marginBeforeRow = CharSequences.spaces(currentLineLength);
         } else {
             marginBeforeRow = "";
         }
         /*
-         * `formattedNumberMarks` contains, for each number in each row, positions in the `buffer` where
-         * the number starts and position where it ends. Those positions are stored as (start,end) pairs.
-         * We compute those marks unconditionally for simplicity, but will ignore them if formatting on
-         * a single line.
+         * `formattedNumberMarks` contains, for each number in each row, the index after `base` where
+         * the number starts and the index where the number ends (including X364 colors), together with
+         * the number lengths (ignoring X364 colors). Those information are stored as (start,end,length)
+         * tuples. We compute those values unconditionally for simplicity, but will ignore them if the
+         * WKT is formatted on a single line.
          */
+        final int TUPLE_LENGTH = 3;     // Number of elements in each `formattedNumberMarks` tuple.
+        final int base = elementStart;  // Needs to be saved here because `elementStart` may be modified.
         final int[][] formattedNumberMarks = new int[numRows][];
-        int numColumns = 0;
+        int maxNumCols = 0;
         for (int j=0; j<numRows; j++) {
             if (j == 0) {
                 appendSeparator();      // It is up to the caller to decide if we begin with a new line.
@@ -1316,63 +1327,72 @@ public class Formatter implements Localized {
             }
             final Vector numbers = rows[j];
             final int numCols = numbers.size();
-            numColumns = Math.max(numColumns, numCols);      // Store the length of longest row.
-            final int[] marks = new int[numCols << 1];       // Positions where numbers are formatted.
+            maxNumCols = Math.max(maxNumCols, numCols);             // Store the length of longest row.
+            final int[] marks = new int[numCols*TUPLE_LENGTH];      // Positions where numbers are formatted.
             formattedNumberMarks[j] = marks;
-            for (int i=0; i<numCols; i++) {
+            for (int i=0,k=0; i<numCols; i++) {
                 if (i != 0) buffer.append(Symbols.NUMBER_SEPARATOR);
                 if (i < fractionDigits.length) {                    // Otherwise, same as previous number.
                     final int f = fractionDigits[i];
                     numberFormat.setMaximumFractionDigits(f);
                     numberFormat.setMinimumFractionDigits(f);
                 }
-                marks[i << 1] = buffer.length();                    // Store the start position where number is formatted.
+                marks[k++] = buffer.length() - base;        // Store the start position where number is formatted.
                 setColor(ElementKind.NUMBER);
+                final int s = buffer.length();
                 final Number n = numbers.get(i);
                 if (n != null) {
                     numberFormat.format(n, buffer, dummy);
                 } else {
                     buffer.append('…');
                 }
+                final int e = buffer.length();
                 resetColor();
-                marks[(i << 1) | 1] = buffer.length();              // Store the end position where number is formatted.
+                marks[k++] = buffer.length() - base;        // Store the end position where number is formatted.
+                marks[k++] = buffer.codePointCount(s, e);   // Note: there is no X364 colors in this range.
             }
         }
         /*
-         * If formatting on more than one line, insert the amount of spaces required for aligning numbers.
+         * If formatting on more than one line, insert the number of spaces required for aligning numbers.
          * This is possible because we wrote the coordinate values with fixed number of fraction digits.
          */
         if (isMultiLines) {
-            final int base = elementStart;
-            final String toWrite = buffer.substring(base);          // Save what we formatted in above loop.
-            buffer.setLength(base);                                 // Discard what we formatted - we will rewrite.
-            final int[] columnWidths = new int[numColumns];
-            for (final int[] marks : formattedNumberMarks) {        // Compute the maximal width of each column.
-                for (int i=0; i<marks.length; i += 2) {
-                    final int k = i >> 1;
-                    final int w = toWrite.codePointCount(marks[i  ] -= base,
-                                                         marks[i+1] -= base);
+            // Compute the maximal width of each column.
+            final int[] columnWidths = new int[maxNumCols];
+            for (final int[] marks : formattedNumberMarks) {
+                for (int i = TUPLE_LENGTH-1; i < marks.length; i += TUPLE_LENGTH) {
+                    final int w = marks[i];
+                    final int k = i / TUPLE_LENGTH;
                     if (w > columnWidths[k]) columnWidths[k] = w;
                 }
             }
-            if (needsAlignment && keywordSpaceAt == null) {
-                keywordSpaceAt = new IntegerList(formattedNumberMarks.length, Integer.MAX_VALUE);
-            }
+            final String toWrite = buffer.substring(base);          // Save what we formatted in above loop.
+            buffer.setLength(base);                                 // Discard what we formatted - we will rewrite.
+            int endOfPrevious = 0;
             boolean requestAlignment = false;
-            int lastPosition = 0;
             for (int[] marks : formattedNumberMarks) {              // Recopy the formatted text, with more spaces.
                 for (int i = 0; i<marks.length;) {
-                    final int w = columnWidths[i >> 1];
+                    final int w = columnWidths[i / TUPLE_LENGTH];
                     final int s = marks[i++];
                     final int e = marks[i++];
-                    buffer.append(toWrite, lastPosition, s)
-                          .append(CharSequences.spaces(w - toWrite.codePointCount(s, e)));
+                    final int n = marks[i++];
+                    buffer.append(toWrite, endOfPrevious, s).append(CharSequences.spaces(w - n));
+                    /*
+                     * If we are formatting the first number of a new line except the first line,
+                     * we will need to add more spaces than what we added with `marginBeforeRow`.
+                     * The number of spaces depends on the number of characters in the keyword to
+                     * be written before the values. We do not know that keyword yet, so we need
+                     * to remember that more spaces will need to be inserted here.
+                     */
                     if (requestAlignment) {
                         requestAlignment = false;
+                        if (keywordSpaceAt == null) {
+                            keywordSpaceAt = new IntegerList(formattedNumberMarks.length, Integer.MAX_VALUE);
+                        }
                         keywordSpaceAt.add(buffer.length());
                     }
                     buffer.append(toWrite, s, e);
-                    lastPosition = e;
+                    endOfPrevious = e;
                 }
                 requestAlignment = needsAlignment;
             }

@@ -552,7 +552,7 @@ public class GeodeticCalculatorTest extends TestCase {
                 }
             }
         }
-        assertTrue("Unexpected amount of no convergence errors.", noConvergenceCount <= 8);
+        assertTrue("Unexpected number of no convergence errors.", noConvergenceCount <= 8);
     }
 
     /**

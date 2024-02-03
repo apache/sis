@@ -117,7 +117,7 @@ class AttributeView<V> extends AbstractAttribute<V> {
     }
 
     /**
-     * Specialization of {@code AttributeView} when the amount of values can be only zero or one.
+     * Specialization of {@code AttributeView} when the number of values can be only zero or one.
      * This implementation takes shortcuts for the {@code getValue()} and {@code getValues()} methods.
      * This specialization is provided because it is the most common case.
      *

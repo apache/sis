@@ -589,7 +589,7 @@ public class RecentReferenceSystems {
             /*
              * Search for duplicated values after we finished filtering. This block is inefficient
              * (execution time of O(N²)) but it should not be an issue if this list is short (e.g.
-             * 20 elements). We cut the list if we reach the maximal amount of systems to keep.
+             * 20 elements). We cut the list if we reach the maximal number of systems to keep.
              */
             for (int i=0,j; i < (j=systemsOrCodes.size()); i++) {
                 if (i >= RecentChoices.MAXIMUM_REFERENCE_SYSTEMS) {
@@ -1037,7 +1037,7 @@ next:       for (int i=0; i<count; i++) {
         ArgumentChecks.ensureNonNull("action", action);
         final List<ReferenceSystem> main = getReferenceSystems(filtered);
         final List<DerivedCRS> derived = (filtered) ? null : cellIndiceSystems;
-        final Menu menu = new Menu(Vocabulary.getResources(locale).getString(Vocabulary.Keys.ReferenceSystem));
+        final Menu menu = new Menu(Vocabulary.forLocale(locale).getString(Vocabulary.Keys.ReferenceSystem));
         final MenuSync property = new MenuSync(main, !filtered, derived, menu, new SelectionListener(action));
         menu.getProperties().put(SELECTED_ITEM_KEY, property);
         controlValues.add(property);

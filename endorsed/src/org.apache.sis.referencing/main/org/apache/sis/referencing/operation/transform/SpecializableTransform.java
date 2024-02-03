@@ -144,7 +144,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
     private MathTransform inverse;
 
     /**
-     * Creates a new transform with the given global transform and some amount of specializations.
+     * Creates a new transform with the given global transform and some number of specializations.
      *
      * @param  global  the transform to use globally where there is no suitable specialization.
      * @param  specializations  more accurate transforms available in sub-areas.

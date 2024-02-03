@@ -347,7 +347,7 @@ final class GridMapping {
                 f.setMaximumFractionDigits(5);      // Centimetric precision.
                 final double km = axisUnit.getConverterTo(Units.KILOMETRE).convert(semiMajor);
                 final StringBuffer b = new StringBuffer()
-                        .append(Vocabulary.getResources(locale).getString(isSphere ? Vocabulary.Keys.Sphere : Vocabulary.Keys.Ellipsoid))
+                        .append(Vocabulary.forLocale(locale).getString(isSphere ? Vocabulary.Keys.Sphere : Vocabulary.Keys.Ellipsoid))
                         .append(isSphere ? " R=" : " a=");
                 return f.format(km, b, new FieldPosition(0)).append(" km").toString();
             };
@@ -451,7 +451,7 @@ final class GridMapping {
                     gridToCRS = new AffineTransform2D(c[1], c[4], c[2], c[5], c[0], c[3]);         // X_DIMENSION, Y_DIMENSION
                 } else {
                     canNotCreate(mapping, message, new DataStoreContentException(
-                            Errors.getResources(mapping.getLocale())
+                            Errors.forLocale(mapping.getLocale())
                                   .getString(Errors.Keys.UnexpectedArrayLength_2, 6, c.length)));
                 }
             }

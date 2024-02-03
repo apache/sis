@@ -157,6 +157,7 @@ public class ReferenceResolver {
      * </ul>
      *
      * If an object is found but is not of the class declared in {@code type},
+     * or if an {@link Exception} was thrown during object unmarshalling,
      * then this method emits a warning and returns {@code null}.
      *
      * @param  <T>      the compile-time type of the {@code type} argument.
@@ -173,6 +174,7 @@ public class ReferenceResolver {
             return null;
         }
         final Object object;
+        final short reasonIfNull;             // An Errors.Key value with one parameter, or 0.
         final Context c = (context instanceof Context) ? (Context) context : Context.current();
         if (!href.isAbsolute() && Strings.isNullOrEmpty(href.getPath())) {
             /*
@@ -187,10 +189,12 @@ public class ReferenceResolver {
                 return null;
             }
             object = Context.getObjectForID(c, fragment);
+            reasonIfNull = Errors.Keys.NotABackwardReference_1;
         } else try {
             /*
-             * URI to an external document. We let `ExternalLinkHandler` decide how to replace relative URI
-             * by absolute URI. It may depend on whether user has specified a `javax.xml.stream.XMLResolver`
+             * URI to an external document. If a `javax.xml.stream.XMLResolver` property was set on the unmarshaller,
+             * use the user supplied `URIResolver`. If there is no URI resolver or the URI resolver cannot resolve,
+             * fallback on the Apache SIS `ExternalLinkHandler` implementation. The latter is the usual case.
              */
             final ExternalLinkHandler handler = Context.linkHandler(c);
             Source source = null;
@@ -200,32 +204,38 @@ public class ReferenceResolver {
                     source = externalSourceResolver.resolve(href.toString(), base.toString());
                 }
             }
-            if (source == null) {
-                source = handler.openReader(href);
+            if (source == null && (source = handler.openReader(href)) == null) {
+                reasonIfNull = Errors.Keys.CanNotResolveAsAbsolutePath_1;
+                object = null;
+            } else {
+                object = resolveExternal(context, source);
+                reasonIfNull = 0;
             }
-            object = (source != null) ? resolveExternal(context, source) : null;
         } catch (Exception e) {
             ExternalLinkHandler.warningOccured(href, e);
             return null;
         }
         /*
-         * At this point, the referenced object has been fetched.
-         * Verify its validity.
+         * At this point, the referenced object has been fetched or unmarshalled.
+         * The result may be null, in which case the warning to emit depends on the
+         * reason why the object is null: could not resolve, or could not unmarshall.
          */
         if (type.isInstance(object)) {
             return type.cast(object);
-        } else {
-            final short key;
-            final Object[] args;
-            if (object == null) {
-                key = Errors.Keys.NotABackwardReference_1;
-                args = new Object[] {href.toString()};
-            } else {
-                key = Errors.Keys.UnexpectedTypeForReference_3;
-                args = new Object[] {href.toString(), type, object.getClass()};
-            }
-            Context.warningOccured(c, ReferenceResolver.class, "resolve", Errors.class, key, args);
         }
+        final short key;
+        final Object[] args;
+        if (object == null) {
+            if (reasonIfNull == 0) {
+                return null;
+            }
+            key = reasonIfNull;
+            args = new Object[] {href.toString()};
+        } else {
+            key = Errors.Keys.UnexpectedTypeForReference_3;
+            args = new Object[] {href.toString(), type, object.getClass()};
+        }
+        Context.warningOccured(c, ReferenceResolver.class, "resolve", Errors.class, key, args);
         return null;
     }
 
@@ -245,9 +255,18 @@ public class ReferenceResolver {
      * </ul>
      * The resolved URL, if known, should be available in {@link Source#getSystemId()}.
      *
+     * <h4>Error handling</h4>
+     * The default implementation keeps a cache during the execution of an {@code XML.unmarshall(…)} method
+     * (or actually, during a {@linkplain MarshallerPool pooled unmarshaller} method).
+     * If an exception is thrown during the document unmarshalling, this failure is also recorded in the cache.
+     * Therefor, the exception is thrown only during the first attempt to read the document
+     * and {@code null} is returned directly on next attempts for the same source.
+     * Exceptions thrown by this method are caught by {@link #resolve(MarshalContext, Class, XLink) resolve(…)}
+     * and reported as warnings.
+     *
      * @param  context  context (GML version, locale, <i>etc.</i>) of the (un)marshalling process.
      * @param  source   source of the document specified by the {@code xlink:href} attribute value.
-     * @return an object for the given source, or {@code null} if none.
+     * @return an object for the given source, or {@code null} if none, for example because of failure in a previous attempt.
      * @throws Exception if an error occurred while opening or parsing the document.
      *
      * @since 1.5
@@ -278,12 +297,12 @@ public class ReferenceResolver {
          * and the URI fragment to use as a GML identifier. Check if the document is in the cache.
          * Note that if the fragment is null, then by convention we lookup for the whole document.
          */
-        final Context c = Context.current();
+        final Context c = (context instanceof Context) ? (Context) context : Context.current();
         if (c != null) {
             final Object object = c.getExternalObjectForID(document, fragment);
             if (object != null) {
                 XmlUtilities.close(source);
-                return object;
+                return (object != Context.INVALID_OBJECT) ? object : null;
             }
         }
         /*
@@ -297,10 +316,17 @@ public class ReferenceResolver {
             ((Pooled) m).forIncludedDocument(document);
         }
         final Object object;
-        if (uri != null) {
-            object = m.unmarshal(uri.toURL());
-        } else {
-            object = m.unmarshal(source);
+        try {
+            if (uri != null) {
+                object = m.unmarshal(uri.toURL());
+            } else {
+                object = m.unmarshal(source);
+            }
+        } catch (Exception e) {
+            if (c != null) {
+                c.cacheDocument(document, Context.INVALID_OBJECT);
+            }
+            throw e;
         }
         pool.recycle(m);
         /*

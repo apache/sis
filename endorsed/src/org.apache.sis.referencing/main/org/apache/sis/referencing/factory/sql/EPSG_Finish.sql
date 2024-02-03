@@ -8,7 +8,7 @@
 -- Corrections to some deprecated Coordinate Reference Systems (CRS).  The errors that we fix here are known to EPSG,
 -- but were fixed by deprecating the erroneous CRS and creating a new one. This approach allows reproductive behavior
 -- of applications that used the erroneous CRS. However in a few cases, Apache SIS cannot instantiate the deprecated
--- object without some minimal corrections. The following UPDATEs perform the minimal amount of changes needed by SIS.
+-- object without some minimal corrections. The following UPDATEs perform the minimal amount of change needed by SIS.
 --
 
 -- "Scale factor at natural origin" (EPSG:8805) shall be dimensionless (EPSG:9201), not in "m" units (EPSG:9001).

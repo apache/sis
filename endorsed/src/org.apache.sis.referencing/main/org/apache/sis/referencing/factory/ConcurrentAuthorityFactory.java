@@ -77,8 +77,8 @@ import org.apache.sis.system.Shutdown;
  * and keep it only for a relatively short amount of time.</p>
  *
  * <h2>Caching strategy</h2>
- * Objects are cached by strong references, up to the amount of objects specified at construction time.
- * If a greater amount of objects are cached, then the oldest ones will be retained through a
+ * Objects are cached by strong references, up to the number of objects specified at construction time.
+ * If a greater number of objects are cached, then the oldest ones will be retained through a
  * {@linkplain WeakReference weak reference} instead of a strong one.
  * This means that this caching factory will continue to return those objects as long as they are in use somewhere
  * else in the Java virtual machine, but will be discarded (and recreated on the fly if needed) otherwise.
@@ -86,7 +86,7 @@ import org.apache.sis.system.Shutdown;
  * <h2>Multi-threading</h2>
  * The cache managed by this class is concurrent. However, the Data Access Objects (DAO) are assumed non-concurrent.
  * If two or more threads are accessing this factory at the same time, then two or more Data Access Object instances
- * may be created. The maximal amount of instances to create is specified at {@code ConcurrentAuthorityFactory}
+ * may be created. The maximal number of instances to create is specified at {@code ConcurrentAuthorityFactory}
  * construction time. If more Data Access Object instances are needed, some of the threads will block until an
  * instance become available.
  *
@@ -237,7 +237,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     private final Deque<DataAccessRef<DAO>> availableDAOs = new LinkedList<>();
 
     /**
-     * The amount of Data Access Objects that can still be created. This number is decremented in a block
+     * The number of Data Access Objects that can still be created. This number is decremented in a block
      * synchronized on {@link #availableDAOs} every time a Data Access Object is in use, and incremented
      * once released.
      */
@@ -300,8 +300,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *
      * @param dataAccessClass       the class of Data Access Object (DAO) created by {@link #newDataAccess()}.
      * @param maxStrongReferences   the maximum number of objects to keep by strong reference.
-     * @param maxConcurrentQueries  the maximal amount of Data Access Objects to use concurrently.
-     *        If more than this amount of threads are querying this {@code ConcurrentAuthorityFactory} concurrently,
+     * @param maxConcurrentQueries  the maximal number of Data Access Objects to use concurrently.
+     *        If more than this number of threads are querying this {@code ConcurrentAuthorityFactory} concurrently,
      *        additional threads will be blocked until a Data Access Object become available.
      */
     protected ConcurrentAuthorityFactory(final Class<DAO> dataAccessClass,
@@ -399,7 +399,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
         if (usage == null) {
             synchronized (availableDAOs) {
                 /*
-                 * If we have reached the maximal amount of Data Access Objects allowed, wait for an instance
+                 * If we have reached the maximal number of Data Access Objects allowed, wait for an instance
                  * to become available. In theory the 0.2 second timeout is not necessary, but we put it as a
                  * safety in case we fail to invoke a notify() matching this wait(), for example someone else
                  * is waiting on this monitor or because the release(…) method threw an exception.
@@ -493,7 +493,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 }
                 final Level level = PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS);
                 final Double duration = time / (double) StandardDateFormat.NANOS_PER_SECOND;
-                final Messages resources = Messages.getResources(null);
+                final Messages resources = Messages.forLocale(null);
                 final LogRecord record;
                 if (code != null) {
                     record = resources.getLogRecord(level, Messages.Keys.CreateDurationFromIdentifier_3, type, code, duration);
@@ -639,7 +639,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
          * If the queue of Data Access Objects (DAO) become empty, this means that this `ConcurrentAuthorityFactory`
          * has not created new objects for a while (at least the amount of time given by the timeout), ignoring any
          * request which may be under execution in another thread right now. We may use this opportunity for reducing
-         * the amount of objects retained in the `IdentifiedObjectFinder.find(…)` cache (maybe in a future version).
+         * the number of objects retained in the `IdentifiedObjectFinder.find(…)` cache (maybe in a future version).
          *
          * Touching `findPool` also has the desired side-effect of letting WeakHashMap expunges stale entries.
          */

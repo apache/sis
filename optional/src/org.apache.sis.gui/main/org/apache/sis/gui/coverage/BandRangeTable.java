@@ -47,7 +47,7 @@ final class BandRangeTable implements Callback<TableColumn<SampleDimension,Numbe
     private static final String NAME = "name", MINIMUM = "minimum", MAXIMUM = "maximum", UNITS = "units";
 
     /**
-     * Approximate amount of rows to make visible.
+     * Approximate number of rows to make visible.
      */
     private static final int NUM_VISIBLE_ROW = 5;
 

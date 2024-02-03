@@ -159,7 +159,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * {@link CSAuthorityFactory}, {@link DatumAuthorityFactory} and {@link CoordinateOperationAuthorityFactory}
      * in that order. That order is defined by the constant values in {@link AuthorityFactoryIdentifier}.
      *
-     * <p>Note that this array is shorter than the amount of {@link AuthorityFactoryIdentifier} values.
+     * <p>Note that this array is shorter than the number of {@link AuthorityFactoryIdentifier} values.
      * The last {@link AuthorityFactoryIdentifier} values are handled in a special way.</p>
      *
      * <p>The array may contain {@code null} elements when there is no provider for a given type.

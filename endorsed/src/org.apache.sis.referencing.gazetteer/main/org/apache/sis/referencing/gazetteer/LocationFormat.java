@@ -208,7 +208,7 @@ public class LocationFormat extends TabularFormat<AbstractLocation> {
     public void format(final AbstractLocation location, final Appendable toAppendTo) throws IOException {
         ArgumentChecks.ensureNonNull("location", location);
         final Locale locale = getLocale(Locale.Category.DISPLAY);
-        final Vocabulary vocabulary = Vocabulary.getResources(locale);
+        final Vocabulary vocabulary = Vocabulary.forLocale(locale);
         final TableAppender table = new TableAppender(toAppendTo, "│ ", columnSeparator, " │");
         table.setMultiLinesCells(true);
         /*

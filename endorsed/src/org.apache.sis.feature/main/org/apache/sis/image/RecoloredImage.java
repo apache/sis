@@ -364,7 +364,7 @@ final class RecoloredImage extends ImageAdapter {
     private static IllegalArgumentException illegalPropertyType(
             final Map<String,?> properties, final String key, final Object value)
     {
-        return new IllegalArgumentException(Errors.getResources(properties)
+        return new IllegalArgumentException(Errors.forProperties(properties)
                 .getString(Errors.Keys.IllegalPropertyValueClass_2, key, value.getClass()));
     }
 

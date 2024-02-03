@@ -1465,7 +1465,7 @@ public class Vocabulary extends IndexedResourceBundle {
      * @return resources in the given locale.
      * @throws MissingResourceException if resources cannot be found.
      */
-    public static Vocabulary getResources(final Locale locale) {
+    public static Vocabulary forLocale(final Locale locale) {
         /*
          * We cannot factorize this method into the parent class, because we need to call
          * `ResourceBundle.getBundle(String)` from the module that provides the resources.
@@ -1483,8 +1483,8 @@ public class Vocabulary extends IndexedResourceBundle {
      * @return resources in the given locale.
      * @throws MissingResourceException if resources cannot be found.
      */
-    public static Vocabulary getResources(final Map<?,?> properties) throws MissingResourceException {
-        return getResources(getLocale(properties));
+    public static Vocabulary forProperties(final Map<?,?> properties) throws MissingResourceException {
+        return forLocale(getLocale(properties));
     }
 
     /**
@@ -1495,7 +1495,7 @@ public class Vocabulary extends IndexedResourceBundle {
      * @throws MissingResourceException if no object for the given key can be found.
      */
     public static String format(final short key) throws MissingResourceException {
-        return getResources((Locale) null).getString(key);
+        return forLocale(null).getString(key);
     }
 
     /**
@@ -1516,7 +1516,7 @@ public class Vocabulary extends IndexedResourceBundle {
         International(short key, Object args)                    {super(key, args);}
         @Override protected final KeyConstants getKeyConstants() {return Keys.INSTANCE;}
         @Override protected final IndexedResourceBundle getBundle(final Locale locale) {
-            return getResources(locale);
+            return forLocale(locale);
         }
     }
 

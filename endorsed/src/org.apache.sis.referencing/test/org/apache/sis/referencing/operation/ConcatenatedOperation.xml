@@ -92,7 +92,7 @@
     </gml:GeodeticCRS>
   </gml:sourceCRS>
   <!--
-    Same definition than the above <gml:sourceCRS> except for the prime meridian.
+    Same definition as the above <gml:sourceCRS> except for the prime meridian.
   -->
   <gml:targetCRS>
     <gml:GeodeticCRS gml:id="test-crs-target">

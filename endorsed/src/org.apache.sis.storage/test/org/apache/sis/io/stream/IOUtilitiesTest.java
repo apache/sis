@@ -22,7 +22,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.io.File;
 import java.io.IOException;
-import org.apache.sis.util.CharSequences;
 
 // Test dependencies
 import org.junit.Test;
@@ -155,83 +154,39 @@ public final class IOUtilitiesTest extends TestCase {
     }
 
     /**
-     * Tests {@link IOUtilities#toURI(URL, String)}.
-     *
-     * @throws IOException if a URL cannot be parsed.
-     * @throws URISyntaxException if a URI cannot be parsed.
-     */
-    @Test
-    @DependsOnMethod("testEncodeURI")
-    @SuppressWarnings("deprecation")
-    public void testToURI() throws IOException, URISyntaxException {
-        assertEquals(new URI("file:/Users/name/Map.png"),
-                IOUtilities.toURI(new URL("file:/Users/name/Map.png"), null));
-        assertEquals(new URI("file:/Users/name/Map%20with%20spaces.png"),
-                IOUtilities.toURI(new URL("file:/Users/name/Map with spaces.png"), null));
-        assertEquals(new URI("file:/Users/name/Map%20with%20spaces.png"),
-                IOUtilities.toURI(new URL("file:/Users/name/Map%20with%20spaces.png"), "UTF-8"));
-        assertEquals(new URI("file:/Users/name/Map%20with%20spaces.png"),
-                IOUtilities.toURI(new URL("file:/Users/name/Map%20with%20spaces.png"), "ISO-8859-1"));
-
-        // Here the URL is considered non-encoded, so the method shall encode the % sign.
-        assertEquals(new URI("file:/Users/name/Map%2520with%2520spaces.png"),
-                IOUtilities.toURI(new URL("file:/Users/name/Map%20with%20spaces.png"), null));
-    }
-
-    /**
-     * Tests the {@link IOUtilities#toFile(URL)} method. Do not test a Windows-specific path
-     * (e.g. {@code "file:///C:/some/path/Map.png"}), since the result is different on Windows or
-     * Unix platforms.
-     *
-     * @throws IOException if a URL cannot be parsed.
-     */
-    @Test
-    @DependsOnMethod("testToURI")
-    public void testToFile() throws IOException {
-        testToFile(null, "+");
-    }
-
-    /**
-     * Same test as {@link #testToFile()}, but using the UTF-8 encoding.
-     *
-     * @throws IOException if a URL cannot be parsed.
-     */
-    @Test
-    @DependsOnMethod("testToFile")
-    public void testToFileFromUTF8() throws IOException {
-        testToFile("UTF-8", "%2B");
-    }
-
-    /**
-     * Implementation of {@link #testToURL()} using the given encoding.
-     * If the encoding is null, then the {@code URLDecoder} will not be used.
-     *
-     * @param  encoding  the encoding, or {@code null} if none.
-     * @param  plus      the representation for the {@code '+'} sign.
-     * @throws IOException if a URL cannot be parsed.
-     */
-    private void testToFile(final String encoding, final String plus) throws IOException {
-        assertEquals(new File("/Users/name/Map.png"),                   // Unix absolute path.
-                IOUtilities.toFile(IOUtilities.toURL("file:/Users/name/Map.png", encoding)));
-        assertEquals(new File("/Users/name/Map with spaces.png"),       // Path with space.
-                IOUtilities.toFile(IOUtilities.toURL("file:/Users/name/Map with spaces.png", encoding)));
-        assertEquals(new File("/Users/name/++t--++est.shp"),            // Path with + sign.
-                IOUtilities.toFile(IOUtilities.toURL(
-                        CharSequences.replace("file:/Users/name/++t--++est.shp", "+", plus).toString(), encoding)));
-    }
-
-    /**
      * Tests {@link IOUtilities#toFileOrURL(String)}.
+     * Do not test a Windows-specific path (e.g. {@code "file:///C:/some/path/Map.png"}),
+     * because the result is different on Windows or Unix platforms.
      *
      * @throws IOException if a URL cannot be parsed.
      */
     @Test
     @DependsOnMethod("testToFileFromUTF8")
     public void testToFileOrURL() throws IOException {
-        assertEquals(new File("/Users/name/Map.png"),        IOUtilities.toFileOrURL("/Users/name/Map.png", null));
-        assertEquals(new File("/Users/name/Map.png"),        IOUtilities.toFileOrURL("file:/Users/name/Map.png", null));
-        assertEquals(URI.create("http://localhost").toURL(), IOUtilities.toFileOrURL("http://localhost", null));
+        // Absolute file paths
+        File expected = new File("/Users/name/Map.png");
+        assertEquals(expected, IOUtilities.toFileOrURL("/Users/name/Map.png", null));
+        assertEquals(expected, IOUtilities.toFileOrURL("file:/Users/name/Map.png", null));
+        assertEquals(expected, IOUtilities.toFileOrURL("file:///Users/name/Map.png", null));
+
+        // Relative file paths
+        expected = new File("name/Map.png");
+        assertEquals(expected, IOUtilities.toFileOrURL("name/Map.png", null));
+        assertEquals(expected, IOUtilities.toFileOrURL("file:name/Map.png", null));
+
+        // HTTP paths
+        assertEquals(URI.create("http://localhost").toURL(),
+                IOUtilities.toFileOrURL("http://localhost", null));
+
+        // Encoded paths
         assertEquals(new File("/Users/name/Map with spaces.png"),
                 IOUtilities.toFileOrURL("file:/Users/name/Map%20with%20spaces.png", "UTF-8"));
+
+        String path = "file:/Users/name/++t--++est.shp";
+        expected = new File("/Users/name/++t--++est.shp");
+        assertEquals(expected, IOUtilities.toFileOrURL(path, null));
+
+        path = path.replace("+", "%2B");
+        assertEquals(expected, IOUtilities.toFileOrURL(path, "UTF-8"));
     }
 }

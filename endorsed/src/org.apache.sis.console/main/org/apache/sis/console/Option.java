@@ -38,6 +38,18 @@ enum Option {
     TARGET_CRS(true),
 
     /**
+     * The Coordinate Operation to apply on data.
+     * This option can be used as an alternative to the {@link #SOURCE_CRS} and {@link #TARGET_CRS} pair.
+     */
+    OPERATION(true),
+
+    /**
+     * Use the inverse of the coordinate operation. The transform will be inverted <em>after</em> all
+     * other options ({@link #OPERATION}, {@link #SOURCE_CRS} and {@link #TARGET_CRS}) have been applied.
+     */
+    INVERSE(false),
+
+    /**
      * Relative path to an auxiliary metadata file.
      */
     METADATA(true),

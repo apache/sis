@@ -26,7 +26,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.StoreMetadata;
-import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.util.Version;
 
@@ -39,7 +39,7 @@ import org.apache.sis.util.Version;
 @StoreMetadata(formatName   = StoreProvider.NAME,
                fileSuffixes = "prj",
                capabilities = Capability.READ)
-public final class StoreProvider extends URIDataStore.Provider {
+public final class StoreProvider extends URIDataStoreProvider {
     /**
      * The format name.
      */
@@ -68,7 +68,9 @@ public final class StoreProvider extends URIDataStore.Provider {
         static final int MIN_LENGTH = 6;
 
         /**
-         * The set of WKT keywords.
+         * The set of WKT keywords for CRS definitions.
+         * This set does not include the WKT keywords for coordinate operations,
+         * because the WKT store can only return metadata and metadata can only store the CRS.
          */
         private final Set<String> keywords;
 

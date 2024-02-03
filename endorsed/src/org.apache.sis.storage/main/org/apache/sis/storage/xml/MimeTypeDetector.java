@@ -110,7 +110,7 @@ abstract class MimeTypeDetector {
 
     /**
      * Reads a single byte or character, or -1 if we reached the end of the stream portion that we are allowed
-     * to read. We are typically not allowed to read the full stream because only a limited amount of bytes is
+     * to read. We are typically not allowed to read the full stream because only a limited number of bytes is
      * cached. This method may return a Unicode code point (i.e. the returned value may not fit in {@code char}).
      *
      * @return the character, or -1 on end of stream window.

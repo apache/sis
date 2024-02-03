@@ -190,7 +190,7 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E> 
     /**
      * Creates an initially empty <var>k</var>-dimensional tree with the given capacity for each node.
      * The number of dimensions of the given envelope determines the number of dimensions of points in this tree.
-     * The positions computed by {@code locator} must have the same number of dimensions than the given envelope.
+     * The positions computed by {@code locator} must have the same number of dimensions as the given envelope.
      *
      * <p>The {@code bounds} argument specifies the expected region of points to be added in this {@code PointTree}.
      * Those bounds do not need to be exact; {@code PointTree} will work even if some points are located outside

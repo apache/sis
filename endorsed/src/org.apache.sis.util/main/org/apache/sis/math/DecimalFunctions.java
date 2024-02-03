@@ -37,7 +37,7 @@ import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
  *   <li>Pre-formatting methods {@link #fractionDigitsForValue(double)} and
  *       {@link #fractionDigitsForDelta(double, boolean)}:
  *     <ul>
- *       <li>for formatting numbers using the exact amount of significant digits for a given precision.</li>
+ *       <li>for formatting numbers using the exact number of significant digits for a given precision.</li>
  *     </ul>
  *   </li>
  * </ul>
@@ -434,7 +434,7 @@ public final class DecimalFunctions extends Static {
      * is a choice:
      *
      * <ul>
-     *   <li>If after rounding the given {@code value} to an amount of fraction digits given by ({@code fractionDigits}
+     *   <li>If after rounding the given {@code value} to an number of fraction digits given by ({@code fractionDigits}
      *       - {@code uncertainDigits}) the 4 last fraction digits before the rounded ones are zero, then this method
      *       returns {@code fractionDigits} - {@code uncertainDigits}.</li>
      *   <li>Otherwise this method returns {@code fractionDigits}.</li>
@@ -445,7 +445,7 @@ public final class DecimalFunctions extends Static {
      * <h4>Examples</h4>
      * <ul>
      *   <li>{@code fractionDigitsForValue(179.12499999999824)} returns 14,
-     *       the amount of digits after the decimal separator.</li>
+     *       the number of digits after the decimal separator.</li>
      *   <li>{@code fractionDigitsForValue(179.12499999999824, 3)} returns 11 because rounding the 3 last digits
      *       (i.e. rounding after the 11<sup>th</sup> digit) results in 179.125000000000.
      *       Since the 4 last fraction digits are zero, the condition for allowing that rounding is met.</li>
