@@ -296,7 +296,7 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
                 if (!isRecoverableFailure(exception)) {
                     throw new BackingStoreException(exception);
                 }
-                final LogRecord record = Messages.getResources(getLocale()).getLogRecord(Level.WARNING,
+                final LogRecord record = Messages.forLocale(getLocale()).getLogRecord(Level.WARNING,
                         Messages.Keys.CanNotInstantiateForIdentifier_3, type, code, getCause(exception));
                 Logging.completeAndLog(GeodeticAuthorityFactory.LOGGER, IdentifiedObjectSet.class, "createObject", record);
             }

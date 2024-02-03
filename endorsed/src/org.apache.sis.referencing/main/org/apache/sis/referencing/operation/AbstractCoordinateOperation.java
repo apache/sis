@@ -365,7 +365,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                     expected += interpDim;
                 }
                 if (crs != null && actual != expected) {
-                    throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                    throw new IllegalArgumentException(Errors.forProperties(properties).getString(
                             Errors.Keys.MismatchedTransformDimension_4, super.getName().getCode(),
                             isTarget, expected, actual));
                 }
@@ -913,7 +913,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * To enabled this variant, {@link org.apache.sis.io.wkt.WKTFormat} can be configured as below:
      *
      * {@snippet lang="java" :
-     *     format = new WKTFormat(null, null);
+     *     format = new WKTFormat();
      *     format.setConvention(Convention.WKT1_IGNORE_AXES);
      *     format.setNameAuthority(Citations.ESRI);
      *     }

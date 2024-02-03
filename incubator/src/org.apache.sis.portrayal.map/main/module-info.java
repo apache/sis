@@ -25,4 +25,17 @@ module org.apache.sis.portrayal.map {
     requires static org.locationtech.jts;
 
     exports org.apache.sis.map;
+    exports org.apache.sis.map.service;
+
+    uses org.apache.sis.map.service.StylePainter;
+    uses org.apache.sis.map.service.se1.SymbolizerToScene2D.Spi;
+
+    provides org.apache.sis.map.service.StylePainter
+            with org.apache.sis.map.service.se1.SEPainter;
+    provides org.apache.sis.map.service.se1.SymbolizerToScene2D.Spi
+            with org.apache.sis.map.service.se1.PointToScene2D.Spi,
+                 org.apache.sis.map.service.se1.LineToScene2D.Spi,
+                 org.apache.sis.map.service.se1.PolygonToScene2D.Spi,
+                 org.apache.sis.map.service.se1.TextToScene2D.Spi,
+                 org.apache.sis.map.service.se1.RasterToScene2D.Spi;
 }

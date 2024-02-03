@@ -604,12 +604,12 @@ public final class Matrices extends Static {
      *
      * <p>This method builds a new matrix with the following content:</p>
      * <ul>
-     *   <li>An amount of {@code firstAffectedCoordinate} rows and columns are inserted before the first
+     *   <li>An number of {@code firstAffectedCoordinate} rows and columns are inserted before the first
      *       row and columns of the sub-matrix. The elements for the new rows and columns are set to 1
      *       on the diagonal, and 0 elsewhere.</li>
      *   <li>The sub-matrix - except for its last row and column - is copied in the new matrix starting
      *       at index ({@code firstAffectedCoordinate}, {@code firstAffectedCoordinate}).</li>
-     *   <li>An amount of {@code numTrailingCoordinates} rows and columns are appended after the above sub-matrix.
+     *   <li>An number of {@code numTrailingCoordinates} rows and columns are appended after the above sub-matrix.
      *       Their elements are set to 1 on the pseudo-diagonal ending in the lower-right corner, and 0 elsewhere.</li>
      *   <li>The last sub-matrix row is copied in the last row of the new matrix, and the last sub-matrix column
      *       is copied in the last column of the sub-matrix.</li>
@@ -1225,8 +1225,8 @@ public final class Matrices extends Static {
         final String[]  elements            = new String [numCol * numRow];     // String representation of matrix values.
         final boolean[] noFractionDigits    = new boolean[numCol * numRow];     // Whether to remove the trailing ".0" for a given number.
         final boolean[] hasDecimalSeparator = new boolean[numCol];              // Whether the column has at least one number where fraction digits are shown.
-        final byte[] maximumFractionDigits  = new byte   [numCol];              // The greatest amount of fraction digits found in a column.
-        final byte[] maximumPaddingZeros    = new byte   [numCol * numRow];     // Maximal amount of zeros that we can append before to exceed the IEEE 754 accuracy.
+        final byte[] maximumFractionDigits  = new byte   [numCol];              // The greatest number of fraction digits found in a column.
+        final byte[] maximumPaddingZeros    = new byte   [numCol * numRow];     // Maximal number of zeros that we can append before to exceed the IEEE 754 accuracy.
         final byte[] widthBeforeFraction    = new byte   [numCol];              // Number of characters before the fraction digits: spacing + ('-') + integerDigits + '.'
         final byte[] columnWidth            = new byte   [numCol];              // Total column width.
         int totalWidth = 1;
@@ -1288,7 +1288,7 @@ public final class Matrices extends Static {
             spacing = SPACING;                              // Spacing before all columns after the first one.
         }
         /*
-         * Now append the formatted elements with the appropriate amount of spaces before each value,
+         * Now append the formatted elements with the appropriate number of spaces before each value,
          * and trailling zeros after each value except ±0, ±1, NaN and infinities.
          */
         final String   lineSeparator = System.lineSeparator();

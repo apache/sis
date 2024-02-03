@@ -900,7 +900,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
             lineSeparator = linearBuilder.appendTo(buffer, getClass(), locale, Vocabulary.Keys.LinearTransformation);
             if (transform != null) {
                 buffer.append(Strings.CONTINUATION_ITEM);
-                final Vocabulary vocabulary = Vocabulary.getResources(locale);
+                final Vocabulary vocabulary = Vocabulary.forLocale(locale);
                 vocabulary.appendLabel(Vocabulary.Keys.Errors, buffer);
                 buffer.append(lineSeparator);
                 final StatisticsFormat sf;

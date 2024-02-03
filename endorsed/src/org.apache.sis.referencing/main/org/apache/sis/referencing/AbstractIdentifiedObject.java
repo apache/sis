@@ -362,7 +362,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         Object value = properties.get(NAME_KEY);
         if (value == null || value instanceof String) {
             if (value == null && properties.get(Identifier.CODE_KEY) == null) {
-                throw new IllegalArgumentException(Errors.getResources(properties)
+                throw new IllegalArgumentException(Errors.forProperties(properties)
                         .getString(Errors.Keys.MissingValueForProperty_1, NAME_KEY));
             }
             name = new NamedIdentifier(PropertiesConverter.convert(properties));
@@ -440,7 +440,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     private static IllegalArgumentException illegalPropertyType(
             final Map<String,?> properties, final String key, final Object value)
     {
-        return new IllegalArgumentException(Errors.getResources(properties)
+        return new IllegalArgumentException(Errors.forProperties(properties)
                 .getString(Errors.Keys.IllegalPropertyValueClass_2, key, value.getClass()));
     }
 

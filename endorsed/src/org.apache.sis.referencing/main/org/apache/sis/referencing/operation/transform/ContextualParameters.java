@@ -606,7 +606,7 @@ public class ContextualParameters extends Parameters implements Serializable {
         }
         /*
          * Search for existing parameter instance. This implementation does not scale, but should be okay since
-         * the amount of parameters is typically very small (rarely more than 6 parameters in map projections).
+         * the number of parameters is typically very small (rarely more than 6 parameters in map projections).
          */
         for (int i=0; i < values.length; i++) {
             ParameterValue<?> p = values[i];

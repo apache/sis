@@ -52,7 +52,7 @@ abstract class ChannelDataTestCase extends TestCase {
 
     /**
      * The size of the {@link ByteArrayChannel} backing array.
-     * A greater size increases the amount of iteration performed by test methods.
+     * A greater size increases the number of iterations performed by test methods.
      */
     static final int STREAM_LENGTH = ARRAY_MAX_LENGTH * 1024;
 

@@ -38,7 +38,7 @@ import org.apache.sis.util.logging.Logging;
 /**
  * An envelope or position converter making them more compatible with a given domain of validity.
  * For each axes having {@link org.opengis.referencing.cs.RangeMeaning#WRAPAROUND},
- * this class can add or subtract an integer amount of periods (typically 360° of longitude)
+ * this class can add or subtract an integer number of periods (typically 360° of longitude)
  * in attempt to move positions or envelopes inside a domain of validity specified at construction time.
  *
  * <p>{@code WraparoundAdjustment} instances are not thread-safe.</p>
@@ -395,8 +395,8 @@ public class WraparoundAdjustment {
                      *   ├─────────────┼────────────┼────────────────────────────┼───────────────────────────────┤
                      *   │    false    │    false   │ AOI is inside valid area   │ Nothing to do                 │
                      *   │    true     │    true    │ AOI encompasses valid area │ Nothing to do                 │
-                     *   │    true     │    false   │ AOI on left of valid area  │ Add positive amount of period │
-                     *   │    false    │    true    │ AOI on right of valid area │ Add negative amount of period │
+                     *   │    true     │    false   │ AOI on left of valid area  │ Add positive number of period │
+                     *   │    false    │    true    │ AOI on right of valid area │ Add negative number of period │
                      *   └─────────────┴────────────┴────────────────────────────┴───────────────────────────────┘
                      *
                      * We try to compute multiples of `periods` instead of just adding or subtracting `periods` once in
@@ -416,7 +416,7 @@ public class WraparoundAdjustment {
                             /*
                              * Notation: ⎣x⎦=floor(x) and ⎡x⎤=ceil(x).
                              *
-                             * We need to add an integer amount of `period` to both sides in order to move the range
+                             * We need to add an integer number of `period` to both sides in order to move the range
                              * inside the valid area. We need  ⎣lowerToValidStart⎦  for reaching the point where:
                              *
                              *     (validStart - period) < (new lower) ≤ validStart

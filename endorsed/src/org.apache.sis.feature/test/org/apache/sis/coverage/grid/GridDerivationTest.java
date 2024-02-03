@@ -370,7 +370,7 @@ public final class GridDerivationTest extends TestCase {
 
     /**
      * Tests {@link GridDerivation#subgrid(GridExtent, int...)}
-     * with an integer amount of tiles, operating only on extents.
+     * with an integer number of tiles, operating only on extents.
      */
     @Test
     public void testSubgridWithTilingOnExtent() {
@@ -383,7 +383,7 @@ public final class GridDerivationTest extends TestCase {
 
     /**
      * Tests {@link GridDerivation#subgrid(Envelope, double...)} with addition of a margin in pixels
-     * and an integer amount of tiles.
+     * and an integer number of tiles.
      */
     @Test
     public void testSubgridWithMarginAndTiling() {

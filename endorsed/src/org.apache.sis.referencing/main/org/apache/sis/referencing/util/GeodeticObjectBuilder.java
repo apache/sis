@@ -228,7 +228,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      */
     public GeodeticObjectBuilder setConversionMethod(final String name) throws FactoryException {
         if (method != null) {
-            throw new IllegalStateException(Errors.getResources(locale).getString(Errors.Keys.ElementAlreadyPresent_1, "OperationMethod"));
+            throw new IllegalStateException(Errors.forLocale(locale).getString(Errors.Keys.ElementAlreadyPresent_1, "OperationMethod"));
         }
         method = factories.getCoordinateOperationFactory().getOperationMethod(name);
         parameters = method.getParameters().createValue();

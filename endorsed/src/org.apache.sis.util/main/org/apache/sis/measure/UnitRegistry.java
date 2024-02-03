@@ -116,7 +116,7 @@ final class UnitRegistry implements SystemOfUnits, Serializable {
      * order as specified by the users when they constructed their units.
      *
      * <h4>Implementation note</h4>
-     * We separate hard-coded values from user-defined values because the amount of hard-coded values is relatively
+     * We separate hard-coded values from user-defined values because the number of hard-coded values is relatively
      * large, using weak references for them is useless, and most applications will not define any custom values so
      * the user-defined map will typically stay empty. This separation avoids synchronization of hard-coded values.
      * Furthermore the two maps have a different policy on whether to consider dimension order as significant.

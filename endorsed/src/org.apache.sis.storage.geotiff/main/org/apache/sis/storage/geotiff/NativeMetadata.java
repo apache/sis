@@ -97,7 +97,7 @@ final class NativeMetadata extends GeoKeysLoader {
      * Creates a reader for a tree table of native metadata.
      */
     NativeMetadata(final Locale locale) {
-        vocabulary = Vocabulary.getResources(locale);
+        vocabulary = Vocabulary.forLocale(locale);
     }
 
     /**

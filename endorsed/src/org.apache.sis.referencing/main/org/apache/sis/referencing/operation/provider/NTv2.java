@@ -673,7 +673,7 @@ public final class NTv2 extends AbstractProvider {
                         keywords.append(entry.getKey());
                     }
                 }
-                log(caller, Messages.getResources(null).getLogRecord(Level.WARNING,
+                log(caller, Messages.forLocale(null).getLogRecord(Level.WARNING,
                         Messages.Keys.UnknownKeywordInRecord_2, file, keywords.toString()));
             }
         }

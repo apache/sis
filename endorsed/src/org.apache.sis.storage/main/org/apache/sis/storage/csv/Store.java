@@ -642,8 +642,8 @@ final class Store extends URIDataStore implements FeatureSet {
             builder.addResourceScope(ScopeCode.FEATURE, null);
             builder.addExtent(envelope, listeners);
             builder.addFeatureType(featureType, -1);
-            mergeAuxiliaryMetadata(builder);
-            addTitleOrIdentifier(builder);
+            mergeAuxiliaryMetadata(Store.class, builder);
+            builder.addTitleOrIdentifier(getFilename(), MetadataBuilder.Scope.ALL);
             builder.setISOStandards(false);
             metadata = builder.buildAndFreeze();
         }
@@ -820,7 +820,7 @@ final class Store extends URIDataStore implements FeatureSet {
      * Returns the resources to use for producing error messages.
      */
     private Errors errors() {
-        return Errors.getResources(getLocale());
+        return Errors.forLocale(getLocale());
     }
 
     /**

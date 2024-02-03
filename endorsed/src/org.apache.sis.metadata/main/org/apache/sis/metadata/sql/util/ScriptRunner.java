@@ -809,7 +809,7 @@ parseLine:  while (pos < length) {
     public String status(final Locale locale) {
         String position = null;
         if (currentFile != null) {
-            position = Errors.getResources(locale).getString(Errors.Keys.ErrorInFileAtLine_2, currentFile,
+            position = Errors.forLocale(locale).getString(Errors.Keys.ErrorInFileAtLine_2, currentFile,
                     (currentLine != 0) ? currentLine : '?');
         }
         if (currentSQL != null) {

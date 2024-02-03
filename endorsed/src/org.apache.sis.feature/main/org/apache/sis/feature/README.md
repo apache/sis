@@ -71,7 +71,7 @@ Compared to `ComplexFeature`, SIS allows 3.3 times more instances
 while being functionally equivalent.
 
 The speed comparisons are subject to more cautions,
-in part because each run has created a different amount of instances before the test stopped.
+in part because each run has created a different number of instances before the test stopped.
 So even the slowest SIS case would be almost twice faster than `SimpleFeature`
 because it created two times more instances in an equivalent amount of time.
 However, this may be highly dependent on garbage collector activities (it has not been verified).

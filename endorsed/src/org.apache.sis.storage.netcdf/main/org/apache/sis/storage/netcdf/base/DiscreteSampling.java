@@ -92,6 +92,6 @@ public abstract class DiscreteSampling extends AbstractFeatureSet implements Sto
      * @return default error message to use in exceptions.
      */
     protected final String canNotReadFile() {
-        return Errors.getResources(listeners.getLocale()).getString(Errors.Keys.CanNotRead_1, listeners.getSourceName());
+        return Errors.forLocale(listeners.getLocale()).getString(Errors.Keys.CanNotRead_1, listeners.getSourceName());
     }
 }

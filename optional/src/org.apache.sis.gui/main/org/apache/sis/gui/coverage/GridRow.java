@@ -32,7 +32,7 @@ import javafx.scene.text.FontWeight;
  * values and image <var>y</var> coordinates.
  *
  * <p>{@link GridRow} instances are created by JavaFX {@link VirtualFlow}, which is responsible
- * for reusing cells. A relatively small amount of {@code GridRow} instances should be created
+ * for reusing cells. A relatively small number of {@code GridRow} instances should be created
  * even if the image contains millions of rows.</p>
  *
  * <p>The {@code GridRow} index value is zero-based. This is not necessarily the <var>y</var> coordinate

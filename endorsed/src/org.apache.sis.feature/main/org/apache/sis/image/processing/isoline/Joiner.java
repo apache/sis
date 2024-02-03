@@ -83,7 +83,7 @@ final class Joiner extends PathBuilder {
      * <p>We perform the analysis in this method instead of in {@link #filterFull(double[], int)} on the
      * the assumption that spikes can appear only between two calls to {@code append(…)} (because having
      * a spike requires that we move forward then backward on the same coordinates, which happen only with
-     * two distinct {@link PolylineBuffer} instances). It reduce the amount of coordinates to examine since
+     * two distinct {@link PolylineBuffer} instances). It reduce the number of coordinates to examine since
      * we can check only the extremities instead of looking for spikes anywhere in the array.</p>
      *
      * @param  coordinates  the coordinates to filter. Values can be modified in-place.

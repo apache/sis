@@ -60,7 +60,7 @@ public final class MergeStrategy {
 
     /**
      * Temporal granularity of the time of interest, or {@code null} if none.
-     * If non-null, intersections with TOI will be rounded to an integer amount of this granularity.
+     * If non-null, intersections with TOI will be rounded to an integer number of this granularity.
      * This is useful if data are expected at an approximately regular interval
      * and we want to ignore slight variations in the temporal extent declared for each image.
      */
@@ -94,7 +94,7 @@ public final class MergeStrategy {
      * even if by coincidence the monthly averages is better centered.</div>
      *
      * If the {@code timeGranularity} argument is non-null, then intersections with TOI will be rounded
-     * to an integer amount of the specified granularity and the last criterion in above list is relaxed.
+     * to an integer number of the specified granularity and the last criterion in above list is relaxed.
      * This is useful when data are expected at an approximately regular time interval (for example one remote
      * sensing image per day) and we want to ignore slight variations in the temporal extent declared for each image.
      *

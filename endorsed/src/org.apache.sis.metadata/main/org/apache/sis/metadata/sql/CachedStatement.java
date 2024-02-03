@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata.sql;
 
-import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Filter;
 import java.util.logging.Logger;
@@ -151,7 +150,7 @@ final class CachedStatement implements AutoCloseable {
             final boolean hasNext = r.next();
             r.close();
             if (hasNext) {
-                warning(type, "<init>", Errors.getResources((Locale) null).getLogRecord(
+                warning(type, "<init>", Errors.forLocale(null).getLogRecord(
                         Level.WARNING, Errors.Keys.DuplicatedIdentifier_1, identifier));
             }
             identifier = null;

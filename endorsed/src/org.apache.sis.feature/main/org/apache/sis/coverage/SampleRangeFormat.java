@@ -86,7 +86,7 @@ final class SampleRangeFormat extends RangeFormat {
      */
     SampleRangeFormat(final Locale locale) {
         super(locale);
-        words = Vocabulary.getResources(locale);
+        words = Vocabulary.forLocale(locale);
     }
 
     /**

@@ -537,7 +537,7 @@ public class ImageRenderer {
      *
      * @param  data  the Java2D buffer containing data for all bands.
      * @throws NullPointerException if {@code data} is null.
-     * @throws MismatchedCoverageRangeException if the given data buffer does not have the expected amount of banks.
+     * @throws MismatchedCoverageRangeException if the given data buffer does not have the expected number of banks.
      */
     public void setData(final DataBuffer data) {
         ArgumentChecks.ensureNonNull("data", data);
@@ -548,7 +548,7 @@ public class ImageRenderer {
     /**
      * Sets the data as NIO buffers. The number of buffers must be equal to the {@linkplain #getNumBands() expected
      * number of bands}. All buffers must be {@linkplain Buffer#array() backed by arrays} of the type specified by
-     * the {@code dataType} argument and have the same amount of {@linkplain Buffer#remaining() remaining elements}.
+     * the {@code dataType} argument and have the same number of {@linkplain Buffer#remaining() remaining elements}.
      * This method wraps the underlying arrays of a primitive type into a Java2D buffer; data are not copied.
      * For each buffer, the grid coverage data (not only the slice data) starts at {@linkplain Buffer#position()
      * buffer position} and ends at that position + {@linkplain Buffer#remaining() remaining}.
@@ -565,7 +565,7 @@ public class ImageRenderer {
      * @throws MismatchedCoverageRangeException if the number of specified buffers is not equal to the number of bands.
      * @throws UnsupportedOperationException if a buffer is not backed by an accessible array or is read-only.
      * @throws ArrayStoreException if a buffer type is incompatible with {@code dataType}.
-     * @throws RasterFormatException if buffers do not have the same amount of remaining values.
+     * @throws RasterFormatException if buffers do not have the same number of remaining values.
      * @throws ArithmeticException if a buffer position overflows the 32 bits integer capacity.
      *
      * @since 1.1

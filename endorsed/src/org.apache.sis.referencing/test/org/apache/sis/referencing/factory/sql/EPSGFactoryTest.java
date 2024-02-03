@@ -619,7 +619,7 @@ public final class EPSGFactoryTest extends TestCase {
         assertTrue ("Shall contain GRS 1980.",    ellipsoids.contains("7019"));
 
         /*
-         * DATUM - The amount of datum is not too large (612 in EPSG 7.9), so execution time should be reasonable
+         * DATUM - The number of datums is not too large (612 in EPSG 7.9), so execution time should be reasonable
          *         for most tests even if a method call causes scanning of the whole Datum table. We nevertheless
          *         limit such tests to the VerticalDatum (unless EXTENSIVE is true), which is a smaller set.
          */

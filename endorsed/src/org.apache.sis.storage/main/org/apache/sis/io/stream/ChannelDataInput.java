@@ -510,7 +510,7 @@ public class ChannelDataInput extends ChannelData implements DataInput {
     }
 
     /**
-     * Reads the given amount of bytes from the stream and returns them in a newly allocated array.
+     * Reads the given number of bytes from the stream and returns them in a newly allocated array.
      * This is a convenience method for {@link #readFully(byte[], int, int)} with a new array.
      *
      * @param  length The number of bytes to read.
@@ -524,7 +524,7 @@ public class ChannelDataInput extends ChannelData implements DataInput {
     }
 
     /**
-     * Reads the given amount of characters from the stream and returns them in a newly allocated array.
+     * Reads the given number of characters from the stream and returns them in a newly allocated array.
      * This is a convenience method for {@link #readFully(char[], int, int)} with a new array.
      *
      * @param  length The number of characters to read.
@@ -538,7 +538,7 @@ public class ChannelDataInput extends ChannelData implements DataInput {
     }
 
     /**
-     * Reads the given amount of shorts from the stream and returns them in a newly allocated array.
+     * Reads the given number of shorts from the stream and returns them in a newly allocated array.
      * This is a convenience method for {@link #readFully(short[], int, int)} with a new array.
      *
      * @param  length The number of shorts to read.
@@ -552,7 +552,7 @@ public class ChannelDataInput extends ChannelData implements DataInput {
     }
 
     /**
-     * Reads the given amount of integers from the stream and returns them in a newly allocated array.
+     * Reads the given number of integers from the stream and returns them in a newly allocated array.
      * This is a convenience method for {@link #readFully(int[], int, int)} with a new array.
      *
      * @param  length The number of integers to read.
@@ -566,7 +566,7 @@ public class ChannelDataInput extends ChannelData implements DataInput {
     }
 
     /**
-     * Reads the given amount of longs from the stream and returns them in a newly allocated array.
+     * Reads the given number of longs from the stream and returns them in a newly allocated array.
      * This is a convenience method for {@link #readFully(long[], int, int)} with a new array.
      *
      * @param  length The number of longs to read.
@@ -580,7 +580,7 @@ public class ChannelDataInput extends ChannelData implements DataInput {
     }
 
     /**
-     * Reads the given amount of floats from the stream and returns them in a newly allocated array.
+     * Reads the given number of floats from the stream and returns them in a newly allocated array.
      * This is a convenience method for {@link #readFully(float[], int, int)} with a new array.
      *
      * @param  length The number of floats to read.
@@ -594,7 +594,7 @@ public class ChannelDataInput extends ChannelData implements DataInput {
     }
 
     /**
-     * Reads the given amount of doubles from the stream and returns them in a newly allocated array.
+     * Reads the given number of doubles from the stream and returns them in a newly allocated array.
      * This is a convenience method for {@link #readFully(double[], int, int)} with a new array.
      *
      * @param  length The number of doubles to read.
@@ -670,7 +670,7 @@ public class ChannelDataInput extends ChannelData implements DataInput {
         abstract void transfer(int offset, int n);
 
         /**
-         * Skips the given amount of bytes in the buffer. It is caller responsibility to ensure
+         * Skips the given number of bytes in the buffer. It is caller responsibility to ensure
          * that there is enough bytes remaining in the buffer.
          */
         private void skipInBuffer(final int n) {
@@ -946,7 +946,7 @@ public class ChannelDataInput extends ChannelData implements DataInput {
      * Decodes a string from a sequence of bytes in the given encoding. This method tries to avoid the creation
      * of a temporary {@code byte[]} array when possible.
      *
-     * <p>This convenience method shall be used only for relatively small amount of {@link String} instances
+     * <p>This convenience method shall be used only for relatively small number of {@link String} instances
      * to decode, for example attribute values in the file header. For large amount of data, consider using
      * {@link java.nio.charset.CharsetDecoder} instead.</p>
      *

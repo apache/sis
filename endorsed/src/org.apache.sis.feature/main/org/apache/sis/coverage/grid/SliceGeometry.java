@@ -157,7 +157,7 @@ final class SliceGeometry implements Function<RenderedImage, GridGeometry> {
             TransformSeparator sep = new TransformSeparator(gridToCRS, factory);
             sep.addSourceDimensions(gridDimensions);
             /*
-             * Try to reduce the CRS by the same amount of dimensions than the grid.
+             * Try to reduce the CRS by the same number of dimensions as the grid.
              */
             crsDimensions = findTargetDimensions(gridToCRS, extent, resolution, gridDimensions, dimCRS);
             if (crsDimensions != null) {

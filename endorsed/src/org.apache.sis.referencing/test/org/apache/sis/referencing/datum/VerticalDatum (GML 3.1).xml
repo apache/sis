@@ -23,7 +23,7 @@
                    xmlns:xsi          = "http://www.w3.org/2001/XMLSchema-instance"
                    gml:id             = "epsg-datum-5100">
   <!--
-    Below is the same content than in the "VerticalDatum.xml" file, but using
+    Below is the same content as in the "VerticalDatum.xml" file, but using
     the GML 3.1.1 schema instead of 3.2.1. Some elements have different names:
       ┌───────────────────┬───────────────────┐
       │      GML 3.1      │      GML 3.2      │

@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
@@ -174,8 +175,8 @@ public abstract class ChannelFactory {
          */
         if (storage instanceof URL) {
             try {
-                storage = IOUtilities.toPath((URL) storage, encoding);
-            } catch (IOException e) {
+                storage = Path.of(((URL) storage).toURI());
+            } catch (IllegalArgumentException | URISyntaxException | FileSystemNotFoundException e) {
                 /*
                  * This is normal if the URL uses HTTP or FTP protocol for instance. Log the exception at FINE
                  * level without stack trace. We will open the channel later using the URL instead of the Path.

@@ -284,7 +284,7 @@ public final class Strings extends Static {
      *
      * @param  delimiter  the separator to insert between lines.
      * @param  text       the multi-lines text to convert to single line, or {@code null}.
-     * @return the        the text on a single line text, or {@code null} if none.
+     * @return the text on a single line text, or {@code null} if none.
      */
     public static String singleLine(final String delimiter, final CharSequence text) {
         if (text != null) {
@@ -386,7 +386,7 @@ public final class Strings extends Static {
             for (int i=0,n=0; i<length; i += n) {
                 if (--precision < 0) {
                     /*
-                     * Found the amount of characters to keep. The `n` variable can be
+                     * Found the number of characters to keep. The `n` variable can be
                      * zero only if precision == 0, in which case the string is empty.
                      */
                     if (n == 0) {

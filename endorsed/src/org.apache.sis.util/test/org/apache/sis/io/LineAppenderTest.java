@@ -21,7 +21,7 @@ import java.io.IOException;
 // Test dependencies
 import org.junit.Before;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 
 
@@ -62,7 +62,7 @@ public class LineAppenderTest extends AppenderTestCase {
     void run(final String lineSeparator) throws IOException {
         final Appendable f = appender;
         if (f instanceof LineAppender) {
-            assertEquals("getLineSeparator", " ", ((LineAppender) f).getLineSeparator());
+            assertEquals(" ", ((LineAppender) f).getLineSeparator());
         }
         assertSame(f, f.append("Le vrai" + lineSeparator + "policitien, "));
         assertSame(f, f.append("c'est celui\r\nqui\r")); // Line separator broken on two method calls.

@@ -206,7 +206,7 @@ final class MetadataReader extends MetadataBuilder {
      */
     private void warning(final short key, final Object p1, final Object p2, final Exception e) {
         final StoreListeners listeners = decoder.listeners;
-        listeners.warning(Errors.getResources(listeners.getLocale()).getString(key, p1, p2), e);
+        listeners.warning(Errors.forLocale(listeners.getLocale()).getString(key, p1, p2), e);
     }
 
     /**

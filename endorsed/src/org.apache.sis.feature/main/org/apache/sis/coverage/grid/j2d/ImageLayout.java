@@ -62,7 +62,7 @@ public class ImageLayout {
     public static final ImageLayout DEFAULT = new ImageLayout(null, false);
 
     /**
-     * Same as {@link #DEFAULT}, but makes image size an integer amount of tiles.
+     * Same as {@link #DEFAULT}, but makes image size an integer number of tiles.
      */
     public static final ImageLayout SIZE_ADJUST = new ImageLayout(null, true);
 
@@ -190,7 +190,7 @@ public class ImageLayout {
      * Suggests a tile size close to {@code tileSize} for the specified {@code imageSize}.
      * First, this method tries to return a tile size which is a divisor of the image size.
      * If no such divisor is found and {@code allowPartialTiles} is {@code true}, then this
-     * method returns a size that minimize the amount of empty pixels in the last tile.
+     * method returns a size that minimize the number of empty pixels in the last tile.
      *
      * @param  imageSize          the image size (width or height).
      * @param  preferredTileSize  the preferred tile size, which is often {@value ImageUtilities#DEFAULT_TILE_SIZE}.
@@ -233,7 +233,7 @@ public class ImageLayout {
         }
         /*
          * Found no exact divisor. If we are allowed to return an approximated size,
-         * search the divisor which will minimize the amount of empty pixels.
+         * search the divisor which will minimize the number of empty pixels.
          */
         if (!allowPartialTiles) {
             return imageSize;
@@ -248,7 +248,7 @@ public class ImageLayout {
         }
         /*
          * At this point `best` is an "optimal" tile size (the one that left as few empty pixels as possible),
-         * and `rmax` is the amount of non-empty pixels using this tile size.
+         * and `rmax` is the number of non-empty pixels using this tile size.
          */
         return best;
     }

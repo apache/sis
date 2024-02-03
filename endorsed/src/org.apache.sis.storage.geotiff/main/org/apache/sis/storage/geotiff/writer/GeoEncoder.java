@@ -738,7 +738,7 @@ public final class GeoEncoder {
      * {@return the resources for error messages in the current locale}.
      */
     private Errors errors() {
-        return Errors.getResources(listeners.getLocale());
+        return Errors.forLocale(listeners.getLocale());
     }
 
     /**

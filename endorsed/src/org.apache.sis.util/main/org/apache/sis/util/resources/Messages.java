@@ -263,7 +263,7 @@ public class Messages extends IndexedResourceBundle {
      * @return resources in the given locale.
      * @throws MissingResourceException if resources cannot be found.
      */
-    public static Messages getResources(final Locale locale) {
+    public static Messages forLocale(final Locale locale) {
         /*
          * We cannot factorize this method into the parent class, because we need to call
          * `ResourceBundle.getBundle(String)` from the module that provides the resources.
@@ -280,7 +280,7 @@ public class Messages extends IndexedResourceBundle {
      * @throws MissingResourceException if no object for the given key can be found.
      */
     public static String format(final short key) throws MissingResourceException {
-        return getResources(null).getString(key);
+        return forLocale(null).getString(key);
     }
 
     /**
@@ -295,7 +295,7 @@ public class Messages extends IndexedResourceBundle {
     public static String format(final short  key,
                                 final Object arg0) throws MissingResourceException
     {
-        return getResources(null).getString(key, arg0);
+        return forLocale(null).getString(key, arg0);
     }
 
     /**
@@ -312,7 +312,7 @@ public class Messages extends IndexedResourceBundle {
                                 final Object arg0,
                                 final Object arg1) throws MissingResourceException
     {
-        return getResources(null).getString(key, arg0, arg1);
+        return forLocale(null).getString(key, arg0, arg1);
     }
 
     /**
@@ -331,7 +331,7 @@ public class Messages extends IndexedResourceBundle {
                                 final Object arg1,
                                 final Object arg2) throws MissingResourceException
     {
-        return getResources(null).getString(key, arg0, arg1, arg2);
+        return forLocale(null).getString(key, arg0, arg1, arg2);
     }
 
     /**
@@ -352,7 +352,7 @@ public class Messages extends IndexedResourceBundle {
                                 final Object arg2,
                                 final Object arg3) throws MissingResourceException
     {
-        return getResources(null).getString(key, arg0, arg1, arg2, arg3);
+        return forLocale(null).getString(key, arg0, arg1, arg2, arg3);
     }
 
     /**
@@ -365,7 +365,7 @@ public class Messages extends IndexedResourceBundle {
         International(short key, Object args)              {super(key, args);}
         @Override protected KeyConstants getKeyConstants() {return Keys.INSTANCE;}
         @Override protected IndexedResourceBundle getBundle(final Locale locale) {
-            return getResources(locale);
+            return forLocale(locale);
         }
     }
 

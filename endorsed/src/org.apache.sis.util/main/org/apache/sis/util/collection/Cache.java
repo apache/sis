@@ -119,7 +119,7 @@ import org.apache.sis.system.ReferenceQueueConsumer;
  * </ul>
  *
  * The total cost is given at construction time. If the {@link #cost} method has not been
- * overridden, then the total cost is the maximal amount of values to keep by strong references.
+ * overridden, then the total cost is the maximal number of values to keep by strong references.
  *
  *
  * <h2>Circular dependencies</h2>

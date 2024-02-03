@@ -138,7 +138,7 @@ public class GeodeticCalculator {
      * Those special cases are needed when general formulas produce indeterminations like 0/0.
      * Current angular value corresponds to a distance of 1 millimetre on a planet of the size
      * of Earth, which is about 1.57E-10 radians. This value is chosen empirically by trying to
-     * minimize the amount of "No convergence errors" reported by {@code GeodesicsOnEllipsoidTest}
+     * minimize the number of "No convergence errors" reported by {@code GeodesicsOnEllipsoidTest}
      * in the {@code compareAgainstDataset()} method.
      *
      * <p><b>Note:</b> this is an angular tolerance threshold, but is also used with sine and cosine values
@@ -1220,7 +1220,7 @@ public class GeodeticCalculator {
     public String toString() {
         final StringBuilder buffer        = new StringBuilder();
         final Locale        locale        = Locale.getDefault();
-        final Vocabulary    resources     = Vocabulary.getResources(locale);
+        final Vocabulary    resources     = Vocabulary.forLocale(locale);
         final String        lineSeparator = System.lineSeparator();
         final CoordinateReferenceSystem crs = getPositionCRS();
         try {

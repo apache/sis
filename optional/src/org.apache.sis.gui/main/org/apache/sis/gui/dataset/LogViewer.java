@@ -18,7 +18,6 @@ package org.apache.sis.gui.dataset;
 
 import java.text.DateFormat;
 import java.util.Date;
-import java.util.Locale;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
@@ -221,7 +220,7 @@ public class LogViewer extends Widget {
      * must be set to a non-null value or {@link #systemLogs} must be set to {@code true}.
      */
     public LogViewer() {
-        this(Vocabulary.getResources((Locale) null));
+        this(Vocabulary.forLocale(null));
     }
 
     /**

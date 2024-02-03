@@ -33,7 +33,7 @@ import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.base.ResourceOnFileSystem;
-import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.io.stream.IOUtilities;
 
 
@@ -87,7 +87,7 @@ final class PathAction implements EventHandler<ActionEvent> {
         final Resource resource = cell.getItem();
         final Object path;
         try {
-            path = URIDataStore.location(resource);
+            path = URIDataStoreProvider.location(resource);
         } catch (DataStoreException e) {
             ExceptionReporter.show(cell, null, null, e);
             return;

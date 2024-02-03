@@ -246,7 +246,7 @@ public class GridSliceSelector extends Widget {
                  * Configure the slider for the current grid axis.
                  */
                 if (row == 0) {
-                    vocabulary = Vocabulary.getResources(locale);
+                    vocabulary = Vocabulary.forLocale(locale);
                     if (gg.isDefined(GridGeometry.GRID_TO_CRS)) {
                         gridToCRS = new TransformSeparator(gg.getGridToCRS(PixelInCell.CELL_CENTER));
                     }

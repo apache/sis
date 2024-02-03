@@ -154,7 +154,7 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
         this.areaOfInterest = Utils.toGeographic(CRSChooser.class, "<init>", areaOfInterest);
         if (locale == null)  locale     = Locale.getDefault();
         final Resources      i18n       = Resources.forLocale(locale);
-        final Vocabulary     vocabulary = Vocabulary.getResources(locale);
+        final Vocabulary     vocabulary = Vocabulary.forLocale(locale);
         final AuthorityCodes codeList   = new AuthorityCodes(factory, locale);
         table = new TableView<>(codeList);
         codeList.owner = table;
@@ -275,7 +275,7 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
         }
         final ObservableList<Node> children = tools.getChildren();
         final Label label = (Label) children.get(0);
-        final Vocabulary vocabulary = Vocabulary.getResources(locale);
+        final Vocabulary vocabulary = Vocabulary.forLocale(locale);
         label.setText(vocabulary.getLabel(labelText));
         label.setLabelFor(control);
         children.set(1, control);
@@ -379,7 +379,7 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
             key = Vocabulary.Keys.NotKnown;
             expected = 0;
         }
-        String text = Vocabulary.getResources(locale).getString(key);
+        String text = Vocabulary.forLocale(locale).getString(key);
         final int     dimension = ReferencingUtilities.getDimension(crs);
         final boolean addDimension = (dimension != expected && expected != 0);
         final boolean isProjection = (crs instanceof GeneralDerivedCRS);

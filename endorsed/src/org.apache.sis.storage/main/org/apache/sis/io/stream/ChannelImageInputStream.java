@@ -208,7 +208,7 @@ public class ChannelImageInputStream extends ChannelDataInput implements ImageIn
      * <h4>Design note</h4>
      * A previous version was skipping no more bytes than the buffer capacity.
      * But experience shows that various {@code ImageReader} implementations outside Apache SIS
-     * expect that we skip exactly the specified amount of bytes and ignore the returned value.
+     * expect that we skip exactly the specified number of bytes and ignore the returned value.
      *
      * @param  n  number of bytes to skip. Can be negative.
      * @return number of bytes actually skipped.
@@ -236,7 +236,7 @@ public class ChannelImageInputStream extends ChannelDataInput implements ImageIn
     }
 
     /**
-     * Advances the current stream position by the given amount of bytes.
+     * Advances the current stream position by the given number of bytes.
      * The bit offset is reset to 0 by this method.
      *
      * @param  n  the number of bytes to seek forward.

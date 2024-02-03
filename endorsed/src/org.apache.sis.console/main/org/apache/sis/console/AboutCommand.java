@@ -97,7 +97,7 @@ final class AboutCommand extends CommandRunner {
         String[] warnings = null;
         final String configuration;
         if (brief && files.isEmpty()) {
-            configuration = Vocabulary.getResources(locale).getString(
+            configuration = Vocabulary.forLocale(locale).getString(
                     Vocabulary.Keys.Version_2, "Apache SIS", Version.SIS);
         } else {
             final EnumSet<About> sections = EnumSet.allOf(About.class);
@@ -144,7 +144,7 @@ final class AboutCommand extends CommandRunner {
                     final double scale = (delay >= 10) ? 1 : (delay >= 1) ? 10 : 100;
                     delay = Math.rint(delay * scale) / scale;
                 }
-                final LogRecord record = Messages.getResources(locale).getLogRecord(Level.INFO,
+                final LogRecord record = Messages.forLocale(locale).getLogRecord(Level.INFO,
                         Messages.Keys.ConfigurationOf_3, address, new Date(), delay);
                 record.setLoggerName(Loggers.APPLICATION);
                 Logging.completeAndLog(null, Command.class, "main", record);
@@ -153,7 +153,7 @@ final class AboutCommand extends CommandRunner {
                  * before to get the string representation of the configuration as a tree-table.
                  */
                 table.getRoot().setValue(TableColumn.NAME,
-                        Vocabulary.getResources(locale).getString(Vocabulary.Keys.RemoteConfiguration));
+                        Vocabulary.forLocale(locale).getString(Vocabulary.Keys.RemoteConfiguration));
                 configuration = table.toString();
             }
         }
@@ -165,7 +165,7 @@ final class AboutCommand extends CommandRunner {
                 color(X364.BOLD);
                 out.print(' ');
             }
-            Vocabulary.getResources(locale).appendLabel(Vocabulary.Keys.Warnings, out);
+            Vocabulary.forLocale(locale).appendLabel(Vocabulary.Keys.Warnings, out);
             if (colors) {
                 out.print(' ');
                 out.println(X364.RESET.sequence());

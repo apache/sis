@@ -62,7 +62,7 @@ final class IdentifiedObjectFormat extends Format {
     public StringBuffer format(final Object obj, final StringBuffer toAppendTo, final FieldPosition pos) {
         final Identifier identifier = ((IdentifiedObject) obj).getName();
         if (identifier == null) {
-            return toAppendTo.append(Vocabulary.getResources(locale).getString(Vocabulary.Keys.Unnamed));
+            return toAppendTo.append(Vocabulary.forLocale(locale).getString(Vocabulary.Keys.Unnamed));
         }
         if (identifier instanceof GenericName) {
             // The toString() behavior is specified by the GenericName javadoc.

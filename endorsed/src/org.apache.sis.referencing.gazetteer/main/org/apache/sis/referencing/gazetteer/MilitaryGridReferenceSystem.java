@@ -939,7 +939,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
 
             /**
              * Guess the number of elements to be returned. The value returned by this method is very rough,
-             * and likely greater than the real amount of elements that will actually be returned.
+             * and likely greater than the real number of elements that will actually be returned.
              *
              * <p><b>Note:</b> returned value should be the number of <em>remaining</em> elements, but
              * current implementation does not compute how many elements we have already traversed.</p>
@@ -1056,7 +1056,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         private int gridX, gridY;
 
         /**
-         * The amount of metres to add to {@code gridX} and to add or subtract to {@code gridY} during iteration.
+         * The number of metres to add to {@code gridX} and to add or subtract to {@code gridY} during iteration.
          * The sign to use when updating the {@code gridY} value depends on whether we are in the North or South
          * hemisphere.
          */
@@ -1115,7 +1115,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * @param geographicArea  the area of interest transformed into a normalized geographic CRS.
          * @param sourceCRS       the horizontal part of the {@code areaOfInterest} CRS.
          * @param targetCRS       the UTM or UPS projected CRS of the zone for which to create MGRS references.
-         * @param step            the amount of metres to add or subtract to grid coordinates during iteration.
+         * @param step            the number of metres to add or subtract to grid coordinates during iteration.
          */
         IteratorOneZone(final Coder coder, Rectangle2D areaOfInterest, final Envelope geographicArea,
                         final SingleCRS sourceCRS, final ProjectedCRS targetCRS, final int step)
@@ -1759,7 +1759,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
 
         /**
          * Appends the given value in the given buffer, padding with zero digits in order to get
-         * the specified total amount of digits.
+         * the specified total number of digits.
          */
         private static void append(final StringBuilder buffer, final int value, int digits) throws GazetteerException {
             if (value >= 0) {
@@ -2078,7 +2078,7 @@ parse:                  switch (part) {
              * That location is normally encoded as a single number with an even number of digits.
              * The first half is the easting and the second half is the northing, both relative to the
              * 100 kilometer square. However, some variants of MGRS use a separator, in which case we get
-             * two distinct numbers. In both cases, the resolution is determined by the amount of digits.
+             * two distinct numbers. In both cases, the resolution is determined by the number of digits.
              */
             final double sx, sy;    // Scale factors for converting MGRS values in to easting and northing in metres.
             if (i < end) {
@@ -2316,7 +2316,7 @@ parse:                  switch (part) {
 
         /**
          * Parses part of the given character sequence as a grid coordinate.
-         * The resolution is determined by the amount of digits.
+         * The resolution is determined by the number of digits.
          *
          * @param  reference  the MGRS reference to parse.
          * @param  start      index of the first character to parse as a grid coordinate.

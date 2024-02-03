@@ -130,7 +130,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
     @BeforeClass
     public static void createFactory() throws ParseException {
         factory = new DefaultCoordinateOperationFactory();
-        parser  = new WKTFormat(null, null);
+        parser  = new WKTFormat();
         /*
          * The first keyword in WKT below should be "GeodeticCRS" in WKT 2, but we use the WKT 1 keyword ("GEOGCS")
          * for allowing inclusion in ProjectedCRS.  SIS is okay with mixed WKT versions, but this is of course not

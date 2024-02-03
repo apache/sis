@@ -28,7 +28,7 @@ import org.apache.sis.metadata.simple.SimpleFormat;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 import org.apache.sis.io.stream.Markable;
-import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.storage.internal.RewindableLineReader;
 import org.apache.sis.measure.Range;
 import org.apache.sis.util.Version;
@@ -611,7 +611,7 @@ public abstract class DataStoreProvider {
      */
     public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
         ArgumentChecks.ensureNonNull("parameter", parameters);
-        return open(URIDataStore.Provider.connector(this, parameters));
+        return open(URIDataStoreProvider.connector(this, parameters));
     }
 
     /**

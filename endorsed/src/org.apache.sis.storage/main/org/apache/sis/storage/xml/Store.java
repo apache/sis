@@ -23,6 +23,7 @@ import java.io.Closeable;
 import java.io.Reader;
 import java.io.InputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import javax.xml.transform.stream.StreamSource;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.Metadata;
@@ -30,15 +31,16 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.xml.XML;
+import org.apache.sis.xml.util.URISource;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.UnsupportedStorageException;
+import org.apache.sis.storage.base.URIDataStore;
+import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.system.Loggers;
-import org.apache.sis.storage.base.URIDataStore;
-import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.referencing.util.DefinitionVerifier;
 import org.apache.sis.setup.OptionKey;
 
@@ -79,17 +81,22 @@ final class Store extends URIDataStore implements Filter {
      *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
+     * @throws URISyntaxException if an error occurred while normalizing the URI.
      * @throws DataStoreException if an error occurred while opening the stream.
      */
-    public Store(final StoreProvider provider, final StorageConnector connector) throws DataStoreException {
+    public Store(final StoreProvider provider, final StorageConnector connector)
+            throws URISyntaxException, DataStoreException
+    {
         super(provider, connector);
         final InputStream in = connector.getStorageAs(InputStream.class);
         if (in != null) {
-            source = new StreamSource(in);
+            source = URISource.create(in, location);
         } else {
             final Reader reader = connector.getStorageAs(Reader.class);
             if (reader != null) {
-                source = new StreamSource(reader);
+                var s = URISource.create(null, location);
+                s.setReader(reader);
+                source = s;
             }
         }
         final Closeable c = input(source);
@@ -207,7 +214,7 @@ final class Store extends URIDataStore implements Filter {
                 final MetadataBuilder builder = new MetadataBuilder();
                 builder.addReferenceSystem((ReferenceSystem) object);
                 builder.addTitle(getDisplayName());
-                mergeAuxiliaryMetadata(builder);
+                mergeAuxiliaryMetadata(Store.class, builder);
                 metadata = builder.buildAndFreeze();
             }
         }

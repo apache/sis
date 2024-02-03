@@ -19,6 +19,7 @@ package org.apache.sis.storage.xml;
 import java.util.Map;
 import java.io.Reader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
@@ -89,6 +90,25 @@ public abstract class AbstractProvider extends DocumentedStoreProvider {
         super(name);
         this.mimeForNameSpaces   = mimeForNameSpaces;
         this.mimeForRootElements = mimeForRootElements;
+    }
+
+    /**
+     * Returns {@code true} if the given input stream begins with the XML header.
+     * This method should be invoked only if mark and reset are supported.
+     *
+     * @param  in  the input stream to test.
+     * @return whether the first bytes are {@code "<?xml "}.
+     * @throws IOException if an error occurred while reading the input stream.
+     */
+    public static boolean isXML(final InputStream in) throws IOException {
+        boolean isXML = true;
+        in.mark(HEADER.length);
+        for (int i=0; i<HEADER.length; i++) {
+            isXML = (in.read() == HEADER[i]);
+            if (!isXML) break;
+        }
+        in.reset();
+        return isXML;
     }
 
     /**

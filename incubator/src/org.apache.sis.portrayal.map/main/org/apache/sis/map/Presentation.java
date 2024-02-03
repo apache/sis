@@ -43,6 +43,8 @@ import org.apache.sis.storage.Resource;
  *
  * @todo Consider renaming as {@code Graphic} for emphasis that this is a graphical representation of something.
  *       This would be consistent with legacy GO-1 specification (even if retired, it still have worthy material).
+ * @todo Consider renaming as {@code Instruction} for emphasis that this is a rendering operation.
+ *       IHO S-52 and S-100 specification. S-100 has been build guided by ISO-19117.
  *
  * @author  Johann Sorel (Geomatys)
  */

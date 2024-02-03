@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
  *
  * <p><b>This class is provided for debugging purpose only.</b> This class cannot be used in test
  * suite because it checks for identical behavior between the two input streams, which is usually
- * a too strong requirement. For example, two streams may read a different amount of bytes in a call
+ * a too strong requirement. For example, two streams may read a different number of bytes in a call
  * to {@link #read(byte[])} and still be compliant with their contract.</p>
  *
  * @author  Rémi Maréchal (Geomatys)
@@ -95,8 +95,8 @@ public class ImageInputStreamComparator implements ImageInputStream {
     /**
      * Forwards the call to the two streams and ensures that they return identical results,
      * <strong>without tolerance for normally allowed differences</strong>.
-     * This method requires that the two streams read an identical amount of bytes,
-     * despite the method contract allowing a different amount of bytes to be read.
+     * This method requires that the two streams read an identical number of bytes,
+     * despite the method contract allowing a different number of bytes to be read.
      *
      * @param  dest  the destination array where to store the bytes read.
      * @return the result of the forwarded call.

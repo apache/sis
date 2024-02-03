@@ -262,7 +262,7 @@ public final class RasterFactory extends Static {
      * @throws ReadOnlyBufferException if a buffer is backed by an array but is read-only.
      * @throws ArrayStoreException if the type of a backing array is not {@code dataType}.
      * @throws ArithmeticException if a buffer position overflows the 32 bits integer capacity.
-     * @throws RasterFormatException if buffers do not have the same amount of remaining values.
+     * @throws RasterFormatException if buffers do not have the same number of remaining values.
      */
     public static DataBuffer wrap(final DataType dataType, final Buffer... data) {
         final int numBands = data.length;

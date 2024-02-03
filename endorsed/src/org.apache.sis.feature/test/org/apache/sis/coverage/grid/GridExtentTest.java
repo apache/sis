@@ -506,7 +506,7 @@ public final class GridExtentTest extends TestCase {
     @Test
     public void testToString() throws IOException {
         final StringBuilder buffer = new StringBuilder(100);
-        create3D().appendTo(buffer, Vocabulary.getResources(Locale.ENGLISH));
+        create3D().appendTo(buffer, Vocabulary.forLocale(Locale.ENGLISH));
         assertMultilinesEquals(
                 "Column: [100 … 499] (400 cells)\n" +
                 "Row:    [200 … 799] (600 cells)\n" +

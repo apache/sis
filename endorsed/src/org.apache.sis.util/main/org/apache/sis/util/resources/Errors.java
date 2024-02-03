@@ -154,9 +154,19 @@ public class Errors extends IndexedResourceBundle {
         public static final short CanNotRead_1 = 12;
 
         /**
+         * Cannot read “{0}” at line {1}, column {2}.
+         */
+        public static final short CanNotRead_3 = 34;
+
+        /**
          * Cannot represent “{1}” in a strictly standard-compliant {0} format.
          */
         public static final short CanNotRepresentInFormat_2 = 13;
+
+        /**
+         * Cannot resolve “{0}” as an absolute path.
+         */
+        public static final short CanNotResolveAsAbsolutePath_1 = 205;
 
         /**
          * Cannot set a value for parameter “{0}”.
@@ -287,11 +297,6 @@ public class Errors extends IndexedResourceBundle {
          * An error occurred in file “{0}” at line {1}.
          */
         public static final short ErrorInFileAtLine_2 = 33;
-
-        /**
-         * Error in “{0}”: {1}
-         */
-        public static final short ErrorIn_2 = 34;
 
         /**
          * A size of {1} elements is excessive for the “{0}” list.
@@ -1123,7 +1128,7 @@ public class Errors extends IndexedResourceBundle {
      * @return resources in the given locale.
      * @throws MissingResourceException if resources cannot be found.
      */
-    public static Errors getResources(final Locale locale) {
+    public static Errors forLocale(final Locale locale) {
         /*
          * We cannot factorize this method into the parent class, because we need to call
          * `ResourceBundle.getBundle(String)` from the module that provides the resources.
@@ -1141,8 +1146,8 @@ public class Errors extends IndexedResourceBundle {
      * @return resources in the given locale.
      * @throws MissingResourceException if resources cannot be found.
      */
-    public static Errors getResources(final Map<?,?> properties) throws MissingResourceException {
-        return getResources(getLocale(properties));
+    public static Errors forProperties(final Map<?,?> properties) throws MissingResourceException {
+        return forLocale(getLocale(properties));
     }
 
     /**
@@ -1153,7 +1158,7 @@ public class Errors extends IndexedResourceBundle {
      * @throws MissingResourceException if no object for the given key can be found.
      */
     public static String format(final short key) throws MissingResourceException {
-        return getResources((Locale) null).getString(key);
+        return forLocale(null).getString(key);
     }
 
     /**
@@ -1168,7 +1173,7 @@ public class Errors extends IndexedResourceBundle {
     public static String format(final short  key,
                                 final Object arg0) throws MissingResourceException
     {
-        return getResources((Locale) null).getString(key, arg0);
+        return forLocale(null).getString(key, arg0);
     }
 
     /**
@@ -1185,7 +1190,7 @@ public class Errors extends IndexedResourceBundle {
                                 final Object arg0,
                                 final Object arg1) throws MissingResourceException
     {
-        return getResources((Locale) null).getString(key, arg0, arg1);
+        return forLocale(null).getString(key, arg0, arg1);
     }
 
     /**
@@ -1204,7 +1209,7 @@ public class Errors extends IndexedResourceBundle {
                                 final Object arg1,
                                 final Object arg2) throws MissingResourceException
     {
-        return getResources((Locale) null).getString(key, arg0, arg1, arg2);
+        return forLocale(null).getString(key, arg0, arg1, arg2);
     }
 
     /**
@@ -1225,7 +1230,7 @@ public class Errors extends IndexedResourceBundle {
                                 final Object arg2,
                                 final Object arg3) throws MissingResourceException
     {
-        return getResources((Locale) null).getString(key, arg0, arg1, arg2, arg3);
+        return forLocale(null).getString(key, arg0, arg1, arg2, arg3);
     }
 
     /**
@@ -1238,7 +1243,7 @@ public class Errors extends IndexedResourceBundle {
         International(short key, Object args)              {super(key, args);}
         @Override protected KeyConstants getKeyConstants() {return Keys.INSTANCE;}
         @Override protected IndexedResourceBundle getBundle(final Locale locale) {
-            return getResources(locale);
+            return forLocale(locale);
         }
     }
 

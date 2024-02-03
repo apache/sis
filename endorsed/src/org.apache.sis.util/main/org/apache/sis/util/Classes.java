@@ -101,7 +101,7 @@ public final class Classes extends Static {
      *   <li>Otherwise if {@code element} is {@link Void#TYPE}, then this method returns {@code Void.TYPE}
      *       since arrays of {@code void} do not exist.</li>
      *   <li>Otherwise this method returns a class that represents an array of the given class augmented by
-     *       the given amount of dimensions.</li>
+     *       the given number of dimensions.</li>
      * </ul>
      *
      * @param  element  the type of elements in the array.
@@ -254,7 +254,7 @@ public final class Classes extends Static {
     /**
      * Returns the type argument of the given type or the first parameterized parent type.
      * For example if the given type is {@code List<String>}, then this method returns {@code String.class}.
-     * This method expects a fixed amount of parameterized types (currently 2 if the given type is {@code Map}
+     * This method expects a fixed number of parameterized types (currently 2 if the given type is {@code Map}
      * and 1 for all other types), otherwise it returns {@code null}.
      *
      * @see ParameterizedType#getActualTypeArguments()

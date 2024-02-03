@@ -57,7 +57,7 @@ import org.opengis.feature.FeatureAssociationRole;
 /**
  * A view of {@link FeatureSet} data organized as a table. The features are specified by a call
  * to {@link #setFeatures(FeatureSet)}, which will load the features in a background thread.
- * At first only a limited amount of features are loaded.
+ * At first only a limited number of features are loaded.
  * More features will be loaded only when the user scroll down.
  *
  * <p>If this view is removed from scene graph, then {@link #interrupt()} should be called

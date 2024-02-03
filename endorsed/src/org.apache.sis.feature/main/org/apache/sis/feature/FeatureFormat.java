@@ -319,7 +319,7 @@ public class FeatureFormat extends TabularFormat<Object> {
             featureType = (FeatureType) object;
             feature     = null;
         } else {
-            throw new IllegalArgumentException(Errors.getResources(displayLocale)
+            throw new IllegalArgumentException(Errors.forLocale(displayLocale)
                     .getString(Errors.Keys.UnsupportedType_1, object.getClass()));
         }
         /*
@@ -373,7 +373,7 @@ public class FeatureFormat extends TabularFormat<Object> {
         /*
          * Create a table and format the header. Columns will be shown in Column enumeration order.
          */
-        final Vocabulary resources = Vocabulary.getResources(displayLocale);
+        final Vocabulary resources = Vocabulary.forLocale(displayLocale);
         final TableAppender table = new TableAppender(toAppendTo, columnSeparator);
         table.setMultiLinesCells(true);
         table.nextLine('─');
@@ -766,7 +766,7 @@ format:                     for (final AttributeType<?> ct : ((AttributeType<?>)
      */
     @Override
     public Object parse(final CharSequence text, final ParsePosition pos) throws ParseException {
-        throw new ParseException(Errors.getResources(displayLocale)
+        throw new ParseException(Errors.forLocale(displayLocale)
                 .getString(Errors.Keys.UnsupportedOperation_1, "parse"), pos.getIndex());
     }
 

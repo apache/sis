@@ -149,7 +149,7 @@ public final class Exceptions extends Static {
                     previousLines.add(message);
                     if (buffer.length() != 0) {
                         if (resources == null) {
-                            resources = Vocabulary.getResources(locale);
+                            resources = Vocabulary.forLocale(locale);
                         }
                         buffer.append(System.lineSeparator())
                               .append(resources.getString(Vocabulary.Keys.CausedBy_1, cause.getClass()))
@@ -192,14 +192,10 @@ public final class Exceptions extends Static {
      *   <li>It is an instance of {@link BackingStoreException} (typically wrapping a checked exception).</li>
      *   <li>It is an instance of {@link UncheckedIOException} (wrapping a {@link java.io.IOException}).</li>
      *   <li>It is an instance of {@link DirectoryIteratorException} (wrapping a {@link java.io.IOException}).</li>
-     *   <li>It is a parent type of the cause. For example, some JDBC drivers wrap {@link SQLException}
-     *       in other {@code SQLException} without additional information.</li>
+     *   <li>It is a parent type of its cause. For example, some JDBC drivers wrap {@link SQLException} in another
+     *       {@code SQLException} without additional information. When the wrapper is a parent class of the cause,
+     *       details about the reason are less accessible.</li>
      * </ul>
-     *
-     * <div class="note"><b>Note:</b>
-     * {@link java.security.PrivilegedActionException} is also a wrapper exception, but is not included in above list
-     * because it is used in very specific contexts. Furthermore, classes related to security manager are deprecated
-     * since Java 17.</div>
      *
      * This method uses only the exception class as criterion;
      * it does not verify if the exception messages are the same.
@@ -233,6 +229,9 @@ public final class Exceptions extends Static {
 
     /**
      * Unwraps and copies suppressed exceptions from the given source to the given target.
+     *
+     * @param  source  the exception from which to copy suppressed exceptions.
+     * @param  target  the exception where to add suppressed exceptions.
      */
     private static void copySuppressed(final Exception source, final Throwable target) {
         for (final Throwable suppressed : source.getSuppressed()) {

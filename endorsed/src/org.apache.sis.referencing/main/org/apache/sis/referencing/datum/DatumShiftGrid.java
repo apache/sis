@@ -486,8 +486,8 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * <h4>Extrapolations</h4>
      * If the given coordinates are outside this grid, then this method computes the translation vector at the
      * closest position in the grid. Applying translations on points outside the grid is a kind of extrapolation,
-     * but some amount of extrapolations are necessary for operations like transforming an envelope before to compute
-     * its intersection with another envelope.
+     * but some extrapolations are necessary for operations like transforming an envelope before to compute its
+     * intersection with another envelope.
      *
      * <h4>Derivative (Jacobian matrix)</h4>
      * If the length of the given array is at least <var>n</var> + 4 where <var>n</var> = {@link #getTranslationDimensions()},

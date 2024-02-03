@@ -224,7 +224,7 @@ public class ParameterFormat extends TabularFormat<Object> {
          * <h4>Tip</h4>
          * The table formatted by default may be quite large.
          * It is recommended to invoke {@link ParameterFormat#setPreferredCodespaces(String[])}
-         * before to format in order to reduce the amount of columns to display.
+         * before to format in order to reduce the number of columns to display.
          */
         NAME_SUMMARY
     }
@@ -429,7 +429,7 @@ public class ParameterFormat extends TabularFormat<Object> {
             formatSummary((IdentifiedObject[]) object, toAppendTo);
             return;
         } else {
-            throw new IllegalArgumentException(Errors.getResources(displayLocale)
+            throw new IllegalArgumentException(Errors.forLocale(displayLocale)
                     .getString(Errors.Keys.UnsupportedType_1, object.getClass()));
         }
         if (isSummary) {
@@ -575,7 +575,7 @@ public class ParameterFormat extends TabularFormat<Object> {
          * Finished to prepare information. Now begin the actual writing.
          * First, formats the table header (i.e. the column names).
          */
-        final Vocabulary resources = Vocabulary.getResources(displayLocale);
+        final Vocabulary resources = Vocabulary.forLocale(displayLocale);
         header.writeIdentifiers(out, true, colors, false, lineSeparator);
         out.append(lineSeparator);
         final char horizontalBorder = isBrief ? '─' : '═';
@@ -817,7 +817,7 @@ public class ParameterFormat extends TabularFormat<Object> {
      * @throws IOException if an error occurred will writing to the given appendable.
      */
     private void formatSummary(final IdentifiedObject[] objects, final Appendable out) throws IOException {
-        final Vocabulary resources = Vocabulary.getResources(displayLocale);
+        final Vocabulary resources = Vocabulary.forLocale(displayLocale);
         /*
          * Prepares all rows before we write them to the output stream, because not all
          * identified objects may have names with the same scopes in the same order. We
@@ -1021,7 +1021,7 @@ public class ParameterFormat extends TabularFormat<Object> {
      */
     @Override
     public Object parse(final CharSequence text, final ParsePosition pos) throws ParseException {
-        throw new ParseException(Errors.getResources(displayLocale)
+        throw new ParseException(Errors.forLocale(displayLocale)
                 .getString(Errors.Keys.UnsupportedOperation_1, "parse"), pos.getIndex());
     }
 

@@ -264,7 +264,7 @@ public class AngleFormat extends Format implements Localized {
     private final Locale locale;
 
     /**
-     * Minimal amount of spaces to be used by the degrees, minutes and seconds fields,
+     * Minimal number of spaces to be used by the degrees, minutes and seconds fields,
      * and by the decimal digits. A value of 0 means that the field is not formatted.
      * {@code fractionFieldWidth} applies to the last non-zero field.
      * {@code maximumTotalWidth} is 0 (the default) if there is no restriction.
@@ -1069,7 +1069,7 @@ public class AngleFormat extends Format implements Localized {
         } else {
             minutes = Math.abs(degrees - (degrees = truncate(degrees))) * 60;
             /*
-             * Limit the maximal number of fraction digits to the amount of significant digits for a 'double' value.
+             * Limit the maximal number of fraction digits to the number of significant digits for a `double` value.
              * The intent is to avoid non-significant garbage that are pure artifacts from the conversion from base
              * 2 to base 10.
              */
@@ -1156,7 +1156,7 @@ public class AngleFormat extends Format implements Localized {
                      * digits, the decimal separator (this is the +1 below) and the suffix.
                      */
                     int available = maximumTotalWidth - toAppendTo.codePointCount(offset, toAppendTo.length());
-                    available -= (width + 1); // Remove the amount of code points that we plan to write.
+                    available -= (width + 1);       // Remove the number of code points that we plan to write.
                     if (suffix != null) {
                         width -= suffix.length();
                     }

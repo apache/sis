@@ -62,7 +62,7 @@ import org.apache.sis.math.Vector;
 /**
  * Description of a variable found in a netCDF file.
  * The natural ordering of {@code VariableInfo} is the order in which the variables appear in the stream of bytes
- * that make the netCDF file. Reading variables in natural order reduces the amount of channel seek operations.
+ * that make the netCDF file. Reading variables in natural order reduces the number of channel seek operations.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

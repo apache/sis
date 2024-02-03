@@ -203,7 +203,7 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * method adds this fraction to the pool of fractions that may be returned in next {@code unique()} invocations,
      * then returns {@code this}.
      *
-     * <p>This method is useful for saving memory when a potentially large amount of {@code Fraction} instances will
+     * <p>This method is useful for saving memory when a potentially large number of {@code Fraction} instances will
      * be kept for a long time and many instances are likely to have the same values.
      * It is usually not worth to invoke this method for short-lived instances.</p>
      *

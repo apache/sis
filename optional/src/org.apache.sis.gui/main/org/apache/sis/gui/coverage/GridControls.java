@@ -56,7 +56,7 @@ final class GridControls extends ViewAndControls {
     GridControls(final CoverageExplorer owner) {
         super(owner);
         view = new GridView(this);
-        final Vocabulary vocabulary = Vocabulary.getResources(owner.getLocale());
+        final Vocabulary vocabulary = Vocabulary.forLocale(owner.getLocale());
         sampleDimensions = new BandRangeTable(view.cellFormat).create(vocabulary);
         BandSelectionListener.bind(view.bandProperty, sampleDimensions.getSelectionModel());
         /*

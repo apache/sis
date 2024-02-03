@@ -55,7 +55,7 @@ abstract class StaxStreamIO implements AutoCloseable {
     /**
      * The (un)marshaller pool, fetched when first needed. The same pool is shared by all {@code StaxStreamIO}
      * instances created by the same {@link StaxDataStoreProvider}, but we nevertheless store a reference here
-     * in order to reduce the amount of synchronizations done every time we need a (un)marshaller.
+     * in order to reduce the number of synchronizations done every time we need a (un)marshaller.
      */
     private MarshallerPool jaxb;
 
@@ -106,6 +106,6 @@ abstract class StaxStreamIO implements AutoCloseable {
      * {@return the error resources in the current locale}.
      */
     protected final Errors errors() {
-        return Errors.getResources(owner.getLocale());
+        return Errors.forLocale(owner.getLocale());
     }
 }

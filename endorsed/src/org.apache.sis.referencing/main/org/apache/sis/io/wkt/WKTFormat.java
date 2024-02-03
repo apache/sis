@@ -201,7 +201,7 @@ public class WKTFormat extends CompoundFormat<Object> {
     private Transliterator transliterator;
 
     /**
-     * The amount of spaces to use in indentation, or {@value #SINGLE_LINE} if indentation is disabled.
+     * The number of spaces to use in indentation, or {@value #SINGLE_LINE} if indentation is disabled.
      * The same value is also stored in the {@linkplain #formatter}.
      * It appears here for serialization purpose.
      */
@@ -300,11 +300,27 @@ public class WKTFormat extends CompoundFormat<Object> {
     private transient Warnings warnings;
 
     /**
+     * Creates a format for the root locale and UTC timezone.
+     * This is the standard configuration for ISO 19162 Well-Known Text.
+     *
+     * @since 1.5
+     */
+    public WKTFormat() {
+        this(null, null);
+    }
+
+    /**
      * Creates a format for the given locale and timezone. The given locale will be used for
-     * {@link InternationalString} localization; this is <strong>not</strong> the locale for number format.
+     * {@link InternationalString} localization, <strong>not</strong> for formatting numbers.
+     * The given timezone will be used for parsing and formatting dates in temporal elements
+     * such as {@code TimeOrigin[…]}. Note that the specified timezone will not be formatted
+     * in WKT elements, as it will be assumed implicit.
      *
      * @param  locale    the locale for the new {@code Format}, or {@code null} for {@code Locale.ROOT}.
-     * @param  timezone  the timezone, or {@code null} for UTC.
+     * @param  timezone  the timezone for dates in the WKT temporal elements, or {@code null} for UTC.
+     *
+     * @see #getLocale()
+     * @see #getTimeZone()
      */
     public WKTFormat(final Locale locale, final TimeZone timezone) {
         super(locale, timezone);
@@ -1178,7 +1194,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Convenience methods for resources for error message in the locale given by {@link #getLocale()}.
      */
     final Errors errors() {
-        return Errors.getResources(getErrorLocale());
+        return Errors.forLocale(getErrorLocale());
     }
 
     /**

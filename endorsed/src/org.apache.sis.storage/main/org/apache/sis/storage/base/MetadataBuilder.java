@@ -84,6 +84,7 @@ import org.apache.sis.metadata.iso.spatial.*;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.metadata.internal.Merger;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.AbstractGridCoverageResource;
@@ -837,6 +838,8 @@ public class MetadataBuilder {
      * @param  resource   the resource for which to add metadata.
      * @param  listeners  the listeners to notify in case of warning, or {@code null} if none.
      * @throws DataStoreException if an error occurred while reading metadata from the data store.
+     *
+     * @see #addTitleOrIdentifier(Resource)
      */
     public final void addDefaultMetadata(final AbstractResource resource, final StoreListeners listeners) throws DataStoreException {
         // Note: title is mandatory in ISO metadata, contrarily to the identifier.
@@ -1610,7 +1613,7 @@ public class MetadataBuilder {
 
         /**
          * Implementation of {@link MetadataBuilder#parseLegalNotice(String)}, provided here for reducing
-         * the amount of class loading in the common case where there is no legal notice to parse.
+         * the number of class loading in the common case where there is no legal notice to parse.
          */
         static void parse(final String notice, final DefaultLegalConstraints constraints) {
             final int length = notice.length();

@@ -281,7 +281,7 @@ public final class PropertyView implements Localized, ChangeListener<Number> {
             GridPane.setHgrow(imageCanvas, Priority.ALWAYS);
             GridPane.setVgrow(imageCanvas, Priority.ALWAYS);
 
-            final Vocabulary vocabulary = Vocabulary.getResources(getLocale());
+            final Vocabulary vocabulary = Vocabulary.forLocale(getLocale());
             final Label rangeLabel = new Label(vocabulary.getLabel(Vocabulary.Keys.ValueRange));
             final Label meanLabel  = new Label(vocabulary.getLabel(Vocabulary.Keys.MeanValue));
             rangeLabel.setLabelFor(sampleValueRange = new Label());
@@ -351,7 +351,7 @@ public final class PropertyView implements Localized, ChangeListener<Number> {
             buffer.setLength(0);
             formats.formatPair(s.mean(), " ± ", s.standardDeviation(false), buffer);
 
-            final Vocabulary vocabulary = Vocabulary.getResources(getLocale());
+            final Vocabulary vocabulary = Vocabulary.forLocale(getLocale());
             buffer.append(" (").append(vocabulary.getString(Vocabulary.Keys.StandardDeviation)).append(')');
             mean = buffer.toString();
         }

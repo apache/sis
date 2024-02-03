@@ -933,7 +933,7 @@ final class MetadataReader extends MetadataBuilder {
      * Returns the filename to show in error messages, or a localized "unnamed" word if none.
      */
     private String getFilename() {
-        return (filename != null) ? filename : Vocabulary.getResources(listeners.getLocale()).getString(Vocabulary.Keys.Unnamed);
+        return (filename != null) ? filename : Vocabulary.forLocale(listeners.getLocale()).getString(Vocabulary.Keys.Unnamed);
     }
 
     /**
@@ -966,6 +966,6 @@ final class MetadataReader extends MetadataBuilder {
      * Returns the resources to use for formatting error messages.
      */
     private Errors errors() {
-        return Errors.getResources(listeners.getLocale());
+        return Errors.forLocale(listeners.getLocale());
     }
 }

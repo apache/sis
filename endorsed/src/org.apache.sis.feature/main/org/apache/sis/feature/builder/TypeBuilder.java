@@ -211,7 +211,7 @@ public abstract class TypeBuilder implements Localized {
      */
     final String getDisplayName() {
         final GenericName name = getName();
-        return (name != null) ? name.toString() : Vocabulary.getResources(identification).getString(Vocabulary.Keys.Unnamed);
+        return (name != null) ? name.toString() : Vocabulary.forProperties(identification).getString(Vocabulary.Keys.Unnamed);
     }
 
     /**
@@ -477,7 +477,7 @@ public abstract class TypeBuilder implements Localized {
      * Returns the resources for error messages.
      */
     final Errors errors() {
-        return Errors.getResources(identification);
+        return Errors.forProperties(identification);
     }
 
     /**

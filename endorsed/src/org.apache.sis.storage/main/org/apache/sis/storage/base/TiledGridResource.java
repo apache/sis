@@ -149,7 +149,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      * number of pixels per data element} for dimension X and returns 1 for all other dimensions.</p>
      *
      * @param  xdim  {@code true} for the size on <var>x</var> dimension, {@code false} for any other dimension.
-     * @return indivisible amount of sample values to read in the specified dimension. Must be ≥ 1.
+     * @return indivisible number of sample values to read in the specified dimension. Must be ≥ 1.
      *         This is in units of sample values (may be bits, bytes, floats, <i>etc</i>).
      * @throws DataStoreException if an error occurred while fetching the sample model.
      */
@@ -342,9 +342,9 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
                 Arrays.fill(subsampling, 1);
             } else {
                 /*
-                 * If an area of interest has been specified, we may need to expand it to an integer amount of tiles.
+                 * If an area of interest has been specified, we may need to expand it to an integer number of tiles.
                  * But we do not need to do that if the image is untiled; it is okay to read only a sub-region of the
-                 * single tile. We disable the "integer amount of tiles" restriction by setting the tile size to 1.
+                 * single tile. We disable the "integer number of tiles" restriction by setting the tile size to 1.
                  * Note that it is possible to disable this restriction in a single dimension, typically the X one
                  * when reading a TIFF image using strips instead of tiles.
                  */

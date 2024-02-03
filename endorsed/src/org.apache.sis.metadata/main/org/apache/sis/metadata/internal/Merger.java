@@ -90,7 +90,7 @@ public class Merger {
      * Returns the resources for error messages.
      */
     private Errors errors() {
-        return Errors.getResources(locale);
+        return Errors.forLocale(locale);
     }
 
     /**

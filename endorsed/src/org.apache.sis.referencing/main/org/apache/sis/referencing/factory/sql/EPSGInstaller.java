@@ -232,7 +232,7 @@ final class EPSGInstaller extends ScriptRunner {
      */
     public void run(InstallationResources scriptProvider, final Locale locale) throws SQLException, IOException {
         long time = System.nanoTime();
-        InstallationScriptProvider.log(Messages.getResources(locale).getLogRecord(Level.INFO,
+        InstallationScriptProvider.log(Messages.forLocale(locale).getLogRecord(Level.INFO,
                 Messages.Keys.CreatingSchema_2, EPSG, SQLUtilities.getSimplifiedURL(getConnection().getMetaData())));
         if (scriptProvider == null) {
             scriptProvider = lookupProvider(locale);
@@ -245,7 +245,7 @@ final class EPSGInstaller extends ScriptRunner {
             }
         }
         time = System.nanoTime() - time;
-        InstallationScriptProvider.log(Messages.getResources(locale).getLogRecord(
+        InstallationScriptProvider.log(Messages.forLocale(locale).getLogRecord(
                 PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS),
                 Messages.Keys.InsertDuration_2, numRows, time / (float) StandardDateFormat.NANOS_PER_SECOND));
     }
@@ -298,7 +298,7 @@ final class EPSGInstaller extends ScriptRunner {
      * error occurred, if such information is available.
      */
     final String failure(final Locale locale, final Exception cause) {
-        String message = Messages.getResources(locale).getString(Messages.Keys.CanNotCreateSchema_1, EPSG);
+        String message = Messages.forLocale(locale).getString(Messages.Keys.CanNotCreateSchema_1, EPSG);
         String status = status(locale);
         if (status != null) {
             message = message + ' ' + status;

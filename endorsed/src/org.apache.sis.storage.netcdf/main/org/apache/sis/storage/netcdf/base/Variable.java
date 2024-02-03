@@ -236,7 +236,7 @@ public abstract class Variable extends Node {
             /*
              * Copy (numbers, labels) entries in an HashMap with keys converted to 32-bits signed integer.
              * If a key cannot be converted, we will log a warning after all errors have been collected
-             * in order to produce only one log message. We put a limit on the amount of reported errors
+             * in order to produce only one log message. We put a limit on the number of reported errors
              * for avoiding to flood the logger.
              */
             Exception     error    = null;

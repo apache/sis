@@ -89,7 +89,7 @@ final class HelpCommand extends CommandRunner {
     void help(final boolean showHeader, final String[] commandNames, final EnumSet<Option> validOptions) throws IOException {
         final ResourceBundle commands = ResourceBundle.getBundle("org.apache.sis.console.Commands", locale);
         final ResourceBundle options  = ResourceBundle.getBundle("org.apache.sis.console.Options",  locale);
-        final Vocabulary vocabulary = Vocabulary.getResources(locale);
+        final Vocabulary vocabulary = Vocabulary.forLocale(locale);
         if (showHeader) {
             out.print("Apache SIS, ");
             out.println(commands.getString("SIS"));

@@ -194,7 +194,7 @@ public final class Assembler {
      * Removes the indentation at the beginning of lines in the given node and all child nodes.
      * This can reduce the file length by as much as 20%. Note that the indentation was broken
      * anyway after the treatment of {@code <xi:include>}, because included file does not use
-     * the right amount of spaces for the location where it is introduced.
+     * the right number of spaces for the location where it is introduced.
      */
     private void removeIndentation(final Node node) {
         switch (node.getNodeType()) {

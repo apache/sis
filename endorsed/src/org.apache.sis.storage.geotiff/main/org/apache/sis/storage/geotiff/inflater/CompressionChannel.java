@@ -100,7 +100,7 @@ abstract class CompressionChannel extends PixelChannel {
      *
      * <p>This method tries to create a buffer of the size of scanline stride, or a multiple of that size,
      * for performance reasons. A well adjusted buffer size reduces calls to {@link ByteBuffer#compact()},
-     * which in turn reduces the amount of copy operations between different regions of the buffer.</p>
+     * which in turn reduces the number of copy operations between different regions of the buffer.</p>
      *
      * @param  channel         the channel to wrap. This is {@code this} unless a {@link Predictor} is applied.
      * @param  scanlineStride  the scanline stride of the image to read. Used for choosing a buffer size.

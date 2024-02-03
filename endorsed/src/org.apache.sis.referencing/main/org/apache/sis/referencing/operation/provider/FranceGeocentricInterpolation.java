@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.provider;
 import java.net.URI;
 import java.util.Map;
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.NoSuchElementException;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
@@ -504,7 +503,7 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
                         case '2': {
                             final String interp = line.substring(p, length);
                             if (!interp.matches("(?i)INTERPOLATION[^A-Z]+BILINEAIRE")) {
-                                final LogRecord record = Errors.getResources((Locale) null).getLogRecord(
+                                final LogRecord record = Errors.forLocale(null).getLogRecord(
                                         Level.WARNING, Errors.Keys.UnsupportedInterpolation_1, interp);
 
                                 // We declare `createMathTransform(…)` method because it is closer to public API.

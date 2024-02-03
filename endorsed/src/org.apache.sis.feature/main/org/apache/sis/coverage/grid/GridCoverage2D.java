@@ -550,12 +550,12 @@ public class GridCoverage2D extends GridCoverage {
      * {@linkplain GridExtent#getLow(int) low coordinates} (see super-class javadoc for more discussion).
      * The {@linkplain RenderedImage#getWidth() image width} and {@linkplain RenderedImage#getHeight() height} will be
      * the {@code sliceExtent} {@linkplain GridExtent#getSize(int) sizes} if this method can honor exactly the request,
-     * but this method is free to return a smaller or larger image if doing so reduce the amount of data to create or copy.
+     * but this method is free to return a smaller or larger image if doing so reduce the number of data to create or copy.
      * This implementation returns a view as much as possible, without copying sample values.
      *
      * @param  sliceExtent  area of interest, or {@code null} for the whole image.
      * @return the grid slice as a rendered image. Image location is relative to {@code sliceExtent}.
-     * @throws MismatchedDimensionException if the given extent does not have the same number of dimensions than this coverage.
+     * @throws MismatchedDimensionException if the given extent does not have the same number of dimensions as this coverage.
      * @throws DisjointExtentException if the given extent does not intersect this grid coverage.
      * @throws CannotEvaluateException if this method cannot produce the rendered image for another reason.
      *

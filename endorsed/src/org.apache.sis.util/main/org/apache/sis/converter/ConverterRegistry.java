@@ -137,7 +137,7 @@ public class ConverterRegistry {
         {
             /*
              * Opportunistically share the same instance for the keys and the values, in order
-             * to reduce a little bit the amount of objects in the JVM. However, we must remove
+             * to reduce a little bit the number of objects in the JVM. However, we must remove
              * any old value from the map using the old key, otherwise put operation may fail.
              * See SystemConverter.equals(Object) for more explanation.
              */

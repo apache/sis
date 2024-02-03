@@ -37,7 +37,7 @@
  * this package.
  *
  * <p>So each class in this package is both a JAXB adapter and a wrapper. We have merged those
- * functionalities in order to avoid doubling the amount of classes, which is already large.</p>
+ * functionalities in order to avoid doubling the number of classes, which is already large.</p>
  *
  * <p>In ISO 19139 terminology:</p>
  * <ul>

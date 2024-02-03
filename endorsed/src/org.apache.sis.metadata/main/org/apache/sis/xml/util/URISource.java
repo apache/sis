@@ -16,6 +16,7 @@
  */
 package org.apache.sis.xml.util;
 
+import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.io.InputStream;
@@ -48,52 +49,55 @@ public final class URISource extends StreamSource {
      * Creates a source from an URI. This constructor separates the fragment from the path.
      * The URI stored by this constructor in {@link #document} excludes the fragment part.
      *
-     * @param source  URI to the XML document.
-     * @throws URISyntaxException if the URI is not valid.
+     * @param  source  URI to the XML document.
+     * @throws URISyntaxException if an error occurred while normalizing the URI.
      */
     URISource(URI source) throws URISyntaxException {
         source = source.normalize();
         // Build a new URI unconditionally because it also decodes escaped characters.
-        final URI c = new URI(source.getScheme(), source.getSchemeSpecificPart(), null);
+        URI c = new URI(source.getScheme(), source.getSchemeSpecificPart(), null);
+        if (c.isOpaque() && "file".equalsIgnoreCase(c.getScheme())) {
+            /*
+             * If the URI is "file:something" without "/" or "///" characters, resolve as an absolute path.
+             * This special case happens if `IOUtilities.toFileOrURI(String)` did not converted a string to
+             * a `java.io.File` because it contains a fragment. Since this constructor removed the fragment,
+             * we can now attempt this conversion again. The result will be an absolute path. This is needed
+             * for `URI.resolve(URI)` to work.
+             */
+            c = new File(c.getSchemeSpecificPart()).toURI();
+        }
         document = source.equals(c) ? source : c;       // Share the existing instance if applicable.
         fragment = Strings.trimOrNull(source.getFragment());
     }
 
     /**
-     * Creates a new source from an input stream.
+     * Creates a new source from the given input stream.
+     * The input should not be null, unless it will be specified later
+     * by a call to {@code setInputStream(…)} or {@code setReader(…)}.
      *
-     * @param input   stream of the XML document.
-     * @param source  URL of the XML document.
-     */
-    private URISource(final InputStream input, final URI source) {
-        super(input);
-        document = source.normalize();
-        fragment = null;
-    }
-
-    /**
-     * Creates a new source.
-     *
-     * @param  input   stream of the XML document.
+     * @param  input   stream of the XML document, or {@code null} if none.
      * @param  source  URL of the XML document, or {@code null} if none.
      * @return the given input stream as a source.
+     * @throws URISyntaxException if an error occurred while normalizing the URI.
      */
-    static StreamSource create(final InputStream input, final URI source) {
+    public static StreamSource create(final InputStream input, final URI source) throws URISyntaxException {
         if (source != null) {
-            return new URISource(input, source);
+            var s = new URISource(source);
+            s.setInputStream(input);
+            return s;
         } else {
             return new StreamSource(input);
         }
     }
 
     /**
-     * If this source if defined only by URI (no input stream), returns that URI.
+     * If this source is defined only by URI (no input stream), returns that URI.
      * Otherwise returns {@code null}.
      *
      * @return the URI, or {@code null} if not applicable for reading the document.
      */
     public URI getReadableURI() {
-        return getInputStream() == null ? document : null;
+        return (getInputStream() == null && getReader() == null) ? document : null;
     }
 
     /**
@@ -115,6 +119,7 @@ public final class URISource extends StreamSource {
      */
     @Override
     public String toString() {
-        return Strings.toString(getClass(), "document", document, "fragment", fragment, "inputStream", getInputStream());
+        return Strings.toString(getClass(), "document", document, "fragment", fragment,
+                                "inputStream", getInputStream(), "reader", getReader());
     }
 }

@@ -23,7 +23,7 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * A vector of integer values backed by an {@link IntegerList}.
- * This offers a compressed storage using only the minimal amount of bits per value.
+ * This offers a compressed storage using only the minimal number of bits per value.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

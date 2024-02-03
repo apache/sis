@@ -178,7 +178,7 @@ next:       for (final String name : axisNames) {
         /*
          * Process the variables in the order the appear in the sequence of bytes that make the netCDF files.
          * This is often the reverse order of range indices, but not necessarily. The intent is to reduce the
-         * amount of disk seek operations. Data loading may happen in this method through Axis constructor.
+         * number of disk seek operations. Data loading may happen in this method through Axis constructor.
          */
         final SortedMap<VariableInfo,Integer> variables = new TreeMap<>();
         for (int i=0; i<range.length; i++) {

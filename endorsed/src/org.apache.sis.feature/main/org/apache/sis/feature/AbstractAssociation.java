@@ -159,7 +159,7 @@ public abstract class AbstractAssociation extends Field<Feature> implements Feat
      * Sets the associated feature.
      *
      * <h4>Validation</h4>
-     * The amount of validation performed by this method is implementation dependent.
+     * The number of validations performed by this method is implementation dependent.
      * Usually, only the most basic constraints are verified. This is so for performance reasons
      * and also because some rules may be temporarily broken while constructing a feature.
      * A more exhaustive verification can be performed by invoking the {@link #quality()} method.

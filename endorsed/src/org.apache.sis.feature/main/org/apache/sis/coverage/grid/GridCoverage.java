@@ -482,7 +482,7 @@ public abstract class GridCoverage extends BandedCoverage {
      *   <li>A negative value means that the returned image is shifted to the left compared to specified extent.
      *       This implies that the image has more data than requested on left side. It may happen if the image is tiled,
      *       the specified {@code sliceExtent} covers many tiles, and expanding the specified extent is necessary
-     *       for returning an integer amount of tiles.</li>
+     *       for returning an integer number of tiles.</li>
      * </ul>
      *
      * Similar discussion applies to the {@linkplain RenderedImage#getMinY() minimum Y coordinate}.
@@ -498,7 +498,7 @@ public abstract class GridCoverage extends BandedCoverage {
      * @param  sliceExtent  a subspace of this grid coverage where all dimensions except two have a size of 1 cell.
      *         May be {@code null} if this grid coverage has only two dimensions with a size greater than 1 cell.
      * @return the grid slice as a rendered image. Image location is relative to {@code sliceExtent}.
-     * @throws MismatchedDimensionException if the given extent does not have the same number of dimensions than this coverage.
+     * @throws MismatchedDimensionException if the given extent does not have the same number of dimensions as this coverage.
      * @throws SubspaceNotSpecifiedException if the given argument is not sufficient for reducing the grid to a two-dimensional slice.
      * @throws DisjointExtentException if the given extent does not intersect this grid coverage.
      * @throws CannotEvaluateException if this method cannot produce the rendered image for another reason.
@@ -536,7 +536,7 @@ public abstract class GridCoverage extends BandedCoverage {
     @Debug
     public TreeTable toTree(final Locale locale, final int bitmask) {
         ArgumentChecks.ensureNonNull("locale", locale);
-        final Vocabulary vocabulary = Vocabulary.getResources(locale);
+        final Vocabulary vocabulary = Vocabulary.forLocale(locale);
         final TableColumn<CharSequence> column = TableColumn.VALUE_AS_TEXT;
         final TreeTable tree = new DefaultTreeTable(column);
         final TreeTable.Node root = tree.getRoot();

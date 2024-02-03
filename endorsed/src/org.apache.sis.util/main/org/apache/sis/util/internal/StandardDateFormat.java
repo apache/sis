@@ -51,10 +51,6 @@ import org.apache.sis.util.CharSequences;
  * the time is optional. For this class, "Standard" is interpreted as "close to ISO 19162 requirements",
  * which is not necessarily identical to other ISO standards.
  *
- * <p>External users should use nothing else than the parsing and formatting methods.
- * The methods for configuring the {@code DateFormat} instances may or may not work
- * depending on the branch.</p>
- *
  * <p>The main usage for this class is Well Known Text (WKT) parsing and formatting.
  * ISO 19162 uses ISO 8601:2004 for the dates. Any precision is allowed: the date could have only the year,
  * or only the year and month, <i>etc</i>. The clock part is optional and also have optional fields: can be
@@ -99,7 +95,7 @@ public final class StandardDateFormat extends DateFormat {
             .optionalStart().appendLiteral(':').appendValue(ChronoField.SECOND_OF_MINUTE, 2)
                                                .appendFraction(ChronoField.MILLI_OF_SECOND, 3, 3, true)
             .optionalEnd().optionalEnd().optionalEnd()    // Move back to the optional block of HOUR_OF_DAY.
-            .optionalStart().appendZoneOrOffsetId()
+            .optionalStart().optionalStart().appendLiteral(' ').optionalEnd().appendZoneOrOffsetId()
             .toFormatter(Locale.ROOT);
 
     /**
@@ -246,40 +242,6 @@ replace:    if (Character.isWhitespace(c)) {
     public static final int NANOS_PER_SECOND = 1000_000_000;
 
     /**
-     * Converts the given legacy {@code Date} object into a {@code java.time} implementation in given timezone.
-     * The method performs the following choice:
-     *
-     * <ul>
-     *   <li>If the given date has zero values in hours, minutes, seconds and milliseconds fields in UTC timezone,
-     *       then the returned implementation will be a {@link LocalDate}, dropping the timezone information (i.e.
-     *       the date is considered an approximation). Note that this is consistent with ISO 19162 requirement that
-     *       dates are always in UTC, even if Apache SIS allows some flexibility.</li>
-     *   <li>Otherwise if the timezone is not {@code null} and not UTC, then this method returns an {@link OffsetDateTime}.</li>
-     *   <li>Otherwise this method returns a {@link LocalDateTime} in the given timezone.</li>
-     * </ul>
-     *
-     * @param  date  the date to convert, or {@code null}.
-     * @param  zone  the timezone of the temporal object to obtain, or {@code null} for UTC.
-     * @return the temporal object for the given date, or {@code null} if the given argument was null.
-     */
-    public static Temporal toHeuristicTemporal(final Date date, ZoneId zone) {
-        if (date == null) {
-            return null;
-        }
-        final long time = date.getTime();
-        if ((time % MILLISECONDS_PER_DAY) == 0) {
-            return LocalDate.ofEpochDay(time / MILLISECONDS_PER_DAY);
-        }
-        final Instant instant = Instant.ofEpochMilli(time);
-        if (zone == null) {
-            zone = ZoneOffset.UTC;
-        } else if (!zone.equals(ZoneOffset.UTC)) {
-            return OffsetDateTime.ofInstant(instant, zone);
-        }
-        return LocalDateTime.ofInstant(instant, zone);
-    }
-
-    /**
      * Converts the given temporal object into a date.
      * The given temporal object is typically the value parsed by {@link #FORMAT}.
      *
@@ -348,10 +310,17 @@ replace:    if (Character.isWhitespace(c)) {
     private DateTimeFormatter format;
 
     /**
+     * The formatter without timezone. This is usually the same object as {@link #format},
+     * unless a timezone has been set in which case this field keep the original formatter.
+     * This is used for formatting local dates without the formatter timezone.
+     */
+    private final DateTimeFormatter formatWithoutZone;
+
+    /**
      * Creates a new format for a default locale in the UTC timezone.
      */
     public StandardDateFormat() {
-        format = FORMAT;
+        formatWithoutZone = format = FORMAT;
     }
 
     /**
@@ -360,7 +329,8 @@ replace:    if (Character.isWhitespace(c)) {
      * @param locale  the locale of the format to create.
      */
     public StandardDateFormat(final Locale locale) {
-        format = FORMAT.withLocale(locale);             // Same instance as FORMAT if the locales are equal.
+        // Same instance as FORMAT if the locales are equal.
+        formatWithoutZone = format = FORMAT.withLocale(locale);
     }
 
     /**
@@ -449,8 +419,9 @@ replace:    if (Character.isWhitespace(c)) {
     }
 
     /**
-     * Formats the given date. If hours, minutes, seconds and milliseconds are zero and the timezone is UTC,
-     * then this method omits the clock part (unless the user has overridden the pattern).
+     * Formats the given date. If hours, minutes, seconds and milliseconds are zero in the timezone of this formatter,
+     * then this method omits the clock part. The timezone is always omitted (ISO 19162 does not include timezone in
+     * WKT elements because all dates are required to be in UTC).
      *
      * @param  date        the date to format.
      * @param  toAppendTo  where to format the date.
@@ -459,7 +430,16 @@ replace:    if (Character.isWhitespace(c)) {
      */
     @Override
     public StringBuffer format(final Date date, final StringBuffer toAppendTo, final FieldPosition pos) {
-        format.formatTo(toHeuristicTemporal(date, null), toAppendTo);
+        ZoneId zone = format.getZone();
+        if (zone == null) {
+            zone = ZoneOffset.UTC;
+        }
+        final LocalDateTime dt = LocalDateTime.ofInstant(date.toInstant(), zone);
+        TemporalAccessor value = dt;
+        if (dt.getHour() == 0 && dt.getMinute() == 0 && dt.getSecond() == 0 && dt.getNano() == 0) {
+            value = dt.toLocalDate();
+        }
+        formatWithoutZone.formatTo(value, toAppendTo);
         return toAppendTo;
     }
 
@@ -529,18 +509,5 @@ replace:    if (Character.isWhitespace(c)) {
     @Override
     public boolean equals(final Object obj) {
         return (obj instanceof StandardDateFormat) && format.equals(((StandardDateFormat) obj).format);
-    }
-
-    /**
-     * Returns a clone of this format.
-     *
-     * @return a clone of this format.
-     */
-    @Override
-    @SuppressWarnings("CloneDoesntCallSuperClone")
-    public Object clone() {
-        final StandardDateFormat clone = new StandardDateFormat();
-        clone.format = format;
-        return clone;
     }
 }

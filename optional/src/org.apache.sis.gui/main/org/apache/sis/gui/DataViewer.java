@@ -145,7 +145,7 @@ public class DataViewer extends Application {
         this.window = window;
         content = new ResourceExplorer();
         final Resources  localized  = Resources.getInstance();
-        final Vocabulary vocabulary = Vocabulary.getResources(localized.getLocale());
+        final Vocabulary vocabulary = Vocabulary.forLocale(localized.getLocale());
         /*
          * Configure the menu bar. For all menu items except simple ones, the action is
          * to invoke a method of the same name in this application class (e.g. open(…)).

@@ -198,7 +198,7 @@ public enum About {
         String userHome = null;
         String javaHome = null;
         final Date now = new Date();
-        final Vocabulary resources = Vocabulary.getResources(locale);
+        final Vocabulary resources = Vocabulary.forLocale(locale);
         final DefaultTreeTable table = new DefaultTreeTable(NAME, VALUE_AS_TEXT);
         final TreeTable.Node root = table.getRoot();
         root.setValue(NAME, resources.getString(Vocabulary.Keys.LocalConfiguration));
@@ -402,7 +402,7 @@ fill:   for (int i=0; ; i++) {
                             value = e.toString();
                         }
                         if (value == null) {
-                            value = Messages.getResources(locale).getString(Messages.Keys.DataDirectoryNotSpecified_1, DataDirectory.ENV);
+                            value = Messages.forLocale(locale).getString(Messages.Keys.DataDirectoryNotSpecified_1, DataDirectory.ENV);
                         } else {
                             final Path path = DataDirectory.getRootDirectory();
                             if (path != null) {

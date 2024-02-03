@@ -293,7 +293,7 @@ public class LambertConicConformal extends ConformalProjection {
         final double t1 = expΨ(φ1, eccentricity*sinφ1);
         /*
          * Compute n = (ln m₁ – ln m₂) / (ln t₁ – ln t₂), which we rewrite as ln(m₁/m₂) / ln(t₁/t₂)
-         * for reducing the amount of calls to the logarithmic function. Note that this equation
+         * for reducing the number of calls to the logarithmic function. Note that this equation
          * tends toward 0/0 if φ₁ ≈ φ₂, which force us to do a special check for the SP1 case.
          */
         if (abs(φ1 - φ2) >= ANGULAR_TOLERANCE) {                    // Should be `true` for 2SP case.

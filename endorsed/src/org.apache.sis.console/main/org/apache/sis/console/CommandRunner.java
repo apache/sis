@@ -89,8 +89,12 @@ abstract class CommandRunner {
     protected final Locale locale;
 
     /**
-     * The locale specified by the {@code "--timezone"} option. If no such option was provided,
-     * then this field is set to the {@linkplain TimeZone#getDefault() default timezone}.
+     * The locale specified by the {@code "--timezone"} option, or null if no timezone was specified.
+     * The null value may be interpreted as the {{@linkplain TimeZone#getDefault() default timezone}
+     * or as UTC, depending on the context. For example, WKT parsing and formatting use UTC unless
+     * specified otherwise.
+     *
+     * @see #getTimeZone()
      */
     protected final TimeZone timezone;
 
@@ -220,7 +224,7 @@ abstract class CommandRunner {
             locale = (s != null) ? Locales.parse(s) : Locale.getDefault(Locale.Category.DISPLAY);
 
             value = s = getOptionAsString(option = Option.TIMEZONE);
-            timezone = (s != null) ? TimeZone.getTimeZone(s) : TimeZone.getDefault();
+            timezone = (s != null) ? TimeZone.getTimeZone(s) : null;
 
             value = s = getOptionAsString(option = Option.ENCODING);
             explicitEncoding = (s != null);
@@ -253,6 +257,15 @@ abstract class CommandRunner {
                 out = Environment.writer(console, System.out);
             }
         }
+    }
+
+    /**
+     * {@return a non-null timezone, either the specified timezone or the default one}.
+     * This method is invoked when a null {@link #timezone} would be interpreted as UTC,
+     * but the {@linkplain TimeZone#getDefault() default timezone} is preferred instead.
+     */
+    protected final TimeZone getTimeZone() {
+        return (timezone != null) ? timezone : TimeZone.getDefault();
     }
 
     /**

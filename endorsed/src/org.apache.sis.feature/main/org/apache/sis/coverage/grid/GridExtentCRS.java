@@ -198,7 +198,7 @@ final class GridExtentCRS {
      * Returns the exception to throw for an unsupported CRS.
      */
     private static FactoryException unsupported(final Locale locale, final CoordinateReferenceSystem crs) {
-        return new FactoryException(Errors.getResources(locale)
+        return new FactoryException(Errors.forLocale(locale)
                 .getString(Errors.Keys.UnsupportedType_1, Classes.getShortClassName(crs)));
     }
 
@@ -329,7 +329,7 @@ final class GridExtentCRS {
          */
         for (int j=0; j<tgtDim; j++) {
             if (axes[j] == null) {
-                final String name = Vocabulary.getResources(locale).getString(Vocabulary.Keys.Dimension_1, j);
+                final String name = Vocabulary.forLocale(locale).getString(Vocabulary.Keys.Dimension_1, j);
                 final String abbreviation = abbreviation(j);
                 axes[j] = axis(csFactory, name, abbreviation, AxisDirection.OTHER);
             }

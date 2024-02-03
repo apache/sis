@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.AbstractMap;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.concurrent.Callable;
@@ -501,7 +500,7 @@ public abstract class LoadedGrid<C extends Quantity<C>, T extends Quantity<T>> e
             final Envelope domain = sg.getDomainOfValidity(Units.DEGREE);
             final MathTransform st = createGeodeticTransformation(provider, factory, sg);
             if (specializations.putIfAbsent(domain, st) != null) {
-                GridLoader.log(provider, Errors.getResources((Locale) null)
+                GridLoader.log(provider, Errors.forLocale(null)
                         .getLogRecord(Level.FINE, Errors.Keys.DuplicatedElement_1, domain));
             }
         } catch (TransformException e) {

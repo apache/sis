@@ -146,7 +146,7 @@ public class TileOpExecutor {
             /*
              * Compute the bounds of the region where iteration will happen, but with only one pixel in
              * the tiles on the border (left, top, bottom, right). If AOI interior contains entirely
-             * those bounds, then the AOI does not help to reduce the amount of tiles to compute.
+             * those bounds, then the AOI does not help to reduce the number of tiles to compute.
              */
             final Rectangle bounds = getTileIndices();
             bounds.x = decrementExact(ImageUtilities.tileToPixelX(image, incrementExact(bounds.x)) - 1);

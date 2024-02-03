@@ -198,7 +198,7 @@ public final class ChannelDataInputTest extends ChannelDataTestCase {
                 assertEquals(array[position++], input.readByte());
             }
             /*
-             * Prefetch a random amount of bytes and verifies the buffer status.
+             * Prefetch a random number of bytes and verifies the buffer status.
              */
             final int p = buffer.position();
             final int m = buffer.limit();

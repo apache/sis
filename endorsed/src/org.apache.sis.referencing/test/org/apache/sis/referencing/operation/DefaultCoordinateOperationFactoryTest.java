@@ -99,7 +99,7 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
     @BeforeClass
     public static void createFactory() throws ParseException {
         factory = new DefaultCoordinateOperationFactory();
-        parser  = new WKTFormat(null, null);
+        parser  = new WKTFormat();
         parser.addFragment("NTF",
                 "ProjectedCRS[“NTF (Paris) / Lambert zone II”,\n" +
                 "  BaseGeodCRS[“NTF (Paris)”,\n" +

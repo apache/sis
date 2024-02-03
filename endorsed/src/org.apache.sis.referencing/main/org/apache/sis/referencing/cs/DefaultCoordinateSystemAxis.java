@@ -329,7 +329,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
             minimumValue = (minimum != null) ? minimum.doubleValue() : Double.NEGATIVE_INFINITY;
             maximumValue = (maximum != null) ? maximum.doubleValue() : Double.POSITIVE_INFINITY;
             if (!(minimumValue < maximumValue)) { // Use '!' for catching NaN
-                throw new IllegalArgumentException(Errors.getResources(properties).getString(
+                throw new IllegalArgumentException(Errors.forProperties(properties).getString(
                         Errors.Keys.IllegalRange_2, minimumValue, maximumValue));
             }
             if ((minimumValue != NEGATIVE_INFINITY) || (maximumValue != POSITIVE_INFINITY)) {

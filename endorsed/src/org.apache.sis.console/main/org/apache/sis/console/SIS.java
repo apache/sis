@@ -596,11 +596,18 @@ public final class SIS extends Static {
      * <ul>
      *   <li>{@code --sourceCRS}: the coordinate reference system of input points.</li>
      *   <li>{@code --targetCRS}: the coordinate reference system of output points.</li>
+     *   <li>{@code --operation}: the coordinate operation from source CRS to target CRS.</li>
      * </ul>
      *
-     * Arguments other than options are files, usually as character strings but can also be
+     * The {@code --operation} parameter is optional.
+     * If provided, then the {@code --sourceCRS} and {@code --targetCRS} parameters become optional.
+     * If the operation is specified together with the source and/or target CRS, then the operation
+     * is used in the middle and conversions from/to the specified CRS are concatenated before/after
+     * the specified operation.
+     *
+     * <p>Arguments other than options are files, usually as character strings, but can also be
      * {@link java.io.File}, {@link java.nio.file.Path} or {@link java.net.URL} for example.
-     * Usage example:
+     * Usage example:</p>
      *
      * {@snippet lang="java" :
      *     SIS.TRANSFORM.sourceCRS("EPSG:3395").targetCRS("EPSG:4326").run("data.txt");
@@ -619,7 +626,7 @@ public final class SIS extends Static {
         Transform() {super("transform");}
 
         /**
-         * Sets Coordinate Reference System of input data.
+         * Sets the Coordinate Reference System of input data.
          *
          * @param  value  the EPSG code, WKT or file from which to get the CRS.
          * @return a new builder or {@code this}, for method call chaining.
@@ -629,13 +636,33 @@ public final class SIS extends Static {
         }
 
         /**
-         * Sets Coordinate Reference System of output data.
+         * Sets the Coordinate Reference System of output data.
          *
          * @param  value  the EPSG code, WKT or file from which to get the CRS.
          * @return a new builder or {@code this}, for method call chaining.
          */
         public Transform targetCRS(Object value) {
             return set(Option.TARGET_CRS, value);
+        }
+
+        /**
+         * Sets the Coordinate Operation to use.
+         *
+         * @param  value  the EPSG code, WKT or file from which to get the coordinate operation.
+         * @return a new builder or {@code this}, for method call chaining.
+         */
+        public Transform operation(Object value) {
+            return set(Option.OPERATION, value);
+        }
+
+        /**
+         * Use the inverse of the coordinate operation. The transform will be inverted <em>after</em> all
+         * other options ({@code operation}, {@code sourceCRS} and {@code targetCRS}) have been applied.
+         *
+         * @return a new builder or {@code this}, for method call chaining.
+         */
+        public Transform inverse() {
+            return set(Option.INVERSE, null);
         }
 
         /**

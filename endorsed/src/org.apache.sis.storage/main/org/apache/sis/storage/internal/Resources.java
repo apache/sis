@@ -85,7 +85,7 @@ public class Resources extends IndexedResourceBundle {
         public static final short CanNotIntersectDataWithQuery_1 = 57;
 
         /**
-         * Cannot read “{0}” auxiliary file.
+         * Cannot read the “{0}” auxiliary file.
          */
         public static final short CanNotReadAuxiliaryFile_1 = 66;
 

@@ -664,7 +664,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
              * array to be returned. Following algorithm applies to deeper levels.
              *
              * The `skip` variable is an optimization. Code below would work with skip = 0 all the times, but this is
-             * very slow when r0 = 1 because equals(…) is invoked for all values.  Computing an amount of values that
+             * very slow when r0 = 1 because equals(…) is invoked for all values.  Computing an number of values that
              * we can skip in the special case where r0 = 1 increases the speed a lot.
              */
             int candidateIndex = 0;
@@ -1446,7 +1446,7 @@ search:     for (;;) {
         }
         /*
          * Try to copy the values in a more compact format.
-         * We will use a vector backed by IntegerList in order to use only the amount of bits needed,
+         * We will use a vector backed by IntegerList in order to use only the number of bits needed,
          * unless that amount is exactly the number of bits of a primitive type (8, 16, 32 or 64) in
          * which case using one of the specialized classes in this ArrayVector is more performant.
          */

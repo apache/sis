@@ -89,7 +89,7 @@ public class ProbeResult implements Serializable {
 
     /**
      * The open capability cannot be determined because the {@link java.nio.ByteBuffer} contains an insufficient
-     * amount of bytes. This value can be returned by {@link DataStoreProvider#probeContent(StorageConnector)}
+     * number of bytes. This value can be returned by {@link DataStoreProvider#probeContent(StorageConnector)}
      * implementations as below:
      *
      * {@snippet lang="java" :

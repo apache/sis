@@ -510,7 +510,7 @@ public enum Type {
      * This method should be invoked when the caller expects a single value.
      *
      * @param  input  the input from where to read the value.
-     * @param  count  the amount of values (normally exactly 1).
+     * @param  count  the number of values (normally exactly 1).
      * @return the value as a {@code short}.
      * @throws IOException if an error occurred while reading the stream.
      * @throws NumberFormatException if the value was stored in ASCII and cannot be parsed.
@@ -531,7 +531,7 @@ public enum Type {
      * This method should be invoked when the caller expects a single value.
      *
      * @param  input  the input from where to read the value.
-     * @param  count  the amount of values (normally exactly 1).
+     * @param  count  the number of values (normally exactly 1).
      * @return the value as an {@code int}.
      * @throws IOException if an error occurred while reading the stream.
      * @throws NumberFormatException if the value was stored in ASCII and cannot be parsed.
@@ -574,7 +574,7 @@ public enum Type {
      * added by GDAL.</p>
      *
      * @param  input  the input from where to read the value.
-     * @param  count  the amount of values (normally exactly 1).
+     * @param  count  the number of values (normally exactly 1).
      * @return the value as a {@code long}.
      * @throws IOException if an error occurred while reading the stream.
      * @throws NumberFormatException if the value was stored in ASCII and cannot be parsed.
@@ -601,7 +601,7 @@ public enum Type {
      * added by GDAL.</p>
      *
      * @param  input  the input from where to read the value.
-     * @param  count  the amount of values (normally exactly 1).
+     * @param  count  the number of values (normally exactly 1).
      * @return the value as a {@code double}.
      * @throws IOException if an error occurred while reading the stream.
      * @throws NumberFormatException if the value was stored in ASCII and cannot be parsed.
@@ -640,7 +640,7 @@ public enum Type {
      * {@link #readAsArray(ChannelDataInput, int)}.
      *
      * @param  input  the input from where to read the values.
-     * @param  count  the amount of values.
+     * @param  count  the number of values.
      * @return the value as a Java array or a {@link String}, or {@code null} if undefined.
      * @throws IOException if an error occurred while reading the stream.
      */
@@ -654,7 +654,7 @@ public enum Type {
      * It may be unsigned values packed in their signed counterpart.
      *
      * @param  input  the input from where to read the values.
-     * @param  count  the amount of values.
+     * @param  count  the number of values.
      * @return the value as a Java array. May be an empty array.
      * @throws IOException if an error occurred while reading the stream.
      * @throws UnsupportedOperationException if this type is {@link #UNDEFINED}.
@@ -669,7 +669,7 @@ public enum Type {
      * returned by {@link #readAsArray(ChannelDataInput, int)}.
      *
      * @param  input  the input from where to read the values.
-     * @param  count  the amount of values.
+     * @param  count  the number of values.
      * @return the value as a wrapper around a Java array of primitive type.
      * @throws IOException if an error occurred while reading the stream.
      * @throws ArithmeticException if the given count is too large.

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.gui.coverage;
 
-import java.util.Locale;
 import javafx.stage.Stage;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -84,7 +83,7 @@ public final class CoverageStylingApp extends Application {
         final CoverageStyling styling = new CoverageStyling(null);
         styling.applyColors(band.getCategories().get(1), new ColorRamp(0xFF607080));
         final TableView<Category> table = styling.createCategoryTable(
-                Resources.forLocale(null), Vocabulary.getResources((Locale) null));
+                Resources.forLocale(null), Vocabulary.forLocale(null));
         table.getItems().setAll(band.getCategories());
         return table;
     }

@@ -122,7 +122,7 @@ import org.opengis.metadata.Identifier;
  *
  * <h2>Multi-threading</h2>
  * This class is thread-safe but not necessarily concurrent.
- * This class is designed for a relatively small amount of WKT;
+ * This class is designed for a relatively small number of WKT;
  * it is not a replacement for database-backed factory such as
  * {@link org.apache.sis.referencing.factory.sql.EPSGFactory}.
  *
@@ -218,7 +218,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
     private static final class Disambiguation {
         /**
          * The previous {@code Disambiguation} in a linked list, or {@code null} if we reached the end of list.
-         * The use of a linked list should be efficient enough if the amount of {@code Disambiguation}s for a
+         * The use of a linked list should be efficient enough if the number of {@code Disambiguation}s for a
          * given code is small.
          */
         private final Disambiguation previous;
@@ -414,7 +414,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
         definitions = new HashMap<>();
         codeCaches  = new HashMap<>();
         codespaces  = new FrequencySortedSet<>(true);
-        parser      = new WKTFormat(null, null);
+        parser      = new WKTFormat();
         lock        = new ReentrantReadWriteLock();
         authorities = (authority != null) ? null : new FrequencySortedSet<>(true);
         this.authority = authority;

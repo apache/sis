@@ -37,7 +37,7 @@ import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
  * {@linkplain org.apache.sis.util.Characters#isLineOrParagraphSeparator(int) line or paragraph separators}.
  * The content of every table cells are stored in memory until the {@link #flush()} method is invoked.
  * When invoked, {@code flush()} copies the cell contents to the {@linkplain #out underlying stream
- * or buffer} while replacing tabulations by some amount of spaces and drawing borders.
+ * or buffer} while replacing tabulations by some number of spaces and drawing borders.
  * The exact number of spaces is computed from the cell widths.
  *
  * <p>For example, the following code:</p>

@@ -566,7 +566,7 @@ public abstract class FileCacheByteChannel extends ByteRangeChannel {
     }
 
     /**
-     * Tries to move the input stream by skipping the specified amount of bytes.
+     * Tries to move the input stream by skipping the specified number of bytes.
      * This method is invoked when the source of input streams (the server) does not support ranges,
      * or when the number of bytes to skip is too small for being worth to create a new connection.
      * This method may skip less bytes than requested. The skipped bytes are saved in the cache.
@@ -690,7 +690,7 @@ public abstract class FileCacheByteChannel extends ByteRangeChannel {
     /**
      * Attempts to read up to <i>r</i> bytes from the cache.
      * This method does not use the connection (it may be null).
-     * The {@link #position} field is updated by the amount of bytes read.
+     * The {@link #position} field is updated by the number of bytes read.
      *
      * @param  dst  the buffer where to store the bytes that are read.
      * @return number of bytes read, or -1 if the cache does not contain the requested range of bytes.

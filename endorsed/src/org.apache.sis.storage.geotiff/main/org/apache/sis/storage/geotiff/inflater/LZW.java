@@ -99,7 +99,7 @@ final class LZW extends CompressionChannel {
      * Number of bits in an offset that are always 0 and consequently do not need to be stored.
      * An intentional consequence of this restriction is that size of blocks allocated in the
      * {@link #stringsFromCode} array must be multiples of {@literal (1 << STRING_ALIGNMENT)}.
-     * It makes possible to use the extra size for growing a string up to that amount of bytes
+     * It makes possible to use the extra size for growing a string up to that number of bytes
      * without copying it.
      *
      * <h4>Performance note</h4>

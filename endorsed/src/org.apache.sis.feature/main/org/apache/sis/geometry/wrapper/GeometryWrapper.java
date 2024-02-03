@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometry.wrapper;
 
+import java.awt.Shape;
 import java.util.Objects;
 import java.util.Iterator;
 import java.util.OptionalInt;
@@ -46,6 +47,7 @@ import org.opengis.geometry.complex.Complex;
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.DistanceOperatorName;
 import org.opengis.filter.InvalidFilterValueException;
+import org.opengis.referencing.operation.MathTransform;
 
 
 /**
@@ -471,6 +473,23 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
     }
 
     /**
+     * Transforms this geometry using the given transform.
+     * If the transform is {@code null}, then the geometry is returned unchanged.
+     * Otherwise, a new geometry is returned without CRS.
+     *
+     * @param  transform  the math transform to apply, or {@code null}.
+     * @return the transformed geometry (may be the same geometry instance, but never {@code null}).
+     * @throws UnsupportedOperationException if this operation is not supported for current implementation.
+     * @throws TransformException if the geometry cannot be transformed.
+     */
+    public GeometryWrapper transform(MathTransform transform) throws TransformException {
+        if (transform == null || transform.isIdentity()) {
+            return this;
+        }
+        throw new UnsupportedOperationException(Geometries.unsupported("transform"));
+    }
+
+    /**
      * Transforms this geometry to the specified Coordinate Reference System (CRS).
      * If the given CRS is null, then the geometry is returned unchanged.
      * If this geometry has no Coordinate Reference System, a {@link TransformException} is thrown.
@@ -521,6 +540,19 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
      * @see Geometries#parseWKT(String)
      */
     public abstract String formatWKT(double flatness);
+
+    /**
+     * Returns a Java2D shape made from this geometry.
+     * The returned shape may be a view backed by the {@linkplain #implementation() geometry implementation},
+     * or may be an internal object returned directly. Caller should not attempt to modify the returned shape.
+     * Changes in the geometry implementation may or may not be reflected in the returned Java2D shape.
+     *
+     * @return a view, copy or direct reference to the geometry as a Java2D shape.
+     * @throws UnsupportedOperationException if this operation is not supported for current implementation.
+     */
+    public Shape toJava2D() {
+        throw new UnsupportedOperationException(Geometries.unsupported("toJava2D"));
+    }
 
     /**
      * Methods from the {@link Geometry} interface. The {@link Override} annotation is intentionally omitted
