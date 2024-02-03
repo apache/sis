@@ -16,14 +16,15 @@
  */
 package org.apache.sis.map.service.se1;
 
-import org.apache.sis.map.service.Scene2D;
 import java.awt.Shape;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import org.apache.sis.map.Presentation;
 import org.apache.sis.map.SEPresentation;
+import org.apache.sis.map.service.Scene2D;
 import org.apache.sis.map.service.RenderingException;
 import org.apache.sis.style.se1.PointSymbolizer;
+
 
 /**
  * Support for PointSymbolizer rendering.

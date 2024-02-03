@@ -16,6 +16,7 @@
  */
 package org.apache.sis.map.service;
 
+
 /**
  * Exception that may be thrown by a portraying operation.
  *

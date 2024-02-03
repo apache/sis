@@ -16,6 +16,7 @@
  */
 package org.apache.sis.map.service.se1;
 
+
 /**
  * Subclassed by symbolizer who have resource caches.
  * This could contain images or models.

@@ -26,6 +26,7 @@ import org.apache.sis.map.service.StylePainter;
 import org.apache.sis.style.Style;
 import org.apache.sis.style.se1.Symbology;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

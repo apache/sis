@@ -17,9 +17,9 @@
 package org.apache.sis.xml.util;
 
 import java.io.File;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.io.InputStream;
 import javax.xml.transform.stream.StreamSource;
 import org.apache.sis.util.internal.Strings;
 

@@ -16,27 +16,28 @@
  */
 package org.apache.sis.map.service.se1;
 
-import org.apache.sis.map.service.Scene2D;
 import java.awt.Shape;
 import java.awt.image.RenderedImage;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.stream.Stream;
+import org.opengis.referencing.operation.TransformException;
+import org.apache.sis.map.Presentation;
+import org.apache.sis.map.SEPresentation;
+import org.apache.sis.map.service.Scene2D;
+import org.apache.sis.map.service.RenderingException;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverageBuilder;
 import org.apache.sis.coverage.grid.GridCoverageProcessor;
 import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.map.Presentation;
-import org.apache.sis.map.SEPresentation;
-import org.apache.sis.map.service.RenderingException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.NoSuchDataException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.style.se1.RasterSymbolizer;
-import org.opengis.referencing.operation.TransformException;
+
 
 /**
  * Support for RasterSymbolizer rendering.

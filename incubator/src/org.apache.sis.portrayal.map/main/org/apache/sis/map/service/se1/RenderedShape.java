@@ -23,6 +23,7 @@ import java.awt.Shape;
 import java.awt.Stroke;
 import java.awt.geom.Area;
 
+
 /**
  * Combine an AWT Shape and it's rendering options.
  *

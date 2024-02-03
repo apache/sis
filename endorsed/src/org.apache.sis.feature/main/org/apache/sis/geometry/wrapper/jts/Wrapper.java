@@ -45,6 +45,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.geometry.DirectPosition2D;
@@ -64,7 +65,6 @@ import org.apache.sis.filter.sqlmm.SQLMM;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.DistanceOperatorName;
-import org.opengis.referencing.operation.MathTransform;
 
 
 /**

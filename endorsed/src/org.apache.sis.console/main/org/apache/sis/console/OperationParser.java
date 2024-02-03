@@ -18,10 +18,10 @@ package org.apache.sis.console;
 
 import java.util.Optional;
 import org.opengis.metadata.Metadata;
+import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.PRJDataStore;
-import org.opengis.referencing.operation.CoordinateOperation;
 
 
 /**

@@ -21,6 +21,12 @@ import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.util.Arrays;
 import java.util.stream.Stream;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.LineString;
+import org.opengis.feature.Feature;
+import org.opengis.feature.FeatureType;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridOrientation;
@@ -37,14 +43,11 @@ import org.apache.sis.style.se1.LineSymbolizer;
 import org.apache.sis.style.se1.Rule;
 import org.apache.sis.style.se1.Symbolizer;
 import org.apache.sis.style.se1.Symbology;
+
+// Test dependencies
 import static org.junit.Assert.*;
 import org.junit.Test;
-import org.locationtech.jts.geom.Coordinate;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.geom.GeometryFactory;
-import org.locationtech.jts.geom.LineString;
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
+
 
 /**
  *

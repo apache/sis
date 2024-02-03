@@ -28,6 +28,7 @@ import org.opengis.geometry.Geometry;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -47,7 +48,6 @@ import org.opengis.geometry.complex.Complex;
 import org.opengis.filter.SpatialOperatorName;
 import org.opengis.filter.DistanceOperatorName;
 import org.opengis.filter.InvalidFilterValueException;
-import org.opengis.referencing.operation.MathTransform;
 
 
 /**
