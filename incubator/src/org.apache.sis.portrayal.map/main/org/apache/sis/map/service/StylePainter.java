@@ -22,6 +22,7 @@ import org.apache.sis.map.MapLayer;
 import org.apache.sis.map.Presentation;
 import org.apache.sis.style.Style;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

@@ -21,6 +21,7 @@ import java.util.logging.Logger;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.util.ArgumentChecks;
 
+
 /**
  * Holds the rendering properties.
  *

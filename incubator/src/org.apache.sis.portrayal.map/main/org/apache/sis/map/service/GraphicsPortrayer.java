@@ -33,6 +33,7 @@ import org.apache.sis.map.SEPortrayer;
 import org.apache.sis.style.Style;
 import org.apache.sis.util.ArgumentChecks;
 
+
 /**
  * Produce rendered image of styled resources.
  *

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.map.service.se1;
 
-import org.apache.sis.map.service.Scene2D;
 import java.awt.Shape;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,14 +26,16 @@ import java.util.ServiceLoader;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
+import org.opengis.feature.Feature;
+import org.opengis.filter.Expression;
 import org.apache.sis.map.Presentation;
 import org.apache.sis.map.SEPresentation;
+import org.apache.sis.map.service.Scene2D;
 import org.apache.sis.map.service.RenderingException;
 import org.apache.sis.style.se1.Symbolizer;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
-import org.opengis.feature.Feature;
-import org.opengis.filter.Expression;
+
 
 /**
  * Transforms a {@link Presentation} to Java2D graphics.

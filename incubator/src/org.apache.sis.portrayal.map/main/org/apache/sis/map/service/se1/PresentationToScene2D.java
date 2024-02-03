@@ -16,7 +16,6 @@
  */
 package org.apache.sis.map.service.se1;
 
-import org.apache.sis.map.service.Scene2D;
 import java.awt.Graphics2D;
 import java.awt.Shape;
 import java.io.IOException;
@@ -27,17 +26,18 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.stream.Stream;
-import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.map.Presentation;
-import org.apache.sis.map.SEPresentation;
-import org.apache.sis.map.service.RenderingException;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.style.se1.Symbolizer;
-import org.apache.sis.util.ArgumentChecks;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
+import org.apache.sis.map.Presentation;
+import org.apache.sis.map.SEPresentation;
+import org.apache.sis.map.service.Scene2D;
+import org.apache.sis.map.service.RenderingException;
+import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.style.se1.Symbolizer;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**

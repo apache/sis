@@ -16,22 +16,11 @@
  */
 package org.apache.sis.map.service.se1;
 
-import org.apache.sis.map.service.Scene2D;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Shape;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
-import org.apache.sis.feature.internal.AttributeConvention;
-import org.apache.sis.geometry.wrapper.Geometries;
-import org.apache.sis.geometry.wrapper.GeometryWrapper;
-import org.apache.sis.geometry.wrapper.jts.JTS;
-import org.apache.sis.map.Presentation;
-import org.apache.sis.map.SEPresentation;
-import org.apache.sis.map.service.RenderingException;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.style.se1.LineSymbolizer;
 import org.locationtech.jts.geom.Geometry;
 import org.opengis.feature.Feature;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -40,6 +29,18 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
+import org.apache.sis.map.Presentation;
+import org.apache.sis.map.SEPresentation;
+import org.apache.sis.map.service.Scene2D;
+import org.apache.sis.map.service.RenderingException;
+import org.apache.sis.feature.internal.AttributeConvention;
+import org.apache.sis.geometry.wrapper.Geometries;
+import org.apache.sis.geometry.wrapper.GeometryWrapper;
+import org.apache.sis.geometry.wrapper.jts.JTS;
+import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.style.se1.LineSymbolizer;
+
 
 /**
  * Support for LineSymbolizer rendering.
