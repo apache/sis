@@ -19,6 +19,7 @@ package org.apache.sis.io;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.io.Flushable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -506,7 +507,7 @@ public class TableAppender extends Appender implements Flushable {
     @Override
     @SuppressWarnings("fallthrough")
     public TableAppender append(final CharSequence sequence, int start, int end) {
-        ArgumentChecks.ensureValidIndexRange(sequence.length(), start, end);
+        Objects.checkFromToIndex(start, end, sequence.length());
         if (lineSeparator == null) {
             lineSeparator = lineSeparator(sequence, start, end);
         }

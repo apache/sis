@@ -24,6 +24,7 @@ package org.apache.sis.geometry;
  */
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Objects;
 import java.time.Instant;
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -340,7 +341,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             throws IndexOutOfBoundsException
     {
         final int d = coordinates.length >>> 1;
-        ensureValidIndex(d, dimension);
+        Objects.checkIndex(dimension, d);
         /*
          * The check performed here shall be identical to ArrayEnvelope.verifyRanges(crs, coordinates),
          * except that there is no loop.
@@ -521,23 +522,6 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             final double t = vector[i];
             coordinates[beginIndex + i] += t;
             coordinates[upperIndex + i] += t;
-        }
-    }
-
-    /**
-     * Adds to this envelope a point of the given array.
-     * This method does not check for anti-meridian crossing. It is invoked only
-     * by the {@link Envelopes} transform methods, which build "normal" envelopes.
-     *
-     * @param  array   the array which contains the coordinate values.
-     * @param  offset  index of the first valid coordinate value in the given array.
-     */
-    final void addSimple(final double[] array, final int offset) {
-        final int d = coordinates.length >>> 1;
-        for (int i=0; i<d; i++) {
-            final double value = array[offset + i];
-            if (value < coordinates[i  ]) coordinates[i  ] = value;
-            if (value > coordinates[i+d]) coordinates[i+d] = value;
         }
     }
 
@@ -1267,7 +1251,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      */
     // Must be overridden in SubEnvelope
     public GeneralEnvelope subEnvelope(final int beginIndex, final int endIndex) throws IndexOutOfBoundsException {
-        ensureValidIndexRange(coordinates.length >>> 1, beginIndex, endIndex);
+        Objects.checkFromToIndex(beginIndex, endIndex, coordinates.length >>> 1);
         return new SubEnvelope(coordinates, beginIndex, endIndex);
         /*
          * Do not check if we could return "this" as an optimization, in order to keep

@@ -468,8 +468,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
             this.parent = parent;
             columnIndices = parent.columnIndices;
             final TreeNodeList addTo = (TreeNodeList) parent.getChildren();
-            ArgumentChecks.ensureValidIndex(addTo.size() + 1, index);
-            addTo.addChild(index, this);
+            addTo.addChild(Objects.checkIndex(index, addTo.size() + 1), this);
         }
 
         /**

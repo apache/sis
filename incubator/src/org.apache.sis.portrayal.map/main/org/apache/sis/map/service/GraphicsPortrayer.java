@@ -21,6 +21,7 @@ import java.awt.Shape;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.stream.Stream;
 import org.apache.sis.coverage.grid.GridCoverage2D;
@@ -29,7 +30,6 @@ import org.apache.sis.map.MapItem;
 import org.apache.sis.map.MapLayer;
 import org.apache.sis.map.MapLayers;
 import org.apache.sis.map.Presentation;
-import org.apache.sis.map.SEPortrayer;
 import org.apache.sis.style.Style;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -92,7 +92,7 @@ public final class GraphicsPortrayer {
         ArgumentChecks.ensureNonNull("domain", domain);
         long[] low = domain.getExtent().getLow().getCoordinateValues();
         for (long l : low) {
-            ArgumentChecks.ensureValidIndex(1, (int) l);
+            Objects.checkIndex((int) l, 1);
         }
 
         this.domain = domain;

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.AbstractList;
 import java.util.RandomAccess;
 import java.util.Arrays;
+import java.util.Objects;
 import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -32,7 +33,6 @@ import org.opengis.parameter.InvalidParameterNameException;
 import org.opengis.parameter.InvalidParameterCardinalityException;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.internal.Resources;
@@ -145,8 +145,7 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
      */
     @Override
     public GeneralParameterValue get(int index) {
-        ArgumentChecks.ensureValidIndex(size, index);
-        GeneralParameterValue value = values[index];
+        GeneralParameterValue value = values[Objects.checkIndex(index, size)];
         if (value instanceof UninitializedParameter) {
             values[index] = value = value.getDescriptor().createValue();
         }
@@ -160,9 +159,7 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
      */
     @Override
     public GeneralParameterValue set(final int index, final GeneralParameterValue parameter) {
-        ArgumentChecks.ensureValidIndex(size, index);
-        final GeneralParameterValue value = values[index];
-        ArgumentChecks.ensureNonNull("parameter", parameter);
+        final GeneralParameterValue value = values[Objects.checkIndex(index, size)];
         final GeneralParameterDescriptor desc = parameter.getDescriptor();
         if (!value.getDescriptor().equals(desc)) {
             ensureDescriptorExists(desc);
@@ -187,7 +184,6 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
      */
     @Override
     public boolean add(final GeneralParameterValue parameter) {
-        ArgumentChecks.ensureNonNull("parameter", parameter);
         final GeneralParameterDescriptor desc = parameter.getDescriptor();
         ensureDescriptorExists(desc);
         /*
@@ -241,8 +237,8 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
              */
             final Identifier name = desc.getName();
             final String code = name.getCode();
-            for (final GeneralParameterDescriptor descriptor : descriptors) {
-                if (IdentifiedObjects.isHeuristicMatchForName(descriptor, code)) {
+            for (final GeneralParameterDescriptor d : descriptors) {
+                if (IdentifiedObjects.isHeuristicMatchForName(d, code)) {
                     throw new IllegalArgumentException(Resources.format(
                             Resources.Keys.MismatchedParameterDescriptor_1, name));
                 }
@@ -303,8 +299,7 @@ final class ParameterValueList extends AbstractList<GeneralParameterValue> imple
      */
     @Override
     public GeneralParameterValue remove(final int index) {
-        ArgumentChecks.ensureValidIndex(size, index);
-        final GeneralParameterValue value = values[index];
+        final GeneralParameterValue value = values[Objects.checkIndex(index, size)];
         ensureCanRemove(value.getDescriptor());
         System.arraycopy(values, index + 1, values, index, --size - index);
         values[size] = null;

@@ -17,6 +17,7 @@
 package org.apache.sis.math;
 
 import java.util.Arrays;
+import java.util.Objects;
 import static java.lang.Math.PI;
 import static java.lang.Math.min;
 import static java.lang.Math.abs;
@@ -797,7 +798,8 @@ public final class MathFunctions extends Static {
      * @see java.math.BigInteger#isProbablePrime(int)
      */
     static int primeNumberAt(final int index) throws IndexOutOfBoundsException {
-        ArgumentChecks.ensureValidIndex(PRIMES_LENGTH_16_BITS, index);
+        Objects.checkIndex(index, PRIMES_LENGTH_16_BITS);
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         short[] primes = MathFunctions.primes;
         if (index >= primes.length) {
             synchronized (MathFunctions.class) {
@@ -842,6 +844,7 @@ testNextNumber:         while (true) {      // Simulate a "goto" statement (usua
      */
     public static int nextPrimeNumber(final int number) throws IllegalArgumentException {
         ArgumentChecks.ensureBetween("number", 2, HIGHEST_SUPPORTED_PRIME_NUMBER, number);
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final short[] primes = MathFunctions.primes;
         int lower = 0;
         int upper = min(PRIMES_LENGTH_15_BITS, primes.length);

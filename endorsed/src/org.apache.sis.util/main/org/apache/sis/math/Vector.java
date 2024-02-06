@@ -23,6 +23,7 @@ import java.util.AbstractList;
 import java.util.RandomAccess;
 import java.util.StringJoiner;
 import java.util.Optional;
+import java.util.Objects;
 import java.util.function.IntSupplier;
 import static java.util.logging.Logger.getLogger;
 import org.apache.sis.measure.NumberRange;
@@ -33,7 +34,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.system.Loggers;
-import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
 
 
 /**
@@ -560,7 +560,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      */
     public void fill(int fromIndex, final int toIndex, final Number value) {
         // Subclasses override with more efficient implementations.
-        ArgumentChecks.ensureValidIndexRange(size(), fromIndex, toIndex);
+        Objects.checkFromToIndex(fromIndex, toIndex, size());
         while (fromIndex < toIndex) set(fromIndex++, value);
     }
 
@@ -967,8 +967,7 @@ search:     for (;;) {
 
         /** Returns the index where to look for the value in the enclosing vector. */
         final int toBacking(final int index) {
-            ensureValidIndex(length, index);
-            return index*step + first;
+            return Objects.checkIndex(index, length) * step + first;
         }
 
         /** Returns the index where to look for the value in the enclosing vector. */
@@ -1105,7 +1104,7 @@ search:     for (;;) {
         indices = indices.clone();
         final int length = size();
         for (int i : indices) {
-            ensureValidIndex(length, i);
+            Objects.checkIndex(i, length);
         }
         return indices;
     }

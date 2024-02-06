@@ -439,8 +439,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      */
     @Override                                       // Must also be overridden in SubEnvelope
     public double getLower(final int dimension) throws IndexOutOfBoundsException {
-        ensureValidIndex(coordinates.length >>> 1, dimension);
-        return coordinates[dimension];
+        return coordinates[Objects.checkIndex(dimension, coordinates.length >>> 1)];
     }
 
     /**
@@ -449,8 +448,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     @Override                                       // Must also be overridden in SubEnvelope
     public double getUpper(final int dimension) throws IndexOutOfBoundsException {
         final int d = coordinates.length >>> 1;
-        ensureValidIndex(d, dimension);
-        return coordinates[dimension + d];
+        return coordinates[Objects.checkIndex(dimension, d) + d];
     }
 
     /**
@@ -458,8 +456,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      */
     @Override
     public double getMinimum(final int dimension) throws IndexOutOfBoundsException {
-        ensureValidIndex(endIndex(), dimension);
-        final int i = dimension + beginIndex();
+        final int i = Objects.checkIndex(dimension, endIndex()) + beginIndex();
         double lower = coordinates[i];
         if (isNegative(coordinates[i + (coordinates.length >>> 1)] - lower)) {    // Special handling for -0.0
             final CoordinateSystemAxis axis = getAxis(crs, dimension);
@@ -473,8 +470,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      */
     @Override
     public double getMaximum(final int dimension) throws IndexOutOfBoundsException {
-        ensureValidIndex(endIndex(), dimension);
-        final int i = dimension + beginIndex();
+        final int i = Objects.checkIndex(dimension, endIndex()) + beginIndex();
         double upper = coordinates[i + (coordinates.length >>> 1)];
         if (isNegative(upper - coordinates[i])) {                               // Special handling for -0.0
             final CoordinateSystemAxis axis = getAxis(crs, dimension);
@@ -488,8 +484,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      */
     @Override
     public double getMedian(final int dimension) throws IndexOutOfBoundsException {
-        ensureValidIndex(endIndex(), dimension);
-        final int i = dimension + beginIndex();
+        final int i = Objects.checkIndex(dimension, endIndex()) + beginIndex();
         final double minimum = coordinates[i];
         final double maximum = coordinates[i + (coordinates.length >>> 1)];
         double median = 0.5 * (minimum + maximum);
@@ -504,8 +499,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      */
     @Override
     public double getSpan(final int dimension) throws IndexOutOfBoundsException {
-        ensureValidIndex(endIndex(), dimension);
-        final int i = dimension + beginIndex();
+        final int i = Objects.checkIndex(dimension, endIndex()) + beginIndex();
         double span = coordinates[i + (coordinates.length >>> 1)] - coordinates[i];
         if (isNegative(span)) {                                                 // Special handling for -0.0
             span = fixSpan(getAxis(crs, dimension), span);

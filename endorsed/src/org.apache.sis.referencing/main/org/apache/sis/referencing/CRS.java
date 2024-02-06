@@ -19,6 +19,7 @@ package org.apache.sis.referencing;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Filter;
 import java.util.logging.Logger;
@@ -1460,7 +1461,7 @@ public final class CRS extends Static {
     public static CoordinateReferenceSystem getComponentAt(CoordinateReferenceSystem crs, int lower, int upper) {
         if (crs == null) return null;     // Skip bounds check.
         int dimension = ReferencingUtilities.getDimension(crs);
-        ArgumentChecks.ensureValidIndexRange(dimension, lower, upper);
+        Objects.checkFromToIndex(lower, upper, dimension);
 check:  while (lower != 0 || upper != dimension) {
             if (crs instanceof CompoundCRS) {
                 // We need nested CompoundCRS (if any) below, not a flattened list of SingleCRS.

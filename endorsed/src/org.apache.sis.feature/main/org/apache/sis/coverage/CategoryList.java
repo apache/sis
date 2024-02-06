@@ -211,8 +211,10 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
         final double[] extremums;
         extremums = new double[count * 2];
         minimums  = new double[count];
-        int countOfFiniteRanges = 0;
+
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         NumberRange<?> range = null;
+        int countOfFiniteRanges = 0;
         for (int i=count; --i >= 0;) {                  // Reverse order for making computation of `range` more convenient.
             final Category category = categories[i];
             if (!isNaN(minimums[i] = category.range.getMinDouble(true))) {

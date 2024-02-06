@@ -220,6 +220,7 @@ public class Category implements Serializable {
      * @throws IllegalSampleDimensionException if the {@code samples} range of values is empty
      *         or the transfer function cannot be used.
      */
+    @SuppressWarnings("this-escape")
     protected Category(final CharSequence name, NumberRange<?> samples, final MathTransform1D toUnits, final Unit<?> units,
              final DoubleToIntFunction toNaN)
     {

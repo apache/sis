@@ -1196,14 +1196,12 @@ public class SampleDimension implements Serializable {
 
                 /** Returns the category at the given index. */
                 @Override public Category get(int i) {
-                    ArgumentChecks.ensureValidIndex(count, i);
-                    return categories[i];
+                    return categories[Objects.checkIndex(i, count)];
                 }
 
                 /** Removes the category at the given index. */
                 @Override public Category remove(int i) {
-                    ArgumentChecks.ensureValidIndex(count, i);
-                    final Category c = categories[i];
+                    final Category c = categories[Objects.checkIndex(i, count)];
                     System.arraycopy(categories, i+1, categories, i, --count - i);
                     categories[count] = null;
                     toNaN.remove(c);

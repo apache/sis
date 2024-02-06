@@ -26,6 +26,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Locale;
 import java.text.NumberFormat;
+import java.util.Objects;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import org.opengis.util.FactoryException;
@@ -1330,8 +1331,7 @@ search:         for (int j=domain(); --j >= 0;) {
             long defined = 0;
             projToGrid = projToGrid.clone();
             for (final int d : projToGrid) {
-                ArgumentChecks.ensureValidIndex(tgtDim, d);
-                if (defined == (defined |= Numerics.bitmask(d))) {
+                if (defined == (defined |= Numerics.bitmask(Objects.checkIndex(d, tgtDim)))) {
                     // Note: if d ≥ 64, there will be no check (mask = 0).
                     throw new IllegalArgumentException(Errors.format(Errors.Keys.DuplicatedNumber_1, d));
                 }

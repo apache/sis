@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.awt.Rectangle;
+import java.util.Objects;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.geometry.Envelope;
@@ -798,8 +799,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      */
     @Override
     public long getLow(final int index) {
-        ArgumentChecks.ensureValidIndex(getDimension(), index);
-        return coordinates[index];
+        return coordinates[Objects.checkIndex(index, getDimension())];
     }
 
     /**
@@ -817,8 +817,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     @Override
     public long getHigh(final int index) {
         final int dimension = getDimension();
-        ArgumentChecks.ensureValidIndex(dimension, index);
-        return coordinates[index + dimension];
+        return coordinates[Objects.checkIndex(index, dimension) + dimension];
     }
 
     /**
@@ -843,8 +842,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      */
     public long getMedian(final int index) {
         final int dimension = getDimension();
-        ArgumentChecks.ensureValidIndex(dimension, index);
-        final long low  = coordinates[index];
+        final long low  = coordinates[Objects.checkIndex(index, dimension)];
         final long high = coordinates[index + dimension];
         /*
          * Use `>> 1` instead of `/2` because the two operations differ in their rounding mode for negative values.
@@ -898,7 +896,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     @Override
     public long getSize(final int index) {
         final int dimension = getDimension();
-        ArgumentChecks.ensureValidIndex(dimension, index);
+        Objects.checkIndex(index, dimension);
         return Math.incrementExact(Math.subtractExact(coordinates[dimension + index], coordinates[index]));
     }
 
@@ -914,7 +912,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      */
     public double getSize(final int index, final boolean minusOne) {
         final int dimension = getDimension();
-        ArgumentChecks.ensureValidIndex(dimension, index);
+        Objects.checkIndex(index, dimension);
         long size = coordinates[dimension + index] - coordinates[index];        // Unsigned long.
         if (!minusOne && ++size == 0) {
             return 0x1P64;                          // Unsigned integer overflow. Result is 2^64.
@@ -1165,7 +1163,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *         than the {@linkplain #getDimension() grid dimension}.
      */
     public Optional<DimensionNameType> getAxisType(final int index) {
-        ArgumentChecks.ensureValidIndex(getDimension(), index);
+        Objects.checkIndex(index, getDimension());
         return Optional.ofNullable((types != null) ? types[index] : null);
     }
 
@@ -1211,8 +1209,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      */
     public GridExtent withRange(final int index, final long low, final long high) {
         int ih = getDimension();
-        ArgumentChecks.ensureValidIndex(ih, index);
-        ih += index;
+        ih += Objects.checkIndex(index, ih);
         if (coordinates[index] == low && coordinates[ih] == high) {
             return this;
         }
@@ -1422,7 +1419,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      */
     public GridExtent insertDimension(final int index, final DimensionNameType axisType, final long low, long high, final boolean isHighIncluded) {
         final int dimension = getDimension();
-        ArgumentChecks.ensureValidIndex(dimension+1, index);
+        Objects.checkIndex(index, dimension+1);
         if (!isHighIncluded) {
             high = Math.decrementExact(high);
         }

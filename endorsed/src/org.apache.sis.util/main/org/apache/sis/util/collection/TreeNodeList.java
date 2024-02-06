@@ -18,8 +18,8 @@ package org.apache.sis.util.collection;
 
 import java.util.Arrays;
 import java.util.AbstractList;
+import java.util.Objects;
 import java.io.Serializable;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -163,8 +163,7 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
      */
     @Override
     public TreeTable.Node get(final int index) {
-        ArgumentChecks.ensureValidIndex(size, index);
-        return children[index];
+        return children[Objects.checkIndex(index, size)];
     }
 
     /**
@@ -178,10 +177,8 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
      */
     @Override
     public TreeTable.Node set(final int index, final TreeTable.Node node) throws IllegalArgumentException {
-        ArgumentChecks.ensureValidIndex(size, index);
-        ArgumentChecks.ensureNonNull("node", node);
-        final TreeTable.Node old = children[index];
-        if (old != node) {
+        final TreeTable.Node old = children[Objects.checkIndex(index, size)];
+        if (old != Objects.requireNonNull(node)) {
             if (isParentOf(node)) {
                 ensureNotPresent(node);
                 setParentOf(old, NULL);
@@ -207,9 +204,8 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
      */
     @Override
     public void add(final int index, final TreeTable.Node node) throws IllegalArgumentException {
-        ArgumentChecks.ensureValidIndex(size + 1, index);
-        ArgumentChecks.ensureNonNull("node", node);
-        if (isParentOf(node)) {
+        Objects.checkIndex(index, size + 1);
+        if (isParentOf(Objects.requireNonNull(node))) {
             ensureNotPresent(node);
         } else {
             setParentOf(node, THIS);
@@ -260,7 +256,7 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
      */
     @Override
     protected void removeRange(final int lower, final int upper) throws IllegalArgumentException {
-        ArgumentChecks.ensureValidIndexRange(size, lower, upper);
+        Objects.checkFromToIndex(lower, upper, size);
         int i = upper;
         try {
             while (i != lower) {
@@ -286,8 +282,7 @@ abstract class TreeNodeList extends AbstractList<TreeTable.Node>
      */
     @Override
     public final TreeTable.Node remove(final int index) throws IllegalArgumentException {
-        ArgumentChecks.ensureValidIndex(size, index);
-        final TreeTable.Node old = children[index];
+        final TreeTable.Node old = children[Objects.checkIndex(index, size)];
         setParentOf(old, NULL);
         System.arraycopy(children, index+1, children, index, --size - index);
         children[size] = null;

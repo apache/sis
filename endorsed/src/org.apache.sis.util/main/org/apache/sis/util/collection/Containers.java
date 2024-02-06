@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.Iterator;
 import java.util.Collection;
+import java.util.Objects;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
@@ -118,8 +119,7 @@ public final class Containers extends Static {
      * @throws IndexOutOfBoundsException if the lower or upper value are out of bounds.
      */
     public static <E> List<? extends E> unmodifiableList(final E[] array, final int lower, final int upper) {
-        ArgumentChecks.ensureNonNull("array", array);
-        ArgumentChecks.ensureValidIndexRange(array.length, lower, upper);
+        Objects.checkFromToIndex(lower, upper, array.length);
         return UnmodifiableArrayList.wrap(array, lower, upper);
     }
 

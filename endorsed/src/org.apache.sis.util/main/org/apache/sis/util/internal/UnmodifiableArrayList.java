@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.RandomAccess;
 import java.lang.reflect.Array;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ConditionallySafe;
 import org.apache.sis.util.collection.CheckedContainer;
 
@@ -303,7 +302,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
     public UnmodifiableArrayList<E> subList(final int lower, final int upper)
             throws IndexOutOfBoundsException
     {
-        ArgumentChecks.ensureValidIndexRange(size(), lower, upper);
+        Objects.checkFromToIndex(lower, upper, size());
         return new SubList<>(array, lower + lower(), upper - lower);
     }
 
@@ -357,8 +356,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
          */
         @Override
         public E get(final int index) {
-            ArgumentChecks.ensureValidIndex(size, index);
-            return super.get(index + lower);
+            return super.get(Objects.checkIndex(index, size) + lower);
         }
 
         /**

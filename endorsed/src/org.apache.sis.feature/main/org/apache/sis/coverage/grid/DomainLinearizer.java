@@ -142,7 +142,6 @@ public class DomainLinearizer {
      * @throws TransformException if some cell coordinates cannot be computed.
      */
     public GridCoverage apply(final GridCoverage coverage) throws TransformException {
-        ArgumentChecks.ensureNonNull("coverage", coverage);
         final GridGeometry gg = coverage.getGridGeometry();
         final GridGeometry linearized = apply(gg);
         if (gg.equals(linearized)) {
@@ -164,7 +163,6 @@ public class DomainLinearizer {
      * @throws TransformException if some cell coordinates cannot be computed.
      */
     public GridGeometry apply(final GridGeometry gg) throws TransformException {
-        ArgumentChecks.ensureNonNull("gg", gg);
         if (gg.nonLinears != 0) try {
             MathTransform   gridToCRS   = gg.requireGridToCRS(true);
             GeneralEnvelope domain      = gg.extent.toEnvelope();

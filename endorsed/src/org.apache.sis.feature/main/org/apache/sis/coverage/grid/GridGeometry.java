@@ -17,6 +17,7 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.time.Instant;
 import java.text.NumberFormat;
@@ -1244,8 +1245,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         final int dimension = getTargetDimension();
         long mask = 0;
         for (final int d : targets) {
-            ArgumentChecks.ensureValidIndex(dimension, d);
-            mask |= Numerics.bitmask(d);
+            mask |= Numerics.bitmask(Objects.checkIndex(d, dimension));
         }
         return (nonLinears & mask) == 0;
     }

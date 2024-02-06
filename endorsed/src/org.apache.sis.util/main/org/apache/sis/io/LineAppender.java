@@ -16,6 +16,7 @@
  */
 package org.apache.sis.io;
 
+import java.util.Objects;
 import java.io.Flushable;
 import java.io.IOException;
 import org.apache.sis.util.Characters;
@@ -577,7 +578,7 @@ split:  for (;;) {
      */
     @Override
     public Appendable append(final CharSequence sequence, int start, final int end) throws IOException {
-        ArgumentChecks.ensureValidIndexRange(sequence.length(), start, end);
+        Objects.checkFromToIndex(start, end, sequence.length());
         if (lineSeparator == null) {
             /*
              * Use the line separator found in the submitted document, if possible.

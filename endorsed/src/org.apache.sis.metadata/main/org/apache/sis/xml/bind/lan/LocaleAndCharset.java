@@ -24,8 +24,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Iterator;
+import java.util.Objects;
 import java.nio.charset.Charset;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.Bag;
 import org.apache.sis.util.internal.Unsafe;
 import org.apache.sis.util.internal.CollectionsExt;
@@ -179,7 +179,7 @@ public final class LocaleAndCharset implements Node {
 
             /** Returns a child node wrapping the {@link Charset} ad the given index. */
             @Override public Node get(final int index) {
-                ArgumentChecks.ensureValidIndex(1, index);
+                Objects.checkIndex(index, 1);
                 return new Child();
             }
         };

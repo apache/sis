@@ -17,7 +17,7 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Arrays;
-import org.apache.sis.util.ArgumentChecks;
+import java.util.Objects;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.grid.GridCoordinates;
@@ -71,8 +71,7 @@ final class GridCoordinatesView implements GridCoordinates {
      */
     @Override
     public final long getCoordinateValue(final int index) {
-        ArgumentChecks.ensureValidIndex(getDimension(), index);
-        return coordinates[offset + index];
+        return coordinates[offset + Objects.checkIndex(index, getDimension())];
     }
 
     /**

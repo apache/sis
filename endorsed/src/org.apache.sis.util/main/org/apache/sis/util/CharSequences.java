@@ -17,6 +17,7 @@
 package org.apache.sis.util;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.nio.CharBuffer;
 import static java.lang.Character.*;
 import org.opengis.metadata.citation.Citation;      // For javadoc
@@ -140,12 +141,12 @@ public final class CharSequences extends Static {
             }
 
             @Override public char charAt(int index) {
-                ArgumentChecks.ensureValidIndex(length, index);
+                Objects.checkIndex(index, length);
                 return ' ';
             }
 
             @Override public CharSequence subSequence(final int start, final int end) {
-                ArgumentChecks.ensureValidIndexRange(length, start, end);
+                Objects.checkFromToIndex(start, end, length);
                 final int n = end - start;
                 return (n == length) ? this : spaces(n);
             }
@@ -981,7 +982,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      */
     public static CharSequence trimWhitespaces(CharSequence text, int lower, int upper) {
         final int length = length(text);
-        ArgumentChecks.ensureValidIndexRange(length, lower, upper);
+        Objects.checkFromToIndex(lower, upper, length);
         if (text != null) {
             lower = skipLeadingWhitespaces (text, lower, upper);
             upper = skipTrailingWhitespaces(text, lower, upper);

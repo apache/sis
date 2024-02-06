@@ -577,8 +577,7 @@ public final class Matrices extends Static {
         final int numTargetDim = selectedDimensions.length;
         final MatrixSIS matrix = createZero(numTargetDim+1, sourceDimensions+1);
         for (int j=0; j<numTargetDim; j++) {
-            final int i = selectedDimensions[j];
-            ArgumentChecks.ensureValidIndex(sourceDimensions, i);
+            int i = Objects.checkIndex(selectedDimensions[j], sourceDimensions);
             matrix.setElement(j, i, 1);
         }
         matrix.setElement(numTargetDim, sourceDimensions, 1);

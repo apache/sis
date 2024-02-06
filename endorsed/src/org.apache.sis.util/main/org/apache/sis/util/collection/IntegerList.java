@@ -18,6 +18,7 @@ package org.apache.sis.util.collection;
 
 import java.util.Arrays;
 import java.util.AbstractList;
+import java.util.Objects;
 import java.util.RandomAccess;
 import java.util.Spliterator;
 import java.util.PrimitiveIterator;
@@ -281,8 +282,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      */
     public int getInt(final int index) throws IndexOutOfBoundsException {
-        ArgumentChecks.ensureValidIndex(size, index);
-        return getUnchecked(index);
+        return getUnchecked(Objects.checkIndex(index, size));
     }
 
     /**
@@ -333,7 +333,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      * @throws IllegalArgumentException if the given value is out of bounds.
      */
     public void setInt(int index, int value) throws IndexOutOfBoundsException {
-        ArgumentChecks.ensureValidIndex(size, index);
+        Objects.checkIndex(index, size);
         ArgumentChecks.ensureBetween("value", 0, mask, value);
         modCount++;
         setUnchecked(index, value);
@@ -399,7 +399,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      */
     @Override
     protected void removeRange(int lower, int upper) {
-        ArgumentChecks.ensureValidIndexRange(size, lower, upper);
+        Objects.checkFromToIndex(lower, upper, size);
         int lo = lower * bitCount;
         int hi = upper * bitCount;
         final int offset = (lo & OFFSET_MASK);

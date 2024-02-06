@@ -205,7 +205,6 @@ public abstract class InstallationScriptProvider extends InstallationResources {
     @Override
     public BufferedReader openScript(final String authority, final int resource) throws IOException {
         verifyAuthority(authority);
-        ArgumentChecks.ensureValidIndex(resources.length, resource);
         if (!Constants.EPSG.equals(authority)) {
             throw new IllegalStateException(Resources.format(Resources.Keys.UnknownAuthority_1, authority));
         }

@@ -59,11 +59,6 @@ import org.opengis.coverage.grid.GridEnvelope;
  *     {@link #ensureCanCast(String, Class, Object) ensureCanCast}.
  *   </td>
  * </tr><tr>
- *   <td>{@link IndexOutOfBoundsException}</td>
- *   <td class="sep">
- *     {@link #ensureValidIndex(int, int) ensureValidIndex}.
- *   </td>
- * </tr><tr>
  *   <td>{@link MismatchedDimensionException}</td>
  *   <td class="sep">
  *     {@link #ensureDimensionMatches(String, int, DirectPosition) ensureDimensionMatches}.
@@ -335,7 +330,10 @@ public final class ArgumentChecks extends Static {
      * @throws IndexOutOfBoundsException if the given index is negative or not lower than the given upper value.
      *
      * @see #ensurePositive(String, int)
+     *
+     * @deprecated As of Java 9, replaced by {@link Objects#checkIndex(int, int)}.
      */
+    @Deprecated(since="1.5", forRemoval=true)
     public static void ensureValidIndex(final int upper, final int index) throws IndexOutOfBoundsException {
         if (index < 0 || index >= upper) {
             throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, index));
@@ -359,7 +357,10 @@ public final class ArgumentChecks extends Static {
      *         range is out of the sequence index range.
      *
      * @see #ensureCountBetween(String, boolean, int, int, int)
+     *
+     * @deprecated As of Java 9, replaced by {@link Objects#checkFromToIndex(int, int, int)}.
      */
+    @Deprecated(since="1.5", forRemoval=true)
     public static void ensureValidIndexRange(final int length, final int lower, final int upper) throws IndexOutOfBoundsException {
         if (lower < 0 || upper < lower || upper > length) {
             throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IllegalRange_2, lower, upper));
@@ -369,13 +370,12 @@ public final class ArgumentChecks extends Static {
     /**
      * Ensures that the given integer value is greater than or equals to zero.
      * This method is used for checking values that are <strong>not</strong> index.
-     * For checking index values, use {@link #ensureValidIndex(int, int)} instead.
+     * For checking index values, use {@link Objects#checkIndex(int, int)} instead.
      *
      * @param  name   the name of the argument to be checked, used only if an exception is thrown.
      * @param  value  the user argument to check.
      * @throws IllegalArgumentException if the given value is negative.
      *
-     * @see #ensureValidIndex(int, int)
      * @see #ensureStrictlyPositive(String, int)
      */
     public static void ensurePositive(final String name, final int value)
@@ -568,7 +568,7 @@ public final class ArgumentChecks extends Static {
      * <ul>
      *   <li>{@link #ensureCountBetween(String, boolean, int, int, int) ensureCountBetween(…)}
      *       if the {@code value} argument is a collection size or an array length.</li>
-     *   <li>{@link #ensureValidIndex(int, int) ensureValidIndex(…)} if the {@code value}
+     *   <li>{@link Objects#checkIndex(int, int)} if the {@code value}
      *       argument is an index in a list or an array.</li>
      * </ul>
      *
@@ -579,8 +579,6 @@ public final class ArgumentChecks extends Static {
      * @throws IllegalArgumentException if the given value is not in the given range.
      *
      * @see #ensureCountBetween(String, boolean, int, int, int)
-     * @see #ensureValidIndex(int, int)
-     * @see #ensureValidIndexRange(int, int, int)
      */
     public static void ensureBetween(final String name, final int min, final int max, final int value)
             throws IllegalArgumentException
@@ -660,7 +658,6 @@ public final class ArgumentChecks extends Static {
      * @throws IllegalArgumentException if the given value is not in the given range.
      *
      * @see #ensureBetween(String, int, int, int)
-     * @see #ensureValidIndexRange(int, int, int)
      *
      * @since 1.4
      */
