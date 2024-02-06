@@ -152,7 +152,6 @@ final class IsolineRenderer {
          *
          * @param  steps  the list of isoline levels to render.
          */
-        @SuppressWarnings("ThisEscapedInObjectConstruction")
         Band(final ObservableList<Step> steps) {
             this.steps = steps;
             addListeners(steps);

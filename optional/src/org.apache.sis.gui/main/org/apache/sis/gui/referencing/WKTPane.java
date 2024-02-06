@@ -71,7 +71,6 @@ final class WKTPane extends StringConverter<Convention> implements ChangeListene
     /**
      * Creates a new pane for showing CRS Well Known Text.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     WKTPane(final Locale locale) {
         final Convention[] sc = {           // Selected conventions in the order we want them to appear.
             Convention.WKT2_SIMPLIFIED,

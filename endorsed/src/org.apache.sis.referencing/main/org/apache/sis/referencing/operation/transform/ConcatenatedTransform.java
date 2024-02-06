@@ -209,6 +209,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         boolean inverseCaseTested = false;
         if (tr1 instanceof AbstractMathTransform) {
             // TODO: after removal of the deprecated method, invoke `tryConcatenate(Joiner)` only once.
+            @SuppressWarnings("removal")
             final MathTransform optimized = ((AbstractMathTransform) tr1).tryConcatenate(false, tr2, factory);
             inverseCaseTested = true;
             if (optimized != null) {
@@ -217,6 +218,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
             }
         }
         if (tr2 instanceof AbstractMathTransform) {
+            @SuppressWarnings("removal")
             final MathTransform optimized = ((AbstractMathTransform) tr2).tryConcatenate(true, tr1, factory);
             inverseCaseTested = true;
             if (optimized != null) {

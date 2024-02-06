@@ -133,10 +133,9 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * @throws IOException if an error occurred while preparing the input stream.
      * @throws Exception if another kind of error occurred while closing a previous stream.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     protected StaxStreamReader(final StaxDataStore owner) throws Exception {
         super(owner);
-        reader = owner.createReader(this);      // Okay because will not store the 'this' reference.
+        reader = owner.createReader(this);      // Okay because will not store the `this` reference.
     }
 
     /**

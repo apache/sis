@@ -93,7 +93,6 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
          * Creates a new entry for the given value, together with the range of index where
          * the field value has been formatted. See class javadoc for more information.
          */
-        @SuppressWarnings("ThisEscapedInObjectConstruction")
         Entry(final Attribute field, final Object value, final int start, final int limit,
                 final Map<Attribute,Entry> attributes)
         {
@@ -175,9 +174,9 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
                 for (final Map.Entry<Attribute,Object> entry : it.getAttributes().entrySet()) {
                     final Attribute attribute = entry.getKey();
                     if (it.getRunLimit(attribute) == currentRunLimit) {
-                        final Entry e = new Entry(attribute, entry.getValue(),  // Constructeur adds itself to the map.
-                                                  offset + it.getRunStart(attribute),
-                                                  offset + currentRunLimit, attributes);
+                        var e = new Entry(attribute, entry.getValue(),  // Constructeur adds itself to the map.
+                                          offset + it.getRunStart(attribute),
+                                          offset + currentRunLimit, attributes);
                     }
                 }
             }

@@ -1110,7 +1110,7 @@ appPow: if (unit == null) {
      * @throws MeasurementParseException if a problem occurred while parsing the given symbols.
      */
     @Override
-    @SuppressWarnings({"null", "fallthrough"})
+    @SuppressWarnings("fallthrough")
     public Unit<?> parse(CharSequence symbols, final ParsePosition position) throws MeasurementParseException {
         ArgumentChecks.ensureNonNull("symbols",  symbols);
         ArgumentChecks.ensureNonNull("position", position);

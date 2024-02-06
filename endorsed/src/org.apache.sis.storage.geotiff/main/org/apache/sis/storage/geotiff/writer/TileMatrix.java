@@ -190,7 +190,6 @@ public final class TileMatrix {
      * @throws DataStoreException if the compression method is unsupported.
      * @throws IOException if an error occurred while writing to the given output.
      */
-    @SuppressWarnings("null")
     public void writeRasters(final ChannelDataOutput output) throws DataStoreException, IOException {
         ChannelDataOutput compOutput  = null;
         PixelChannel      compressor  = null;

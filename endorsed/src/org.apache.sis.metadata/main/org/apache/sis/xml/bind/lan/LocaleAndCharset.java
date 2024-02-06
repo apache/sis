@@ -27,6 +27,7 @@ import java.util.Iterator;
 import java.nio.charset.Charset;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.Bag;
+import org.apache.sis.util.internal.Unsafe;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable.Node;
@@ -225,11 +226,11 @@ public final class LocaleAndCharset implements Node {
         @Override public <V> void setValue(final TableColumn<V> column, V value) {
             if (TableColumn.VALUE.equals(column)) {
                 /*
-                 * No @SuppressWarning("unchecked") because following is a real hole.
-                 * We rely on Entry.setValue(Object) implementation to perform checks
-                 * (this is the case with SIS implementation backed by PropertyAccessor).
+                 * We rely on Entry.setValue(Object) implementation to perform type checks.
+                 * This is the case with SIS implementation backed by PropertyAccessor,
+                 * but we cannot guarantee that this is the case with user-provided map.
                  */
-                ((Map.Entry<?,V>) node.getUserObject()).setValue(value);
+                Unsafe.setValue((Map.Entry<?,?>) node.getUserObject(), value);
             } else {
                 node.setValue(column, value);
             }

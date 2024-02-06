@@ -46,6 +46,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.beans.value.WritableValue;
 import javafx.concurrent.Task;
 import javafx.concurrent.Worker;
+import javafx.scene.Node;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.transform.Affine;
@@ -351,6 +352,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      *
      * @param  locale  the locale to use for labels and some messages, or {@code null} for default.
      */
+    @SuppressWarnings("this-escape")
     public MapCanvas(final Locale locale) {
         super(locale);
         transform        = new Affine();
@@ -719,7 +721,6 @@ public abstract class MapCanvas extends PlanarCanvas {
          * Creates and registers a new handler for showing a contextual menu in the enclosing canvas.
          * It is caller responsibility to ensure that this method is invoked only once.
          */
-        @SuppressWarnings("ThisEscapedInObjectConstruction")
         MenuHandler(final ContextMenu menu) {
             super(getDisplayCRS());
             this.menu = menu;
@@ -737,7 +738,7 @@ public abstract class MapCanvas extends PlanarCanvas {
                 hideContextMenu();
                 x = event.getX();
                 y = event.getY();
-                menu.show((Pane) event.getSource(), event.getScreenX(), event.getScreenY());
+                menu.show((Node) event.getSource(), event.getScreenX(), event.getScreenY());
                 menuShown = menu;
                 event.consume();
             }
@@ -788,8 +789,8 @@ public abstract class MapCanvas extends PlanarCanvas {
         public void propertyChange(final PropertyChangeEvent event) {
             if (OBJECTIVE_CRS_PROPERTY.equals(event.getPropertyName())) {
                 final Object value = event.getNewValue();
-                if (value instanceof CoordinateReferenceSystem) {
-                    selectedCrsProperty.set((CoordinateReferenceSystem) value);
+                if (value instanceof ReferenceSystem) {
+                    selectedCrsProperty.set((ReferenceSystem) value);
                 }
                 if (!isPositionableProjection) {
                     positionables.selectToggle(null);
@@ -804,8 +805,9 @@ public abstract class MapCanvas extends PlanarCanvas {
      *
      * @param  crs       the new Coordinate Reference System in which to transform all data before displaying.
      * @param  anchor    the point to keep at fixed display coordinates, or {@code null} for default value.
-     * @param  property  the property to reset if the operation fails.
+     * @param  property  the property to reset if the operation fails, or {@code null} if none.
      */
+    @SuppressWarnings("unchecked")
     private void setObjectiveCRS(final CoordinateReferenceSystem crs, DirectPosition anchor,
                                  final ObservableValue<? extends ReferenceSystem> property)
     {
@@ -826,6 +828,7 @@ public abstract class MapCanvas extends PlanarCanvas {
             requestRepaint();
         } catch (Exception e) {
             if (property instanceof WritableValue<?>) {
+                // Cast is ok because used only for properties that we defined.
                 ((WritableValue<ReferenceSystem>) property).setValue(previous);
             }
             errorOccurred(e);
@@ -1212,6 +1215,7 @@ public abstract class MapCanvas extends PlanarCanvas {
                      * Otherwise the transform is initialized to an identity transform (should not happen often).
                      * If a CRS is present, it is used for deciding if we need to swap or flip axes.
                      */
+                    @SuppressWarnings("LocalVariableHidesMemberVariable")
                     final Envelope objectiveBounds = getObjectiveBounds();
                     if (objectiveBounds != null) {
                         final MatrixSIS m;

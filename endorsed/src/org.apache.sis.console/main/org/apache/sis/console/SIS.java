@@ -86,7 +86,7 @@ public final class SIS extends Static {
          * @param  value  value for the specified option.
          * @return the builder on which to perform chained method calls.
          */
-        @SuppressWarnings({"unchecked", "null"})
+        @SuppressWarnings("unchecked")
         final C set(final Option key, Object value) {
             if (key.hasValue && (value = trim(value)) == null) {
                 final String option = key.label();

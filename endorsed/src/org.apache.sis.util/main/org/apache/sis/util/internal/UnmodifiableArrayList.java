@@ -23,6 +23,7 @@ import java.util.Objects;
 import java.util.RandomAccess;
 import java.lang.reflect.Array;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ConditionallySafe;
 import org.apache.sis.util.collection.CheckedContainer;
 
 
@@ -39,7 +40,7 @@ import org.apache.sis.util.collection.CheckedContainer;
  *     List<?> list = Collections.unmodifiableList(Arrays.asList(array));
  *     }
  *
- * except that this class uses one less level of indirection (which may be significant since
+ * except that this class uses one less level of indirection (which may be significant because
  * unmodifiable lists are extensively used in SIS) and implements the {@link CheckedContainer}
  * interface.
  *
@@ -47,7 +48,7 @@ import org.apache.sis.util.collection.CheckedContainer;
  * The {@link #getElementType()} return type is {@code Class<E>}, but its implementation actually
  * returns {@code Class<? extends E>}. This contract violation is possible because Java arrays are
  * covariant (at the contrary of collections). In order to avoid such contract violation, callers
- * <strong>must</strong> ensure that the type of array elements in exactly {@code E}, not a subtype
+ * <strong>must</strong> ensure that the type of array elements is exactly {@code E}, not a subtype
  * of {@code E}. This class has no way to verify that condition. This class is not in the public API
  * for this reason.
  *
@@ -121,11 +122,11 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
      * specified sub-region of the given array shall not be modified after construction if the
      * returned list is intended to be immutable.
      *
-     * <p>This method does not check the validity of the given index.
+     * <p>This method does not check the validity of the given indices.
      * The check must be done by the caller.</p>
      *
      * <h4>WARNING! Type safety hole</h4>
-     * Callers <strong>must</strong> ensure that the type of array elements in exactly {@code E},
+     * Callers <strong>must</strong> ensure that the type of array elements is exactly {@code E},
      * not a subtype of {@code E}. If the caller is okay with {@code List<? extends E>}, then (s)he
      * should use {@link org.apache.sis.util.collection.Containers#unmodifiableList(Object[])} instead.
      * See class javadoc for more information.
@@ -136,6 +137,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
      * @param  upper  high endpoint (exclusive) of the sublist.
      * @return the given array wrapped in an unmodifiable list.
      */
+    @ConditionallySafe
     public static <E> UnmodifiableArrayList<E> wrap(final E[] array, final int lower, final int upper) {
         if (lower == 0 && upper == array.length) {
             return new UnmodifiableArrayList<>(array);
@@ -147,11 +149,16 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
      * Returns the element type of the wrapped array. The default implementation returns
      * <code>array.getClass().{@linkplain Class#getComponentType() getComponentType()}</code>.
      *
+     * <h4>Type safety hole</h4>
+     * The returned value is correct only if the condition documented
+     * in {@link #wrap(Object[], int, int)} has been met.
+     *
      * @return the type of elements in the list.
      */
     @Override
+    @ConditionallySafe
+    @SuppressWarnings("unchecked")
     public Class<E> getElementType() {
-        // No @SuppressWarnings because this cast is really unsafe. See class javadoc.
         return (Class<E>) array.getClass().getComponentType();
     }
 

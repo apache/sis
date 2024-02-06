@@ -147,9 +147,9 @@ final class CoverageControls extends ViewAndControls {
             final ValueColorMapper mapper = new ValueColorMapper(resources, vocabulary);
             isolines = new IsolineRenderer(view);
             isolines.setIsolineTables(List.of(mapper.getSteps()));
-            final Region view = mapper.getView();
-            VBox.setVgrow(view, Priority.ALWAYS);
-            isolinesPane = new VBox(view);                          // TODO: add band selector
+            final Region style = mapper.getView();
+            VBox.setVgrow(style, Priority.ALWAYS);
+            isolinesPane = new VBox(style);                         // TODO: add band selector
         }
         /*
          * Synchronized windows. A synchronized windows is a window which can reproduce the same gestures

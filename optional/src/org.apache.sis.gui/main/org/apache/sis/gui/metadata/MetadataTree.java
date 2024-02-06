@@ -180,6 +180,7 @@ check:      if (data != null) {
      *
      * @param  controller  the widget to watch, or {@code null} if none.
      */
+    @SuppressWarnings("this-escape")
     public MetadataTree(final MetadataSummary controller) {
         this(controller, false);
         setRowFactory(Row::new);
@@ -192,7 +193,7 @@ check:      if (data != null) {
      * @param  controller  the widget to watch, or {@code null} if none.
      * @param  standard    {@code true} for showing standard metadata, or {@code false} for native metadata.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
+    @SuppressWarnings({"this-escape", "unchecked"})
     MetadataTree(final MetadataSummary controller, final boolean standard) {
         final Vocabulary vocabulary;
         if (controller != null) {
@@ -405,7 +406,6 @@ check:      if (data != null) {
         /**
          * Creates a new row for the given tree table.
          */
-        @SuppressWarnings("ThisEscapedInObjectConstruction")
         Row(final TreeTableView<TreeTable.Node> owner) {
             final MetadataTree md = (MetadataTree) owner;
             final Resources localized = Resources.forLocale(md.getLocale());

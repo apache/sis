@@ -105,7 +105,6 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
      *
      * @throws JAXBException if an error occurred while preparing the marshaller.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public MarshallingTest() throws JAXBException {
         output     = new StringWriter();
         pool       = getMarshallerPool();

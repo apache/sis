@@ -109,7 +109,6 @@ public final class Numbers extends Static {
     /**
      * Creates an entry for a type which is not a primitive type.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     private Numbers(final Class<?> type, final boolean isFloat, final boolean isInteger, final byte ordinal) {
         primitive = wrapper = type;
         this.isFloat   = isFloat;
@@ -126,7 +125,6 @@ public final class Numbers extends Static {
     /**
      * Creates a mapping between a primitive type and its wrapper.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     private Numbers(final Class<?> primitive, final Class<?> wrapper,
                     final boolean  isFloat,   final boolean  isInteger,
                     final byte     size,      final byte     ordinal,

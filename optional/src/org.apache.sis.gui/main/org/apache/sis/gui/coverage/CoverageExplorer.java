@@ -229,6 +229,7 @@ public class CoverageExplorer extends Widget {
      *
      * @since 1.2
      */
+    @SuppressWarnings("this-escape")
     public CoverageExplorer(final View type) {
         ArgumentChecks.ensureNonNull("type", type);
         views            = new EnumMap<>(View.class);
@@ -250,6 +251,7 @@ public class CoverageExplorer extends Widget {
      *
      * @since 1.2
      */
+    @SuppressWarnings("this-escape")
     public CoverageExplorer(final CoverageExplorer source) {
         this(source.getViewType());
         window = PrivateAccess.newWindowHandler.apply(source.window, this);

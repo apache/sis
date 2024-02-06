@@ -153,6 +153,7 @@ public abstract class MapCanvasAWT extends MapCanvas {
      *
      * @param  locale  the locale to use for labels and some messages, or {@code null} for default.
      */
+    @SuppressWarnings("this-escape")
     public MapCanvasAWT(final Locale locale) {
         super(locale);
         imageMargin = new SimpleObjectProperty<>(this, "imageMargin", DEFAULT_MARGIN);

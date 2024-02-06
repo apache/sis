@@ -1110,6 +1110,7 @@ public class StorageConnector implements Serializable {
          * ChannelDataInput depends on ReadableByteChannel, which itself depends on storage
          * (potentially an InputStream). We need to remember this chain in `Coupled` objects.
          */
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final String name = getStorageName();
         final ReadableByteChannel channel = factory.readable(name, null);
         addView(ReadableByteChannel.class, channel, null, factory.isCoupled() ? CASCADE_ON_RESET : 0);
@@ -1194,7 +1195,7 @@ public class StorageConnector implements Serializable {
      * @return the byte buffer to use with {@link ChannelDataInput} or {@link ChannelDataOutput}.
      */
     private ByteBuffer getChannelBuffer(final ChannelFactory factory) {
-        @SuppressWarnings("deprecated")
+        @SuppressWarnings("deprecation")
         ByteBuffer buffer = getOption(OptionKey.BYTE_BUFFER);               // User-supplied buffer.
         if (buffer == null) {
             if (factory.suggestDirectBuffer) {
@@ -1495,6 +1496,7 @@ public class StorageConnector implements Serializable {
          * ChannelDataOutput depends on WritableByteChannel, which itself depends on storage
          * (potentially an OutputStream). We need to remember this chain in `Coupled` objects.
          */
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final String name = getStorageName();
         final WritableByteChannel channel = factory.writable(name, null);
         addView(WritableByteChannel.class, channel, null, factory.isCoupled() ? CASCADE_ON_RESET : 0);

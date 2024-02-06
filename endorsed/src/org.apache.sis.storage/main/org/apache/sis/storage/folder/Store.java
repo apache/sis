@@ -160,7 +160,6 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
      * @throws DataStoreException if an error occurred while fetching the directory {@link Path}.
      * @throws IOException if an error occurred while using the directory {@code Path}.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")    // Okay because 'children' does not escape.
     Store(final DataStoreProvider provider, final StorageConnector connector, final Path path, final DataStoreProvider format)
             throws DataStoreException, IOException
     {
@@ -265,6 +264,7 @@ class Store extends DataStore implements StoreResource, UnstructuredAggregate, D
                            configuration.getOption(OptionKey.ENCODING),
                            MetadataBuilder.Scope.RESOURCE);
 
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final GenericName identifier = identifier(null);
             String name = null;
             if (identifier != null) {

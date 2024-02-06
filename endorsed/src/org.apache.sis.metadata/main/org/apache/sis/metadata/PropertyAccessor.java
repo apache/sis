@@ -41,11 +41,12 @@ import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.internal.Numerics;
-import org.apache.sis.measure.ValueRange;
+import org.apache.sis.util.internal.Unsafe;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.IdentifiedObject;
+import org.apache.sis.measure.ValueRange;
 import static org.apache.sis.metadata.PropertyComparator.*;
 import static org.apache.sis.metadata.ValueExistencePolicy.isNullOrEmpty;
 import static org.apache.sis.util.internal.CollectionsExt.snapshot;
@@ -232,6 +233,7 @@ class PropertyAccessor {
      * @param  standardImpl    the implementation specified by the {@link MetadataStandard}, or {@code null} if none.
      *                         This is the same as {@code implementation} unless a custom implementation is used.
      */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     PropertyAccessor(final Class<?> type, final Class<?> implementation, final Class<?> standardImpl) {
         assert type.isAssignableFrom(implementation) : implementation;
         this.type           = type;
@@ -499,6 +501,7 @@ class PropertyAccessor {
      * @return the index of the given name, or -1 if none and {@code mandatory} is {@code false}.
      * @throws IllegalArgumentException if the name is not found and {@code mandatory} is {@code true}.
      */
+    @SuppressWarnings("StringEquality")
     final int indexOf(final String name, final boolean mandatory) {
         Integer index = mapping.get(name);
         if (index == null) {
@@ -508,7 +511,7 @@ class PropertyAccessor {
              * directly the given String instance allow usage of its cached hash code value.
              */
             final String key = CharSequences.replace(name, " ", "").toString().toLowerCase(Locale.ROOT).strip();
-            if (key == name || (index = mapping.get(key)) == null) { // Identity comparison is okay here.
+            if (key == name || (index = mapping.get(key)) == null) {        // Identity comparison is okay here.
                 if (!mandatory) {
                     return -1;
                 }
@@ -622,8 +625,8 @@ class PropertyAccessor {
      */
     final boolean isCollectionOrMap(final int index) {
         if (index >= 0 && index < allCount) {
-            final Class<?> type = getters[index].getReturnType();
-            return Collection.class.isAssignableFrom(type) || Map.class.isAssignableFrom(type);
+            final Class<?> pt = getters[index].getReturnType();
+            return Collection.class.isAssignableFrom(pt) || Map.class.isAssignableFrom(pt);
         }
         return false;
     }
@@ -657,6 +660,7 @@ class PropertyAccessor {
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     final synchronized ExtendedElementInformation information(final Citation standard, final int index) {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         ExtendedElementInformation[] informations = this.informations;
         if (informations == null) {
             this.informations = informations = new PropertyInformation<?>[standardCount];
@@ -1065,8 +1069,7 @@ class PropertyAccessor {
                  * runtime. However, other implementations could use unchecked collection.
                  * There is not much we can do...
                  */
-                // No @SuppressWarnings because this is a real hole.
-                changed = ((Collection) addTo).addAll(elementList);
+                changed = Unsafe.addAll(addTo, elementList);
             }
         }
         /*
@@ -1090,14 +1093,14 @@ class PropertyAccessor {
     @SuppressWarnings({"unchecked","rawtypes"})
     private void convert(final Object[] elements, final Class<?> targetType) throws ClassCastException {
         boolean hasNewConverter = false;
-        ObjectConverter<?,?> converter = null;
+        ObjectConverter converter = null;               // Intentionally raw type. Checks are done below.
         for (int i=0; i<elements.length; i++) {
             final Object value = elements[i];
             if (value != null) {
                 final Class<?> sourceType = value.getClass();
                 if (!targetType.isAssignableFrom(sourceType)) try {
                     if (converter == null) {
-                        converter = lastConverter;              // Volatile field - read only if needed.
+                        converter = lastConverter;      // Volatile field - read only if needed.
                     }
                     /*
                      * Require the exact same classes, not parent or subclass,
@@ -1109,7 +1112,7 @@ class PropertyAccessor {
                         converter = ObjectConverters.find(sourceType, targetType);
                         hasNewConverter = true;
                     }
-                    elements[i] = ((ObjectConverter) converter).apply(value);
+                    elements[i] = converter.apply(value);
                 } catch (UnconvertibleObjectException cause) {
                     throw (ClassCastException) new ClassCastException(Errors.format(
                             Errors.Keys.IllegalClass_2, targetType, sourceType)).initCause(cause);
@@ -1117,7 +1120,7 @@ class PropertyAccessor {
             }
         }
         if (hasNewConverter) {
-            lastConverter = converter;                          // Volatile field - store only if needed.
+            lastConverter = converter;          // Volatile field - store only if needed.
         }
     }
 

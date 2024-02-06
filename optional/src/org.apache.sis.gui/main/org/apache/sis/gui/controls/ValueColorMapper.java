@@ -346,6 +346,7 @@ public final class ValueColorMapper extends TabularWidget {
      * @param  vocabulary  localized resources, given because already known by the caller
      *                     (this argument would be removed if this method was public API).
      */
+    @SuppressWarnings("unchecked")
     private void createIsolineTable(final Vocabulary vocabulary) {
         /*
          * First column containing a checkbox for choosing whether the isoline should be drawn or not.

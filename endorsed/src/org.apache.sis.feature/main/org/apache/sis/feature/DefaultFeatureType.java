@@ -257,7 +257,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      *
      * @see org.apache.sis.feature.builder.FeatureTypeBuilder
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
+    @SuppressWarnings("this-escape")
     public DefaultFeatureType(final Map<String,?> identification, final boolean isAbstract,
             final FeatureType[] superTypes, final PropertyType... properties)
     {

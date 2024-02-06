@@ -132,7 +132,6 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * @param  listeners  where to send the warnings.
      * @throws IOException if an error occurred while opening the netCDF file.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public DecoderWrapper(final String filename, final GeometryLibrary geomlib, final StoreListeners listeners)
             throws IOException
     {
@@ -394,7 +393,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * @return all variables, or an empty array if none.
      */
     @Override
-    @SuppressWarnings({"ReturnOfCollectionOrArrayField", "null"})
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public Variable[] getVariables() {
         if (variables == null) {
             final List<? extends ucar.nc2.Variable> all = file.getVariables();
@@ -448,6 +447,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      */
     @Override
     public DiscreteSampling[] getDiscreteSampling(final DataStore lock) throws IOException, DataStoreException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final FeatureDataset features = getFeatureDataSet();
         if (features instanceof FeatureDatasetPoint) {
             final List<DsgFeatureCollection> fc = ((FeatureDatasetPoint) features).getPointFeatureCollectionList();

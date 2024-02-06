@@ -127,7 +127,6 @@ public class StandardMetadataTree extends MetadataTree {
         /**
          * Creates a new row for the given tree table.
          */
-        @SuppressWarnings("ThisEscapedInObjectConstruction")
         Row(final TreeTableView<TreeTable.Node> view) {
             super(view);
             final StandardMetadataTree md = (StandardMetadataTree) view;
