@@ -28,8 +28,8 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.Cloner;
 import org.apache.sis.util.internal.Acyclic;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
+import org.apache.sis.pending.jdk.JDK19;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
 
 /**
@@ -153,8 +153,8 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         Map<TableColumn<?>,Integer> map;
         switch (columns.length) {
             case 0:  map = Map.of(); break;
-            case 1:  map = null; break; // Will be created inside the loop (common case).
-            default: map = new LinkedHashMap<>(hashMapCapacity(columns.length)); break;
+            case 1:  map = null; break;         // Will be created inside the loop (common case).
+            default: map = JDK19.newLinkedHashMap(columns.length); break;
         }
         for (int i=0; i<columns.length; i++) {
             final TableColumn<?> column = columns[i];

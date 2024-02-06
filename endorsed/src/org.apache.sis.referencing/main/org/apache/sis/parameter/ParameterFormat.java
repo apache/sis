@@ -56,7 +56,7 @@ import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.internal.X364;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.metadata.internal.NameToIdentifier;
-import static org.apache.sis.util.collection.Containers.hashMapCapacity;
+import org.apache.sis.pending.jdk.JDK19;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.ControlledVocabulary;
@@ -462,8 +462,7 @@ public class ParameterFormat extends TabularFormat<Object> {
          */
         int codespaceWidth = 0;
         final Collection<?> elements = (values != null) ? values.values() : group.descriptors();
-        final Map<GeneralParameterDescriptor, ParameterTableRow> descriptorValues =
-                new LinkedHashMap<>(hashMapCapacity(elements.size()));
+        final Map<GeneralParameterDescriptor, ParameterTableRow> descriptorValues = JDK19.newLinkedHashMap(elements.size());
         List<Object> deferredGroups = null;                 // To be created only if needed (it is usually not).
         for (final Object element : elements) {
             final GeneralParameterValue parameter;

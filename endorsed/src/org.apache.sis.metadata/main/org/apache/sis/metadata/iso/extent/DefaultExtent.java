@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata.iso.extent;
 
-import java.util.Set;
 import java.util.LinkedHashSet;
 import java.util.Collection;
 import java.util.function.BinaryOperator;
@@ -35,6 +34,7 @@ import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.collection.Containers;
+import org.apache.sis.pending.jdk.JDK19;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.internal.ReferencingServices;
@@ -362,7 +362,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
     private <T> Collection<T> intersect(final Class<T> type, Collection<T> targets, Collection<? extends T> sources, final BinaryOperator<T> intersect) {
         if (!Containers.isNullOrEmpty(sources)) {
             if (!Containers.isNullOrEmpty(targets)) {
-                final Set<T> results = new LinkedHashSet<>(Containers.hashMapCapacity(targets.size()));
+                final LinkedHashSet<T> results = JDK19.newLinkedHashSet(targets.size());
                 T empty = null;
                 for (final T target : targets) {
                     for (final T source : sources) {

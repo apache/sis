@@ -251,26 +251,24 @@ public final class Containers extends Static {
     }
 
     /**
-     * Returns the capacity to be given to the {@link java.util.HashMap#HashMap(int) HashMap}
-     * constructor for holding the given number of elements. This method computes the capacity
-     * for the default <cite>load factor</cite>, which is 0.75.
+     * Returns the capacity to give to the {@code HashMap} and {@code HashSet} constructors for holding the
+     * given number of elements. This method computes the capacity for the default load factor, which is 0.75.
+     * This capacity is applicable to the following classes:
+     * {@link java.util.HashSet},
+     * {@link java.util.HashMap},
+     * {@link java.util.LinkedHashSet} and
+     * {@link java.util.LinkedHashMap}.
+     * This capacity is <strong>not</strong> applicable to {@link java.util.IdentityHashMap}.
      *
-     * <p>The same calculation can be used for {@link java.util.LinkedHashMap} and
-     * {@link java.util.HashSet} as well, which are built on top of {@code HashMap}.
-     * However, it is not needed for {@link java.util.IdentityHashMap}.</p>
-     *
-     * <h4>Future evolution</h4>
-     * This method may be deprecated in favor of {@code HashMap.newHashMap(int)}
-     * when Apache SIS will be allowed to compile for JDK19.
+     * <p>Since Java 19, the static factory methods in above-cited classes should be used instead of this method.
+     * However, this {@code hashMapCapacity} method is still useful in a few cases where the standard factory methods
+     * cannot be invoked, for example because the collection to construct is a subclasses for the standard classes.</p>
      *
      * @param  count  the number of elements to be put into the hash map or hash set.
      * @return the minimal initial capacity to be given to the hash map constructor.
      */
     public static int hashMapCapacity(final int count) {
-        /*
-         * Dividing 'count' by 0.75 is equivalent to multiplying by 1.333333…
-         * rounded to next integer.
-         */
+        // Dividing `count` by 0.75 is equivalent to multiplying by 1.333333… rounded to next integer.
         return (count * 4 + 2) / 3;
     }
 

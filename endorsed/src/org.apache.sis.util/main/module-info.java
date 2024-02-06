@@ -165,6 +165,7 @@ module org.apache.sis.util {
             org.apache.sis.referencing.database;        // In the "non-free" sub-project.
 
     exports org.apache.sis.pending.jdk to
+            org.apache.sis.metadata,
             org.apache.sis.referencing,
             org.apache.sis.referencing.gazetteer,
             org.apache.sis.feature,

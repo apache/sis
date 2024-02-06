@@ -25,7 +25,7 @@ import org.apache.sis.util.Numbers;
 import org.apache.sis.util.collection.CodeListSet;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
-import static org.apache.sis.util.collection.Containers.hashMapCapacity;
+import org.apache.sis.pending.jdk.JDK19;
 
 
 /**
@@ -317,7 +317,7 @@ public final class CollectionsExt extends Static {
         if (Enum.class.isAssignableFrom(type)) {
             return EnumSet.noneOf((Class) type);
         }
-        return new LinkedHashSet<>(hashMapCapacity(count));
+        return JDK19.newLinkedHashSet(count);
     }
 
     /**
@@ -826,7 +826,7 @@ public final class CollectionsExt extends Static {
         if (entries == null || entries.isEmpty()) {
             return Collections.emptyMap();
         }
-        final Map<String,E> map = new LinkedHashMap<>(hashMapCapacity(entries.size()));
+        final Map<String,E> map = JDK19.newLinkedHashMap(entries.size());
         final Set<String> generated = new HashSet<>();
         for (final Map.Entry<String, ? extends E> entry : entries) {
             final String name = entry.getKey();

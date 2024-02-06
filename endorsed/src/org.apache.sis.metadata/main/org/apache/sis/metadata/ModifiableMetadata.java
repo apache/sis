@@ -40,6 +40,7 @@ import org.apache.sis.util.internal.CheckedHashSet;
 import org.apache.sis.util.internal.CheckedArrayList;
 import org.apache.sis.metadata.internal.Resources;
 import org.apache.sis.system.Semaphores;
+import org.apache.sis.pending.jdk.JDK19;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.metadata.internal.ImplementationHelper.valueIfDefined;
 
@@ -897,7 +898,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
             return new EnumMap(keyType);
         } else {
             // Must be LinkedHashMap, not HashMap, because TreeTableView needs stable iteration order.
-            return new LinkedHashMap<>((source != null) ? Containers.hashMapCapacity(source.size()) : 4);
+            return (source != null) ? JDK19.newLinkedHashMap(source.size()) : new LinkedHashMap<>(4);
         }
     }
 

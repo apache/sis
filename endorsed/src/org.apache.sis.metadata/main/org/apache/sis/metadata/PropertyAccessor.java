@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Locale;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Collection;
 import java.lang.reflect.Method;
@@ -47,11 +46,11 @@ import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.measure.ValueRange;
+import org.apache.sis.pending.jdk.JDK19;
 import static org.apache.sis.metadata.PropertyComparator.*;
 import static org.apache.sis.metadata.ValueExistencePolicy.isNullOrEmpty;
 import static org.apache.sis.util.internal.CollectionsExt.snapshot;
 import static org.apache.sis.util.internal.CollectionsExt.modifiableCopy;
-import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
 
 /**
@@ -258,7 +257,7 @@ class PropertyAccessor {
         /*
          * Compute all information derived from getters: setters, property names, value types.
          */
-        mapping      = new HashMap<>(hashMapCapacity(allCount));
+        mapping      = JDK19.newHashMap(allCount);
         names        = new String[allCount];
         elementTypes = new Class<?>[allCount];
         Method[] setters = null;
@@ -412,7 +411,7 @@ class PropertyAccessor {
          * Indices map is used for choosing what to do in case of name collision.
          */
         Method[] getters = (MetadataStandard.IMPLEMENTATION_CAN_ALTER_API ? implementation : type).getMethods();
-        final Map<String,Integer> indices = new HashMap<>(hashMapCapacity(getters.length));
+        final Map<String,Integer> indices = JDK19.newHashMap(getters.length);
         boolean hasExtraGetter = false;
         int count = 0;
         for (Method candidate : getters) {

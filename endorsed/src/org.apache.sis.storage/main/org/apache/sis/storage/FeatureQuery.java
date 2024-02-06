@@ -18,9 +18,7 @@ package org.apache.sis.storage;
 
 import java.util.Arrays;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.OptionalLong;
 import java.util.function.Function;
@@ -41,10 +39,10 @@ import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.internal.SortByComparator;
 import org.apache.sis.filter.internal.XPath;
 import org.apache.sis.storage.internal.Resources;
+import org.apache.sis.pending.jdk.JDK19;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.resources.Vocabulary;
 
@@ -228,7 +226,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
         if (properties != null) {
             ArgumentChecks.ensureNonEmpty("properties", properties);
             properties = properties.clone();
-            final Map<Object,Integer> uniques = new LinkedHashMap<>(Containers.hashMapCapacity(properties.length));
+            final Map<Object,Integer> uniques = JDK19.newLinkedHashMap(properties.length);
             for (int i=0; i<properties.length; i++) {
                 final NamedExpression c = properties[i];
                 ArgumentChecks.ensureNonNullElement("properties", i, c);
@@ -755,7 +753,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
                  * We may have collision of their `String` representations however, which is okay.
                  */
                 if (names == null) {
-                    names = new HashSet<>(Containers.hashMapCapacity(projection.length));
+                    names = JDK19.newHashSet(projection.length);
                     for (final NamedExpression p : projection) {
                         if (p.alias != null) {
                             names.add(p.alias.toString());

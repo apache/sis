@@ -52,20 +52,20 @@ import org.apache.sis.storage.netcdf.base.Variable;
 import org.apache.sis.storage.netcdf.base.Dimension;
 import org.apache.sis.storage.netcdf.base.Convention;
 import org.apache.sis.storage.netcdf.base.NamedElement;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.internal.StandardDateFormat;
-import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
+import org.apache.sis.pending.jdk.JDK19;
 
 
 /**
@@ -658,7 +658,7 @@ public final class ChannelDecoder extends Decoder {
         if (attributes.size() >= attributeMap.size()) {
             return Collections.unmodifiableSet(attributeMap.keySet());
         }
-        final Set<String> attributeNames = new LinkedHashSet<>(Containers.hashMapCapacity(attributes.size()));
+        final Set<String> attributeNames = JDK19.newLinkedHashSet(attributes.size());
         attributes.forEach((e) -> attributeNames.add(e.getKey()));
         return attributeNames;
     }
