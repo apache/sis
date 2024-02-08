@@ -33,9 +33,9 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArgumentCheckByAssertion;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.internal.Numerics;
-import org.apache.sis.util.internal.ArgumentCheckByAssertion;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.geometry.GeneralDirectPosition;
@@ -627,9 +627,11 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
 
     /**
      * Returns a coordinate tuple on which dimensionality reduction has been applied.
+     *
+     * <h4>Precondition</h4>
      * The coordinate reference system of the given {@code source} should be either
      * null or equal (ignoring metadata) to the CRS of the source grid geometry.
-     * For performance reason, this is not verified unless assertions are enabled.
+     * For performance reason, this condition is not verified unless Java assertions are enabled.
      *
      * @param  source  the source coordinate tuple, or {@code null}.
      * @return the reduced coordinate tuple, or {@code null} if the given source was null.

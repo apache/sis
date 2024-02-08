@@ -36,6 +36,7 @@ import org.apache.sis.referencing.internal.DeprecatedCode;
 import org.apache.sis.referencing.internal.DeprecatedName;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArgumentCheckByAssertion;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Errors;
@@ -219,6 +220,7 @@ public abstract class Builder<B extends Builder<B>> {
      *
      * @throws AssertionError if assertions are enabled and the {@code <B>} type is not the type of {@code this}.
      */
+    @ArgumentCheckByAssertion
     protected Builder() {
         assert verifyParameterizedType(getClass());
         properties  = new HashMap<>(8);

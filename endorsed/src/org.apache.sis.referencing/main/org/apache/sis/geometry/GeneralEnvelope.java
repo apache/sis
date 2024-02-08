@@ -39,7 +39,7 @@ import org.opengis.geometry.MismatchedReferenceSystemException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.referencing.util.TemporalAccessor;
 import org.apache.sis.referencing.util.AxisDirections;
-import org.apache.sis.util.internal.ArgumentCheckByAssertion;
+import org.apache.sis.util.ArgumentCheckByAssertion;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -535,7 +535,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *
      * <h4>Preconditions</h4>
      * This method assumes that the specified point uses a CRS equivalent to this envelope CRS.
-     * For performance reasons, it will no be verified unless Java assertions are enabled.
+     * For performance reasons, this condition is not verified unless Java assertions are enabled.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * This method supports envelopes crossing the anti-meridian. In such cases it is possible to
@@ -613,7 +613,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *
      * <h4>Preconditions</h4>
      * This method assumes that the specified envelope uses a CRS equivalent to this envelope CRS.
-     * For performance reasons, it will no be verified unless Java assertions are enabled.
+     * For performance reasons, this condition is not verified unless Java assertions are enabled.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * This method supports envelopes crossing the anti-meridian. If one or both envelopes cross
@@ -770,7 +770,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *
      * <h4>Preconditions</h4>
      * This method assumes that the specified envelope uses a CRS equivalent to this envelope CRS.
-     * For performance reasons, it will no be verified unless Java assertions are enabled.
+     * For performance reasons, this condition is not verified unless Java assertions are enabled.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * This method supports envelopes crossing the anti-meridian.

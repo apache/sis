@@ -23,10 +23,10 @@ import java.util.FormattableFlags;
 import java.io.Serializable;
 import javax.measure.Unit;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArgumentCheckByAssertion;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.internal.Strings;
-import org.apache.sis.util.internal.ArgumentCheckByAssertion;
 import org.apache.sis.util.collection.CheckedContainer;
 
 

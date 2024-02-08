@@ -44,6 +44,7 @@ import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArgumentCheckByAssertion;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
@@ -1148,6 +1149,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @throws AssertionError if assertions are enabled and the objects are equal but their hash codes are different.
      */
     @Override
+    @ArgumentCheckByAssertion
     public final boolean equals(final Object object) {
         final boolean eq = equals(object, ComparisonMode.STRICT);
         // If objects are equal, then they must have the same hash code value.

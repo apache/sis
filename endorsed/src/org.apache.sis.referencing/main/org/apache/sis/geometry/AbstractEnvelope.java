@@ -37,16 +37,16 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.RangeMeaning;
+import org.apache.sis.util.ArgumentCheckByAssertion;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.referencing.util.TemporalAccessor;
-import org.apache.sis.util.internal.ArgumentCheckByAssertion;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.measure.Range;
 import org.apache.sis.math.Vector;
 
@@ -765,7 +765,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * <h4>Preconditions</h4>
      * This method assumes that the specified point uses a CRS equivalent to this envelope CRS.
-     * For performance reasons, it will no be verified unless Java assertions are enabled.
+     * For performance reasons, this condition is not verified unless Java assertions are enabled.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * For any dimension, if <var>upper</var> &lt; <var>lower</var> then this method uses an
@@ -817,7 +817,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * <h4>Preconditions</h4>
      * This method assumes that the specified envelope uses the same CRS as this envelope.
-     * For performance reasons, it will no be verified unless Java assertions are enabled.
+     * For performance reasons, this condition is not verified unless Java assertions are enabled.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * For every cases illustrated below, the yellow box is considered completely enclosed
@@ -947,7 +947,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * <h4>Preconditions</h4>
      * This method assumes that the specified envelope uses the same CRS as this envelope.
-     * For performance reasons, it will no be verified unless Java assertions are enabled.
+     * For performance reasons, this condition is not verified unless Java assertions are enabled.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * This method can handle envelopes crossing the anti-meridian.
