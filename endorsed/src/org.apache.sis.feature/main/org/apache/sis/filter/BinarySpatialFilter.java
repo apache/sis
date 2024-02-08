@@ -147,14 +147,14 @@ final class BinarySpatialFilter<R> extends BinaryGeometryFilter<R> implements Bi
                 warning(e, true);
             }
         }
-        return negativeResult();
+        return emptyResult();
     }
 
     /**
      * Returns the value to return when a test cannot be applied.
      */
     @Override
-    protected boolean negativeResult() {
-        return SpatialOperationContext.negativeResult(operatorType);
+    protected boolean emptyResult() {
+        return SpatialOperationContext.emptyResult(operatorType);
     }
 }

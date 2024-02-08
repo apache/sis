@@ -209,8 +209,8 @@ abstract class BinaryGeometryFilter<R> extends Node implements SpatialOperator<R
         literalIsNull = (literal.getValue() == null);
         final boolean result;
         if (literalIsNull) {
-            // If the literal has no value, then the filter will always evaluate to a negative result.
-            result = negativeResult();
+            // If the literal has no value, then the filter will always evaluate to an empty result.
+            result = emptyResult();
         } else {
             /*
              * If we are optimizing for a feature type, and if the other expression is a property value,
@@ -252,5 +252,5 @@ abstract class BinaryGeometryFilter<R> extends Node implements SpatialOperator<R
     /**
      * Returns the value to return when a test cannot be applied.
      */
-    protected abstract boolean negativeResult();
+    protected abstract boolean emptyResult();
 }

@@ -164,14 +164,14 @@ final class DistanceFilter<R> extends BinaryGeometryFilter<R> implements Distanc
                 warning(e, true);
             }
         }
-        return negativeResult();
+        return emptyResult();
     }
 
     /**
      * Returns the value to return when a test cannot be applied.
      */
     @Override
-    protected boolean negativeResult() {
-        return SpatialOperationContext.negativeResult(operatorType);
+    protected boolean emptyResult() {
+        return SpatialOperationContext.emptyResult(operatorType);
     }
 }
