@@ -171,7 +171,10 @@ public final class StringBuilders extends Static {
      * @throws IllegalArgumentException if the given count is negative.
      *
      * @since 1.0
+     *
+     * @deprecated Replaced by {@link StringBuilder#repeat(int, int)} since Java 21.
      */
+    @Deprecated(since="1.5", forRemoval=true)
     public static void repeat(final StringBuilder buffer, final char c, final int count) {
         switch (count) {
             case 0:  break;

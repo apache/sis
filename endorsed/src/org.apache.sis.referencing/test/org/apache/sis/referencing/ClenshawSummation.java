@@ -17,7 +17,7 @@
 package org.apache.sis.referencing;
 
 import org.apache.sis.math.Fraction;
-import org.apache.sis.util.StringBuilders;
+import org.apache.sis.pending.jdk.JDK21;
 
 
 /**
@@ -268,7 +268,7 @@ public final class ClenshawSummation {
                 }
             }
             if (term.length != 1) {
-                StringBuilders.repeat(b, ')', term.length);
+                JDK21.repeat(b, ')', term.length);
             }
         }
 
@@ -318,7 +318,7 @@ public final class ClenshawSummation {
                     b.append('0');
                 }
             }
-            StringBuilders.repeat(b, ')', cosineCoefficients.length);
+            JDK21.repeat(b, ')', cosineCoefficients.length);
         }
         return b.toString();
     }

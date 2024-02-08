@@ -29,12 +29,12 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.math.DecimalFunctions;
-import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.internal.DoubleDouble;
+import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.math.MathFunctions;
+import org.apache.sis.pending.jdk.JDK21;
 import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.internal.Resources;
@@ -1317,7 +1317,7 @@ public final class Matrices extends Static {
                         s += 2;
                     } else {
                         int n = Math.min(s, maximumPaddingZeros[flatIndex]);
-                        StringBuilders.repeat(buffer, '0', n);
+                        JDK21.repeat(buffer, '0', n);
                         s -= n;
                     }
                     buffer.append(CharSequences.spaces(s));
