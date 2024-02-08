@@ -78,6 +78,7 @@ import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.internal.AxisNames;
 import org.apache.sis.metadata.internal.TransformationAccuracy;
 import org.apache.sis.referencing.operation.provider.AbstractProvider;
+import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.internal.Strings;
@@ -452,22 +453,17 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
              * (for example "WGS84" for the datum instead of "World Geodetic System 1984"),
              * so the name in WKT is often not compliant with the name actually defined by the authority.
              */
-            final ImmutableIdentifier id = new ImmutableIdentifier(Citations.fromName(authority),
+            final var id = new ImmutableIdentifier(Citations.fromName(authority),
                     codeSpace, code, (version != null) ? version.toString() : null, null);
-            final Object previous = properties.put(IdentifiedObject.IDENTIFIERS_KEY, id);
-            if (previous != null) {
-                Identifier[] identifiers;
+            properties.merge(IdentifiedObject.IDENTIFIERS_KEY, id, (previous, toAdd) -> {
+                final var more = (Identifier) toAdd;
                 if (previous instanceof Identifier) {
-                    identifiers = new Identifier[] {(Identifier) previous, id};
+                    return new Identifier[] {(Identifier) previous, more};
                 } else {
-                    identifiers = (Identifier[]) previous;
-                    final int n = identifiers.length;
-                    identifiers = Arrays.copyOf(identifiers, n + 1);
-                    identifiers[n] = id;
+                    return ArraysExt.append((Identifier[]) previous, more);
                 }
-                properties.put(IdentifiedObject.IDENTIFIERS_KEY, identifiers);
-                // REMINDER: values associated to IDENTIFIERS_KEY shall be recognized by `toIdentifier(Object)`.
-            }
+            });
+            // REMINDER: values associated to IDENTIFIERS_KEY shall be recognized by `toIdentifier(Object)`.
         }
         /*
          * Other metadata (SCOPE, AREA, etc.).  ISO 19162 said that at most one of each type shall be present,
