@@ -16,6 +16,7 @@
  */
 package org.apache.sis.portrayal;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.awt.geom.Point2D;
 import java.awt.geom.AffineTransform;
@@ -31,7 +32,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.Disposable;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
@@ -146,10 +146,8 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
      * @param  target  the canvas on which to apply the changes of zoom, pan or rotation.
      */
     public CanvasFollower(final PlanarCanvas source, final PlanarCanvas target) {
-        ArgumentChecks.ensureNonNull("source", source);
-        ArgumentChecks.ensureNonNull("target", target);
-        this.source = source;
-        this.target = target;
+        this.source = Objects.requireNonNull(source);
+        this.target = Objects.requireNonNull(target);
         followRealWorld = true;
         displayTransformStatus   = OUTDATED;
         objectiveTransformStatus = OUTDATED;

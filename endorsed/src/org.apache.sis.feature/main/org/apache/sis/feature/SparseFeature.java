@@ -122,6 +122,7 @@ final class SparseFeature extends AbstractFeature implements CloneAccess {
      * @throws PropertyNotFoundException if the given argument is not a property name of this feature.
      */
     private Integer getIndex(final String name) throws PropertyNotFoundException {
+        ArgumentChecks.ensureNonNull("name", name);     // Parameter name in public API.
         final Integer index = indices.get(name);
         if (index != null) {
             return index;
@@ -175,7 +176,7 @@ final class SparseFeature extends AbstractFeature implements CloneAccess {
      */
     @Override
     public Property getProperty(final String name) throws PropertyNotFoundException {
-        ArgumentChecks.ensureNonNull("name", name);
+        // Null value check done by the invoked method.
         requireMapOfProperties();
         return getPropertyInstance(name);
     }
@@ -207,7 +208,6 @@ final class SparseFeature extends AbstractFeature implements CloneAccess {
      */
     @Override
     public void setProperty(final Property property) throws IllegalArgumentException {
-        ArgumentChecks.ensureNonNull("property", property);
         final String name = property.getName().toString();
         verifyPropertyType(name, property);
         requireMapOfProperties();
@@ -279,7 +279,7 @@ final class SparseFeature extends AbstractFeature implements CloneAccess {
      */
     @Override
     public void setPropertyValue(final String name, final Object value) throws IllegalArgumentException {
-        ArgumentChecks.ensureNonNull("name", name);
+        // Null value check done by the invoked method.
         final Integer index = getIndex(name);
         if (index < 0) {
             setOperationValue(name, value);

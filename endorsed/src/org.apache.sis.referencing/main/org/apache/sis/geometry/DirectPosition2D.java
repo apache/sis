@@ -25,7 +25,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
 
@@ -148,7 +147,6 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * @see #setLocation(Point2D)
      */
     public DirectPosition2D(final DirectPosition position) throws MismatchedDimensionException {
-        ensureNonNull("position", position);
         ensureDimensionMatches("position", 2, position);
         x   = position.getOrdinate(0);
         y   = position.getOrdinate(1);

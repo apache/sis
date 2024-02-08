@@ -17,6 +17,7 @@
 package org.apache.sis.gui.map;
 
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
@@ -35,7 +36,6 @@ import org.apache.sis.gui.referencing.PositionableProjection;
 import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -87,8 +87,7 @@ public class MapMenu extends ContextMenu {
      * @param  canvas  the canvas for which to create menus.
      */
     public MapMenu(final MapCanvas canvas) {
-        ArgumentChecks.ensureNonNull("canvas", canvas);
-        this.canvas = canvas;
+        this.canvas = Objects.requireNonNull(canvas);
     }
 
     /**
@@ -129,7 +128,7 @@ public class MapMenu extends ContextMenu {
      * @see #selectedReferenceSystem()
      */
     public void addReferenceSystems(final RecentReferenceSystems preferences) {
-        ArgumentChecks.ensureNonNull("preferences", preferences);
+        Objects.requireNonNull(preferences);
         final MapCanvas.MenuHandler handler = startNewMenuItems(CRS);
         final Menu systemChoices = preferences.createMenuItems(true, handler);
         handler.selectedCrsProperty = RecentReferenceSystems.getSelectedProperty(systemChoices);
@@ -155,7 +154,7 @@ public class MapMenu extends ContextMenu {
      * @param  format  status bar determining the CRS and format to use for coordinate values.
      */
     public void addCopyOptions(final StatusBar format) {
-        ArgumentChecks.ensureNonNull("format", format);
+        Objects.requireNonNull(format);
         final MapCanvas.MenuHandler handler = startNewMenuItems(COPY);
         final Resources resources = Resources.forLocale(canvas.getLocale());
         final MenuItem coordinates = resources.menu(Resources.Keys.CopyCoordinates, (event) -> {

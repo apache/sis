@@ -16,8 +16,8 @@
  */
 package org.apache.sis.storage;
 
+import java.util.Objects;
 import java.util.stream.Stream;
-import org.apache.sis.util.ArgumentChecks;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
@@ -108,8 +108,7 @@ public interface FeatureSet extends DataSet {
      * @see FeatureQuery#execute(FeatureSet)
      */
     default FeatureSet subset(Query query) throws UnsupportedQueryException, DataStoreException {
-        ArgumentChecks.ensureNonNull("query", query);
-        if (query instanceof FeatureQuery) {
+        if (Objects.requireNonNull(query) instanceof FeatureQuery) {
             return ((FeatureQuery) query).execute(this);
         } else {
             throw new UnsupportedQueryException();

@@ -39,7 +39,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 
-import static org.apache.sis.util.ArgumentChecks.*;
+import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.referencing.util.Formulas.isPoleToPole;
 
@@ -127,8 +127,6 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      * @throws MismatchedDimensionException if the two sequences do not have the same length.
      */
     public ArrayEnvelope(final double[] lowerCorner, final double[] upperCorner) throws MismatchedDimensionException {
-        ensureNonNull("lowerCorner", lowerCorner);
-        ensureNonNull("upperCorner", upperCorner);
         ensureSameDimension(lowerCorner.length, upperCorner.length);
         coordinates = Arrays.copyOf(lowerCorner, lowerCorner.length + upperCorner.length);
         System.arraycopy(upperCorner, 0, coordinates, lowerCorner.length, upperCorner.length);
@@ -151,7 +149,6 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      * @param  crs  the coordinate reference system.
      */
     public ArrayEnvelope(final CoordinateReferenceSystem crs) {
-        ensureNonNull("crs", crs);
         coordinates = new double[crs.getCoordinateSystem().getDimension() * 2];
         this.crs = crs;
     }
@@ -162,7 +159,6 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      * @param envelope  the envelope to copy.
      */
     public ArrayEnvelope(final Envelope envelope) {
-        ensureNonNull("envelope", envelope);
         /*
          * Do not optimize with `if (envelope instanceof ArrayEnvelope)` because subclasses may change the semantic.
          * In particular the SubEnvelope subclass uses only a subrange of this array. If we still want to optimize,
@@ -189,7 +185,6 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      * @param box  the bounding box to copy.
      */
     public ArrayEnvelope(final GeographicBoundingBox box) {
-        ensureNonNull("box", box);
         coordinates = new double[] {
             box.getWestBoundLongitude(),
             box.getSouthBoundLatitude(),
@@ -223,7 +218,6 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      * @throws IllegalArgumentException if the given string cannot be parsed.
      */
     public ArrayEnvelope(final CharSequence wkt) throws IllegalArgumentException {
-        ensureNonNull("wkt", wkt);
         int levelParenth = 0;               // Number of opening parenthesis: (
         int levelBracket = 0;               // Number of opening brackets: [
         int dimLimit     = 4;               // The length of minimum and maximum arrays.

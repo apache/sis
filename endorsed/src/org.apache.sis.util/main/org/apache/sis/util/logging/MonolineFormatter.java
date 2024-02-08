@@ -35,7 +35,6 @@ import java.util.logging.*;
 import java.util.function.IntSupplier;
 import org.apache.sis.system.Modules;
 import org.apache.sis.system.Configuration;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.internal.X364;
@@ -1067,7 +1066,6 @@ loop:   for (int i=0; ; i++) {
     @Debug
     @Configuration(writeAccess = Configuration.Access.STATIC)
     public static MonolineFormatter install(final Logger logger, final Level level) throws SecurityException {
-        ArgumentChecks.ensureNonNull("logger", logger);
         MonolineFormatter monoline = null;
         for (final Handler handler : logger.getHandlers()) {
             if (handler instanceof ConsoleHandler) {

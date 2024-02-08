@@ -44,7 +44,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 
-import static org.apache.sis.util.ArgumentChecks.*;
+import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 import static org.apache.sis.math.MathFunctions.isSameSign;
 import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.math.MathFunctions.isNegativeZero;
@@ -404,7 +404,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
         if (envelope == this) {
             return;     // Optimization for methods chaining like env.setEnvelope(Envelopes.transform(env, crs))
         }
-        ensureNonNull("envelope", envelope);
+        Objects.requireNonNull(envelope);
         final int beginIndex = beginIndex();
         final int dimension = endIndex() - beginIndex;
         ensureDimensionMatches("envelope", dimension, envelope);
@@ -514,7 +514,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @since 0.5
      */
     public void translate(final double... vector) {
-        ensureNonNull("vector", vector);
+        Objects.requireNonNull(vector);
         final int beginIndex = beginIndex();
         ensureDimensionMatches("vector", endIndex() - beginIndex, vector);
         final int upperIndex = beginIndex + (coordinates.length >>> 1);
@@ -554,7 +554,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      */
     @ArgumentCheckByAssertion
     public void add(final DirectPosition position) throws MismatchedDimensionException {
-        ensureNonNull("position", position);
+        Objects.requireNonNull(position);
         final int beginIndex = beginIndex();
         final int dimension = endIndex() - beginIndex;
         ensureDimensionMatches("position", dimension, position);
@@ -657,7 +657,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      */
     @ArgumentCheckByAssertion
     public void add(final Envelope envelope) throws MismatchedDimensionException {
-        ensureNonNull("envelope", envelope);
+        Objects.requireNonNull(envelope);
         final int beginIndex = beginIndex();
         final int dimension = endIndex() - beginIndex;
         ensureDimensionMatches("envelope", dimension, envelope);
@@ -814,7 +814,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      */
     @ArgumentCheckByAssertion
     public void intersect(final Envelope envelope) throws MismatchedDimensionException {
-        ensureNonNull("envelope", envelope);
+        Objects.requireNonNull(envelope);
         final int beginIndex = beginIndex();
         final int dimension = endIndex() - beginIndex;
         ensureDimensionMatches("envelope", dimension, envelope);

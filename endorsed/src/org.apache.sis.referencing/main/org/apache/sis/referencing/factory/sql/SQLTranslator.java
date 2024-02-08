@@ -25,7 +25,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.Constants;
 import static org.apache.sis.util.internal.Strings.isNullOrEmpty;
@@ -248,7 +247,6 @@ public class SQLTranslator implements Function<String,String> {
      * @throws SQLException if an error occurred while querying the database metadata.
      */
     public SQLTranslator(final DatabaseMetaData md, final String catalog, final String schema) throws SQLException {
-        ArgumentChecks.ensureNonNull("md", md);
         quote = md.getIdentifierQuoteString().trim();
         accessToAnsi = new HashMap<>(4);
         this.catalog = catalog;

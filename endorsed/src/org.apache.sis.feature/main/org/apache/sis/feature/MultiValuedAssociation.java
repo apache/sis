@@ -133,7 +133,7 @@ final class MultiValuedAssociation extends AbstractAssociation {
     @Override
     public void setValues(final Collection<? extends Feature> newValues) {
         if (newValues != values) {
-            ArgumentChecks.ensureNonNull("values", newValues);  // The parameter name in public API is "values".
+            ArgumentChecks.ensureNonNull("values", newValues);      // The parameter name in public API is "values".
             final FeatureType base = role.getValueType();
             values.clear();
             for (final Feature value : newValues) {

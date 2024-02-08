@@ -52,7 +52,6 @@ import org.apache.sis.math.Vector;
 
 import static java.lang.Double.doubleToLongBits;
 import static org.apache.sis.util.internal.Numerics.SIGN_BIT_MASK;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 import static org.apache.sis.math.MathFunctions.epsilonEqual;
@@ -192,8 +191,6 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
                                                   final DirectPosition upperCorner)
             throws MismatchedReferenceSystemException
     {
-        ensureNonNull("lowerCorner", lowerCorner);
-        ensureNonNull("upperCorner", upperCorner);
         final CoordinateReferenceSystem crs1 = lowerCorner.getCoordinateReferenceSystem();
         final CoordinateReferenceSystem crs2 = upperCorner.getCoordinateReferenceSystem();
         if (crs1 == null) {
@@ -783,7 +780,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      */
     @ArgumentCheckByAssertion
     public boolean contains(final DirectPosition position) throws MismatchedDimensionException {
-        ensureNonNull("position", position);
+        // Implicit null check below.
         final int dimension = getDimension();
         ensureDimensionMatches("point", dimension, position);
         assert assertEquals(getCoordinateReferenceSystem(), position.getCoordinateReferenceSystem()) : position;
@@ -862,7 +859,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      */
     @ArgumentCheckByAssertion
     public boolean contains(final Envelope envelope, final boolean edgesInclusive) throws MismatchedDimensionException {
-        ensureNonNull("envelope", envelope);
+        // Implicit null check below.
         final int dimension = getDimension();
         ensureDimensionMatches("envelope", dimension, envelope);
         assert assertEquals(getCoordinateReferenceSystem(), envelope.getCoordinateReferenceSystem()) : envelope;
@@ -998,7 +995,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      */
     @ArgumentCheckByAssertion
     public boolean intersects(final Envelope envelope, final boolean touch) throws MismatchedDimensionException {
-        ensureNonNull("envelope", envelope);
+        // Implicit null check below.
         final int dimension = getDimension();
         ensureDimensionMatches("envelope", dimension, envelope);
         assert assertEquals(getCoordinateReferenceSystem(), envelope.getCoordinateReferenceSystem()) : envelope;
@@ -1106,7 +1103,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * @see #intersects(Envelope)
      */
     public boolean equals(final Envelope other, final double eps, final boolean epsIsRelative) {
-        ensureNonNull("other", other);
+        // Implicit null check below.
         final int dimension = getDimension();
         if (other.getDimension() != dimension ||
                 !equals(getCoordinateReferenceSystem(), other.getCoordinateReferenceSystem(),

@@ -19,6 +19,7 @@ package org.apache.sis.xml;
 import java.util.Map;
 import java.util.Deque;
 import java.util.ServiceLoader;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 import jakarta.xml.bind.JAXBContext;
@@ -26,7 +27,6 @@ import jakarta.xml.bind.JAXBException;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.system.Reflect;
@@ -179,8 +179,7 @@ public class MarshallerPool {
      */
     @SuppressWarnings("this-escape")
     public MarshallerPool(final JAXBContext context, final Map<String,?> properties) throws JAXBException {
-        ArgumentChecks.ensureNonNull("context", context);
-        this.context       = context;
+        this.context       = Objects.requireNonNull(context);
         replacements       = ServiceLoader.load(AdapterReplacement.class, Reflect.getContextClassLoader());
         implementation     = Implementation.detect(context);
         template           = new PooledTemplate(this, properties, implementation);

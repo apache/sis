@@ -19,6 +19,7 @@ package org.apache.sis.storage.event;
 import java.util.Map;
 import java.util.Set;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.IdentityHashMap;
 import java.util.logging.Level;
@@ -290,8 +291,7 @@ public class StoreListeners implements Localized {
      * @param source  the source of events. Cannot be null.
      */
     public StoreListeners(final StoreListeners parent, Resource source) {
-        ArgumentChecks.ensureNonNull("source", source);
-        this.source = source;
+        this.source = Objects.requireNonNull(source);
         this.parent = parent;
         if (parent != null) {
             permittedEventTypes = parent.permittedEventTypes;
@@ -424,7 +424,7 @@ public class StoreListeners implements Localized {
      * @param  message  the warning message to report.
      */
     public void warning(final String message) {
-        ArgumentChecks.ensureNonNull("message", message);
+        // Null value check done by invoked method.
         warning(Level.WARNING, message, null);
     }
 
@@ -440,8 +440,7 @@ public class StoreListeners implements Localized {
      * @param  exception  the exception to report.
      */
     public void warning(final Exception exception) {
-        ArgumentChecks.ensureNonNull("exception", exception);
-        warning(Level.WARNING, null, exception);
+        warning(Level.WARNING, null, Objects.requireNonNull(exception));
     }
 
     /**

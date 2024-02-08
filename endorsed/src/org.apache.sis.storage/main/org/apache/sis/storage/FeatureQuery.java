@@ -577,8 +577,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
          * @param alias       the name to assign to the expression result, or {@code null} if unspecified.
          */
         public NamedExpression(final Expression<? super Feature,?> expression, final String alias) {
-            ArgumentChecks.ensureNonNull("expression", expression);
-            this.expression = expression;
+            this.expression = Objects.requireNonNull(expression);
             this.alias = (alias != null) ? Names.createLocalName(null, null, alias) : null;
             this.type = ProjectionType.STORED;
         }
@@ -593,11 +592,9 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
          * @since 1.4
          */
         public NamedExpression(final Expression<? super Feature,?> expression, final GenericName alias, ProjectionType type) {
-            ArgumentChecks.ensureNonNull("expression", expression);
-            ArgumentChecks.ensureNonNull("type", type);
-            this.expression = expression;
-            this.alias = alias;
-            this.type  = type;
+            this.expression = Objects.requireNonNull(expression);
+            this.type       = Objects.requireNonNull(type);
+            this.alias      = alias;
         }
 
         /**
@@ -698,7 +695,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      * @since 1.2
      */
     protected FeatureSet execute(final FeatureSet source) throws DataStoreException {
-        ArgumentChecks.ensureNonNull("source", source);
+        Objects.requireNonNull(source);
         final FeatureQuery query = clone();
         if (query.selection != null) {
             final Optimization optimization = new Optimization();

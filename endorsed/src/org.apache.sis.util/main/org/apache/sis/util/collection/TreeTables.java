@@ -201,7 +201,6 @@ public final class TreeTables extends Static {
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     public static int replaceCharSequences(final TreeTable table, final Locale locale) {
-        ArgumentChecks.ensureNonNull("table", table);
         final List<TableColumn<?>> columns = table.getColumns();
         TableColumn<? super String>[] filtered = new TableColumn[columns.size()];
         int count = 0;

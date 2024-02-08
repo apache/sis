@@ -429,6 +429,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
         } else {
             name = simplify(name);
         }
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final WeakValueHashMap<String,Object> childs = this.childs;     // Paranoiac protection against accidental changes.
         DefaultNameSpace child;
         synchronized (childs) {
@@ -467,8 +468,8 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * @return a name which is local in this namespace.
      */
     final DefaultLocalName local(final CharSequence name, final DefaultLocalName candidate) {
-        ensureNonNull("name", name);
         final String key = name.toString();
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final WeakValueHashMap<String,Object> childs = this.childs;     // Paranoiac protection against accidental changes.
         DefaultLocalName child;
         synchronized (childs) {

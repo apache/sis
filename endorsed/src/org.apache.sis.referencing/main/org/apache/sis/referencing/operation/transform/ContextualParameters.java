@@ -248,10 +248,9 @@ public class ContextualParameters extends Parameters implements Serializable {
      * @since 1.0
      */
     public ContextualParameters(final ParameterDescriptorGroup descriptor, int srcDim, int tgtDim) {
-        ArgumentChecks.ensureNonNull("descriptor", descriptor);
         ArgumentChecks.ensureStrictlyPositive("srcDim", srcDim);
         ArgumentChecks.ensureStrictlyPositive("tgtDim", tgtDim);
-        this.descriptor  = descriptor;
+        this.descriptor  = Objects.requireNonNull(descriptor);
         this.normalize   = Matrices.create(++srcDim, srcDim, ExtendedPrecisionMatrix.CREATE_IDENTITY);
         this.denormalize = Matrices.create(++tgtDim, tgtDim, ExtendedPrecisionMatrix.CREATE_IDENTITY);
         this.values      = new ParameterValue<?>[descriptor.descriptors().size()];

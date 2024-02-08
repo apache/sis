@@ -24,7 +24,6 @@ import java.lang.reflect.Array;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ConditionallySafe;
 import static org.apache.sis.util.collection.WeakEntry.*;
 
@@ -213,8 +212,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      */
     @Override
     public synchronized boolean add(final E element) {
-        ArgumentChecks.ensureNonNull("element", element);
-        return intern(element, ADD) == null;
+        return intern(Objects.requireNonNull(element), ADD) == null;
     }
 
     /**

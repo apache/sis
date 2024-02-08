@@ -150,12 +150,11 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
             final E minValue, final boolean isMinIncluded,
             final E maxValue, final boolean isMaxIncluded)
     {
-        ArgumentChecks.ensureNonNull("elementType", elementType);
         /*
          * The `isMin/Maxincluded` flags must be forced to `false` if `minValue` or `maxValue`
          * are null. This is required for proper working of algorithms implemented in this class.
          */
-        this.elementType   = elementType;
+        this.elementType   = Objects.requireNonNull(elementType);
         this.minValue      = minValue;
         this.isMinIncluded = isMinIncluded && (minValue != null);
         this.maxValue      = maxValue;

@@ -29,7 +29,6 @@ import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Errors;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.IdentifiedType;
@@ -200,9 +199,9 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
      * @param  identification  the name and other information to be given to this identified type.
      * @throws IllegalArgumentException if a property has an invalid value.
      */
-    @SuppressWarnings("OverridableMethodCallInConstructor")
+    @SuppressWarnings("this-escape")
     protected AbstractIdentifiedType(final Map<String,?> identification) throws IllegalArgumentException {
-        ensureNonNull("identification", identification);
+        // Implicit null value check.
         Object value = identification.get(NAME_KEY);
         if (value == null) {
             throw new IllegalArgumentException(Errors.forProperties(identification)

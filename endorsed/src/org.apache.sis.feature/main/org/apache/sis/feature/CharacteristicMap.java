@@ -18,7 +18,6 @@ package org.apache.sis.feature;
 
 import java.util.Map;
 import org.opengis.util.GenericName;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.Cloner;
 import org.apache.sis.util.internal.CloneAccess;
 import org.apache.sis.util.internal.AbstractMap;
@@ -169,7 +168,6 @@ final class CharacteristicMap extends AbstractMap<String,Attribute<?>> implement
      * @throws PropertyNotFoundException if the given key is not the name of a characteristic in this map.
      */
     private int indexOf(final String key) {
-        ArgumentChecks.ensureNonNull("key", key);
         final Integer index = types.indices.get(key);
         if (index == null) {
             throw new PropertyNotFoundException(Resources.format(
@@ -206,7 +204,6 @@ final class CharacteristicMap extends AbstractMap<String,Attribute<?>> implement
     @Override
     public Attribute<?> put(final String key, final Attribute<?> value) {
         final int index = indexOf(key);
-        ArgumentChecks.ensureNonNull("value", value);
         verifyAttributeType(index, value.getType());
         if (characterizedBy == null) {
             characterizedBy = new Attribute<?>[types.characterizedBy.length];
@@ -247,7 +244,6 @@ final class CharacteristicMap extends AbstractMap<String,Attribute<?>> implement
      */
     @Override
     protected boolean addValue(final Attribute<?> value) {
-        ArgumentChecks.ensureNonNull("value", value);
         final int index = indexOf(value.getName().toString());
         verifyAttributeType(index, value.getType());
         if (characterizedBy == null) {
@@ -342,7 +338,6 @@ final class CharacteristicMap extends AbstractMap<String,Attribute<?>> implement
 
         /** Sets the attribute characteristic. */
         @Override public Attribute<?> setValue(final Attribute<?> value) {
-            ArgumentChecks.ensureNonNull("value", value);
             verifyAttributeType(index, value.getType());
             final Attribute<?> previous = this.value;
             characterizedBy[index] = value;

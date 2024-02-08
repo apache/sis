@@ -371,8 +371,6 @@ public final class Matrices extends Static {
      * @see org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes(CoordinateSystem, CoordinateSystem)
      */
     public static MatrixSIS createTransform(final Envelope srcEnvelope, final Envelope dstEnvelope) {
-        ArgumentChecks.ensureNonNull("srcEnvelope", srcEnvelope);
-        ArgumentChecks.ensureNonNull("dstEnvelope", dstEnvelope);
         /*
          * Following code is a simplified version of above createTransform(Envelope, AxisDirection[], ...) method.
          * We need to make sure that those two methods are consistent and compute the matrix values in the same way.

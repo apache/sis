@@ -451,7 +451,6 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @param object  the object to shallow copy.
      */
     protected AbstractIdentifiedObject(final IdentifiedObject object) {
-        ensureNonNull("object", object);
         name        =          object.getName();
         alias       = nonEmpty(object.getAlias()); // Favor null for empty set in case it is not Collections.EMPTY_SET
         identifiers = nonEmpty(object.getIdentifiers());

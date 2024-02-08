@@ -72,7 +72,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Deprecable;
@@ -249,7 +248,7 @@ class CoordinateOperationRegistry {
     /**
      * Creates a new instance for the given factory and context.
      *
-     * @param  registry  the factory to use for creating operations as defined by authority.
+     * @param  registry  the factory to use for creating operations as defined by authority, or {@code null} if none.
      * @param  factory   the factory to use for creating operations not found in the registry.
      * @param  context   the area of interest and desired accuracy, or {@code null} if none.
      * @throws FactoryException if an error occurred while initializing this {@link CoordinateOperationRegistry}.
@@ -258,13 +257,16 @@ class CoordinateOperationRegistry {
                                 final CoordinateOperationFactory          factory,
                                 final CoordinateOperationContext          context) throws FactoryException
     {
-        ArgumentChecks.ensureNonNull("factory", factory);
         this.registry = registry;
-        this.factory  = factory;
+        this.factory  = Objects.requireNonNull(factory);
         factorySIS    = (factory instanceof DefaultCoordinateOperationFactory)
                         ? (DefaultCoordinateOperationFactory) factory
                         : DefaultCoordinateOperationFactory.provider();
+
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         Map<CoordinateReferenceSystem, List<String>> authorityCodes = Collections.emptyMap();
+
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         IdentifiedObjectFinder codeFinder = null;
         if (registry != null) {
             if (registry instanceof GeodeticAuthorityFactory) {

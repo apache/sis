@@ -39,7 +39,6 @@ import org.opengis.util.RecordType;
 import org.opengis.util.RecordSchema;
 import org.apache.sis.pending.jdk.JDK19;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.converter.SurjectiveConverter;
@@ -151,13 +150,12 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      *
      * @deprecated The {@code RecordSchema} interface has been removed in the 2015 revision of the ISO 19103 standard.
      */
+    @SuppressWarnings("this-escape")
     @Deprecated(since = "1.5", forRemoval = true)
     public DefaultRecordType(final TypeName typeName, final RecordSchema container,
             final Map<? extends MemberName, ? extends Type> fields)
     {
-        ArgumentChecks.ensureNonNull("typeName", typeName);
-        ArgumentChecks.ensureNonNull("field",    fields);
-        this.typeName   = typeName;
+        this.typeName   = Objects.requireNonNull(typeName);
         this.container  = container;
         this.fieldTypes = computeTransientFields(fields);
         /*

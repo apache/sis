@@ -23,6 +23,7 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.io.Serializable;
+import java.util.Objects;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.Envelope;
@@ -72,7 +73,7 @@ final class ShapeAdapter extends AbstractShape implements Serializable {
      * @param  geometry  the JTS geometry to wrap.
      */
     protected ShapeAdapter(final Geometry geometry) {
-        this.geometry = geometry;
+        this.geometry = Objects.requireNonNull(geometry);
     }
 
     /**

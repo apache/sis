@@ -25,7 +25,6 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.geometry.DirectPosition;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.UnformattableObjectException;
@@ -61,8 +60,7 @@ public class MathTransformWrapper extends FormattableObject implements MathTrans
      * @param transform the math transform on which to delegate the work.
      */
     public MathTransformWrapper(final MathTransform transform) {
-        ArgumentChecks.ensureNonNull("transform", transform);
-        this.transform = transform;
+        this.transform = Objects.requireNonNull(transform);
     }
 
     /**

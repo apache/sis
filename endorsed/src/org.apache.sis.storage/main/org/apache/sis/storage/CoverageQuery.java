@@ -356,8 +356,7 @@ next:       for (int i=0; i<rangeNames.length; i++) {
      * @since 1.2
      */
     protected GridCoverageResource execute(final GridCoverageResource source) throws DataStoreException {
-        ArgumentChecks.ensureNonNull("source", source);
-        return new CoverageSubset(null, source, this);
+        return new CoverageSubset(null, Objects.requireNonNull(source), this);
     }
 
     /**

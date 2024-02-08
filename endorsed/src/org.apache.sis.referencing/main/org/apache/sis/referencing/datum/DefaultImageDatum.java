@@ -30,7 +30,6 @@ import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.util.ComparisonMode;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
@@ -122,8 +121,7 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
      */
     public DefaultImageDatum(final Map<String,?> properties, final PixelInCell pixelInCell) {
         super(properties);
-        this.pixelInCell = pixelInCell;
-        ensureNonNull("pixelInCell", pixelInCell);
+        this.pixelInCell = Objects.requireNonNull(pixelInCell);
     }
 
     /**

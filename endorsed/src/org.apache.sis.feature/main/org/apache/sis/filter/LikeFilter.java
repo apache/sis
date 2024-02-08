@@ -18,8 +18,8 @@ package org.apache.sis.filter;
 
 import java.util.List;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.regex.Pattern;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.filter.internal.Node;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -100,9 +100,8 @@ final class LikeFilter<R> extends Node implements LikeOperator<R>, Optimization.
     LikeFilter(final Expression<R,?> expression, final String pattern,
             final char wildcard, final char singleChar, final char escape, final boolean isMatchingCase)
     {
-        ArgumentChecks.ensureNonNull("pattern", pattern);
-        this.expression     = expression;
-        this.pattern        = pattern;
+        this.expression     = Objects.requireNonNull(expression);
+        this.pattern        = Objects.requireNonNull(pattern);
         this.wildcard       = wildcard;
         this.singleChar     = singleChar;
         this.escape         = escape;

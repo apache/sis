@@ -33,7 +33,6 @@ import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
@@ -147,7 +146,6 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      */
     public DefaultTemporalDatum(final Map<String,?> properties, final Date origin) {
         super(properties);
-        ensureNonNull("origin", origin);
         this.origin = origin.getTime();
     }
 

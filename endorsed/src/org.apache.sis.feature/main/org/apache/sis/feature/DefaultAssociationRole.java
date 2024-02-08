@@ -21,12 +21,12 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.IdentityHashMap;
+import java.util.Objects;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.feature.internal.AttributeConvention;
-import static org.apache.sis.util.ArgumentChecks.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.PropertyType;
@@ -136,8 +136,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
             final int minimumOccurs, final int maximumOccurs)
     {
         super(identification, minimumOccurs, maximumOccurs);
-        ensureNonNull("valueType", valueType);
-        this.valueType = valueType;
+        this.valueType = Objects.requireNonNull(valueType);
     }
 
     /**
@@ -179,8 +178,7 @@ public class DefaultAssociationRole extends FieldType implements FeatureAssociat
             final int minimumOccurs, final int maximumOccurs)
     {
         super(identification, minimumOccurs, maximumOccurs);
-        ensureNonNull("valueType", valueType);
-        this.valueType = new NamedFeatureType(valueType);
+        this.valueType = new NamedFeatureType(Objects.requireNonNull(valueType));
     }
 
     /**

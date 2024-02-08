@@ -96,14 +96,31 @@ public final class ArgumentChecks extends Static {
     /**
      * Makes sure that an argument is non-null. If the given {@code object} is null, then a
      * {@link NullPointerException} is thrown with a localized message containing the given name.
+     * This method differs from {@link java.util.Objects#requireNonNull(Object, String)} in that
+     * the {@code String} argument is only the parameter name, not the full exception message.
+     *
+     * <h4>Suggestions about when to use</h4>
+     * This method is helpful for validating arguments in a method receiving many arguments,
+     * when there is a potential ambiguity about which argument is {@code null}.
+     * This method is also useful when the validation is done in a private method invoked by a public method,
+     * because it is no longer obvious that a {@link NullPointerException} is caused by a null argument given
+     * to the public method.
+     *
+     * <h4>Suggestions about when to not use</h4>
+     * When there is no ambiguity, for example in methods receiving a single argument, the standard
+     * {@link java.util.Objects#requireNonNull(Object)} method should be preferred as it is more efficient.
+     * Another situation where to not use this method is when an implicit null check would occur early
+     * because the argument is used immediately. Since Java 14, the exception thrown by implicit null
+     * checks contains sufficiently <a href="https://openjdk.org/jeps/358">helpful message</a>.
      *
      * @param  name    the name of the argument to be checked. Used only if an exception is thrown.
      * @param  object  the user argument to check against null value.
      * @throws NullPointerException if {@code object} is null.
+     *
+     * @see java.util.Objects#requireNonNull(Object)
+     * @see java.util.Objects#requireNonNull(Object, String)
      */
-    public static void ensureNonNull(final String name, final Object object)
-            throws NullPointerException
-    {
+    public static void ensureNonNull(final String name, final Object object) throws NullPointerException {
         if (object == null) {
             throw new NullPointerException(Errors.format(Errors.Keys.NullArgument_1, name));
         }

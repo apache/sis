@@ -17,12 +17,12 @@
 package org.apache.sis.util.collection;
 
 import java.util.Map;
+import java.util.Objects;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import java.io.InvalidObjectException;
 import org.opengis.annotation.Obligation;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.resources.Vocabulary;
 
@@ -286,8 +286,8 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * @param header  the text to display as column header.
      */
     public TableColumn(final Class<V> type, final CharSequence header) {
-        ArgumentChecks.ensureNonNull("type",   this.type   = type);
-        ArgumentChecks.ensureNonNull("header", this.header = header);
+        this.type   = Objects.requireNonNull(type);
+        this.header = Objects.requireNonNull(header);
     }
 
     /**

@@ -36,7 +36,6 @@ import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.collection.Containers.property;
 
 
@@ -162,7 +161,6 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      * @see #castOrCopy(Identifier)
      */
     public ImmutableIdentifier(final Identifier identifier) {
-        ensureNonNull("identifier", identifier);
         code        = identifier.getCode();
         codeSpace   = identifier.getCodeSpace();
         authority   = identifier.getAuthority();
@@ -264,7 +262,6 @@ public class ImmutableIdentifier extends FormattableObject implements Identifier
      * @throws IllegalArgumentException if a property has an illegal value.
      */
     public ImmutableIdentifier(final Map<String,?> properties) throws IllegalArgumentException {
-        ensureNonNull("properties", properties);
         code        = Strings.trimOrNull(property(properties, CODE_KEY,    String.class));
         version     = Strings.trimOrNull(property(properties, VERSION_KEY, String.class));
         description = Types.toInternationalString(properties, DESCRIPTION_KEY);

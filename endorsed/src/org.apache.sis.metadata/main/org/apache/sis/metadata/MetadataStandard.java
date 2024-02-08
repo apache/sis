@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.LinkedHashSet;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.io.IOException;
@@ -597,8 +598,7 @@ public class MetadataStandard implements Serializable {
      * @see AbstractMetadata#getInterface()
      */
     public <T> Class<? super T> getInterface(final Class<T> type) throws ClassCastException {
-        ensureNonNull("type", type);
-        return getInterface(new CacheKey(type));
+        return getInterface(new CacheKey(Objects.requireNonNull(type)));
     }
 
     /**

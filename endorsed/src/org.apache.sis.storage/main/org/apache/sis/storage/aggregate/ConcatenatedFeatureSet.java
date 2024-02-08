@@ -137,7 +137,6 @@ public class ConcatenatedFeatureSet extends AggregatedFeatureSet {
      * @throws DataStoreException if given feature sets does not share any common type.
      */
     public static FeatureSet create(final Collection<? extends FeatureSet> sources) throws DataStoreException {
-        ArgumentChecks.ensureNonNull("sources", sources);
         final int size = sources.size();
         switch (size) {
             case 0: {

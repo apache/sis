@@ -21,11 +21,11 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CheckedContainer;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
@@ -67,9 +67,7 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      * @param type  the element type (cannot be null).
      */
     public CheckedArrayList(final Class<E> type) {
-        super();
-        this.type = type;
-        ensureNonNull("type", type);
+        this.type = Objects.requireNonNull(type);
     }
 
     /**
@@ -80,8 +78,7 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      */
     public CheckedArrayList(final Class<E> type, final int capacity) {
         super(capacity);
-        this.type = type;
-        ensureNonNull("type", type);
+        this.type = Objects.requireNonNull(type);
     }
 
     /**

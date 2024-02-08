@@ -19,11 +19,11 @@ package org.apache.sis.io.wkt;
 import java.io.Console;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Printable;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.X364;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.system.Environment;
@@ -138,8 +138,7 @@ public abstract class FormattableObject implements Printable {
      * @return the Well Known Text (WKT) or a pseudo-WKT representation of this object.
      */
     public String toString(final Convention convention) {
-        ArgumentChecks.ensureNonNull("convention", convention);
-        return formatWKT(convention, false, false);
+        return formatWKT(Objects.requireNonNull(convention), false, false);
     }
 
     /**

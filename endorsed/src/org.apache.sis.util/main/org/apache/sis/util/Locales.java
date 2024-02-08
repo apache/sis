@@ -261,7 +261,6 @@ filter: for (final Locale locale : locales) {
      * @see org.apache.sis.util.iso.Types#toInternationalString(Map, String)
      */
     public static Locale parse(final String code, final int fromIndex) throws IllformedLocaleException {
-        ArgumentChecks.ensureNonNull("code", code);
         ArgumentChecks.ensurePositive("fromIndex", fromIndex);
         int p1 = code.indexOf('_', fromIndex);
         int i  = code.indexOf('-', fromIndex);

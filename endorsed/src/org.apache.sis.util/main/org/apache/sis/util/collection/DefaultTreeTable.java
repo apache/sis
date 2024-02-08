@@ -137,7 +137,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * @param  root  the tree table root (cannot be null).
      */
     public DefaultTreeTable(final Node root) {
-        ArgumentChecks.ensureNonNull("root", root);
+        // Implicit null check below.
         this.root = root;
         columnIndices = root.columnIndices;
     }
@@ -220,14 +220,13 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      *         with the table columns in this {@code DefaultTreeTable}.
      */
     public void setRoot(final TreeTable.Node root) {
-        ArgumentChecks.ensureNonNull("root", root);
         if (root instanceof Node) {
             final Map<TableColumn<?>,Integer> other = ((Node) root).columnIndices;
             if (other != columnIndices && !columnIndices.keySet().containsAll(other.keySet())) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.InconsistentTableColumns));
             }
         }
-        this.root = root;
+        this.root = Objects.requireNonNull(root);
     }
 
     /**
@@ -430,7 +429,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * @param  table  the table for which this node is created.
          */
         public Node(final TreeTable table) {
-            ArgumentChecks.ensureNonNull("table", table);
+            // Implicit null check below.
             if (table instanceof DefaultTreeTable) {
                 // Share the same instance if possible.
                 columnIndices = ((DefaultTreeTable) table).columnIndices;
@@ -447,8 +446,8 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          *
          * @param  parent  the parent of the new node.
          */
+        @SuppressWarnings("this-escape")
         public Node(final Node parent) {
-            ArgumentChecks.ensureNonNull("parent", parent);
             this.parent = parent;
             columnIndices = parent.columnIndices;
             final TreeNodeList addTo = (TreeNodeList) parent.getChildren();
@@ -463,8 +462,8 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * @param  parent  the parent of the new node.
          * @param  index   the index where to add the new node in the parent list of children.
          */
+        @SuppressWarnings("this-escape")
         public Node(final Node parent, final int index) {
-            ArgumentChecks.ensureNonNull("parent", parent);
             this.parent = parent;
             columnIndices = parent.columnIndices;
             final TreeNodeList addTo = (TreeNodeList) parent.getChildren();

@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
@@ -315,8 +316,7 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E> 
      */
     @Override
     public boolean add(final E element) {
-        ArgumentChecks.ensureNonNull("element", element);
-        final boolean modified = insert(root, treeRegion, element, new double[getDimension()]);
+        final boolean modified = insert(root, treeRegion, Objects.requireNonNull(element), new double[getDimension()]);
         if (modified) count++;
         return modified;
     }
@@ -330,7 +330,6 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E> 
      */
     @Override
     public boolean addAll(final Collection<? extends E> elements) {
-        ArgumentChecks.ensureNonNull("elements", elements);
         final double[] buffer = new double[getDimension()];
         boolean modified = false;
         int i = 0;

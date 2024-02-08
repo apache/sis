@@ -18,6 +18,7 @@ package org.apache.sis.metadata.iso.extent;
 
 import java.util.LinkedHashSet;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.function.BinaryOperator;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -31,7 +32,6 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Emptiable;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.pending.jdk.JDK19;
@@ -145,6 +145,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      * @param  verticalElements    a vertical component, or {@code null} if none.
      * @param  temporalElements    a temporal component, or {@code null} if none.
      */
+    @SuppressWarnings("this-escape")
     public DefaultExtent(final CharSequence     description,
                          final GeographicExtent geographicElements,
                          final VerticalExtent   verticalElements,
@@ -165,6 +166,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      *
      * @see #castOrCopy(Extent)
      */
+    @SuppressWarnings("this-escape")
     public DefaultExtent(final Extent object) {
         super(object);
         if (object != null) {
@@ -308,8 +310,7 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      */
     public void addElements(final Envelope envelope) throws TransformException {
         checkWritePermission(isNonEmpty());
-        ArgumentChecks.ensureNonNull("envelope", envelope);
-        if (!ReferencingServices.getInstance().addElements(envelope, this)) {
+        if (!ReferencingServices.getInstance().addElements(Objects.requireNonNull(envelope), this)) {
             throw new NotSpatioTemporalException(3, envelope);
         }
     }
@@ -333,7 +334,6 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      */
     public void intersect(final Extent other) {
         checkWritePermission(isNonEmpty());
-        ArgumentChecks.ensureNonNull("other", other);
         final InternationalString od = other.getDescription();
         if (od != null && !(description instanceof NilObject)) {
             if (description == null || (od instanceof NilObject)) {

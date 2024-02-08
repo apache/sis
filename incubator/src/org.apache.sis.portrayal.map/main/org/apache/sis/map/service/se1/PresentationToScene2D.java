@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.logging.Level;
@@ -37,7 +38,6 @@ import org.apache.sis.map.service.RenderingException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.style.se1.Symbolizer;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -70,8 +70,7 @@ final class PresentationToScene2D {
      * @param grid, not null
      */
     public PresentationToScene2D(GridGeometry grid, Graphics2D graphics) throws FactoryException, MismatchedDimensionException, TransformException {
-        ArgumentChecks.ensureNonNull("grid", grid);
-
+        // Null values are verified by the Scene2D constuctor.
         state = new Scene2D(grid, graphics);
     }
 
@@ -81,9 +80,7 @@ final class PresentationToScene2D {
      * @param state, not null
      */
     public PresentationToScene2D(Scene2D state) {
-        ArgumentChecks.ensureNonNull("state", state);
-
-        this.state = state;
+        this.state = Objects.requireNonNull(state);
     }
 
     /**

@@ -18,6 +18,7 @@ package org.apache.sis.referencing.factory.sql;
 
 import java.util.Set;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.sql.Connection;
@@ -31,7 +32,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.setup.InstallationResources;
@@ -117,9 +117,8 @@ public abstract class InstallationScriptProvider extends InstallationResources {
      * @see #openStream(String)
      */
     protected InstallationScriptProvider(final String authority, final String... resources) {
-        ArgumentChecks.ensureNonNull("resources", resources);
+        this.resources = Objects.requireNonNull(resources);
         authorities = CollectionsExt.singletonOrEmpty(authority);
-        this.resources = resources;
     }
 
     /**

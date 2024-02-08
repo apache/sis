@@ -17,6 +17,7 @@
 package org.apache.sis.util;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.converter.IdentityConverter;
@@ -79,8 +80,7 @@ public final class ObjectConverters extends Static {
      * @return an identity converter for objects of the given type.
      */
     public static <T> ObjectConverter<T,T> identity(final Class<T> type) {
-        ArgumentChecks.ensureNonNull("type", type);
-        return new IdentityConverter<>(type, type, null).unique();
+        return new IdentityConverter<>(Objects.requireNonNull(type), type, null).unique();
     }
 
     /**
@@ -115,7 +115,6 @@ public final class ObjectConverters extends Static {
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     public static <T> T convert(Object value, final Class<T> target) throws UnconvertibleObjectException {
-        ArgumentChecks.ensureNonNull("target", target);
         if (!target.isInstance(value) && value != null) {
             value = ((ObjectConverter) SystemRegistry.INSTANCE.find(value.getClass(), target)).apply(value);
         }

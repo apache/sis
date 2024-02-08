@@ -17,6 +17,7 @@
 package org.apache.sis.geometry.wrapper.jts;
 
 import java.util.Map;
+import java.util.Objects;
 import java.awt.Shape;
 import org.locationtech.jts.geom.Envelope;
 import org.locationtech.jts.geom.Geometry;
@@ -31,7 +32,6 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
@@ -309,7 +309,7 @@ public final class JTS extends Static {
      * @return the Java2D shape view.
      */
     public static Shape asShape(final Geometry geometry) {
-        ArgumentChecks.ensureNonNull("geometry", geometry);
+        // Null value check in the invoked constructor.
         return new ShapeAdapter(geometry);
     }
 
@@ -324,7 +324,6 @@ public final class JTS extends Static {
      * @return JTS geometry with shape coordinates. Never null but can be empty.
      */
     public static Geometry fromAWT(final GeometryFactory factory, final Shape shape, final double flatness) {
-        ArgumentChecks.ensureNonNull("shape", shape);
-        return ShapeConverter.create(factory, shape, flatness);
+        return ShapeConverter.create(factory, Objects.requireNonNull(shape), flatness);
     }
 }

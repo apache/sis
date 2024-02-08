@@ -25,6 +25,8 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.io.PrintWriter;
@@ -33,7 +35,6 @@ import java.text.NumberFormat;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.measure.Unit;
 import org.opengis.parameter.*;
 import org.opengis.util.ScopedName;
@@ -318,8 +319,7 @@ public class ParameterFormat extends TabularFormat<Object> {
      * @param  level  the amount of information to put in the table.
      */
     public void setContentLevel(final ContentLevel level) {
-        ArgumentChecks.ensureNonNull("level", level);
-        this.contentLevel = level;
+        this.contentLevel = Objects.requireNonNull(level);
     }
 
     /**

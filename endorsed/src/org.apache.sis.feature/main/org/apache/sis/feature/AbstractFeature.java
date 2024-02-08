@@ -119,8 +119,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      * @see DefaultFeatureType#newInstance()
      */
     protected AbstractFeature(final FeatureType type) {
-        ArgumentChecks.ensureNonNull("type", type);
-        this.type = type;
+        this.type = Objects.requireNonNull(type);
     }
 
     /**
@@ -214,7 +213,6 @@ public abstract class AbstractFeature implements Feature, Serializable {
      */
     @Override
     public void setProperty(final Property property) throws IllegalArgumentException {
-        ArgumentChecks.ensureNonNull("property", property);
         final String name = property.getName().toString();
         verifyPropertyType(name, property);
         if (property instanceof Attribute<?> && !Containers.isNullOrEmpty(((Attribute<?>) property).characteristics())) {

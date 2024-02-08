@@ -16,12 +16,12 @@
  */
 package org.apache.sis.storage.xml.stream;
 
+import java.util.Objects;
 import java.io.Closeable;
 import java.io.IOException;
 import javax.xml.stream.XMLStreamException;
 import jakarta.xml.bind.JAXBException;
 import org.apache.sis.xml.MarshallerPool;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -65,8 +65,7 @@ abstract class StaxStreamIO implements AutoCloseable {
      * @param owner  the data store for which this reader or writer is created.
      */
     StaxStreamIO(final StaxDataStore owner) {
-        ArgumentChecks.ensureNonNull("owner", owner);
-        this.owner = owner;
+        this.owner = Objects.requireNonNull(owner);
     }
 
     /**

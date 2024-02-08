@@ -30,7 +30,6 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.metadata.InvalidMetadataException;
@@ -514,9 +513,8 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * @see DefaultTemporalExtent#setBounds(Envelope)
      */
     public void setBounds(final Envelope envelope) throws TransformException {
-        ArgumentChecks.ensureNonNull("envelope", envelope);
         checkWritePermission(isNonEmpty());
-        if (ReferencingServices.getInstance().setBounds(envelope, this, null) == null) {
+        if (ReferencingServices.getInstance().setBounds(Objects.requireNonNull(envelope), this, null) == null) {
             throw new NotSpatioTemporalException(0, envelope);
         }
     }
@@ -527,7 +525,6 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * @param  box  the geographic bounding box to use for setting the values of this box.
      */
     public void setBounds(final GeographicBoundingBox box) {
-        ArgumentChecks.ensureNonNull("box", box);
         setBounds(box.getWestBoundLongitude(), box.getEastBoundLongitude(),
                   box.getSouthBoundLatitude(), box.getNorthBoundLatitude());
         setInclusion(box.getInclusion());                               // Set only on success.
@@ -644,7 +641,6 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      */
     public void add(final GeographicBoundingBox box) {
         checkWritePermission(isNonEmpty());
-        ArgumentChecks.ensureNonNull("box", box);
         double λmin = box.getWestBoundLongitude();
         double λmax = box.getEastBoundLongitude();
         double φmin = box.getSouthBoundLatitude();
@@ -702,7 +698,6 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      */
     public void intersect(final GeographicBoundingBox box) throws IllegalArgumentException {
         checkWritePermission(isNonEmpty());
-        ArgumentChecks.ensureNonNull("box", box);
         if (getInclusion(getInclusion()) != getInclusion(box.getInclusion())) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatiblePropertyValue_1, "inclusion"));
         }

@@ -348,7 +348,6 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @since 1.2
      */
     public GridGeometry(final GridGeometry other, final GridExtent extent, final MathTransform toOther) throws TransformException {
-        ArgumentChecks.ensureNonNull("other", other);
         final int dimension = other.getDimension();
         this.extent = extent;
         ensureDimensionMatches(dimension, extent);
@@ -383,6 +382,7 @@ public class GridGeometry implements LenientComparable, Serializable {
          * Recompute the envelope and clip only if a sub-sampling may have been applied (toOther != null).
          * The reason for clipping is because subsampling may cause cells to appear larger.
          */
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         ImmutableEnvelope envelope = other.envelope;            // We will share the same instance if possible.
         ImmutableEnvelope computed = computeEnvelope(gridToCRS, getCoordinateReferenceSystem(envelope),
                                                      toOther == null ? null : envelope);       // Clip.
@@ -716,7 +716,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @since 1.4
      */
     public GridGeometry(final Envelope envelope) {
-        ArgumentChecks.ensureNonNull("envelope", envelope);
+        // Implicit null value check below.
         this.envelope = ImmutableEnvelope.castOrCopy(envelope);
         if (this.envelope.isAllNaN() && this.envelope.getCoordinateReferenceSystem() == null) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyArgument_1, "envelope"));
@@ -1585,7 +1585,6 @@ public class GridGeometry implements LenientComparable, Serializable {
      * @since 1.3
      */
     public GridGeometry relocate(final GridExtent newExtent) throws TransformException {
-        ArgumentChecks.ensureNonNull("newExtent", newExtent);
         if (newExtent.equals(extent)) {
             return this;
         }

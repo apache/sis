@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Hashtable;
+import static java.util.Objects.requireNonNull;
 import java.awt.Point;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -298,7 +299,7 @@ public class GridCoverageBuilder {
      * @see SampleDimension.Builder
      */
     public GridCoverageBuilder addRange(final SampleDimension band) {
-        ArgumentChecks.ensureNonNull("band", band);
+        requireNonNull(band);
         if (!(ranges instanceof ArrayList<?>)) {
             ranges = (ranges != null) ? new ArrayList<>(ranges) : new ArrayList<>();
         }
@@ -322,8 +323,7 @@ public class GridCoverageBuilder {
      * @see BufferedImage
      */
     public GridCoverageBuilder setValues(final RenderedImage data) {
-        ArgumentChecks.ensureNonNull("data", data);
-        image  = data;
+        image  = requireNonNull(data);
         raster = null;
         buffer = null;
         size   = null;
@@ -346,8 +346,7 @@ public class GridCoverageBuilder {
      * @see Raster#createBandedRaster(int, int, int, int, Point)
      */
     public GridCoverageBuilder setValues(final Raster data) {
-        ArgumentChecks.ensureNonNull("data", data);
-        raster = data;
+        raster = requireNonNull(data);
         image  = null;
         buffer = null;
         size   = null;
@@ -425,9 +424,7 @@ public class GridCoverageBuilder {
      */
     @SuppressWarnings("UseOfObsoleteCollectionType")
     public GridCoverageBuilder addImageProperty(final String key, final Object value) {
-        ArgumentChecks.ensureNonNull("key",   key);
-        ArgumentChecks.ensureNonNull("value", value);
-        if (properties.putIfAbsent(key, value) != null) {
+        if (properties.putIfAbsent(requireNonNull(key, "key"), requireNonNull(value, "value")) != null) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, key));
         }
         return this;

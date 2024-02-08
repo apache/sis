@@ -42,7 +42,6 @@ import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.GridCoverageResource;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.URIDataStoreProvider;
@@ -275,7 +274,6 @@ public final class StoreProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
-        ArgumentChecks.ensureNonNull("parameter", parameters);
         final StorageConnector connector = URIDataStoreProvider.connector(this, parameters);
         final Parameters pg = Parameters.castOrWrap(parameters);
         connector.setOption(OptionKey.LOCALE,   pg.getValue(LOCALE));

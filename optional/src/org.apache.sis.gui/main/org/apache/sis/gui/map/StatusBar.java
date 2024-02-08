@@ -582,7 +582,6 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      * @since 1.3
      */
     public void track(final MapCanvas canvas) {
-        ArgumentChecks.ensureNonNull("canvas", canvas);
         if (this.canvas != null) {
             throw new IllegalArgumentException(Errors.format(
                         Errors.Keys.TooManyCollectionElements_3, "canvas", 1, 2));
@@ -592,7 +591,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
          * We do not allow the canvas to be changed after construction because of the added complexity
          * (e.g. we would have to remember all registered listeners so we can unregister them).
          */
-        this.canvas = canvas;
+        this.canvas = Objects.requireNonNull(canvas);
         sampleValuesProvider.set(ValuesUnderCursor.create(canvas));
         canvas.errorProperty().addListener((p,o,n) -> setRenderingError(n));
         canvas.renderingProperty().addListener((p,o,n) -> {if (!n) applyCanvasGeometry();});
@@ -1162,11 +1161,11 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
          * @throws MismatchedDimensionException if the number of dimensions is not the same as previous conversion.
          */
         @Override public void set(MathTransform newValue) {
-            ArgumentChecks.ensureNonNull("newValue", newValue);
             final MathTransform oldValue = get();
             ArgumentChecks.ensureDimensionsMatch("newValue",
                     oldValue.getSourceDimensions(),
-                    oldValue.getTargetDimensions(), newValue);
+                    oldValue.getTargetDimensions(),
+                    Objects.requireNonNull(newValue));
             final MathTransform tr = objectiveToPositionCRS;
             if (tr != null) {
                 newValue = MathTransforms.concatenate(newValue, tr);

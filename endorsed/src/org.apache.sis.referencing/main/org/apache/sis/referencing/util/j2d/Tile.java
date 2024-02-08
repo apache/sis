@@ -160,7 +160,6 @@ public class Tile implements Serializable {
      *                     This argument can be understood as pixel size relative to finest resolution.
      */
     public Tile(final Point location, final Dimension subsampling) {
-        ArgumentChecks.ensureNonNull("location", location);
         x = location.x;
         y = location.y;
         setSubsampling(subsampling);
@@ -178,7 +177,6 @@ public class Tile implements Serializable {
      * @throws IllegalArgumentException if the given region {@linkplain Rectangle#isEmpty() is empty}.
      */
     public Tile(final Rectangle region, final Dimension subsampling) {
-        ArgumentChecks.ensureNonNull("location", region);
         x      = region.x;
         y      = region.y;
         width  = region.width;

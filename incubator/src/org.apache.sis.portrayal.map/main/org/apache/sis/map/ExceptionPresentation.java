@@ -16,9 +16,9 @@
  */
 package org.apache.sis.map;
 
+import java.util.Objects;
 import org.opengis.feature.Feature;
 import org.apache.sis.storage.Resource;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -40,17 +40,15 @@ public class ExceptionPresentation extends Presentation {
      * @param exception not null.
      */
     public ExceptionPresentation(Exception exception) {
-        ArgumentChecks.ensureNonNull("exception", exception);
-        this.exception = exception;
+        this.exception = Objects.requireNonNull(exception);
     }
 
     /**
      * @param exception not null.
      */
     public ExceptionPresentation(MapLayer layer, Resource resource, Feature candidate, Exception exception) {
-        super(layer,resource, candidate);
-        ArgumentChecks.ensureNonNull("exception", exception);
-        this.exception = exception;
+        super(layer, resource, candidate);
+        this.exception = Objects.requireNonNull(exception);
     }
 
     /**

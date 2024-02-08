@@ -685,8 +685,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
         if (type == this) {
             return true;                            // Optimization for a common case.
         }
-        ArgumentChecks.ensureNonNull("type", type);
-        if (!maybeAssignableFrom(this, type)) {
+        if (!maybeAssignableFrom(this, Objects.requireNonNull(type))) {
             return false;
         }
         /*

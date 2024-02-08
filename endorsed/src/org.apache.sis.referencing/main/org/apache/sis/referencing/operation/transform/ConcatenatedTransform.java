@@ -105,7 +105,6 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * @param  transform1  the first math transform.
      * @param  transform2  the second math transform.
      */
-    @SuppressWarnings("OverridableMethodCallInConstructor")
     protected ConcatenatedTransform(final MathTransform transform1,
                                     final MathTransform transform2)
     {

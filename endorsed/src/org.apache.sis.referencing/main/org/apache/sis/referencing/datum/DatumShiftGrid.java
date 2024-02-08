@@ -266,7 +266,6 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * @param  other  the other datum shift grid from which to copy the grid geometry.
      */
     protected DatumShiftGrid(final DatumShiftGrid<C,T> other) {
-        ArgumentChecks.ensureNonNull("other", other);
         coordinateUnit   = other.coordinateUnit;
         coordinateToGrid = other.coordinateToGrid;
         isCellValueRatio = other.isCellValueRatio;

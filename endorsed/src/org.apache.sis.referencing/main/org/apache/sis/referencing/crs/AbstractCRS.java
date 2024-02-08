@@ -40,7 +40,6 @@ import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 
@@ -179,8 +178,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     @SuppressWarnings("this-escape")
     public AbstractCRS(final Map<String,?> properties, final CoordinateSystem cs) {
         super(properties);
-        ArgumentChecks.ensureNonNull("cs", cs);
-        coordinateSystem = cs;
+        coordinateSystem = Objects.requireNonNull(cs);
         forConvention = forConvention(this);
     }
 
@@ -338,9 +336,8 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * @see AbstractCS#forConvention(AxesConvention)
      */
     public AbstractCRS forConvention(final AxesConvention convention) {
-        ArgumentChecks.ensureNonNull("convention", convention);
         synchronized (forConvention) {
-            AbstractCRS crs = forConvention.get(convention);
+            AbstractCRS crs = forConvention.get(Objects.requireNonNull(convention));
             if (crs == null) {
                 final AbstractCS cs = AbstractCS.castOrCopy(coordinateSystem);
                 final AbstractCS candidate = cs.forConvention(convention);

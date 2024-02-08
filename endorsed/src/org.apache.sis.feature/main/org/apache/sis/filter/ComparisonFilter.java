@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Calendar;
+import java.util.Objects;
 import java.time.Instant;
 import java.time.LocalTime;
 import java.time.OffsetTime;
@@ -35,7 +36,6 @@ import java.time.chrono.ChronoZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
 import org.apache.sis.math.Fraction;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.filter.internal.Node;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -104,8 +104,7 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
     {
         super(expression1, expression2);
         this.isMatchingCase = isMatchingCase;
-        this.matchAction = matchAction;
-        ArgumentChecks.ensureNonNull("matchAction", matchAction);
+        this.matchAction = Objects.requireNonNull(matchAction);
     }
 
     /**

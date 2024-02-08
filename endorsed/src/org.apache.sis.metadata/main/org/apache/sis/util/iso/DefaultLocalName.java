@@ -55,7 +55,7 @@ import org.apache.sis.xml.bind.gco.CharSequenceAdapter;
  * remain safe to call from multiple threads and do not change any public {@code LocalName} state.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see DefaultNameSpace
  * @see DefaultScopedName
@@ -124,10 +124,10 @@ public class DefaultLocalName extends AbstractName implements LocalName {
      * Otherwise the {@link CharSequence#toString()} method will be used.
      *
      * @param scope  the scope of this name, or {@code null} for a global scope.
-     * @param name   the local name (never {@code null}).
+     * @param name   the local name. Shall not be {@code null} or empty.
      */
     protected DefaultLocalName(NameSpace scope, final CharSequence name) {
-        ArgumentChecks.ensureNonNull("name", name);
+        ArgumentChecks.ensureNonEmpty("name", name);
         if (scope == GlobalNameSpace.GLOBAL) {
             scope = null;                                       // Handled specially by scope().
         }

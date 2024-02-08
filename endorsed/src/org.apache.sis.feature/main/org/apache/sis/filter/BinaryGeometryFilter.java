@@ -27,7 +27,6 @@ import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.geometry.wrapper.SpatialOperationContext;
 import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.filter.internal.Node;
-import org.apache.sis.util.ArgumentChecks;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Filter;
@@ -91,8 +90,7 @@ abstract class BinaryGeometryFilter<R> extends Node implements SpatialOperator<R
                                    final Expression<R,?> geometry2,
                                    final Unit<?> systemUnit)
     {
-        ArgumentChecks.ensureNonNull("expression1", geometry1);
-        ArgumentChecks.ensureNonNull("expression2", geometry2);
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         Expression<R, GeometryWrapper> expression1, expression2;
         expression1 = toGeometryWrapper(library, geometry1);
         expression2 = toGeometryWrapper(library, geometry2);

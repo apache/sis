@@ -90,8 +90,7 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
      *         Meridians in the East hemisphere are positive and meridians in the West hemisphere are negative.
      */
     DirectionAlongMeridian(final AxisDirection baseDirection, final double meridian) {
-        ArgumentChecks.ensureNonNull("baseDirection", baseDirection);
-        if (!AxisDirection.NORTH.equals(baseDirection) && !AxisDirection.SOUTH.equals(baseDirection)) {
+        if (!baseDirection.equals(AxisDirection.NORTH) && !baseDirection.equals(AxisDirection.SOUTH)) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.IllegalArgumentValue_2, "baseDirection", baseDirection));
         }

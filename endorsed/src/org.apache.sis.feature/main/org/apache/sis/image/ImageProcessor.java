@@ -308,8 +308,7 @@ public class ImageProcessor implements Cloneable {
      * This method is not yet public because {@link ImageLayout} is not a public class.
      */
     final synchronized void setImageLayout(final ImageLayout layout) {
-        ArgumentChecks.ensureNonNull("layout", layout);
-        this.layout = layout;
+        this.layout = Objects.requireNonNull(layout);
     }
 
     /**
@@ -331,8 +330,7 @@ public class ImageProcessor implements Cloneable {
      * @see #resample(RenderedImage, Rectangle, MathTransform)
      */
     public synchronized void setInterpolation(final Interpolation method) {
-        ArgumentChecks.ensureNonNull("method", method);
-        interpolation = method;
+        interpolation = Objects.requireNonNull(method);
     }
 
     /**
@@ -409,8 +407,9 @@ public class ImageProcessor implements Cloneable {
      * @param  policy   the new image resizing policy.
      */
     public synchronized void setImageResizingPolicy(final Resizing policy) {
-        ArgumentChecks.ensureNonNull("policy", policy);
-        layout = (policy == Resizing.EXPAND) ? ImageLayout.SIZE_ADJUST : ImageLayout.DEFAULT;
+        layout = (Objects.requireNonNull(policy) == Resizing.EXPAND)
+                ? ImageLayout.SIZE_ADJUST
+                : ImageLayout.DEFAULT;
     }
 
     /**
@@ -485,8 +484,7 @@ public class ImageProcessor implements Cloneable {
      * @param  mode  whether the operations can be executed in parallel.
      */
     public synchronized void setExecutionMode(final Mode mode) {
-        ArgumentChecks.ensureNonNull("mode", mode);
-        executionMode = mode;
+        executionMode = Objects.requireNonNull(mode);
     }
 
     /**
@@ -535,8 +533,7 @@ public class ImageProcessor implements Cloneable {
      *                  or {@link ErrorHandler#THROW} for propagating the exception.
      */
     public synchronized void setErrorHandler(final ErrorHandler handler) {
-        ArgumentChecks.ensureNonNull("handler", handler);
-        errorHandler = handler;
+        errorHandler = Objects.requireNonNull(handler);
     }
 
     /**
@@ -1370,6 +1367,7 @@ public class ImageProcessor implements Cloneable {
      */
     public List<NavigableMap<Double,Shape>> isolines(final RenderedImage data, final double[][] levels, final MathTransform gridToCRS) {
         ArgumentChecks.ensureNonNull("data", data);
+        ArgumentChecks.ensureNonNull("levels", levels);
         final boolean parallel;
         synchronized (this) {
             parallel = parallel(data);

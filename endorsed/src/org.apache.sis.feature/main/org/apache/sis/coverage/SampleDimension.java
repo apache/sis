@@ -493,8 +493,7 @@ public class SampleDimension implements Serializable {
      */
     @Debug
     public static String toString(final Locale locale, SampleDimension... dimensions) {
-        ArgumentChecks.ensureNonNull("dimensions", dimensions);
-        return new SampleRangeFormat(locale).write(dimensions);
+        return new SampleRangeFormat(locale).write(Objects.requireNonNull(dimensions));
     }
 
 

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometry;
 
+import java.util.Objects;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
@@ -30,7 +31,6 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.referencing.util.WraparoundAxesFinder;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
 
@@ -131,8 +131,7 @@ public class WraparoundAdjustment {
      *                 or {@code null} for the same CRS as the {@code domain} CRS..
      */
     public WraparoundAdjustment(final Envelope domain, final CoordinateReferenceSystem target) {
-        ArgumentChecks.ensureNonNull("domain", domain);
-        domainOfValidity = ImmutableEnvelope.castOrCopy(domain);
+        domainOfValidity = ImmutableEnvelope.castOrCopy(Objects.requireNonNull(domain));
         resultCRS        = (target != null) ? target : domainOfValidity.getCoordinateReferenceSystem();
         domainToInput    = null;
     }
@@ -155,8 +154,7 @@ public class WraparoundAdjustment {
      *                         If {@code null}, the results will be expressed in same CRS as the inputs.
      */
     public WraparoundAdjustment(final Envelope domain, MathTransform domainToInput, MathTransform inputToResult) {
-        ArgumentChecks.ensureNonNull("domain", domain);
-        domainOfValidity = ImmutableEnvelope.castOrCopy(domain);
+        domainOfValidity = ImmutableEnvelope.castOrCopy(Objects.requireNonNull(domain));
         if (domainToInput == null) {
             domainToInput = MathTransforms.identity(domainOfValidity.getDimension());
         }

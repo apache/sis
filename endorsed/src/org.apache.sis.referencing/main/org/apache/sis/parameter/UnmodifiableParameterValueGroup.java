@@ -150,8 +150,7 @@ class UnmodifiableParameterValueGroup extends Parameters implements LenientCompa
      */
     @Override
     public final ParameterValue<?> parameter(final String name) throws ParameterNotFoundException {
-        ArgumentChecks.ensureNonNull("name", name);
-        final ParameterValue<?> value = parameterIfExist(name);
+        final ParameterValue<?> value = parameterIfExist(Objects.requireNonNull(name));
         if (value != null) {
             return value;
         }
@@ -164,7 +163,7 @@ class UnmodifiableParameterValueGroup extends Parameters implements LenientCompa
      */
     @Override
     public List<ParameterValueGroup> groups(final String name) throws ParameterNotFoundException {
-        ArgumentChecks.ensureNonNull("name", name);
+        Objects.requireNonNull(name);
         final List<ParameterValueGroup> groups = new ArrayList<>(4);
         for (final GeneralParameterValue value : values) {
             if (value instanceof ParameterValueGroup) {

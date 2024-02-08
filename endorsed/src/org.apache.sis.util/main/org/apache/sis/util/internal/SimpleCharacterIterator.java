@@ -56,7 +56,6 @@ public class SimpleCharacterIterator implements CharacterIterator, CharSequence 
      * @param  text  the character sequence to wrap.
      */
     public SimpleCharacterIterator(final CharSequence text) {
-        ArgumentChecks.ensureNonNull("text", text);
         this.text = text;
         upper = text.length();
     }

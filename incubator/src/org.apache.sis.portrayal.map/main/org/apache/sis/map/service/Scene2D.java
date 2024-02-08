@@ -17,9 +17,9 @@
 package org.apache.sis.map.service;
 
 import java.awt.Graphics2D;
+import java.util.Objects;
 import java.util.logging.Logger;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -42,10 +42,8 @@ public final class Scene2D {
     public final Graphics2D graphics;
 
     public Scene2D(GridGeometry grid, Graphics2D graphics) {
-        ArgumentChecks.ensureNonNull("grid", grid);
-        ArgumentChecks.ensureNonNull("graphics", graphics);
-        this.grid = grid;
-        this.graphics = graphics;
+        this.grid = Objects.requireNonNull(grid);
+        this.graphics = Objects.requireNonNull(graphics);
     }
 
     public Graphics2D getGraphics() {

@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.Map;
+import java.util.Objects;
 import static java.lang.Math.*;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
@@ -29,7 +30,6 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection.ParameterRole;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
@@ -102,11 +102,8 @@ final class Initializer {
                 final Map<ParameterRole, ? extends ParameterDescriptor<? extends Number>> roles,
                 final ProjectionVariant variant)
     {
-        ensureNonNull("method",     method);
-        ensureNonNull("parameters", parameters);
-        ensureNonNull("roles",      roles);
         this.context    = new ContextualParameters(method.getParameters(), 2, 2);
-        this.parameters = parameters;
+        this.parameters = Objects.requireNonNull(parameters);
         this.variant    = variant;
         /*
          * Note: we do not use Map.getOrDefault(K,V) below because the user could have explicitly associated

@@ -708,13 +708,13 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Verifies if the given type is a valid key for the {@link #factories} map.
      */
     private void ensureValidFactoryType(final Class<?> type) throws IllegalArgumentException {
-        ArgumentChecks.ensureNonNull("type", type);
         if (type != CRSFactory.class            &&
             type != CSFactory.class             &&
             type != DatumFactory.class          &&
             type != MathTransformFactory.class  &&
             type != CoordinateOperationFactory.class)
         {
+            ArgumentChecks.ensureNonNull("type", type);
             throw new IllegalArgumentException(errors().getString(Errors.Keys.IllegalArgumentValue_2, "type", type));
         }
     }

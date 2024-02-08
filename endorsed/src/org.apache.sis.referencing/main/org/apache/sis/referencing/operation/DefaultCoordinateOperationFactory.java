@@ -176,7 +176,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * @param factory     the factory to use for creating {@linkplain AbstractMathTransform math transforms},
      *                    or {@code null} for the default factory.
      */
-    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @SuppressWarnings({"LocalVariableHidesMemberVariable", "UnusedAssignment"})
     public DefaultCoordinateOperationFactory(Map<String,?> properties, MathTransformFactory factory) {
         final CSFactory  csFactory;
         final CRSFactory crsFactory;
@@ -281,6 +281,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     @Override
     public OperationMethod getOperationMethod(String name) throws FactoryException {
         ArgumentChecks.ensureNonEmpty("name", name = name.strip());
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final MathTransformFactory mtFactory = getMathTransformFactory();
         if (mtFactory instanceof DefaultMathTransformFactory) {
             return ((DefaultMathTransformFactory) mtFactory).getOperationMethod(name);

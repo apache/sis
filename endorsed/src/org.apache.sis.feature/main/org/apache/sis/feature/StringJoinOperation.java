@@ -303,8 +303,7 @@ final class StringJoinOperation extends AbstractOperation {
      */
     @Override
     public Property apply(Feature feature, ParameterValueGroup parameters) {
-        ArgumentChecks.ensureNonNull("feature", feature);
-        return new Result(feature);
+        return new Result(Objects.requireNonNull(feature));
     }
 
 

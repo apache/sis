@@ -18,6 +18,7 @@ package org.apache.sis.storage.base;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.Objects;
 import java.awt.image.RenderedImage;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.SampleDimension;
@@ -29,7 +30,6 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -61,8 +61,7 @@ public final class MemoryGridResource extends AbstractGridCoverageResource {
      */
     public MemoryGridResource(final StoreListeners parent, final GridCoverage coverage, final GridCoverageProcessor processor) {
         super(parent, false);
-        ArgumentChecks.ensureNonNull("coverage", coverage);
-        this.coverage = coverage;
+        this.coverage  = Objects.requireNonNull(coverage);
         this.processor = (processor != null) ? processor : new GridCoverageProcessor();
     }
 

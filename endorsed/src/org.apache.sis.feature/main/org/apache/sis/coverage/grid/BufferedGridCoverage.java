@@ -17,6 +17,7 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
@@ -33,7 +34,6 @@ import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.image.DataType;
@@ -148,8 +148,7 @@ public class BufferedGridCoverage extends GridCoverage {
      */
     public BufferedGridCoverage(final GridGeometry domain, final List<? extends SampleDimension> range, final DataBuffer data) {
         super(domain, range);
-        this.data = data;
-        ArgumentChecks.ensureNonNull("data", data);
+        this.data = Objects.requireNonNull(data);
         /*
          * The buffer shall either contain all values in a single bank (pixel interleaved sample model)
          * or contain as many banks as bands (banded sample model).

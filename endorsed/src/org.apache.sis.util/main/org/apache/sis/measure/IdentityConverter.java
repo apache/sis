@@ -16,8 +16,8 @@
  */
 package org.apache.sis.measure;
 
+import java.util.Objects;
 import javax.measure.UnitConverter;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 
@@ -67,8 +67,7 @@ final class IdentityConverter extends AbstractConverter implements LenientCompar
      */
     @Override
     public Number convert(Number value) {
-        ArgumentChecks.ensureNonNull("value", value);
-        return value;
+        return Objects.requireNonNull(value);
     }
 
     /**

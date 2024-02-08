@@ -40,7 +40,6 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 
@@ -140,8 +139,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * @param  descriptor  the descriptor for this group.
      */
     public DefaultParameterValueGroup(final ParameterDescriptorGroup descriptor) {
-        ArgumentChecks.ensureNonNull("descriptor", descriptor);
-        values = new ParameterValueList(descriptor);
+        values = new ParameterValueList(Objects.requireNonNull(descriptor));
     }
 
     /**
@@ -156,7 +154,6 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      * @since 0.6
      */
     public DefaultParameterValueGroup(final ParameterValueGroup parameters) {
-        ArgumentChecks.ensureNonNull("parameters", parameters);
         values = new ParameterValueList(parameters.getDescriptor());
         values.addAll(parameters.values());
     }
@@ -216,6 +213,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      */
     @Override
     public <T> ParameterValue<T> getOrCreate(final ParameterDescriptor<T> parameter) throws ParameterNotFoundException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ParameterValueList values = this.values;          // Protect against accidental changes.
         final int n = values.size();
         for (int i=0; i<n; i++) {
@@ -235,6 +233,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      */
     @Override
     final ParameterValue<?> getParameter(final ParameterDescriptor<?> parameter) throws ParameterNotFoundException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ParameterValueList values = this.values;          // Protect against accidental changes.
         final int n = values.size();
         for (int i=0; i<n; i++) {
@@ -284,8 +283,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      */
     @Override
     public ParameterValue<?> parameter(final String name) throws ParameterNotFoundException {
-        ArgumentChecks.ensureNonNull("name", name);
-        ParameterValue<?> value = parameterIfExist(name);
+        ParameterValue<?> value = parameterIfExist(Objects.requireNonNull(name));
         if (value == null) {
             /*
              * No existing parameter found. Maybe the parameter is optional and not yet created.
@@ -318,6 +316,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      */
     @Override
     ParameterValue<?> parameterIfExist(final String name) throws ParameterNotFoundException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ParameterValueList values = this.values;          // Protect against accidental changes.
         /*
          * Search for an exact match. By invoking `descriptor(i)` instead of `get(i)`, we avoid the
@@ -370,7 +369,8 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
      */
     @Override
     public List<ParameterValueGroup> groups(final String name) throws ParameterNotFoundException {
-        ArgumentChecks.ensureNonNull("name", name);
+        Objects.requireNonNull(name);
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ParameterValueList values = this.values;                  // Protect against accidental changes.
         final List<ParameterValueGroup> groups = new ArrayList<>(4);
         final int size = values.size();
@@ -418,6 +418,7 @@ public class DefaultParameterValueGroup extends Parameters implements LenientCom
     public ParameterValueGroup addGroup(final String name)
             throws ParameterNotFoundException, InvalidParameterCardinalityException
     {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ParameterValueList values = this.values;                  // Protect against accidental changes.
         final ParameterDescriptorGroup descriptor = values.descriptor;
         final GeneralParameterDescriptor child = descriptor.descriptor(name);

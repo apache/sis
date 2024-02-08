@@ -572,7 +572,6 @@ search: for (int j=numPoints; --j >= 0;) {
      * @since 1.1
      */
     public void setControlPoints(final MathTransform gridToCRS) throws TransformException {
-        ArgumentChecks.ensureNonNull("gridToCRS", gridToCRS);
         if (gridSize == null) {
             throw new IllegalStateException(Resources.format(Resources.Keys.PointsAreNotOnRegularGrid));
         }
@@ -644,7 +643,6 @@ search: for (int j=numPoints; --j >= 0;) {
             throws MismatchedDimensionException
     {
         ensureModifiable();
-        ArgumentChecks.ensureNonNull("sourceToTarget", sourceToTarget);
         sources    = null;
         targets    = null;
         numPoints  = 0;
@@ -974,8 +972,6 @@ search:         for (int j=domain(); --j >= 0;) {
      */
     public void setControlPoint(final int[] source, final double[] target) {
         ensureModifiable();
-        ArgumentChecks.ensureNonNull("source", source);
-        ArgumentChecks.ensureNonNull("target", target);
         verifySourceDimension(source.length);
         final int tgtDim = target.length;
         if (targets != null && tgtDim != targets.length) {
@@ -1051,7 +1047,6 @@ search:         for (int j=domain(); --j >= 0;) {
      * @since 0.8
      */
     public double[] getControlPoint(final int[] source) {
-        ArgumentChecks.ensureNonNull("source", source);
         verifySourceDimension(source.length);
         if (targets == null) {
             return null;
@@ -1311,8 +1306,7 @@ search:         for (int j=domain(); --j >= 0;) {
      * @since 1.0
      */
     public void addLinearizers(final Map<String,MathTransform> projections, final int... projToGrid) {
-        ArgumentChecks.ensureNonNull("projections", projections);
-        addLinearizers(projections, false, projToGrid);
+        addLinearizers(Objects.requireNonNull(projections), false, projToGrid);
     }
 
     /**

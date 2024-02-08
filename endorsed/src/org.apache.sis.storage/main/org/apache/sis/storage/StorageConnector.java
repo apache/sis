@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.IdentityHashMap;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 import java.net.URI;
 import java.net.URL;
@@ -51,7 +52,6 @@ import javax.sql.DataSource;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.resources.Errors;
@@ -620,8 +620,7 @@ public class StorageConnector implements Serializable {
      * @param storage  the input/output object as a URL, file, image input stream, <i>etc.</i>.
      */
     public StorageConnector(final Object storage) {
-        ArgumentChecks.ensureNonNull("storage", storage);
-        this.storage = storage;
+        this.storage = Objects.requireNonNull(storage);
     }
 
     /**
@@ -658,7 +657,6 @@ public class StorageConnector implements Serializable {
      * @param value  the new value for the given option, or {@code null} for removing the value.
      */
     public <T> void setOption(final OptionKey<T> key, final T value) {
-        ArgumentChecks.ensureNonNull("key", key);
         options = key.setValueInto(options, value);
     }
 
@@ -671,7 +669,6 @@ public class StorageConnector implements Serializable {
      * @return the current value for the given option, or {@code null} if none.
      */
     public <T> T getOption(final OptionKey<T> key) {
-        ArgumentChecks.ensureNonNull("key", key);
         return key.getValueFrom(options);
     }
 
@@ -889,7 +886,6 @@ public class StorageConnector implements Serializable {
      * @see DataStoreProvider#probeContent(StorageConnector, Class, Prober)
      */
     public <S> S getStorageAs(final Class<S> type) throws IllegalArgumentException, DataStoreException {
-        ArgumentChecks.ensureNonNull("type", type);
         if (views != null && views.isEmpty()) {
             throw new IllegalStateException(Resources.format(Resources.Keys.ClosedStorageConnector));
         }
@@ -905,7 +901,7 @@ public class StorageConnector implements Serializable {
          *    4) getStorageAs(InputStream.class) needs to rewind the InputStream itself since it was
          *       not done at step 3. However, doing so invalidate the Reader, so we need to discard it.
          */
-        Coupled value = getView(type);
+        Coupled value = getView(Objects.requireNonNull(type));
         if (reset(value)) {
             return type.cast(value.view);               // null is a valid result.
         }

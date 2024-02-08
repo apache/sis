@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.stream.Stream;
 import java.util.function.Predicate;
 import java.util.function.Consumer;
@@ -469,7 +470,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
      * @throws FactoryException if the definition file cannot be read.
      */
     public void load(final BufferedReader source) throws FactoryException {
-        ArgumentChecks.ensureNonNull("source", source);
+        Objects.requireNonNull(source);
         lock.writeLock().lock();
         try {
             final Loader loader = new Loader(source);
@@ -704,7 +705,6 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
      *         used for two objects.
      */
     public void addDefinitions(final Stream<String> objects) throws FactoryException {
-        ArgumentChecks.ensureNonNull("objects", objects);
         /*
          * We work with iterator because we do not support parallelism yet.
          * However, a future version may support that, which is why argument
@@ -900,7 +900,6 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
      */
     @Override
     public Set<String> getAuthorityCodes(Class<? extends IdentifiedObject> type) throws FactoryException {
-        ArgumentChecks.ensureNonNull("type", type);
         if (!type.isInterface()) {
             type = ReferencingUtilities.getInterface(IdentifiedObject.class, type);
         }

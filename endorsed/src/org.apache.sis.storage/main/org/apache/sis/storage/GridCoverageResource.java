@@ -17,13 +17,13 @@
 package org.apache.sis.storage;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.DisjointExtentException;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 
 
@@ -191,8 +191,7 @@ public interface GridCoverageResource extends DataSet {
      * @since 1.1
      */
     default GridCoverageResource subset(final Query query) throws UnsupportedQueryException, DataStoreException {
-        ArgumentChecks.ensureNonNull("query", query);
-        if (query instanceof CoverageQuery) try {
+        if (Objects.requireNonNull(query) instanceof CoverageQuery) try {
             return ((CoverageQuery) query).execute(this);
         } catch (RuntimeException e) {
             throw new UnsupportedQueryException(e);
@@ -255,7 +254,6 @@ public interface GridCoverageResource extends DataSet {
      * @since 1.1
      */
     default boolean setLoadingStrategy(final RasterLoadingStrategy strategy) throws DataStoreException {
-        ArgumentChecks.ensureNonNull("strategy", strategy);
-        return strategy == getLoadingStrategy();
+        return Objects.requireNonNull(strategy) == getLoadingStrategy();
     }
 }

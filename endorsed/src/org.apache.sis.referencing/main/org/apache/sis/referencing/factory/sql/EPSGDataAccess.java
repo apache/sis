@@ -29,6 +29,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
@@ -372,11 +373,9 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * @see EPSGFactory#newDataAccess(Connection, SQLTranslator)
      */
     protected EPSGDataAccess(final EPSGFactory owner, final Connection connection, final SQLTranslator translator) {
-        ArgumentChecks.ensureNonNull("connection", connection);
-        ArgumentChecks.ensureNonNull("translator", translator);
         this.owner      = owner;
-        this.connection = connection;
-        this.translator = translator;
+        this.connection = Objects.requireNonNull(connection);
+        this.translator = Objects.requireNonNull(translator);
         this.namespace  = owner.nameFactory.createNameSpace(
                           owner.nameFactory.createLocalName(null, Constants.IOGP), null);
     }

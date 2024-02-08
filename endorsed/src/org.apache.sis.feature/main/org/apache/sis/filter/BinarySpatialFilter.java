@@ -17,12 +17,12 @@
 package org.apache.sis.filter;
 
 import java.util.Collection;
+import java.util.Objects;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.geometry.wrapper.SpatialOperationContext;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.geometry.wrapper.Geometries;
-import org.apache.sis.util.ArgumentChecks;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Expression;
@@ -83,8 +83,7 @@ final class BinarySpatialFilter<R> extends BinaryGeometryFilter<R> implements Bi
                         final Expression<R,?> geometry2)
     {
         super(library, geometry1, geometry2, null);
-        this.operatorType = operatorType;
-        ArgumentChecks.ensureNonNull("operatorType", operatorType);
+        this.operatorType = Objects.requireNonNull(operatorType);
     }
 
     /**

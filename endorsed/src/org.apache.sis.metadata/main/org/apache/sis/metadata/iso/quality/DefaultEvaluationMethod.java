@@ -19,6 +19,7 @@ package org.apache.sis.metadata.iso.quality;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.AbstractList;
+import java.util.Objects;
 import java.io.Serializable;
 import java.time.temporal.Temporal;
 import jakarta.xml.bind.annotation.XmlType;
@@ -29,7 +30,6 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.EvaluationMethodType;
 import org.apache.sis.system.Semaphores;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.CloneAccess;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
@@ -181,7 +181,7 @@ public class DefaultEvaluationMethod extends ISOMetadata implements EvaluationMe
          */
         @Override
         public Temporal set(final int index, final Temporal date) {
-            ArgumentChecks.ensureNonNull("date", date);
+            Objects.requireNonNull(date);
             final Temporal previous = get(index);
             switch (index) {
                 case 0: date1 = date; break;

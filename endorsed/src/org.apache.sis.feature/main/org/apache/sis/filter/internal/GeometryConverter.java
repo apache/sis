@@ -18,13 +18,13 @@ package org.apache.sis.filter.internal;
 
 import java.util.List;
 import java.util.Collection;
+import java.util.Objects;
 import org.opengis.util.ScopedName;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.geometry.WraparoundMethod;
@@ -80,10 +80,8 @@ final class GeometryConverter<R,G> extends Node implements Optimization.OnExpres
      * @param  expression  the expression providing source values.
      */
     public GeometryConverter(final Geometries<G> library, final Expression<R,?> expression) {
-        ArgumentChecks.ensureNonNull("expression", expression);
-        ArgumentChecks.ensureNonNull("library",    library);
-        this.expression = expression;
-        this.library    = library;
+        this.expression = Objects.requireNonNull(expression);
+        this.library    = Objects.requireNonNull(library);
     }
 
     /**

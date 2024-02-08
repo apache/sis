@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
+import java.util.Objects;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -44,7 +45,6 @@ import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
@@ -102,8 +102,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
                        final CoordinateSystem cs)
     {
         super(properties, cs);
-        ensureNonNull("datum", datum);
-        this.datum = datum;
+        this.datum = Objects.requireNonNull(datum);
     }
 
     /**

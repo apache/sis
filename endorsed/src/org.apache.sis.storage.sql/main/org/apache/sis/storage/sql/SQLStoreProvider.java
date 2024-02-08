@@ -17,10 +17,11 @@
 package org.apache.sis.storage.sql;
 
 import java.util.Map;
+import java.util.Objects;
+import java.util.logging.Logger;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;
-import java.util.logging.Logger;
 import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -41,7 +42,6 @@ import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.util.ArgumentChecks;
 import static org.apache.sis.storage.sql.feature.Database.WILDCARD;
 
 
@@ -224,9 +224,8 @@ public class SQLStoreProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
-        ArgumentChecks.ensureNonNull("parameters", parameters);
         try {
-            final Parameters p = Parameters.castOrWrap(parameters);
+            final Parameters p = Parameters.castOrWrap(Objects.requireNonNull(parameters));
             final StorageConnector connector = new StorageConnector(p.getValue(SOURCE_PARAM));
             final GenericName[] tableNames = p.getValue(TABLES_PARAM);
             final Map<?,?> queries = p.getValue(QUERIES_PARAM);

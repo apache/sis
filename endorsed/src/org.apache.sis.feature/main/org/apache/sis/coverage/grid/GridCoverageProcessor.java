@@ -152,7 +152,6 @@ public class GridCoverageProcessor implements Cloneable {
      * @param  processor  the processor to use for operations on two-dimensional slices.
      */
     public GridCoverageProcessor(final ImageProcessor processor) {
-        ArgumentChecks.ensureNonNull("processor", processor);
         imageProcessor = processor.clone();
     }
 
@@ -716,7 +715,6 @@ public class GridCoverageProcessor implements Cloneable {
      * @since 1.4
      */
     public GridCoverage reduceDimensionality(final GridCoverage source) {
-        ArgumentChecks.ensureNonNull("source", source);
         return DimensionalityReduction.reduce(source.getGridGeometry()).apply(source);
     }
 
@@ -761,7 +759,6 @@ public class GridCoverageProcessor implements Cloneable {
      * @since 1.4
      */
     public GridCoverage removeGridDimensions(final GridCoverage source, final int... gridAxesToRemove) {
-        ArgumentChecks.ensureNonNull("source", source);
         var reduction = DimensionalityReduction.remove(source.getGridGeometry(), gridAxesToRemove);
         reduction.ensureIsSlice();
         return reduction.apply(source);
@@ -812,7 +809,6 @@ public class GridCoverageProcessor implements Cloneable {
      * @since 1.4
      */
     public GridCoverage selectGridDimensions(final GridCoverage source, final int... gridAxesToPass) {
-        ArgumentChecks.ensureNonNull("source", source);
         var reduction = DimensionalityReduction.select(source.getGridGeometry(), gridAxesToPass);
         reduction.ensureIsSlice();
         return reduction.apply(source);

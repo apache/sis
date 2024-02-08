@@ -211,6 +211,7 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
      * If {@code inverse} is {@code null}, then this constructor creates the forward transformation.
      * Otherwise this constructor creates the inverse of the given {@code inverse} transformation.
      */
+    @SuppressWarnings("this-escape")
     private InterpolatedGeocentricTransform(final Ellipsoid source, final boolean isSource3D,
                                             final Ellipsoid target, final boolean isTarget3D,
                                             final DatumShiftGrid<?,?> grid,

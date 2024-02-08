@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.builder;
 
 import java.util.Map;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -215,7 +216,6 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * @since 1.0
      */
     public LocalizationGridBuilder(final LinearTransformBuilder localizations) {
-        ArgumentChecks.ensureNonNull("localizations", localizations);
         int n = localizations.getGridDimensions();
         if (n == SOURCE_DIMENSION) {
             linearBuilder = localizations;
@@ -371,7 +371,6 @@ public class LocalizationGridBuilder extends TransformBuilder {
      */
     public void setSourceToGrid(final LinearTransform sourceToGrid) {
         ensureModifiable();
-        ArgumentChecks.ensureNonNull("sourceToGrid", sourceToGrid);
         int isTarget = 0;
         int dim = sourceToGrid.getSourceDimensions();
         if (dim >= SOURCE_DIMENSION) {
@@ -451,8 +450,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      */
     public void setControlPoints(final Vector... coordinates) {
         ensureModifiable();
-        ArgumentChecks.ensureNonNull("coordinates", coordinates);
-        linearBuilder.setControlPoints(coordinates);
+        linearBuilder.setControlPoints(Objects.requireNonNull(coordinates));
     }
 
     /**
@@ -618,9 +616,8 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * @since 1.1
      */
     public void addLinearizers(final Map<String,MathTransform> projections, final boolean compensate, final int... projToGrid) {
-        ArgumentChecks.ensureNonNull("projections", projections);
         ensureModifiable();
-        linearBuilder.addLinearizers(projections, compensate, projToGrid);
+        linearBuilder.addLinearizers(Objects.requireNonNull(projections), compensate, projToGrid);
     }
 
     /**

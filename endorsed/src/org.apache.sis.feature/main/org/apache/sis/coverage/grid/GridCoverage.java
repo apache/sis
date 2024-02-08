@@ -19,6 +19,7 @@ package org.apache.sis.coverage.grid;
 import java.util.Map;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.awt.image.RenderedImage;
 import org.opengis.geometry.Envelope;
@@ -104,10 +105,8 @@ public abstract class GridCoverage extends BandedCoverage {
      * @throws IllegalArgumentException if the {@code range} list is empty.
      */
     protected GridCoverage(final GridGeometry domain, final List<? extends SampleDimension> ranges) {
-        gridGeometry     = domain;
+        gridGeometry     = Objects.requireNonNull(domain);
         sampleDimensions = ranges.toArray(SampleDimension[]::new);
-        ArgumentChecks.ensureNonNull ("domain", domain);
-        ArgumentChecks.ensureNonEmpty("ranges", sampleDimensions);
         for (int i=0; i<sampleDimensions.length; i++) {
             ArgumentChecks.ensureNonNullElement("ranges", i, sampleDimensions[i]);
         }
@@ -535,8 +534,7 @@ public abstract class GridCoverage extends BandedCoverage {
      */
     @Debug
     public TreeTable toTree(final Locale locale, final int bitmask) {
-        ArgumentChecks.ensureNonNull("locale", locale);
-        final Vocabulary vocabulary = Vocabulary.forLocale(locale);
+        final Vocabulary vocabulary = Vocabulary.forLocale(Objects.requireNonNull(locale));
         final TableColumn<CharSequence> column = TableColumn.VALUE_AS_TEXT;
         final TreeTable tree = new DefaultTreeTable(column);
         final TreeTable.Node root = tree.getRoot();

@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import jakarta.xml.bind.annotation.XmlType;
@@ -492,9 +493,8 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      */
     @Override
     public DefaultCompoundCRS forConvention(final AxesConvention convention) {
-        ArgumentChecks.ensureNonNull("convention", convention);
         synchronized (forConvention) {
-            DefaultCompoundCRS crs = (DefaultCompoundCRS) forConvention.get(convention);
+            var crs = (DefaultCompoundCRS) forConvention.get(Objects.requireNonNull(convention));
             if (crs == null) {
                 crs = this;
                 boolean changed = false;

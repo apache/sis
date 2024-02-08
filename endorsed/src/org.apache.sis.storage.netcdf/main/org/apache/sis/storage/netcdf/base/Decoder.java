@@ -165,9 +165,8 @@ public abstract class Decoder extends ReferencingFactoryContainer {
      * @param  listeners  where to send the warnings.
      */
     protected Decoder(final GeometryLibrary geomlib, final StoreListeners listeners) {
-        Objects.requireNonNull(listeners);
         this.geomlib      = geomlib;
-        this.listeners    = listeners;
+        this.listeners    = Objects.requireNonNull(listeners);
         this.nameFactory  = DefaultNameFactory.provider();
         this.datumCache   = new Datum[CRSBuilder.DATUM_CACHE_SIZE];
         this.gridMapping  = new HashMap<>();

@@ -17,6 +17,7 @@
 package org.apache.sis.measure;
 
 import java.util.Locale;
+import java.util.Objects;
 import java.text.Format;
 import java.text.FieldPosition;
 import java.text.NumberFormat;
@@ -26,7 +27,6 @@ import java.lang.reflect.InaccessibleObjectException;
 import javax.measure.Quantity;
 import javax.measure.Unit;
 import javax.measure.format.MeasurementParseException;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 
@@ -70,9 +70,8 @@ public class QuantityFormat extends Format implements javax.measure.format.Quant
      * @param  locale  the locale for the quantity format.
      */
     public QuantityFormat(final Locale locale) {
-        ArgumentChecks.ensureNonNull("locale", locale);
+        unitFormat   = new UnitFormat(locale);                  // Does null check.
         numberFormat = NumberFormat.getNumberInstance(locale);
-        unitFormat   = new UnitFormat(locale);
     }
 
     /**
@@ -82,10 +81,8 @@ public class QuantityFormat extends Format implements javax.measure.format.Quant
      * @param  unitFormat    the format for parsing and formatting the unit of measurement part.
      */
     public QuantityFormat(final NumberFormat numberFormat, final UnitFormat unitFormat) {
-        ArgumentChecks.ensureNonNull("numberFormat", numberFormat);
-        ArgumentChecks.ensureNonNull("unitFormat",   unitFormat);
-        this.numberFormat = numberFormat;
-        this.unitFormat   = unitFormat;
+        this.numberFormat = Objects.requireNonNull(numberFormat);
+        this.unitFormat   = Objects.requireNonNull(unitFormat);
     }
 
     /**

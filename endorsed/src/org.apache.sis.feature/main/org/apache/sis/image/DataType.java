@@ -20,7 +20,6 @@ import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.awt.image.RasterFormatException;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 import org.apache.sis.feature.internal.Resources;
@@ -119,7 +118,6 @@ public enum DataType {
      * @return smallest data type for the given range of values.
      */
     public static DataType forRange(final NumberRange<?> range, final boolean asInteger) {
-        ArgumentChecks.ensureNonNull("range", range);
         final byte nt = Numbers.getEnumConstant(range.getElementType());
         if (!asInteger) {
             if (nt >= Numbers.DOUBLE)   return DOUBLE;

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util;
 
+import java.util.Objects;
 import java.text.Normalizer;
 import static java.lang.Character.*;
 import org.apache.sis.util.resources.Errors;
@@ -172,7 +173,6 @@ public final class StringBuilders extends Static {
      * @since 1.0
      */
     public static void repeat(final StringBuilder buffer, final char c, final int count) {
-        ArgumentChecks.ensureNonNull("buffer", buffer);
         switch (count) {
             case 0:  break;
             case 1:  buffer.append(c); break;
@@ -199,7 +199,6 @@ public final class StringBuilders extends Static {
      * @since 0.8
      */
     public static void repeat(final StringBuilder buffer, final int offset, final char c, final int count) {
-        ArgumentChecks.ensureNonNull("buffer", buffer);
         switch (count) {
             case 0:  break;
             case 1:  buffer.insert(offset, c); break;
@@ -271,7 +270,6 @@ public final class StringBuilders extends Static {
      */
     @SuppressWarnings("fallthrough")
     public static void trimFractionalPart(final StringBuilder buffer) {
-        ArgumentChecks.ensureNonNull ("buffer", buffer);
         for (int i=buffer.length(); i > 0;) {
             switch (buffer.charAt(--i)) {               // No need to use Unicode code points here.
                 case '0': continue;
@@ -295,8 +293,7 @@ public final class StringBuilders extends Static {
      * @see Normalizer#normalize(CharSequence, Normalizer.Form)
      */
     public static void toASCII(final StringBuilder buffer) {
-        ArgumentChecks.ensureNonNull("buffer", buffer);
-        toASCII(buffer, buffer);
+        toASCII(Objects.requireNonNull(buffer), buffer);
     }
 
     /**

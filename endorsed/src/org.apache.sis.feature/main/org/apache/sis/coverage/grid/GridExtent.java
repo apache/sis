@@ -21,12 +21,12 @@ import java.util.TreeMap;
 import java.util.SortedMap;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.Objects;
 import java.util.logging.Logger;
 import java.io.Serializable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.awt.Rectangle;
-import java.util.Objects;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.geometry.Envelope;
@@ -358,7 +358,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @see #insertDimension(int, DimensionNameType, long, long, boolean)
      */
     public GridExtent(final DimensionNameType[] axisTypes, final long[] low, final long[] high, final boolean isHighIncluded) {
-        ArgumentChecks.ensureNonNull("high", high);
         final int dimension = high.length;
         if (low != null && low.length != dimension) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedDimension_2, low.length, dimension));
@@ -675,7 +674,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @see #castOrCopy(GridEnvelope)
      */
     protected GridExtent(final GridEnvelope extent) {
-        ArgumentChecks.ensureNonNull("extent", extent);
         final int dimension = extent.getDimension();
         coordinates = allocate(dimension);
         for (int i=0; i<dimension; i++) {
@@ -1477,7 +1475,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @return a clone of the given array, or {@code null} if the caller can return {@code this}.
      */
     static int[] verifyDimensions(int[] indices, final int limit) {
-        ArgumentChecks.ensureNonNull("indices", indices);
         final int n = indices.length;
         ArgumentChecks.ensureCountBetween("indices", false, 1, limit, n);
         indices = indices.clone();
@@ -1535,7 +1532,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @see GridDerivation#margin(int...)
      */
     public GridExtent expand(final long... margins) {
-        ArgumentChecks.ensureNonNull("margins", margins);
         final int m = getDimension();
         final int length = Math.min(m, margins.length);
         if (isZero(margins, length)) {
@@ -1607,7 +1603,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @see GridDerivation#subgrid(GridExtent, int...)
      */
     public GridExtent resize(final long... sizes) {
-        ArgumentChecks.ensureNonNull("sizes", sizes);
         final int m = getDimension();
         final int length = Math.min(m, sizes.length);
         final GridExtent resize = new GridExtent(this);
@@ -1665,7 +1660,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @see GridDerivation#subgrid(GridExtent, int...)
      */
     public GridExtent subsample(final int... periods) {
-        ArgumentChecks.ensureNonNull("periods", periods);
         final int m = getDimension();
         final int length = Math.min(m, periods.length);
         final GridExtent sub = new GridExtent(this);
@@ -1711,7 +1705,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @since 1.3
      */
     public GridExtent upsample(final int... periods) {
-        ArgumentChecks.ensureNonNull("periods", periods);
         final int m = getDimension();
         final int length = Math.min(m, periods.length);
         final GridExtent sub = new GridExtent(this);
@@ -1856,7 +1849,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @since 1.1
      */
     public GridExtent translate(final long... translation) {
-        ArgumentChecks.ensureNonNull("translation", translation);
         final int m = getDimension();
         final int length = Math.min(m, translation.length);
         if (isZero(translation, length)) {
@@ -1889,7 +1881,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @since 1.2
      */
     public boolean contains(final long... cell) {
-        ArgumentChecks.ensureNonNull("cell", cell);
         final int m = getDimension();
         final int length = Math.min(m, cell.length);
         for (int i=0; i<length; i++) {

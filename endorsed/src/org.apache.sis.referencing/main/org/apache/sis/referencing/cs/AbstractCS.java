@@ -182,10 +182,9 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * @param  axes        the sequence of axes.
      * @throws IllegalArgumentException if an axis has an illegal direction or an illegal unit of measurement.
      */
-    @SuppressWarnings({"this-escape", "OverridableMethodCallInConstructor"})
+    @SuppressWarnings("this-escape")
     public AbstractCS(final Map<String,?> properties, final CoordinateSystemAxis... axes) {
         super(properties);
-        ensureNonNull("axes", axes);
         this.axes = axes.clone();
         validate(properties);
         forConvention = forConvention(this);
@@ -273,7 +272,6 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *
      * @see #createForAxes(String, CoordinateSystemAxis[])
      */
-    @SuppressWarnings("OverridableMethodCallInConstructor")
     AbstractCS(final AbstractCS original, final String name, final CoordinateSystemAxis[] axes) {
         super(original.getPropertiesWithoutIdentifiers(name));
         this.axes = axes;
@@ -292,7 +290,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *
      * @see #castOrCopy(CoordinateSystem)
      */
-    @SuppressWarnings({"this-escape", "OverridableMethodCallInConstructor"})
+    @SuppressWarnings("this-escape")
     protected AbstractCS(final CoordinateSystem original) {
         super(original);
         axes = (original instanceof AbstractCS) ? ((AbstractCS) original).axes : getAxes(original);
@@ -461,7 +459,6 @@ next:   for (final CoordinateSystemAxis axis : axes) {
      * @see org.apache.sis.referencing.crs.AbstractCRS#forConvention(AxesConvention)
      */
     public AbstractCS forConvention(final AxesConvention convention) {
-        ensureNonNull("convention", convention);
         synchronized (forConvention) {
             AbstractCS cs = forConvention.get(convention);
             if (cs == null) {

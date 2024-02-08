@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -140,8 +141,7 @@ public class TransferFunction implements Cloneable, Serializable {
      * @param  type  the transfer function type.
      */
     public void setType(final TransferFunctionType type) {
-        ArgumentChecks.ensureNonNull("type", type);
-        this.type = type;
+        this.type = Objects.requireNonNull(type);
         transform = null;
     }
 

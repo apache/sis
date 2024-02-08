@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.ServiceLoader;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -310,8 +311,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @param  methods  the operation methods to use, stored by reference (not copied).
      */
     public DefaultMathTransformFactory(final Iterable<? extends OperationMethod> methods) {
-        ArgumentChecks.ensureNonNull("methods", methods);
-        this.methods  = methods;
+        this.methods  = Objects.requireNonNull(methods);
         methodsByName = new ConcurrentHashMap<>();
         methodsByType = new IdentityHashMap<>();
         lastMethod    = new ThreadLocal<>();
@@ -416,10 +416,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      */
     @Override
     public Set<OperationMethod> getAvailableMethods(final Class<? extends SingleOperation> type) {
-        ArgumentChecks.ensureNonNull("type", type);
         OperationMethodSet set;
         synchronized (methodsByType) {
-            set = methodsByType.get(type);
+            set = methodsByType.get(Objects.requireNonNull(type));
         }
         if (set == null) {
             /*
@@ -1207,7 +1206,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         RuntimeException failure = null;
         MathTransform transform;
         try {
-            ArgumentChecks.ensureNonNull("parameters", parameters);
             final ParameterDescriptorGroup descriptor = parameters.getDescriptor();
             final String methodName = descriptor.getName().getCode();
             String methodIdentifier = IdentifiedObjects.toString(IdentifiedObjects.getIdentifier(descriptor, Citations.EPSG));

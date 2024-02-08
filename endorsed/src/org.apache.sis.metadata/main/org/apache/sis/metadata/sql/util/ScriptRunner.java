@@ -275,7 +275,6 @@ public class ScriptRunner implements AutoCloseable {
      * @throws SQLException if an error occurred while creating a SQL statement.
      */
     public ScriptRunner(final Connection connection, final int maxRowsPerInsert) throws SQLException {
-        ArgumentChecks.ensureNonNull("connection", connection);
         ArgumentChecks.ensurePositive("maxRowsPerInsert", maxRowsPerInsert);
         final DatabaseMetaData metadata = connection.getMetaData();
         this.maxRowsPerInsert   = maxRowsPerInsert;

@@ -19,15 +19,15 @@ package org.apache.sis.filter.internal;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.util.CodeList;
 import org.opengis.geometry.Envelope;
 import org.opengis.filter.*;
-import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.util.internal.CollectionsExt;
 
 
 /**
@@ -326,9 +326,9 @@ public class CopyVisitor<SR,TR,G,T> extends Visitor<SR, List<Object>> {
      * @param  forceNew    whether to force creation of new filters or expressions even when the operands did not changed.
      * @param  forceUse    whether to force the use of newly created filters or expressions even when they are equal to the original ones.
      */
+    @SuppressWarnings("this-escape")
     CopyVisitor(final FilterFactory<TR,G,T> newFactory, final boolean forceNew, final boolean forceUse) {
-        ArgumentChecks.ensureNonNull("factory", newFactory);
-        this.factory  = newFactory;
+        this.factory  = Objects.requireNonNull(newFactory);
         this.forceNew = forceNew;
         this.forceUse = forceUse;
         setCopyHandler(ComparisonOperatorName.PROPERTY_IS_EQUAL_TO,                 FilterFactory::equal);

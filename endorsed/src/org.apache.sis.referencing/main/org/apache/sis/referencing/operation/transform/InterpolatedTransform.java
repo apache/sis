@@ -32,7 +32,6 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.internal.Resources;
@@ -128,7 +127,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
      *
      * @see #createGeodeticTransformation(MathTransformFactory, DatumShiftGrid)
      */
-    @SuppressWarnings( {"OverridableMethodCallInConstructor", "fallthrough"})
+    @SuppressWarnings("fallthrough")
     protected <T extends Quantity<T>> InterpolatedTransform(final DatumShiftGrid<T,T> grid) throws NoninvertibleMatrixException {
         /*
          * Create the contextual parameters using the descriptor of the provider that created the datum shift grid.
@@ -216,7 +215,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
     public static <T extends Quantity<T>> MathTransform createGeodeticTransformation(
             final MathTransformFactory factory, final DatumShiftGrid<T,T> grid) throws FactoryException
     {
-        ArgumentChecks.ensureNonNull("grid", grid);
+        // Implicit null value check below.
         final InterpolatedTransform tr;
         try {
             if (grid.getTranslationDimensions() == 2) {

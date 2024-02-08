@@ -34,7 +34,6 @@ import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Units;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
@@ -211,7 +210,6 @@ public abstract class PositionableProjection extends CodeList<PositionableProjec
      * @throws TransformException if an error occurred while converting the given position.
      */
     public ProjectedCRS createProjectedCRS(DirectPosition center) throws FactoryException, TransformException {
-        ArgumentChecks.ensureNonNull("center", center);
         final CoordinateReferenceSystem inherit = center.getCoordinateReferenceSystem();
         if (inherit == null) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.UnspecifiedCRS));

@@ -345,7 +345,6 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
          */
         @Override
         public void setPrecision(final Quantity<?> precision, DirectPosition position) throws IncommensurableException {
-            ArgumentChecks.ensureNonNull("precision", precision);
             double p = precision.getValue().doubleValue();
             final Unit<?> unit = precision.getUnit();
             double numLat=0, numLon=0;                        // Number of distinct latitude and longitude values.

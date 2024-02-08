@@ -29,6 +29,7 @@ import java.util.LinkedHashSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.net.URI;
@@ -59,7 +60,6 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.AbstractInternationalString;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.iso.Names;
@@ -627,12 +627,11 @@ public class MetadataBuilder {
      * @param  type  whether the party to create is an individual or an organization.
      */
     public final void newParty(final PartyType type) {
-        ArgumentChecks.ensureNonNull("type", type);
         if (party != null) {
             addIfNotPresent(responsibility().getParties(), party);
             party = null;
         }
-        partyType = type;
+        partyType = Objects.requireNonNull(type);
     }
 
     /**
@@ -792,7 +791,6 @@ public class MetadataBuilder {
      * @param type  whether the next grid should be an instance of {@link DefaultGeorectified} or {@link DefaultGeoreferenceable}.
      */
     public final void newGridRepresentation(final GridType type) {
-        ArgumentChecks.ensureNonNull("type", type);
         if (gridRepresentation != null) {
             final int n = gridRepresentation.getAxisDimensionProperties().size();
             if (n != 0) {
@@ -805,7 +803,7 @@ public class MetadataBuilder {
             addIfNotPresent(metadata.getSpatialRepresentationInfo(), gridRepresentation);
             gridRepresentation = null;
         }
-        gridType = type;
+        gridType = Objects.requireNonNull(type);
     }
 
     /**
@@ -965,7 +963,6 @@ public class MetadataBuilder {
      * @see #addIdentifier(CharSequence, String, Scope)
      */
     public final void addIdentifier(Identifier id, final Scope scope) {
-        ArgumentChecks.ensureNonNull("scope", scope);
         if (id != null) {
             id = (Identifier) sharedValues.getOrDefault(id, id);
             if (scope != Scope.RESOURCE) metadata().setMetadataIdentifier(id);
@@ -994,7 +991,6 @@ public class MetadataBuilder {
      * @see #addIdentifier(Identifier, Scope)
      */
     public final void addIdentifier(final CharSequence authority, String code, final Scope scope) {
-        ArgumentChecks.ensureNonNull("scope", scope);
         code = Strings.trimOrNull(code);
         if (code != null) {
             final Identifier id = sharedIdentifier(authority, code);
@@ -1058,7 +1054,6 @@ public class MetadataBuilder {
      * @param  scope     whether the language applies to data, to metadata or to both.
      */
     public final void addLanguage(final Locale language, final Charset encoding, final Scope scope) {
-        ArgumentChecks.ensureNonNull("scope", scope);
         if (language != null) {
             if (scope != Scope.RESOURCE) metadata().getLocalesAndCharsets().put(language, encoding);
             if (scope != Scope.METADATA) identification().getLocalesAndCharsets().put(language, encoding);
@@ -1108,7 +1103,6 @@ public class MetadataBuilder {
      * @see #addAcquisitionTime(Date)
      */
     public final void addCitationDate(final Date date, final DateType type, final Scope scope) {
-        ArgumentChecks.ensureNonNull("scope", scope);
         if (date != null) {
             final DefaultCitationDate cd = new DefaultCitationDate(date, type);
             if (scope != Scope.RESOURCE) addEarliest(metadata().getDateInfo(), cd, type);
@@ -1226,7 +1220,6 @@ public class MetadataBuilder {
      * @see #addIdentifier(CharSequence, String, Scope)
      */
     public final void addTitleOrIdentifier(final String code, Scope scope) {
-        ArgumentChecks.ensureNonNull("scope", scope);
         if (scope != Scope.METADATA) {
             if (citation == null || citation.getTitle() == null) {
                 addTitle(code);
@@ -1521,9 +1514,8 @@ public class MetadataBuilder {
      * @param  scope    whether the contact applies to data, to metadata or to both.
      */
     public final void addPointOfContact(final Responsibility contact, final Scope scope) {
-        ArgumentChecks.ensureNonNull("scope", scope);
         if (contact != null) {
-            if (scope != Scope.RESOURCE)     addIfNotPresent(metadata().getContacts(), contact);
+            if (scope != Scope.RESOURCE) addIfNotPresent(metadata().getContacts(), contact);
             if (scope != Scope.METADATA) addIfNotPresent(identification().getPointOfContacts(), contact);
         }
     }

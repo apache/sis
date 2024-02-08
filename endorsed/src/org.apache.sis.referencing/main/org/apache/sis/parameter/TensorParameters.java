@@ -763,8 +763,7 @@ public class TensorParameters<E> implements Serializable {
         if (rank() != 2) {
             throw new IllegalStateException();
         }
-        ArgumentChecks.ensureNonNull("parameters", parameters);
-        if (parameters instanceof TensorValues) {
+        if (Objects.requireNonNull(parameters) instanceof TensorValues) {
             return ((TensorValues) parameters).toMatrix();              // More efficient implementation
         }
         // Fallback on the general case (others implementations)

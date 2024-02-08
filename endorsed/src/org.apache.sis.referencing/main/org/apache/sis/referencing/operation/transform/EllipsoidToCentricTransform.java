@@ -846,7 +846,6 @@ next:   while (--numPts >= 0) {
          */
         @Override
         public Matrix derivative(final DirectPosition point) throws TransformException {
-            ArgumentChecks.ensureNonNull("point", point);
             final double[] coordinate = point.getCoordinate();
             ArgumentChecks.ensureDimensionMatches("point", 3, coordinate);
             return this.transform(coordinate, 0, coordinate, 0, true);

@@ -31,7 +31,6 @@ import org.apache.sis.map.MapLayer;
 import org.apache.sis.map.MapLayers;
 import org.apache.sis.map.Presentation;
 import org.apache.sis.style.Style;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -65,8 +64,7 @@ public final class GraphicsPortrayer {
      * @return this portrayer
      */
     public GraphicsPortrayer setCanvas(BufferedImage image) {
-        ArgumentChecks.ensureNonNull("image", image);
-        this.image = image;
+        this.image = Objects.requireNonNull(image);
         this.graphics = image.createGraphics();
         return this;
     }
@@ -78,8 +76,7 @@ public final class GraphicsPortrayer {
      * @return this portrayer
      */
     public GraphicsPortrayer setCanvas(Graphics2D graphics) {
-        ArgumentChecks.ensureNonNull("graphics", graphics);
-        this.graphics = graphics;
+        this.graphics = Objects.requireNonNull(graphics);
         return this;
     }
 
@@ -89,7 +86,7 @@ public final class GraphicsPortrayer {
      * @param domain not null, lower extent coordinates must be on 0.
      */
     public GraphicsPortrayer setDomain(GridGeometry domain) {
-        ArgumentChecks.ensureNonNull("domain", domain);
+        // Implicit null check. As of Java 14, exception message is informative.
         long[] low = domain.getExtent().getLow().getCoordinateValues();
         for (long l : low) {
             Objects.checkIndex((int) l, 1);
@@ -119,7 +116,7 @@ public final class GraphicsPortrayer {
      * Validate parameters and create image if needed.
      */
     private Scene2D init() {
-        ArgumentChecks.ensureNonNull("domain", domain);
+        Objects.requireNonNull(domain, "domain");       // Not an argument.
         if (image == null) {
             setCanvas(new BufferedImage(
                     (int) domain.getExtent().getSize(0),

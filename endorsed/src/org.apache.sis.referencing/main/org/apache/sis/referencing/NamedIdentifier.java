@@ -32,7 +32,6 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.InvalidParameterValueException;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.metadata.internal.NameToIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -271,7 +270,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      * Returns the unlocalized string representation of the given code.
      */
     private static String toString(final CharSequence code) {
-        ArgumentChecks.ensureNonNull("code", code);
+        // Implicit null check below.
         final String c;
         if (code instanceof InternationalString) {
             c = ((InternationalString) code).toString(Locale.ROOT);

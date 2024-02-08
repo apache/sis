@@ -21,6 +21,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.Locale;
+import java.util.Objects;
 
 
 /**
@@ -56,8 +57,7 @@ public class SimpleInternationalString extends AbstractInternationalString imple
      * @param text the string for all locales.
      */
     public SimpleInternationalString(final String text) {
-        ArgumentChecks.ensureNonNull("text", text);
-        defaultValue = text;
+        defaultValue = Objects.requireNonNull(text);
     }
 
     /**

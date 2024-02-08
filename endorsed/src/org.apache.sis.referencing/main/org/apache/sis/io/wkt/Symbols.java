@@ -18,6 +18,7 @@ package org.apache.sis.io.wkt;
 
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Objects;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import java.text.NumberFormat;
@@ -207,7 +208,6 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * @param symbols  the symbols to copy.
      */
     public Symbols(final Symbols symbols) {
-        ensureNonNull("symbols", symbols);
         locale           = symbols.locale;
         brackets         = symbols.brackets;
         quotes           = symbols.quotes;
@@ -282,8 +282,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      */
     public void setLocale(final Locale locale) {
         checkWritePermission();
-        ensureNonNull("locale", locale);
-        this.locale = locale;
+        this.locale = Objects.requireNonNull(locale);
     }
 
     /**

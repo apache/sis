@@ -22,9 +22,9 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.Objects;
 import java.text.Format;
 import java.text.AttributedCharacterIterator;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.converter.SurjectiveConverter;
 import org.apache.sis.util.internal.SimpleCharacterIterator;
@@ -248,8 +248,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
      */
     @Override
     public int getRunStart(final Attribute attribute) {
-        ArgumentChecks.ensureNonNull("attribute", attribute);
-        update(attribute, null);
+        update(Objects.requireNonNull(attribute), null);
         return start;
     }
 
@@ -282,8 +281,7 @@ final class FormattedCharacterIterator extends SimpleCharacterIterator implement
      */
     @Override
     public int getRunLimit(final Attribute attribute) {
-        ArgumentChecks.ensureNonNull("attribute", attribute);
-        update(attribute, null);
+        update(Objects.requireNonNull(attribute), null);
         return limit;
     }
 

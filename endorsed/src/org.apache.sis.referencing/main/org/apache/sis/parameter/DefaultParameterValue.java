@@ -211,7 +211,6 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * @param  descriptor  the abstract definition of this parameter.
      */
     public DefaultParameterValue(final ParameterDescriptor<T> descriptor) {
-        ArgumentChecks.ensureNonNull("descriptor", descriptor);
         this.descriptor = descriptor;
         this.value      = descriptor.getDefaultValue();
         this.unit       = descriptor.getUnit();
@@ -228,7 +227,6 @@ public class DefaultParameterValue<T> extends FormattableObject implements Param
      * @see #unmodifiable(ParameterValue)
      */
     public DefaultParameterValue(final ParameterValue<T> parameter) {
-        ArgumentChecks.ensureNonNull("parameter", parameter);
         descriptor = parameter.getDescriptor();
         value      = parameter.getValue();
         unit       = parameter.getUnit();

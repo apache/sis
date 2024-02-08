@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.X364;
@@ -275,12 +274,9 @@ public class TableAppender extends Appender implements Flushable {
      */
     public TableAppender(final Appendable out, final String leftBorder, final String separator, final String rightBorder) {
         super(out);
-        ArgumentChecks.ensureNonNull("leftBorder",  leftBorder);
-        ArgumentChecks.ensureNonNull("separator",   separator);
-        ArgumentChecks.ensureNonNull("rightBorder", rightBorder);
-        this.leftBorder      = leftBorder;
-        this.rightBorder     = rightBorder;
-        this.columnSeparator = separator;
+        this.leftBorder      = Objects.requireNonNull(leftBorder);
+        this.rightBorder     = Objects.requireNonNull(rightBorder);
+        this.columnSeparator = Objects.requireNonNull(separator);
     }
 
     /**

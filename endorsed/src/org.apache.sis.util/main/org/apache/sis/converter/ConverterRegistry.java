@@ -239,7 +239,7 @@ public class ConverterRegistry {
      * @param  converter  the converter to register.
      */
     public <S,T> void register(final ObjectConverter<S,T> converter) {
-        ArgumentChecks.ensureNonNull("converter", converter);
+        // Implicit null value check below.
         /*
          * If the given converter is a FallbackConverter (maybe obtained from another
          * ConverterRegistry), unwraps it and registers its component individually.

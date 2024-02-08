@@ -22,7 +22,6 @@ import java.io.IOException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.feature.internal.FeatureUtilities;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -114,7 +113,6 @@ final class LinkOperation extends AbstractOperation {
      */
     @Override
     public Property apply(final Feature feature, final ParameterValueGroup parameters) {
-        ArgumentChecks.ensureNonNull("feature", feature);
         return feature.getProperty(referentName);
     }
 

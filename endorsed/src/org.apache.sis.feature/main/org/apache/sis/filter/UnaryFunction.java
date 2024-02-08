@@ -18,9 +18,9 @@ package org.apache.sis.filter;
 
 import java.util.List;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.Optional;
 import org.apache.sis.xml.NilReason;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.filter.internal.Node;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -58,8 +58,7 @@ class UnaryFunction<R,V> extends Node {
      * Creates a new unary operator.
      */
     UnaryFunction(final Expression<R, ? extends V> expression) {
-        ArgumentChecks.ensureNonNull("expression", expression);
-        this.expression = expression;
+        this.expression = Objects.requireNonNull(expression);
     }
 
     /**

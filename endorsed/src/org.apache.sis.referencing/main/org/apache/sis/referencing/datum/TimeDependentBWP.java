@@ -122,7 +122,6 @@ public class TimeDependentBWP extends BursaWolfParameters {
      */
     public TimeDependentBWP(final GeodeticDatum targetDatum, final Extent domainOfValidity, final Date timeReference) {
         super(targetDatum, domainOfValidity);
-        ensureNonNull("timeReference", timeReference);
         this.timeReference = timeReference.getTime();
     }
 

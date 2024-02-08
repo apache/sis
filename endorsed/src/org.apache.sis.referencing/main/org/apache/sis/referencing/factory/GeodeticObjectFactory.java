@@ -19,6 +19,7 @@ package org.apache.sis.referencing.factory;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
@@ -270,8 +271,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @return the union of the given properties with the default properties.
      */
     protected Map<String,?> complete(final Map<String,?> properties) {
-        ArgumentChecks.ensureNonNull("properties", properties);
-        return new MergedProperties(properties, defaultProperties) {
+        return new MergedProperties(Objects.requireNonNull(properties), defaultProperties) {
             /**
              * Handles the {@code "mtFactory"} key in a special way since this is normally not needed for
              * {@link GeodeticObjectFactory}, except when creating the SIS implementation of derived or

@@ -40,7 +40,6 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.measure.Units;
 import static org.apache.sis.util.ArgumentChecks.ensureFinite;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
@@ -156,9 +155,8 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     {
         super(properties);
         ensureFinite("greenwichLongitude", greenwichLongitude);
-        ensureNonNull("angularUnit", angularUnit);
         this.greenwichLongitude = greenwichLongitude;
-        this.angularUnit = angularUnit;
+        this.angularUnit = Objects.requireNonNull(angularUnit);
     }
 
     /**

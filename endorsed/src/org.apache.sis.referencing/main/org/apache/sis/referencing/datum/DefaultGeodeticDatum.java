@@ -260,10 +260,8 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                                 final PrimeMeridian primeMeridian)
     {
         super(properties);
-        ensureNonNull("ellipsoid",     ellipsoid);
-        ensureNonNull("primeMeridian", primeMeridian);
-        this.ellipsoid     = ellipsoid;
-        this.primeMeridian = primeMeridian;
+        this.ellipsoid     = Objects.requireNonNull(ellipsoid);
+        this.primeMeridian = Objects.requireNonNull(primeMeridian);
         bursaWolf = CollectionsExt.nonEmpty(CollectionsExt.nonNullArraySet(
                 BURSA_WOLF_KEY, properties.get(BURSA_WOLF_KEY), EMPTY_ARRAY));
         if (bursaWolf != null) {

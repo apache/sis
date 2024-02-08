@@ -32,7 +32,6 @@ import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.metadata.internal.ImplementationHelper;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
@@ -148,8 +147,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      */
     public DefaultVerticalDatum(final Map<String,?> properties, final VerticalDatumType type) {
         super(properties);
-        this.type = type;
-        ensureNonNull("type", type);
+        this.type = Objects.requireNonNull(type);
     }
 
     /**

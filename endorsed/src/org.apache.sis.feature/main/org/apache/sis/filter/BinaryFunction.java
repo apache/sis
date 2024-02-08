@@ -18,10 +18,10 @@ package org.apache.sis.filter;
 
 import java.util.List;
 import java.util.Collection;
+import java.util.Objects;
 import java.math.BigInteger;
 import java.math.BigDecimal;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.filter.internal.Node;
@@ -75,10 +75,8 @@ abstract class BinaryFunction<R,V1,V2> extends Node {
     protected BinaryFunction(final Expression<R, ? extends V1> expression1,
                              final Expression<R, ? extends V2> expression2)
     {
-        ArgumentChecks.ensureNonNull("expression1", expression1);
-        ArgumentChecks.ensureNonNull("expression2", expression2);
-        this.expression1 = expression1;
-        this.expression2 = expression2;
+        this.expression1 = Objects.requireNonNull(expression1);
+        this.expression2 = Objects.requireNonNull(expression2);
     }
 
     /**

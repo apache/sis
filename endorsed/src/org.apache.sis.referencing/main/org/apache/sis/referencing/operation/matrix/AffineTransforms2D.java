@@ -33,7 +33,6 @@ import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 import org.apache.sis.referencing.util.j2d.IntervalRectangle;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.Static;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -149,7 +148,7 @@ public final class AffineTransforms2D extends Static {
      * @see AffineTransform#createTransformedShape(Shape)
      */
     public static Shape transform(final AffineTransform transform, Shape shape, boolean allowOverwrite) {
-        ArgumentChecks.ensureNonNull("transform", transform);
+        // Implicit null check of `transform` below.
         if (shape == null) {
             return null;
         }
@@ -227,7 +226,7 @@ public final class AffineTransforms2D extends Static {
     public static Rectangle2D transform(final AffineTransform transform,
             final Rectangle2D bounds, final Rectangle2D dest)
     {
-        ArgumentChecks.ensureNonNull("transform", transform);
+        // Implicit null check of `transform` below.
         if (bounds == null) {
             return null;
         }
@@ -271,7 +270,7 @@ public final class AffineTransforms2D extends Static {
     public static Rectangle2D inverseTransform(final AffineTransform transform,
             final Rectangle2D bounds, final Rectangle2D dest) throws NoninvertibleTransformException
     {
-        ArgumentChecks.ensureNonNull("transform", transform);
+        // Implicit null check of `transform` below.
         if (bounds == null) {
             return null;
         }
@@ -310,7 +309,7 @@ public final class AffineTransforms2D extends Static {
     public static Point2D inverseDeltaTransform(final AffineTransform transform,
             final Point2D vector, final Point2D dest) throws NoninvertibleTransformException
     {
-        ArgumentChecks.ensureNonNull("transform", transform);
+        // Implicit null check of `transform` below.
         if (vector == null) {
             return null;
         }
@@ -344,7 +343,7 @@ public final class AffineTransforms2D extends Static {
      * @return {@code true} if the given transform seems to swap axis order.
      */
     public static int getSwapXY(final AffineTransform transform) {
-        ArgumentChecks.ensureNonNull("transform", transform);
+        // Implicit null check of `transform` in `getFlip`.
         final int flip = getFlip(transform);
         if (flip != 0) {
             final double scaleX = getScaleX0(transform);
@@ -369,7 +368,7 @@ public final class AffineTransforms2D extends Static {
      *         or {@link Double#NaN NaN} if the angle cannot be estimated.
      */
     public static double getRotation(final AffineTransform transform) {
-        ArgumentChecks.ensureNonNull("transform", transform);
+        // Implicit null check of `transform` in `getFlip`.
         final int flip = getFlip(transform);
         if (flip != 0) {
             final double scaleX = getScaleX0(transform);
@@ -411,7 +410,6 @@ public final class AffineTransforms2D extends Static {
      * @return -1 if an axis has been flipped, +1 if no flipping, or 0 if unknown.
      */
     public static int getFlip(final AffineTransform transform) {
-        ArgumentChecks.ensureNonNull("transform", transform);
         final double scaleX = Math.signum(transform.getScaleX());
         final double scaleY = Math.signum(transform.getScaleY());
         final double shearX = Math.signum(transform.getShearX());
@@ -431,7 +429,6 @@ public final class AffineTransforms2D extends Static {
      * @return the magnitude of scale factor <var>x</var>.
      */
     public static double getScaleX0(final AffineTransform transform) {
-        ArgumentChecks.ensureNonNull("transform", transform);
         final double scale = transform.getScaleX();
         final double shear = transform.getShearX();
         if (shear == 0) return abs(scale);                  // Optimization for a very common case.
@@ -449,7 +446,6 @@ public final class AffineTransforms2D extends Static {
      * @return the magnitude of scale factor <var>y</var>.
      */
     public static double getScaleY0(final AffineTransform transform) {
-        ArgumentChecks.ensureNonNull("transform", transform);
         final double scale = transform.getScaleY();
         final double shear = transform.getShearY();
         if (shear == 0) return abs(scale);                  // Optimization for a very common case.

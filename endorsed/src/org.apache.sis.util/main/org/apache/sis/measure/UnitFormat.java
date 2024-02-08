@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
+import java.util.Objects;
 import java.text.Format;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
@@ -328,8 +329,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * @param  locale  the locale to use for parsing and formatting units.
      */
     public UnitFormat(final Locale locale) {
-        ArgumentChecks.ensureNonNull("locale", locale);
-        this.locale = locale;
+        this.locale = Objects.requireNonNull(locale);
         style       = Style.SYMBOL;
         unitToLabel = new HashMap<>();
         labelToUnit = new HashMap<>();
@@ -355,8 +355,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * @see UnitServices#getUnitFormat(String)
      */
     public void setLocale(final Locale locale) {
-        ArgumentChecks.ensureNonNull("locale", locale);
-        this.locale  = locale;
+        this.locale  = Objects.requireNonNull(locale);
         symbolToName = null;            // Force reloading for the new locale.
         nameToUnit   = null;
     }
@@ -388,8 +387,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * @param  style  the desired style of units.
      */
     public void setStyle(final Style style) {
-        ArgumentChecks.ensureNonNull("style", style);
-        this.style = style;
+        this.style = Objects.requireNonNull(style);
     }
 
     /**

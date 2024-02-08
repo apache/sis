@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.Objects;
 import java.text.Format;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -39,7 +40,6 @@ import java.lang.reflect.InaccessibleObjectException;
 import javax.measure.Unit;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Localized;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.LocalizedParseException;
@@ -350,10 +350,8 @@ public class RangeFormat extends Format implements Localized {
      * @throws IllegalArgumentException if the given type is not recognized by this constructor.
      */
     public RangeFormat(final Locale locale, final Class<?> elementType) throws IllegalArgumentException {
-        ArgumentChecks.ensureNonNull("locale",      locale);
-        ArgumentChecks.ensureNonNull("elementType", elementType);
-        this.locale      = locale;
-        this.elementType = elementType;
+        this.locale      = Objects.requireNonNull(locale);
+        this.elementType = Objects.requireNonNull(elementType);
         if (Angle.class.isAssignableFrom(elementType)) {
             elementFormat = AngleFormat.getInstance(locale);
             unitFormat    = null;

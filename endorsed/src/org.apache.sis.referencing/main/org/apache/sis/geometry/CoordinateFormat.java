@@ -24,6 +24,7 @@ import java.text.DecimalFormat;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Arrays;
@@ -925,8 +926,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * @since 1.1
      */
     public void setGroundPrecision(final Quantity<?> precision) {
-        ArgumentChecks.ensureNonNull("precision", precision);
-        groundPrecision = precision;
+        groundPrecision = Objects.requireNonNull(precision);
         if (isPrecisionApplied) {
             applyGroundPrecision(lastCRS);
         }
@@ -1539,8 +1539,6 @@ abort:  if (dimensions != 0 && groundAccuracy != null) try {
      */
     @Override
     public DirectPosition parse(final CharSequence text, final ParsePosition pos) throws ParseException {
-        ArgumentChecks.ensureNonNull("text", text);
-        ArgumentChecks.ensureNonNull("pos",  pos);
         final int start  = pos.getIndex();
         final int length = text.length();
         /*
@@ -1569,6 +1567,7 @@ abort:  if (dimensions != 0 && groundAccuracy != null) try {
         }
         final double[] coordinates;
         Format format;
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Format[] formats = this.formats;
         if (formats != null) {
             format      = null;

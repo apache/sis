@@ -1499,7 +1499,6 @@ check:  while (lower != 0 || upper != dimension) {
      * @since 0.5
      */
     public static double getGreenwichLongitude(final GeodeticCRS crs) {
-        ArgumentChecks.ensureNonNull("crs", crs);
         return ReferencingUtilities.getGreenwichLongitude(crs.getDatum().getPrimeMeridian(), Units.DEGREE);
     }
 

@@ -224,8 +224,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * @param  sources      sources of this image (may be an empty array), or a null array if unknown.
      */
     protected ComputedImage(final SampleModel sampleModel, RenderedImage... sources) {
-        ArgumentChecks.ensureNonNull("sampleModel", sampleModel);
-        this.sampleModel = sampleModel;
+        this.sampleModel = Objects.requireNonNull(sampleModel);
         /*
          * Verify the `sources` argument validity and opportunistically collect all writable sources
          * in a separated array. If at the end it appears that the two arrays have the same content,

@@ -19,6 +19,7 @@ package org.apache.sis.referencing;
 import java.awt.Shape;
 import java.awt.geom.Path2D;
 import java.util.Locale;
+import java.util.Objects;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.text.NumberFormat;
@@ -292,8 +293,7 @@ public class GeodeticCalculator {
      * @return a new geodetic calculator using the specified CRS.
      */
     public static GeodeticCalculator create(final CoordinateReferenceSystem crs) {
-        ArgumentChecks.ensureNonNull("crs", crs);
-        final Ellipsoid ellipsoid = ReferencingUtilities.getEllipsoid(crs);
+        final Ellipsoid ellipsoid = ReferencingUtilities.getEllipsoid(Objects.requireNonNull(crs));
         if (ellipsoid == null) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCRSType_1,
                     ReferencingUtilities.getInterface(CoordinateReferenceSystem.class, crs)));
