@@ -583,7 +583,7 @@ public class GridCoverageProcessor implements Cloneable {
          * the interpolation type is "nearest neighbor" since this is not really
          * an interpolation.
          */
-        if (!Interpolation.NEAREST.equals(imageProcessor.getInterpolation())) {
+        if (imageProcessor.getInterpolation() != Interpolation.NEAREST) {
             source = source.forConvertedValues(true);
         }
         final GridCoverage resampled;

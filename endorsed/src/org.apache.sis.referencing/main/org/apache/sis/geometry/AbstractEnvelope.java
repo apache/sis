@@ -241,7 +241,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * @return {@code true} if the range meaning is {@code WRAPAROUND}.
      */
     static boolean isWrapAround(final CoordinateSystemAxis axis) {
-        return (axis != null) && RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning());
+        return (axis != null) && axis.getRangeMeaning() == RangeMeaning.WRAPAROUND;
     }
 
     /**

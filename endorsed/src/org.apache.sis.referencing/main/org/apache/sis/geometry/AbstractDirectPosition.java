@@ -214,11 +214,11 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
                 final double  minimum = axis.getMinimumValue();
                 final double  maximum = axis.getMaximumValue();
                 final RangeMeaning rm = axis.getRangeMeaning();
-                if (RangeMeaning.EXACT.equals(rm)) {
+                if (rm == RangeMeaning.EXACT) {
                          if (coordinate < minimum) coordinate = minimum;
                     else if (coordinate > maximum) coordinate = maximum;
                     else continue;
-                } else if (RangeMeaning.WRAPAROUND.equals(rm)) {
+                } else if (rm == RangeMeaning.WRAPAROUND) {
                     final double csSpan = maximum - minimum;
                     final double shift  = Math.floor((coordinate - minimum) / csSpan) * csSpan;
                     if (shift == 0) {

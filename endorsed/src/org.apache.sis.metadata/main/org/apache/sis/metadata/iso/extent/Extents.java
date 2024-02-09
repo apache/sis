@@ -431,13 +431,13 @@ public final class Extents extends Static {
                     final VerticalDatum datum = crs.getDatum();
                     if (datum != null) {
                         type = datum.getVerticalDatumType();
-                        if (VerticalDatumType.DEPTH.equals(type)) {
+                        if (type == VerticalDatumType.DEPTH) {
                             type = VerticalDatumType.GEOIDAL;
                         }
                     }
                     final CoordinateSystemAxis axis = crs.getCoordinateSystem().getAxis(0);
                     unit = axis.getUnit();
-                    if (AxisDirection.DOWN.equals(axis.getDirection())) {
+                    if (axis.getDirection() == AxisDirection.DOWN) {
                         final double tmp = min;
                         min = -max;
                         max = -tmp;

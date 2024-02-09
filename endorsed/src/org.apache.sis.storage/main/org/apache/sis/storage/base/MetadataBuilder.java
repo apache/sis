@@ -1663,7 +1663,7 @@ parse:      for (int i = 0; i < length;) {
                             if (notice.regionMatches(true, i, symbol, 0, symbol.length())) {
                                 final int after = i + symbol.length();
                                 if (after >= length || isSpaceOrPunctuation(notice.codePointAt(after))) {
-                                    isCopyright |= Restriction.COPYRIGHT.equals(r.restriction);
+                                    isCopyright |= (r.restriction == Restriction.COPYRIGHT);
                                     constraints.getUseConstraints().add(r.restriction);
                                     wasPunctuation = true;      // Pretend that "Copyright" was followed by a coma.
                                     skipNextChars  = true;      // Ignore spaces and punctuations until the next word.

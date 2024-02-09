@@ -241,7 +241,7 @@ public final class RasterWriter extends RasterFormat {
          * Write the header followed by all bands.
          */
         output.buffer.order(byteOrder);
-        output.writeByte(ByteOrder.LITTLE_ENDIAN.equals(byteOrder) ? 1 : 0);
+        output.writeByte(byteOrder == ByteOrder.LITTLE_ENDIAN ? 1 : 0);
         output.writeShort(0);                  // WKB version number.
         output.writeShort(ensureUnsignedShort("numBands", numBands));
         output.writeDouble(gridToCRS.getScaleX());

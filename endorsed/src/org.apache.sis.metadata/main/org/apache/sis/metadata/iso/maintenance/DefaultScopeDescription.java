@@ -511,30 +511,30 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * @since 1.0
      */
     public void setLevelDescription(final ScopeCode level, final Set<? extends CharSequence> newValues) {
-        if (ScopeCode.DATASET.equals(level)) {
+        if (level == ScopeCode.DATASET) {
             String description = null;
             if (newValues != null) {
-                for (CharSequence value : newValues) {
-                    if (value != null) {
-                        description = value.toString();
+                for (CharSequence v : newValues) {
+                    if (v != null) {
+                        description = v.toString();
                         break;
                     }
                 }
             }
             setDataset(description);
-        } else if (ScopeCode.FEATURE_TYPE.equals(level)) {
+        } else if (level == ScopeCode.FEATURE_TYPE) {
             setFeatures(newValues);
-        } else if (ScopeCode.ATTRIBUTE_TYPE.equals(level)) {
+        } else if (level == ScopeCode.ATTRIBUTE_TYPE) {
             setAttributes(newValues);
-        } else if (ScopeCode.FEATURE.equals(level)) {
+        } else if (level == ScopeCode.FEATURE) {
             setFeatureInstances(newValues);
-        } else if (ScopeCode.ATTRIBUTE.equals(level)) {
+        } else if (level == ScopeCode.ATTRIBUTE) {
             setAttributeInstances(newValues);
         } else {
             InternationalString description = null;
             if (newValues != null) {
-                for (CharSequence value : newValues) {
-                    description = Types.toInternationalString(value);
+                for (CharSequence v : newValues) {
+                    description = Types.toInternationalString(v);
                     if (description != null) break;
                 }
             }

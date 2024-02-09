@@ -175,9 +175,9 @@ public final class PixelTranslation extends Static implements Serializable {
      * @throws IllegalArgumentException if the given {@code anchor} is not a known code list value.
      */
     public static double getPixelTranslation(final PixelInCell anchor) {
-        if (PixelInCell.CELL_CENTER.equals(anchor)) {
+        if (anchor == PixelInCell.CELL_CENTER) {
             return 0;
-        } else if (PixelInCell.CELL_CORNER.equals(anchor)) {
+        } else if (anchor == PixelInCell.CELL_CORNER) {
             return -0.5;
         } else {
             throw new IllegalArgumentException(Errors.format(

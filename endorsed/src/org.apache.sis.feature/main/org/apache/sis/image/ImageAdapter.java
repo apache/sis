@@ -154,7 +154,7 @@ abstract class ImageAdapter extends PlanarImage {
      */
     @Override
     public boolean equals(final Object object) {
-        if (object != null && object.getClass().equals(getClass())) {
+        if (object != null && object.getClass() == getClass()) {
             return source.equals(((ImageAdapter) object).source);
         }
         return false;

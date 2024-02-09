@@ -907,9 +907,9 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * for elements of the given type.
      */
     private <E> boolean useSet(final Class<E> elementType) {
-        final Class<? extends Collection<E>> type = collectionType(elementType);
-        if (Set .class == (Class) type) return true;
-        if (List.class == (Class) type) return false;
+        final Class<?> type = collectionType(elementType);
+        if (Set .class == type) return true;
+        if (List.class == type) return false;
         throw new NoSuchElementException(Errors.format(Errors.Keys.UnsupportedType_1, type));
     }
 

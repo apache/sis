@@ -22,7 +22,7 @@ import org.opengis.metadata.quality.Result;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 
@@ -44,12 +44,10 @@ public final class PositionalAccuracyConstantTest extends TestCase {
      */
     @Test
     public void testPositionalAccuracy() {
-        assertEquals("Identity comparison",
-                     PositionalAccuracyConstant.DATUM_SHIFT_APPLIED,
+        assertEquals(PositionalAccuracyConstant.DATUM_SHIFT_APPLIED,
                      PositionalAccuracyConstant.DATUM_SHIFT_APPLIED);
 
-        assertEquals("Identity comparison",
-                     PositionalAccuracyConstant.DATUM_SHIFT_OMITTED,
+        assertEquals(PositionalAccuracyConstant.DATUM_SHIFT_OMITTED,
                      PositionalAccuracyConstant.DATUM_SHIFT_OMITTED);
 
         assertNotSame(PositionalAccuracyConstant.DATUM_SHIFT_APPLIED,
@@ -60,11 +58,11 @@ public final class PositionalAccuracyConstantTest extends TestCase {
         final ConformanceResult applied = (ConformanceResult) TestUtilities.getSingleton(appliedResults);
         final ConformanceResult omitted = (ConformanceResult) TestUtilities.getSingleton(omittedResults);
         assertNotSame(applied, omitted);
-        assertTrue ("DATUM_SHIFT_APPLIED", applied.pass());
-        assertFalse("DATUM_SHIFT_OMITTED", omitted.pass());
-        assertFalse(applied.equals(omitted));
-        assertFalse(appliedResults.equals(omittedResults));
-        assertFalse(PositionalAccuracyConstant.DATUM_SHIFT_APPLIED.equals(
-                    PositionalAccuracyConstant.DATUM_SHIFT_OMITTED));
+        assertTrue (applied.pass(), "DATUM_SHIFT_APPLIED");
+        assertFalse(omitted.pass(), "DATUM_SHIFT_OMITTED");
+        assertNotEquals(applied, omitted);
+        assertNotEquals(appliedResults, omittedResults);
+        assertNotEquals(PositionalAccuracyConstant.DATUM_SHIFT_APPLIED,
+                        PositionalAccuracyConstant.DATUM_SHIFT_OMITTED);
     }
 }

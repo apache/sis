@@ -150,7 +150,7 @@ public class DefaultTimeCS extends AbstractCS implements TimeCS {
      */
     @Override
     final int validateAxis(final AxisDirection direction, final Unit<?> unit) {
-        if (!AxisDirection.FUTURE.equals(AxisDirections.absolute(direction))) {
+        if (!AxisDirections.isTemporal(direction)) {
             return INVALID_DIRECTION;
         }
         if (!Units.isTemporal(unit)) {

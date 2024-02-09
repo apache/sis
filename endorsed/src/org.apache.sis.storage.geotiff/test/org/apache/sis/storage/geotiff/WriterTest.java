@@ -317,7 +317,7 @@ public final class WriterTest extends TestCase {
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ByteBuffer data     = this.data;
         final boolean isBigTIFF   = store.getModifiers().contains(FormatModifier.BIG_TIFF);
-        final boolean isBigEndian = ByteOrder.BIG_ENDIAN.equals(data.order());
+        final boolean isBigEndian = data.order() == ByteOrder.BIG_ENDIAN;
         assertEquals(tagCount, isBigTIFF ? data.getLong() : data.getShort());
         /*
          * Build a list of tags considered mandatory for all images in this test.

@@ -212,7 +212,7 @@ public final class CoordinateOperations extends Static {
      * @return {@code true} if the given axis has "wrap around" range meaning.
      */
     public static boolean isWrapAround(final CoordinateSystemAxis axis) {
-        return RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning());
+        return axis.getRangeMeaning() == RangeMeaning.WRAPAROUND;
     }
 
     /**

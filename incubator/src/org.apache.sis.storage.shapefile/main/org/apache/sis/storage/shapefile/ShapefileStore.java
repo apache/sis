@@ -1004,7 +1004,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
 
         final CodeList operatorType = filter.getOperatorType();
 
-        if (SpatialOperatorName.BBOX.equals(operatorType)) {
+        if (operatorType == SpatialOperatorName.BBOX) {
             Envelope env = isDirectBbox(filter);
             if (env != null) {
                 return new AbstractMap.SimpleImmutableEntry<>(env, null);
@@ -1012,7 +1012,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                 return new AbstractMap.SimpleImmutableEntry<>(null, filter);
             }
 
-        } else if (LogicalOperatorName.AND.equals(operatorType)) {
+        } else if (operatorType == LogicalOperatorName.AND) {
 
             boolean rebuildAnd = false;
             List<Filter<?>> lst = (List<Filter<?>>) ((LogicalOperator<?>)filter).getOperands();

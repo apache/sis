@@ -79,8 +79,8 @@ public final class WritableGridCoverageSupport implements Localized {
     public WritableGridCoverageSupport(final GridCoverageResource target, final WritableGridCoverageResource.Option[] options) {
         this.target = target;
         for (final WritableGridCoverageResource.Option option : options) {
-            replace |= WritableGridCoverageResource.CommonOption.REPLACE.equals(option);
-            update  |= WritableGridCoverageResource.CommonOption.UPDATE .equals(option);
+            replace |= (option == WritableGridCoverageResource.CommonOption.REPLACE);
+            update  |= (option == WritableGridCoverageResource.CommonOption.UPDATE);
         }
         if (replace & update) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.MutuallyExclusiveOptions_2,

@@ -184,7 +184,7 @@ final class Writer extends IOBase implements Flushable {
          * Note that it does not necessarily mean that the stream has no bytes before current position.
          */
         output.relocateOrigin();
-        output.writeShort(ByteOrder.LITTLE_ENDIAN.equals(output.buffer.order()) ? LITTLE_ENDIAN : BIG_ENDIAN);
+        output.writeShort((output.buffer.order() == ByteOrder.LITTLE_ENDIAN) ? LITTLE_ENDIAN : BIG_ENDIAN);
         output.writeShort(isBigTIFF ? BIG_TIFF : CLASSIC);
         if (isBigTIFF) {
             output.writeShort((short) Long.BYTES);            // Byte size of offsets.

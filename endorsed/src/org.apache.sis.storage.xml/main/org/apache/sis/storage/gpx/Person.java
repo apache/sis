@@ -114,8 +114,8 @@ public final class Person implements Responsibility, Party, Contact, Address {
             return (Person) r;
         }
         final Role role = r.getRole();
-        final boolean isCreator = Role.ORIGINATOR.equals(role);
-        if (isCreator || Role.AUTHOR.equals(role)) {
+        final boolean isCreator = (role == Role.ORIGINATOR);
+        if (isCreator || role == Role.AUTHOR) {
             for (final Party p : r.getParties()) {
                 final String name = Types.toString(p.getName(), locale);
                 if (name != null) {

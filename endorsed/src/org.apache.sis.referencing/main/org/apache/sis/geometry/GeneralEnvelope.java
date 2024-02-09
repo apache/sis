@@ -1022,10 +1022,10 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             final double  minimum = axis.getMinimumValue();
             final double  maximum = axis.getMaximumValue();
             final RangeMeaning rm = axis.getRangeMeaning();
-            if (RangeMeaning.EXACT.equals(rm)) {
+            if (rm == RangeMeaning.EXACT) {
                 if (coordinates[iLower] < minimum) {coordinates[iLower] = minimum; changed = true;}
                 if (coordinates[iUpper] > maximum) {coordinates[iUpper] = maximum; changed = true;}
-            } else if (RangeMeaning.WRAPAROUND.equals(rm)) {
+            } else if (rm == RangeMeaning.WRAPAROUND) {
                 final double cycle = maximum - minimum;
                 if (cycle > 0 && cycle < Double.POSITIVE_INFINITY) {
                     double o1 = coordinates[iLower];

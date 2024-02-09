@@ -1940,9 +1940,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                  * But sometimes the axis (which was not available when we created the datum) provides
                  * more information. Verify if we can have a better type now, and if so rebuild the datum.
                  */
-                if (VerticalDatumType.OTHER_SURFACE.equals(datum.getVerticalDatumType())) {
-                    final VerticalDatumType type = VerticalDatumTypes.guess(datum.getName().getCode(), datum.getAlias(), cs.getAxis(0));
-                    if (!VerticalDatumType.OTHER_SURFACE.equals(type)) {
+                if (datum.getVerticalDatumType() == VerticalDatumType.OTHER_SURFACE) {
+                    var type = VerticalDatumTypes.guess(datum.getName().getCode(), datum.getAlias(), cs.getAxis(0));
+                    if (type != VerticalDatumType.OTHER_SURFACE) {
                         final DatumFactory datumFactory = factories.getDatumFactory();
                         datum = datumFactory.createVerticalDatum(IdentifiedObjects.getProperties(datum), type);
                     }

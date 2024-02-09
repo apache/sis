@@ -171,7 +171,7 @@ class UnaryFunction<R,V> extends Node {
             final NilReason value = NilReason.forObject(expression.apply(object));
             if (value     == null) return false;
             if (nilReason == null) return true;
-            final String explanation = NilReason.OTHER.equals(value) ? value.getOtherExplanation() : value.toString();
+            final String explanation = value.equals(NilReason.OTHER) ? value.getOtherExplanation() : value.toString();
             return nilReason.equalsIgnoreCase(explanation);
         }
     }

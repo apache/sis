@@ -949,7 +949,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     public double[] getPointOfInterest(final PixelInCell anchor) {
         final int dimension = getDimension();
         final double[] center = new double[dimension];
-        final boolean isCorner = PixelInCell.CELL_CORNER.equals(anchor);
+        final boolean isCorner = anchor.equals(PixelInCell.CELL_CORNER);            // Implicit null check.
         for (int i=0; i<dimension; i++) {
             /*
              * We want the average of (low + hi+1). However for the purpose of computing an average, it does

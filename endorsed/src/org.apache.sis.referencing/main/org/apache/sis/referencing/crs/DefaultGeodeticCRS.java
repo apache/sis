@@ -27,7 +27,6 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -191,7 +190,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
             SingleCRS first  = CRS.getHorizontalComponent(this);
             SingleCRS second = CRS.getVerticalComponent(this, true);
             if (first != null && second != null) {                      // Should not be null, but we are paranoiac.
-                if (AxisDirection.UP.equals(AxisDirections.absolute(cs.getAxis(0).getDirection()))) {
+                if (AxisDirections.isVertical(cs.getAxis(0).getDirection())) {
                     // It is very unusual to have VerticalCRS first, but our code tries to be robust.
                     final SingleCRS t = first;
                     first = second; second = t;

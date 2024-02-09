@@ -623,8 +623,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
          * coordinate operation may shift some coordinate values (typically ±360° on longitudes).
          */
         final CoordinateSystemAxis that = (CoordinateSystemAxis) object;
-        if (!equalsIgnoreMetadata(that, mode, RangeMeaning.WRAPAROUND.equals(this.getRangeMeaning()) &&
-                                              RangeMeaning.WRAPAROUND.equals(that.getRangeMeaning())))
+        if (!equalsIgnoreMetadata(that, mode, this.getRangeMeaning() == RangeMeaning.WRAPAROUND &&
+                                              that.getRangeMeaning() == RangeMeaning.WRAPAROUND))
         {
             return false;
         }

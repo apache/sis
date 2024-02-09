@@ -363,7 +363,7 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
     protected String getExpectedXmlTypeName(final Stereotype stereotype, final UML uml) {
         final String rootName = uml.identifier();
         final StringBuilder buffer = new StringBuilder(rootName.length() + 13);
-        if (Stereotype.ABSTRACT.equals(stereotype)) {
+        if (stereotype == Stereotype.ABSTRACT) {
             buffer.append("Abstract");
         }
         return buffer.append(rootName).append("_Type").toString();
@@ -382,7 +382,7 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
      */
     protected String getExpectedXmlRootElementName(final Stereotype stereotype, final UML uml) {
         String name = uml.identifier();
-        if (Stereotype.ABSTRACT.equals(stereotype)) {
+        if (stereotype == Stereotype.ABSTRACT) {
             name = "Abstract".concat(name);
         }
         return name;

@@ -508,9 +508,9 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
      * @return removed part of the conversion from grid coordinates to "real world" coordinates.
      */
     private MathTransform getRemovedGridToCRS(final PixelInCell anchor) {
-        if (PixelInCell.CELL_CENTER.equals(anchor)) {
+        if (anchor == PixelInCell.CELL_CENTER) {
             return removedGridToCRS;
-        } else if (PixelInCell.CELL_CORNER.equals(anchor)) {
+        } else if (anchor == PixelInCell.CELL_CORNER) {
             return removedCornerToCRS;
         }  else {
             return PixelTranslation.translate(removedGridToCRS, PixelInCell.CELL_CENTER, anchor);

@@ -590,7 +590,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
      */
     @Override
     public final boolean equals(final Object obj) {
-        return (obj != null) && obj.getClass().equals(getClass()) &&
+        return (obj != null) && obj.getClass() == getClass() &&
                 Objects.equals(((GeometryWrapper) obj).implementation(), implementation());
     }
 

@@ -732,7 +732,7 @@ public class StoreListeners implements Localized {
         if (isPossibleEvent(permittedEventTypes, eventType)) {
             ForType<E> ce = null;
             for (ForType<?> e = listeners; e != null; e = e.next) {
-                if (e.type.equals(eventType)) {
+                if (e.type == eventType) {
                     ce = (ForType<E>) e;
                     break;
                 }
@@ -789,7 +789,7 @@ public class StoreListeners implements Localized {
         ArgumentChecks.ensureNonNull("listener",  listener);
         ArgumentChecks.ensureNonNull("eventType", eventType);
         for (ForType<?> e = listeners; e != null; e = e.next) {
-            if (e.type.equals(eventType)) {
+            if (e.type == eventType) {
                 if (((ForType<E>) e).remove(listener) && cascadedListeners != null) {
                     final StoreListener cascade = cascadedListeners.remove(eventType);
                     if (cascade != null) {
@@ -819,7 +819,7 @@ public class StoreListeners implements Localized {
         ArgumentChecks.ensureNonNull("listener",  listener);
         ArgumentChecks.ensureNonNull("eventType", eventType);
         for (ForType<?> e = listeners; e != null; e = e.next) {
-            if (e.type.equals(eventType) && e.hasListener(listener)) {
+            if (e.type == eventType && e.hasListener(listener)) {
                 return true;
             }
         }

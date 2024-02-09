@@ -244,7 +244,7 @@ public class DefaultContact extends ISOMetadata implements Contact {
                 TelephoneType ignored = null;
                 for (final Telephone c : phones) {
                     final TelephoneType type = c.getNumberType();
-                    if (TelephoneType.VOICE.equals(type) || TelephoneType.FACSIMILE.equals(type)) {
+                    if (type == TelephoneType.VOICE || type == TelephoneType.FACSIMILE) {
                         if (phone == null) {
                             phone = c;
                         }

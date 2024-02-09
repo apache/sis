@@ -144,7 +144,7 @@ public final class LocaleAndCharset implements Node {
      */
     private <V> V separateValue(final TableColumn<V> column, final boolean key) {
         V value = node.getValue(column);
-        if (TableColumn.VALUE.equals(column)) {
+        if (column == TableColumn.VALUE) {
             value = column.getElementType().cast(keyOrValue(value, key));
         }
         return value;
@@ -157,7 +157,7 @@ public final class LocaleAndCharset implements Node {
      */
     @Override
     public <V> void setValue(final TableColumn<V> column, final V value) {
-        if (TableColumn.VALUE.equals(column)) {
+        if (column == TableColumn.VALUE) {
             throw new UnsupportedOperationException();
         } else {
             node.setValue(column, value);
@@ -212,9 +212,9 @@ public final class LocaleAndCharset implements Node {
         /** Returns the value at the given column, with hard-coded names. */
         @Override public <V> V getValue(final TableColumn<V> column) {
             final String value;
-            if (TableColumn.IDENTIFIER.equals(column)) {
+            if (column == TableColumn.IDENTIFIER) {
                 value = "characterSet";
-            } else if (TableColumn.NAME.equals(column)) {
+            } else if (column == TableColumn.NAME) {
                 value = "Character set";
             } else {
                 return separateValue(column, false);
@@ -224,7 +224,7 @@ public final class LocaleAndCharset implements Node {
 
         /** Sets the value in the map entry key wrapped by this node. */
         @Override public <V> void setValue(final TableColumn<V> column, V value) {
-            if (TableColumn.VALUE.equals(column)) {
+            if (column == TableColumn.VALUE) {
                 /*
                  * We rely on Entry.setValue(Object) implementation to perform type checks.
                  * This is the case with SIS implementation backed by PropertyAccessor,

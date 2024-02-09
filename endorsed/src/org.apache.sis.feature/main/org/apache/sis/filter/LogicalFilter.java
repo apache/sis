@@ -328,7 +328,7 @@ abstract class LogicalFilter<R> extends Node implements LogicalOperator<R>, Opti
          *     A OR  NOT(A) = TRUE
          */
         for (Filter<R> f : effective) {
-            if (LogicalOperatorName.NOT.equals(f.getOperatorType())) {
+            if (f.getOperatorType() == LogicalOperatorName.NOT) {
                 if (effective.containsAll(((LogicalOperator<?>) f).getOperands())) {
                     return shortCircuit;
                 }

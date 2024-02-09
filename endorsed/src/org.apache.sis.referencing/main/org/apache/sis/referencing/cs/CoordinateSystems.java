@@ -662,7 +662,7 @@ forDim: switch (axes.length) {
                             final CoordinateSystemAxis axis = axes[i];
                             ArgumentChecks.ensureNonNullElement("axes", i, axis);
                             directions[i] = axis.getDirection();
-                            if (isAngular && RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning())) try {
+                            if (isAngular && axis.getRangeMeaning() == RangeMeaning.WRAPAROUND) try {
                                 final UnitConverter uc = unit.getConverterToAny(Units.DEGREE);
                                 final double min = uc.convert(axis.getMinimumValue());
                                 final double max = uc.convert(axis.getMaximumValue());

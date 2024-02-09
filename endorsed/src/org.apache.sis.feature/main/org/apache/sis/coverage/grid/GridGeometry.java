@@ -921,9 +921,9 @@ public class GridGeometry implements LenientComparable, Serializable {
      */
     public MathTransform getGridToCRS(final PixelInCell anchor) {
         final MathTransform mt;
-        if (PixelInCell.CELL_CENTER.equals(anchor)) {
+        if (anchor.equals(PixelInCell.CELL_CENTER)) {           // Implicit null check.
             mt = gridToCRS;
-        } else if (PixelInCell.CELL_CORNER.equals(anchor)) {
+        } else if (anchor == PixelInCell.CELL_CORNER) {
             mt = cornerToCRS;
         }  else {
             mt = PixelTranslation.translate(gridToCRS, PixelInCell.CELL_CENTER, anchor);

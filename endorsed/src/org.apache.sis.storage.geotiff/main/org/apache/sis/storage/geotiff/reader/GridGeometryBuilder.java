@@ -292,7 +292,7 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
             case 0:  break;
         }
         final GridExtent extent = new GridExtent(axisTypes, null, high, true);
-        boolean pixelIsPoint = CellGeometry.POINT.equals(cellGeometry);
+        boolean pixelIsPoint = (cellGeometry == CellGeometry.POINT);
         final MathTransformFactory factory = DefaultMathTransformFactory.provider();
         GridGeometry gridGeometry;
         try {
@@ -361,9 +361,9 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
              */
             metadata.setCellGeometry(cellGeometry);
             final PixelOrientation po;
-            if (CellGeometry.POINT.equals(cellGeometry)) {
+            if (cellGeometry == CellGeometry.POINT) {
                 po = PixelOrientation.CENTER;
-            } else if (CellGeometry.AREA.equals(cellGeometry)) {
+            } else if (cellGeometry == CellGeometry.AREA) {
                 po = PixelOrientation.UPPER_LEFT;
             } else {
                 return;

@@ -234,7 +234,7 @@ final class Store extends URIDataStore implements FeatureSet {
         final Reader r = connector.commit(Reader.class, StoreProvider.NAME);
         source     = (r instanceof BufferedReader) ? (BufferedReader) r : new LineNumberReader(r);
         geometries = Geometries.factory(connector.getOption(OptionKey.GEOMETRY_LIBRARY));
-        dissociate = FoliationRepresentation.FRAGMENTED.equals(connector.getOption(DataOptionKey.FOLIATION_REPRESENTATION));
+        dissociate = connector.getOption(DataOptionKey.FOLIATION_REPRESENTATION) == FoliationRepresentation.FRAGMENTED;
         GeneralEnvelope envelope    = null;
         FeatureType     featureType = null;
         Foliation       foliation   = null;
