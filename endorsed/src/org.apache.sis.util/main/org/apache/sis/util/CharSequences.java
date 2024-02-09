@@ -30,9 +30,9 @@ import org.opengis.referencing.IdentifiedObject;    // For javadoc
  * but works on a generic {@code CharSequence} instance instead of {@code String}.
  *
  * <h2>Unicode support</h2>
- * Every methods defined in this class work on <cite>code points</cite> instead of characters
+ * Every methods defined in this class work on <i>code points</i> instead of characters
  * when appropriate. Consequently, those methods should behave correctly with characters outside
- * the <cite>Basic Multilingual Plane</cite> (BMP).
+ * the <i>Basic Multilingual Plane</i> (BMP).
  *
  * <h2>Policy on space characters</h2>
  * Java defines two methods for testing if a character is a white space:
@@ -670,7 +670,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
     }
 
     /**
-     * Splits a text around the <cite>End Of Line</cite> (EOL) characters.
+     * Splits a text around the <i>End Of Line</i> (EOL) characters.
      * EOL characters can be any of {@code "\r"}, {@code "\n"} or {@code "\r\n"} sequences.
      * Each element in the returned array will be a single line. If the given text is already
      * a single line, then this method returns a singleton containing only the given text.
@@ -1728,7 +1728,7 @@ cmp:    while (ia < lga) {
     /**
      * Returns {@code true} if the two given texts are equal, ignoring case.
      * This method is similar to {@link String#equalsIgnoreCase(String)}, except
-     * it works on arbitrary character sequences and compares <cite>code points</cite>
+     * it works on arbitrary character sequences and compares <i>code points</i>
      * instead of characters.
      *
      * @param  s1  the first string to compare, or {@code null}.

@@ -56,7 +56,7 @@ import org.apache.sis.coverage.grid.j2d.ImageUtilities;
  * <p>{@code ComputedImage} may have an arbitrary number of source images, including zero.
  * A {@link TileObserver} is automatically registered to all sources that are instances of
  * {@link WritableRenderedImage}. If one of those sources sends a change event, then all
- * {@code ComputedImage} tiles that may be impacted by that change are marked as <cite>dirty</cite>
+ * {@code ComputedImage} tiles that may be impacted by that change are marked as <dfn>dirty</dfn>
  * and will be computed again when needed.</p>
  *
  * <p>When this {@code ComputedImage} is garbage collected, all cached tiles are discarded
@@ -70,7 +70,7 @@ import org.apache.sis.coverage.grid.j2d.ImageUtilities;
  * This assumption is consistent with {@link org.apache.sis.coverage.grid.GridCoverage#render(GridExtent)}
  * contract, which produces an image located at (0,0) when the image region matches the {@code GridExtent}.
  * However, subclasses can use a non-zero origin by overriding the methods documented in the
- * <cite>Sub-classing</cite> section below.
+ * <i>Sub-classing</i> section below.
  *
  * <p>If this {@code ComputedImage} does not have any {@link WritableRenderedImage} source, then there is
  * no other assumption on the pixel coordinate system. But if there is writable sources, then the default

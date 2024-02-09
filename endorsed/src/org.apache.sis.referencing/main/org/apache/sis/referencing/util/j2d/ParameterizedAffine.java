@@ -146,7 +146,7 @@ public final class ParameterizedAffine extends AffineTransform2D {
     /**
      * Compares this affine transform with the given object for equality.
      * Parameters are compared only if the other object is also an instance of {@code ParameterizedAffine}
-     * in order to preserve the {@link AffineTransform#equals(Object)} <cite>symmetricity</cite> contract.
+     * in order to preserve the {@link AffineTransform#equals(Object)} <i>symmetricity</i> contract.
      *
      * @param  object  the object to compare with this transform for equality.
      * @return {@code true} if the given object is of appropriate class (as explained in the

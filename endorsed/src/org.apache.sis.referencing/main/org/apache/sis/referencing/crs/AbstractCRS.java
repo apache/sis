@@ -67,7 +67,7 @@ import org.opengis.metadata.Identifier;
  * However, most subclasses restrict the allowed number of dimensions.
  *
  * <h2>Instantiation</h2>
- * This class is conceptually <cite>abstract</cite>, even if it is technically possible to instantiate it.
+ * This class is conceptually <i>abstract</i>, even if it is technically possible to instantiate it.
  * Typical applications should create instances of the most specific subclass prefixed by {@code Default} instead.
  * An exception to this rule may occur when it is not possible to identify the exact CRS type.
  *
@@ -411,7 +411,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
-     * Formats the inner part of the <cite>Well Known Text</cite> (WKT) representation of this CRS.
+     * Formats the inner part of the <i>Well Known Text</i> (WKT) representation of this CRS.
      * The default implementation writes the following elements in WKT 2 format:
      *
      * <ul>

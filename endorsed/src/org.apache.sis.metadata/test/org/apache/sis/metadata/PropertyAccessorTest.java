@@ -303,7 +303,7 @@ public final class PropertyAccessorTest extends TestCase {
 
     /**
      * Tests the {@link PropertyAccessor#set(int, Object, Object, int)} method
-     * with a value to be stored <cite>as-is</cite> (without conversion).
+     * with a value to be stored <em>as-is</em> (without conversion).
      * The metadata object created by this test is:
      *
      * <pre class="text">

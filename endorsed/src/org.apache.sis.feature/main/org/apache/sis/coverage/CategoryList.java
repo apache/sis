@@ -37,7 +37,7 @@ import org.apache.sis.math.MathFunctions;
 
 
 /**
- * An immutable list of categories and a <cite>transfer function</cite> implementation backed by that list.
+ * An immutable list of categories and a <i>transfer function</i> implementation backed by that list.
  * The category list (exposed by the {@link java.util.List} interface) has the following properties:
  *
  * <ul>
@@ -400,8 +400,8 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     }
 
     /**
-     * Returns the <cite>transfer function</cite> from sample values to real values, including conversion
-     * of "no data" values to NaNs. Callers shall ensure that there is at least one quantitative category
+     * Returns the <i>transfer function</i> from sample values to real values, including conversion of
+     * "no data" values to NaNs. Callers shall ensure that there is at least one quantitative category
      * before to invoke this method.
      *
      * @see SampleDimension#getTransferFunction()
@@ -838,7 +838,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     }
 
     /**
-     * Returns a <cite>Well Known Text</cite> (WKT) for this object. This operation
+     * Returns a <i>Well Known Text</i> (WKT) for this object. This operation
      * may fail if an object is too complex for the WKT format capability.
      *
      * @return the Well Know Text for this object.

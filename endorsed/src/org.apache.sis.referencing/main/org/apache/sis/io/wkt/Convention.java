@@ -24,7 +24,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 
 /**
  * The convention to use for WKT formatting.
- * This enumeration specifies whether to use the <cite>Well Known Text</cite> format defined by ISO 19162
+ * This enumeration specifies whether to use the <i>Well Known Text</i> format defined by ISO 19162
  * (also known as “WKT 2”), or whether to use the format previously defined in OGC 01-009 (referenced as “WKT 1”).
  *
  * <h2>WKT 1 variants</h2>
@@ -147,7 +147,7 @@ public enum Convention {
 
     /**
      * The <cite>Simple Feature</cite> format, also known as “WKT 1”.
-     * <cite>Simple Feature</cite> is anterior to OGC 01-009 and defines the same format,
+     * <cite>OGC Simple Feature</cite> is anterior to OGC 01-009 and defines the same format,
      * but was unclear about the unit of measurement for prime meridians and projection parameters.
      * Consequently, many implementations interpreted those angular units as fixed to degrees instead
      * than being context-dependent.

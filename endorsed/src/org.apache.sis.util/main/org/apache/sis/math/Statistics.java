@@ -48,7 +48,7 @@ import org.apache.sis.util.internal.DoubleDouble;
  *
  * <p>If the samples are (at least conceptually) the result of some <var>y</var>=<var>f</var>(<var>x</var>)
  * function for <var>x</var> values increasing or decreasing at a constant interval Δ<var>x</var>,
- * then one can get the statistics on the <cite>discrete derivatives</cite> by a call to
+ * then one can get the statistics on the <i>discrete derivatives</i> by a call to
  * <code>differences().{@linkplain #scale(double) scale}(1/Δx)</code>.</p>
  *
  * <p>Statistics are computed on the fly using the

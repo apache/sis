@@ -66,7 +66,7 @@ public final class MemoryGridResource extends AbstractGridCoverageResource {
     }
 
     /**
-     * Returns information about the <cite>domain</cite> of wrapped grid coverage.
+     * Returns information about the <i>domain</i> of wrapped grid coverage.
      *
      * @return extent of grid coordinates together with their mapping to "real world" coordinates.
      */
@@ -76,7 +76,7 @@ public final class MemoryGridResource extends AbstractGridCoverageResource {
     }
 
     /**
-     * Returns information about the <cite>ranges</cite> of wrapped grid coverage.
+     * Returns information about the <i>ranges</i> of wrapped grid coverage.
      *
      * @return ranges of sample values together with their mapping to "real values".
      */

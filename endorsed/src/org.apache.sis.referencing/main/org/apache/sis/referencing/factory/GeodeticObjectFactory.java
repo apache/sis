@@ -71,7 +71,7 @@ import org.apache.sis.xml.XML;
  * <ul>
  *   <li><b>For users</b>, allows the creation of complex objects that cannot be created by the authority factories,
  *       without explicit dependency to Apache SIS (when using the GeoAPI interfaces implemented by this class).</li>
- *   <li><b>For providers</b>, allows <cite>inversion of control</cite> by overriding methods in this class,
+ *   <li><b>For providers</b>, allows <i>inversion of control</i> by overriding methods in this class,
  *       then specifying the customized instance to other services that consume {@code CRSFactory} (for example
  *       authority factories or {@linkplain org.apache.sis.io.wkt.WKTFormat WKT parsers}).</li>
  * </ul>
@@ -171,7 +171,7 @@ import org.apache.sis.xml.XML;
  * They are convenience properties for building the {@code InternationalString} value.
  *
  * <p>The {@code "locale"} property applies only in case of exception for formatting the error message, and
- * is used only on a <cite>best effort</cite> basis. The locale is discarded after successful construction
+ * is used only on a <em>best effort</em> basis. The locale is discarded after successful construction
  * since localizations are applied by the {@link InternationalString#toString(Locale)} method.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
@@ -208,7 +208,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     private final WeakHashSet<AbstractIdentifiedObject> pool;
 
     /**
-     * The <cite>Well Known Text</cite> parser for {@code CoordinateReferenceSystem} instances.
+     * The <i>Well Known Text</i> parser for {@code CoordinateReferenceSystem} instances.
      * This parser is not thread-safe, so we need to prevent two threads from using the same instance at the same time.
      */
     private final AtomicReference<Parser> parser;
@@ -1618,7 +1618,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     }
 
     /**
-     * Creates a Coordinate Reference System object from a <cite>Well Known Text</cite> (WKT).
+     * Creates a Coordinate Reference System object from a <i>Well Known Text</i> (WKT).
      * This method understands both version 1 (a.k.a. OGC 01-009) and version 2 (a.k.a. ISO 19162)
      * of the WKT format.
      *

@@ -118,7 +118,7 @@ public final class MathFunctions extends Static {
 
     /**
      * The beginning of ranges of quiet NaN values.
-     * The range is selected in way to restrict ourselves to <cite>quiet</cite> NaN values.
+     * The range is selected in way to restrict ourselves to <i>quiet</i> NaN values.
      * The following is an adaptation of evaluator's comments for bug #4471414
      * (http://developer.java.sun.com/developer/bugParade/bugs/4471414.html):
      *
@@ -598,14 +598,14 @@ public final class MathFunctions extends Static {
     /**
      * Returns the first floating-point argument with the sign reversed if the second floating-point
      * argument is negative. This method is similar to <code>{@linkplain Math#copySign(double,double)
-     * Math.copySign}(value, sign)</code> except that the sign is combined with an <cite>exclusive
-     * or</cite> operation instead of being copied.
+     * Math.copySign}(value, sign)</code> except that the sign is combined with an <i>exclusive
+     * or</i> operation instead of being copied.
      *
      * <p>This method makes no guarantee about whether {@code NaN} values are handled as positive
      * or negative numbers. This is the same policy as {@link Math#copySign(double, double)}.</p>
      *
      * @param  value  the parameter providing the value that may need a sign change.
-     * @param  sign   the parameter providing the sign to <cite>xor</cite> with the value.
+     * @param  sign   the parameter providing the sign to <i>xor</i> with the value.
      * @return the provided value with its sign reversed if the {@code sign} parameter is negative.
      *
      * @see Math#copySign(double, double)
@@ -669,7 +669,7 @@ public final class MathFunctions extends Static {
      *   <li>[{@code 0xFF800001} … {@code 0xFFFFFFFF}]</li>
      * </ul>
      *
-     * Some of those bits, named the <cite>payload</cite>, can be used for storing custom information.
+     * Some of those bits, named the <i>payload</i>, can be used for storing custom information.
      * This method maps some of the payload values to each ordinal value.
      *
      * <p>This method guarantees that {@code toNanFloat(0)} returns the standard {@link Float#NaN} value.

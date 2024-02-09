@@ -117,7 +117,7 @@ final class TreeNodeChildren extends AbstractCollection<TreeTable.Node> {
 
     /**
      * Modification count, incremented when the content of this collection is modified. This check
-     * is done on a <cite>best effort basis</cite> only, since we cannot not track the changes which
+     * is done on a <em>best effort basis</em> only, since we cannot not track the changes which
      * are done independently in the {@linkplain #metadata} object.
      */
     private int modCount;

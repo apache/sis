@@ -33,7 +33,7 @@ import org.apache.sis.util.resources.Errors;
  * element of another {@code TreeNodeList} will cause an {@link IllegalArgumentException} to be
  * thrown.</p>
  *
- * <p>Operations receiving a single {@code TreeTable.Node} argument are <cite>all or nothing</cite>
+ * <p>Operations receiving a single {@code TreeTable.Node} argument are <i>all or nothing</i>
  * operations: in case of failure, the list will be left in the same state as if no operation were
  * attempted. If a failure occurs during a bulk operations, then the list may be left in a state
  * where some elements where processed and others not.</p>

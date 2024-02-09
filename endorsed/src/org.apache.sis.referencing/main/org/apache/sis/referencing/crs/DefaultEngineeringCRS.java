@@ -234,7 +234,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
     }
 
     /**
-     * Formats this CRS as a <cite>Well Known Text</cite> {@code EngineeringCRS[…]} element.
+     * Formats this CRS as a <i>Well Known Text</i> {@code EngineeringCRS[…]} element.
      *
      * @return {@code "EngineeringCRS"} (WKT 2) or {@code "Local_CS"} (WKT 1).
      *

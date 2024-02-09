@@ -43,11 +43,11 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  *
  * <h2>Example</h2>
  * In the following code snippet, {@code gridToCRS} is an {@link java.awt.geom.AffineTransform} from
- * <cite>grid cell</cite> coordinates (typically pixel coordinates) to some arbitrary CRS coordinates.
+ * <i>grid cell</i> coordinates (typically pixel coordinates) to some arbitrary CRS coordinates.
  * In this example, the transform maps pixels {@linkplain PixelOrientation#CENTER center},
  * while the {@linkplain PixelOrientation#UPPER_LEFT upper left} corner is desired.
- * This code will switch the affine transform from the <cite>pixel center</cite> to
- * <cite>upper left corner</cite> convention:
+ * This code will switch the affine transform from the <i>pixel center</i> to
+ * <i>upper left corner</i> convention:
  *
  * {@snippet lang="java" :
  *     public AffineTransform getGridToPixelCorner() {
@@ -230,7 +230,7 @@ public final class PixelTranslation extends Static implements Serializable {
      * The above-cited <var>cell center</var> → <var>cell corner</var> conversion is done by translating the grid coordinates
      * by +½, because the grid coordinates (0,0) relative to cell center is (½,½) relative to cell corner.
      *
-     * @param  gridToCRS  a math transform from <cite>pixel</cite> coordinates to any CRS, or {@code null}.
+     * @param  gridToCRS  a math transform from pixel coordinates to any CRS, or {@code null}.
      * @param  current    the pixel orientation of the given {@code gridToCRS} transform.
      * @param  desired    the pixel orientation of the desired transform.
      * @return the translation from {@code current} to {@code desired}, or {@code null} if {@code gridToCRS} was null.
@@ -277,7 +277,7 @@ public final class PixelTranslation extends Static implements Serializable {
      * will return a new transform translating grid coordinates by +0.5 before to apply the given {@code gridToCRS} transform.
      * See example in above {@link #translate(MathTransform, PixelInCell, PixelInCell) translate} method for more details.
      *
-     * @param  gridToCRS   a math transform from <cite>pixel</cite> coordinates to any CRS, or {@code null}.
+     * @param  gridToCRS   a math transform from pixel coordinates to any CRS, or {@code null}.
      * @param  current     the pixel orientation of the given {@code gridToCRS} transform.
      * @param  desired     the pixel orientation of the desired transform.
      * @param  xDimension  the dimension of <var>x</var> coordinates (pixel columns). Often 0.

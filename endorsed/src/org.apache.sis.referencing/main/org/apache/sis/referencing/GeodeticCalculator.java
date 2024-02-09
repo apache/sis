@@ -1161,7 +1161,7 @@ public class GeodeticCalculator {
      * All returned {@link MathTransform} instances are immutable;
      * changing {@code GeodeticCalculator} state does not affect those transforms.
      *
-     * @return transform from {@linkplain #getPositionCRS() position CRS} to <cite>Azimuthal Equidistant</cite>
+     * @return transform from {@linkplain #getPositionCRS() position CRS} to <i>Azimuthal Equidistant</i>
      *         projected CRS centered on current {@linkplain #getStartPoint() start point}.
      * @throws IllegalStateException if the start point has not been set.
      * @throws GeodeticException if the projection cannot be computed.

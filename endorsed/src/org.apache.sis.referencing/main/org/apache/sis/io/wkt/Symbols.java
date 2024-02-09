@@ -30,7 +30,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
 
 
 /**
- * The set of symbols to use for <cite>Well Known Text</cite> (WKT) parsing and formatting.
+ * The set of symbols to use for <i>Well Known Text</i> (WKT) parsing and formatting.
  * The two constants defined in this class, namely {@link #SQUARE_BRACKETS} and {@link #CURLY_BRACKETS},
  * define the symbols for ISO 19162 compliant WKT formatting. Their properties are:
  *

@@ -80,9 +80,9 @@ import org.opengis.feature.PropertyNotFoundException;
  * assignable to the super-type property.
  *
  * <div class="note"><b>Analogy:</b> compared to the Java language, the above rule is similar to overriding a method
- * with a more specific return type (a.k.a. <cite>covariant return type</cite>). This is also similar to Java arrays,
- * which are implicitly <cite>covariant</cite> (i.e. {@code String[]} can be casted to {@code CharSequence[]}, which
- * is safe for read operations but not for write operations — the latter may throw {@link ArrayStoreException}).</div>
+ * with a more specific return type (a.k.a. <dfn>covariant return type</dfn>). This is also similar to Java arrays,
+ * which are implicitly <i>covariant</i> (i.e. {@code String[]} can be casted to {@code CharSequence[]}, which is
+ * safe for read operations but not for write operations — the latter may throw {@link ArrayStoreException}).</div>
  *
  * <h2>Instantiation</h2>
  * {@code DefaultFeatureType} can be instantiated directly by a call to its {@linkplain #DefaultFeatureType constructor}.

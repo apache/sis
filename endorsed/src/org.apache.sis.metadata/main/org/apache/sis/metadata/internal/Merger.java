@@ -42,7 +42,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * <ul>
  *   <li>If the target metadata does not have a non-null and non-empty value for the same property, then the
- *     reference to the value from the source metadata is stored <cite>as-is</cite> in the target metadata.</li>
+ *     reference to the value from the source metadata is stored <em>as-is</em> in the target metadata.</li>
  *   <li>Otherwise if the target value is a collection, then:
  *     <ul>
  *       <li>For each element of the source collection, a corresponding element of the target collection is searched.

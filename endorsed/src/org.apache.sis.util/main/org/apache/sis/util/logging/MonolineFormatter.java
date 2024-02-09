@@ -549,7 +549,7 @@ loop:   for (int i=0; ; i++) {
     /**
      * Sets the color to use for the given level, or {@code null} for removing colorization.
      * This method should be invoked only if this formatter is associated to a {@link Handler}
-     * writing to a terminal supporting <cite>ANSI escape codes</cite>
+     * writing to a terminal supporting <i>ANSI escape codes</i>
      * (a.k.a. ECMA-48, ISO/IEC 6429 and X3.64 standards).
      *
      * <p>The given {@code color} argument shall be one of the values documented in the
@@ -590,7 +590,7 @@ loop:   for (int i=0; ; i++) {
     }
 
     /**
-     * Resets the colors to the default values. This method does not check if <cite>ANSI escape codes</cite>
+     * Resets the colors to the default values. This method does not check if <i>ANSI escape codes</i>
      * are supported or not - this check must be done by the caller.
      */
     private void resetLevelColors() {
@@ -613,7 +613,7 @@ loop:   for (int i=0; ; i++) {
      *   <li>If {@code enabled} is {@code false}, then this method resets the formatting to plain text.</li>
      * </ul>
      *
-     * This method does not check if <cite>ANSI escape codes</cite> are supported or not.
+     * This method does not check if <i>ANSI escape codes</i> are supported or not.
      * This check must be done by the caller.
      *
      * @param enabled {@code true} for defining a default set of colors, or {@code false} for removing all colors.

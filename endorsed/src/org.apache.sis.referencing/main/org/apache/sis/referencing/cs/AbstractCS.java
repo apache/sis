@@ -61,10 +61,10 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * The type of the coordinate system implies the set of mathematical rules for calculating geometric properties
  * like angles, distances and surfaces.
  *
- * <p>This class is conceptually <cite>abstract</cite>, even if it is technically possible to instantiate it.
+ * <p>This class is conceptually <i>abstract</i>, even if it is technically possible to instantiate it.
  * Typical applications should create instances of the most specific subclass with {@code Default} prefix instead.
  * An exception to this rule may occurs when it is not possible to identify the exact type. For example, it is not
- * possible to infer the exact coordinate system from <cite>Well Known Text</cite> (WKT) version 1 in some cases
+ * possible to infer the exact coordinate system from <i>Well Known Text</i> (WKT) version 1 in some cases
  * (e.g. in a {@code LOCAL_CS} element). In such exceptional situation, a plain {@code AbstractCS} object may be
  * instantiated.</p>
  *
@@ -608,7 +608,7 @@ next:   for (final CoordinateSystemAxis axis : axes) {
     }
 
     /**
-     * Formats the inner part of the <cite>Well Known Text</cite> (WKT) representation of this coordinate system.
+     * Formats the inner part of the <i>Well Known Text</i> (WKT) representation of this coordinate system.
      * This method does <strong>not</strong> format the axes, because they shall appear outside
      * the {@code CS[…]} element for historical reasons. Axes shall be formatted by the enclosing
      * element (usually an {@link org.apache.sis.referencing.crs.AbstractCRS}).

@@ -17,7 +17,7 @@
 
 /**
  * Default set of {@link org.apache.sis.util.ObjectConverter} implementations.
- * Converter for a given pair of <cite>source</cite> and <cite>target</cite> classes
+ * Converter for a given pair of <i>source</i> and <i>target</i> classes
  * can be obtained with {@link org.apache.sis.converter.ConverterRegistry}.
  * A system-wide instance of {@code ConverterRegistry} with a default set of conversions
  * is available as {@link org.apache.sis.converter.SystemRegistry#INSTANCE}.

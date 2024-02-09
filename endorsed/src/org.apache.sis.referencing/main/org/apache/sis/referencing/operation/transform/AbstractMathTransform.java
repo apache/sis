@@ -247,7 +247,7 @@ public abstract class AbstractMathTransform extends FormattableObject
     }
 
     /**
-     * Returns the parameters for a sequence of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite>
+     * Returns the parameters for a sequence of <i>normalize</i> → {@code this} → <i>denormalize</i>
      * transforms (<i>optional operation</i>).
      *
      * Subclasses can override this method if they choose to split their computation in linear and non-linear parts.
@@ -256,7 +256,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * If a split has been done, then this {@code MathTransform} represents only the non-linear step and Apache SIS
      * needs this method for reconstructing the parameters of the complete transform.
      *
-     * @return the parameter values for the sequence of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite>
+     * @return the parameter values for the sequence of <i>normalize</i> → {@code this} → <i>denormalize</i>
      *         transforms, or {@code null} if unspecified.
      *         Callers should not modify the returned parameters, since modifications (if allowed)
      *         will generally not be reflected back in this {@code MathTransform}.
@@ -1238,7 +1238,7 @@ public abstract class AbstractMathTransform extends FormattableObject
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> version 1 (WKT 1) element.
+     * Formats the inner part of a <i>Well Known Text</i> version 1 (WKT 1) element.
      * The default implementation formats all parameter values returned by {@link #getParameterValues()}.
      * The parameter group name is used as the math transform name.
      *
@@ -1426,7 +1426,7 @@ public abstract class AbstractMathTransform extends FormattableObject
         }
 
         /**
-         * Formats the inner part of a <cite>Well Known Text</cite> version 1 (WKT 1) element.
+         * Formats the inner part of a <i>Well Known Text</i> version 1 (WKT 1) element.
          * If this inverse math transform has any parameter values, then this method formats
          * the WKT as in the {@linkplain AbstractMathTransform#formatWKT super-class method}.
          * Otherwise this method formats the math transform as an {@code "Inverse_MT"} entity.

@@ -52,7 +52,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *     }
  *
  * <h2>Identity comparisons and serialization</h2>
- * This base class relies on <cite>identity comparisons</cite> instead of defining the
+ * This base class relies on <em>identity comparisons</em> instead of defining the
  * {@code equals(Object)} method, because the {@linkplain #getElementType() element type}
  * is not a sufficient criterion for differentiating the columns (many columns have values
  * of the same type) and the {@linkplain #getHeader() header} is arbitrary. Consequently

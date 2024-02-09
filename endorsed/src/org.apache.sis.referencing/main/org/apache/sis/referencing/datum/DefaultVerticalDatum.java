@@ -285,7 +285,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     }
 
     /**
-     * Formats this datum as a <cite>Well Known Text</cite> {@code VerticalDatum[…]} element.
+     * Formats this datum as a <i>Well Known Text</i> {@code VerticalDatum[…]} element.
      *
      * <h4>Compatibility note</h4>
      * OGC 01-009 defined numerical codes for various vertical datum types, for example 2005 for geoidal height

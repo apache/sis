@@ -79,7 +79,7 @@ public final class Characters extends Static {
     }
 
     /**
-     * Returns {@code true} if the given code point is a valid character for <cite>Well Known Text</cite> (WKT).
+     * Returns {@code true} if the given code point is a valid character for <i>Well Known Text</i> (WKT).
      * This method returns {@code true} for the following characters:
      *
      * <blockquote><pre>{@literal A-Z a-z 0-9 _ [ ] ( ) { } < = > . , : ; + - (space) % & ' " * ^ / \ ? | °}</pre></blockquote>
@@ -314,7 +314,7 @@ public final class Characters extends Static {
      *
      * <blockquote>{@code A-Z a-z 0-9 _ [ ] ( ) { } < = > . , : ; + - (space) % & ' " * ^ / \ ? | °}</blockquote>
      * <div class="note"><b>Note:</b> SIS does not enforce this restriction in its programmatic API,
-     * but may perform some character substitutions at <cite>Well Known Text</cite> (WKT) formatting time.</div>
+     * but may perform some character substitutions at <i>Well Known Text</i> (WKT) formatting time.</div>
      *
      * If we take only the characters in the above list which are valid in a {@linkplain #UNICODE_IDENTIFIER
      * Unicode identifier} and remove the characters that ISO 19162 recommends to ignore, the only characters

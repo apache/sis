@@ -625,7 +625,7 @@ public abstract class Vector extends AbstractList<Number> implements RandomAcces
      * <h4>Use cases</h4>
      * This method is useful for analyzing the localization grid provided by some files (for example in netCDF format).
      * Those grids sometimes have constant longitude for the same column index, or constant latitude for the same row index.
-     * This method can detect such regularity, which allows more efficient handling of the <cite>grid to CRS</cite> transform.
+     * This method can detect such regularity, which allows more efficient handling of the <i>grid to CRS</i> transform.
      *
      * @param  candidates  probable values, or {@code null} or an empty array if unknown. If non-empty, those values will be used
      *         for narrowing the search, which may improve performances. There is no guarantee that the values returned by this

@@ -64,7 +64,7 @@ public final class AxisNames {
     /**
      * The ISO 19111 <q>spherical longitude</q> name, also called <q>azimuthal angle</q>.
      * Abbreviation used by SIS is "θ" (theta) for consistency with ISO 19111 and ISO 19162
-     * <cite>Axis name and abbreviation</cite> section, but some other conventions use φ or Ω instead.
+     * <i>Axis name and abbreviation</i> section, but some other conventions use φ or Ω instead.
      * Direction in the EPSG database is "East", but "counterClockwise" may also be used.
      *
      * <p>Axis name <q>Geocentric longitude</q> can also be used.
@@ -78,7 +78,7 @@ public final class AxisNames {
     /**
      * The ISO 19111 <q>spherical latitude</q> name, also called <q>polar (zenith) angle</q>.
      * Abbreviation used by SIS is "Ω" (omega) for consistency with ISO 19111
-     * <cite>Axis name and abbreviation</cite> section, but some other conventions use θ, Ω or Ψ instead.
+     * <i>Axis name and abbreviation</i> section, but some other conventions use θ, Ω or Ψ instead.
      * Direction in the EPSG database is "North", but the "Up" direction may also be used with a similar
      * axis named "elevation".
      *

@@ -306,7 +306,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
     }
 
     /**
-     * Formats the inner part of the <cite>Well Known Text</cite> (WKT) representation of this CRS.
+     * Formats the inner part of the <i>Well Known Text</i> (WKT) representation of this CRS.
      *
      * <h4>Example</h4>
      * Well-Known Text (version 2)

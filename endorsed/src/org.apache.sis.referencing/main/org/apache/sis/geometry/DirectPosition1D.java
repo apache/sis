@@ -89,7 +89,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
 
     /**
      * Constructs a position initialized to the values parsed from the given string in
-     * <cite>Well Known Text</cite> (WKT) format. The given string is typically a {@code POINT}
+     * <i>Well Known Text</i> (WKT) format. The given string is typically a {@code POINT}
      * element like below:
      *
      * {@snippet lang="wkt" :
@@ -210,7 +210,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
     }
 
     /**
-     * Formats this position in the <cite>Well Known Text</cite> (WKT) format.
+     * Formats this position in the <i>Well Known Text</i> (WKT) format.
      * The output is like below:
      *
      * {@snippet lang="wkt" :

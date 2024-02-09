@@ -62,8 +62,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
  *         <li>{@code get*()} methods with arbitrary return type;</li>
  *         <li>or {@code is*()} methods with boolean return type.</li>
  *       </ul></li>
- *   <li>All properties are <cite>readable</cite>.</li>
- *   <li>A property is also <cite>writable</cite> if a {@code set*(…)} method is defined
+ *   <li>All properties are <i>readable</i>.</li>
+ *   <li>A property is also <i>writable</i> if a {@code set*(…)} method is defined
  *       <strong>in the implementation class</strong> for the corresponding getter method.
  *       The setter method does not need to be defined in the interface.</li>
  * </ul>
@@ -860,7 +860,7 @@ public class MetadataStandard implements Serializable {
      * Calls to {@code put(…)} replace the previous value, with one noticeable exception: if the metadata
      * property associated to the given key is a {@link java.util.Collection} but the given value is a single
      * element (not a collection), then the given value is {@linkplain java.util.Collection#add(Object) added}
-     * to the existing collection. In other words, the returned map behaves as a <cite>multi-values map</cite>
+     * to the existing collection. In other words, the returned map behaves as a <i>multi-values map</i>
      * for the properties that allow multiple values. If the intent is to unconditionally discard all previous
      * values, then make sure that the given value is a collection when the associated metadata property expects
      * such collection.

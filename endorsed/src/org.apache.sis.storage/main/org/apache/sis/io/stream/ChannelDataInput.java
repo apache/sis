@@ -161,10 +161,10 @@ public class ChannelDataInput extends ChannelData implements DataInput {
     /**
      * Tries to read more bytes from the channel without changing the buffer position.
      * This method returns a negative number if the buffer is already full or if the channel reached the
-     * <cite>end of stream</cite>. Otherwise this method reads an arbitrary number of bytes not greater
+     * <i>end of stream</i>. Otherwise this method reads an arbitrary number of bytes not greater
      * than the space available in the buffer, and returns the amount bytes actually read.
      *
-     * @return the number of bytes read, or -2 if the buffer is full, or -1 on <cite>end of stream</cite>.
+     * @return the number of bytes read, or -2 if the buffer is full, or -1 on <i>end of stream</i>.
      * @throws IOException if an error occurred while reading the bytes.
      */
     public final int prefetch() throws IOException {

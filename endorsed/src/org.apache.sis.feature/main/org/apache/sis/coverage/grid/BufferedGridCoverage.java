@@ -59,7 +59,7 @@ import org.opengis.coverage.PointOutsideCoverageException;
  *   <li>If the number of banks is greater than 1, then each band is stored in a separated array.
  *       In each array, sample values are stored with column indices (<var>x</var>) varying fastest,
  *       then row indices (<var>y</var>), then other dimensions.
- *       In the two-dimensional case, this layout is also known as <cite>row-major</cite>.</li>
+ *       In the two-dimensional case, this layout is also known as <dfn>row-major</dfn>.</li>
  * </ul>
  *
  * The number of cells in each dimension is specified by the {@link GridExtent} of the geometry given at

@@ -228,7 +228,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      *  </tr><tr>
      *   <td>{@code locale}</td>
      *   <td>{@link Locale}</td>
-     *   <td>The locale for producing error messages on a <cite>best effort</cite> basis.</td>
+     *   <td>The locale for producing error messages on a <em>best effort</em> basis.</td>
      *  </tr>
      * </table>
      *

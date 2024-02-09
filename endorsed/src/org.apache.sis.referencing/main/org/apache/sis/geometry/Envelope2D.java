@@ -55,7 +55,7 @@ import org.opengis.geometry.MismatchedReferenceSystemException;
  * <p>This class inherits {@linkplain #x x} and {@linkplain #y y} fields.
  * But despite their names, they don't need to be oriented toward {@linkplain AxisDirection#EAST East} and
  * {@linkplain AxisDirection#NORTH North} respectively. The (<var>x</var>,<var>y</var>) axis can have any
- * direction and should be understood as <cite>coordinate 0</cite> and <cite>coordinate 1</cite> values instead.
+ * direction and should be understood as <dfn>coordinate 0</dfn> and <dfn>coordinate 1</dfn> values instead.
  * This is not specific to this implementation; in Java2D too, the visual axis orientation depend
  * on the {@linkplain java.awt.Graphics2D#getTransform() affine transform in the graphics context}.</p>
  *
@@ -619,7 +619,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      *   <li>If this envelope {@linkplain #isEmpty() is empty}, then this method returns an empty array.</li>
      *   <li>If this envelope does not have any wraparound behavior, then this method returns a copy
      *       of this envelope as an instance of {@code Rectangle2D.Double} in an array of length 1.</li>
-     *   <li>If this envelope crosses the <cite>anti-meridian</cite> (a.k.a. <cite>date line</cite>)
+     *   <li>If this envelope crosses the <i>anti-meridian</i> (a.k.a. <i>date line</i>)
      *       then this method represents this envelope as two separated rectangles.
      *   <li>While uncommon, the envelope could theoretically crosses the limit of other axis having
      *       wraparound range meaning. If wraparound occur along the two axes, then this method

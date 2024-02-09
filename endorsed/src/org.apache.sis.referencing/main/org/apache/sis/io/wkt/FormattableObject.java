@@ -30,12 +30,12 @@ import org.apache.sis.system.Environment;
 
 
 /**
- * Base class for objects that can be formatted as <cite>Well Known Text</cite> (WKT).
+ * Base class for objects that can be formatted as <i>Well Known Text</i> (WKT).
  * {@link WKTFormat} checks for this class at formatting time for each element to format.
  * When a {@code FormattableObject} element is found, its {@link #formatTo(Formatter)} method
  * is invoked for allowing the element to control its formatting.
  *
- * <p>This class provides two methods for getting a default <cite>Well Known Text</cite>
+ * <p>This class provides two methods for getting a default <i>Well Known Text</i>
  * representation of this object:</p>
  *
  * <ul>
@@ -94,7 +94,7 @@ public abstract class FormattableObject implements Printable {
     }
 
     /**
-     * Returns a strictly compliant <cite>Well Known Text</cite> (WKT) using the default convention,
+     * Returns a strictly compliant <i>Well Known Text</i> (WKT) using the default convention,
      * symbols and indentation. If this object cannot be represented in a standard way, then this
      * method throws an {@link UnformattableObjectException}.
      *
@@ -110,7 +110,7 @@ public abstract class FormattableObject implements Printable {
     }
 
     /**
-     * Returns a <cite>Well Known Text</cite> (WKT) or an alternative text representation for this object.
+     * Returns a <i>Well Known Text</i> (WKT) or an alternative text representation for this object.
      * If this object cannot be represented in a standard way, then this method may fallback on non-standard
      * representation, or leave unformattable elements empty and append warnings after the WKT.
      *
@@ -127,7 +127,7 @@ public abstract class FormattableObject implements Printable {
     }
 
     /**
-     * Returns a <cite>Well Known Text</cite> (WKT) for this object using the specified convention.
+     * Returns a <i>Well Known Text</i> (WKT) for this object using the specified convention.
      * Unicode characters are kept <i>as-is</i> (they are not converted to ASCII).
      * The returned string may contain non-standard elements or warnings
      * if this object cannot be formatted according the given convention.
@@ -220,7 +220,7 @@ public abstract class FormattableObject implements Printable {
     }
 
     /**
-     * Formats the inner part of this <cite>Well Known Text</cite> (WKT) element into the given formatter.
+     * Formats the inner part of this <i>Well Known Text</i> (WKT) element into the given formatter.
      * This method is automatically invoked by {@link WKTFormat} when a formattable element is found.
      *
      * <p>Keywords, opening and closing brackets shall not be formatted here.

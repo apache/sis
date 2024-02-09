@@ -405,7 +405,7 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
     /**
      * Invoked by {@link #propertyChange(PropertyChangeEvent)} for updating the transform of the target canvas
      * in units of the objective CRS. The {@linkplain #target} canvas is updated by this method as if the given
-     * transform was applied <em>before</em> its current <cite>objective to display</cite> transform.
+     * transform was applied <em>before</em> its current <i>objective to display</i> transform.
      *
      * <p>The default implementation delegates to {@link PlanarCanvas#transformObjectiveCoordinates(AffineTransform)}.
      * Subclasses can override if they need to transform additional data.</p>
@@ -422,7 +422,7 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
     /**
      * Invoked by {@link #propertyChange(PropertyChangeEvent)} for updating the transform of the target canvas
      * in display units (typically pixels). The {@linkplain #target} canvas is updated by this method as if the
-     * given transform was applied <em>after</em> its current <cite>objective to display</cite> transform.
+     * given transform was applied <em>after</em> its current <i>objective to display</i> transform.
      *
      * <p>The default implementation delegates to {@link PlanarCanvas#transformDisplayCoordinates(AffineTransform)}.
      * Subclasses can override if they need to transform additional data.</p>

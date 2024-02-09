@@ -48,10 +48,10 @@ import org.apache.sis.util.resources.Vocabulary;
  * <h2>Terminology</h2>
  * This class uses relational database terminology for consistency with generic queries:
  * <ul>
- *   <li>A <cite>selection</cite> is a filter choosing the cells or pixels to include in the subset.
- *       In this context, the selection is the <cite>coverage domain</cite>.</li>
- *   <li>A <cite>projection</cite> (not to be confused with map projection) is the set of sample values to keep.
- *       In this context, the projection is the <cite>coverage range</cite> (i.e. set of sample dimensions).</li>
+ *   <li>A <dfn>selection</dfn> is a filter choosing the cells or pixels to include in the subset.
+ *       In this context, the selection is the <i>coverage domain</i>.</li>
+ *   <li>A <dfn>projection</dfn> (not to be confused with map projection) is the set of sample values to keep.
+ *       In this context, the projection is the <i>coverage range</i> (i.e. set of sample dimensions).</li>
  * </ul>
  *
  * <h2>Optional values</h2>
@@ -149,7 +149,7 @@ public class CoverageQuery extends Query implements Cloneable, Serializable {
      * <h4>Note on terminology</h4>
      * "Selection" is the generic term used in queries for designating a subset of feature instances.
      * In a grid coverage, feature instances are cells or pixels.
-     * So this concept maps to the <cite>coverage domain</cite>.
+     * So this concept maps to the <i>coverage domain</i>.
      *
      * @return desired grid extent and resolution, or {@code null} for reading the whole domain.
      */
@@ -240,7 +240,7 @@ public class CoverageQuery extends Query implements Cloneable, Serializable {
     }
 
     /**
-     * Sets the indices of samples dimensions to read (the <cite>coverage range</cite>).
+     * Sets the indices of samples dimensions to read (the <i>coverage range</i>).
      * A {@code null} value means to read all sample dimensions (no filtering on range).
      * If non-null, then the {@code range} array shall contain at least one element,
      * all elements must be positive and no value can be duplicated.
@@ -266,7 +266,7 @@ public class CoverageQuery extends Query implements Cloneable, Serializable {
      * <h4>Note on terminology</h4>
      * "Projection" (not to be confused with map projection) is the generic term used in queries
      * for designating a subset of feature properties retained in each feature instances.
-     * In a coverage, this concept maps to the <cite>coverage range</cite>.
+     * In a coverage, this concept maps to the <i>coverage range</i>.
      *
      * @return 0-based indices of sample dimensions to read, or {@code null} for reading them all.
      */

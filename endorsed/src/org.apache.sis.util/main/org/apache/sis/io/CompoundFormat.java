@@ -54,7 +54,7 @@ import static org.apache.sis.util.internal.StandardDateFormat.UTC;
 /**
  * Base class of {@link Format} implementations which delegate part of their work to other
  * {@code Format} instances. {@code CompoundFormat} subclasses typically work on relatively
- * large blocks of data, for example a metadata tree or a <cite>Well Known Text</cite> (WKT).
+ * large blocks of data, for example a metadata tree or a <i>Well Known Text</i> (WKT).
  * Those blocks of data usually contain smaller elements like numbers and dates, whose parsing
  * and formatting can be delegated to {@link NumberFormat} and {@link DateFormat} respectively.
  * Subclasses can obtain instances of those formats by call to {@link #getFormat(Class)} where

@@ -73,8 +73,8 @@ import org.opengis.coverage.PointOutsideCoverageException;
  * Then the grid geometry is created by a call to {@link #build()}.
  * The {@link #getIntersection()} method can also be invoked for the {@link GridExtent} part without subsampling.
  *
- * <p>All methods in this class preserve the number of dimensions. For example, the {@link #slice(DirectPosition)} method sets
- * the {@linkplain GridExtent#getSize(int) grid size} to 1 in all dimensions specified by the <cite>slice point</cite>,
+ * <p>All methods in this class preserve the number of dimensions. For example, the {@link #slice(DirectPosition)} method
+ * sets the {@linkplain GridExtent#getSize(int) grid size} to 1 in all dimensions specified by the <i>slice point</i>,
  * but does not remove those dimensions from the grid geometry.
  * For dimensionality reduction, see {@link GridGeometry#selectDimensions(int[])}.</p>
  *

@@ -44,7 +44,7 @@ import org.apache.sis.util.resources.Errors;
  * We also measured better performance with this reader at least for uncompressed files, and added support for some
  * unusual data layout not supported by other libraries.
  *
- * <p>This image reader can also process <cite>Big TIFF</cite> images.</p>
+ * <p>This image reader can also process <i>Big TIFF</i> images.</p>
  *
  * <p>The TIFF format specification version 6.0 (June 3, 1992) is available
  * <a href="https://partners.adobe.com/public/developer/en/tiff/TIFF6.pdf">here</a>.</p>
@@ -79,7 +79,7 @@ final class Reader extends IOBase {
     final byte intSizeExpansion;
 
     /**
-     * The last <cite>Image File Directory</cite> (IFD) read, or {@code null} if none.
+     * The last <i>Image File Directory</i> (IFD) read, or {@code null} if none.
      * This is used when we detected the end of a pyramid and the beginning of next one.
      */
     private ImageFileDirectory lastIFD;
@@ -101,7 +101,7 @@ final class Reader extends IOBase {
     private boolean endOfFile;
 
     /**
-     * Offsets of all <cite>Image File Directory</cite> (IFD) that have been read so far.
+     * Offsets of all <i>Image File Directory</i> (IFD) that have been read so far.
      * This field is used only as a protection against infinite recursivity, by preventing
      * the same offset to appear twice.
      *
@@ -403,7 +403,7 @@ final class Reader extends IOBase {
     }
 
     /**
-     * Returns the potentially pyramided <cite>Image File Directories</cite> (IFDs) at the given index.
+     * Returns the potentially pyramided <i>Image File Directories</i> (IFDs) at the given index.
      * If the pyramid has already been initialized, then it is returned.
      * Otherwise this method initializes the pyramid now and returns it.
      *

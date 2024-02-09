@@ -646,7 +646,7 @@ public final class Types extends Static {
      *   <li>If the key is exactly equals to {@code prefix}, selects {@link Locale#ROOT}.</li>
      *   <li>Otherwise the characters after {@code '_'} are parsed as an ISO language and country code
      *       by the {@link Locales#parse(String, int)} method. Note that 3-letters codes are replaced
-     *       by their 2-letters counterparts on a <cite>best effort</cite> basis.</li>
+     *       by their 2-letters counterparts on a <em>best effort</em> basis.</li>
      *   <li>The value for the decoded locale is added in the international string to be returned.</li>
      * </ul>
      *

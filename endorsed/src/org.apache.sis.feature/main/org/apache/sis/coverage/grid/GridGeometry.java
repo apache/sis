@@ -90,17 +90,17 @@ import static org.apache.sis.referencing.CRS.findOperation;
  * to real world coordinates. {@code GridGeometry} contains:
  *
  * <ul class="verbose">
- *   <li>A {@linkplain #getExtent() grid extent} (a.k.a. <cite>grid envelope</cite>),
+ *   <li>A {@linkplain #getExtent() grid extent} (a.k.a. <i>grid envelope</i>),
  *       often inferred from the {@link RenderedImage} size.</li>
  *   <li>A {@linkplain #getGridToCRS grid to CRS} transform,
  *       which may be inferred from the grid extent and the georeferenced envelope.</li>
  *   <li>A {@linkplain #getEnvelope() georeferenced envelope}, which can be inferred
- *       from the grid extent and the <cite>grid to CRS</cite> transform.</li>
+ *       from the grid extent and the <i>grid to CRS</i> transform.</li>
  *   <li>An optional {@linkplain #getCoordinateReferenceSystem() Coordinate Reference System} (CRS)
  *       specified as part of the georeferenced envelope.
- *       This CRS is the target of the <cite>grid to CRS</cite> transform.</li>
+ *       This CRS is the target of the <i>grid to CRS</i> transform.</li>
  *   <li>An <em>estimation</em> of {@link #getResolution(boolean) grid resolution} along each CRS axes,
- *       computed from the <cite>grid to CRS</cite> transform and eventually from the grid extent.</li>
+ *       computed from the <i>grid to CRS</i> transform and eventually from the grid extent.</li>
  *   <li>An {@linkplain #isConversionLinear indication of whether conversion for some axes is linear or not}.</li>
  * </ul>
  *
@@ -418,7 +418,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * <h4>API note</h4>
      * There is no default value for {@code anchor} because experience shows that images shifted by ½ pixel
      * (with pixels that may be tens of kilometres large) is a recurrent problem. We want to encourage developers
-     * to always think about wether their <cite>grid to CRS</cite> transform is mapping pixel corner or center.
+     * to always think about wether their <i>grid to CRS</i> transform is mapping pixel corner or center.
      *
      * <div class="warning"><b>Upcoming API generalization:</b>
      * the {@code extent} type of this method may be changed to {@code GridEnvelope} interface in a future Apache SIS version.
@@ -587,7 +587,7 @@ public class GridGeometry implements LenientComparable, Serializable {
 
     /**
      * Creates an axis-aligned grid geometry with an extent and an envelope.
-     * This constructor can be used when the <cite>grid to CRS</cite> transform is unknown.
+     * This constructor can be used when the <i>grid to CRS</i> transform is unknown.
      * If only the coordinate reference system is known, then the envelope coordinates can be
      * {@linkplain GeneralEnvelope#isAllNaN() all NaN}.
      *
@@ -911,7 +911,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * <h4>API note</h4>
      * There is no default value for {@code anchor} because experience shows that images shifted by ½ pixel
      * (with pixels that may be tens of kilometres large) is a recurrent problem. We want to encourage developers
-     * to always think about wether the desired <cite>grid to CRS</cite> transform shall map pixel corner or center.
+     * to always think about wether the desired <i>grid to CRS</i> transform shall map pixel corner or center.
      *
      * @param  anchor  the cell part to map (center or corner).
      * @return the conversion from grid coordinates to "real world" coordinates (never {@code null}).
@@ -1232,7 +1232,7 @@ public class GridGeometry implements LenientComparable, Serializable {
     }
 
     /**
-     * Indicates whether the <cite>grid to CRS</cite> conversion is linear for all the specified CRS axes.
+     * Indicates whether the <i>grid to CRS</i> conversion is linear for all the specified CRS axes.
      * The conversion from grid coordinates to real world coordinates is often linear for some dimensions,
      * typically the horizontal ones at indices 0 and 1. But the vertical dimension (usually at index 2)
      * is often non-linear, for example with data at 0, 5, 10, 100 and 1000 metres.
@@ -1442,7 +1442,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      *
      * <p>Each {@code GridDerivation} instance can be used only once and should be used in a single thread.
      * {@code GridDerivation} preserves the number of dimensions. For example, {@linkplain GridDerivation#slice slicing}
-     * sets the {@linkplain GridExtent#getSize(int) grid size} to 1 in all dimensions specified by a <cite>slice point</cite>,
+     * sets the {@linkplain GridExtent#getSize(int) grid size} to 1 in all dimensions specified by a <i>slice point</i>,
      * but does not remove those dimensions from the grid geometry. For dimensionality reduction, see {@link #selectDimensions(int[])}.</p>
      *
      * <h4>Example</h4>
@@ -1608,7 +1608,7 @@ public class GridGeometry implements LenientComparable, Serializable {
      * The given dimensions must be in strictly ascending order without duplicated values.
      * The number of dimensions of the sub grid geometry will be {@code dimensions.length}.
      *
-     * <p>This method performs a <cite>dimensionality reduction</cite>.
+     * <p>This method performs a <i>dimensionality reduction</i>.
      * This method cannot be used for changing dimension order.
      * The converse operation is the {@linkplain #GridGeometry(GridGeometry, GridGeometry) concatenation}.</p>
      *

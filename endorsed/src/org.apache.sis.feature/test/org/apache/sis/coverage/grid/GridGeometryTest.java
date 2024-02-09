@@ -263,9 +263,9 @@ public final class GridGeometryTest extends TestCase {
     }
 
     /**
-     * Tests construction from a <cite>grid to CRS</cite> having a 0.5 pixel translation.
-     * This translation happens in transform mapping <cite>pixel center</cite> when the
-     * corresponding <cite>pixel corner</cite> transformation is identity.
+     * Tests construction from a <i>grid to CRS</i> having a 0.5 pixel translation.
+     * This translation happens in transform mapping <i>pixel center</i> when the
+     * corresponding <i>pixel corner</i> transformation is identity.
      */
     @Test
     public void testShifted() {

@@ -49,7 +49,7 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * Creates parameter groups for tensors (usually matrices).
- * Matrices are handled as a special case of tensors (<cite>second-order</cite> tensors).
+ * Matrices are handled as a special case of tensors (<i>second-order</i> tensors).
  *
  * <p>Each group of parameters contains the following elements:</p>
  * <ul>
@@ -65,12 +65,12 @@ import org.apache.sis.util.resources.Errors;
  * </ul>
  *
  * For all matrix or tensor elements, the default value is 1 for elements on the diagonal (where all indices have
- * the same value) and 0 for all other elements. Those default values defines an <cite>identity matrix</cite>,
- * or (more generally) <cite>Kroenecker delta tensor</cite>.
+ * the same value) and 0 for all other elements. Those default values defines an <i>identity matrix</i>,
+ * or (more generally) <i>Kroenecker delta tensor</i>.
  *
  * <p><b>Parameters are not an efficient storage format for large tensors.</b>
  * Parameters are used only for small matrices/tensors to be specified in coordinate operations or processing libraries.
- * In particular, those parameters integrate well in <cite>Well Known Text</cite> (WKT) format.
+ * In particular, those parameters integrate well in <i>Well Known Text</i> (WKT) format.
  * For a more efficient matrix storage,
  * see the {@linkplain org.apache.sis.referencing.operation.matrix matrix package}.</p>
  *
@@ -155,7 +155,7 @@ public class TensorParameters<E> implements Serializable {
      * {@linkplain DefaultParameterDescriptor#getName() Names} are made of a letter indicating the row
      * (first row is {@code "A"}), followed by a digit indicating the column index (first column is {@code "0"}).
      * {@linkplain DefaultParameterDescriptor#getAlias() Aliases} are the names as they were defined in version 1
-     * of <cite>Well Known Text</cite> (WKT) format.
+     * of <i>Well Known Text</i> (WKT) format.
      *
      * <table class="sis">
      *   <caption>Parameter names for a 3×3 matrix</caption>

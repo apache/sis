@@ -17,7 +17,7 @@
 
 /**
  * Defines the structure and content of views of real-world phenomenon.
- * The phenomenon to represent (or a fundamental unit of information) is called <cite>a feature</cite>.
+ * The phenomenon to represent (or a fundamental unit of information) is called <dfn>a feature</dfn>.
  * The term “feature” may be used in different contexts:
  *
  * <ul class="verbose">
@@ -56,8 +56,8 @@
  * Names can be {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped} for avoiding name collision.
  *
  * <h2>Class hierarchy</h2>
- * The class hierarchy for feature <cite>types</cite> is derived from ISO 19109 specification.
- * The class hierarchy for feature <cite>instances</cite> is closely related:
+ * The class hierarchy for feature <em>types</em> is derived from ISO 19109 specification.
+ * The class hierarchy for feature <em>instances</em> is closely related:
  *
  * <table class="sis">
  * <caption>Feature class hierarchy</caption>
@@ -73,10 +73,10 @@
  * {@code      └─} {@linkplain org.apache.sis.feature.AbstractOperation       Operation}<br>
  * </td><td class="sep" style="width: 50%; white-space: nowrap">
  *                 Object<br>
- * {@code  ├─}     {@linkplain org.apache.sis.feature.AbstractFeature     Feature}             (<cite>sparse</cite> or <cite>dense</cite>)<br>
+ * {@code  ├─}     {@linkplain org.apache.sis.feature.AbstractFeature     Feature}             (<i>sparse</i> or <i>dense</i>)<br>
  * {@code  └─}                                                            Property<br>
- * {@code      ├─} {@linkplain org.apache.sis.feature.AbstractAttribute   Attribute}           (<cite>singleton</cite> or <cite>multi-valued</cite>)<br>
- * {@code      └─} {@linkplain org.apache.sis.feature.AbstractAssociation Feature association} (<cite>singleton</cite> or <cite>multi-valued</cite>)<br>
+ * {@code      ├─} {@linkplain org.apache.sis.feature.AbstractAttribute   Attribute}           (<i>singleton</i> or <i>multi-valued</i>)<br>
+ * {@code      └─} {@linkplain org.apache.sis.feature.AbstractAssociation Feature association} (<i>singleton</i> or <i>multi-valued</i>)<br>
  * </td></tr></table>
  *
  * <h2>Instantiation</h2>

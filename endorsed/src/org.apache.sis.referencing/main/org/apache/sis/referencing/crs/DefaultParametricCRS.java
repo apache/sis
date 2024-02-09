@@ -229,7 +229,7 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
     }
 
     /**
-     * Formats this CRS as a <cite>Well Known Text</cite> {@code ParametricCRS[…]} element.
+     * Formats this CRS as a <i>Well Known Text</i> {@code ParametricCRS[…]} element.
      *
      * <h4>Compatibility note</h4>
      * {@code ParametricCRS} is defined in the WKT 2 specification only.

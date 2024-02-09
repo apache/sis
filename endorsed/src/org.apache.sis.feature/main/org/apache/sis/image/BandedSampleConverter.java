@@ -75,7 +75,7 @@ class BandedSampleConverter extends WritableComputedImage {
 
     /**
      * Properties potentially added by this image, no matter if present in source image or not. Must be consistent
-     * with the <cite>switch case</cite> statement doing its own calculation in {@link #getProperty(String)}.
+     * with the <i>switch case</i> statement doing its own calculation in {@link #getProperty(String)}.
      *
      * @see #getPropertyNames()
      */

@@ -112,8 +112,8 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
     /**
      * The square of eccentricity: ℯ² = (a²-b²)/a² where
      * <var>ℯ</var> is the eccentricity,
-     * <var>a</var> is the <cite>semi-major</cite> axis length and
-     * <var>b</var> is the <cite>semi-minor</cite> axis length.
+     * <var>a</var> is the <i>semi-major</i> axis length and
+     * <var>b</var> is the <i>semi-minor</i> axis length.
      */
     final double eccentricitySquared;
 

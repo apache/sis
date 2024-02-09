@@ -700,7 +700,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     }
 
     /**
-     * Formats this axis as a <cite>Well Known Text</cite> {@code Axis[…]} element.
+     * Formats this axis as a <i>Well Known Text</i> {@code Axis[…]} element.
      *
      * <h4>Constraints for WKT validity</h4>
      * The ISO 19162 specification puts many constraints on axis names, abbreviations and directions allowed in WKT.

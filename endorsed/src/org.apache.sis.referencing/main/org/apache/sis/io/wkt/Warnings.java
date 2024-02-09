@@ -39,7 +39,7 @@ import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * Warnings that occurred during a <cite>Well Known Text</cite> (WKT) parsing or formatting.
+ * Warnings that occurred during a <i>Well Known Text</i> (WKT) parsing or formatting.
  * Information provided by this object include:
  *
  * <ul>

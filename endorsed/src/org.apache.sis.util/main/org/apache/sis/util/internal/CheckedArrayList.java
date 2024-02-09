@@ -40,7 +40,7 @@ import org.apache.sis.util.collection.CheckedContainer;
  *   <li>Does not accept null elements.</li>
  * </ul>
  *
- * The checks are performed only on a <cite>best effort</cite> basis. In current implementation,
+ * The checks are performed only on a <em>best effort</em> basis. In current implementation,
  * holes are known to exist in use cases like {@code sublist(…).set(…)} or when using the list iterator.
  *
  * @author  Martin Desruisseaux (Geomatys)

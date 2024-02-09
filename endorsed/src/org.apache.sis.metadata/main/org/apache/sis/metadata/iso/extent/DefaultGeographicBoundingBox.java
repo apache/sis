@@ -84,8 +84,8 @@ import org.apache.sis.metadata.internal.ReferencingServices;
  * any {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getDirection() direction} (some maps are south-oriented)
  * and may use any units of measurement. By contrast, geographic bounding box are restricted to two-dimensional
  * geographic CRS with latitude and longitude in decimal degrees, inside the [-90 … +90]° and [-180 … +180]° range
- * respectively, increasing toward north and east respectively, and longitude measured from the <cite>international
- * reference meridian</cite> (Greenwich on Earth). However, {@code GeographicBoundingBox} said nothing about the
+ * respectively, increasing toward north and east respectively, and longitude measured from the <i>international
+ * reference meridian</i> (Greenwich on Earth). However, {@code GeographicBoundingBox} said nothing about the
  * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum}. Consequently, this bounding
  * box should be used only as a convenient way to give an <em>approximate</em> description of a location.
  * Users can assume a precision of about 0.01° for the latitude and longitude values in this class.
@@ -615,7 +615,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
     /**
      * Adds a geographic bounding box to this box.
      * This method behavior depends on whether the bounding boxes encompass an area covered by the data
-     * (<cite>inclusion</cite>) or an area where data is not present (<cite>exclusion</cite>):
+     * (<dfn>inclusion</dfn>) or an area where data is not present (<dfn>exclusion</dfn>):
      *
      * <ul>
      *   <li>If the {@linkplain #getInclusion() inclusion} status is the same for this box and the box to be added,

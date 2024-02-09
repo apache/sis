@@ -96,7 +96,7 @@ public class MarshallerPool {
      *
      * <h4>Implementation note</h4>
      * Each {@code MarshallerPool} has its own service loader instance rather than using a system-wide instance
-     * because the {@link ClassLoader} used by the service loader is the <cite>context class loader</cite>,
+     * because the {@link ClassLoader} used by the service loader is the <i>context class loader</i>,
      * which depends on the thread that created the pool. So two pools in two different applications could have
      * two different set of replacements.
      */

@@ -111,7 +111,7 @@ import org.apache.sis.measure.Units;
  * should be <em>stable</em>, i.e. pixel values should not be modified after method return.
  *
  * <h2>Area of interest</h2>
- * Some operations accept an optional <cite>area of interest</cite> argument specified as a {@link Shape} instance in
+ * Some operations accept an optional <var>area of interest</var> argument specified as a {@link Shape} instance in
  * pixel coordinates. If a shape is given, it should not be modified after {@code ImageProcessor} method call because
  * the given object may be retained directly (i.e. the {@code Shape} is not always cloned; it depends on its class).
  * In addition, the {@code Shape} implementation shall be thread-safe (assuming its state stay unmodified)
@@ -667,8 +667,8 @@ public class ImageProcessor implements Cloneable {
      * <h5>API design note</h5>
      * The {@code areaOfInterest} and {@code sampleFilters} arguments are complementary.
      * Both of them filter the data accepted for statistics. In ISO 19123 terminology,
-     * the {@code areaOfInterest} argument filters the <cite>coverage domain</cite> while
-     * the {@code sampleFilters} argument filters the <cite>coverage range</cite>.
+     * the {@code areaOfInterest} argument filters the <i>coverage domain</i> while
+     * the {@code sampleFilters} argument filters the <i>coverage range</i>.
      * Another connection with OGC/ISO standards is that {@link DoubleUnaryOperator} in this context
      * does the same work as {@linkplain SampleDimension#getTransferFunction() transfer function}.
      * It can be useful for images not managed by a {@link org.apache.sis.coverage.grid.GridCoverage}.
@@ -712,7 +712,7 @@ public class ImageProcessor implements Cloneable {
     /**
      * Returns an image with the same sample values as the given image, but with its color ramp stretched between
      * specified or inferred bounds. For example, in a gray scale image, pixels with the minimum value will be black
-     * and pixels with the maximum value will be white. This operation is a kind of <cite>tone mapping</cite>,
+     * and pixels with the maximum value will be white. This operation is a kind of <i>tone mapping</i>,
      * a technique used in image processing to map one set of colors to another. The mapping applied by this method
      * is conceptually a simple linear transform (a scale and an offset) applied on sample values before they are
      * mapped to their colors.

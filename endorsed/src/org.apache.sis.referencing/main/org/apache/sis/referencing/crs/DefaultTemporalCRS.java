@@ -448,7 +448,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     }
 
     /**
-     * Formats this CRS as a <cite>Well Known Text</cite> {@code TimeCRS[…]} element.
+     * Formats this CRS as a <i>Well Known Text</i> {@code TimeCRS[…]} element.
      *
      * <h4>Compatibility note</h4>
      * {@code TimeCRS} is defined in the WKT 2 specification only.

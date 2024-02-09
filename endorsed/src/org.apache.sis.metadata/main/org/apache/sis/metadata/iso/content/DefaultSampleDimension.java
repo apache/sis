@@ -50,8 +50,8 @@ import org.opengis.metadata.content.SampleDimension;
  * {@code   └─units………………………} Units of data in each dimension included in the resource.</div>
  *
  * <h2>Terminology</h2>
- * <cite>Data values</cite> should be physical values expressed in the unit of measurement
- * given by {@link #getUnits()}. <cite>Cell values</cite> are values stored in the device,
+ * <i>Data values</i> should be physical values expressed in the unit of measurement
+ * given by {@link #getUnits()}. <i>Cell values</i> are values stored in the device,
  * before conversion to data values by application of {@linkplain #getScaleFactor() scale
  * factor} and {@linkplain #getOffset() offset}.
  *

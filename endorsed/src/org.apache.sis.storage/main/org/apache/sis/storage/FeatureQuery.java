@@ -70,9 +70,9 @@ import org.opengis.filter.InvalidFilterValueException;
  * <h2>Terminology</h2>
  * This class uses relational database terminology:
  * <ul>
- *   <li>A <cite>selection</cite> is a filter choosing the features instances to include in the subset.
+ *   <li>A <dfn>selection</dfn> is a filter choosing the features instances to include in the subset.
  *       In relational databases, a feature instances are mapped to table rows.</li>
- *   <li>A <cite>projection</cite> (not to be confused with map projection) is the set of feature properties to keep.
+ *   <li>A <dfn>projection</dfn> (not to be confused with map projection) is the set of feature properties to keep.
  *       In relational databases, feature properties are mapped to table columns.</li>
  * </ul>
  *
@@ -100,7 +100,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
     /**
      * The properties to retrieve, or {@code null} if all properties shall be included in the query.
      * In a database, "properties" are table columns.
-     * Subset of columns is called <cite>projection</cite> in relational database terminology.
+     * Subset of columns is called <dfn>projection</dfn> in relational database terminology.
      *
      * @see #getProjection()
      * @see #setProjection(NamedExpression[])
@@ -110,7 +110,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
     /**
      * The filter for trimming feature instances.
      * In a database, "feature instances" are table rows.
-     * Subset of rows is called <cite>selection</cite> in relational database terminology.
+     * Subset of rows is called <dfn>selection</dfn> in relational database terminology.
      *
      * @see #getSelection()
      * @see #setSelection(Filter)
@@ -216,7 +216,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      * in the returned features.
      *
      * <p>This is equivalent to the column names in the {@code SELECT} clause of a SQL statement.
-     * Subset of columns is called <cite>projection</cite> in relational database terminology.</p>
+     * Subset of columns is called <dfn>projection</dfn> in relational database terminology.</p>
      *
      * @param  properties  properties to retrieve, or {@code null} to retrieve all properties.
      * @throws IllegalArgumentException if a property or an alias is duplicated.
@@ -436,8 +436,8 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      *
      * <h2>Analogy with relational databases</h2>
      * The terminology used in this enumeration is close to the one used in relational database.
-     * A <cite>projection</cite> is the set of feature properties to keep in the query results.
-     * The projection may contain <cite>generated columns</cite>, which are specified in SQL by
+     * A <dfn>projection</dfn> is the set of feature properties to keep in the query results.
+     * The projection may contain <dfn>generated columns</dfn>, which are specified in SQL by
      * {@code SQL GENERATED ALWAYS} statement, optionally with {@code STORED} or {@code VIRTUAL}
      * modifier.
      *
@@ -511,7 +511,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      *
      * <h2>Analogy with relational databases</h2>
      * A {@code NamedExpression} instance can be understood as the definition of a column in a SQL database table.
-     * In relational database terminology, subset of columns is called <cite>projection</cite>.
+     * In relational database terminology, subset of columns is called <dfn>projection</dfn>.
      * A projection is specified by a SQL {@code SELECT} statement, which maps to {@code NamedExpression} as below:
      *
      * <p>{@code SELECT} {@link #expression} {@code AS} {@link #alias}</p>

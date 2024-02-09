@@ -95,7 +95,7 @@ import org.opengis.util.ControlledVocabulary;
  * <table class="sis">
  *   <caption>Formattable object types</caption>
  *   <tr><th>Class</th> <th>Remarks</th></tr>
- *   <tr><td>{@link ParameterValueGroup}</td><td><cite>Default values</cite> column is replaced by a column of the actual values.</td></tr>
+ *   <tr><td>{@link ParameterValueGroup}</td><td><q>Default values</q> column is replaced by a column of the actual values.</td></tr>
  *   <tr><td>{@link ParameterDescriptorGroup}</td><td>Table caption is the parameter group name.</td></tr>
  *   <tr><td>{@link OperationMethod}</td><td>Table caption is the method name (not necessarily the same as parameter group name).</td></tr>
  *   <tr><td><code>{@linkplain IdentifiedObject}[]</code></td><td>Accepted only for {@link ContentLevel#NAME_SUMMARY}.</td></tr>

@@ -29,19 +29,19 @@ import org.opengis.referencing.cs.AxisDirection;
  * depending on how the latitude is defined:</p>
  *
  * <ul>
- *   <li><cite>Geodetic latitude</cite> is the angle between the equatorial plane and a line perpendicular
+ *   <li><dfn>Geodetic latitude</dfn> is the angle between the equatorial plane and a line perpendicular
  *       to the {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid ellipsoid} surface.</li>
- *   <li><cite>Geocentric latitude</cite> is the angle between the equatorial plane and a line going from
+ *   <li><dfn>Geocentric latitude</dfn> is the angle between the equatorial plane and a line going from
  *       the Earth center. It differs from geodetic latitude by less than 11 angular minutes.</li>
- *   <li><cite>Astronomical latitude</cite> is the angle between the equatorial plane and a line given
+ *   <li><dfn>Astronomical latitude</dfn> is the angle between the equatorial plane and a line given
  *       by the direction of a plumb line (the "true vertical").</li>
- *   <li>Above list is not exhaustive. There is also <cite>geomagnetic latitude</cite>, <i>etc.</i></li>
+ *   <li>Above list is not exhaustive. There is also <dfn>geomagnetic latitude</dfn>, <i>etc.</i></li>
  * </ul>
  *
  * The kind of latitude is unspecified by this {@code Latitude} class, and rather depends on the context:
- * the latitude is <cite>geodetic</cite> if the coordinate reference system is
+ * the latitude is <dfn>geodetic</dfn> if the coordinate reference system is
  * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic},
- * or <cite>geocentric</cite> if the coordinate reference system is
+ * or <dfn>geocentric</dfn> if the coordinate reference system is
  * {@linkplain org.apache.sis.referencing.crs.DefaultGeocentricCRS geocentric}.
  * If the context is unknown, then geodetic latitude can usually be assumed.
  *
@@ -110,9 +110,9 @@ public final class Latitude extends Angle {
      * Constructs a newly allocated object containing the latitude value of the given position.
      * For this method, the latitude value is defined as the angular value associated to the first axis
      * oriented toward {@linkplain AxisDirection#NORTH North} or {@linkplain AxisDirection#SOUTH South}.
-     * Note that this is not necessarily the <cite>geodetic latitudes</cite> used in
+     * Note that this is not necessarily the <i>geodetic latitudes</i> used in
      * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS};
-     * it may also be <cite>geocentric latitudes</cite>.
+     * it may also be <i>geocentric latitudes</i>.
      *
      * <p>If the axis direction is South, then the sign of the coordinate value is inverted.
      * If the coordinate value uses another angular units than {@linkplain Units#DEGREE degrees},

@@ -33,7 +33,7 @@ import org.apache.sis.coverage.grid.j2d.ColorModelFactory;
  */
 final class PositionalConsistencyImage extends SourceAlignedImage {
     /**
-     * Properties inherited from the source image. Must be consistent with the <cite>switch case</cite>
+     * Properties inherited from the source image. Must be consistent with the <i>switch case</i>
      * statement delegating to the source image in {@link #getProperty(String)}.
      *
      * @see #getPropertyNames()
@@ -43,7 +43,7 @@ final class PositionalConsistencyImage extends SourceAlignedImage {
 
     /**
      * Properties added by this image, no matter if present in source image or not. Must be consistent with
-     * the <cite>switch case</cite> statement doing its own calculation in {@link #getProperty(String)}.
+     * the <i>switch case</i> statement doing its own calculation in {@link #getProperty(String)}.
      *
      * @see #getPropertyNames()
      */

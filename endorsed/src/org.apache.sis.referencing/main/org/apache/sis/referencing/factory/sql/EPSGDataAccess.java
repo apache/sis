@@ -125,7 +125,7 @@ import org.opengis.metadata.Identifier;
 
 
 /**
- * <cite>Data Access Object</cite> (DAO) creating geodetic objects from a JDBC connection to an EPSG database.
+ * <i>Data Access Object</i> (DAO) creating geodetic objects from a JDBC connection to an EPSG database.
  * The EPSG database is freely available at <a href="https://epsg.org/">https://epsg.org/</a>.
  * Current version of this class requires EPSG database version 6.6 or above.
  *
@@ -1775,7 +1775,7 @@ codes:  for (int i=0; i<codes.length; i++) {
      * Returns Bursa-Wolf parameters for a geodetic datum. If the specified datum has no conversion information,
      * then this method returns {@code null}.
      *
-     * <p>This method is for compatibility with <cite>Well Known Text</cite> (WKT) version 1 formatting.
+     * <p>This method is for compatibility with <i>Well Known Text</i> (WKT) version 1 formatting.
      * That legacy format had a {@code TOWGS84} element which needs the information provided by this method.
      * Note that {@code TOWGS84} is a deprecated element as of WKT 2 (ISO 19162).</p>
      *
@@ -2399,7 +2399,7 @@ codes:  for (int i=0; i<codes.length; i++) {
      * Creates an unit of measurement from a code.
      * Current implementation first checks if {@link Units#valueOfEPSG(int)} can provide a hard-coded unit
      * for the given code before to try to parse the information found in the database. This is done that
-     * way for better support of non-straightforward units like <cite>sexagesimal degrees</cite>
+     * way for better support of non-straightforward units like <i>sexagesimal degrees</i>
      * (EPSG:9110 and 9111).
      *
      * <h4>Examples</h4>
@@ -3094,7 +3094,7 @@ next:                   while (r.next()) {
     /**
      * Returns a finder which can be used for looking up unidentified objects.
      * The finder tries to fetch a fully {@linkplain AbstractIdentifiedObject identified object} from an incomplete one,
-     * for example from an object without "{@code ID[…]}" or "{@code AUTHORITY[…]}" element in <cite>Well Known Text</cite>.
+     * for example from an object without "{@code ID[…]}" or "{@code AUTHORITY[…]}" element in <i>Well Known Text</i>.
      *
      * @return a finder to use for looking up unidentified objects.
      * @throws FactoryException if the finder cannot be created.

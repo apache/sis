@@ -94,7 +94,7 @@ import org.apache.sis.util.resources.Errors;
  *       in which the code space information is shown by the {@code toString()} method.</li>
  *
  *   <li>The {@link #addIdentifier(Identifier)}, {@link #addName(Identifier)} and {@link #addName(GenericName)}
- *       methods take the given object <cite>as-is</cite>. Any authority, code space, version or description
+ *       methods take the given object <em>as-is</em>. Any authority, code space, version or description
  *       information given to the {@code Builder} are ignored.</li>
  * </ul>
  *

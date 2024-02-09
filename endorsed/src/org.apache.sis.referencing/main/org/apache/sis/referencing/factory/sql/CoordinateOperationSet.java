@@ -37,7 +37,7 @@ import org.apache.sis.referencing.factory.IdentifiedObjectSet;
  * There are two different ways in which {@link EPSGDataAccess} get coordinate operations:
  *
  * <ol>
- *   <li>The coordinate operation may be the <cite>conversion from base</cite> property of a projected CRS.
+ *   <li>The coordinate operation may be the <i>conversion from base</i> property of a projected CRS.
  *       Those conversions are obtained by a SQL query like below (note that this query can return at most
  *       one result, because {@code COORD_REF_SYS_CODE} is a primary key):
  *

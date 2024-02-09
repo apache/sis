@@ -33,10 +33,10 @@
  * <h2>Accurate definition of georeferencing information</h2>
  * While it is possible to create a grid coverage from a geodetic
  * {@linkplain org.opengis.geometry.Envelope envelope}, this approach should be used <em>in last resort</em> only.
- * Instead, always specify the <cite>grid to CRS</cite> affine transform.
+ * Instead, always specify the <i>grid to CRS</i> affine transform.
  * This is preferable because envelopes have ambiguities
  * (do we need to swap the longitude and latitude axes? Do we need to flip the <var>y</var> axis?).
- * On the other hand, the <cite>grid to CRS</cite> affine transform is fully determinist.
+ * On the other hand, the <i>grid to CRS</i> affine transform is fully determinist.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)

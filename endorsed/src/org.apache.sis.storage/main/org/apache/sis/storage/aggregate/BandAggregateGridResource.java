@@ -152,7 +152,7 @@ final class BandAggregateGridResource extends AbstractGridCoverageResource imple
      *
      * <ul>
      *   <li>Same CRS.</li>
-     *   <li>Same <cite>grid to CRS</cite> transform except for translation terms.</li>
+     *   <li>Same <i>grid to CRS</i> transform except for translation terms.</li>
      *   <li>Translation terms that differ only by an integer number of grid cells.</li>
      * </ul>
      *

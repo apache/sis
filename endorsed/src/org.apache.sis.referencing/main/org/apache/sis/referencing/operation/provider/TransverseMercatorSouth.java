@@ -28,9 +28,9 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
 /**
  * The provider for <q>Transverse Mercator (South Orientated)</q> projection (EPSG:9808).
- * The terms <cite>false easting</cite> (FE) and <cite>false northing</cite> (FN) increase
+ * The parameters named <i>false easting</i> (FE) and <i>false northing</i> (FN) increase
  * the Westing and Southing value at the natural origin. In other words they are effectively
- * <cite>false westing</cite> (FW) and <cite>false southing</cite> (FS) respectively.
+ * <i>false westing</i> (FW) and <i>false southing</i> (FS) respectively.
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  *

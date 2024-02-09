@@ -45,8 +45,8 @@ import org.apache.sis.referencing.IdentifiedObjects;
  *
  * <ul>
  *   <li>{@link #addReferenceSystems(RecentReferenceSystems)}:<ul>
- *     <li><cite>Reference system</cite> with some items from EPSG database.</li>
- *     <li><cite>Centered projection</cite> with the list of {@link PositionableProjection} items.</li>
+ *     <li><i>Reference system</i> with some items from EPSG database.</li>
+ *     <li><i>Centered projection</i> with the list of {@link PositionableProjection} items.</li>
  *   </ul></li>
  * </ul>
  *
@@ -115,8 +115,8 @@ public class MapMenu extends ContextMenu {
      * Adds menu items for CRS selection. The menu items are in two groups:
      *
      * <ul>
-     *   <li><cite>Reference system</cite> with some items from EPSG database.</li>
-     *   <li><cite>Centered projection</cite> with the list of {@link PositionableProjection} items.</li>
+     *   <li><i>Reference system</i> with some items from EPSG database.</li>
+     *   <li><i>Centered projection</i> with the list of {@link PositionableProjection} items.</li>
      * </ul>
      *
      * This method can be invoked at most once.

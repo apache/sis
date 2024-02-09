@@ -222,7 +222,7 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
     }
 
     /**
-     * Formats this datum as a <cite>Well Known Text</cite> {@code ImageDatum[…]} element.
+     * Formats this datum as a <i>Well Known Text</i> {@code ImageDatum[…]} element.
      *
      * <h4>Compatibility note</h4>
      * {@code ImageDatum} is defined in the WKT 2 specification only.

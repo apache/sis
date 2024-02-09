@@ -61,7 +61,7 @@ import org.apache.sis.storage.geotiff.writer.ReformattedImage;
  * An image writer for GeoTIFF files. This writer duplicates the implementations performed by other libraries,
  * but we nevertheless provide our own writer in Apache SIS for better control on the internal file structure,
  * such as keeping metadata close to each other (for Cloud Optimized GeoTIFF) and tiles order.
- * This image writer can also handle <cite>Big TIFF</cite> images.
+ * This image writer can also handle <i>Big TIFF</i> images.
  *
  * <p>This writer supports only the tile layout. It does not support the writing of stripped images,
  * because they are not useful for geospatial applications. This restriction does not reduce the set

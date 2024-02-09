@@ -32,9 +32,9 @@ import org.apache.sis.util.ArraysExt;
  * A coverage is a kind of function with the following properties:
  *
  * <ul class="verbose">
- *   <li>The function input is a position valid in the coverage <cite>domain</cite>. In the particular case of
+ *   <li>The function input is a position valid in the coverage <i>domain</i>. In the particular case of
  *       {@link GridCoverage}, the domain is described by a {@linkplain #getGridGeometry() grid geometry}.</li>
- *   <li>The function output is a record of values in the coverage <cite>range</cite>. In the particular case of
+ *   <li>The function output is a record of values in the coverage <i>range</i>. In the particular case of
  *       {@link GridCoverage}, the range is described by a list of {@linkplain #getSampleDimensions() sample dimensions}.</li>
  * </ul>
  *
@@ -70,13 +70,13 @@ public interface GridCoverageResource extends DataSet {
      * coordinates to real world coordinates. A grid geometry contains the following information:
      *
      * <ul class="verbose">
-     *   <li>The minimum and maximum grid coordinates as integers (the <cite>Grid Extent</cite>).
+     *   <li>The minimum and maximum grid coordinates as integers (the <i>Grid Extent</i>).
      *       The minimum coordinates are typically (0,0, …, 0) but not necessarily.</li>
-     *   <li>The minimum and maximum "real world" coordinates (the <cite>Envelope</cite>).
+     *   <li>The minimum and maximum "real world" coordinates (the <i>Envelope</i>).
      *       Those coordinates are typically, but not necessarily, latitudes and longitudes
      *       or projected coordinates, together with altitudes and dates.</li>
      *   <li>A description of the datum and axes of above "real world" coordinates
-     *       (the <cite>Coordinate Reference System</cite>).</li>
+     *       (the <i>Coordinate Reference System</i>).</li>
      *   <li>The conversion from grid coordinates to "real world" coordinates. This conversion is often,
      *       but not necessarily, a linear relationship. Axis order or direction may be changed by the conversion.
      *       For example, row indices may be increasing toward down while latitude coordinates are increasing toward up.</li>
@@ -101,8 +101,8 @@ public interface GridCoverageResource extends DataSet {
      * Sample dimensions contain the following information:
      *
      * <ul class="verbose">
-     *   <li>The range of valid <cite>sample values</cite>, typically but not necessarily as positive integers.</li>
-     *   <li>A <cite>transfer function</cite> for converting sample values to real values, for example measurements
+     *   <li>The range of valid <i>sample values</i>, typically but not necessarily as positive integers.</li>
+     *   <li>A <i>transfer function</i> for converting sample values to real values, for example measurements
      *       of a geophysics phenomenon. The transfer function is typically defined by a scale factor and an offset,
      *       but is not restricted to such linear equations.</li>
      *   <li>The units of measurement of "real world" values after their conversions from sample values.</li>

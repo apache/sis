@@ -56,7 +56,7 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  * as two {@linkplain AbstractDirectPosition direct positions} (coordinate tuples).
  * To encode an {@code Envelope}, it is sufficient to encode these two points.
  *
- * <p>{@code Envelope} uses an arbitrary <cite>Coordinate Reference System</cite>, which does not need to be geographic.
+ * <p>{@code Envelope} uses an arbitrary <i>Coordinate Reference System</i>, which does not need to be geographic.
  * This is different than the {@code GeographicBoundingBox} class provided in the metadata package, which can be used
  * as a kind of envelope restricted to a Geographic CRS having Greenwich prime meridian.</p>
  *
@@ -71,7 +71,7 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  *   <li>{@linkplain #GeneralEnvelope(Envelope) From a another envelope} (copy constructor).</li>
  *   <li>{@linkplain #GeneralEnvelope(GeographicBoundingBox) From a geographic bounding box}.</li>
  *   <li>{@linkplain #GeneralEnvelope(CharSequence) From a character sequence}
- *       representing a {@code BBOX} or a <cite>Well Known Text</cite> (WKT) format.</li>
+ *       representing a {@code BBOX} or a <i>Well Known Text</i> (WKT) format.</li>
  * </ul>
  *
  * <h2>Crossing the anti-meridian of a Geographic CRS</h2>
@@ -224,7 +224,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
 
     /**
      * Constructs a new envelope initialized to the values parsed from the given string in
-     * {@code BOX} or <cite>Well Known Text</cite> (WKT) format. The given string is typically
+     * {@code BOX} or <i>Well Known Text</i> (WKT) format. The given string is typically
      * a {@code BOX} element like below:
      *
      * {@snippet lang="wkt" :
@@ -471,7 +471,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * <p>Null value means no time limit. More specifically
      * null {@code startTime} is mapped to {@linkplain Double#NEGATIVE_INFINITY −∞} and
      * null {@code endTime}   is mapped to {@linkplain Double#POSITIVE_INFINITY +∞}.
-     * This rule makes easy to create <cite>is before</cite> or <cite>is after</cite> temporal filters,
+     * This rule makes easy to create <q>is before</q> or <q>is after</q> temporal filters,
      * which can be combined with other envelopes using {@linkplain #intersect(Envelope) intersection}
      * for logical AND, or {@linkplain #add(Envelope) union} for logical OR operations.</p>
      *

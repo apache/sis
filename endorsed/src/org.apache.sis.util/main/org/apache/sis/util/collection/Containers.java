@@ -51,7 +51,7 @@ public final class Containers extends Static {
      * then the given collection is guaranteed to be non-null and to contain at least
      * one element.
      *
-     * <p>This is a convenience method for classes implementing the <cite>lazy instantiation</cite>
+     * <p>This is a convenience method for classes implementing the <i>lazy instantiation</i>
      * pattern. In such cases, null collections (i.e. collections not yet instantiated) are typically
      * considered as {@linkplain Collection#isEmpty() empty}.</p>
      *
@@ -67,7 +67,7 @@ public final class Containers extends Static {
      * If this method returns {@code false}, then the given map is guaranteed to be non-null and
      * to contain at least one element.
      *
-     * <p>This is a convenience method for classes implementing the <cite>lazy instantiation</cite>
+     * <p>This is a convenience method for classes implementing the <i>lazy instantiation</i>
      * pattern. In such cases, null maps (i.e. maps not yet instantiated) are typically considered
      * as {@linkplain Map#isEmpty() empty}.</p>
      *
@@ -124,7 +124,7 @@ public final class Containers extends Static {
     }
 
     /**
-     * Returns a set whose elements are derived <cite>on-the-fly</cite> from the given set.
+     * Returns a set whose elements are derived <i>on-the-fly</i> from the given set.
      * Conversions from the original elements to the derived elements are performed when needed
      * by invoking the {@link ObjectConverter#apply(Object)} method on the given converter.
      * Those conversions are repeated every time a {@code Set} method is invoked; there is no cache.
@@ -164,7 +164,7 @@ public final class Containers extends Static {
     }
 
     /**
-     * Returns a map whose keys and values are derived <cite>on-the-fly</cite> from the given map.
+     * Returns a map whose keys and values are derived <i>on-the-fly</i> from the given map.
      * Conversions from the original entries to the derived entries are performed when needed
      * by invoking the {@link ObjectConverter#apply(Object)} method on the given converters.
      * Those conversions are repeated every time a {@code Map} method is invoked; there is no cache.

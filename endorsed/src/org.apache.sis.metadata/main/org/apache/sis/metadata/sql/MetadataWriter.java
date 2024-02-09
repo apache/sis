@@ -180,7 +180,7 @@ public class MetadataWriter extends MetadataSource {
      * @throws MetadataStoreException if the metadata object does not implement a metadata interface
      *         of the expected package, if an exception occurred while reading or writing the database.
      *         In such case, the database content is left unchanged
-     *         (i.e. this method is a <cite>all or nothing</cite> operation).
+     *         (i.e. this method is a <i>all or nothing</i> operation).
      */
     public String add(final Object metadata) throws MetadataStoreException {
         String identifier = proxy(metadata);

@@ -52,13 +52,13 @@ import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
  *
  * <div class="note"><b>Note:</b>
  * The upper case letters are intentional. By convention, (<var>X</var>, <var>Y</var>, <var>Z</var>)
- * stand for <cite>geocentric</cite> coordinates while (<var>x</var>, <var>y</var>, <var>z</var>)
- * stand for <cite>projected</cite> coordinates.</div>
+ * stand for <i>geocentric</i> coordinates while (<var>x</var>, <var>y</var>, <var>z</var>)
+ * stand for <i>projected</i> coordinates.</div>
  *
  * The "Bursa-Wolf" formula is expressed with 7 parameters, listed in the table below.
- * The <cite>code</cite>, <cite>name</cite> and <cite>abbreviation</cite> columns list EPSG identifiers,
- * while the <cite>legacy</cite> column lists the identifiers used in the legacy OGC 01-009 specification
- * (still used in some <cite>Well Known Texts</cite>).
+ * The <i>code</i>, <i>name</i> and <i>abbreviation</i> columns list EPSG identifiers,
+ * while the <i>legacy</i> column lists the identifiers used in the legacy OGC 01-009 specification
+ * (still used in some <i>Well Known Texts</i>).
  *
  * <div class="horizontal-flow">
  * <div><table class="sis">
@@ -108,15 +108,15 @@ import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
  *   <li>Created as a step while creating a {@linkplain org.apache.sis.referencing.operation.AbstractCoordinateOperation
  *       coordinate operation} from the EPSG database.</li>
  *   <li>Associated to a {@link DefaultGeodeticDatum} with the WGS 84 {@linkplain #getTargetDatum() target datum} for
- *       providing the parameter values to display in the {@code TOWGS84[…]} element of <cite>Well Known Text</cite>
+ *       providing the parameter values to display in the {@code TOWGS84[…]} element of <i>Well Known Text</i>
  *       (WKT) version 1. Note that WKT version 2 does not have {@code TOWGS84[…]} element anymore.</li>
  *   <li>Specified at {@code DefaultGeodeticDatum} construction time for arbitrary target datum.
  *       Apache SIS will ignore those Bursa-Wolf parameters, except as a fallback if no parameters
  *       can be found in the EPSG database for a given pair of source and target CRS.</li>
  * </ol>
  *
- * In EPSG terminology, Apache SIS gives precedence to the <cite>late-binding</cite> approach
- * (case 1 above) over the <cite>early-binding</cite> approach (case 3 above).
+ * In EPSG terminology, Apache SIS gives precedence to the <i>late-binding</i> approach
+ * (case 1 above) over the <i>early-binding</i> approach (case 3 above).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.4
@@ -133,7 +133,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     private static final long serialVersionUID = 754825592343010900L;
 
     /**
-     * The conversion factor from <cite>parts per million</cite> to scale minus one.
+     * The conversion factor from <i>parts per million</i> to scale minus one.
      */
     static final int PPM = 1000000;
 
@@ -156,19 +156,19 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     public double tZ;
 
     /**
-     * X-axis rotation in arc-seconds (EPSG:8608), sign following the <cite>Position Vector</cite> convention.
+     * X-axis rotation in arc-seconds (EPSG:8608), sign following the <i>Position Vector</i> convention.
      * The legacy OGC parameter name is {@code "ex"}.
      */
     public double rX;
 
     /**
-     * Y-axis rotation in arc-seconds (EPSG:8609), sign following the <cite>Position Vector</cite> convention.
+     * Y-axis rotation in arc-seconds (EPSG:8609), sign following the <i>Position Vector</i> convention.
      * The legacy OGC parameter name is {@code "ey"}.
      */
     public double rY;
 
     /**
-     * Z-axis rotation in arc-seconds (EPSG:8610), sign following the <cite>Position Vector</cite> convention.
+     * Z-axis rotation in arc-seconds (EPSG:8610), sign following the <i>Position Vector</i> convention.
      * The legacy OGC parameter name is {@code "ez"}.
      */
     public double rZ;
@@ -659,7 +659,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
     }
 
     /**
-     * Formats this object as a <cite>Well Known Text</cite> {@code ToWGS84[…]} element.
+     * Formats this object as a <i>Well Known Text</i> {@code ToWGS84[…]} element.
      * The WKT contains the parameters in <var>translation</var>, <var>rotation</var>, <var>scale</var> order,
      * like below:
      *

@@ -41,7 +41,7 @@ import org.opengis.filter.Expression;
 
 /**
  * A set of predefined operations expecting a {@code Feature} as input and producing an {@code Attribute} as output.
- * Those operations can be used for creating <cite>dynamic properties</cite> which compute their value on-the-fly
+ * Those operations can be used for creating <dfn>dynamic properties</dfn> which compute their value on-the-fly
  * from the values of other properties.
  *
  * <p>A flexible but relatively cumbersome way to define arbitrary computations is to subclass {@link AbstractOperation}.
@@ -169,7 +169,7 @@ public final class FeatureOperations extends Static {
 
     /**
      * Creates an operation concatenating the string representations of the values of multiple properties.
-     * This operation can be used for creating a <cite>compound key</cite> as a {@link String} that consists
+     * This operation can be used for creating a <dfn>compound key</dfn> as a {@link String} that consists
      * of two or more attribute values that uniquely identify a feature instance.
      *
      * <p>The {@code delimiter}, {@code prefix} and {@code suffix} arguments given to this method

@@ -273,7 +273,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * If the map contains no characteristic for a given name, a {@linkplain DefaultAttributeType#getDefaultValue()
      * default value} may still exist.
      * In such cases, callers may also need to inspect the {@link DefaultAttributeType#characteristics()}
-     * as shown in the <cite>Reading a characteristic</cite> section below.</p>
+     * as shown in the <q>Reading a characteristic</q> section below.</p>
      *
      * <div class="note"><b>Rational:</b>
      * Very often, all attributes of a given type in the same dataset have the same characteristics.

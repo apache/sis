@@ -597,7 +597,7 @@ public final class Matrices extends Static {
      *
      * A square matrix complying with the above conditions is often {@linkplain #isAffine(Matrix) affine},
      * but this is not mandatory
-     * (for example a <cite>perspective transform</cite> may contain non-zero values in the last row).
+     * (for example a <i>perspective transform</i> may contain non-zero values in the last row).
      *
      * <p>This method builds a new matrix with the following content:</p>
      * <ul>

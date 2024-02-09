@@ -302,7 +302,7 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Creates a (<cite>name</cite>, <cite>element</cite>) mapping for the given array of elements.
+     * Creates a (<var>name</var>, <var>element</var>) mapping for the given array of elements.
      * If the name of an element is not all lower cases, then this method also adds an entry for the
      * lower cases version of that name in order to allow case-insensitive searches.
      *
@@ -311,7 +311,7 @@ public final class ChannelDecoder extends Decoder {
      *
      * @param  <E>       the type of elements.
      * @param  elements  the elements to store in the map, or {@code null} if none.
-     * @return a (<cite>name</cite>, <cite>element</cite>) mapping with lower cases entries where possible.
+     * @return a (<var>name</var>, <var>element</var>) mapping with lower cases entries where possible.
      * @throws InvalidParameterCardinalityException if the same name is used for more than one element.
      */
     private static <E extends NamedElement> Map<String,E> toCaseInsensitiveNameMap(final E[] elements) {

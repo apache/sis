@@ -49,7 +49,7 @@ import org.apache.sis.setup.OptionKey;
 
 
 /**
- * A data store which writes grid coverages using Image I/O writers completed by the <cite>World File</cite> convention.
+ * A data store which writes grid coverages using Image I/O writers completed by the <i>World File</i> convention.
  * Georeferencing is defined by two auxiliary files described in the {@link WorldFileStore} parent class.
  *
  * <h2>Type of output objects</h2>
@@ -283,7 +283,7 @@ writeCoeffs:    for (int i=0;; i++) {
 
     /**
      * Adds a new {@code Resource} in this {@code Aggregate}.
-     * The given {@link Resource} will be copied, and the <cite>effectively added</cite> resource returned.
+     * The given {@link Resource} will be copied, and the <i>effectively added</i> resource returned.
      *
      * @param  resource  the resource to copy in this {@code Aggregate}.
      * @return the effectively added resource.

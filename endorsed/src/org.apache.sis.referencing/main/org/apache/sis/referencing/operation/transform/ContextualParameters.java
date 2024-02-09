@@ -59,7 +59,7 @@ import static org.apache.sis.referencing.util.WKTUtilities.LOGGER;
 
 /**
  * The parameters that describe a sequence of
- * <cite>normalize</cite> → <cite>non-linear kernel</cite> → <cite>denormalize</cite> transforms as a whole.
+ * <i>normalize</i> → <i>non-linear kernel</i> → <i>denormalize</i> transforms as a whole.
  * The normalize and denormalize steps must be affine transforms, while the non-linear kernel is arbitrary.
  * This separation is useful for doing in the linear steps any unit conversions and axis swapping necessary
  * for allowing the non-linear step to work in some predefined (implementation specific) coordinate system.
@@ -67,7 +67,7 @@ import static org.apache.sis.referencing.util.WKTUtilities.LOGGER;
  * <p>Contextual parameters are {@linkplain AbstractMathTransform#getContextualParameters() associated}
  * to the <em>non-linear kernel</em> step of the above-cited sequence.
  * Since the {@linkplain AbstractMathTransform#getParameterValues() parameter values} of the non-linear kernel contains
- * only normalized parameters (e.g. a map projection on an ellipsoid having a <cite>semi-major</cite> axis length of 1),
+ * only normalized parameters (e.g. a map projection on an ellipsoid having a <i>semi-major</i> axis length of 1),
  * Apache SIS needs contextual information for reconstructing the parameters of the complete transforms chain.</p>
  *
  * <h2>Usage in map projections</h2>
@@ -126,7 +126,7 @@ import static org.apache.sis.referencing.util.WKTUtilities.LOGGER;
  */
 public class ContextualParameters extends Parameters implements Serializable {
     /**
-     * Whether a matrix is used for <cite>normalization</cite> or <cite>denormalization</cite>
+     * Whether a matrix is used for <i>normalization</i> or <i>denormalization</i>
      * before or after a non-linear operation.
      *
      * @author  Martin Desruisseaux (Geomatys)
@@ -184,7 +184,7 @@ public class ContextualParameters extends Parameters implements Serializable {
     private final ParameterDescriptorGroup descriptor;
 
     /**
-     * The affine transform to be applied before (<cite>normalize</cite>) and after (<cite>denormalize</cite>)
+     * The affine transform to be applied before (<i>normalize</i>) and after (<i>denormalize</i>)
      * the kernel operation. On {@code ContextualParameters} construction, those affines are initially identity
      * transforms, to be modified in-place by callers of {@link #getMatrix(MatrixRole)} or related methods.
      * After the {@link #completeTransform(MathTransformFactory, MathTransform)} method has been invoked,
@@ -227,7 +227,7 @@ public class ContextualParameters extends Parameters implements Serializable {
     /**
      * Creates a new group of parameters with the given descriptor.
      * The {@linkplain org.apache.sis.referencing.operation.DefaultOperationMethod#getParameters() method parameters}
-     * shall describe the <cite>normalize</cite> → <cite>non-linear kernel</cite> → <cite>denormalize</cite> sequence
+     * shall describe the <i>normalize</i> → <i>non-linear kernel</i> → <i>denormalize</i> sequence
      * as a whole. After construction, callers shall:
      *
      * <ul>
@@ -325,8 +325,8 @@ public class ContextualParameters extends Parameters implements Serializable {
     }
 
     /**
-     * Returns the parameters for the <cite>normalize</cite> → <cite>non-linear kernel</cite> →
-     * <cite>denormalize</cite> sequence as a whole. This is the parameter descriptor of the
+     * Returns the parameters for the <i>normalize</i> → <i>non-linear kernel</i> →
+     * <i>denormalize</i> sequence as a whole. This is the parameter descriptor of the
      * {@linkplain org.apache.sis.referencing.operation.DefaultOperationMethod operation method}
      * given to the constructor.
      *
@@ -394,8 +394,8 @@ public class ContextualParameters extends Parameters implements Serializable {
      *   </tr>
      * </table>
      *
-     * @param  role  {@code NORMALIZATION} for fetching the <cite>normalization</cite> transform to apply before the kernel,
-     *               {@code DENORMALIZATION} for the <cite>denormalization</cite> transform to apply after the kernel, or
+     * @param  role  {@code NORMALIZATION} for fetching the <i>normalization</i> transform to apply before the kernel,
+     *               {@code DENORMALIZATION} for the <i>denormalization</i> transform to apply after the kernel, or
      *               {@code INVERSE_*} for the inverse of the above-cited matrices.
      * @return the matrix for the requested normalization or denormalization affine transform.
      *
@@ -488,7 +488,7 @@ public class ContextualParameters extends Parameters implements Serializable {
 
     /**
      * Marks this {@code ContextualParameter} as unmodifiable and creates the
-     * <cite>normalize</cite> → {@code kernel} → <cite>denormalize</cite> transforms chain.
+     * <i>normalize</i> → {@code kernel} → <i>denormalize</i> transforms chain.
      * This method shall be invoked only after the {@linkplain #getMatrix(MatrixRole) (de)normalization}
      * matrices have been set to their final values.
      *
@@ -500,7 +500,7 @@ public class ContextualParameters extends Parameters implements Serializable {
      *
      * @param  factory  the factory to use for creating math transform instances.
      * @param  kernel   the non-linear kernel which expects "normalized" coordinates in a predefined coordinate system.
-     * @return the concatenation of <cite>normalize</cite> → <cite>the given kernel</cite> → <cite>denormalize</cite>
+     * @return the concatenation of <i>normalize</i> → <i>the given kernel</i> → <i>denormalize</i>
      *         transforms.
      * @throws FactoryException if an error occurred while creating a math transform instance.
      */
@@ -741,7 +741,7 @@ public class ContextualParameters extends Parameters implements Serializable {
     }
 
     /**
-     * Formats the <cite>Well Known Text</cite> for the transform or the inverse of the transform
+     * Formats the <i>Well Known Text</i> for the transform or the inverse of the transform
      * that would be built from the enclosing {@code ContextualParameters}.
      */
     private final class WKT extends FormattableObject implements Parameterized {
@@ -774,7 +774,7 @@ public class ContextualParameters extends Parameters implements Serializable {
         }
 
         /**
-         * Formats a <cite>Well Known Text</cite> version 1 (WKT 1) element for a transform using this group of parameters.
+         * Formats a <i>Well Known Text</i> version 1 (WKT 1) element for a transform using this group of parameters.
          *
          * <h4>Compatibility note</h4>
          * {@code Param_MT} is defined in the WKT 1 specification only.

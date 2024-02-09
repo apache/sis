@@ -285,7 +285,7 @@ public final class CRS extends Static {
     }
 
     /**
-     * Creates a Coordinate Reference System object from a <cite>Well Known Text</cite> (WKT).
+     * Creates a Coordinate Reference System object from a <i>Well Known Text</i> (WKT).
      * The default {@linkplain org.apache.sis.io.wkt Apache SIS parser} understands both
      * version 1 (a.k.a. OGC 01-009) and version 2 (a.k.a. ISO 19162) of the WKT format.
      *
@@ -316,7 +316,7 @@ public final class CRS extends Static {
      * In particular, this method verifies if the description provided by the WKT matches the description provided
      * by the authority ({@code "EPSG:5641"} in the above example) and reports discrepancies.
      * Note that this comparison between parsed CRS and authoritative CRS is specific to this convenience method;
-     * other APIs documented in <cite>see also</cite> section do not perform this comparison automatically.
+     * other APIs documented in <i>see also</i> section do not perform this comparison automatically.
      * Should the WKT description and the authoritative description be in conflict, the WKT description prevails
      * as mandated by ISO 19162 standard (see {@link #fromAuthority fromAuthority(…)} if a different behavior is needed).
      *
@@ -360,7 +360,7 @@ public final class CRS extends Static {
      * In particular, this method verifies if the description provided by the XML matches the description provided by
      * the authority code given in {@code <gml:identifier>} element, and reports discrepancies.
      * Note that this comparison between unmarshalled CRS and authoritative CRS is specific to this convenience method;
-     * other APIs documented in <cite>see also</cite> section do not perform this comparison automatically.
+     * other APIs documented in <i>see also</i> section do not perform this comparison automatically.
      * Should the XML description and the authoritative description be in conflict, the XML description prevails
      * (see {@link #fromAuthority fromAuthority(…)} if a different behavior is needed).</p>
      *
@@ -383,8 +383,8 @@ public final class CRS extends Static {
     /**
      * Replaces the given coordinate reference system by an authoritative description, if one can be found.
      * This method can be invoked after constructing a CRS in a context where the EPSG (or other authority)
-     * code is suspected more reliable than the rest of the description. A common case is a <cite>Well Known
-     * Text</cite> (WKT) string declaring wrong projection method or parameter values for the EPSG code that
+     * code is suspected more reliable than the rest of the description. A common case is a <i>Well Known
+     * Text</i> (WKT) string declaring wrong projection method or parameter values for the EPSG code that
      * it pretends to describe. For example:
      *
      * <blockquote>

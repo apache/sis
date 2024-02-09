@@ -39,7 +39,7 @@ import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
 
 /**
  * Helper class for building the description of a location. Temporary instances of this class can be used
- * during the construction of <cite>spatial reference systems using geographic identifiers</cite>.
+ * during the construction of <i>spatial reference systems using geographic identifiers</i>.
  * Since {@code ModifiableLocationType} instances are modifiable, they should not be published directly.
  * Instead, unmodifiable {@linkplain #snapshot snapshots} should be published.
  * The same {@code ModifiableLocationType} instance can be used for many snapshots.

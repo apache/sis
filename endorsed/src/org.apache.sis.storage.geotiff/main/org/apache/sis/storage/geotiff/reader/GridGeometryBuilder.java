@@ -70,7 +70,7 @@ import org.apache.sis.math.Vector;
  *         GeographicTypeGeoKey = 4326 (GCS_WGS_84)</pre>
  *
  * The former is {@link PixelInCell#CELL_CORNER} convention while the latter is {@link PixelInCell#CELL_CENTER}.
- * Note that the translation coefficients in the <cite>grid to CRS</cite> matrix is {@code crs - grid × scale}.
+ * Note that the translation coefficients in the <i>grid to CRS</i> matrix is {@code crs - grid × scale}.
  * So compared to the {@code CELL_CORNER} case, the {@code CELL_CENTER} case has a translation of +0.5 × scale.
  *
  * @author  Martin Desruisseaux (Geomatys)

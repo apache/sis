@@ -857,7 +857,7 @@ convert:            if (componentType != null) {
      *   <li>This method does not perform any type conversion. Type conversion, if desired, should be
      *       applied by the public {@code setValue(…)} methods before to invoke this protected method.</li>
      *   <li>This method does not clone the given value. In particular, references to {@code int[]} and
-     *       {@code double[]} arrays are stored <cite>as-is</cite>.</li>
+     *       {@code double[]} arrays are stored <em>as-is</em>.</li>
      * </ul>
      *
      * <h4>Implementation note for subclasses</h4>
@@ -1004,7 +1004,7 @@ convert:            if (componentType != null) {
      * <h4>Instances sharing</h4>
      * If this method is invoked more than once with equal {@linkplain #getDescriptor() descriptor},
      * {@linkplain #getValue() value} and {@linkplain #getUnit() unit}, then this method will return
-     * the same {@code DefaultParameterValue} instance on a <cite>best effort</cite> basis.
+     * the same {@code DefaultParameterValue} instance on a <em>best effort</em> basis.
      * The rational for sharing is because the same parameter value is often used in many different coordinate operations.
      * For example, all <cite>Universal Transverse Mercator</cite> (UTM) projections use the same scale factor (0.9996)
      * and the same false easting (500000 metres).
@@ -1022,7 +1022,7 @@ convert:            if (componentType != null) {
     }
 
     /**
-     * Formats this parameter as a <cite>Well Known Text</cite> {@code Parameter[…]} element.
+     * Formats this parameter as a <i>Well Known Text</i> {@code Parameter[…]} element.
      * Example:
      *
      * {@snippet lang="wkt" :

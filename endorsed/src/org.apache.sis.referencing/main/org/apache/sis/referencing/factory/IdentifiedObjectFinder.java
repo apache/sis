@@ -41,7 +41,7 @@ import org.apache.sis.util.logging.Logging;
  * Searches in an authority factory for objects approximately equal to a given object.
  * This class can be used for fetching a fully defined {@linkplain AbstractIdentifiedObject identified object}
  * from an incomplete one, for example from an object without "{@code ID[…]}" or "{@code AUTHORITY[…]}"
- * element in <cite>Well Known Text</cite>.
+ * element in <i>Well Known Text</i>.
  *
  * <p>The steps for using {@code IdentifiedObjectFinder} are:</p>
  * <ol>

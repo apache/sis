@@ -23,8 +23,8 @@ import static org.apache.sis.math.MathFunctions.atanh;
 
 
 /**
- * Base class of projections doing conversions between <cite>geodetic</cite> latitude and <cite>authalic</cite> latitude.
- * This is used by <cite>equal-area</cite> projections such as {@link AlbersEqualArea} and {@link CylindricalEqualArea}.
+ * Base class of projections doing conversions between <i>geodetic</i> latitude and <i>authalic</i> latitude.
+ * This is used by <i>equal-area</i> projections such as {@link AlbersEqualArea} and {@link CylindricalEqualArea}.
  * However, not all equal-area projections extend this base class, and conversely not all sub-classes are equal-area.
  * For example, the {@link Sinusoidal} projection, despite being equal-area, uses different formulas.
  *
@@ -32,7 +32,7 @@ import static org.apache.sis.math.MathFunctions.atanh;
  * are usually mutually exclusive with formulas in {@link ConformalProjection} class.</p>
  *
  * <h2>Note on class naming</h2>
- * Lee (1944) defines an <cite>authalic map projection</cite> to be one in which at any point the scales in
+ * Lee (1944) defines an <dfn>authalic map projection</dfn> to be one in which at any point the scales in
  * two orthogonal directions are inversely proportional. Those map projections have a constant areal scale.
  * However, this {@code AuthalicConversion} is <strong>not</strong> necessarily an authalic projection.
  * Subclasses may want to use the latitude conversion formulas for other purposes.
@@ -60,7 +60,7 @@ abstract class AuthalicConversion extends NormalizedProjection {
     /**
      * Coefficients of the first terms in the series expansion of the reverse projection.
      * Values of those coefficients depend only on {@linkplain #eccentricity eccentricity} value.
-     * The series expansion is published under the following form, where β is the <cite>authalic latitude</cite>:
+     * The series expansion is published under the following form, where β is the <i>authalic latitude</i>:
      *
      *     <blockquote>φ = c₂⋅sin(2β) + c₄⋅sin(4β) + c₈⋅sin(6β)</blockquote>
      *

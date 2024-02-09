@@ -50,7 +50,7 @@ abstract class MeridianArcBased extends NormalizedProjection {
     private final double ci1, ci2, ci3, ci4;
 
     /**
-     * Denominator of <cite>rectifying latitude</cite> equation. The rectifying latitude is computed by
+     * Denominator of <i>rectifying latitude</i> equation. The rectifying latitude is computed by
      * µ = M/(1 – ℯ²/4 – 3ℯ⁴/64 – 5ℯ⁶/256 – …)  (Snyder 7-19 with a=1).
      */
     private final double rµ;
@@ -172,7 +172,7 @@ abstract class MeridianArcBased extends NormalizedProjection {
      *   <li>If φ=-π/2, then this method returns a value slightly greater than -π/2, depending on the eccentricity.</li>
      * </ul>
      *
-     * This value is related to <cite>rectifying latitude</cite> by µ = (π/2)⋅(M/{@linkplain #cf0}) (derived from Snyder 3-20).
+     * This value is related to <i>rectifying latitude</i> by µ = (π/2)⋅(M/{@linkplain #cf0}) (derived from Snyder 3-20).
      *
      * @param  φ     latitude for which to compute the distance, in radians.
      * @param  sinφ  value of sin(φ).

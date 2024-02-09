@@ -20,7 +20,7 @@
  * An explanation for this package is provided in the {@linkplain org.opengis.referencing OpenGIS® javadoc}.
  * The remaining discussion on this page is specific to the SIS implementation.
  *
- * <p>The most commonly used kinds of Reference Systems in Apache SIS are the <cite>Coordinate Reference Systems</cite>
+ * <p>The most commonly used kinds of Reference Systems in Apache SIS are the <i>Coordinate Reference Systems</i>
  * (CRS), which handle coordinates of arbitrary dimensions. The SIS implementations can handle 2D and 3D coordinates,
  * as well as 4D, 5D, <i>etc</i>. Another less-frequently used kind of Reference System uses labels instead, as in
  * postal address. This package is the root for both kinds, with an emphasis on the one for coordinates.
@@ -82,7 +82,7 @@
  * The <var>type</var> specifies which {@link org.opengis.referencing.AuthorityFactory} method to invoke, while
  * the <var>code</var> specifies the argument value to give to that method in order to get the EPSG object.
  * For example, the {@link org.apache.sis.referencing.CommonCRS#WGS84} documentation said that object
- * of type <cite>geodetic datum</cite> is associated to code {@code EPSG:6326}.
+ * of type <i>geodetic datum</i> is associated to code {@code EPSG:6326}.
  * This means that the EPSG object could be obtained by the following code:
  *
  * {@snippet lang="java" :

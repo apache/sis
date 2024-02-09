@@ -435,7 +435,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * dimension is {@linkplain RangeMeaning#WRAPAROUND wraparound}, then the median calculated
      * above is actually in the middle of the space <em>outside</em> the envelope. In such cases,
      * this method shifts the <var>median</var> value by half of the periodicity (180° in the
-     * longitude case) in order to switch from <cite>outer</cite> space to <cite>inner</cite>
+     * longitude case) in order to switch from <i>outer</i> space to <i>inner</i>
      * space. If the axis range meaning is not {@code WRAPAROUND}, then this method returns
      * {@link Double#NaN NaN}.
      *
@@ -579,7 +579,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *   <li>If this envelope {@linkplain #isEmpty() is empty}, then this method returns an empty array.</li>
      *   <li>If this envelope does not have any wraparound behavior, then this method returns {@code this}
      *       in an array of length 1. This envelope is <strong>not</strong> cloned.</li>
-     *   <li>If this envelope crosses the <cite>anti-meridian</cite> (a.k.a. <cite>date line</cite>)
+     *   <li>If this envelope crosses the <i>anti-meridian</i> (a.k.a. <i>date line</i>)
      *       then this method returns two separated envelopes covering the same area as this envelopes.
      *   <li>While uncommon, the envelope could theoretically crosses the limit of other axis having
      *       wraparound range meaning. If wraparounds occur along <var>n</var> axes, then this method
@@ -1209,7 +1209,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * by the {@code GeneralEnvelope} constructor.
      *
      * <h4>Note on standards</h4>
-     * The {@code BOX} element is not part of the standard <cite>Well Known Text</cite> (WKT) format.
+     * The {@code BOX} element is not part of the standard <i>Well Known Text</i> (WKT) format.
      * However, it is understood by many software libraries, for example GDAL and PostGIS.
      *
      * @return this envelope as a {@code BOX} or {@code BOX3D} (most typical dimensions) element.
@@ -1272,7 +1272,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * adjusted for the axis unit of measurement and the planet size if different than Earth).</p>
      *
      * <h4>Note on standards</h4>
-     * The {@code BOX} element is not part of the standard <cite>Well Known Text</cite> (WKT) format.
+     * The {@code BOX} element is not part of the standard <i>Well Known Text</i> (WKT) format.
      * However, it is understood by many software libraries, for example GDAL and PostGIS.
      *
      * @param  formatter  the formatter where to format the inner content of this envelope.

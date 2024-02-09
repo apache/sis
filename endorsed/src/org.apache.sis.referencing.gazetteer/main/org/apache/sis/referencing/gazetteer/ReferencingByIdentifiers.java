@@ -434,7 +434,7 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
     }
 
     /**
-     * Formats a pseudo-<cite>Well Known Text</cite> (WKT) representation for this object.
+     * Formats a pseudo-<i>Well Known Text</i> (WKT) representation for this object.
      * The format produced by this method is non-standard and may change in any future Apache SIS version.
      *
      * @param  formatter  the formatter where to format the inner content of this pseudo-WKT element.

@@ -471,7 +471,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         }
 
         /**
-         * Creates a node with a single column for object names (<cite>convenience constructor</cite>).
+         * Creates a node with a single column for object names (<i>convenience constructor</i>).
          * The node will have the following columns:
          *
          * <table class="sis">

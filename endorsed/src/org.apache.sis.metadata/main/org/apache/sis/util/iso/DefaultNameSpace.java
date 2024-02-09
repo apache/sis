@@ -506,7 +506,7 @@ public class DefaultNameSpace implements NameSpace, Serializable {
      * then this method returns “<code>{org.apache.sis}</code>”.
      *
      * <h4>Usage</h4>
-     * With this convention, it would be possible to create an <cite>expanded form</cite> of a generic name
+     * With this convention, it would be possible to create an <i>expanded form</i> of a generic name
      * (except for escaping of illegal characters) with a simple concatenation as in the following code example:
      *
      * {@snippet lang="java" :

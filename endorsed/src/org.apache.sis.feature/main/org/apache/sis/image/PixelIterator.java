@@ -1087,7 +1087,7 @@ public class PixelIterator {
 
     /**
      * Returns a moving window over the sample values in a rectangular region starting at iterator position.
-     * The <cite>window size</cite> must have been specified at {@code PixelIterator} construction time.
+     * The <var>window size</var> must have been specified at {@code PixelIterator} construction time.
      * The current iterator position is the window corner having the smallest <var>x</var> and <var>y</var> coordinates.
      * This is typically, but not necessarily (depending on axis orientations) the window upper-left corner.
      * Sample values are stored in a sequence of length

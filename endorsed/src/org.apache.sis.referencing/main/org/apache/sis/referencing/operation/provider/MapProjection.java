@@ -68,7 +68,7 @@ public abstract class MapProjection extends AbstractProvider {
     private static final long serialVersionUID = 6280666068007678702L;
 
     /**
-     * All names known to Apache SIS for the <cite>semi-major</cite> parameter.
+     * All names known to Apache SIS for the <i>semi-major</i> parameter.
      * This parameter is mandatory and has no default value. The range of valid values is (0 … ∞).
      *
      * <p>Some names for this parameter are {@code "semi_major"}, {@code "SemiMajorAxis"} and {@code "a"}.</p>
@@ -91,7 +91,7 @@ public abstract class MapProjection extends AbstractProvider {
     public static final DefaultParameterDescriptor<Double> SEMI_MAJOR;
 
     /**
-     * All names known to Apache SIS for the <cite>semi-minor</cite> parameter.
+     * All names known to Apache SIS for the <i>semi-minor</i> parameter.
      * This parameter is mandatory and has no default value. The range of valid values is (0 … ∞).
      *
      * <p>Some names for this parameter are {@code "semi_minor"}, {@code "SemiMinorAxis"} and {@code "b"}.</p>

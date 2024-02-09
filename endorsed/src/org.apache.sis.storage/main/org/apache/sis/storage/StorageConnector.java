@@ -862,7 +862,7 @@ public class StorageConnector implements Serializable {
      *
      * <h4>Usage for probing operations</h4>
      * Multiple invocations of this method on the same {@code StorageConnector} instance will try
-     * to return the same instance on a <cite>best effort</cite> basis. Consequently, implementations of
+     * to return the same instance on a <em>best effort</em> basis. Consequently, implementations of
      * {@link DataStoreProvider#probeContent(StorageConnector)} methods shall not close the stream or
      * database connection returned by this method. In addition, those {@code probeContent(StorageConnector)}
      * methods are responsible for restoring the stream or byte buffer to its original position on return.

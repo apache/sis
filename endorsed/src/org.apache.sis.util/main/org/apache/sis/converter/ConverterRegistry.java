@@ -105,7 +105,7 @@ public class ConverterRegistry {
 
     /**
      * Removes all converters from this registry and set this {@code ServiceRegistry}
-     * state to <cite>uninitialized</cite>. The {@link #initialize()} method will be
+     * state to <i>uninitialized</i>. The {@link #initialize()} method will be
      * invoked again when first needed.
      */
     public void clear() {

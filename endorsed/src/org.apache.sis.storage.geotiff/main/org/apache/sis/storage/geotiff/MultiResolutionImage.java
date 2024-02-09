@@ -57,7 +57,7 @@ final class MultiResolutionImage extends GridResourceWrapper implements Resource
     private NameSpace namespace;
 
     /**
-     * Descriptions of each <cite>Image File Directory</cite> (IFD) in the GeoTIFF file.
+     * Descriptions of each <i>Image File Directory</i> (IFD) in the GeoTIFF file.
      * Should have at least 2 elements. The full-resolution image shall be at index 0.
      */
     private final ImageFileDirectory[] levels;

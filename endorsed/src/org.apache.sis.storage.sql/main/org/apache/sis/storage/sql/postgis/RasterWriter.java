@@ -49,7 +49,7 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * A writer of rasters encoded in <cite>Well Known Binary</cite> (WKB) format.
+ * A writer of rasters encoded in <i>Well Known Binary</i> (WKB) format.
  * This format is specific to PostGIS 2 (this is not yet an OGC standard at the
  * time of writing this class), but it can nevertheless be used elsewhere.
  *
@@ -69,7 +69,7 @@ public final class RasterWriter extends RasterFormat {
 
     /**
      * Conversion from pixel coordinates to CRS coordinates.
-     * This is defined by 6 affine transform coefficients similar to the <cite>World File</cite> format.
+     * This is defined by 6 affine transform coefficients similar to the <i>World File</i> format.
      */
     private AffineTransform gridToCRS;
 

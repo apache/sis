@@ -51,7 +51,7 @@ import org.opengis.referencing.gazetteer.LocationType;
 
 
 /**
- * Geographic coordinates represented as <cite>geohashes</cite> strings.
+ * Geographic coordinates represented as <i>geohashes</i> strings.
  * Geohash is a simple encoding of geographic coordinates into a short string of letters and digits.
  * Longer strings are more accurate, however the accuracy is not uniformly distributed between latitude
  * and longitude, and removing digits decreases accuracy faster when the point is located close to the

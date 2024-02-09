@@ -34,7 +34,7 @@ import org.apache.sis.system.Reflect;
  *
  * <h2>Examples</h2>
  * <ul>
- * <li>The NADCON grid files provide <cite>datum shifts</cite> data for North America.
+ * <li>The NADCON grid files provide <i>datum shifts</i> data for North America.
  *     Since those files are in the public domain, they could be bundled in Apache SIS.
  *     But the weight of those files (about 2.4 Mb) is unnecessary for users who do not live in North America.</li>
  * <li>On the other hand, the <a href="https://epsg.org/">EPSG geodetic dataset</a> is important for most users.

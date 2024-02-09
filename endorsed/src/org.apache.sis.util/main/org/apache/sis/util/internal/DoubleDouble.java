@@ -29,7 +29,7 @@ import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
 
 
 /**
- * Basic arithmetic methods for extended precision numbers using the <cite>double-double</cite> algorithm.
+ * Basic arithmetic methods for extended precision numbers using the <i>double-double</i> algorithm.
  * This class implements some of the methods published in the following paper:
  *
  * <ul>

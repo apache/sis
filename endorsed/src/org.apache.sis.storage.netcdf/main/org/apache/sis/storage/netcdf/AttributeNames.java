@@ -982,7 +982,7 @@ public class AttributeNames {
          * <p>The default associations may not be always correct since the columns and rows can be anything.
          * Strictly speaking, the dimension name types shall be associated to the <em>grid axes</em> rather
          * than the <em>coordinate system axes</em>. However, the default association is correct in the common case
-         * (for netCDF files) where there is no axis swapping in the <cite>grid to CRS</cite> conversion.</p>
+         * (for netCDF files) where there is no axis swapping in the <i>grid to CRS</i> conversion.</p>
          */
         public final DimensionNameType DEFAULT_NAME_TYPE;
 

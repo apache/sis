@@ -445,7 +445,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
 
     /**
      * Returns an iterator over the elements in this list in increasing index order.
-     * The iterator is <cite>fail-fast</cite> and supports the remove operation.
+     * The iterator is <i>fail-fast</i> and supports the remove operation.
      *
      * @return iterator over the integer values in this list.
      *
@@ -458,7 +458,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
 
     /**
      * Returns an spliterator over the elements in this list in increasing index order.
-     * The iterator is <cite>fail-fast</cite>.
+     * The iterator is <i>fail-fast</i>.
      *
      * @return spliterator over the integer values in this list.
      *
@@ -472,7 +472,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     /**
      * Returns a stream of integers with this {@code IntegerList} as its source.
      * This method is similar to {@link #stream()}, but does not box the values.
-     * The returned stream is <cite>fail-fast</cite>, meaning that any modification to the list
+     * The returned stream is <i>fail-fast</i>, meaning that any modification to the list
      * while using the stream will cause a {@link ConcurrentModificationException} to be thrown.
      *
      * <p>The default implementation creates a parallel or sequential stream from {@link #spliterator()}.</p>

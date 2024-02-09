@@ -40,7 +40,7 @@ public enum GridClippingMode {
     STRICT,
 
     /**
-     * Clipping is applied on the <cite>Area Of Interest</cite> supplied by user, before expansion for
+     * Clipping is applied on the <i>Area Of Interest</i> supplied by user, before expansion for
      * margin and chunk size. After clipping, the addition of a margin and the rounding to chunk size
      * may cause the final grid extent to expand outside the base grid extent.
      *

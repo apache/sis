@@ -360,8 +360,8 @@ public final class AffineTransforms2D extends Static {
     /**
      * Returns an estimation of the rotation angle in radians. This method assumes that the specified affine
      * transform is built from arbitrary translations, scales or rotations, but no shear. If a flip has been
-     * applied, then this method assumes that the flipped axis is the <var>y</var> one in <cite>source CRS</cite>
-     * space. For a <cite>grid to world CRS</cite> transform, this is the row number in grid coordinates.
+     * applied, then this method assumes that the flipped axis is the <var>y</var> one in <i>source CRS</i>
+     * space. For a <i>grid to world CRS</i> transform, this is the row number in grid coordinates.
      *
      * @param  transform  the affine transform to inspect.
      * @return an estimation of the rotation angle in radians,

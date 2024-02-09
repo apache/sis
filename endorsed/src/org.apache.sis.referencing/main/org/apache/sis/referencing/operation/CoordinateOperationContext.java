@@ -46,7 +46,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * to choose the most suitable coordinate transformation between two CRS.
  *
  * <p>{@code CoordinateOperationContext} is part of the API
- * used by SIS for implementing the <cite>late binding</cite> model.
+ * used by SIS for implementing the <i>late binding</i> model.
  * See {@linkplain org.apache.sis.referencing.operation package javadoc}
  * for a note on early binding versus late binding implementations.</p>
  *

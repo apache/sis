@@ -169,7 +169,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
     }
 
     /**
-     * Formats this CRS as a <cite>Well Known Text</cite> {@code GeodeticCRS[…]} element.
+     * Formats this CRS as a <i>Well Known Text</i> {@code GeodeticCRS[…]} element.
      * More information about the WKT format is documented in subclasses.
      *
      * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeogCS"}/{@code "GeocCS"} (WKT 1).

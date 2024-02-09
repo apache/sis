@@ -122,7 +122,7 @@ public final class ObjectConverters extends Static {
     }
 
     /**
-     * Returns a set whose elements are derived <cite>on-the-fly</cite> from the given set.
+     * Returns a set whose elements are derived <i>on-the-fly</i> from the given set.
      * Conversions from the original elements to the derived elements are performed when needed
      * by invoking the {@link ObjectConverter#apply(Object)} method on the given converter.
      *
@@ -144,7 +144,7 @@ public final class ObjectConverters extends Static {
     }
 
     /**
-     * Returns a map whose keys and values are derived <cite>on-the-fly</cite> from the given map.
+     * Returns a map whose keys and values are derived <i>on-the-fly</i> from the given map.
      * Conversions from the original entries to the derived entries are performed when needed
      * by invoking the {@link ObjectConverter#apply(Object)} method on the given converters.
      *
@@ -172,7 +172,7 @@ public final class ObjectConverters extends Static {
     }
 
     /**
-     * Returns a map whose keys are derived <cite>on-the-fly</cite> from the given map.
+     * Returns a map whose keys are derived <i>on-the-fly</i> from the given map.
      * Conversions from the original keys to the derived keys are performed when needed by
      * invoking the {@link ObjectConverter#apply(Object)} method on the given converter.
      *
@@ -200,7 +200,7 @@ public final class ObjectConverters extends Static {
     }
 
     /**
-     * Returns a map whose values are derived <cite>on-the-fly</cite> from the given map.
+     * Returns a map whose values are derived <i>on-the-fly</i> from the given map.
      * Conversions from the original values to the derived values are performed when needed by
      * invoking the {@link ObjectConverter#apply(Object)} method on the given converter.
      *

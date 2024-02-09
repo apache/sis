@@ -31,7 +31,7 @@ import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
  * <ul>
  *   <li>Post-parsing methods {@link #floatToDouble(float)} and {@link #deltaForDoubleToDecimal(double)}:
  *     <ul>
- *       <li>for compensating error when the base 10 representation is considered <cite>definitive</cite>.</li>
+ *       <li>for compensating error when the base 10 representation is considered <i>definitive</i>.</li>
  *     </ul>
  *   </li>
  *   <li>Pre-formatting methods {@link #fractionDigitsForValue(double)} and
@@ -385,10 +385,10 @@ public final class DecimalFunctions extends Static {
      * Returns the number of significant fraction digits when formatting the given number in base 10.
      * This method does <strong>not</strong> ignore trailing zeros.
      * For example, {@code fractionDigitsForValue(1.0)} returns 16,
-     * because the {@code double} format can store <i>almost</i> 16 decimal digits after 1.
+     * because the {@code double} format can store <em>almost</em> 16 decimal digits after 1.
      *
      * <div class="note"><b>Note:</b>
-     * We said <cite>almost</cite> because the very last digit may be able to store only a subset
+     * We said <i>almost</i> because the very last digit may be able to store only a subset
      * of the [0 … 9] digits.</div>
      *
      * Invoking this method is equivalent to invoking <code>{@linkplain #fractionDigitsForDelta(double, boolean)

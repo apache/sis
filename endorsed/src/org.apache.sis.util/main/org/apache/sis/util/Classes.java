@@ -160,7 +160,7 @@ public final class Classes extends Static {
      *   <li>{@code Set<Number>}: returns {@code Number.class}.</li>
      *   <li>{@code Set<? extends Number>}: returns {@code Number.class} as well,
      *       because that collection cannot contain instances of super-classes.
-     *       {@code Number} is the <cite>upper bound</cite>.</li>
+     *       {@code Number} is the <i>upper bound</i>.</li>
      *   <li>{@code Set<? super Number>}: returns {@code Object.class},
      *       because that collection is allowed to contain such elements.</li>
      *   <li>{@code Set}: returns {@code null} because that collection is declared with raw type.</li>

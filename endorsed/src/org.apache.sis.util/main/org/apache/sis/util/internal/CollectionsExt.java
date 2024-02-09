@@ -804,7 +804,7 @@ public final class CollectionsExt extends Static {
     }
 
     /**
-     * Creates a (<cite>name</cite>, <cite>element</cite>) mapping for the given collection of elements.
+     * Creates a (<var>name</var>, <var>element</var>) mapping for the given collection of elements.
      * If the name of an element is not all lower cases, then this method also adds an entry for the
      * lower cases version of that name in order to allow case-insensitive searches.
      *
@@ -817,7 +817,7 @@ public final class CollectionsExt extends Static {
      * @param  <E>           the type of elements.
      * @param  entries       the entries to store in the map, or {@code null} if none.
      * @param  namesLocale   the locale to use for creating the "all lower cases" names.
-     * @return a (<cite>name</cite>, <cite>element</cite>) mapping with lower cases entries where possible.
+     * @return a (<var>name</var>, <var>element</var>) mapping with lower cases entries where possible.
      * @throws InvalidParameterCardinalityException if the same name is used for more than one element.
      */
     public static <E> Map<String,E> toCaseInsensitiveNameMap(

@@ -2234,7 +2234,7 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
-     * Adds <cite>check points</cite> (if georectified) or <cite>ground control points</cite> (if georeferenceable).
+     * Adds <i>check points</i> (if georectified) or <i>ground control points</i> (if georeferenceable).
      * Ground control points (GCP) are large marked targets on the ground. GCP should not be used for storing the
      * localization grid (e.g. "model tie points" in a GeoTIFF file).
      * Storage locations are:

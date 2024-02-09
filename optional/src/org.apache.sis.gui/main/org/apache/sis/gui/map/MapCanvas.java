@@ -880,9 +880,9 @@ public abstract class MapCanvas extends PlanarCanvas {
      * Invoking this method has the effect of changing the viewed area, the zoom level or the rotation of the map.
      * Caller needs to invoke {@link #requestRepaint()} after this method call (this is not done automatically).
      *
-     * @param  newValue  the new <cite>objective to display</cite> conversion.
+     * @param  newValue  the new <i>objective to display</i> conversion.
      * @throws IllegalArgumentException if given the transform does not have the expected number of dimensions or is not affine.
-     * @throws RenderException if the <cite>objective to display</cite> transform cannot be set to the given value for another reason.
+     * @throws RenderException if the <i>objective to display</i> transform cannot be set to the given value for another reason.
      */
     @Override
     public void setObjectiveToDisplay(final LinearTransform newValue) throws RenderException {
@@ -915,7 +915,7 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
-     * Updates the <cite>objective to display</cite> transform with the given transform in objective coordinates.
+     * Updates the <i>objective to display</i> transform with the given transform in objective coordinates.
      * This method must be invoked in the JavaFX thread. The visual is updated immediately by transforming
      * the current image, then a more accurate image is prepared in a background thread.
      *
@@ -927,7 +927,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * with {@link TransformChangeEvent.Reason#DISPLAY_NAVIGATION} (really display, not objective).
      * That event will consolidate all {@code INTERIM} events that happened since the last non-interim event.
      *
-     * @param  before  coordinate conversion to apply before the current <cite>objective to display</cite> transform.
+     * @param  before  coordinate conversion to apply before the current <i>objective to display</i> transform.
      *
      * @since 1.3
      */
@@ -950,7 +950,7 @@ public abstract class MapCanvas extends PlanarCanvas {
     }
 
     /**
-     * Updates the <cite>objective to display</cite> transform with the given transform in pixel coordinates.
+     * Updates the <i>objective to display</i> transform with the given transform in pixel coordinates.
      * This method must be invoked in the JavaFX thread. The visual is updated immediately by transforming
      * the current image, then a more accurate image is prepared in a background thread.
      *
@@ -962,7 +962,7 @@ public abstract class MapCanvas extends PlanarCanvas {
      * with {@link TransformChangeEvent.Reason#DISPLAY_NAVIGATION}. That event will consolidate
      * all {@code INTERIM} events that happened since the last non-interim event.
      *
-     * @param  after  coordinate conversion to apply after the current <cite>objective to display</cite> transform.
+     * @param  after  coordinate conversion to apply after the current <i>objective to display</i> transform.
      *
      * @since 1.3
      */

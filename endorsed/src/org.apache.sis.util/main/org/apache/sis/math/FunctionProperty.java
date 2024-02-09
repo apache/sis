@@ -47,9 +47,9 @@ import java.util.EnumSet;
  *
  * The Javadoc in this class uses the following terms:
  * <ul>
- *   <li><var>S</var> (as in <cite>source</cite>) is the set of all possible input values (the <cite>domain</cite>).
- *   <li><var>T</var> (as in <cite>target</cite>) is a set containing all possible output values,
- *       and potentially more elements (the <cite>codomain</cite>). For example, the set of output
+ *   <li><var>S</var> (as in <i>source</i>) is the set of all possible input values (the <i>domain</i>).
+ *   <li><var>T</var> (as in <i>target</i>) is a set containing all possible output values,
+ *       and potentially more elements (the <i>codomain</i>). For example, the set of output
  *       values of the {@link Integer#toString()} function is included in a larger set, which is
  *       the set of all possible {@link String} values. In this Javadoc, <var>T</var> stands for
  *       the latter set.</li>
@@ -64,7 +64,7 @@ import java.util.EnumSet;
  */
 public enum FunctionProperty {
     /**
-     * A function is <cite>invertible</cite> if it can provide another function mapping
+     * A function is <i>invertible</i> if it can provide another function mapping
      * <var>T</var> values to <var>S</var> values.
      *
      * <p>While other values defined in this enumeration are more about the mathematical aspects
@@ -78,13 +78,13 @@ public enum FunctionProperty {
     INVERTIBLE,
 
     /**
-     * A function is <cite>injective</cite> if each value of <var>T</var> is either unrelated
+     * A function is <i>injective</i> if each value of <var>T</var> is either unrelated
      * to <var>S</var>, or is the output of exactly one value of <var>S</var>.
      * For example an {@link org.apache.sis.util.ObjectConverter} doing conversions from {@link Integer}
      * to {@link String} is an injective function, because no pair of integers can produce the same string.
      *
      * <p>A function which is both injective and {@linkplain #SURJECTIVE surjective} is a
-     * <cite>bijective</cite> function. In such functions, there is a one-to-one relationship
+     * <i>bijective</i> function. In such functions, there is a one-to-one relationship
      * between all input and output values.</p>
      *
      * @see #SURJECTIVE
@@ -93,14 +93,14 @@ public enum FunctionProperty {
     INJECTIVE,
 
     /**
-     * A function is <cite>surjective</cite> if any value of <var>T</var> can be created
+     * A function is <i>surjective</i> if any value of <var>T</var> can be created
      * from one or many values of <var>S</var>.
      * For example an {@link org.apache.sis.util.ObjectConverter} doing conversions from {@link String}
      * to {@link Integer} is a surjective function, because there is always at least one string for each integer value.
      * Note that such function cannot be injective since many different strings can represent the same integer value.
      *
      * <p>A function which is both {@linkplain #INJECTIVE injective} and surjective is a
-     * <cite>bijective</cite> function. In such functions, there is a one-to-one relationship
+     * <i>bijective</i> function. In such functions, there is a one-to-one relationship
      * between all input and output values.</p>
      *
      * @see #INJECTIVE
@@ -163,7 +163,7 @@ public enum FunctionProperty {
     private static final EnumSet<FunctionProperty> CONSTANT = EnumSet.of(ORDER_PRESERVING, ORDER_REVERSING);
 
     /**
-     * Returns {@code true} if a function having the given set of properties is <cite>bijective</cite>.
+     * Returns {@code true} if a function having the given set of properties is <i>bijective</i>.
      * Bijective functions have a one-to-one relationship between all input and output values.
      * This convenience method tests if the given set contains <em>all</em> following properties:
      *
@@ -180,7 +180,7 @@ public enum FunctionProperty {
     }
 
     /**
-     * Returns {@code true} if a function having the given set of properties is <cite>monotonic</cite>.
+     * Returns {@code true} if a function having the given set of properties is <i>monotonic</i>.
      * This convenience method tests if the given set contains <em>at least one</em> of the following
      * properties:
      *

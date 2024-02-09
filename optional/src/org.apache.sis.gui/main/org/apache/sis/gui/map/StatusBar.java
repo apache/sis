@@ -208,7 +208,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
     private CoordinateReferenceSystem objectiveCRS;
 
     /**
-     * The transform from <cite>objective CRS</cite> to the CRS of coordinates shown in this status bar.
+     * The transform from <i>objective CRS</i> to the CRS of coordinates shown in this status bar.
      * The {@linkplain CoordinateOperation#getSourceCRS() source CRS} is {@link #objectiveCRS} and
      * the {@linkplain CoordinateOperation#getTargetCRS() target CRS} is {@link CoordinateFormat#getDefaultCRS()}.
      * This transform may be null if there is no CRS change to apply
@@ -255,7 +255,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
 
     /**
      * The reference systems used by the coordinates shown in this status bar.
-     * This is initially the <cite>objective CRS</cite>, but may become different
+     * This is initially the <i>objective CRS</i>, but may become different
      * if the user selects another reference system through contextual menu.
      *
      * <h4>API note</h4>

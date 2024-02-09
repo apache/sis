@@ -49,7 +49,7 @@ public class CopyVisitor<SR,TR,G,T> extends Visitor<SR, List<Object>> {
     /**
      * The factory to use for creating the new filters and expressions.
      * Note that some methods in this factory may return {@code null}.
-     * See <i>Partially implemented factory</i> in {@link EditVisitor} Javadoc.
+     * See <cite>Partially implemented factory</cite> in {@link EditVisitor} Javadoc.
      */
     protected final FilterFactory<TR,G,T> factory;
 

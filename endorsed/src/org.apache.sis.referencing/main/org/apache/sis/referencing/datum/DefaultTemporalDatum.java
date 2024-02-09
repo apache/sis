@@ -249,7 +249,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     }
 
     /**
-     * Formats this datum as a <cite>Well Known Text</cite> {@code TimeDatum[…]} element.
+     * Formats this datum as a <i>Well Known Text</i> {@code TimeDatum[…]} element.
      *
      * <h4>Compatibility note</h4>
      * {@code TimeDatum} is defined in the WKT 2 specification only.

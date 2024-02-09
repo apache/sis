@@ -32,7 +32,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
 
 
 /**
- * The function converting raster <cite>sample values</cite> to <cite>geophysics values</cite>.
+ * The function converting raster <i>sample values</i> to <i>geophysics values</i>.
  * The function is usually linear, but can sometimes be logarithmic or exponential.
  * The latter occur most often when measuring concentration of something.
  *

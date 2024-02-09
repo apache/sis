@@ -801,7 +801,7 @@ asLong: if (mapping != null) {
      *       method returns {@link Boolean#FALSE}.</li>
      *
      *   <li>If the given type is an array or a collection, then this method returns an empty
-     *       array or collection. The given type is honored on a <cite>best effort</cite> basis.</li>
+     *       array or collection. The given type is honored on a <em>best effort</em> basis.</li>
      *
      *   <li>For all other cases, including the wrapper classes of primitive types, this method
      *       returns {@code null}.</li>

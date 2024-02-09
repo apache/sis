@@ -186,9 +186,9 @@ public class ImageRenderer {
      * Number of data elements between two samples for the same band on the same line.
      * This is the product of {@linkplain GridExtent#getSize(int) grid sizes} of enclosing {@code GridCoverage}
      * in all dimensions before the dimension of image {@linkplain #width}. This stride does <strong>not</strong>
-     * include the multiplication factor for the number of bands in a <cite>pixel interleaved sample model</cite>
-     * because whether this factor is needed or not depends on the data {@linkplain #buffer}, which is not known
-     * at construction time.
+     * include the multiplication factor for the number of bands in a <i>pixel interleaved sample model</i>
+     * because whether this factor is needed or not depends on the data {@linkplain #buffer},
+     * which is not known at construction time.
      *
      * @see #strideFactor
      * @see java.awt.image.ComponentSampleModel#pixelStride
@@ -199,8 +199,8 @@ public class ImageRenderer {
      * Number of data elements between a given sample and the corresponding sample in the same column of the next line.
      * This is the product of {@linkplain GridExtent#getSize(int) grid sizes} of enclosing {@code GridCoverage} in all
      * dimensions before the dimension of image {@linkplain #height}. This stride does <strong>not</strong> include the
-     * multiplication factor for the number of bands in a <cite>pixel interleaved sample model</cite> because whether
-     * this factor is needed or not depends on the data {@linkplain #buffer}, which is not known at construction time.
+     * multiplication factor for the number of bands in a <i>pixel interleaved sample model</i> because whether this
+     * factor is needed or not depends on the data {@linkplain #buffer}, which is not known at construction time.
      *
      * @see #strideFactor
      * @see java.awt.image.ComponentSampleModel#scanlineStride
@@ -210,7 +210,7 @@ public class ImageRenderer {
     /**
      * Multiplication factor for {@link #pixelStride} and {@link #scanlineStride}. This is the number of data elements
      * between two samples in the data {@link #buffer}. There is no direct equivalent in {@link java.awt.image} because
-     * <cite>pixel stride</cite> and <cite>scanline stride</cite> in {@link SampleModel} are pre-multiplied by this factor,
+     * <var>pixel stride</var> and <var>scanline stride</var> in {@link SampleModel} are pre-multiplied by this factor,
      * but we need to keep this information separated in this builder because its value depends on which methods are invoked:
      *
      * <ul>

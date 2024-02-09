@@ -1543,8 +1543,8 @@ public enum CommonCRS {
 
         /**
          * Time measured as days since November 17, 1858 at 00:00 UTC.
-         * A <cite>Modified Julian day</cite> (MJD) is defined relative to
-         * <cite>Julian day</cite> (JD) as {@code MJD = JD − 2400000.5}.
+         * A <dfn>Modified Julian day</dfn> (MJD) is defined relative
+         * to <i>Julian day</i> (JD) as {@code MJD = JD − 2400000.5}.
          * This variant was introduced by the Smithsonian Astrophysical Observatory (Massachusetts) in 1955.
          *
          * @see <a href="https://en.wikipedia.org/wiki/Julian_day">Julian day on Wikipedia</a>
@@ -1555,8 +1555,8 @@ public enum CommonCRS {
         /**
          * Time measured as days since May 24, 1968 at 00:00 UTC.
          * This epoch was introduced by NASA for the space program.
-         * A <cite>Truncated Julian day</cite> (TJD) is defined relative to
-         * <cite>Julian day</cite> (JD) as {@code TJD = JD − 2440000.5}.
+         * A <dfn>Truncated Julian day</dfn> (TJD) is defined relative
+         * to <i>Julian day</i> (JD) as {@code TJD = JD − 2440000.5}.
          * This variant was introduced by National Aeronautics and Space Administration (NASA) in 1979.
          *
          * @see <a href="https://en.wikipedia.org/wiki/Julian_day">Julian day on Wikipedia</a>
@@ -1566,8 +1566,8 @@ public enum CommonCRS {
 
         /**
          * Time measured as days since December 31, 1899 at 12:00 UTC.
-         * A <cite>Dublin Julian day</cite> (DJD) is defined relative to
-         * <cite>Julian day</cite> (JD) as {@code DJD = JD − 2415020}.
+         * A <dfn>Dublin Julian day</dfn> (DJD) is defined relative to
+         * <i>Julian day</i> (JD) as {@code DJD = JD − 2415020}.
          * This variant was introduced by the International Astronomical Union (IAU) in 1955.
          *
          * @see <a href="https://en.wikipedia.org/wiki/Julian_day">Julian day on Wikipedia</a>

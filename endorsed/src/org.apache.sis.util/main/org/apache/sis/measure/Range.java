@@ -40,10 +40,10 @@ import org.apache.sis.util.collection.CheckedContainer;
  * within the range. Null values are always considered <em>exclusive</em>,
  * since iterations over the values will never reach the infinite endpoint.
  *
- * <p>The minimal and maximal values (the <cite>endpoints</cite>) may be inclusive or exclusive.
- * Numeric ranges where both endpoints are inclusive are called <cite>closed intervals</cite>
+ * <p>The minimal and maximal values (the <dfn>endpoints</dfn>) may be inclusive or exclusive.
+ * Numeric ranges where both endpoints are inclusive are called <dfn>closed intervals</dfn>
  * and are represented by square brackets, for example "{@code [0 … 255]}".
- * Numeric ranges where both endpoints are exclusive are called <cite>open intervals</cite>
+ * Numeric ranges where both endpoints are exclusive are called <dfn>open intervals</dfn>
  * and are represented by parenthesis, for example "{@code (0 … 256)}".</p>
  *
  * <h2>Type and value of range elements</h2>

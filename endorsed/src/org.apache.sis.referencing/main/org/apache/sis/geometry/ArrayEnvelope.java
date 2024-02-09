@@ -203,7 +203,7 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
 
     /**
      * Constructs a new envelope initialized to the values parsed from the given string in
-     * {@code BOX} or <cite>Well Known Text</cite> (WKT) format. The given string is typically
+     * {@code BOX} or <i>Well Known Text</i> (WKT) format. The given string is typically
      * a {@code BOX} element like below:
      *
      * {@snippet lang="wkt" :

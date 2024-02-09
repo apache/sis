@@ -72,7 +72,7 @@ import org.apache.sis.system.Shutdown;
  * by {@link #newDataAccess()} and the result is cached in this factory.
  *
  * <p>{@code ConcurrentAuthorityFactory} delays the call to {@code newDataAccess()} until first needed,
- * and {@linkplain AutoCloseable#close() closes} the factory used as a <cite>Data Access Object</cite>
+ * and {@linkplain AutoCloseable#close() closes} the factory used as a <i>Data Access Object</i>
  * (DAO) after some timeout. This approach allows to establish a connection to a database (for example)
  * and keep it only for a relatively short amount of time.</p>
  *

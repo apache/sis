@@ -175,7 +175,7 @@ public class DefaultFormula extends FormattableObject implements Formula, Serial
     }
 
     /**
-     * Formats this formula as a pseudo-<cite>Well Known Text</cite> element.
+     * Formats this formula as a pseudo-<i>Well Known Text</i> element.
      *
      * <h4>Compatibility note</h4>
      * ISO 19162 does not define a WKT representation for {@code Formula} objects.

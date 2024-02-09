@@ -229,7 +229,7 @@ filter: for (final Locale locale : locales) {
      *
      * <p>This method can be used when the caller wants the same {@code Locale} constants no matter if the language
      * and country codes use 2 or 3 letters. This method tries to convert 3-letters codes to 2-letters code on a
-     * <cite>best effort</cite> basis.</p>
+     * <em>best effort</em> basis.</p>
      *
      * @param  code  the language code, optionally followed by country code and variant.
      * @return the language for the given code (never {@code null}).
@@ -245,7 +245,7 @@ filter: for (final Locale locale : locales) {
      * Parses the given language code and optional complements (country, variant), starting at the given index.
      * All characters before {@code fromIndex} are ignored. Characters from {@code fromIndex} to the end of the
      * string are parsed as documented in the {@link #parse(String)} method. In particular, this method tries to
-     * convert 3-letters codes to 2-letters code on a <cite>best effort</cite> basis.
+     * convert 3-letters codes to 2-letters code on a <em>best effort</em> basis.
      *
      * <h4>Example</h4>
      * This method is useful when language codes are appended to a base property or resource name.

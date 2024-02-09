@@ -248,7 +248,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses a <cite>Well-Know Text</cite> from specified position as a geodetic object.
+     * Parses a <i>Well-Know Text</i> from specified position as a geodetic object.
      * Caller should invoke {@link #getAndClearWarnings(Object)} in a {@code finally} block
      * after this method.
      *
@@ -296,7 +296,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     }
 
     /**
-     * Parses the next element in the specified <cite>Well Know Text</cite> (WKT) tree.
+     * Parses the next element in the specified <i>Well Know Text</i> (WKT) tree.
      *
      * @param  element  the element to be parsed.
      * @return the parsed object.

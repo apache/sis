@@ -229,7 +229,7 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
     }
 
     /**
-     * Formats this CRS as a <cite>Well Known Text</cite> {@code ImageCRS[…]} element.
+     * Formats this CRS as a <i>Well Known Text</i> {@code ImageCRS[…]} element.
      *
      * <h4>Compatibility note</h4>
      * {@code ImageCRS} are defined in the WKT 2 specification only.

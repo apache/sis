@@ -55,7 +55,7 @@ import org.apache.sis.util.logging.Logging;
  * Parses and formats units of measurement as SI symbols, URI in OGC namespace or other symbols.
  * This class combines in a single class the API from {@link java.text} and the API from {@link javax.measure.format}.
  * In addition to the symbols of the <cite>Système international</cite> (SI), this class is also capable to handle
- * some symbols found in <cite>Well Known Text</cite> (WKT) definitions or in XML files.
+ * some symbols found in <i>Well Known Text</i> (WKT) definitions or in XML files.
  *
  * <h2>Parsing authority codes</h2>
  * If a character sequence given to the {@link #parse(CharSequence)} method is of the form {@code "EPSG:####"},
@@ -138,8 +138,8 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      *   <li>As a symbol using Unicode characters: <b>m³</b></li>
      *   <li>As a symbol restricted to the ASCII characters set: <b>m3</b></li>
      *   <li>As a long name:<ul>
-     *     <li>in English: <cite>cubic metre</cite></li>
-     *     <li>in French: <cite>mètre cube</cite></li>
+     *     <li>in English: <q>cubic metre</q></li>
+     *     <li>in French: <q>mètre cube</q></li>
      *   </ul></li>
      * </ul>
      *
@@ -391,7 +391,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
     }
 
     /**
-     * Attaches a label to the specified unit. A <cite>label</cite> can be a substitute to either the
+     * Attaches a label to the specified unit. A <i>label</i> can be a substitute to either the
      * {@linkplain AbstractUnit#getSymbol() unit symbol} or the {@link AbstractUnit#getName() unit name},
      * depending on the {@linkplain #getStyle() format style}.
      * If the specified label is already associated to another unit, then the previous association is discarded.

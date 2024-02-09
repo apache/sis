@@ -74,7 +74,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * <p>Builders are not thread-safe. Builders can be used only once;
  * points cannot be added or modified after {@link #create(MathTransformFactory)} has been invoked.
- * The transform coefficients are determined using a <cite>least squares</cite> estimation method,
+ * The transform coefficients are determined using a <i>least squares</i> estimation method,
  * with the assumption that source positions are exact and all the uncertainty is in the target positions.</p>
  *
  * <h2>Linearizers</h2>
@@ -617,8 +617,8 @@ search: for (int j=numPoints; --j >= 0;) {
      * Null positions are silently ignored.
      * Positions with NaN or infinite coordinates cause an exception to be thrown.
      *
-     * <p>All source positions shall have the same number of dimensions (the <cite>source dimension</cite>),
-     * and all target positions shall have the same number of dimensions (the <cite>target dimension</cite>).
+     * <p>All source positions shall have the same number of dimensions (the <i>source dimension</i>),
+     * and all target positions shall have the same number of dimensions (the <i>target dimension</i>).
      * However, the source dimension does not need to be the same as the target dimension.
      * Apache SIS currently supports only one- or two-dimensional source positions,
      * together with arbitrary target dimension.</p>
@@ -1261,8 +1261,8 @@ search:         for (int j=domain(); --j >= 0;) {
 
     /**
      * Adds transforms to potentially apply on target control points before to compute the linear transform.
-     * This method can be invoked when the <cite>source to target</cite> transform would possibly be more
-     * linear if <cite>target</cite> was another space than the {@linkplain #getTargetEnvelope() current one}.
+     * This method can be invoked when the <i>source to target</i> transform would possibly be more
+     * linear if <i>target</i> was another space than the {@linkplain #getTargetEnvelope() current one}.
      * If linearizers have been specified, then the {@link #create(MathTransformFactory)} method will try to
      * apply each transform on target coordinates and check which one get the best
      * {@linkplain #correlation() correlation} coefficients.
@@ -1273,7 +1273,7 @@ search:         for (int j=domain(); --j >= 0;) {
      * will be given by {@link #linearizer()}.</p>
      *
      * <p>Linearizers are specified as a collection of {@link MathTransform}s from current {@linkplain #getTargetEnvelope()
-     * target coordinates} to some other spaces where <cite>sources to new targets</cite> transforms may be more linear.
+     * target coordinates} to some other spaces where <i>sources to new targets</i> transforms may be more linear.
      * Keys in the map are arbitrary identifiers.
      * Values in the map should be non-linear transforms; {@link LinearTransform}s (other than identity)
      * should be avoided because they will consume processing power for no correlation improvement.</p>
@@ -1571,7 +1571,7 @@ search:         for (int j=domain(); --j >= 0;) {
      * In such case, {@code LinearTransformBuilder} selects a linearizer identified by the returned
      * <var>key</var> - <var>value</var> entry. The entry key is one of the keys of the maps given
      * to {@code addLinearizers(…)}. The entry value is the associated {@code MathTransform},
-     * possibly modified as described in the <cite>axis order</cite> section below.
+     * possibly modified as described in the <i>axis order</i> section below.
      *
      * <p>The envelope returned by {@link #getTargetEnvelope()} and all control points
      * returned by {@link #getControlPoint(int[])} are projected by the selected transform.

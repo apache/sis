@@ -951,7 +951,7 @@ class PropertyAccessor {
      *       is unconditionally added to the previous collection.</li>
      *   <li>If {@code append} is {@code false} and the new value is <strong>not</strong> a collection,
      *       then the new value is added to the existing collection. In other words, we behave as a
-     *       <cite>multi-values map</cite> for the properties that allow multi-values.</li>
+     *       <i>multi-values map</i> for the properties that allow multi-values.</li>
      *   <li>Otherwise the new collection replaces the previous collection. All previous values
      *       are discarded.</li>
      * </ul>

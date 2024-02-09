@@ -500,7 +500,7 @@ public class FileService extends FileSystemProvider {
      *
      * @param  path   the path to the file to check.
      * @param  modes  the access modes to check; may have zero elements.
-     * @throws NoSuchFileException if a file does not exist <i>(optional specific exception)</i>.
+     * @throws NoSuchFileException if a file does not exist (optional specific exception).
      * @throws AccessDeniedException the requested access would be denied.
      * @throws IOException if an I/O error occurs
      */

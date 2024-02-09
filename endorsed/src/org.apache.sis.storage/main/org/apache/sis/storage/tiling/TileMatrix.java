@@ -92,7 +92,7 @@ public interface TileMatrix {
      * </ul>
      *
      * <h4>Relationship with OGC specification</h4>
-     * OGC has a more generic definition of <cite>tiling scheme</cite>,
+     * OGC has a more generic definition of <i>tiling scheme</i>,
      * where the scheme specifies which space a uniquely identified tile occupies.
      * Reversely, the tiling scheme makes possible to find which unique identifier
      * corresponds to a space satisfying the geometric properties to be a tile.

@@ -35,7 +35,7 @@
  *       unless foreigner key constraints are manually disabled for the columns which contain the cyclic references.</li>
  * </ul>
  *
- * If the database supports <cite>table inheritance</cite> (like <a href="http://www.postgresql.org">PostgreSQL</a>),
+ * If the database supports <i>table inheritance</i> (like <a href="http://www.postgresql.org">PostgreSQL</a>),
  * then this package will leverage that feature for the storage of metadata that are sub-interface of other metadata
  * (for example {@link org.opengis.metadata.extent.GeographicDescription} which extends
  * {@link org.opengis.metadata.extent.GeographicExtent}).

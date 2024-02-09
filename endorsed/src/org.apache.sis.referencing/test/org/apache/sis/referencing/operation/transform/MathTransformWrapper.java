@@ -186,7 +186,7 @@ public class MathTransformWrapper extends FormattableObject implements MathTrans
     }
 
     /**
-     * Returns a <cite>Well Known Text</cite> (WKT) for this transform.
+     * Returns a <i>Well Known Text</i> (WKT) for this transform.
      *
      * @throws UnsupportedOperationException if this object cannot be formatted as WKT.
      */

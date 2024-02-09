@@ -35,7 +35,7 @@ import org.apache.sis.measure.Units;
 
 /**
  * Private structure for {@link EPSGDataAccess#createBursaWolfParameters(PrimeMeridian, Integer)} usage.
- * Those information are for compatibility with <cite>Well Known Text</cite> (WKT) version 1 formatting.
+ * Those information are for compatibility with <i>Well Known Text</i> (WKT) version 1 formatting.
  * That legacy format had a {@code TOWGS84} element which needs the information provided by this class.
  * Note that {@code TOWGS84} is a deprecated element as of WKT 2 (ISO 19162).
  *

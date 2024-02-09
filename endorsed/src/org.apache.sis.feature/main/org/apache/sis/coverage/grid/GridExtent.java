@@ -1448,7 +1448,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * The given dimensions must be in strictly ascending order without duplicated values.
      * The number of dimensions of the sub grid extent will be {@code indices.length}.
      *
-     * <p>This method performs a <cite>dimensionality reduction</cite> and can be used as the converse
+     * <p>This method performs a <i>dimensionality reduction</i> and can be used as the converse
      * of {@link #insertDimension(int, DimensionNameType, long, long, boolean) insertDimension(…)}.
      * This method cannot be used for changing dimension order.</p>
      *

@@ -87,10 +87,10 @@ import org.apache.sis.util.resources.Vocabulary;
  * in two classes for the two main strategies used for finding coordinate operations:
  *
  * <ul>
- *   <li>{@code CoordinateOperationRegistry} implements the <cite>late-binding</cite> approach
+ *   <li>{@code CoordinateOperationRegistry} implements the <dfn>late-binding</dfn> approach
  *       (i.e. search coordinate operation paths specified by authorities like the ones listed
  *       in the EPSG dataset), which is the preferred approach.</li>
- *   <li>{@link CoordinateOperationFinder} adds an <cite>early-binding</cite> approach
+ *   <li>{@link CoordinateOperationFinder} adds an <dfn>early-binding</dfn> approach
  *       (i.e. find a coordinate operation path by inspecting the properties associated to the CRS).
  *       That approach is used only as a fallback when the late-binding approach gave no result.</li>
  * </ul>
@@ -173,13 +173,13 @@ class CoordinateOperationRegistry {
 
     /**
      * The factory to use for creating operations as defined by authority, or {@code null} if none.
-     * This is the factory used by the <cite>late-binding</cite> approach.
+     * This is the factory used by the <i>late-binding</i> approach.
      */
     protected final CoordinateOperationAuthorityFactory registry;
 
     /**
      * The factory to use for creating coordinate operations not found in the registry.
-     * This is the factory used by the <cite>early-binding</cite> approach.
+     * This is the factory used by the <i>early-binding</i> approach.
      */
     protected final CoordinateOperationFactory factory;
 
@@ -438,7 +438,7 @@ class CoordinateOperationRegistry {
 
     /**
      * Finds or infers operations for conversions or transformations between two coordinate reference systems.
-     * {@code CoordinateOperationRegistry} implements the <cite>late-binding</cite> approach (see definition
+     * {@code CoordinateOperationRegistry} implements the <i>late-binding</i> approach (see definition
      * of terms in class javadoc) by extracting the authority codes from the supplied {@code sourceCRS} and
      * {@code targetCRS}, then by submitting those codes to the
      * <code>{@linkplain CoordinateOperationAuthorityFactory#createFromCoordinateReferenceSystemCodes
@@ -1044,7 +1044,7 @@ class CoordinateOperationRegistry {
      * to get three-dimensional domains.</p>
      *
      * <p>This method is not guaranteed to succeed in adding the ellipsoidal height. It works on a
-     * <cite>best effort</cite> basis. In any cases, the {@link #complete} method should be invoked
+     * <em>best effort</em> basis. In any cases, the {@link #complete} method should be invoked
      * after this one in order to ensure that the source and target CRS are the expected ones.</p>
      *
      * @param  sourceCRS  the potentially three-dimensional source CRS

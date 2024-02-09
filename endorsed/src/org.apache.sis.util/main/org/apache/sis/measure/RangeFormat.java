@@ -61,8 +61,8 @@ import org.apache.sis.util.internal.Numerics;
  *   <li>Otherwise the minimal and maximal values are formatted inside bracket or parenthesis,
  *       depending on whether each endpoint is inclusive or exclusive:
  *     <ul>
- *       <li>"{@code [min … max]}" if both endpoints are inclusive (<cite>closed interval</cite>);</li>
- *       <li>"{@code (min … max)}" if both endpoints are exclusive (<cite>open interval</cite>);</li>
+ *       <li>"{@code [min … max]}" if both endpoints are inclusive (<dfn>closed interval</dfn>);</li>
+ *       <li>"{@code (min … max)}" if both endpoints are exclusive (<dfn>open interval</dfn>);</li>
  *       <li>or a mix of both styles if an endpoint is inclusive while the other is exclusive.</li>
  *     </ul>
  *     The "{@code ∞}" symbol is used in place of {@code min} or {@code max} for unbounded ranges.</li>

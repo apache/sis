@@ -502,7 +502,7 @@ public final class ImageUtilities extends Static {
      * Converts a <var>x</var> pixel coordinates to a tile index.
      *
      * <h4>Implementation note</h4>
-     * This method performs its calculation using <cite>tile grid offset</cite> instead of minimum coordinate
+     * This method performs its calculation using <em>tile grid offset</em> instead of minimum coordinate
      * values because the former does not assume that image coordinates start at the beginning of first tile.
      * In practice it would be risky to have image {@code minX} different than first tile {@code minX},
      * but Apache SIS tries to handle the most general cases when possible.
@@ -534,7 +534,7 @@ public final class ImageUtilities extends Static {
      * The returned value is a coordinate of the pixel in upper-left corner.
      *
      * <h4>Implementation note</h4>
-     * This method performs its calculation using <cite>tile grid offset</cite> instead of minimum coordinate
+     * This method performs its calculation using <em>tile grid offset</em> instead of minimum coordinate
      * values because the former does not assume that image coordinates start at the beginning of first tile.
      * In practice it would be risky to have image {@code minX} different than first tile {@code minX},
      * but Apache SIS tries to handle the most general cases when possible.
@@ -568,7 +568,7 @@ public final class ImageUtilities extends Static {
      * This method does <strong>not</strong> clip the rectangle to image bounds.
      *
      * <h4>Implementation note</h4>
-     * This method performs its calculation using <cite>tile grid offset</cite> instead of minimum coordinate
+     * This method performs its calculation using <em>tile grid offset</em> instead of minimum coordinate
      * values because the former does not assume that image coordinates start at the beginning of first tile.
      * The intend is to be consistent with {@link #pixelToTileX(RenderedImage, int)}.
      *
@@ -602,7 +602,7 @@ public final class ImageUtilities extends Static {
      * This method does <strong>not</strong> clip the rectangle to image bounds.
      *
      * <h4>Implementation note</h4>
-     * This method performs its calculation using <cite>tile grid offset</cite> instead of minimum coordinate
+     * This method performs its calculation using <em>tile grid offset</em> instead of minimum coordinate
      * values because the former does not assume that image coordinates start at the beginning of first tile.
      * The intend is to be consistent with {@link #tileToPixelX(RenderedImage, int)}.
      *

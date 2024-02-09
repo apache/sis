@@ -106,7 +106,7 @@ public class StoreListeners implements Localized {
 
     /**
      * All types of of events that may be fired, or {@code null} if no restriction.
-     * This is a <cite>copy on write</cite> set: no elements are modified after a set has been created.
+     * This is a <i>copy on write</i> set: no elements are modified after a set has been created.
      *
      * @see #setUsableEventTypes(Class...)
      */
@@ -141,7 +141,7 @@ public class StoreListeners implements Localized {
 
         /**
          * The listeners for the {@linkplain #type event type}, or {@code null} if none.
-         * This is a <cite>copy on write</cite> array: no elements are modified after an array has been created.
+         * This is a <i>copy on write</i> array: no elements are modified after an array has been created.
          */
         @SuppressWarnings("VolatileArrayField")
         private volatile StoreListener<? super E>[] listeners;

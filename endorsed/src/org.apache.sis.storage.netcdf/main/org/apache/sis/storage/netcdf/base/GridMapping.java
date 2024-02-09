@@ -103,7 +103,7 @@ final class GridMapping {
     final CoordinateReferenceSystem crs;
 
     /**
-     * The <cite>grid to CRS</cite> transform, or {@code null} if none. This information is usually not specified
+     * The <i>grid to CRS</i> transform, or {@code null} if none. This information is usually not specified
      * except when using GDAL conventions. If {@code null}, then the transform should be inferred by {@link Grid}.
      */
     private final MathTransform gridToCRS;

@@ -298,7 +298,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     /**
      * Creates an operation method from a set of properties and a descriptor group.
      * The source and target dimensions may be {@code null} if the method can work
-     * with any number of dimensions (e.g. <cite>Affine Transform</cite>).
+     * with any number of dimensions (e.g. <i>Affine Transform</i>).
      *
      * <p>The properties given in argument follow the same rules as for the
      * {@linkplain DefaultOperationMethod#DefaultOperationMethod(Map, ParameterDescriptorGroup)

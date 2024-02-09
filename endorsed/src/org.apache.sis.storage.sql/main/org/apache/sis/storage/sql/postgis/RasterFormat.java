@@ -21,7 +21,7 @@ import org.apache.sis.storage.sql.feature.InfoStatements;
 
 
 /**
- * Base class of reader and writer of rasters encoded in PostGIS <cite>Well Known Binary</cite> (WKB) format.
+ * Base class of reader and writer of rasters encoded in PostGIS <i>Well Known Binary</i> (WKB) format.
  * This format is specific to PostGIS 2 (this is not yet an OGC standard at the time of writing this class),
  * but it can nevertheless be used elsewhere. We do not use "WKB" in the class name because this class would
  * be more accurately named "PostGIS raster format" rather than "Well Known Binary raster format".

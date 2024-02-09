@@ -27,7 +27,7 @@ import org.apache.sis.util.internal.X364;
 
 /**
  * An {@link Appendable} which can apply different kinds of reformatting that depend on the
- * <cite>End Of Line</cite> (EOL) occurrences. Available reformatting include inserting a
+ * <i>End Of Line</i> (EOL) occurrences. Available reformatting include inserting a
  * a margin before each line, wrapping to a maximal line length and replacing tabulations or
  * EOL characters. The actual work to be done can be enabled by invoking one or many of the
  * following methods:
@@ -44,7 +44,7 @@ import org.apache.sis.util.internal.X364;
  * before end of lines.
  *
  * <h2>How line lengths are calculated</h2>
- * Line length are measured in unit of Unicode <cite>code points</cite>. This is usually the same
+ * Line length are measured in unit of Unicode <i>code points</i>. This is usually the same
  * than the number of {@code char} primitive values, but not always. Combining characters are not
  * yet recognized by this class, but future versions may improve on that.
  *

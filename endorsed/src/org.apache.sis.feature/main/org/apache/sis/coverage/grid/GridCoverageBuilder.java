@@ -54,8 +54,8 @@ import org.apache.sis.util.resources.Errors;
  * A grid coverage is a function described by three parts:
  *
  * <ul>
- *   <li>A <cite>domain</cite>, which describes the input values (e.g. geographic coordinates).</li>
- *   <li>One or more <cite>ranges</cite>, which describe the output values that the coverage can produce.</li>
+ *   <li>A <dfn>domain</dfn>, which describes the input values (e.g. geographic coordinates).</li>
+ *   <li>One or more <dfn>ranges</dfn>, which describe the output values that the coverage can produce.</li>
  *   <li>The actual values, distributed on a regular grid.</li>
  * </ul>
  *
@@ -391,7 +391,7 @@ public class GridCoverageBuilder {
      * Invoking this method a second time for the same dimension will cancel the flipping.
      *
      * <p>When building coverage with a {@linkplain #setDomain(Envelope) domain specified by an envelope}
-     * (i.e. with no explicit <cite>grid to CRS</cite> transform), the default {@code GridCoverageBuilder}
+     * (i.e. with no explicit <i>grid to CRS</i> transform), the default {@code GridCoverageBuilder}
      * behavior is to create a {@link GridGeometry} with grid indices increasing in the same direction as
      * domain coordinates. This method allows to reverse direction for an axis.
      * The most typical usage is to reverse the direction of the <var>y</var> axis in images.</p>

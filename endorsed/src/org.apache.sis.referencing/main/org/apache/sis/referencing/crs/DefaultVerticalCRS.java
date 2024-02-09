@@ -225,7 +225,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
     }
 
     /**
-     * Formats this CRS as a <cite>Well Known Text</cite> {@code VerticalCRS[…]} element.
+     * Formats this CRS as a <i>Well Known Text</i> {@code VerticalCRS[…]} element.
      *
      * @return {@code "VerticalCRS"} (WKT 2) or {@code "Vert_CS"} (WKT 1).
      *

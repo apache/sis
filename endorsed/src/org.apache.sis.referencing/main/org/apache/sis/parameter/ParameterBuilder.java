@@ -402,7 +402,7 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
 
     /**
      * Creates a descriptor group for a map projection. This method automatically adds mandatory parameters
-     * for the <cite>semi-major</cite> and <cite>semi-minor axis length</cite>. Those parameters are usually
+     * for the <i>semi-major</i> and <i>semi-minor axis length</i>. Those parameters are usually
      * not explicitly included in parameter definitions since the axis lengths can be inferred from the
      * {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid ellipsoid}.
      * However, {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory} needs them.

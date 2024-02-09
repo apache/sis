@@ -81,7 +81,7 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
  *       {@linkplain org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createFromCoordinateReferenceSystemCodes
  *       submitted to a registry of coordinate operations}. If an operation is found, it will be returned.
  *
- *       <div class="note"><b>Note:</b> the above is known as the <cite>late-binding</cite> approach.
+ *       <div class="note"><b>Note:</b> the above is known as the <i>late-binding</i> approach.
  *       The late-binding approach allows the authority to define better suited operations than what
  *       we would get if we were transforming everything from and to a pivot system (e.g. WGS84).
  *       In addition, this approach provides useful information like the coordinate operation
@@ -93,10 +93,10 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
  *       infer the coordinate operation by itself. The CRS type is examined and the work is dispatched
  *       to one or many of the {@code createOperationStep(…)} protected methods defined in this class.
  *       Those methods use properties associated to the CRS, including {@code BOUNDCRS} or {@code TOWGS84}
- *       elements found in <cite>Well Known Text</cite> (WKT).
+ *       elements found in <i>Well Known Text</i> (WKT).
  *
  *       <div class="note"><b>Note:</b> the use of elements like {@code TOWGS84} is known as the
- *       <cite>early-binding</cite> approach. The operation found by this approach may be sub-optimal.
+ *       <i>early-binding</i> approach. The operation found by this approach may be sub-optimal.
  *       The early-binding approach is used only as a fallback when the late-binding approach gave no result.</div>
  *   </li>
  * </ol>
@@ -169,11 +169,11 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
 
     /**
      * Infers an operation for conversion or transformation between two coordinate reference systems.
-     * If a non-null authority factory – the <cite>registry</cite> – has been specified at construction time,
-     * then this method will first query that factory (<cite>late-binding</cite> approach – see class javadoc).
+     * If a non-null authority factory – the <i>registry</i> – has been specified at construction time,
+     * then this method will first query that factory (<i>late-binding</i> approach – see class javadoc).
      * If no operation has been found in the registry or if no registry has been specified to the constructor,
      * this method inspects the given CRS and delegates the work to one or many {@code createOperationStep(…)}
-     * methods (<cite>early-binding</cite> approach).
+     * methods (<i>early-binding</i> approach).
      *
      * <p>The default implementation invokes <code>{@linkplain #createOperations createOperations}(sourceCRS,
      * targetCRS)</code>, then returns the first operation in the returned list or throws an exception if the
@@ -201,11 +201,11 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
 
     /**
      * Infers operations for conversions or transformations between two coordinate reference systems.
-     * If a non-null authority factory – the <cite>registry</cite> – has been specified at construction time,
-     * then this method will first query that factory (<cite>late-binding</cite> approach – see class javadoc).
+     * If a non-null authority factory – the <i>registry</i> – has been specified at construction time,
+     * then this method will first query that factory (<i>late-binding</i> approach – see class javadoc).
      * If no operation has been found in the registry or if no registry has been specified to the constructor,
      * this method inspects the given CRS and delegates the work to one or many {@code createOperationStep(…)}
-     * methods (<cite>early-binding</cite> approach).
+     * methods (<i>early-binding</i> approach).
      *
      * <p>At first, this method is invoked with the {@code sourceCRS} and {@code targetCRS} arguments given to the
      * {@link DefaultCoordinateOperationFactory#createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem,
@@ -492,8 +492,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * The default implementation can:
      *
      * <ul>
-     *   <li>adjust axis order and orientation, for example converting from (<cite>North</cite>, <cite>West</cite>)
-     *       axes to (<cite>East</cite>, <cite>North</cite>) axes,</li>
+     *   <li>adjust axis order and orientation, for example converting from (<i>North</i>, <i>West</i>)
+     *       axes to (<i>East</i>, <i>North</i>) axes,</li>
      *   <li>apply units conversion if needed,</li>
      *   <li>perform longitude rotation if needed,</li>
      *   <li>perform datum shift if {@linkplain BursaWolfParameters Bursa-Wolf parameters} are available
