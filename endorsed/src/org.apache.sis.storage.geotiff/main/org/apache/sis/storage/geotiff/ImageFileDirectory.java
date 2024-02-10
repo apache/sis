@@ -960,13 +960,10 @@ final class ImageFileDirectory extends DataCube {
              */
             case TAG_PAGE_NUMBER: {
                 final Vector v = type.readAsVector(input(), count);
-                int p = 0, n = 0;
-                switch (v.size()) {
-                    default: n = v.intValue(1);     // Fall through
-                    case 1:  p = v.intValue(0);
-                    case 0:  break;
+                final int n = v.size();
+                if (n >= 1) {
+                    metadata.addPage(v.intValue(0), (n >= 2) ? v.intValue(1) : 0);
                 }
-                metadata.addPage(p, n);
                 break;
             }
             /*
@@ -1369,6 +1366,7 @@ final class ImageFileDirectory extends DataCube {
      */
     @Override
     protected Metadata createMetadata() throws DataStoreException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ImageMetadataBuilder metadata = this.metadata;
         if (metadata == null) {
             /*
@@ -1390,6 +1388,7 @@ final class ImageFileDirectory extends DataCube {
          */
         final boolean isIndexValid = !isReducedResolution();
         metadata.newCoverage(isIndexValid && reader.store.customizer.isElectromagneticMeasurement(index));
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final List<SampleDimension> sampleDimensions = getSampleDimensions();
         for (int band = 0; band < samplesPerPixel; band++) {
             metadata.addNewBand(sampleDimensions.get(band));
@@ -1406,6 +1405,7 @@ final class ImageFileDirectory extends DataCube {
          * Destination: metadata/spatialRepresentationInfo and others.
          */
         if (referencing != null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final GridGeometry gridGeometry = getGridGeometry();
             if (gridGeometry.isDefined(GridGeometry.ENVELOPE)) {
                 metadata.addExtent(gridGeometry.getEnvelope(), listeners);

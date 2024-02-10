@@ -16,6 +16,7 @@
  */
 package org.apache.sis.portrayal;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.awt.geom.Point2D;
 import java.awt.geom.AffineTransform;
@@ -31,7 +32,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.Disposable;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
@@ -146,10 +146,8 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
      * @param  target  the canvas on which to apply the changes of zoom, pan or rotation.
      */
     public CanvasFollower(final PlanarCanvas source, final PlanarCanvas target) {
-        ArgumentChecks.ensureNonNull("source", source);
-        ArgumentChecks.ensureNonNull("target", target);
-        this.source = source;
-        this.target = target;
+        this.source = Objects.requireNonNull(source);
+        this.target = Objects.requireNonNull(target);
         followRealWorld = true;
         displayTransformStatus   = OUTDATED;
         objectiveTransformStatus = OUTDATED;
@@ -407,7 +405,7 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
     /**
      * Invoked by {@link #propertyChange(PropertyChangeEvent)} for updating the transform of the target canvas
      * in units of the objective CRS. The {@linkplain #target} canvas is updated by this method as if the given
-     * transform was applied <em>before</em> its current <cite>objective to display</cite> transform.
+     * transform was applied <em>before</em> its current <i>objective to display</i> transform.
      *
      * <p>The default implementation delegates to {@link PlanarCanvas#transformObjectiveCoordinates(AffineTransform)}.
      * Subclasses can override if they need to transform additional data.</p>
@@ -424,7 +422,7 @@ public class CanvasFollower implements PropertyChangeListener, Disposable {
     /**
      * Invoked by {@link #propertyChange(PropertyChangeEvent)} for updating the transform of the target canvas
      * in display units (typically pixels). The {@linkplain #target} canvas is updated by this method as if the
-     * given transform was applied <em>after</em> its current <cite>objective to display</cite> transform.
+     * given transform was applied <em>after</em> its current <i>objective to display</i> transform.
      *
      * <p>The default implementation delegates to {@link PlanarCanvas#transformDisplayCoordinates(AffineTransform)}.
      * Subclasses can override if they need to transform additional data.</p>

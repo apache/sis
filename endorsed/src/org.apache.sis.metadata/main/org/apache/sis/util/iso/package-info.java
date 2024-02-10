@@ -25,7 +25,7 @@
  *       <li>{@link org.apache.sis.util.iso.DefaultLocalName}  for identifier within a {@linkplain org.apache.sis.util.iso.DefaultNameSpace name space}.</li>
  *       <li>{@link org.apache.sis.util.iso.DefaultMemberName} for identifying a member of a {@linkplain org.apache.sis.util.iso.DefaultRecord record}.</li>
  *       <li>{@link org.apache.sis.util.iso.DefaultTypeName}   for identifying an attribute type associated to a member.</li>
- *       <li>{@link org.apache.sis.util.iso.DefaultScopedName} for a composite of a <cite>head</cite> name and a <cite>tail</cite> name.</li>
+ *       <li>{@link org.apache.sis.util.iso.DefaultScopedName} for a composite of a <i>head</i> name and a <i>tail</i> name.</li>
  *     </ul>
  *   </li>
  *   <li>Implementations of {@link org.opengis.util.Record} and related classes (derived from ISO 19103):

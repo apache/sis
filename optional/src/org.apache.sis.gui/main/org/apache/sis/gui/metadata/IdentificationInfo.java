@@ -342,12 +342,12 @@ final class IdentificationInfo extends Section<Identification> {
                 final Date cd = c.getDate();
                 if (cd != null) {
                     final DateType type = c.getDateType();
-                    if (DateType.PUBLICATION.equals(type) || DateType.RELEASED.equals(type)) {
+                    if (type == DateType.PUBLICATION || type == DateType.RELEASED) {
                         label = Vocabulary.Keys.PublicationDate;
                         date  = cd;
                         break;                      // Take the first publication or release date.
                     }
-                    final boolean isCreation = DateType.CREATION.equals(type);
+                    final boolean isCreation = (type == DateType.CREATION);
                     if (date == null || isCreation) {
                         label = isCreation ? Vocabulary.Keys.CreationDate : Vocabulary.Keys.Date;
                         date  = cd;     // Fallback date: creation date, or the first date otherwise.

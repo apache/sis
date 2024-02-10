@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.metadata.content.TransferFunctionType;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -31,7 +32,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
 
 
 /**
- * The function converting raster <cite>sample values</cite> to <cite>geophysics values</cite>.
+ * The function converting raster <i>sample values</i> to <i>geophysics values</i>.
  * The function is usually linear, but can sometimes be logarithmic or exponential.
  * The latter occur most often when measuring concentration of something.
  *
@@ -121,7 +122,7 @@ public class TransferFunction implements Cloneable, Serializable {
      * @since 1.0
      */
     public boolean isIdentity() {
-        return TransferFunctionType.LINEAR.equals(type) && scale == 1 && offset == 0;
+        return type == TransferFunctionType.LINEAR && scale == 1 && offset == 0;
     }
 
     /**
@@ -140,8 +141,7 @@ public class TransferFunction implements Cloneable, Serializable {
      * @param  type  the transfer function type.
      */
     public void setType(final TransferFunctionType type) {
-        ArgumentChecks.ensureNonNull("type", type);
-        this.type = type;
+        this.type = Objects.requireNonNull(type);
         transform = null;
     }
 
@@ -153,7 +153,7 @@ public class TransferFunction implements Cloneable, Serializable {
      * @return the logarithmic or exponent base.
      */
     public double getBase() {
-        return TransferFunctionType.LINEAR.equals(type) ? 1 : base;
+        return type == TransferFunctionType.LINEAR ? 1 : base;
     }
 
     /**
@@ -243,14 +243,14 @@ public class TransferFunction implements Cloneable, Serializable {
     public MathTransform createTransform(final MathTransformFactory factory) throws FactoryException {
         ArgumentChecks.ensureNonNull("factory", factory);
         MathTransform mt;
-        if (TransferFunctionType.LINEAR.equals(type)) {
+        if (type == TransferFunctionType.LINEAR) {
             mt = createAffineTransform(factory, true);
-        } else if (TransferFunctionType.EXPONENTIAL.equals(type)) {
+        } else if (type == TransferFunctionType.EXPONENTIAL) {
             mt = ExponentialTransform1D.create(base, scale);
             if (offset != 0) {
                 mt = factory.createConcatenatedTransform(mt, createAffineTransform(factory, false));
             }
-        } else if (TransferFunctionType.LOGARITHMIC.equals(type)) {
+        } else if (type == TransferFunctionType.LOGARITHMIC) {
             if (scale == 1) {
                 mt = LogarithmicTransform1D.create(base, offset);
             } else {
@@ -273,14 +273,14 @@ public class TransferFunction implements Cloneable, Serializable {
     public MathTransform1D getTransform() {
         MathTransform1D mt = transform;
         if (mt == null) {
-            if (TransferFunctionType.LINEAR.equals(type)) {
+            if (type == TransferFunctionType.LINEAR) {
                 mt = LinearTransform1D.create(scale, offset);
-            } else if (TransferFunctionType.EXPONENTIAL.equals(type)) {
+            } else if (type == TransferFunctionType.EXPONENTIAL) {
                 mt = ExponentialTransform1D.create(base, scale);
                 if (offset != 0) {                                          // Rarely occurs in practice.
                     mt = MathTransforms.concatenate(mt, LinearTransform1D.create(null, offset));
                 }
-            } else if (TransferFunctionType.LOGARITHMIC.equals(type)) {
+            } else if (type == TransferFunctionType.LOGARITHMIC) {
                 if (scale == 1) {
                     mt = LogarithmicTransform1D.create(base, offset);
                 } else {
@@ -402,16 +402,16 @@ public class TransferFunction implements Cloneable, Serializable {
                 StringBuilders.trimFractionalPart(b.append(scale).append('⋅'));
             }
         }
-        if (TransferFunctionType.LINEAR.equals(type)) {
+        if (type == TransferFunctionType.LINEAR) {
             b.append('x');
-        } else if (TransferFunctionType.EXPONENTIAL.equals(type)) {
+        } else if (type == TransferFunctionType.EXPONENTIAL) {
             if (base == Math.E) {
                 b.append('e');
             } else {
                 StringBuilders.trimFractionalPart(b.append(base));
             }
             b.append('ˣ');
-        } else if (TransferFunctionType.LOGARITHMIC.equals(type)) {
+        } else if (type == TransferFunctionType.LOGARITHMIC) {
             if (base == Math.E) {
                 b.append("ln");
             } else {

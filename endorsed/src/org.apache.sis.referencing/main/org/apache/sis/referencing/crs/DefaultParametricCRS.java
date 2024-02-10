@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
+import java.util.Objects;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlType;
@@ -25,7 +26,6 @@ import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.util.ArgumentChecks;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.cs.ParametricCS;
@@ -126,8 +126,7 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
                                 final ParametricCS cs)
     {
         super(properties, cs);
-        this.datum = datum;
-        ArgumentChecks.ensureNonNull("datum", datum);
+        this.datum = Objects.requireNonNull(datum);
     }
 
     /**
@@ -230,7 +229,7 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
     }
 
     /**
-     * Formats this CRS as a <cite>Well Known Text</cite> {@code ParametricCRS[…]} element.
+     * Formats this CRS as a <i>Well Known Text</i> {@code ParametricCRS[…]} element.
      *
      * <h4>Compatibility note</h4>
      * {@code ParametricCRS} is defined in the WKT 2 specification only.

@@ -17,10 +17,10 @@
 package org.apache.sis.math;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.io.Serializable;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -190,8 +190,7 @@ abstract class SequenceVector extends Vector implements Serializable {
 
         /** Computes the value at the given index. */
         @Override public final double doubleValue(final int index) {
-            ArgumentChecks.ensureValidIndex(length, index);
-            return Math.fma(index, increment, first);
+            return Math.fma(Objects.checkIndex(index, length), increment, first);
         }
 
         /** Returns the string representation of the value at the given index. */
@@ -318,8 +317,7 @@ abstract class SequenceVector extends Vector implements Serializable {
 
         /** Computes the value at the given index. */
         @Override public long longValue(final int index) {
-            ArgumentChecks.ensureValidIndex(length, index);
-            return first + increment*index;
+            return Math.addExact(first, Math.multiplyExact(increment, Objects.checkIndex(index, length)));
         }
 
         /** Returns the string representation of the value at the given index. */

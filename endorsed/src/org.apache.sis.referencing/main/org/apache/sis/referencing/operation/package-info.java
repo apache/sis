@@ -31,7 +31,7 @@
  *   <li>{@link org.apache.sis.referencing.operation.AbstractCoordinateOperation#getLinearAccuracy() AbstractCoordinateOperation.getLinearAccuracy()}
  *     — tries to convert the accuracy to metres,</li>
  *   <li>{@link org.apache.sis.referencing.operation.DefaultConversion#specialize DefaultConversion.specialize(…)}
- *     — changes a <cite>defining conversion</cite> into a complete conversion.</li>
+ *     — changes a <i>defining conversion</i> into a complete conversion.</li>
  * </ul>
  *
  * <h2>Apache SIS specific behavior</h2>
@@ -48,12 +48,12 @@
  *     for converting the longitude axis of source and target CRS to degrees before this operation is applied.</li>
  * </ul>
  *
- * <h2><cite>Early binding</cite> versus <cite>late binding</cite> implementations</h2>
+ * <h2><i>Early binding</i> versus <i>late binding</i> implementations</h2>
  * There is sometimes multiple ways of transforming coordinates for a given pair of source and target CRS.
  * For example, the {@linkplain org.apache.sis.referencing.datum.BursaWolfParameters Bursa-Wolf parameters}
  * may vary depending on the area of interest, like in the transformations from NAD27 to WGS84.
  * Even for a fixed set of Bursa-Wolf parameter, there is various ways to use them (<cite>Molodensky</cite>,
- * <cite>Abridged Molodensky</cite>, <cite>Geocentric translation</cite>, <cite>etc.</cite>).
+ * <cite>Abridged Molodensky</cite>, <cite>Geocentric translation</cite>, <i>etc.</i>).
  *
  * <p>EPSG identifies two approaches for addressing this multiplicity problem.
  * Quoting the GIGS guideline:</p>
@@ -77,7 +77,7 @@
  * <i>OGP publication, Report No. 430-1, September 2011</i></p>
  * </blockquote>
  *
- * Apache SIS is a <cite>late binding</cite> implementation, while a little trace for <cite>early binding</cite>
+ * Apache SIS is a <i>late binding</i> implementation, while a little trace for <i>early binding</i>
  * exists in the form of the {@link org.apache.sis.referencing.datum.DefaultGeodeticDatum#getBursaWolfParameters()}
  * method for those who really need it. This means that when searching for a coordinate operation between a given
  * pair of CRS, Apache SIS will query {@link org.apache.sis.referencing.factory.sql.EPSGFactory} before to try to

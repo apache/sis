@@ -90,8 +90,7 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
      *         Meridians in the East hemisphere are positive and meridians in the West hemisphere are negative.
      */
     DirectionAlongMeridian(final AxisDirection baseDirection, final double meridian) {
-        ArgumentChecks.ensureNonNull("baseDirection", baseDirection);
-        if (!AxisDirection.NORTH.equals(baseDirection) && !AxisDirection.SOUTH.equals(baseDirection)) {
+        if (!baseDirection.equals(AxisDirection.NORTH) && !baseDirection.equals(AxisDirection.SOUTH)) {
             throw new IllegalArgumentException(Errors.format(
                     Errors.Keys.IllegalArgumentValue_2, "baseDirection", baseDirection));
         }
@@ -183,7 +182,7 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
      * A positive angle denote a right-handed system.
      *
      * <h4>Example</h4>
-     * The angle from <q>North along 90 deg East</q> to <q>North along 0 deg</cite> is 90°.
+     * The angle from <q>North along 90 deg East</q> to <q>North along 0 deg</q> is 90°.
      */
     public double angle(final DirectionAlongMeridian other) {
         if (!baseDirection.equals(other.baseDirection)) {
@@ -288,7 +287,7 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
     }
 
     /**
-     * Formats this object as a <cite>Well Known Text</cite> {@code Meridian[…]} element.
+     * Formats this object as a <i>Well Known Text</i> {@code Meridian[…]} element.
      * This element contains the meridian value and the unit of measurement.
      * The unit is currently fixed to degrees, but this may change in any future implementation.
      *

@@ -18,7 +18,6 @@ package org.apache.sis.xml.bind.referencing;
 
 import java.util.Map;
 import java.util.List;
-import java.util.LinkedHashMap;
 import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -27,7 +26,7 @@ import org.apache.sis.xml.bind.gco.PropertyType;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.util.CorruptedObjectException;
-import org.apache.sis.util.collection.Containers;
+import org.apache.sis.pending.jdk.JDK19;
 
 
 /**
@@ -141,8 +140,7 @@ public final class CC_OperationParameterGroup extends PropertyType<CC_OperationP
         if (descriptors.isEmpty()) {
             return fromValues;
         }
-        final Map<String,GeneralParameterDescriptor> union =
-                new LinkedHashMap<>(Containers.hashMapCapacity(descriptors.size()));
+        final Map<String,GeneralParameterDescriptor> union = JDK19.newLinkedHashMap(descriptors.size());
         /*
          * Collect the descriptors declared explicitly in the ParameterDescriptorGroup. We should never have
          * two descriptors of the same name since the DefaultParameterDescriptorGroup constructor checked for

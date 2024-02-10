@@ -17,7 +17,7 @@
 
 /**
  * Filters features according their properties.
- * A <cite>filter expression</cite> is a construct used to constraint a feature set to a subset.
+ * A <dfn>filter expression</dfn> is a construct used to constraint a feature set to a subset.
  * Operations in this package follow the rules of
  * <a href="http://docs.opengeospatial.org/is/09-026r2/09-026r2.html">OGC® Filter Encoding</a> and
  * <a href="https://www.iso.org/standard/60343.html">ISO 13249-3 - SQLMM</a> standards.

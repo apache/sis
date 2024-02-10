@@ -235,7 +235,7 @@ public interface TreeTable {
 
         /**
          * Returns {@code true} if the given object is a node with the same content as this node.
-         * For this method, the meaning of <cite>same content</cite> is defined as below:
+         * For this method, the meaning of <dfn>same content</dfn> is defined as below:
          *
          * <ul>
          *   <li>The given object is also a {@code Node}.</li>
@@ -247,7 +247,7 @@ public interface TreeTable {
          * The node returned by {@link #getParent()} shall <strong>not</strong> be taken in account.
          * It is necessary to ignore the parent for consistency with {@linkplain DefaultTreeTable#clone() clone}
          * and for avoiding infinite recursivity when comparing the children.
-         * A third reason is given in the <cite>purpose</cite> example below.
+         * A third reason is given below.
          *
          * <h4>Purpose of this method: example with ISO metadata</h4>
          * Consider the following tree made of ISO 19115 metadata objects: a platform containing a list of instruments,

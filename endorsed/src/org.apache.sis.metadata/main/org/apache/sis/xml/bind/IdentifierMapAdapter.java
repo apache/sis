@@ -34,7 +34,8 @@ import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.internal.SetOfUnknownSize;
-import static org.apache.sis.util.collection.Containers.hashMapCapacity;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.pending.jdk.JDK19;
 
 
 /**
@@ -212,7 +213,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
      */
     @Override
     public final int size() {
-        final HashSet<Citation> done = new HashSet<>(hashMapCapacity(identifiers.size()));
+        final HashSet<Citation> done = JDK19.newHashSet(identifiers.size());
         for (final Identifier identifier : identifiers) {
             if (identifier != null) {
                 done.add(identifier.getAuthority());
@@ -442,7 +443,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
          * Creates a new iterator for the given collection of identifiers.
          */
         Iter(final Collection<? extends Identifier> identifiers, final boolean isModifiable) {
-            super(hashMapCapacity(identifiers.size()));
+            super(Containers.hashMapCapacity(identifiers.size()));
             this.identifiers = identifiers.iterator();
             this.isModifiable = isModifiable;
         }

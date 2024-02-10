@@ -176,7 +176,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * @param factory     the factory to use for creating {@linkplain AbstractMathTransform math transforms},
      *                    or {@code null} for the default factory.
      */
-    @SuppressWarnings("ResultOfMethodCallIgnored")
+    @SuppressWarnings({"LocalVariableHidesMemberVariable", "UnusedAssignment"})
     public DefaultCoordinateOperationFactory(Map<String,?> properties, MathTransformFactory factory) {
         final CSFactory  csFactory;
         final CRSFactory crsFactory;
@@ -281,6 +281,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     @Override
     public OperationMethod getOperationMethod(String name) throws FactoryException {
         ArgumentChecks.ensureNonEmpty("name", name = name.strip());
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final MathTransformFactory mtFactory = getMathTransformFactory();
         if (mtFactory instanceof DefaultMathTransformFactory) {
             return ((DefaultMathTransformFactory) mtFactory).getOperationMethod(name);
@@ -297,7 +298,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     /**
      * Creates an operation method from a set of properties and a descriptor group.
      * The source and target dimensions may be {@code null} if the method can work
-     * with any number of dimensions (e.g. <cite>Affine Transform</cite>).
+     * with any number of dimensions (e.g. <i>Affine Transform</i>).
      *
      * <p>The properties given in argument follow the same rules as for the
      * {@linkplain DefaultOperationMethod#DefaultOperationMethod(Map, ParameterDescriptorGroup)

@@ -47,9 +47,8 @@ import org.apache.sis.util.iso.Names;
 
 /**
  * Describes the data values in a coverage (the range). For a raster, a sample dimension is a band.
- * A sample dimension can reserve some values for <cite>qualitative</cite> information like  “this
- * is a forest” and some other values for <cite>quantitative</cite> information like a temperature
- * measurements.
+ * A sample dimension can reserve some values for <dfn>qualitative</dfn> information like “this is a forest”
+ * and some other values for <dfn>quantitative</dfn> information like a temperature measurements.
  *
  * <h2>Example</h2>
  * An image of sea surface temperature (SST) could define the following categories:
@@ -331,7 +330,7 @@ public class SampleDimension implements Serializable {
     }
 
     /**
-     * Returns the <cite>transfer function</cite> from sample values to real values.
+     * Returns the <dfn>transfer function</dfn> from sample values to real values.
      * This method returns a transform expecting sample values as input and computing real values as output.
      * The output units of measurement is given by {@link #getUnits()}.
      *
@@ -339,7 +338,7 @@ public class SampleDimension implements Serializable {
      * The <code>transferFunction.{@linkplain MathTransform1D#inverse() inverse()}</code> transform is capable to differentiate
      * those {@code NaN} values and get back the original sample value.</p>
      *
-     * @return the <cite>transfer function</cite> from sample to real values. May be absent if this sample dimension
+     * @return the <i>transfer function</i> from sample to real values. May be absent if this sample dimension
      *         does not define any transform (which is not the same that defining an identity transform).
      */
     public Optional<MathTransform1D> getTransferFunction() {
@@ -493,8 +492,7 @@ public class SampleDimension implements Serializable {
      */
     @Debug
     public static String toString(final Locale locale, SampleDimension... dimensions) {
-        ArgumentChecks.ensureNonNull("dimensions", dimensions);
-        return new SampleRangeFormat(locale).write(dimensions);
+        return new SampleRangeFormat(locale).write(Objects.requireNonNull(dimensions));
     }
 
 
@@ -507,18 +505,18 @@ public class SampleDimension implements Serializable {
      * <ul>
      *   <li>An optional name for the {@code SampleDimension}.</li>
      *   <li>A single optional category for the background value.</li>
-     *   <li>An arbitrary number of <cite>qualitative</cite> categories.</li>
-     *   <li>An arbitrary number of <cite>quantitative</cite> categories.</li>
+     *   <li>An arbitrary number of <i>qualitative</i> categories.</li>
+     *   <li>An arbitrary number of <i>quantitative</i> categories.</li>
      * </ul>
      *
-     * <p>A <cite>qualitative category</cite> is a range of sample values associated to a label.
+     * <p>A <dfn>qualitative category</dfn> is a range of sample values associated to a label.
      * For example, 0 = no data, 1 = cloud, 2 = sea, 3 = land, <i>etc</i>.
      * Missing values are also considered as a qualitative category and should be declared.
      * If the missing value can be used as a background value for filling empty spaces in
      * {@linkplain org.apache.sis.image.ImageProcessor#resample image resampling operations},
      * then it should be declared using {@code setBackground(…)} method instead of {@code addQualitative(…)}.</p>
      *
-     * <p>A <cite>quantitative category</cite> is a range of sample values associated to numbers with units of measurement.
+     * <p>A <dfn>quantitative category</dfn> is a range of sample values associated to numbers with units of measurement.
      * For example, 10 = 1.0°C, 11 = 1.1°C, 12 = 1.2°C, <i>etc</i>. A quantitative category has a
      * {@linkplain org.opengis.metadata.content.SampleDimension#getTransferFunctionType() transfer function}
      * (typically a scale factor and an offset) for converting sample values to values expressed
@@ -1196,14 +1194,12 @@ public class SampleDimension implements Serializable {
 
                 /** Returns the category at the given index. */
                 @Override public Category get(int i) {
-                    ArgumentChecks.ensureValidIndex(count, i);
-                    return categories[i];
+                    return categories[Objects.checkIndex(i, count)];
                 }
 
                 /** Removes the category at the given index. */
                 @Override public Category remove(int i) {
-                    ArgumentChecks.ensureValidIndex(count, i);
-                    final Category c = categories[i];
+                    final Category c = categories[Objects.checkIndex(i, count)];
                     System.arraycopy(categories, i+1, categories, i, --count - i);
                     categories[count] = null;
                     toNaN.remove(c);

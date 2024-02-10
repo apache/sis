@@ -51,7 +51,7 @@ import org.opengis.feature.type.FeatureType;
  * {@code   ├─features………………………………} Features to which the information applies.
  * {@code   └─other………………………………………} Class of information that does not fall into the other categories to which the information applies.</div>
  *
- * ISO 19115 defines {@code ScopeDescription} as an <cite>union</cite> (in the C/C++ sense):
+ * ISO 19115 defines {@code ScopeDescription} as an <i>union</i> (in the C/C++ sense):
  * only one of the properties in this class can be set to a non-empty value.
  * Setting any property to a non-empty value discard all the other ones.
  *
@@ -320,7 +320,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * If a geographic data provider is generating vector mapping for the administrative areas
      * and if the data were processed in the same way, then the provider could record the bulk
      * of initial data at {@link ScopeCode#DATASET} level with a
-     * “<cite>Administrative area A, B &amp; C</cite>” description.
+     * <q>Administrative area A, B &amp; C</q> description.
      *
      * @return dataset to which the information applies, or {@code null}.
      */
@@ -354,7 +354,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * <h4>Example</h4>
      * If an administrative area performs a complete re-survey of the road network,
      * the change can be recorded at {@link ScopeCode#FEATURE_TYPE} level with a
-     * “<cite>Administrative area A — Road network</cite>” description.
+     * <q>Administrative area A — Road network</q> description.
      *
      * <h4>Conditions</h4>
      * This method returns a modifiable collection only if no other property is set.
@@ -395,7 +395,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * <h4>Example</h4>
      * if an administrative area detects an anomaly in all overhead clearance of the road survey,
      * the correction can be recorded at {@link ScopeCode#ATTRIBUTE_TYPE} level with a
-     * “<cite>Administrative area A — Overhead clearance</cite>” description.
+     * <q>Administrative area A — Overhead clearance</q> description.
      *
      * <h4>Conditions</h4>
      * This method returns a modifiable collection only if no other property is set.
@@ -436,7 +436,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * <h4>Example</h4>
      * If a new bridge is constructed in a road network,
      * the change can be recorded at {@link ScopeCode#FEATURE} level with a
-     * “<cite>Administrative area A — New bridge</cite>” description.
+     * <q>Administrative area A — New bridge</q> description.
      *
      * <h4>Conditions</h4>
      * This method returns a modifiable collection only if no other property is set.
@@ -477,7 +477,7 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * <h4>Example</h4>
      * If the overhead clearance of a new bridge was wrongly recorded,
      * the correction can be recorded at {@link ScopeCode#ATTRIBUTE} level with a
-     * “<cite>Administrative area A — New bridge — Overhead clearance</cite>” description.
+     * <q>Administrative area A — New bridge — Overhead clearance</q> description.
      *
      * <h4>Conditions</h4>
      * This method returns a modifiable collection only if no other property is set.
@@ -563,31 +563,31 @@ public class DefaultScopeDescription extends ISOMetadata implements ScopeDescrip
      * @since 1.0
      */
     public void setLevelDescription(final ScopeCode level, final Set<? extends CharSequence> newValues) {
-        if (ScopeCode.DATASET.equals(level)) {
+        if (level == ScopeCode.DATASET) {
             String description = null;
             if (newValues != null) {
-                for (CharSequence value : newValues) {
-                    if (value != null) {
-                        description = value.toString();
+                for (CharSequence v : newValues) {
+                    if (v != null) {
+                        description = v.toString();
                         break;
                     }
                 }
             }
             setDataset(description);
-        } else if (ScopeCode.FEATURE_TYPE.equals(level)) {
+        } else if (level == ScopeCode.FEATURE_TYPE) {
             setFeatures(LegacyFeatureType.wrapAll(newValues));
-        } else if (ScopeCode.ATTRIBUTE_TYPE.equals(level)) {
+        } else if (level == ScopeCode.ATTRIBUTE_TYPE) {
             setAttributes(LegacyFeatureType.wrapAll(newValues));
-        } else if (ScopeCode.FEATURE.equals(level)) {
+        } else if (level == ScopeCode.FEATURE) {
             setFeatureInstances(LegacyFeatureType.wrapAll(newValues));
-        } else if (ScopeCode.ATTRIBUTE.equals(level)) {
+        } else if (level == ScopeCode.ATTRIBUTE) {
             setAttributeInstances(LegacyFeatureType.wrapAll(newValues));
         } else {
             String description = null;
             if (newValues != null) {
-                for (CharSequence value : newValues) {
-                    if (value != null) {
-                        description = value.toString();
+                for (CharSequence v : newValues) {
+                    if (v != null) {
+                        description = v.toString();
                         break;
                     }
                 }

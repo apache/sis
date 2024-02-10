@@ -22,14 +22,14 @@
  * <ul class="verbose">
  *   <li>{@link org.apache.sis.referencing.factory.GeodeticAuthorityFactory}
  *     creates geodetic objects from codes defined by an authority.
- *     An <cite>authority</cite> is an organization that maintains definitions of authority codes.
- *     An <cite>authority code</cite> is a compact string defined by an authority to reference a particular spatial reference object.
+ *     An <dfn>authority</dfn> is an organization that maintains definitions of authority codes.
+ *     An <dfn>authority code</dfn> is a compact string defined by an authority to reference a particular spatial reference object.
  *     A frequently used set of authority codes is the <a href="https://epsg.org/">EPSG geodetic dataset</a>,
  *     a database of coordinate systems and other spatial referencing objects where each object has a code number ID.</li>
  *
  *   <li>{@link org.apache.sis.referencing.factory.GeodeticObjectFactory}
  *     creates complex objects that cannot be created by the authority factories.
- *     Allows also <cite>inversion of control</cite> when used with the
+ *     Allows also <i>inversion of control</i> when used with the
  *     {@linkplain org.apache.sis.referencing.factory.sql.EPSGFactory EPSG authority factory}
  *     or with the {@linkplain org.apache.sis.io.wkt.WKTFormat WKT parser}.</li>
  * </ul>

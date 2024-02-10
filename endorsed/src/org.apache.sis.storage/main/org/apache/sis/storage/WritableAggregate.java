@@ -28,7 +28,7 @@ package org.apache.sis.storage;
 public interface WritableAggregate extends Aggregate {
     /**
      * Adds a new {@code Resource} in this {@code Aggregate}.
-     * The given {@link Resource} will be copied, and the <cite>effectively added</cite> resource returned.
+     * The given {@link Resource} will be copied, and the <i>effectively added</i> resource returned.
      * The effectively added resource may differ from the given resource in many aspects.
      * The possible changes may include the followings but not only:
      *

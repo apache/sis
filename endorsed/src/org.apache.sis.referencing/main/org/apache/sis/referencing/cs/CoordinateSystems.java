@@ -361,8 +361,6 @@ next:   for (final CoordinateSystem cs : targets) {
                                           final CoordinateSystem targetCS)
             throws IllegalArgumentException, IncommensurableException
     {
-        ArgumentChecks.ensureNonNull("sourceCS", sourceCS);
-        ArgumentChecks.ensureNonNull("targetCS", targetCS);
         if (!Classes.implementSameInterfaces(sourceCS.getClass(), targetCS.getClass(), CoordinateSystem.class)) {
             // Above line was a relatively cheap test. Try the more expensive test below only if necessary.
             if (!hasAllTargetTypes(sourceCS, targetCS)) {
@@ -565,7 +563,6 @@ next:   for (final CoordinateSystem cs : targets) {
      * @since 0.8
      */
     public static AxisDirection[] getAxisDirections(final CoordinateSystem cs) {
-        ArgumentChecks.ensureNonNull("cs", cs);
         final AxisDirection[] directions = new AxisDirection[cs.getDimension()];
         for (int i=0; i<directions.length; i++) {
             final CoordinateSystemAxis axis = cs.getAxis(i);
@@ -582,14 +579,13 @@ next:   for (final CoordinateSystem cs : targets) {
      * and the space is rare.
      *
      * @param  axis    the axis for which to get a short label.
-     * @param  locale  desired locale for the label.
+     * @param  locale  desired locale for the label, or {@code null} for the default.
      * @return a relatively short axis label, in the desired locale if possible.
      *
      * @since 1.3
      */
     public static String getShortName(final CoordinateSystemAxis axis, final Locale locale) {
-        ArgumentChecks.ensureNonNull("axis", axis);
-        return AxisName.find(axis, locale);
+        return AxisName.find(Objects.requireNonNull(axis), locale);
     }
 
     /**
@@ -644,7 +640,6 @@ next:   for (final CoordinateSystem cs : targets) {
     @SuppressWarnings("fallthrough")
     public static Integer getEpsgCode(final Class<? extends CoordinateSystem> type, final CoordinateSystemAxis... axes) {
         ArgumentChecks.ensureNonNull("type", type);
-        ArgumentChecks.ensureNonNull("axes", axes);
 forDim: switch (axes.length) {
             case 3: {
                 if (!Units.METRE.equals(axes[2].getUnit())) break;      // Restriction in our hard-coded list of codes.
@@ -667,7 +662,7 @@ forDim: switch (axes.length) {
                             final CoordinateSystemAxis axis = axes[i];
                             ArgumentChecks.ensureNonNullElement("axes", i, axis);
                             directions[i] = axis.getDirection();
-                            if (isAngular && RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning())) try {
+                            if (isAngular && axis.getRangeMeaning() == RangeMeaning.WRAPAROUND) try {
                                 final UnitConverter uc = unit.getConverterToAny(Units.DEGREE);
                                 final double min = uc.convert(axis.getMinimumValue());
                                 final double max = uc.convert(axis.getMaximumValue());

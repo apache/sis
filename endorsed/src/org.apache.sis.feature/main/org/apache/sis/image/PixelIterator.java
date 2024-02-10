@@ -17,6 +17,7 @@
 package org.apache.sis.image;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.NoSuchElementException;
 import java.nio.Buffer;
@@ -427,7 +428,6 @@ public class PixelIterator {
          * @return a new iterator traversing pixels in the given raster.
          */
         public PixelIterator create(final Raster data) {
-            ArgumentChecks.ensureNonNull("data", data);
             final int scanlineStride = getScanlineStride(data.getSampleModel());
             if (scanlineStride > 0) {
                 return new BandedIterator(data, null, subArea, window, order, scanlineStride);
@@ -443,8 +443,7 @@ public class PixelIterator {
          * @return a new iterator traversing pixels in the given image.
          */
         public PixelIterator create(RenderedImage data) {
-            ArgumentChecks.ensureNonNull("data", data);
-            data = unwrap(data);
+            data = unwrap(Objects.requireNonNull(data));
             /*
              * Note: Before Java 16, `BufferedImage.getTileGridXOffset()` and `getTileGridYOffset()` had a bug.
              * They should return `BufferedImage.getMinX()` (which is always 0) because the image contains only
@@ -472,8 +471,7 @@ public class PixelIterator {
          * @return a new iterator traversing pixels in the given raster.
          */
         public WritablePixelIterator createWritable(final WritableRaster data) {
-            ArgumentChecks.ensureNonNull("data", data);
-            return createWritable(data, data);
+            return createWritable(Objects.requireNonNull(data), data);
         }
 
         /**
@@ -483,8 +481,7 @@ public class PixelIterator {
          * @return a new iterator traversing pixels in the given image.
          */
         public WritablePixelIterator createWritable(final WritableRenderedImage data) {
-            ArgumentChecks.ensureNonNull("data", data);
-            if (data instanceof BufferedImage) {
+            if (Objects.requireNonNull(data) instanceof BufferedImage) {
                 return createWritable(((BufferedImage) data).getRaster());
             }
             return createWritable(data, data);
@@ -1090,7 +1087,7 @@ public class PixelIterator {
 
     /**
      * Returns a moving window over the sample values in a rectangular region starting at iterator position.
-     * The <cite>window size</cite> must have been specified at {@code PixelIterator} construction time.
+     * The <var>window size</var> must have been specified at {@code PixelIterator} construction time.
      * The current iterator position is the window corner having the smallest <var>x</var> and <var>y</var> coordinates.
      * This is typically, but not necessarily (depending on axis orientations) the window upper-left corner.
      * Sample values are stored in a sequence of length
@@ -1142,7 +1139,7 @@ public class PixelIterator {
      */
     @SuppressWarnings("unchecked")
     public <T extends Buffer> Window<T> createWindow(final TransferType<T> type) {
-        ArgumentChecks.ensureNonNull("type", type);
+        // Implicit null value check below.
         final int length = numBands * windowWidth * windowHeight;
         // `transfer` array needs one row or one column less than `data`.
         final int transferLength = length - numBands * Math.min(windowWidth, windowHeight);

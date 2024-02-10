@@ -59,7 +59,7 @@ import org.apache.sis.util.internal.Numerics;
 
 /**
  * Creates a grid coverage resource from an aggregation of an arbitrary number of other resources.
- * This class accepts heterogeneous resources (a <cite>data lake</cite>), organizes them in a tree
+ * This class accepts heterogeneous resources (a <i>data lake</i>), organizes them in a tree
  * of resources as described in the next section, then performs different kinds of aggregation:
  *
  * <ul class="verbose">

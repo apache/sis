@@ -322,6 +322,7 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
      * Closes the (pooled) connection, including the statements of all dependencies.
      */
     @Override
+    @SuppressWarnings("try")
     public void close() throws SQLException {
         if (spatialInformation != null) {
             spatialInformation.close();

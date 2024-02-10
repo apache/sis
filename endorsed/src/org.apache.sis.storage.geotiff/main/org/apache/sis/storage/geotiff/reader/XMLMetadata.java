@@ -63,7 +63,7 @@ import static org.apache.sis.metadata.internal.TemporalUtilities.toDate;
  * </ul>
  *
  * {@code GEO_METADATA} is defined by the Defense Geospatial Information Working Group (DGIWG)
- * in the <cite>GeoTIFF Profile for Georeferenced Imagery</cite> standard.
+ * in the <i>GeoTIFF Profile for Georeferenced Imagery</i> standard.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *

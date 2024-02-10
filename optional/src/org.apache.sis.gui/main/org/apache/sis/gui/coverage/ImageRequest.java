@@ -16,13 +16,13 @@
  */
 package org.apache.sis.gui.coverage;
 
+import java.util.Objects;
 import java.util.Optional;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -114,8 +114,7 @@ public class ImageRequest {
      * @see GridCoverageResource#read(GridGeometry, int...)
      */
     public ImageRequest(final GridCoverageResource source, final GridGeometry domain, final int... range) {
-        ArgumentChecks.ensureNonNull("source", source);
-        this.resource = source;
+        this.resource = Objects.requireNonNull(source);
         this.domain   = domain;
         this.range    = (range != null && range.length != 0) ? range : null;
         /*
@@ -140,8 +139,7 @@ public class ImageRequest {
      * @see GridCoverage#render(GridExtent)
      */
     public ImageRequest(final GridCoverage source, final GridExtent slice) {
-        ArgumentChecks.ensureNonNull("source", source);
-        this.coverage = source;
+        this.coverage = Objects.requireNonNull(source);
         this.slice    = slice;
         this.resource = null;
         this.domain   = null;

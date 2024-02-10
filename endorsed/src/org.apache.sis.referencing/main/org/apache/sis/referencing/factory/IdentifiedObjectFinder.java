@@ -18,6 +18,7 @@ package org.apache.sis.referencing.factory;
 
 import java.util.Set;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import org.opengis.util.GenericName;
@@ -28,7 +29,6 @@ import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.internal.Constants;
@@ -41,7 +41,7 @@ import org.apache.sis.util.logging.Logging;
  * Searches in an authority factory for objects approximately equal to a given object.
  * This class can be used for fetching a fully defined {@linkplain AbstractIdentifiedObject identified object}
  * from an incomplete one, for example from an object without "{@code ID[…]}" or "{@code AUTHORITY[…]}"
- * element in <cite>Well Known Text</cite>.
+ * element in <i>Well Known Text</i>.
  *
  * <p>The steps for using {@code IdentifiedObjectFinder} are:</p>
  * <ol>
@@ -188,8 +188,7 @@ public class IdentifiedObjectFinder {
      * @see GeodeticAuthorityFactory#newIdentifiedObjectFinder()
      */
     protected IdentifiedObjectFinder(final AuthorityFactory factory) {
-        ArgumentChecks.ensureNonNull("factory", factory);
-        this.factory = factory;
+        this.factory = Objects.requireNonNull(factory);
     }
 
     /**
@@ -228,8 +227,7 @@ public class IdentifiedObjectFinder {
      * @param  domain  the domain of the search.
      */
     public void setSearchDomain(final Domain domain) {
-        ArgumentChecks.ensureNonNull("domain", domain);
-        this.domain = domain;
+        this.domain = Objects.requireNonNull(domain);
     }
 
     /**
@@ -311,8 +309,7 @@ public class IdentifiedObjectFinder {
      * @throws FactoryException if an error occurred while creating an object.
      */
     public Set<IdentifiedObject> find(final IdentifiedObject object) throws FactoryException {
-        ArgumentChecks.ensureNonNull("object", object);
-        Set<IdentifiedObject> result = getFromCache(object);
+        Set<IdentifiedObject> result = getFromCache(Objects.requireNonNull(object));
         if (result == null) {
             final AuthorityFactoryProxy<?> previousProxy = proxy;
             proxy = AuthorityFactoryProxy.getInstance(object.getClass());

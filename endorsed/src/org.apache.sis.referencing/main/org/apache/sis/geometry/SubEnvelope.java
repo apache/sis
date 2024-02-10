@@ -23,9 +23,7 @@ package org.apache.sis.geometry;
  * force installation of the Java2D module (e.g. JavaFX/SWT).
  */
 import java.util.Arrays;
-
-import static org.apache.sis.util.ArgumentChecks.ensureValidIndex;
-import static org.apache.sis.util.ArgumentChecks.ensureValidIndexRange;
+import java.util.Objects;
 
 
 /**
@@ -102,8 +100,7 @@ final class SubEnvelope extends GeneralEnvelope {
      */
     @Override
     public double getLower(final int dimension) throws IndexOutOfBoundsException {
-        ensureValidIndex(endIndex, dimension);
-        return coordinates[dimension + beginIndex];
+        return coordinates[Objects.checkIndex(dimension, endIndex) + beginIndex];
     }
 
     /**
@@ -112,8 +109,7 @@ final class SubEnvelope extends GeneralEnvelope {
      */
     @Override
     public double getUpper(final int dimension) throws IndexOutOfBoundsException {
-        ensureValidIndex(endIndex, dimension);
-        return coordinates[dimension + beginIndex + (coordinates.length >>> 1)];
+        return coordinates[Objects.checkIndex(dimension, endIndex) + beginIndex + (coordinates.length >>> 1)];
     }
 
     /**
@@ -123,7 +119,7 @@ final class SubEnvelope extends GeneralEnvelope {
     public void setRange(int dimension, final double lower, final double upper)
             throws IndexOutOfBoundsException
     {
-        ensureValidIndex(endIndex, dimension);
+        Objects.checkIndex(dimension, endIndex);
         /*
          * The check performed here shall be identical to the super-class method, which is itself
          * identical to ArrayEnvelope.verifyRanges(crs, coordinates) except that there is no loop.
@@ -197,7 +193,7 @@ final class SubEnvelope extends GeneralEnvelope {
      */
     @Override
     public GeneralEnvelope subEnvelope(final int b, final int e) throws IndexOutOfBoundsException {
-        ensureValidIndexRange(endIndex - beginIndex, b, e);
+        Objects.checkFromToIndex(b, e, endIndex - beginIndex);
         return new SubEnvelope(coordinates, b + beginIndex, e + beginIndex);
     }
 

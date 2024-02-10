@@ -19,7 +19,7 @@ package org.apache.sis.util;
 
 /**
  * Thrown when an object cannot be {@linkplain ObjectConverter#apply(Object) converted}
- * from the <cite>source</cite> type to the <cite>target</cite> type.
+ * from the <i>source</i> type to the <i>target</i> type.
  *
  * <p>Some converters may attempt many strategies before to give up, resulting in more than
  * one exception being caught. In such case, all the failed attempts will be reported as

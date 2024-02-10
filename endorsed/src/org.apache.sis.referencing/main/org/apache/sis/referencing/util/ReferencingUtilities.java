@@ -424,8 +424,8 @@ public final class ReferencingUtilities extends Static {
     public static boolean startsWithNorthEast(final CoordinateSystem cs) {
         final int dimension = cs.getDimension();
         return (dimension >= 2)
-                && AxisDirection.NORTH.equals(cs.getAxis(0).getDirection())
-                && AxisDirection.EAST .equals(cs.getAxis(1).getDirection());
+                && cs.getAxis(0).getDirection() == AxisDirection.NORTH
+                && cs.getAxis(1).getDirection() == AxisDirection.EAST;
     }
 
     /**
@@ -666,13 +666,13 @@ public final class ReferencingUtilities extends Static {
             final CoordinateSystemAxis axis = cs.getAxis(i);
             final AxisDirection direction = axis.getDirection();
             if (AxisDirections.isCardinal(direction)) {
-                final boolean isMeridional = AxisDirection.NORTH.equals(direction) || AxisDirection.SOUTH.equals(direction);
+                final boolean isMeridional = (direction == AxisDirection.NORTH) || (direction == AxisDirection.SOUTH);
                 if (isGeographic) {
                     key = isMeridional ? Vocabulary.Keys.Latitude : Vocabulary.Keys.Longitude;
                 } else if (isProjected) {
                     // We could add "Easting" / "Northing" here for ProjectedCRS in a future version.
                 }
-            } else if (AxisDirection.UP.equals(direction)) {
+            } else if (direction == AxisDirection.UP) {
                 if (isGeographic | isProjected) {
                     key = Vocabulary.Keys.Height;
                 }

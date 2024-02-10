@@ -197,7 +197,6 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
      * @param  upstream  the branch which is merged in this branch.
      * @throws IOException if an error occurred while reading a file.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     private ReorganizeImports(final Path root, final ReorganizeImports upstream) throws IOException {
         this.root = root;
         if (upstream == null) {
@@ -619,11 +618,11 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
      * @throws IOException if an error occurred while writing a file.
      */
     private void rewrite(final String[] branchNames) throws IOException {
-        final Integer bitmask = (1 << branchNames.length) - 1;
+        final Integer allBranches = (1 << branchNames.length) - 1;
         final var lines = new ArrayList<String>();
         for (final Map.Entry<Path,Source> entry : sources.entrySet()) {
             final Path relative = entry.getKey();
-            entry.getValue().writeTo(lines, branchNames, branchesOfFiles.getOrDefault(relative, bitmask));
+            entry.getValue().writeTo(lines, branchNames, branchesOfFiles.getOrDefault(relative, allBranches));
             lines.replaceAll(ReorganizeImports::removeExtraneousSpaces);
             Files.write(root.resolve(relative), lines, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
             lines.clear();

@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
+import java.util.Objects;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -26,7 +27,6 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -44,7 +44,6 @@ import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
@@ -102,8 +101,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
                        final CoordinateSystem cs)
     {
         super(properties, cs);
-        ensureNonNull("datum", datum);
-        this.datum = datum;
+        this.datum = Objects.requireNonNull(datum);
     }
 
     /**
@@ -170,7 +168,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
     }
 
     /**
-     * Formats this CRS as a <cite>Well Known Text</cite> {@code GeodeticCRS[…]} element.
+     * Formats this CRS as a <i>Well Known Text</i> {@code GeodeticCRS[…]} element.
      * More information about the WKT format is documented in subclasses.
      *
      * @return {@code "GeodeticCRS"} (WKT 2) or {@code "GeogCS"}/{@code "GeocCS"} (WKT 1).
@@ -192,7 +190,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
             SingleCRS first  = CRS.getHorizontalComponent(this);
             SingleCRS second = CRS.getVerticalComponent(this, true);
             if (first != null && second != null) {                      // Should not be null, but we are paranoiac.
-                if (AxisDirection.UP.equals(AxisDirections.absolute(cs.getAxis(0).getDirection()))) {
+                if (AxisDirections.isVertical(cs.getAxis(0).getDirection())) {
                     // It is very unusual to have VerticalCRS first, but our code tries to be robust.
                     final SingleCRS t = first;
                     first = second; second = t;

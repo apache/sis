@@ -16,8 +16,9 @@
  */
 package org.apache.sis.math;
 
-import java.util.Iterator;
 import java.io.Serializable;
+import java.util.Objects;
+import java.util.Iterator;
 import java.util.function.DoubleBinaryOperator;
 import static java.lang.Math.abs;
 import static java.lang.Math.sqrt;
@@ -362,8 +363,7 @@ public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
      * @throws MismatchedDimensionException if a point is not three-dimensional.
      */
     public double fit(final Iterable<? extends DirectPosition> points) {
-        ArgumentChecks.ensureNonNull("points", points);
-        final Fit r = new Fit(points);
+        final Fit r = new Fit(Objects.requireNonNull(points));
         r.resolve();
         final double p = r.correlation(0, 0, null, points.iterator());
         /*

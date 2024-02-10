@@ -25,11 +25,11 @@ import java.util.Spliterator;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.DirectPosition2D;
-import org.apache.sis.util.collection.Containers;
+import org.apache.sis.pending.jdk.JDK19;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
@@ -115,7 +115,7 @@ public final class PointTreeTest extends TestCase {
         random = TestUtilities.createRandomNumberGenerator();
         tree = new PointTree<>(Element.class, region, Element::getPosition, 5, false);
         int count = random.nextInt(100) + 200;
-        data = new HashSet<>(Containers.hashMapCapacity(count));
+        data = JDK19.newHashSet(count);
         while (--count >= 0) {
             final Element e = new Element(random);
             assertEquals(data.add(e), tree.add(e));

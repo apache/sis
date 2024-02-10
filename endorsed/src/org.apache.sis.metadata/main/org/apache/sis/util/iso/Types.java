@@ -17,7 +17,6 @@
 package org.apache.sis.util.iso;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.SortedMap;
 import java.util.Locale;
 import java.util.Properties;
@@ -42,9 +41,9 @@ import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.internal.CodeLists;
+import org.apache.sis.pending.jdk.JDK19;
 import org.apache.sis.system.Modules;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -525,7 +524,7 @@ public final class Types extends Static {
              * Also use internized strings because those Strings are programmatic names or annotation values
              * which are expected to be internized anyway when the corresponding classes are loaded.
              */
-            typeForNames = new HashMap<>(Containers.hashMapCapacity(2 * props.size()));
+            typeForNames = JDK19.newHashMap(2 * props.size());
             for (final Map.Entry<Object,Object> e : props.entrySet()) {
                 final String key   = ((String) e.getKey()).intern();
                 final String value = ((String) e.getValue()).intern();
@@ -647,7 +646,7 @@ public final class Types extends Static {
      *   <li>If the key is exactly equals to {@code prefix}, selects {@link Locale#ROOT}.</li>
      *   <li>Otherwise the characters after {@code '_'} are parsed as an ISO language and country code
      *       by the {@link Locales#parse(String, int)} method. Note that 3-letters codes are replaced
-     *       by their 2-letters counterparts on a <cite>best effort</cite> basis.</li>
+     *       by their 2-letters counterparts on a <em>best effort</em> basis.</li>
      *   <li>The value for the decoded locale is added in the international string to be returned.</li>
      * </ul>
      *

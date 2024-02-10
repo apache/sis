@@ -17,7 +17,7 @@
 
 /**
  * Helper classes for reading and writing XML documents using StAX (Streaming API for XML).
- * This package uses the <cite>cursor API</cite> through {@link javax.xml.stream.XMLStreamReader}
+ * This package uses the <i>cursor API</i> through {@link javax.xml.stream.XMLStreamReader}
  * and {@link javax.xml.stream.XMLStreamWriter} interfaces.
  * Implementations can optionally use JAXB for some specific elements,
  * typically for metadata before the stream of features.

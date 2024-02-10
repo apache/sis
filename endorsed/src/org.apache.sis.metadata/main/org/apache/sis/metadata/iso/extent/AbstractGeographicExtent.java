@@ -60,7 +60,7 @@ public class AbstractGeographicExtent extends ISOMetadata implements GeographicE
 
     /**
      * Indication of whether the bounding polygon encompasses an area covered by the data
-     * (<cite>inclusion</cite>) or an area where data is not present (<cite>exclusion</cite>).
+     * (<dfn>inclusion</dfn>) or an area where data is not present (<dfn>exclusion</dfn>).
      * May be {@code null} is unspecified.
      */
     private Boolean inclusion;
@@ -138,7 +138,7 @@ public class AbstractGeographicExtent extends ISOMetadata implements GeographicE
 
     /**
      * Indication of whether the bounding polygon encompasses an area covered by the data
-     * (<cite>inclusion</cite>) or an area where data is not present (<cite>exclusion</cite>).
+     * (<dfn>inclusion</dfn>) or an area where data is not present (<dfn>exclusion</dfn>).
      *
      * @return {@code true} for inclusion, or {@code false} for exclusion.
      *         May be {@code null} is unspecified.
@@ -151,7 +151,7 @@ public class AbstractGeographicExtent extends ISOMetadata implements GeographicE
 
     /**
      * Sets whether the bounding polygon encompasses an area covered by the data
-     * (<cite>inclusion</cite>) or an area where data is not present (<cite>exclusion</cite>).
+     * (<dfn>inclusion</dfn>) or an area where data is not present (<dfn>exclusion</dfn>).
      *
      * @param newValue {@code true} if the bounding polygon encompasses an area covered by the data.
      */

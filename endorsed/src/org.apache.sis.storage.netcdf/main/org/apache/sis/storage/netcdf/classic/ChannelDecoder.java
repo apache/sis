@@ -52,20 +52,20 @@ import org.apache.sis.storage.netcdf.base.Variable;
 import org.apache.sis.storage.netcdf.base.Dimension;
 import org.apache.sis.storage.netcdf.base.Convention;
 import org.apache.sis.storage.netcdf.base.NamedElement;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.internal.StandardDateFormat;
-import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
+import org.apache.sis.pending.jdk.JDK19;
 
 
 /**
@@ -302,7 +302,7 @@ public final class ChannelDecoder extends Decoder {
     }
 
     /**
-     * Creates a (<cite>name</cite>, <cite>element</cite>) mapping for the given array of elements.
+     * Creates a (<var>name</var>, <var>element</var>) mapping for the given array of elements.
      * If the name of an element is not all lower cases, then this method also adds an entry for the
      * lower cases version of that name in order to allow case-insensitive searches.
      *
@@ -311,7 +311,7 @@ public final class ChannelDecoder extends Decoder {
      *
      * @param  <E>       the type of elements.
      * @param  elements  the elements to store in the map, or {@code null} if none.
-     * @return a (<cite>name</cite>, <cite>element</cite>) mapping with lower cases entries where possible.
+     * @return a (<var>name</var>, <var>element</var>) mapping with lower cases entries where possible.
      * @throws InvalidParameterCardinalityException if the same name is used for more than one element.
      */
     private static <E extends NamedElement> Map<String,E> toCaseInsensitiveNameMap(final E[] elements) {
@@ -658,7 +658,7 @@ public final class ChannelDecoder extends Decoder {
         if (attributes.size() >= attributeMap.size()) {
             return Collections.unmodifiableSet(attributeMap.keySet());
         }
-        final Set<String> attributeNames = new LinkedHashSet<>(Containers.hashMapCapacity(attributes.size()));
+        final Set<String> attributeNames = JDK19.newLinkedHashSet(attributes.size());
         attributes.forEach((e) -> attributeNames.add(e.getKey()));
         return attributeNames;
     }

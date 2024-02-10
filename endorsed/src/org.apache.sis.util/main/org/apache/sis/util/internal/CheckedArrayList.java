@@ -21,11 +21,11 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Objects;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.CheckedContainer;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
@@ -40,7 +40,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  *   <li>Does not accept null elements.</li>
  * </ul>
  *
- * The checks are performed only on a <cite>best effort</cite> basis. In current implementation,
+ * The checks are performed only on a <em>best effort</em> basis. In current implementation,
  * holes are known to exist in use cases like {@code sublist(…).set(…)} or when using the list iterator.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -67,9 +67,7 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      * @param type  the element type (cannot be null).
      */
     public CheckedArrayList(final Class<E> type) {
-        super();
-        this.type = type;
-        ensureNonNull("type", type);
+        this.type = Objects.requireNonNull(type);
     }
 
     /**
@@ -80,8 +78,7 @@ public final class CheckedArrayList<E> extends ArrayList<E> implements CheckedCo
      */
     public CheckedArrayList(final Class<E> type, final int capacity) {
         super(capacity);
-        this.type = type;
-        ensureNonNull("type", type);
+        this.type = Objects.requireNonNull(type);
     }
 
     /**

@@ -16,9 +16,9 @@
  */
 package org.apache.sis.io;
 
+import java.util.Objects;
 import java.io.IOException;
 import java.io.CharConversionException;
-import org.apache.sis.util.ArgumentChecks;
 import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
 
 
@@ -65,8 +65,7 @@ abstract class Appender implements Appendable {
      * @param out  the underlying character output stream or buffer.
      */
     protected Appender(final Appendable out) {
-        ArgumentChecks.ensureNonNull("out", out);
-        this.out = out;
+        this.out = Objects.requireNonNull(out);
     }
 
     /**

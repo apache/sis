@@ -90,7 +90,6 @@ final class UnitDimension implements Dimension, Serializable {
      *
      * @param  symbol  the symbol of this base dimension (not to be confused with unit symbol).
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")    // Safe because this class is final.
     UnitDimension(final char symbol) {
         this.symbol = symbol;
         components  = Map.of(this, new Fraction(1,1).unique());

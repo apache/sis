@@ -26,6 +26,7 @@ import java.nio.file.NoSuchFileException;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Optional;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.parameter.ParameterDescriptor;
@@ -43,7 +44,6 @@ import org.apache.sis.storage.wkt.StoreFormat;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Vocabulary;
@@ -322,8 +322,7 @@ public abstract class PRJDataStore extends URIDataStore {
          */
         @Override
         public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
-            ArgumentChecks.ensureNonNull("parameter", parameters);
-            final StorageConnector connector = connector(this, parameters);
+            final StorageConnector connector = connector(this, Objects.requireNonNull(parameters));
             final Parameters pg = Parameters.castOrWrap(parameters);
             connector.setOption(OptionKey.DEFAULT_CRS, pg.getValue(DEFAULT_CRS));
             return open(connector);

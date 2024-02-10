@@ -948,7 +948,7 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
     }
 
     /**
-     * Formats this transform as a <cite>Well Known Text</cite> version 1 (WKT 1) element.
+     * Formats this transform as a <i>Well Known Text</i> version 1 (WKT 1) element.
      *
      * <h4>Compatibility note</h4>
      * {@code PassThrough_MT} is defined in the WKT 1 specification only.

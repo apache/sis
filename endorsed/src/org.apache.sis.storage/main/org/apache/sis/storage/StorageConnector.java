@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.IdentityHashMap;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 import java.net.URI;
 import java.net.URL;
@@ -51,7 +52,6 @@ import javax.sql.DataSource;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.resources.Errors;
@@ -620,8 +620,7 @@ public class StorageConnector implements Serializable {
      * @param storage  the input/output object as a URL, file, image input stream, <i>etc.</i>.
      */
     public StorageConnector(final Object storage) {
-        ArgumentChecks.ensureNonNull("storage", storage);
-        this.storage = storage;
+        this.storage = Objects.requireNonNull(storage);
     }
 
     /**
@@ -658,7 +657,6 @@ public class StorageConnector implements Serializable {
      * @param value  the new value for the given option, or {@code null} for removing the value.
      */
     public <T> void setOption(final OptionKey<T> key, final T value) {
-        ArgumentChecks.ensureNonNull("key", key);
         options = key.setValueInto(options, value);
     }
 
@@ -671,7 +669,6 @@ public class StorageConnector implements Serializable {
      * @return the current value for the given option, or {@code null} if none.
      */
     public <T> T getOption(final OptionKey<T> key) {
-        ArgumentChecks.ensureNonNull("key", key);
         return key.getValueFrom(options);
     }
 
@@ -865,7 +862,7 @@ public class StorageConnector implements Serializable {
      *
      * <h4>Usage for probing operations</h4>
      * Multiple invocations of this method on the same {@code StorageConnector} instance will try
-     * to return the same instance on a <cite>best effort</cite> basis. Consequently, implementations of
+     * to return the same instance on a <em>best effort</em> basis. Consequently, implementations of
      * {@link DataStoreProvider#probeContent(StorageConnector)} methods shall not close the stream or
      * database connection returned by this method. In addition, those {@code probeContent(StorageConnector)}
      * methods are responsible for restoring the stream or byte buffer to its original position on return.
@@ -889,7 +886,6 @@ public class StorageConnector implements Serializable {
      * @see DataStoreProvider#probeContent(StorageConnector, Class, Prober)
      */
     public <S> S getStorageAs(final Class<S> type) throws IllegalArgumentException, DataStoreException {
-        ArgumentChecks.ensureNonNull("type", type);
         if (views != null && views.isEmpty()) {
             throw new IllegalStateException(Resources.format(Resources.Keys.ClosedStorageConnector));
         }
@@ -905,7 +901,7 @@ public class StorageConnector implements Serializable {
          *    4) getStorageAs(InputStream.class) needs to rewind the InputStream itself since it was
          *       not done at step 3. However, doing so invalidate the Reader, so we need to discard it.
          */
-        Coupled value = getView(type);
+        Coupled value = getView(Objects.requireNonNull(type));
         if (reset(value)) {
             return type.cast(value.view);               // null is a valid result.
         }
@@ -1110,6 +1106,7 @@ public class StorageConnector implements Serializable {
          * ChannelDataInput depends on ReadableByteChannel, which itself depends on storage
          * (potentially an InputStream). We need to remember this chain in `Coupled` objects.
          */
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final String name = getStorageName();
         final ReadableByteChannel channel = factory.readable(name, null);
         addView(ReadableByteChannel.class, channel, null, factory.isCoupled() ? CASCADE_ON_RESET : 0);
@@ -1194,7 +1191,7 @@ public class StorageConnector implements Serializable {
      * @return the byte buffer to use with {@link ChannelDataInput} or {@link ChannelDataOutput}.
      */
     private ByteBuffer getChannelBuffer(final ChannelFactory factory) {
-        @SuppressWarnings("deprecated")
+        @SuppressWarnings("deprecation")
         ByteBuffer buffer = getOption(OptionKey.BYTE_BUFFER);               // User-supplied buffer.
         if (buffer == null) {
             if (factory.suggestDirectBuffer) {
@@ -1495,6 +1492,7 @@ public class StorageConnector implements Serializable {
          * ChannelDataOutput depends on WritableByteChannel, which itself depends on storage
          * (potentially an OutputStream). We need to remember this chain in `Coupled` objects.
          */
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final String name = getStorageName();
         final WritableByteChannel channel = factory.writable(name, null);
         addView(WritableByteChannel.class, channel, null, factory.isCoupled() ? CASCADE_ON_RESET : 0);

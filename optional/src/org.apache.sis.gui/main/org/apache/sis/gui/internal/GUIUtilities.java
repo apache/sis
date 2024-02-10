@@ -292,7 +292,7 @@ walk:   for (final T search : path) {
 
     /**
      * Returns the longest subsequence common to both specified sequences.
-     * This is known as <cite>longest common subsequence</cite> (LCS) problem.
+     * This is known as <dfn>longest common subsequence</dfn> (LCS) problem.
      * The LCS elements are not required to occupy consecutive positions within the original sequences.
      *
      * <h4>Example</h4>

@@ -16,7 +16,7 @@
  */
 
 /**
- * <cite>Well Known Text</cite> (WKT) parsing and formatting.
+ * <i>Well Known Text</i> (WKT) parsing and formatting.
  * This package implements the services provided by various convenience methods:
  *
  * <ul>
@@ -36,7 +36,7 @@
  *   <li>Format the elements with different quote characters or brackets style.
  *       For example, both {@code ID["EPSG",4326]} and {@code ID("EPSG",4326)} are legal WKT.</li>
  *   <li>Format with a different indentation or format the whole WKT on a single line.</li>
- *   <li>Apply syntactic coloring on terminal supporting <cite>ANSI escape codes</cite>
+ *   <li>Apply syntactic coloring on terminal supporting <i>ANSI escape codes</i>
  *       (a.k.a. ECMA-48, ISO/IEC 6429 and X3.64).</li>
  *   <li>Alter the parsing in a way compatible with non-standard (but commonly used) WKT.
  *       For example, some others software products ignore the {@code AXIS[…]} elements at parsing time.</li>

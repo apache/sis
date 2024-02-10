@@ -105,7 +105,7 @@
  * The same rule applies to the <cite>Krovak</cite> projection as well (at the opposite of what ESRI does).
  *
  * <p>In order to reduce the risk of confusion, this package never defines south oriented map projection.
- * This rule removes ambiguity when reading a transform in <cite>Well Known Text</cite> (WKT) format,
+ * This rule removes ambiguity when reading a transform in <i>Well Known Text</i> (WKT) format,
  * since only the north-oriented variant is used and the affine transform coefficients tell exactly
  * which axis flips are applied.</p>
  *
@@ -121,12 +121,12 @@
  *   <li>A {@linkplain org.apache.sis.referencing.operation.transform.ContextualParameters#getMatrix denormalization} affine transform</li>
  * </ul>
  *
- * The first step (<q>normalization</q>) converts longitude and latitude values from degrees to radians
- * and removes the <cite>central meridian</cite> from the longitude.
- * The last step (<q>denormalization</q>) multiplies the result of the middle step by the global scale factor
- * (typically the product of the <cite>scale factor</cite> with the <cite>semi-major</cite> axis length),
- * then adds the <cite>false easting</cite> and <cite>false northing</cite>.
- * This means that the middle step (<q>normalized projection</q>) is performed on an ellipse (or sphere)
+ * The first step (<i>normalization</i>) converts longitude and latitude values from degrees to radians
+ * and removes the <i>central meridian</i> from the longitude.
+ * The last step (<i>denormalization</i>) multiplies the result of the middle step by the global scale factor
+ * (typically the product of the <i>scale factor</i> with the <i>semi-major</i> axis length),
+ * then adds the <i>false easting</i> and <i>false northing</i>.
+ * This means that the middle step (<i>normalized projection</i>) is performed on an ellipse (or sphere)
  * having a semi-major axis of 1.
  *
  * <p>In other words, the
@@ -143,7 +143,7 @@
  * In the <a href="https://proj.org/">PROJ</a> library,
  * the same standardization is handled by {@code pj_fwd.c} and {@code pj_inv.c}.
  * This normalization makes the equations closer to the ones published in Snyder's book, where the
- * <cite>false easting</cite>, <cite>false northing</cite> and <cite>scale factor</cite> are usually not given.</div>
+ * <i>false easting</i>, <i>false northing</i> and <i>scale factor</i> are usually not given.</div>
  *
  * <h2>References</h2>
  * <ul>

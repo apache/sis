@@ -973,7 +973,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
             final Collection<CitationDate> dates = getDateInfo();
             if (dates != null) {
                 for (final CitationDate date : dates) {
-                    if (DateType.CREATION.equals(date.getDateType())) {
+                    if (date.getDateType() == DateType.CREATION) {
                         return date.getDate();
                     }
                 }
@@ -1002,7 +1002,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
             final Iterator<CitationDate> it = newValues.iterator();
             while (it.hasNext()) {
                 final CitationDate date = it.next();
-                if (DateType.CREATION.equals(date.getDateType())) {
+                if (date.getDateType() == DateType.CREATION) {
                     if (newValue == null) {
                         it.remove();
                         return;

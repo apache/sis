@@ -123,7 +123,7 @@ public abstract class PlanarCanvas extends Canvas {
     /**
      * Returns the affine conversion from objective CRS to display coordinate system.
      * The transform returned by this method is a snapshot taken at the time this method is invoked;
-     * subsequent changes in the <cite>objective to display</cite> conversion are not reflected in
+     * subsequent changes in the <i>objective to display</i> conversion are not reflected in
      * the returned transform.
      *
      * <p>The {@link Canvas#objectiveToDisplay} transform in parent class is used as an immutable snapshot of
@@ -147,7 +147,7 @@ public abstract class PlanarCanvas extends Canvas {
      * This method does not update the {@value #POINT_OF_INTEREST_PROPERTY} property;
      * the point of interest may move outside the view area as a result of this method call.
      *
-     * @param  newValue  the new <cite>objective to display</cite> conversion.
+     * @param  newValue  the new <i>objective to display</i> conversion.
      * @throws IllegalArgumentException if the given transform is not two-dimensional or is not affine.
      */
     @Override
@@ -157,7 +157,7 @@ public abstract class PlanarCanvas extends Canvas {
     }
 
     /**
-     * Updates the <cite>objective to display</cite> transform as if the given transform was applied <em>before</em>
+     * Updates the <i>objective to display</i> transform as if the given transform was applied <em>before</em>
      * the current transform. For example if the given {@code before} transform is a translation, then the translation
      * vector is in units of the {@linkplain #getObjectiveCRS() objective CRS} (typically metres on the map).
      *
@@ -167,7 +167,7 @@ public abstract class PlanarCanvas extends Canvas {
      * Depending on the implementation, the change may not take effect immediately.
      * For example, subclasses may do the rendering in a background thread.</p>
      *
-     * @param  before  coordinate conversion to apply before the current <cite>objective to display</cite> transform.
+     * @param  before  coordinate conversion to apply before the current <i>objective to display</i> transform.
      *
      * @see TransformChangeEvent#getObjectiveChange()
      */
@@ -184,7 +184,7 @@ public abstract class PlanarCanvas extends Canvas {
     }
 
     /**
-     * Updates the <cite>objective to display</cite> transform as if the given transform was applied <em>after</em>
+     * Updates the <i>objective to display</i> transform as if the given transform was applied <em>after</em>
      * the current transform. For example if the given {@code after} transform is a translation, then the translation
      * vector is in pixel units.
      *
@@ -194,7 +194,7 @@ public abstract class PlanarCanvas extends Canvas {
      * Depending on the implementation, the change may not take effect immediately.
      * For example, subclasses may do the rendering in a background thread.</p>
      *
-     * @param  after  coordinate conversion to apply after the current <cite>objective to display</cite> transform.
+     * @param  after  coordinate conversion to apply after the current <i>objective to display</i> transform.
      *
      * @see TransformChangeEvent#getDisplayChange()
      */

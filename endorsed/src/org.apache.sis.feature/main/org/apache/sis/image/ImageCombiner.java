@@ -20,6 +20,7 @@ import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRenderedImage;
+import java.util.Objects;
 import java.util.function.Consumer;
 import javax.measure.Quantity;
 import org.opengis.referencing.operation.MathTransform;
@@ -94,10 +95,8 @@ public class ImageCombiner implements Consumer<RenderedImage> {
      * @since 1.2
      */
     public ImageCombiner(final WritableRenderedImage destination, final ImageProcessor processor) {
-        ArgumentChecks.ensureNonNull("destination", destination);
-        ArgumentChecks.ensureNonNull("processor", processor);
-        this.destination = destination;
-        this.processor = processor;
+        this.destination = Objects.requireNonNull(destination);
+        this.processor   = Objects.requireNonNull(processor);
     }
 
     /**
@@ -181,6 +180,7 @@ public class ImageCombiner implements Consumer<RenderedImage> {
     @Override
     public void accept(final RenderedImage source) {
         ArgumentChecks.ensureNonNull("source", source);
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final WritableRenderedImage destination = this.destination;
         final Rectangle bounds = ImageUtilities.getBounds(source);
         ImageUtilities.clipBounds(destination, bounds);

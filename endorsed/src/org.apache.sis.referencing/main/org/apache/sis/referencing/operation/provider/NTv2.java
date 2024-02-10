@@ -52,11 +52,11 @@ import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.measure.Units;
+import org.apache.sis.pending.jdk.JDK19;
 
 
 /**
@@ -441,7 +441,7 @@ public final class NTv2 extends AbstractProvider {
          * sub-grids (if any) as children.
          */
         final LoadedGrid<Angle,Angle> readAllGrids() throws IOException, FactoryException, NoninvertibleTransformException {
-            final Map<String,      LoadedGrid<Angle,Angle>>  grids    = new HashMap<>(Containers.hashMapCapacity(numGrids));
+            final Map<String,      LoadedGrid<Angle,Angle>>  grids    = JDK19.newHashMap(numGrids);
             final Map<String, List<LoadedGrid<Angle,Angle>>> children = new LinkedHashMap<>();   // Should have few entries.
             while (grids.size() < numGrids) {
                 readGrid(grids, children);

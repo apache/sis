@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import java.util.Objects;
 import java.text.NumberFormat;
 import javax.measure.Unit;
 import javax.measure.Quantity;
@@ -279,8 +280,7 @@ public class UnitServices extends ServiceProvider implements SystemOfUnitsServic
      */
     @Override
     public <Q extends Quantity<Q>> QuantityFactory<Q> getQuantityFactory(final Class<Q> type) {
-        ArgumentChecks.ensureNonNull("type", type);
-        QuantityFactory<Q> factory = Units.get(type);
+        QuantityFactory<Q> factory = Units.get(Objects.requireNonNull(type));
         if (factory == null) {
             if (type != null) {
                 factory = new DefaultQuantityFactory<Q>() {

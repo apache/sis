@@ -27,7 +27,6 @@ import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.geometry.wrapper.SpatialOperationContext;
 import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.filter.internal.Node;
-import org.apache.sis.util.ArgumentChecks;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Filter;
@@ -91,8 +90,7 @@ abstract class BinaryGeometryFilter<R> extends Node implements SpatialOperator<R
                                    final Expression<R,?> geometry2,
                                    final Unit<?> systemUnit)
     {
-        ArgumentChecks.ensureNonNull("expression1", geometry1);
-        ArgumentChecks.ensureNonNull("expression2", geometry2);
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         Expression<R, GeometryWrapper> expression1, expression2;
         expression1 = toGeometryWrapper(library, geometry1);
         expression2 = toGeometryWrapper(library, geometry2);
@@ -211,8 +209,8 @@ abstract class BinaryGeometryFilter<R> extends Node implements SpatialOperator<R
         literalIsNull = (literal.getValue() == null);
         final boolean result;
         if (literalIsNull) {
-            // If the literal has no value, then the filter will always evaluate to a negative result.
-            result = negativeResult();
+            // If the literal has no value, then the filter will always evaluate to an empty result.
+            result = emptyResult();
         } else {
             /*
              * If we are optimizing for a feature type, and if the other expression is a property value,
@@ -254,5 +252,5 @@ abstract class BinaryGeometryFilter<R> extends Node implements SpatialOperator<R
     /**
      * Returns the value to return when a test cannot be applied.
      */
-    protected abstract boolean negativeResult();
+    protected abstract boolean emptyResult();
 }

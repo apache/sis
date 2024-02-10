@@ -450,7 +450,7 @@ select: if (commonCRS == null) {
      * @param   type  the test that could not be applied.
      * @return  the operation result to assume.
      */
-    public static boolean negativeResult(final SpatialOperatorName type) {
+    public static boolean emptyResult(final SpatialOperatorName type) {
         return type == SpatialOperatorName.DISJOINT;
     }
 
@@ -461,7 +461,7 @@ select: if (commonCRS == null) {
      * @param   type  the test that could not be applied.
      * @return  the operation result to assume.
      */
-    public static boolean negativeResult(final DistanceOperatorName type) {
+    public static boolean emptyResult(final DistanceOperatorName type) {
         return type == DistanceOperatorName.BEYOND;
     }
 }

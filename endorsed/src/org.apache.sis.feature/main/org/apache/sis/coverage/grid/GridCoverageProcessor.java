@@ -152,7 +152,6 @@ public class GridCoverageProcessor implements Cloneable {
      * @param  processor  the processor to use for operations on two-dimensional slices.
      */
     public GridCoverageProcessor(final ImageProcessor processor) {
-        ArgumentChecks.ensureNonNull("processor", processor);
         imageProcessor = processor.clone();
     }
 
@@ -584,7 +583,7 @@ public class GridCoverageProcessor implements Cloneable {
          * the interpolation type is "nearest neighbor" since this is not really
          * an interpolation.
          */
-        if (!Interpolation.NEAREST.equals(imageProcessor.getInterpolation())) {
+        if (imageProcessor.getInterpolation() != Interpolation.NEAREST) {
             source = source.forConvertedValues(true);
         }
         final GridCoverage resampled;
@@ -716,13 +715,12 @@ public class GridCoverageProcessor implements Cloneable {
      * @since 1.4
      */
     public GridCoverage reduceDimensionality(final GridCoverage source) {
-        ArgumentChecks.ensureNonNull("source", source);
         return DimensionalityReduction.reduce(source.getGridGeometry()).apply(source);
     }
 
     /**
      * Creates a coverage trimmed from the specified grid dimensions.
-     * This is a <cite>dimensionality reduction</cite> operation applied to the coverage domain.
+     * This is a <i>dimensionality reduction</i> operation applied to the coverage domain.
      * The dimensions to remove are specified as indices of <em>grid extent</em> axes.
      * It may be the same indices as the indices of the CRS axes which will be removed,
      * but not necessarily.
@@ -761,7 +759,6 @@ public class GridCoverageProcessor implements Cloneable {
      * @since 1.4
      */
     public GridCoverage removeGridDimensions(final GridCoverage source, final int... gridAxesToRemove) {
-        ArgumentChecks.ensureNonNull("source", source);
         var reduction = DimensionalityReduction.remove(source.getGridGeometry(), gridAxesToRemove);
         reduction.ensureIsSlice();
         return reduction.apply(source);
@@ -769,7 +766,7 @@ public class GridCoverageProcessor implements Cloneable {
 
     /**
      * Creates a coverage containing only the specified grid dimensions.
-     * This is a <cite>dimensionality reduction</cite> operation applied to the coverage domain.
+     * This is a <i>dimensionality reduction</i> operation applied to the coverage domain.
      * The dimensions to keep are specified as indices of <em>grid extent</em> axes.
      * It may be the same indices as the indices of the CRS axes which will pass through,
      * but not necessarily.
@@ -812,7 +809,6 @@ public class GridCoverageProcessor implements Cloneable {
      * @since 1.4
      */
     public GridCoverage selectGridDimensions(final GridCoverage source, final int... gridAxesToPass) {
-        ArgumentChecks.ensureNonNull("source", source);
         var reduction = DimensionalityReduction.select(source.getGridGeometry(), gridAxesToPass);
         reduction.ensureIsSlice();
         return reduction.apply(source);
@@ -872,8 +868,8 @@ public class GridCoverageProcessor implements Cloneable {
      * <h4>Restrictions</h4>
      * <ul>
      *   <li>All coverage shall use the same CRS.</li>
-     *   <li>All coverage shall use the same <cite>grid to CRS</cite> transform except for translation terms.</li>
-     *   <li>Translation terms in <cite>grid to CRS</cite> can differ only by an integer number of grid cells.</li>
+     *   <li>All coverage shall use the same <i>grid to CRS</i> transform except for translation terms.</li>
+     *   <li>Translation terms in <i>grid to CRS</i> can differ only by an integer number of grid cells.</li>
      *   <li>The intersection of the domain of all coverages shall be non-empty.</li>
      *   <li>All coverages shall use the same data type in their rendered image.</li>
      * </ul>

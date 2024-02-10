@@ -24,7 +24,7 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Thrown when a <cite>Well Known Text</cite> (WKT) cannot be parsed.
+ * Thrown when a <i>Well Known Text</i> (WKT) cannot be parsed.
  *
  * <h2>Localization</h2>
  * This exception may contain the error message in two languages:

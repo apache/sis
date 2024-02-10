@@ -36,11 +36,11 @@ import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 
 
 /**
- * Creates a collection of {@link Tile}s from their <cite>grid to CRS</cite> affine transforms.
+ * Creates a collection of {@link Tile}s from their <i>grid to CRS</i> affine transforms.
  * When the {@link Rectangle} that describe the destination region is known for each tiles,
  * the {@link Tile#Tile(Rectangle, Dimension)} constructor should be invoked directly.
  * But in some cases the destination rectangle is not known directly. Instead we have a set of tiles,
- * all of them with an upper-left corner located at (0,0), but different <cite>grid to CRS</cite>
+ * all of them with an upper-left corner located at (0,0), but different <i>grid to CRS</i>
  * affine transforms read from <a href="https://en.wikipedia.org/wiki/World_file">World Files</a>.
  * This {@code TileOrganizer} class infers the destination regions automatically
  * from the set of affine transforms.
@@ -118,7 +118,7 @@ public class TileOrganizer {
     }
 
     /**
-     * Returns the tiles. Keys are pyramid geometry (containing mosaic bounds and <cite>grid to CRS</cite>
+     * Returns the tiles. Keys are pyramid geometry (containing mosaic bounds and <i>grid to CRS</i>
      * transforms) and values are the tiles in that pyramid. This method usually returns a singleton map,
      * but more entries may be present if this method was not able to build a single pyramid using all
      * provided tiles.
@@ -352,7 +352,7 @@ public class TileOrganizer {
      * element in the returned list. A new pass is run, discarded transforms from the second pass are put in
      * the third element of the list, <i>etc</i>.
      *
-     * @param  gridToCRS  the <cite>grid to CRS</cite> affine transforms computed from the image to use in a pyramid.
+     * @param  gridToCRS  the <i>grid to CRS</i> affine transforms computed from the image to use in a pyramid.
      *         The collection and the transform elements are not modified by this method (they may be modified by the
      *         caller however).
      * @return a subset of the given transforms with their relative resolution. This method typically returns one map,

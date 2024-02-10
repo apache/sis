@@ -120,7 +120,7 @@ public abstract class Decoder extends ReferencingFactoryContainer {
     final Datum[] datumCache;
 
     /**
-     * The CRS and <cite>grid to CRS</cite> transform defined by attributes in a variable. For example, GDAL uses
+     * The CRS and <i>grid to CRS</i> transform defined by attributes in a variable. For example, GDAL uses
      * {@code "spatial_ref_sys"} and {@code "GeoTransform"} attributes associated to a variable having the name
      * specified by the {@code "grid_mapping"} attribute.
      *
@@ -154,7 +154,7 @@ public abstract class Decoder extends ReferencingFactoryContainer {
 
     /**
      * Sets to {@code true} for canceling a reading process.
-     * This flag is honored on a <cite>best effort</cite> basis only.
+     * This flag is honored on a <em>best effort</em> basis only.
      */
     public volatile boolean canceled;
 
@@ -165,9 +165,8 @@ public abstract class Decoder extends ReferencingFactoryContainer {
      * @param  listeners  where to send the warnings.
      */
     protected Decoder(final GeometryLibrary geomlib, final StoreListeners listeners) {
-        Objects.requireNonNull(listeners);
         this.geomlib      = geomlib;
-        this.listeners    = listeners;
+        this.listeners    = Objects.requireNonNull(listeners);
         this.nameFactory  = DefaultNameFactory.provider();
         this.datumCache   = new Datum[CRSBuilder.DATUM_CACHE_SIZE];
         this.gridMapping  = new HashMap<>();

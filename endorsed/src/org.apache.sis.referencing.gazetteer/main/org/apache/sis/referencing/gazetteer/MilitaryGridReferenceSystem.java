@@ -541,7 +541,6 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          */
         @Override
         public void setPrecision(final Quantity<?> precision, DirectPosition position) throws IncommensurableException {
-            ArgumentChecks.ensureNonNull("precision", precision);
             double p = precision.getValue().doubleValue();
             final Unit<?> unit = precision.getUnit();
             if (Units.isAngular(unit)) {
@@ -672,7 +671,6 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          */
         @Override
         public String encode(final DirectPosition position) throws TransformException {
-            ArgumentChecks.ensureNonNull("position", position);
             try {
                 return encoder(position.getCoordinateReferenceSystem())
                         .encode(this, position, true, getSeparator(), digits(), 0);
@@ -699,8 +697,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         public String encode(final DirectPosition position, final Quantity<?> precision)
                 throws IncommensurableException, TransformException
         {
-            ArgumentChecks.ensureNonNull("position",  position);
-            ArgumentChecks.ensureNonNull("precision", precision);
+            // Implicit null check below.
             double p = precision.getValue().doubleValue();
             final Unit<?> unit = precision.getUnit();
             if (Units.isAngular(unit)) {
@@ -735,7 +732,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * @throws TransformException if an error occurred while transforming the area of interest.
          */
         public Iterator<String> encode(final Envelope areaOfInterest) throws TransformException {
-            ArgumentChecks.ensureNonNull("areaOfInterest", areaOfInterest);
+            // Implicit null check in `IteratorAllZones` constructor.
             try {
                 return Spliterators.iterator(new IteratorAllZones(areaOfInterest).simplify());
             } catch (IllegalArgumentException | FactoryException e) {
@@ -762,7 +759,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
          * @throws TransformException if an error occurred while transforming the area of interest.
          */
         public Stream<String> encode(final Envelope areaOfInterest, final boolean parallel) throws TransformException {
-            ArgumentChecks.ensureNonNull("areaOfInterest", areaOfInterest);
+            // Implicit null check in `IteratorAllZones` constructor.
             try {
                 return StreamSupport.stream(new IteratorAllZones(areaOfInterest).simplify(), parallel);
             } catch (IllegalArgumentException | FactoryException e) {

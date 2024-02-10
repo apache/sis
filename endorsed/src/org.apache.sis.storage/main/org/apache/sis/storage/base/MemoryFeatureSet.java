@@ -16,12 +16,12 @@
  */
 package org.apache.sis.storage.base;
 
+import java.util.Objects;
 import java.util.Collection;
 import java.util.OptionalLong;
 import java.util.stream.Stream;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.AbstractFeatureSet;
-import org.apache.sis.util.ArgumentChecks;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
@@ -58,10 +58,8 @@ public class MemoryFeatureSet extends AbstractFeatureSet {
      */
     public MemoryFeatureSet(final Resource parent, final FeatureType type, final Collection<Feature> features) {
         super(parent);
-        ArgumentChecks.ensureNonNull("type",     type);
-        ArgumentChecks.ensureNonNull("features", features);
-        this.type     = type;
-        this.features = features;
+        this.type     = Objects.requireNonNull(type);
+        this.features = Objects.requireNonNull(features);
     }
 
     /**

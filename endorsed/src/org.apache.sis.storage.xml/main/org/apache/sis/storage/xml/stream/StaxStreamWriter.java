@@ -110,7 +110,6 @@ public abstract class StaxStreamWriter extends StaxStreamIO implements Consumer<
      * @throws XMLStreamException if an error occurred while opening the XML file.
      * @throws IOException if an error occurred while preparing the output stream.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     protected StaxStreamWriter(final StaxDataStore owner, final OutputStream temporary)
             throws DataStoreException, XMLStreamException, IOException
     {

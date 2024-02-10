@@ -18,6 +18,7 @@ package org.apache.sis.gui.coverage;
 
 import java.util.Map;
 import java.util.EnumMap;
+import java.util.Objects;
 import java.util.Optional;
 import java.awt.image.RenderedImage;
 import javafx.application.Platform;
@@ -41,7 +42,6 @@ import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.gui.internal.ToolbarButton;
 import org.apache.sis.gui.internal.NonNullObjectProperty;
 import org.apache.sis.gui.internal.PrivateAccess;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.gui.referencing.RecentReferenceSystems;
 import org.apache.sis.gui.dataset.WindowHandler;
@@ -229,10 +229,10 @@ public class CoverageExplorer extends Widget {
      *
      * @since 1.2
      */
+    @SuppressWarnings("this-escape")
     public CoverageExplorer(final View type) {
-        ArgumentChecks.ensureNonNull("type", type);
         views            = new EnumMap<>(View.class);
-        viewTypeProperty = new NonNullObjectProperty<>(this, "viewType", type);
+        viewTypeProperty = new NonNullObjectProperty<>(this, "viewType", Objects.requireNonNull(type));
         resourceProperty = new SimpleObjectProperty<> (this, "resource");
         coverageProperty = new SimpleObjectProperty<> (this, "coverage");
         referenceSystems = new RecentReferenceSystems();
@@ -250,6 +250,7 @@ public class CoverageExplorer extends Widget {
      *
      * @since 1.2
      */
+    @SuppressWarnings("this-escape")
     public CoverageExplorer(final CoverageExplorer source) {
         this(source.getViewType());
         window = PrivateAccess.newWindowHandler.apply(source.window, this);
@@ -390,8 +391,7 @@ public class CoverageExplorer extends Widget {
      */
     public final Region getDataView(final View type) {
         assert Platform.isFxApplicationThread();
-        ArgumentChecks.ensureNonNull("type", type);
-        return getViewAndControls(type, false).viewAndNavigation;
+        return getViewAndControls(Objects.requireNonNull(type), false).viewAndNavigation;
     }
 
     /**
@@ -403,8 +403,7 @@ public class CoverageExplorer extends Widget {
      */
     public final TitledPane[] getControls(final View type) {
         assert Platform.isFxApplicationThread();
-        ArgumentChecks.ensureNonNull("type", type);
-        return getViewAndControls(type, false).controlPanes.clone();
+        return getViewAndControls(Objects.requireNonNull(type), false).controlPanes.clone();
     }
 
     /**

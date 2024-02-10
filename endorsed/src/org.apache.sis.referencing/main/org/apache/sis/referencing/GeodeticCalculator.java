@@ -19,6 +19,7 @@ package org.apache.sis.referencing;
 import java.awt.Shape;
 import java.awt.geom.Path2D;
 import java.util.Locale;
+import java.util.Objects;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.text.NumberFormat;
@@ -292,8 +293,7 @@ public class GeodeticCalculator {
      * @return a new geodetic calculator using the specified CRS.
      */
     public static GeodeticCalculator create(final CoordinateReferenceSystem crs) {
-        ArgumentChecks.ensureNonNull("crs", crs);
-        final Ellipsoid ellipsoid = ReferencingUtilities.getEllipsoid(crs);
+        final Ellipsoid ellipsoid = ReferencingUtilities.getEllipsoid(Objects.requireNonNull(crs));
         if (ellipsoid == null) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCRSType_1,
                     ReferencingUtilities.getInterface(CoordinateReferenceSystem.class, crs)));
@@ -1161,7 +1161,7 @@ public class GeodeticCalculator {
      * All returned {@link MathTransform} instances are immutable;
      * changing {@code GeodeticCalculator} state does not affect those transforms.
      *
-     * @return transform from {@linkplain #getPositionCRS() position CRS} to <cite>Azimuthal Equidistant</cite>
+     * @return transform from {@linkplain #getPositionCRS() position CRS} to <i>Azimuthal Equidistant</i>
      *         projected CRS centered on current {@linkplain #getStartPoint() start point}.
      * @throws IllegalStateException if the start point has not been set.
      * @throws GeodeticException if the projection cannot be computed.

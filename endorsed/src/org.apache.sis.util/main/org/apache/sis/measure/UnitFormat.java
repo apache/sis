@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
+import java.util.Objects;
 import java.text.Format;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
@@ -54,7 +55,7 @@ import org.apache.sis.util.logging.Logging;
  * Parses and formats units of measurement as SI symbols, URI in OGC namespace or other symbols.
  * This class combines in a single class the API from {@link java.text} and the API from {@link javax.measure.format}.
  * In addition to the symbols of the <cite>Système international</cite> (SI), this class is also capable to handle
- * some symbols found in <cite>Well Known Text</cite> (WKT) definitions or in XML files.
+ * some symbols found in <i>Well Known Text</i> (WKT) definitions or in XML files.
  *
  * <h2>Parsing authority codes</h2>
  * If a character sequence given to the {@link #parse(CharSequence)} method is of the form {@code "EPSG:####"},
@@ -137,8 +138,8 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      *   <li>As a symbol using Unicode characters: <b>m³</b></li>
      *   <li>As a symbol restricted to the ASCII characters set: <b>m3</b></li>
      *   <li>As a long name:<ul>
-     *     <li>in English: <cite>cubic metre</cite></li>
-     *     <li>in French: <cite>mètre cube</cite></li>
+     *     <li>in English: <q>cubic metre</q></li>
+     *     <li>in French: <q>mètre cube</q></li>
      *   </ul></li>
      * </ul>
      *
@@ -328,8 +329,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * @param  locale  the locale to use for parsing and formatting units.
      */
     public UnitFormat(final Locale locale) {
-        ArgumentChecks.ensureNonNull("locale", locale);
-        this.locale = locale;
+        this.locale = Objects.requireNonNull(locale);
         style       = Style.SYMBOL;
         unitToLabel = new HashMap<>();
         labelToUnit = new HashMap<>();
@@ -355,8 +355,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * @see UnitServices#getUnitFormat(String)
      */
     public void setLocale(final Locale locale) {
-        ArgumentChecks.ensureNonNull("locale", locale);
-        this.locale  = locale;
+        this.locale  = Objects.requireNonNull(locale);
         symbolToName = null;            // Force reloading for the new locale.
         nameToUnit   = null;
     }
@@ -388,12 +387,11 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
      * @param  style  the desired style of units.
      */
     public void setStyle(final Style style) {
-        ArgumentChecks.ensureNonNull("style", style);
-        this.style = style;
+        this.style = Objects.requireNonNull(style);
     }
 
     /**
-     * Attaches a label to the specified unit. A <cite>label</cite> can be a substitute to either the
+     * Attaches a label to the specified unit. A <i>label</i> can be a substitute to either the
      * {@linkplain AbstractUnit#getSymbol() unit symbol} or the {@link AbstractUnit#getName() unit name},
      * depending on the {@linkplain #getStyle() format style}.
      * If the specified label is already associated to another unit, then the previous association is discarded.
@@ -1110,7 +1108,7 @@ appPow: if (unit == null) {
      * @throws MeasurementParseException if a problem occurred while parsing the given symbols.
      */
     @Override
-    @SuppressWarnings({"null", "fallthrough"})
+    @SuppressWarnings("fallthrough")
     public Unit<?> parse(CharSequence symbols, final ParsePosition position) throws MeasurementParseException {
         ArgumentChecks.ensureNonNull("symbols",  symbols);
         ArgumentChecks.ensureNonNull("position", position);

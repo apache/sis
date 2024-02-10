@@ -67,7 +67,7 @@ final class Capabilities implements FilterCapabilities, Conformance, IdCapabilit
     }
 
     /**
-     * Returns whether the implementation supports the <cite>Resource Identification</cite> conformance level.
+     * Returns whether the implementation supports the <i>Resource Identification</i> conformance level.
      */
     @Override
     public boolean implementsResourceld() {
@@ -91,7 +91,7 @@ final class Capabilities implements FilterCapabilities, Conformance, IdCapabilit
     }
 
     /**
-     * Returns whether the implementation supports the <cite>Standard Filter</cite> conformance level.
+     * Returns whether the implementation supports the <i>Standard Filter</i> conformance level.
      * A value of {@code true} means that all the logical operators ({@code And}, {@code Or}, {@code Not})
      * are supported, together with all the standard {@link ComparisonOperatorName}. Those operators shall
      * be listed in the {@linkplain FilterCapabilities#getScalarCapabilities() scalar capabilities}.
@@ -102,7 +102,7 @@ final class Capabilities implements FilterCapabilities, Conformance, IdCapabilit
     }
 
     /**
-     * Indicates that SIS supports <cite>And</cite>, <cite>Or</cite> and <cite>Not</cite> operators.
+     * Indicates that SIS supports <i>And</i>, <i>Or</i> and <i>Not</i> operators.
      */
     @Override
     public boolean hasLogicalOperators() {
@@ -126,7 +126,7 @@ final class Capabilities implements FilterCapabilities, Conformance, IdCapabilit
     }
 
     /**
-     * Indicates that Apache SIS supports the <cite>Spatial Filter</cite> conformance level.
+     * Indicates that Apache SIS supports the <i>Spatial Filter</i> conformance level.
      *
      * @todo Need to implement {@linkplain FilterCapabilities#getSpatialCapabilities() temporal capabilities}.
      */
@@ -136,7 +136,7 @@ final class Capabilities implements FilterCapabilities, Conformance, IdCapabilit
     }
 
     /**
-     * Indicates that Apache SIS supports the <cite>Temporal Filter</cite> conformance level.
+     * Indicates that Apache SIS supports the <i>Temporal Filter</i> conformance level.
      *
      * @todo Need to implement {@linkplain FilterCapabilities#getTemporalCapabilities() temporal capabilities}.
      */
@@ -146,7 +146,7 @@ final class Capabilities implements FilterCapabilities, Conformance, IdCapabilit
     }
 
     /**
-     * Indicates that Apache SIS supports the <cite>Sorting</cite> conformance level.
+     * Indicates that Apache SIS supports the <i>Sorting</i> conformance level.
      */
     @Override
     public boolean implementsSorting() {

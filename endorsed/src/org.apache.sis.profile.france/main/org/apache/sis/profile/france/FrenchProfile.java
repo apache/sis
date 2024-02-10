@@ -91,7 +91,7 @@ public final class FrenchProfile extends Static {
 
     /**
      * Returns the given given reference system as an AFNOR-compliant instance.
-     * AFNOR requires the reference systems to be either <cite>direct</cite> or <cite>indirect</cite>.
+     * AFNOR requires the reference systems to be either <i>direct</i> or <i>indirect</i>.
      * Those two cases are represented by the following schema fragments:
      *
      * <p><b>Direct:</b></p>

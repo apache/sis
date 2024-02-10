@@ -29,12 +29,12 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.math.DecimalFunctions;
-import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.internal.DoubleDouble;
+import org.apache.sis.math.DecimalFunctions;
+import org.apache.sis.math.MathFunctions;
+import org.apache.sis.pending.jdk.JDK21;
 import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.internal.Resources;
@@ -371,8 +371,6 @@ public final class Matrices extends Static {
      * @see org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes(CoordinateSystem, CoordinateSystem)
      */
     public static MatrixSIS createTransform(final Envelope srcEnvelope, final Envelope dstEnvelope) {
-        ArgumentChecks.ensureNonNull("srcEnvelope", srcEnvelope);
-        ArgumentChecks.ensureNonNull("dstEnvelope", dstEnvelope);
         /*
          * Following code is a simplified version of above createTransform(Envelope, AxisDirection[], ...) method.
          * We need to make sure that those two methods are consistent and compute the matrix values in the same way.
@@ -577,8 +575,7 @@ public final class Matrices extends Static {
         final int numTargetDim = selectedDimensions.length;
         final MatrixSIS matrix = createZero(numTargetDim+1, sourceDimensions+1);
         for (int j=0; j<numTargetDim; j++) {
-            final int i = selectedDimensions[j];
-            ArgumentChecks.ensureValidIndex(sourceDimensions, i);
+            int i = Objects.checkIndex(selectedDimensions[j], sourceDimensions);
             matrix.setElement(j, i, 1);
         }
         matrix.setElement(numTargetDim, sourceDimensions, 1);
@@ -600,7 +597,7 @@ public final class Matrices extends Static {
      *
      * A square matrix complying with the above conditions is often {@linkplain #isAffine(Matrix) affine},
      * but this is not mandatory
-     * (for example a <cite>perspective transform</cite> may contain non-zero values in the last row).
+     * (for example a <i>perspective transform</i> may contain non-zero values in the last row).
      *
      * <p>This method builds a new matrix with the following content:</p>
      * <ul>
@@ -1320,7 +1317,7 @@ public final class Matrices extends Static {
                         s += 2;
                     } else {
                         int n = Math.min(s, maximumPaddingZeros[flatIndex]);
-                        StringBuilders.repeat(buffer, '0', n);
+                        JDK21.repeat(buffer, '0', n);
                         s -= n;
                     }
                     buffer.append(CharSequences.spaces(s));

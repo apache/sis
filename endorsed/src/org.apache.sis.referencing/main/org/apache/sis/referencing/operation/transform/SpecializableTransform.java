@@ -477,7 +477,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> version 1 (WKT 1) element.
+     * Formats the inner part of a <i>Well Known Text</i> version 1 (WKT 1) element.
      *
      * <h4>Compatibility note</h4>
      * The {@code SPECIALIZABLE_MT} element formatted here is an Apache SIS-specific extension.

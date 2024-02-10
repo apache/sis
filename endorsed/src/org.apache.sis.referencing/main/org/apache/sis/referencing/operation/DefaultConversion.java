@@ -51,14 +51,14 @@ import org.apache.sis.util.resources.Errors;
  * with associated {@linkplain org.apache.sis.parameter.DefaultParameterValueGroup parameter values}.
  * In the SIS implementation, the parameter values can be either inferred from the
  * {@linkplain org.apache.sis.referencing.operation.transform.AbstractMathTransform math transform}
- * or explicitly provided at construction time in a <cite>defining conversion</cite> (see below).</p>
+ * or explicitly provided at construction time in a <dfn>defining conversion</dfn> (see below).</p>
  *
  * <h2>Defining conversions</h2>
  * {@code OperationMethod} instances are generally created for a pair of existing {@linkplain #getSourceCRS() source}
  * and {@linkplain #getTargetCRS() target CRS}. But {@code Conversion} instances without those information may exist
  * temporarily while creating a {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS derived} or
  * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}.
- * Those <cite>defining conversions</cite> have no source and target CRS since those elements are provided by the
+ * Those <i>defining conversions</i> have no source and target CRS since those elements are provided by the
  * derived or projected CRS themselves. This class provides a {@linkplain #DefaultConversion(Map, OperationMethod,
  * MathTransform, ParameterValueGroup) constructor} for such defining conversions.
  *
@@ -133,7 +133,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      *
      * <h4>Example</h4>
      * Converting time instants from a {@linkplain org.apache.sis.referencing.crs.DefaultTemporalCRS temporal CRS} using
-     * the <cite>January 1st, 1950</cite> epoch to another temporal CRS using the <cite>January 1st, 1970</cite> epoch
+     * the <i>January 1st, 1950</i> epoch to another temporal CRS using the <i>January 1st, 1970</i> epoch
      * is a datum change, since the epoch is part of {@linkplain org.apache.sis.referencing.datum.DefaultTemporalDatum
      * temporal datum} definition. However, such operation does not have all the accuracy issues of transformations
      * between geodetic datum (empirically determined, over-determined systems, stochastic nature of the parameters).
@@ -163,7 +163,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
     /**
      * Creates a defining conversion from the given transform and/or parameters.
      * This conversion has no source and target CRS since those elements are usually unknown
-     * at <cite>defining conversion</cite> construction time.
+     * at <i>defining conversion</i> construction time.
      * The source and target CRS will become known later, at the
      * {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS Derived CRS} or
      * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS Projected CRS}

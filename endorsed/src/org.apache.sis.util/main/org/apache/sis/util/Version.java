@@ -73,7 +73,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
     };
 
     /**
-     * The version in string form, with leading and trailing spaces removed.
+     * The version in string form.
      */
     private final String version;
 
@@ -98,7 +98,7 @@ public class Version implements CharSequence, Comparable<Version>, Serializable 
      * @param version  the version as a string.
      */
     public Version(final String version) {
-        ArgumentChecks.ensureNonNull("version", version);
+        ArgumentChecks.ensureNonEmpty("version", version);
         this.version = version;
     }
 

@@ -105,7 +105,7 @@ public class ConverterRegistry {
 
     /**
      * Removes all converters from this registry and set this {@code ServiceRegistry}
-     * state to <cite>uninitialized</cite>. The {@link #initialize()} method will be
+     * state to <i>uninitialized</i>. The {@link #initialize()} method will be
      * invoked again when first needed.
      */
     public void clear() {
@@ -239,7 +239,7 @@ public class ConverterRegistry {
      * @param  converter  the converter to register.
      */
     public <S,T> void register(final ObjectConverter<S,T> converter) {
-        ArgumentChecks.ensureNonNull("converter", converter);
+        // Implicit null value check below.
         /*
          * If the given converter is a FallbackConverter (maybe obtained from another
          * ConverterRegistry), unwraps it and registers its component individually.

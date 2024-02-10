@@ -23,7 +23,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.MemberName;
 import org.opengis.util.NameSpace;
 import org.opengis.util.TypeName;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
@@ -74,8 +73,7 @@ public class DefaultMemberName extends DefaultLocalName implements MemberName {
      */
     protected DefaultMemberName(final NameSpace scope, final CharSequence name, final TypeName attributeType) {
         super(scope, name);
-        ensureNonNull("attributeType", attributeType);
-        this.attributeType = attributeType;
+        this.attributeType = Objects.requireNonNull(attributeType);
     }
 
     /**

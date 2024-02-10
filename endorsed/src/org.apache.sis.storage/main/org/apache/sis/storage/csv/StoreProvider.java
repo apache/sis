@@ -34,7 +34,6 @@ import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.storage.wkt.FirstKeywordPeek;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -182,7 +181,6 @@ public final class StoreProvider extends URIDataStoreProvider {
      */
     @Override
     public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
-        ArgumentChecks.ensureNonNull("parameter", parameters);
         final StorageConnector connector = connector(this, parameters);
         final Parameters pg = Parameters.castOrWrap(parameters);
         connector.setOption(DataOptionKey.ENCODING, pg.getValue(ENCODING));

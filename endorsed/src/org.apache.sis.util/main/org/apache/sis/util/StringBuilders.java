@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util;
 
+import java.util.Objects;
 import java.text.Normalizer;
 import static java.lang.Character.*;
 import org.apache.sis.util.resources.Errors;
@@ -28,9 +29,9 @@ import org.apache.sis.util.resources.Errors;
  * new objects.
  *
  * <h2>Unicode support</h2>
- * Every methods defined in this class work on <cite>code points</cite> instead of characters
+ * Every methods defined in this class work on <i>code points</i> instead of characters
  * when appropriate. Consequently, those methods should behave correctly with characters outside
- * the <cite>Basic Multilingual Plane</cite> (BMP).
+ * the <i>Basic Multilingual Plane</i> (BMP).
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
@@ -170,9 +171,11 @@ public final class StringBuilders extends Static {
      * @throws IllegalArgumentException if the given count is negative.
      *
      * @since 1.0
+     *
+     * @deprecated Replaced by {@link StringBuilder#repeat(int, int)} since Java 21.
      */
+    @Deprecated(since="1.5", forRemoval=true)
     public static void repeat(final StringBuilder buffer, final char c, final int count) {
-        ArgumentChecks.ensureNonNull("buffer", buffer);
         switch (count) {
             case 0:  break;
             case 1:  buffer.append(c); break;
@@ -199,7 +202,6 @@ public final class StringBuilders extends Static {
      * @since 0.8
      */
     public static void repeat(final StringBuilder buffer, final int offset, final char c, final int count) {
-        ArgumentChecks.ensureNonNull("buffer", buffer);
         switch (count) {
             case 0:  break;
             case 1:  buffer.insert(offset, c); break;
@@ -271,7 +273,6 @@ public final class StringBuilders extends Static {
      */
     @SuppressWarnings("fallthrough")
     public static void trimFractionalPart(final StringBuilder buffer) {
-        ArgumentChecks.ensureNonNull ("buffer", buffer);
         for (int i=buffer.length(); i > 0;) {
             switch (buffer.charAt(--i)) {               // No need to use Unicode code points here.
                 case '0': continue;
@@ -295,8 +296,7 @@ public final class StringBuilders extends Static {
      * @see Normalizer#normalize(CharSequence, Normalizer.Form)
      */
     public static void toASCII(final StringBuilder buffer) {
-        ArgumentChecks.ensureNonNull("buffer", buffer);
-        toASCII(buffer, buffer);
+        toASCII(Objects.requireNonNull(buffer), buffer);
     }
 
     /**

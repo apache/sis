@@ -17,12 +17,12 @@
 package org.apache.sis.referencing.operation.matrix;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.io.Serializable;
 import java.awt.geom.AffineTransform;                       // For javadoc
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.internal.Arithmetic;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.Numbers;
@@ -295,7 +295,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      * @since 0.7
      */
     public void setMatrix(final Matrix source) throws MismatchedMatrixSizeException {
-        ArgumentChecks.ensureNonNull("source", source);
+        Objects.requireNonNull(source);
         final int numRow = getNumRow();
         final int numCol = getNumCol();
         ensureSizeMatch(numRow, numCol, source);
@@ -447,7 +447,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
      */
     public void convertBefore(final int srcDim, final Number scale, final Number offset) {
         final int lastCol = getNumCol() - 1;
-        ArgumentChecks.ensureValidIndex(lastCol, srcDim);
+        Objects.checkIndex(srcDim, lastCol);
         for (int j = getNumRow(); --j >= 0;) {
             if (offset != null) {
                 final Number s = getElementOrNull(j, srcDim);           // Scale factor
@@ -478,7 +478,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     public void convertAfter(final int tgtDim, final Number scale, final Number offset) {
         final int lastRow = getNumRow() - 1;
         final int lastCol = getNumCol() - 1;
-        ArgumentChecks.ensureValidIndex(lastRow, tgtDim);
+        Objects.checkIndex(tgtDim, lastRow);
         if (scale != null) {
             for (int i=lastCol; i>=0; i--) {
                 final Number s = getElementOrNull(tgtDim, i);
@@ -635,7 +635,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     public MatrixSIS removeRows(final int lower, final int upper) {
         final int numRow = getNumRow();
         final int numCol = getNumCol();
-        ArgumentChecks.ensureValidIndexRange(numRow, lower, upper);
+        Objects.checkFromToIndex(lower, upper, numRow);
         final MatrixSIS reduced = Matrices.createZero(numRow - (upper - lower), numCol, this);
         int dest = 0;
         for (int j=0; j<numRow; j++) {
@@ -665,7 +665,7 @@ public abstract class MatrixSIS implements Matrix, LenientComparable, Cloneable,
     public MatrixSIS removeColumns(final int lower, final int upper) {
         final int numRow = getNumRow();
         final int numCol = getNumCol();
-        ArgumentChecks.ensureValidIndexRange(numCol, lower, upper);
+        Objects.checkFromToIndex(lower, upper, numCol);
         final MatrixSIS reduced = Matrices.createZero(numRow, numCol - (upper - lower), this);
         int dest = 0;
         for (int i=0; i<numCol; i++) {

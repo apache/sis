@@ -168,7 +168,7 @@ public final class Geographic3Dto2D extends GeographicRedimension {
         }
 
         /**
-         * Formats a <cite>Well Known Text</cite> version 1 (WKT 1) element for a transform using this group of parameters.
+         * Formats a <i>Well Known Text</i> version 1 (WKT 1) element for a transform using this group of parameters.
          *
          * <h4>Compatibility note</h4>
          * {@code Param_MT} is defined in the WKT 1 specification only.

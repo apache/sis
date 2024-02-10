@@ -21,8 +21,8 @@ import java.util.Arrays;
 
 /**
  * A node in a {@link PointTree} which is the parent of other nodes. The number of child nodes depends
- * on the number of dimensions of the tree: 4 children with two-dimensional <cite>QuadTree</cite>,
- * 8 children with three-dimensional <cite>Octree</cite>, <i>etc</i>.
+ * on the number of dimensions of the tree: 4 children with two-dimensional <dfn>QuadTree</dfn>,
+ * 8 children with three-dimensional <dfn>Octree</dfn>, <i>etc</i>.
  * The child node can be another {@link PointTreeNode} if that node is itself the parent of more nodes.
  * Otherwise (i.e. if the child node is leaf) the child is an instance of {@code Object[]}.
  *
@@ -31,7 +31,7 @@ import java.util.Arrays;
  * then the leaf is replaced by a new {@link PointTreeNode} and the {@code Object[]} content
  * is distributed between the new child nodes.</p>
  *
- * <p>Addition of new features in {@code Object[]} arrays uses a <cite>copy-on-write</cite> strategy
+ * <p>Addition of new features in {@code Object[]} arrays uses a <i>copy-on-write</i> strategy
  * in order to keep memory usage minimal (a tree may have thousands of small arrays) and for making
  * easier to ensure thread-safety during concurrent read/write operations.</p>
  *

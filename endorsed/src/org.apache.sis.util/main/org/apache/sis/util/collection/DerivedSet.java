@@ -27,7 +27,7 @@ import org.apache.sis.util.internal.SetOfUnknownSize;
 
 
 /**
- * A set whose values are derived <cite>on-the-fly</cite> from another set.
+ * A set whose values are derived <i>on-the-fly</i> from another set.
  * Conversions are performed when needed by two converters:
  *
  * <ul>

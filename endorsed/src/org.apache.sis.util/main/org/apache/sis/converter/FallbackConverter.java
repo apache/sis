@@ -156,7 +156,7 @@ final class FallbackConverter<S,T> extends SystemConverter<S,T> {
     {
         ArgumentChecks.ensureNonNull("primary",  primary);
         ArgumentChecks.ensureNonNull("fallback", fallback);
-        assert !(fallback instanceof FallbackConverter<?,?>) : fallback; // See javadoc
+        assert !(fallback instanceof FallbackConverter<?,?>) : fallback;            // See javadoc
         final ObjectConverter<S, ? extends T> candidate = mergeIfSubtype(primary, fallback, null);
         if (candidate != null) {
             return candidate;

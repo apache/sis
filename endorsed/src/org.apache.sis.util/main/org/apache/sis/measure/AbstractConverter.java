@@ -19,7 +19,6 @@ package org.apache.sis.measure;
 import java.util.List;
 import java.io.Serializable;
 import javax.measure.UnitConverter;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.math.DecimalFunctions;
 
 
@@ -139,7 +138,6 @@ abstract class AbstractConverter implements UnitConverter, Serializable {
      */
     @Override
     public UnitConverter concatenate(final UnitConverter converter) {
-        ArgumentChecks.ensureNonNull("converter", converter);
         if (equals(converter.inverse())) {
             return IdentityConverter.INSTANCE;
         }

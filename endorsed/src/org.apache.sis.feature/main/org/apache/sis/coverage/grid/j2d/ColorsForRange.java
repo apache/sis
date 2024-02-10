@@ -119,9 +119,8 @@ final class ColorsForRange implements Comparable<ColorsForRange> {
     ColorsForRange(final CharSequence name, final NumberRange<?> sampleRange, final Color[] colors,
                    final boolean isData, final ColorModel inherited)
     {
-        ArgumentChecks.ensureNonNull("sampleRange", sampleRange);
         this.name        = name;
-        this.sampleRange = originalSampleRange = sampleRange;
+        this.sampleRange = originalSampleRange = Objects.requireNonNull(sampleRange);
         this.isData      = isData;
         this.colors      = colors;
         inheritedColors  = inherited;

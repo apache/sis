@@ -209,7 +209,7 @@ public class CassiniSoldner extends MeridianArcBased {
     }
 
     /**
-     * Returns the sequence of <cite>normalization</cite> → {@code this} → <cite>denormalization</cite> transforms
+     * Returns the sequence of <i>normalization</i> → {@code this} → <i>denormalization</i> transforms
      * as a whole. The transform returned by this method expects (<var>longitude</var>, <var>latitude</var>)
      * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
      * The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid

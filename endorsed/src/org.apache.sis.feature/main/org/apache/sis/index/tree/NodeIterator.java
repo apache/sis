@@ -94,7 +94,6 @@ class NodeIterator<E> implements Spliterator<E>, Cloneable {
      * Creates a new iterator for the specified search region.
      * If the given region is null, then infinite bounds are assumed.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     NodeIterator(final PointTree<E> tree, final Envelope searchRegion) {
         final int n = tree.getDimension();
         bitmask = Numerics.bitmask(1 << n) - 1;

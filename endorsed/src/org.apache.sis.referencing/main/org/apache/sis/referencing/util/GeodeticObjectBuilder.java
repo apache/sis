@@ -19,6 +19,7 @@ package org.apache.sis.referencing.util;
 import java.util.Map;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import javax.measure.Unit;
 import javax.measure.quantity.Time;
@@ -256,7 +257,6 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * @throws FactoryException if the operation method cannot be obtained.
      */
     public GeodeticObjectBuilder setConversion(final ParameterValueGroup parameters) throws FactoryException {
-        ArgumentChecks.ensureNonNull("parameters", parameters);
         method = factories.getCoordinateOperationFactory().getOperationMethod(parameters.getDescriptor().getName().getCode());
         this.parameters = parameters;           // Set only if above line succeed.
         return this;
@@ -634,7 +634,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
              */
             return source.equals(replacement) ? source : replacement;
         }
-        ArgumentChecks.ensureValidIndex(srcDim - repDim, firstDimension);
+        Objects.checkIndex(firstDimension, srcDim - repDim);
         if (source instanceof CompoundCRS) {
             final var components = ((CompoundCRS) source).getComponents().toArray(CoordinateReferenceSystem[]::new);
             int lower = 0;

@@ -21,6 +21,7 @@ import java.util.TreeMap;
 import java.util.SortedMap;
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.Objects;
 import java.util.logging.Logger;
 import java.io.Serializable;
 import java.io.IOException;
@@ -357,7 +358,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @see #insertDimension(int, DimensionNameType, long, long, boolean)
      */
     public GridExtent(final DimensionNameType[] axisTypes, final long[] low, final long[] high, final boolean isHighIncluded) {
-        ArgumentChecks.ensureNonNull("high", high);
         final int dimension = high.length;
         if (low != null && low.length != dimension) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.MismatchedDimension_2, low.length, dimension));
@@ -674,7 +674,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @see #castOrCopy(GridEnvelope)
      */
     protected GridExtent(final GridEnvelope extent) {
-        ArgumentChecks.ensureNonNull("extent", extent);
         final int dimension = extent.getDimension();
         coordinates = allocate(dimension);
         for (int i=0; i<dimension; i++) {
@@ -798,8 +797,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      */
     @Override
     public long getLow(final int index) {
-        ArgumentChecks.ensureValidIndex(getDimension(), index);
-        return coordinates[index];
+        return coordinates[Objects.checkIndex(index, getDimension())];
     }
 
     /**
@@ -817,8 +815,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     @Override
     public long getHigh(final int index) {
         final int dimension = getDimension();
-        ArgumentChecks.ensureValidIndex(dimension, index);
-        return coordinates[index + dimension];
+        return coordinates[Objects.checkIndex(index, dimension) + dimension];
     }
 
     /**
@@ -843,8 +840,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      */
     public long getMedian(final int index) {
         final int dimension = getDimension();
-        ArgumentChecks.ensureValidIndex(dimension, index);
-        final long low  = coordinates[index];
+        final long low  = coordinates[Objects.checkIndex(index, dimension)];
         final long high = coordinates[index + dimension];
         /*
          * Use `>> 1` instead of `/2` because the two operations differ in their rounding mode for negative values.
@@ -898,7 +894,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     @Override
     public long getSize(final int index) {
         final int dimension = getDimension();
-        ArgumentChecks.ensureValidIndex(dimension, index);
+        Objects.checkIndex(index, dimension);
         return Math.incrementExact(Math.subtractExact(coordinates[dimension + index], coordinates[index]));
     }
 
@@ -914,7 +910,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      */
     public double getSize(final int index, final boolean minusOne) {
         final int dimension = getDimension();
-        ArgumentChecks.ensureValidIndex(dimension, index);
+        Objects.checkIndex(index, dimension);
         long size = coordinates[dimension + index] - coordinates[index];        // Unsigned long.
         if (!minusOne && ++size == 0) {
             return 0x1P64;                          // Unsigned integer overflow. Result is 2^64.
@@ -953,7 +949,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
     public double[] getPointOfInterest(final PixelInCell anchor) {
         final int dimension = getDimension();
         final double[] center = new double[dimension];
-        final boolean isCorner = PixelInCell.CELL_CORNER.equals(anchor);
+        final boolean isCorner = anchor.equals(PixelInCell.CELL_CORNER);            // Implicit null check.
         for (int i=0; i<dimension; i++) {
             /*
              * We want the average of (low + hi+1). However for the purpose of computing an average, it does
@@ -1165,7 +1161,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *         than the {@linkplain #getDimension() grid dimension}.
      */
     public Optional<DimensionNameType> getAxisType(final int index) {
-        ArgumentChecks.ensureValidIndex(getDimension(), index);
+        Objects.checkIndex(index, getDimension());
         return Optional.ofNullable((types != null) ? types[index] : null);
     }
 
@@ -1211,8 +1207,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      */
     public GridExtent withRange(final int index, final long low, final long high) {
         int ih = getDimension();
-        ArgumentChecks.ensureValidIndex(ih, index);
-        ih += index;
+        ih += Objects.checkIndex(index, ih);
         if (coordinates[index] == low && coordinates[ih] == high) {
             return this;
         }
@@ -1422,7 +1417,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      */
     public GridExtent insertDimension(final int index, final DimensionNameType axisType, final long low, long high, final boolean isHighIncluded) {
         final int dimension = getDimension();
-        ArgumentChecks.ensureValidIndex(dimension+1, index);
+        Objects.checkIndex(index, dimension+1);
         if (!isHighIncluded) {
             high = Math.decrementExact(high);
         }
@@ -1453,7 +1448,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * The given dimensions must be in strictly ascending order without duplicated values.
      * The number of dimensions of the sub grid extent will be {@code indices.length}.
      *
-     * <p>This method performs a <cite>dimensionality reduction</cite> and can be used as the converse
+     * <p>This method performs a <i>dimensionality reduction</i> and can be used as the converse
      * of {@link #insertDimension(int, DimensionNameType, long, long, boolean) insertDimension(…)}.
      * This method cannot be used for changing dimension order.</p>
      *
@@ -1480,7 +1475,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @return a clone of the given array, or {@code null} if the caller can return {@code this}.
      */
     static int[] verifyDimensions(int[] indices, final int limit) {
-        ArgumentChecks.ensureNonNull("indices", indices);
         final int n = indices.length;
         ArgumentChecks.ensureCountBetween("indices", false, 1, limit, n);
         indices = indices.clone();
@@ -1538,7 +1532,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @see GridDerivation#margin(int...)
      */
     public GridExtent expand(final long... margins) {
-        ArgumentChecks.ensureNonNull("margins", margins);
         final int m = getDimension();
         final int length = Math.min(m, margins.length);
         if (isZero(margins, length)) {
@@ -1610,7 +1603,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @see GridDerivation#subgrid(GridExtent, int...)
      */
     public GridExtent resize(final long... sizes) {
-        ArgumentChecks.ensureNonNull("sizes", sizes);
         final int m = getDimension();
         final int length = Math.min(m, sizes.length);
         final GridExtent resize = new GridExtent(this);
@@ -1668,7 +1660,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @see GridDerivation#subgrid(GridExtent, int...)
      */
     public GridExtent subsample(final int... periods) {
-        ArgumentChecks.ensureNonNull("periods", periods);
         final int m = getDimension();
         final int length = Math.min(m, periods.length);
         final GridExtent sub = new GridExtent(this);
@@ -1714,7 +1705,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @since 1.3
      */
     public GridExtent upsample(final int... periods) {
-        ArgumentChecks.ensureNonNull("periods", periods);
         final int m = getDimension();
         final int length = Math.min(m, periods.length);
         final GridExtent sub = new GridExtent(this);
@@ -1859,7 +1849,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @since 1.1
      */
     public GridExtent translate(final long... translation) {
-        ArgumentChecks.ensureNonNull("translation", translation);
         final int m = getDimension();
         final int length = Math.min(m, translation.length);
         if (isZero(translation, length)) {
@@ -1892,7 +1881,6 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @since 1.2
      */
     public boolean contains(final long... cell) {
-        ArgumentChecks.ensureNonNull("cell", cell);
         final int m = getDimension();
         final int length = Math.min(m, cell.length);
         for (int i=0; i<length; i++) {

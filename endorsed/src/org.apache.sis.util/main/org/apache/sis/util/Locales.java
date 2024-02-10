@@ -21,15 +21,13 @@ import java.util.Set;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.TreeMap;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.MissingResourceException;
 import java.util.IllformedLocaleException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import org.apache.sis.pending.jdk.JDK19;
 import org.apache.sis.util.logging.Logging;
 import static org.apache.sis.util.CharSequences.trimWhitespaces;
-import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 import static org.apache.sis.util.resources.IndexedResourceBundle.LOGGER;
 
 
@@ -57,7 +55,7 @@ public final class Locales extends Static {
     private static final Map<Locale,Locale> POOL;
     static {
         final Locale[] locales = Locale.getAvailableLocales();
-        POOL = new HashMap<>(hashMapCapacity(locales.length));
+        POOL = JDK19.newHashMap(locales.length);
         for (final Locale lc : locales) {
             POOL.put(lc, lc);
         }
@@ -211,7 +209,7 @@ filter: for (final Locale locale : locales) {
      */
     @SuppressWarnings("deprecation")
     private static Locale[] getLanguages(final Locale... locales) {
-        final Set<String> codes = new LinkedHashSet<>(hashMapCapacity(locales.length));
+        final Set<String> codes = JDK19.newLinkedHashSet(locales.length);
         for (final Locale locale : locales) {
             codes.add(locale.getLanguage());
         }
@@ -231,7 +229,7 @@ filter: for (final Locale locale : locales) {
      *
      * <p>This method can be used when the caller wants the same {@code Locale} constants no matter if the language
      * and country codes use 2 or 3 letters. This method tries to convert 3-letters codes to 2-letters code on a
-     * <cite>best effort</cite> basis.</p>
+     * <em>best effort</em> basis.</p>
      *
      * @param  code  the language code, optionally followed by country code and variant.
      * @return the language for the given code (never {@code null}).
@@ -247,7 +245,7 @@ filter: for (final Locale locale : locales) {
      * Parses the given language code and optional complements (country, variant), starting at the given index.
      * All characters before {@code fromIndex} are ignored. Characters from {@code fromIndex} to the end of the
      * string are parsed as documented in the {@link #parse(String)} method. In particular, this method tries to
-     * convert 3-letters codes to 2-letters code on a <cite>best effort</cite> basis.
+     * convert 3-letters codes to 2-letters code on a <em>best effort</em> basis.
      *
      * <h4>Example</h4>
      * This method is useful when language codes are appended to a base property or resource name.
@@ -263,7 +261,6 @@ filter: for (final Locale locale : locales) {
      * @see org.apache.sis.util.iso.Types#toInternationalString(Map, String)
      */
     public static Locale parse(final String code, final int fromIndex) throws IllformedLocaleException {
-        ArgumentChecks.ensureNonNull("code", code);
         ArgumentChecks.ensurePositive("fromIndex", fromIndex);
         int p1 = code.indexOf('_', fromIndex);
         int i  = code.indexOf('-', fromIndex);

@@ -16,6 +16,12 @@
  */
 package org.apache.sis.pending.jdk;
 
+import java.util.HashSet;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
+import static org.apache.sis.util.collection.Containers.hashMapCapacity;
+
 
 /**
  * Place holder for some functionalities defined in a JDK more recent than Java 11.
@@ -37,5 +43,21 @@ public final class JDK19 {
      * Do not allow instantiation of this class.
      */
     private JDK19() {
+    }
+
+    public static <T> HashSet<T> newHashSet(int n) {
+        return new HashSet<>(hashMapCapacity(n));
+    }
+
+    public static <K,V> HashMap<K,V> newHashMap(int n) {
+        return new HashMap<>(hashMapCapacity(n));
+    }
+
+    public static <T> LinkedHashSet<T> newLinkedHashSet(int n) {
+        return new LinkedHashSet<>(hashMapCapacity(n));
+    }
+
+    public static <K, V> LinkedHashMap<K,V> newLinkedHashMap(int n) {
+        return new LinkedHashMap<>(hashMapCapacity(n));
     }
 }

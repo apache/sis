@@ -27,7 +27,7 @@ import org.apache.sis.util.resources.Errors;
  * Those attributes are used by SIS formatters for providing some syntax coloring,
  * for example in the {@link org.apache.sis.io.wkt} package.
  *
- * <p>This enumeration is restricted to a subset of the <cite>ANSI escape codes</cite> (a.k.a.
+ * <p>This enumeration is restricted to a subset of the <i>ANSI escape codes</i> (a.k.a.
  * ECMA-48, ISO/IEC 6429 and X3.64 standards) because SIS uses them mostly for syntax coloring in
  * console outputs. However, those attributes can also occasionally be used for HTML rendering.</p>
  *
@@ -119,7 +119,6 @@ public enum X364 {
      * @param code   the X.364 numerical code.
      * @param color  the color name, or {@code null} if none.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     private X364(final byte code, final String color) {
         this.code  = code;
         this.color = color;
@@ -132,7 +131,6 @@ public enum X364 {
      *
      * @param foreground  the X.364 code for a foreground color.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     private X364(final X364 foreground) {
         this((byte) (foreground.code + 10), foreground.color);
         this.foreground = foreground;

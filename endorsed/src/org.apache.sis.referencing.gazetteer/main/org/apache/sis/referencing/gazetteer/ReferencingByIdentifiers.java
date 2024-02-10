@@ -172,7 +172,7 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
      * @param properties  the properties to be given to the reference system.
      * @param types       description of location type(s) in the spatial reference system.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
+    @SuppressWarnings("this-escape")
     public ReferencingByIdentifiers(final Map<String,?> properties, final LocationType... types) {
         super(properties);
         theme = Types.toInternationalString(properties, THEME_KEY);
@@ -434,7 +434,7 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
     }
 
     /**
-     * Formats a pseudo-<cite>Well Known Text</cite> (WKT) representation for this object.
+     * Formats a pseudo-<i>Well Known Text</i> (WKT) representation for this object.
      * The format produced by this method is non-standard and may change in any future Apache SIS version.
      *
      * @param  formatter  the formatter where to format the inner content of this pseudo-WKT element.

@@ -34,6 +34,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.internal.Unsafe;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable.Node;
@@ -735,8 +736,7 @@ class TreeNode implements Node {
                  * runtime. However, other implementations could use unchecked collection. We have
                  * done our best for converting the type above, there is not much more we can do...
                  */
-                // No @SuppressWarnings because this is a real hole.
-                ((List) values).set(indexInList, value);
+                Unsafe.set((List<?>) values, indexInList, value);
             } catch (IndexOutOfBoundsException e) {
                 // Same rational as in the getUserObject() method.
                 throw new ConcurrentModificationException(e);
@@ -973,6 +973,7 @@ class TreeNode implements Node {
      */
     private TreeNodeChildren getCompactChildren() {
         if (table.valuePolicy == ValueExistencePolicy.COMPACT) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final Collection<Node> children = getChildren();
             if (children instanceof TreeNodeChildren) {
                 return (TreeNodeChildren) children;
@@ -1000,6 +1001,7 @@ class TreeNode implements Node {
             }
             value = name;
         } else if (column == TableColumn.TYPE) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final TreeNodeChildren children = getCompactChildren();
             if (children == null || (value = children.getParentType()) == null) {
                 value = baseType;
@@ -1008,6 +1010,7 @@ class TreeNode implements Node {
             if (isLeaf()) {
                 value = getNonNilValue();
             } else {
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final TreeNodeChildren children = getCompactChildren();
                 if (children != null) {
                     value = children.getParentTitle();
@@ -1037,6 +1040,7 @@ class TreeNode implements Node {
         ArgumentChecks.ensureNonNull("column", column);
         if (column == TableColumn.VALUE) {
             ArgumentChecks.ensureNonNull("value", value);                       // See javadoc.
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final TreeNodeChildren children = getCompactChildren();
             if (children == null || !(children.setParentTitle(value))) {
                 setUserObject(value);

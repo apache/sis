@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.Map;
+import java.util.Objects;
 import static java.lang.Math.*;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
@@ -29,7 +30,6 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection.ParameterRole;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
@@ -72,9 +72,9 @@ final class Initializer {
 
     /**
      * The square of eccentricity: ℯ² = (a²-b²)/a² where
-     * <var>ℯ</var> is the <cite>eccentricity</cite>,
-     * <var>a</var> is the <cite>semi-major</cite> axis length and
-     * <var>b</var> is the <cite>semi-minor</cite> axis length.
+     * <var>ℯ</var> is the <i>eccentricity</i>,
+     * <var>a</var> is the <i>semi-major</i> axis length and
+     * <var>b</var> is the <i>semi-minor</i> axis length.
      *
      * <p>This is stored as a double-double value because this parameter is sometimes used for computing back
      * the semi-minor axis length or the inverse flattening factor. In such case we wish to find the original
@@ -94,19 +94,16 @@ final class Initializer {
      *
      * @param method      description of the map projection parameters.
      * @param parameters  the parameters of the projection to be created.
-     * @param roles       parameters to look for <cite>central meridian</cite>, <cite>scale factor</cite>,
-     *                    <cite>false easting</cite>, <cite>false northing</cite> and other values.
+     * @param roles       parameters to look for <i>central meridian</i>, <i>scale factor</i>,
+     *                    <i>false easting</i>, <i>false northing</i> and other values.
      * @param variant     the map projection variant, or {@code null} if none.
      */
     Initializer(final OperationMethod method, final Parameters parameters,
                 final Map<ParameterRole, ? extends ParameterDescriptor<? extends Number>> roles,
                 final ProjectionVariant variant)
     {
-        ensureNonNull("method",     method);
-        ensureNonNull("parameters", parameters);
-        ensureNonNull("roles",      roles);
         this.context    = new ContextualParameters(method.getParameters(), 2, 2);
-        this.parameters = parameters;
+        this.parameters = Objects.requireNonNull(parameters);
         this.variant    = variant;
         /*
          * Note: we do not use Map.getOrDefault(K,V) below because the user could have explicitly associated

@@ -42,12 +42,12 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.pending.jdk.JDK19;
 import static org.apache.sis.storage.base.StoreUtilities.ALLOW_LAST_RESORT_STATISTICS;
 
 
@@ -241,7 +241,7 @@ public abstract class Variable extends Node {
              */
             Exception     error    = null;
             StringBuilder invalids = null;
-            enumeration = new HashMap<>(Containers.hashMapCapacity(count));
+            enumeration = JDK19.newHashMap(count);
             for (int i=0; i<count; i++) try {
                 final CharSequence label = labels[i];
                 if (label != null) {

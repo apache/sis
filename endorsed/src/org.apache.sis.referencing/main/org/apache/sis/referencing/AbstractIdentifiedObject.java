@@ -100,14 +100,14 @@ import org.opengis.referencing.ObjectDomain;
  * </ul>
  *
  * <h2>Instantiation</h2>
- * This class is conceptually <cite>abstract</cite>, even if it is technically possible to instantiate it.
+ * This class is conceptually <i>abstract</i>, even if it is technically possible to instantiate it.
  * Applications should instead instantiate the most specific subclass having a name starting by {@code Default}.
  * However, exceptions to this rule may occur when it is not possible to identify the exact type.
  *
  * <div class="note"><b>Example:</b>
  * It is sometimes not possible to infer the exact coordinate system type from
  * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">version 1
- * of <cite>Well Known Text format</cite></a>, for example when parsing a {@code LOCAL_CS} element.
+ * of <i>Well Known Text</i> format</a>, for example when parsing a {@code LOCAL_CS} element.
  * In such exceptional situation, a plain {@code AbstractCS} object may be instantiated.</div>
  *
  * {@code IdentifiedObject} instances are created in two main ways:
@@ -163,7 +163,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * <ul>
      *   <li>The locale is not stored in any {@code AbstractIdentifiedObject} property;
      *       its value is ignored if no error occurred at construction time.</li>
-     *   <li>The locale is used on a <cite>best effort</cite> basis;
+     *   <li>The locale is used on a <em>best effort</em> basis;
      *       not all error messages may be localized.</li>
      * </ul>
      */
@@ -342,7 +342,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * They are convenience properties for building the {@code InternationalString} value.
      *
      * <p>The {@code "locale"} property applies only in case of exception for formatting the error message, and
-     * is used only on a <cite>best effort</cite> basis. The locale is discarded after successful construction
+     * is used only on a <em>best effort</em> basis. The locale is discarded after successful construction
      * since localizations are applied by the {@link InternationalString#toString(Locale)} method.</p>
      *
      * <h4>Properties map versus explicit arguments</h4>
@@ -454,7 +454,6 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @param object  the object to shallow copy.
      */
     protected AbstractIdentifiedObject(final IdentifiedObject object) {
-        ensureNonNull("object", object);
         name        =          object.getName();
         alias       = nonEmpty(object.getAlias()); // Favor null for empty set in case it is not Collections.EMPTY_SET
         identifiers = nonEmpty(object.getIdentifiers());
@@ -637,7 +636,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *   <li>All characters that are not {@linkplain Character#isLetterOrDigit(int) letters or digits}
      *       (e.g. {@code "Mercator (1SP)"} and {@code "Mercator_1SP"} are considered equal).</li>
      *   <li>Namespaces or scopes, because this method is typically invoked with either the value of another
-     *       <code>IdentifiedObject.getName().getCode()</code> or with the <cite>Well Known Text</cite> (WKT)
+     *       <code>IdentifiedObject.getName().getCode()</code> or with the <i>Well Known Text</i> (WKT)
      *       projection or parameter name.</li>
      * </ul>
      *
@@ -734,9 +733,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *
      * <h4>Conformance to the <code>equals(Object)</code> method contract</h4>
      * {@link ComparisonMode#STRICT} is the only mode compliant with the {@link Object#equals(Object)} contract.
-     * For all other modes, the comparison is not guaranteed to be <cite>symmetric</cite> neither
-     * <cite>transitive</cite>. See {@link LenientComparable#equals(Object, ComparisonMode) LenientComparable}
-     * for more information.
+     * For all other modes, the comparison is not guaranteed to be <i>symmetric</i> neither <i>transitive</i>.
+     * See {@link LenientComparable#equals(Object, ComparisonMode) LenientComparable} for more information.
      *
      * @param  object  the object to compare to {@code this}.
      * @param  mode    the strictness level of the comparison.
@@ -897,7 +895,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
-     * Formats the inner part of the <cite>Well Known Text</cite> (WKT) representation for this object.
+     * Formats the inner part of the <i>Well Known Text</i> (WKT) representation for this object.
      * The default implementation writes the following elements:
      *
      * <ul>

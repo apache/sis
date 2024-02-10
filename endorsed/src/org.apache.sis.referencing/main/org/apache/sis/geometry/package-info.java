@@ -87,7 +87,7 @@
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 package org.apache.sis.geometry;

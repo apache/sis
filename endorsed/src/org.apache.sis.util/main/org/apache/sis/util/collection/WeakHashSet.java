@@ -24,7 +24,7 @@ import java.lang.reflect.Array;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ConditionallySafe;
 import static org.apache.sis.util.collection.WeakEntry.*;
 
 
@@ -212,8 +212,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      */
     @Override
     public synchronized boolean add(final E element) {
-        ArgumentChecks.ensureNonNull("element", element);
-        return intern(element, ADD) == null;
+        return intern(Objects.requireNonNull(element), ADD) == null;
     }
 
     /**
@@ -256,7 +255,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
     }
 
     /**
-     * Returns an object equals to {@code element} if such an object already exist in this
+     * Returns an object equals to {@code element} if such an object already exists in this
      * {@code WeakHashSet}. Otherwise, adds {@code element} to this {@code WeakHashSet}.
      * This method is functionally equivalents to the following code:
      *
@@ -272,30 +271,47 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
      *     return element;
      *     }
      *
-     * @param  <T>      the type of the element to get. Can be {@code null}.
-     * @param  element  the element to get or to add in the set if not already presents,
-     *                  or {@code null} if the given element was null.
-     * @return an element equals to the given one if already presents in the set,
-     *         or the given {@code object} otherwise.
+     * <h4>Requirement for type safety</h4>
+     * This method is safe only if the given {@code element} implements the {@link Object#equals(Object)} method
+     * in such a way that {@code T.equals(x)} can be true only if <var>x</var> is an instance of <var>T</var>.
+     * This requirement is true in the common case when the {@code equals(Object)} implementation requires that
+     * the two compared objects are of the same class, for example as below:
+     *
+     * {@snippet lang="java" :
+     *     @Override
+     *     public boolean equals(Object obj) {
+     *         if (obj == null || obj.getClass() != getClass()) {
+     *             return false;
+     *         }
+     *         // Do the comparison
+     *     }
+     *
+     * @param  <T>      the type of the element to get.
+     * @param  element  the element to get or to add in the set if not already presents. Can be {@code null}.
+     * @return an element equals to the given one if already presents in the set, or the given {@code element}
+     *         otherwise. Can be {@code null} if the given element was null.
      */
+    @ConditionallySafe
+    @SuppressWarnings("unchecked")
     public synchronized <T extends E> T unique(final T element) {
         /*
-         * There is no way to make sure that this operation is really safe.
-         * We have to trust the Object.equals(Object) method to be strict
+         * It is difficult to make sure that this operation is really safe.
+         * We have to trust the `Object.equals(Object)` method to be strict
          * about the type of compared objects.
          */
-        return (T) intern(element, INTERN);
+        return (T) intern(element, UNIQUE);
     }
 
     // Arguments for the {@link #intern} method.
     /** The "remove" operation.  */  private static final int REMOVE = -1;
     /** The "get"    operation.  */  private static final int GET    =  0;
     /** The "add"    operation.  */  private static final int ADD    = +1;
-    /** The "intern" operation.  */  private static final int INTERN = +2;
+    /** The "unique" operation.  */  private static final int UNIQUE = +2;
 
     /**
      * Implementation of the {@link #add(Object)}, {@link #remove(Object)}, {@link #get(Object)},
-     * {@link #contains(Object)} and {@link #unique(Object)} methods.
+     * {@link #contains(Object)} and {@link #unique(Object)} methods. Tests for equality are done
+     * on the given object (this is implied by the {@link #unique(Object)} method contract).
      */
     private E intern(final Object obj, final int operation) {
         assert isValid();
@@ -304,6 +320,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
              * Check if the object is already contained in this
              * WeakHashSet. If yes, return the existing element.
              */
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             Entry[] table = this.table;
             final int hash = (mayContainArrays ? Utilities.deepHashCode(obj) : obj.hashCode()) & HASH_MASK;
             int index = hash % table.length;
@@ -332,7 +349,7 @@ public class WeakHashSet<E> extends AbstractSet<E> implements CheckedContainer<E
                 final E element = elementType.cast(obj);
                 table[index] = new Entry(element, table[index], hash);
                 assert isValid();
-                if (operation == INTERN) {
+                if (operation == UNIQUE) {
                     return element;
                 }
             }

@@ -25,6 +25,8 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.io.PrintWriter;
@@ -33,7 +35,6 @@ import java.text.NumberFormat;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
-import java.util.concurrent.atomic.AtomicReference;
 import javax.measure.Unit;
 import org.opengis.parameter.*;
 import org.opengis.util.ScopedName;
@@ -56,7 +57,7 @@ import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.util.internal.X364;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.metadata.internal.NameToIdentifier;
-import static org.apache.sis.util.collection.Containers.hashMapCapacity;
+import org.apache.sis.pending.jdk.JDK19;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.ReferenceIdentifier;
@@ -97,7 +98,7 @@ import org.opengis.util.ControlledVocabulary;
  * <table class="sis">
  *   <caption>Formattable object types</caption>
  *   <tr><th>Class</th> <th>Remarks</th></tr>
- *   <tr><td>{@link ParameterValueGroup}</td><td><cite>Default values</cite> column is replaced by a column of the actual values.</td></tr>
+ *   <tr><td>{@link ParameterValueGroup}</td><td><q>Default values</q> column is replaced by a column of the actual values.</td></tr>
  *   <tr><td>{@link ParameterDescriptorGroup}</td><td>Table caption is the parameter group name.</td></tr>
  *   <tr><td>{@link OperationMethod}</td><td>Table caption is the method name (not necessarily the same as parameter group name).</td></tr>
  *   <tr><td><code>{@linkplain IdentifiedObject}[]</code></td><td>Accepted only for {@link ContentLevel#NAME_SUMMARY}.</td></tr>
@@ -321,8 +322,7 @@ public class ParameterFormat extends TabularFormat<Object> {
      * @param  level  the amount of information to put in the table.
      */
     public void setContentLevel(final ContentLevel level) {
-        ArgumentChecks.ensureNonNull("level", level);
-        this.contentLevel = level;
+        this.contentLevel = Objects.requireNonNull(level);
     }
 
     /**
@@ -465,8 +465,7 @@ public class ParameterFormat extends TabularFormat<Object> {
          */
         int codespaceWidth = 0;
         final Collection<?> elements = (values != null) ? values.values() : group.descriptors();
-        final Map<GeneralParameterDescriptor, ParameterTableRow> descriptorValues =
-                new LinkedHashMap<>(hashMapCapacity(elements.size()));
+        final Map<GeneralParameterDescriptor, ParameterTableRow> descriptorValues = JDK19.newLinkedHashMap(elements.size());
         List<Object> deferredGroups = null;                 // To be created only if needed (it is usually not).
         for (final Object element : elements) {
             final GeneralParameterValue parameter;

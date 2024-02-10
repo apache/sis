@@ -64,7 +64,7 @@ final class AxisName {
      * and the space is rare.
      *
      * @param  axis    the axis for which to get a short label.
-     * @param  locale  desired locale for the label.
+     * @param  locale  desired locale for the label, or {@code null} for the default.
      * @return a relatively short axis label, in the desired locale if possible.
      */
     static String find(final CoordinateSystemAxis axis, final Locale locale) {

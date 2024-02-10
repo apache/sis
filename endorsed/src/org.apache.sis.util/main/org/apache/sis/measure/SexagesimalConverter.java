@@ -28,8 +28,8 @@ import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
 
 /**
  * A converter from decimal degrees to sexagesimal degrees. Sexagesimal degrees are pseudo-unit
- * in the <cite>sign - degrees - decimal point - minutes (two digits) - integer seconds (two digits) -
- * fraction of seconds (any precision)</cite> format.
+ * in the <i>sign - degrees - decimal point - minutes (two digits) - integer seconds (two digits) -
+ * fraction of seconds (any precision)</i> format.
  *
  * <p>When possible, Apache SIS always handles angles in radians, decimal degrees or any other proportional units.
  * Sexagesimal angles are considered a string representation issue (handled by {@link AngleFormat}) rather than a
@@ -55,7 +55,7 @@ class SexagesimalConverter extends AbstractConverter {
     /**
      * Pseudo-unit for sexagesimal degree. Numbers in this pseudo-unit have the following format:
      *
-     * <cite>sign - degrees - decimal point - minutes (two digits) - fraction of minutes (any precision)</cite>.
+     * <i>sign - degrees - decimal point - minutes (two digits) - fraction of minutes (any precision)</i>.
      *
      * Using this unit is loosely equivalent to formatting decimal degrees with the
      * {@code "D.MMm"} {@link AngleFormat} pattern.
@@ -69,8 +69,8 @@ class SexagesimalConverter extends AbstractConverter {
     /**
      * Pseudo-unit for sexagesimal degree. Numbers in this pseudo-unit have the following format:
      *
-     * <cite>sign - degrees - decimal point - minutes (two digits) - integer seconds (two digits) -
-     * fraction of seconds (any precision)</cite>.
+     * <i>sign - degrees - decimal point - minutes (two digits) - integer seconds (two digits) -
+     * fraction of seconds (any precision)</i>.
      *
      * Using this unit is loosely equivalent to formatting decimal degrees with the
      * {@code "D.MMSSs"} {@link AngleFormat} pattern.
@@ -85,8 +85,8 @@ class SexagesimalConverter extends AbstractConverter {
      * Pseudo-unit for degree - minute - second.
      * Numbers in this pseudo-unit have the following format:
      *
-     * <cite>signed degrees (integer) - arc-minutes (integer) - arc-seconds
-     * (real, any precision)</cite>.
+     * <i>signed degrees (integer) - arc-minutes (integer) - arc-seconds
+     * (real, any precision)</i>.
      *
      * Using this unit is loosely equivalent to formatting decimal degrees with the
      * {@code "DMMSS.s"} {@link AngleFormat} pattern.

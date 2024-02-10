@@ -19,6 +19,7 @@ package org.apache.sis.coverage.grid;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.text.NumberFormat;
 import java.text.FieldPosition;
@@ -47,7 +48,6 @@ import org.apache.sis.image.DataType;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.iso.DefaultNameFactory;
@@ -186,8 +186,7 @@ public class GridCoverage2D extends GridCoverage {
      */
     public GridCoverage2D(final GridCoverage source, RenderedImage data) {
         super(source, source.getGridGeometry());
-        ArgumentChecks.ensureNonNull("data", data);
-        this.data = data = unwrapIfSameSize(data);
+        this.data = data = unwrapIfSameSize(Objects.requireNonNull(data));
         final GridExtent extent = gridGeometry.getExtent();
         final int[] imageAxes;
         if (source instanceof GridCoverage2D) {
@@ -249,8 +248,7 @@ public class GridCoverage2D extends GridCoverage {
         super(domain = addExtentIfAbsent(domain, data = unwrapIfSameSize(data)),
                 defaultIfAbsent(range, data, ImageUtilities.getNumBands(data)));
 
-        this.data = data;
-        ArgumentChecks.ensureNonNull("data", data);
+        this.data = Objects.requireNonNull(data);
         /*
          * Find indices of the two dimensions of the slice. Those dimensions are usually 0 for x and 1 for y,
          * but not necessarily. A two dimensional CRS will be extracted for those dimensions later if needed.

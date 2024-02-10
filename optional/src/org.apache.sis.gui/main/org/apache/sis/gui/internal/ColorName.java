@@ -42,7 +42,7 @@ public final class ColorName {
     static {
         final StringBuilder buffer = new StringBuilder();
         for (final Field field : Color.class.getFields()) {
-            if (Modifier.isStatic(field.getModifiers()) && Color.class.equals(field.getType())) try {
+            if (Modifier.isStatic(field.getModifiers()) && field.getType() == Color.class) try {
                 final String name = field.getName();
                 buffer.append(name.toLowerCase());          // Default locale is okay here.
                 buffer.setCharAt(0, name.charAt(0));        // Code point not used in Color API.

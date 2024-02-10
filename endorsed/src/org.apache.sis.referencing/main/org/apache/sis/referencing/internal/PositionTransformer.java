@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.internal;
 
+import java.util.Objects;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
@@ -28,7 +29,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.geometry.GeneralDirectPosition;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 
 
@@ -127,7 +127,6 @@ public final class PositionTransformer extends GeneralDirectPosition {
             final CoordinateOperationFactory factory)
     {
         super(targetCRS);
-        ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
         this.defaultCRS = (defaultCRS != null) ? defaultCRS : targetCRS;
         this.factory    = (factory != null) ? factory : DefaultCoordinateOperationFactory.provider();
     }
@@ -146,8 +145,7 @@ public final class PositionTransformer extends GeneralDirectPosition {
      */
     @Override
     public void setCoordinateReferenceSystem(final CoordinateReferenceSystem targetCRS) throws MismatchedDimensionException {
-        ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
-        super.setCoordinateReferenceSystem(targetCRS);
+        super.setCoordinateReferenceSystem(Objects.requireNonNull(targetCRS));
         forward = null;
         inverse = null;
     }

@@ -426,7 +426,6 @@ final class GridViewSkin extends VirtualContainerBase<GridView, GridRow> impleme
          * Creates a new flow for the given view. This method registers listeners
          * on the properties that may require a redrawn of the full view port.
          */
-        @SuppressWarnings("ThisEscapedInObjectConstruction")
         Flow(final GridView view) {
             setPannable(false);         // We will use our own pan listeners.
             getHbar().valueProperty().addListener(this);

@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
+import java.util.Objects;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -29,7 +30,6 @@ import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -125,8 +125,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
                               final VerticalCS    cs)
     {
         super(properties, cs);
-        this.datum = datum;
-        ArgumentChecks.ensureNonNull("datum", datum);
+        this.datum = Objects.requireNonNull(datum);
     }
 
     /**
@@ -226,7 +225,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
     }
 
     /**
-     * Formats this CRS as a <cite>Well Known Text</cite> {@code VerticalCRS[…]} element.
+     * Formats this CRS as a <i>Well Known Text</i> {@code VerticalCRS[…]} element.
      *
      * @return {@code "VerticalCRS"} (WKT 2) or {@code "Vert_CS"} (WKT 1).
      *

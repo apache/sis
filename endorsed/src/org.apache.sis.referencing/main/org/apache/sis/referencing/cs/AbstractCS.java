@@ -61,10 +61,10 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * The type of the coordinate system implies the set of mathematical rules for calculating geometric properties
  * like angles, distances and surfaces.
  *
- * <p>This class is conceptually <cite>abstract</cite>, even if it is technically possible to instantiate it.
+ * <p>This class is conceptually <i>abstract</i>, even if it is technically possible to instantiate it.
  * Typical applications should create instances of the most specific subclass with {@code Default} prefix instead.
  * An exception to this rule may occurs when it is not possible to identify the exact type. For example, it is not
- * possible to infer the exact coordinate system from <cite>Well Known Text</cite> (WKT) version 1 in some cases
+ * possible to infer the exact coordinate system from <i>Well Known Text</i> (WKT) version 1 in some cases
  * (e.g. in a {@code LOCAL_CS} element). In such exceptional situation, a plain {@code AbstractCS} object may be
  * instantiated.</p>
  *
@@ -182,10 +182,9 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      * @param  axes        the sequence of axes.
      * @throws IllegalArgumentException if an axis has an illegal direction or an illegal unit of measurement.
      */
-    @SuppressWarnings({"this-escape", "OverridableMethodCallInConstructor"})
+    @SuppressWarnings("this-escape")
     public AbstractCS(final Map<String,?> properties, final CoordinateSystemAxis... axes) {
         super(properties);
-        ensureNonNull("axes", axes);
         this.axes = axes.clone();
         validate(properties);
         forConvention = forConvention(this);
@@ -273,7 +272,6 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *
      * @see #createForAxes(String, CoordinateSystemAxis[])
      */
-    @SuppressWarnings("OverridableMethodCallInConstructor")
     AbstractCS(final AbstractCS original, final String name, final CoordinateSystemAxis[] axes) {
         super(original.getPropertiesWithoutIdentifiers(name));
         this.axes = axes;
@@ -292,7 +290,7 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *
      * @see #castOrCopy(CoordinateSystem)
      */
-    @SuppressWarnings({"this-escape", "OverridableMethodCallInConstructor"})
+    @SuppressWarnings("this-escape")
     protected AbstractCS(final CoordinateSystem original) {
         super(original);
         axes = (original instanceof AbstractCS) ? ((AbstractCS) original).axes : getAxes(original);
@@ -461,7 +459,6 @@ next:   for (final CoordinateSystemAxis axis : axes) {
      * @see org.apache.sis.referencing.crs.AbstractCRS#forConvention(AxesConvention)
      */
     public AbstractCS forConvention(final AxesConvention convention) {
-        ensureNonNull("convention", convention);
         synchronized (forConvention) {
             AbstractCS cs = forConvention.get(convention);
             if (cs == null) {
@@ -611,7 +608,7 @@ next:   for (final CoordinateSystemAxis axis : axes) {
     }
 
     /**
-     * Formats the inner part of the <cite>Well Known Text</cite> (WKT) representation of this coordinate system.
+     * Formats the inner part of the <i>Well Known Text</i> (WKT) representation of this coordinate system.
      * This method does <strong>not</strong> format the axes, because they shall appear outside
      * the {@code CS[…]} element for historical reasons. Axes shall be formatted by the enclosing
      * element (usually an {@link org.apache.sis.referencing.crs.AbstractCRS}).

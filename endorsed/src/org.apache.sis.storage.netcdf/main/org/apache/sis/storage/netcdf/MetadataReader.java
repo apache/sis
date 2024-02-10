@@ -179,7 +179,7 @@ final class MetadataReader extends MetadataBuilder {
     private boolean hasGridCoverages;
 
     /**
-     * Creates a new <cite>netCDF to ISO</cite> mapper for the given source.
+     * Creates a new <i>netCDF to ISO</i> mapper for the given source.
      *
      * @param  decoder  the source of netCDF attributes.
      */

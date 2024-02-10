@@ -28,7 +28,6 @@ import org.opengis.util.GenericName;
 import org.opengis.metadata.quality.DataQuality;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.ArgumentChecks;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Attribute;
@@ -126,7 +125,6 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * @see DefaultAttributeType#newInstance()
      */
     public static <V> AbstractAttribute<V> create(final AttributeType<V> type) {
-        ArgumentChecks.ensureNonNull("type", type);
         return isSingleton(type.getMaximumOccurs())
                ? new SingletonAttribute<>(type)
                : new MultiValuedAttribute<>(type);
@@ -142,7 +140,6 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * @return the new attribute.
      */
     static <V> AbstractAttribute<V> create(final AttributeType<V> type, final Object value) {
-        ArgumentChecks.ensureNonNull("type", type);
         return isSingleton(type.getMaximumOccurs())
                ? new SingletonAttribute<>(type, value)
                : new MultiValuedAttribute<>(type, value);
@@ -276,7 +273,7 @@ public abstract class AbstractAttribute<V> extends Field<V> implements Attribute
      * If the map contains no characteristic for a given name, a {@linkplain DefaultAttributeType#getDefaultValue()
      * default value} may still exist.
      * In such cases, callers may also need to inspect the {@link DefaultAttributeType#characteristics()}
-     * as shown in the <cite>Reading a characteristic</cite> section below.</p>
+     * as shown in the <q>Reading a characteristic</q> section below.</p>
      *
      * <div class="note"><b>Rational:</b>
      * Very often, all attributes of a given type in the same dataset have the same characteristics.

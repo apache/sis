@@ -481,7 +481,7 @@ public final class Axis extends NamedElement {
      */
     final boolean isWraparound() {
         if (abbreviation == 0) {
-            return AxisDirection.EAST.equals(AxisDirections.absolute(direction)) && Units.isAngular(getUnit());
+            return AxisDirections.absolute(direction) == AxisDirection.EAST && Units.isAngular(getUnit());
         } else {
             return abbreviation == 'λ';
         }
@@ -909,7 +909,7 @@ public final class Axis extends NamedElement {
      */
     final Vector read() throws IOException, DataStoreException {
         final TransferFunction tr = coordinates.getTransferFunction();
-        if (TransferFunctionType.LINEAR.equals(tr.getType())) {
+        if (tr.getType() == TransferFunctionType.LINEAR) {
             Vector data = coordinates.read();
             if (gridSizes != null) {
                 data = data.subList(0, getSizeProduct(0));              // Trim trailing NaN values.

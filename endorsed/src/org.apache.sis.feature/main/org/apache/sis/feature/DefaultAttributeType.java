@@ -26,7 +26,7 @@ import java.io.InvalidObjectException;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Classes;
-import static org.apache.sis.util.ArgumentChecks.*;
+import org.apache.sis.util.ArgumentChecks;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Attribute;
@@ -183,14 +183,14 @@ public class DefaultAttributeType<V> extends FieldType implements AttributeType<
      *
      * @see org.apache.sis.feature.builder.AttributeTypeBuilder
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")    // Okay because used only in package-private class.
+    @SuppressWarnings("this-escape")        // Okay because used only in package-private class.
     public DefaultAttributeType(final Map<String,?> identification, final Class<V> valueClass,
             final int minimumOccurs, final int maximumOccurs, final V defaultValue,
             final AttributeType<?>... characterizedBy)
     {
         super(identification, minimumOccurs, maximumOccurs);
-        ensureNonNull("valueClass",   valueClass);
-        ensureCanCast("defaultValue", valueClass, defaultValue);
+        ArgumentChecks.ensureNonNull("valueClass",   valueClass);
+        ArgumentChecks.ensureCanCast("defaultValue", valueClass, defaultValue);
         this.valueClass      = valueClass;
         this.defaultValue    = defaultValue;
         if (characterizedBy != null && characterizedBy.length != 0) {

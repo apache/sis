@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
@@ -69,7 +70,6 @@ import org.apache.sis.storage.Query;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.style.se1.FeatureTypeStyle;
 import org.apache.sis.style.se1.Rule;
 import org.apache.sis.style.se1.Symbolizer;
@@ -157,8 +157,7 @@ public final class SEPortrayer {
      * @param marginSolver
      */
     public void setMarginSolver(BiFunction<GridGeometry, Symbolizer<?>, Double> marginSolver) {
-        ArgumentChecks.ensureNonNull("marginSolver", marginSolver);
-        this.marginSolver = marginSolver;
+        this.marginSolver = Objects.requireNonNull(marginSolver);
     }
 
     /**

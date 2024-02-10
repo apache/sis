@@ -626,7 +626,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      */
     @Override
     public synchronized GridCoverageResource findResource(final String sequence) throws DataStoreException {
-        ArgumentChecks.ensureNonNull("sequence", sequence);
+        ArgumentChecks.ensureNonEmpty("sequence", sequence);
         final int index = parseImageIndex(sequence);
         if (index >= 0) try {
             final GridCoverageResource image = reader().getImage(index - 1);

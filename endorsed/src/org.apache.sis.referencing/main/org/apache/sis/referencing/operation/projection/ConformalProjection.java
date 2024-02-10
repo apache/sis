@@ -23,7 +23,7 @@ import org.apache.sis.referencing.internal.Resources;
 
 /**
  * Base class of {@link LambertConicConformal}, {@link Mercator} and {@link PolarStereographic} projections.
- * Those projections have in common the property of being <cite>conformal</cite>, i.e. they preserve angles locally.
+ * Those projections have in common the property of being <dfn>conformal</dfn>, i.e. they preserve angles locally.
  * However, we do not put this base class in public API because not all conformal projections extend this base class.
  * For example, the {@link TransverseMercator} projection, despite being conformal, uses very different formulas.
  *
@@ -83,7 +83,7 @@ abstract class ConformalProjection extends NormalizedProjection {
     /**
      * Coefficients of the first terms in the series expansion of the reverse projection.
      * Values of those coefficients depend only on {@linkplain #eccentricity eccentricity} value.
-     * The series expansion is published under the following form, where χ is the <cite>conformal latitude</cite>:
+     * The series expansion is published under the following form, where χ is the <i>conformal latitude</i>:
      *
      *     <blockquote>c₂⋅sin(2χ) + c₄⋅sin(4χ) + c₆⋅sin(6χ) + c₈⋅sin(8χ)</blockquote>
      *

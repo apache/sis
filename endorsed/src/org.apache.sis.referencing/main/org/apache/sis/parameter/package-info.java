@@ -31,8 +31,8 @@
  *     {@code ParameterDescriptor}s, the search for parameter values and visualizing them in a tabular format.</li>
  * </ul>
  *
- * <p>Parameters are organized in <cite>groups</cite>.
- * A group may be for example the set of all parameters needed for the definition of a <cite>Mercator projection</cite>.
+ * <p>Parameters are organized in <i>groups</i>.
+ * A group may be for example the set of all parameters needed for the definition of a <i>Mercator projection</i>.
  * Parameter groups have some similarities with {@code java.util.Map} where:</p>
  *
  * <ul>

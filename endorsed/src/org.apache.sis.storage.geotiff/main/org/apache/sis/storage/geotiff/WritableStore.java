@@ -47,7 +47,7 @@ final class WritableStore extends GeoTiffStore implements WritableAggregate {
 
     /**
      * Adds a new {@code GridCoverageResource} in this {@code Aggregate}.
-     * The given {@link Resource} will be copied, and the <cite>effectively added</cite> resource returned.
+     * The given {@link Resource} will be copied, and the <i>effectively added</i> resource returned.
      *
      * @param  resource  the resource to copy in this {@code Aggregate}.
      * @return the effectively added resource. Using this resource may cause data to be reloaded.

@@ -90,7 +90,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
  * </ul>
  *
  * <h2>Instantiation</h2>
- * This class is conceptually <cite>abstract</cite>, even if it is technically possible to instantiate it.
+ * This class is conceptually <i>abstract</i>, even if it is technically possible to instantiate it.
  * Typical applications should create instances of the most specific subclass prefixed by {@code Default} instead.
  * An exception to this rule may occur when it is not possible to identify the exact operation type.
  *
@@ -473,7 +473,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * Returns {@code true} if this coordinate operation is for the definition of a
      * {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS derived} or
      * {@linkplain org.apache.sis.referencing.crs.DefaultProjectedCRS projected CRS}.
-     * The standard (ISO 19111) approach constructs <cite>defining conversion</cite>
+     * The standard (ISO 19111) approach constructs <i>defining conversion</i>
      * as an operation of type {@link org.opengis.referencing.operation.Conversion}
      * with null {@linkplain #getSourceCRS() source} and {@linkplain #getTargetCRS() target CRS}.
      * But SIS supports also defining conversions with non-null CRS provided that:

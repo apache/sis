@@ -30,7 +30,7 @@
  * This package is used as a basis for
  * {@linkplain org.apache.sis.metadata.iso.spatial.DefaultGeorectified georectified} or
  * {@linkplain org.apache.sis.metadata.iso.spatial.DefaultGeoreferenceable georeferenceable}
- * <cite>grid coverages</cite>.
+ * <i>grid coverages</i>.
  *
  * <h2>Usage note</h2>
  * Some images are writable. But modifying pixel values should be done by invoking the {@code getWritableTile(…)}

@@ -136,7 +136,7 @@ public final class ModifiableIdentifierMap extends IdentifierMapAdapter {
      * <p>If the given {@code authority} is {@code HREF} and if the given string is parsable as a {@link URI},
      * then this method will actually store the value as the {@link XLink#getHRef()} property of the {@code XLink}
      * associated to the {@code XLINK} key. Only if the given string cannot be parsed, then the value is stored
-     * <cite>as-is</cite> under the {@code HREF} key.</p>
+     * <i>as-is</i> under the {@code HREF} key.</p>
      *
      * @param  authority  the authority for which to set the code.
      * @param  code  the new code for the given authority, or {@code null} for removing the entry.

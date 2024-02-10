@@ -18,6 +18,7 @@ package org.apache.sis.coverage.grid;
 
 import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.Objects;
 import java.util.function.Function;
 import java.nio.Buffer;
 import java.awt.Color;
@@ -185,9 +186,9 @@ public class ImageRenderer {
      * Number of data elements between two samples for the same band on the same line.
      * This is the product of {@linkplain GridExtent#getSize(int) grid sizes} of enclosing {@code GridCoverage}
      * in all dimensions before the dimension of image {@linkplain #width}. This stride does <strong>not</strong>
-     * include the multiplication factor for the number of bands in a <cite>pixel interleaved sample model</cite>
-     * because whether this factor is needed or not depends on the data {@linkplain #buffer}, which is not known
-     * at construction time.
+     * include the multiplication factor for the number of bands in a <i>pixel interleaved sample model</i>
+     * because whether this factor is needed or not depends on the data {@linkplain #buffer},
+     * which is not known at construction time.
      *
      * @see #strideFactor
      * @see java.awt.image.ComponentSampleModel#pixelStride
@@ -198,8 +199,8 @@ public class ImageRenderer {
      * Number of data elements between a given sample and the corresponding sample in the same column of the next line.
      * This is the product of {@linkplain GridExtent#getSize(int) grid sizes} of enclosing {@code GridCoverage} in all
      * dimensions before the dimension of image {@linkplain #height}. This stride does <strong>not</strong> include the
-     * multiplication factor for the number of bands in a <cite>pixel interleaved sample model</cite> because whether
-     * this factor is needed or not depends on the data {@linkplain #buffer}, which is not known at construction time.
+     * multiplication factor for the number of bands in a <i>pixel interleaved sample model</i> because whether this
+     * factor is needed or not depends on the data {@linkplain #buffer}, which is not known at construction time.
      *
      * @see #strideFactor
      * @see java.awt.image.ComponentSampleModel#scanlineStride
@@ -209,7 +210,7 @@ public class ImageRenderer {
     /**
      * Multiplication factor for {@link #pixelStride} and {@link #scanlineStride}. This is the number of data elements
      * between two samples in the data {@link #buffer}. There is no direct equivalent in {@link java.awt.image} because
-     * <cite>pixel stride</cite> and <cite>scanline stride</cite> in {@link SampleModel} are pre-multiplied by this factor,
+     * <var>pixel stride</var> and <var>scanline stride</var> in {@link SampleModel} are pre-multiplied by this factor,
      * but we need to keep this information separated in this builder because its value depends on which methods are invoked:
      *
      * <ul>
@@ -300,7 +301,6 @@ public class ImageRenderer {
      * @throws ArithmeticException if a stride calculation overflows the 32 bits integer capacity.
      */
     public ImageRenderer(final GridCoverage coverage, GridExtent sliceExtent) {
-        ArgumentChecks.ensureNonNull("coverage", coverage);
         bands = coverage.getSampleDimensions().toArray(SampleDimension[]::new);
         geometry = coverage.getGridGeometry();
         final GridExtent source = geometry.getExtent();
@@ -540,7 +540,6 @@ public class ImageRenderer {
      * @throws MismatchedCoverageRangeException if the given data buffer does not have the expected number of banks.
      */
     public void setData(final DataBuffer data) {
-        ArgumentChecks.ensureNonNull("data", data);
         ensureExpectedBandCount(data.getNumBanks(), true);
         buffer = data;
     }
@@ -572,7 +571,6 @@ public class ImageRenderer {
      */
     public void setData(final DataType dataType, final Buffer... data) {
         ArgumentChecks.ensureNonNull("dataType", dataType);
-        ArgumentChecks.ensureNonNull("data", data);
         ensureExpectedBandCount(data.length, true);
         setData(RasterFactory.wrap(dataType, data));
     }
@@ -594,7 +592,6 @@ public class ImageRenderer {
      * @throws ArithmeticException if a buffer position overflows the 32 bits integer capacity.
      */
     public void setData(final Vector... data) {
-        ArgumentChecks.ensureNonNull("data", data);
         ensureExpectedBandCount(data.length, true);
         final Buffer[] buffers = new Buffer[data.length];
         DataType dataType = null;
@@ -631,7 +628,6 @@ public class ImageRenderer {
      */
     public void setInterleavedPixelOffsets(final int pixelStride, final int[] bandOffsets) {
         ArgumentChecks.ensureStrictlyPositive("pixelStride", pixelStride);
-        ArgumentChecks.ensureNonNull("bandOffsets", bandOffsets);
         ensureExpectedBandCount(bandOffsets.length, false);
         this.strideFactor = pixelStride;
         this.bandOffsets = bandOffsets.clone();
@@ -682,8 +678,7 @@ public class ImageRenderer {
      * @since 1.2
      */
     public void setCategoryColors(final Function<Category,Color[]> colors) {
-        ArgumentChecks.ensureNonNull("colors", colors);
-        this.colors = colors;
+        this.colors = Objects.requireNonNull(colors);
     }
 
     /**

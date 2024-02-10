@@ -24,7 +24,7 @@ import org.apache.sis.referencing.cs.AxesConvention;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.cs.HardCodedAxes;
@@ -50,9 +50,9 @@ public final class CoordinateOperationsTest extends TestCase {
      */
     @Test
     public void testIsWrapAround() {
-        assertFalse("GEODETIC_LATITUDE",  CoordinateOperations.isWrapAround(HardCodedAxes.GEODETIC_LATITUDE));
-        assertTrue ("GEODETIC_LONGITUDE", CoordinateOperations.isWrapAround(HardCodedAxes.GEODETIC_LONGITUDE));
-        assertFalse("ELLIPSOIDAL_HEIGHT", CoordinateOperations.isWrapAround(HardCodedAxes.ELLIPSOIDAL_HEIGHT));
+        assertFalse(CoordinateOperations.isWrapAround(HardCodedAxes.GEODETIC_LATITUDE));
+        assertTrue (CoordinateOperations.isWrapAround(HardCodedAxes.GEODETIC_LONGITUDE));
+        assertFalse(CoordinateOperations.isWrapAround(HardCodedAxes.ELLIPSOIDAL_HEIGHT));
     }
 
     /**
@@ -63,19 +63,20 @@ public final class CoordinateOperationsTest extends TestCase {
     public void testWrapAroundChanges() {
         CoordinateReferenceSystem sourceCRS = HardCodedCRS.WGS84_3D;
         CoordinateSystem          targetCS = HardCodedCS.GEODETIC_2D;
-        assertTrue("(λ,φ,h) → (λ,φ)", CoordinateOperations.wrapAroundChanges(sourceCRS, targetCS).isEmpty());
+        assertTrue(CoordinateOperations.wrapAroundChanges(sourceCRS, targetCS).isEmpty(),
+                   "(λ,φ,h) → (λ,φ)");
 
         sourceCRS = HardCodedCRS.WGS84_3D.forConvention(AxesConvention.POSITIVE_RANGE);
-        assertArrayEquals("(λ′,φ,h) → (λ,φ)", new Integer[] {0},
-                CoordinateOperations.wrapAroundChanges(sourceCRS, targetCS).toArray());
+        assertArrayEquals(new Integer[] {0}, CoordinateOperations.wrapAroundChanges(sourceCRS, targetCS).toArray(),
+                          "(λ′,φ,h) → (λ,φ)");
 
         targetCS = HardCodedCS.GEODETIC_φλ;
-        assertArrayEquals("(λ′,φ,h) → (φ,λ)", new Integer[] {1},
-                CoordinateOperations.wrapAroundChanges(sourceCRS, targetCS).toArray());
+        assertArrayEquals(new Integer[] {1}, CoordinateOperations.wrapAroundChanges(sourceCRS, targetCS).toArray(),
+                          "(λ′,φ,h) → (φ,λ)");
 
         sourceCRS = HardCodedConversions.mercator((GeographicCRS) sourceCRS);
-        assertArrayEquals("(λ′,φ,h) → (φ,λ)", new Integer[] {1},
-                CoordinateOperations.wrapAroundChanges(sourceCRS, targetCS).toArray());
+        assertArrayEquals(new Integer[] {1}, CoordinateOperations.wrapAroundChanges(sourceCRS, targetCS).toArray(),
+                          "(λ′,φ,h) → (φ,λ)");
 
     }
 }

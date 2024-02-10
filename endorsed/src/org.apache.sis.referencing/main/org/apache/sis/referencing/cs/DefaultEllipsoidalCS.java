@@ -178,8 +178,8 @@ public class DefaultEllipsoidalCS extends AbstractCS implements EllipsoidalCS {
     @Override
     final int validateAxis(AxisDirection direction, final Unit<?> unit) {
         direction = AxisDirections.absolute(direction);
-        final boolean isVertical = AxisDirection.UP.equals(direction);
-        if (!isVertical && !AxisDirection.NORTH.equals(direction) && !AxisDirection.EAST.equals(direction)) {
+        final boolean isVertical = direction == AxisDirection.UP;
+        if (!isVertical && direction != AxisDirection.NORTH && direction != AxisDirection.EAST) {
             return INVALID_DIRECTION;
         }
         if (!(isVertical ? Units.isLinear(unit) : Units.isAngular(unit))) {

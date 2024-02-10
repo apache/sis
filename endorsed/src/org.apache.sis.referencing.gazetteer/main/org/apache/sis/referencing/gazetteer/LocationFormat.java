@@ -201,7 +201,7 @@ public class LocationFormat extends TabularFormat<Location> {
      * @throws IOException if an error occurred while writing to the given appendable.
      */
     @Override
-    @SuppressWarnings({"fallthrough", "null"})
+    @SuppressWarnings("fallthrough")
     public void format(final Location location, final Appendable toAppendTo) throws IOException {
         ArgumentChecks.ensureNonNull("location", location);
         final Locale locale = getLocale(Locale.Category.DISPLAY);

@@ -401,7 +401,7 @@ public abstract class ChannelFactory {
             throws DataStoreException, IOException;
 
     /**
-     * A factory that returns an existing channel <cite>as-is</cite>. The channel is often wrapping an
+     * A factory that returns an existing channel <em>as-is</em>. The channel is often wrapping an
      * {@link InputStream} or {@link OutputStream} (which is the reason for {@code Stream} class name),
      * otherwise {@link org.apache.sis.storage.StorageConnector} would hare returned the storage object
      * directly instead of instantiating this factory.

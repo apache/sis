@@ -1013,7 +1013,7 @@ poles:  for (int i=0; i<dimension; i++) {
     }
 
     /**
-     * Returns the bounding box of a geometry defined in <cite>Well Known Text</cite> (WKT) format.
+     * Returns the bounding box of a geometry defined in <i>Well Known Text</i> (WKT) format.
      * This method does not check the consistency of the provided WKT. For example, it does not check
      * that every points in a {@code LINESTRING} have the same dimension. However, this method
      * ensures that the parenthesis are balanced, in order to catch some malformed WKT.
@@ -1057,7 +1057,7 @@ poles:  for (int i=0; i<dimension; i++) {
      * parsed} by the {@code GeneralEnvelope} constructor.
      *
      * <h4>Note on standards</h4>
-     * The {@code BOX} element is not part of the standard <cite>Well Known Text</cite> (WKT) format.
+     * The {@code BOX} element is not part of the standard <i>Well Known Text</i> (WKT) format.
      * However, it is understood by many software libraries, for example GDAL and PostGIS.
      *
      * @param  envelope  the envelope to format.
@@ -1071,7 +1071,7 @@ poles:  for (int i=0; i<dimension; i++) {
     }
 
     /**
-     * Formats the given envelope as a {@code POLYGON} element in the <cite>Well Known Text</cite>
+     * Formats the given envelope as a {@code POLYGON} element in the <i>Well Known Text</i>
      * (WKT) format. {@code POLYGON} can be used as an alternative to {@code BOX} when the element
      * needs to be considered as a standard WKT geometry.
      *

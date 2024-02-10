@@ -72,9 +72,9 @@ package org.apache.sis.util;
  *            because there is no GeoAPI interfaces for the various kind of math transforms.</li>
  *       <li>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} – Objects must be of the same class,
  *           but the parameter values can be different if they are different way to formulate the same transform.
- *           For example, a <q>Mercator (2SP)</q> projection on a sphere with a <cite>standard parallel</cite>
+ *           For example, a <q>Mercator (2SP)</q> projection on a sphere with a <i>standard parallel</i>
  *           value of 60° produces the same results as a <q>Mercator (1SP)</q> projection on the same sphere
- *           with a <cite>scale factor</cite> value of 0.5.</li>
+ *           with a <i>scale factor</i> value of 0.5.</li>
  *       <li>{@link ComparisonMode#APPROXIMATE APPROXIMATE} – The same attributes as the above
  *           {@code IGNORE_METADATA} mode are compared, but a slight (implementation dependant)
  *           difference is tolerated in floating point numbers.</li>
@@ -124,8 +124,8 @@ public interface LenientComparable {
      *
      * <h4>Conformance to the {@code equals(Object)} method contract</h4>
      * {@link ComparisonMode#STRICT} is the only mode compliant with the {@link Object#equals(Object)} contract.
-     * For all other modes <var>m</var>, the comparison is not guaranteed to be <cite>symmetric</cite> neither
-     * <cite>transitive</cite>:
+     * For all other modes <var>m</var>, the comparison is not guaranteed to be <i>symmetric</i> neither
+     * <i>transitive</i>:
      *
      * <ul>
      *   <li>{@code x.equals(y,m)} is <strong>not</strong> guaranteed to be equal to {@code y.equals(x,m)}.

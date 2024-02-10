@@ -22,7 +22,7 @@
  * from a "target" data set. The builder will then provide a transformation positions from the "source" CRS
  * to the "target" CRS.
  *
- * <p>Algorithms in this package use a <cite>least squares</cite> estimation method.
+ * <p>Algorithms in this package use a <i>least squares</i> estimation method.
  * The matching parameters are estimated by minimizing the sum of the squared distances
  * between the given points and the fitted points (i.e. the points calculated using the
  * transform). Note that "distance" here is not necessarily the Euclidian distance or a

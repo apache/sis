@@ -17,6 +17,7 @@
 package org.apache.sis.measure;
 
 import java.util.Map;
+import java.util.Objects;
 import javax.measure.Unit;
 import javax.measure.Quantity;
 import javax.measure.Dimension;
@@ -24,7 +25,6 @@ import javax.measure.UnitConverter;
 import javax.measure.MeasurementException;
 import javax.measure.UnconvertibleException;
 import javax.measure.IncommensurableException;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
@@ -86,9 +86,9 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
         }
         /*
          * Verifies if an instance already exists for the given converter.
-         * The 'related' array is populated only by the Units class static initializer.
+         * The `related` array is populated only by the Units class static initializer.
          * The SystemUnitTest.verifyRelatedUnits() method verified that the array does
-         * not contain null element and that all 'toTarget' are instances of LinearConverter.
+         * not contain null element and that all `toTarget` are instances of LinearConverter.
          */
         final ConventionalUnit<Q>[] related = target.related();
         if (related != null && toTarget instanceof LinearConverter) {
@@ -313,15 +313,14 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
         if (that == this) {
             return IdentityConverter.INSTANCE;
         }
-        ArgumentChecks.ensureNonNull("that", that);
         UnitConverter c = toTarget;
-        if (target != that) {                           // Optimization for a common case.
+        if (target != Objects.requireNonNull(that)) {               // Optimization for a common case.
             final Unit<Q> step = that.getSystemUnit();
             if (target != step && !target.isCompatible(step)) {
                 // Should never occur unless parameterized type has been compromised.
                 throw new UnconvertibleException(incompatible(that));
             }
-            c = target.getConverterTo(step).concatenate(c);         // Usually leave 'c' unchanged.
+            c = target.getConverterTo(step).concatenate(c);         // Usually leave `c` unchanged.
             c =   step.getConverterTo(that).concatenate(c);
         }
         return c;
@@ -343,14 +342,13 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
         if (that == this) {
             return IdentityConverter.INSTANCE;
         }
-        ArgumentChecks.ensureNonNull("that", that);
         UnitConverter c = toTarget;
-        if (target != that) {                           // Optimization for a common case.
+        if (target != Objects.requireNonNull(that)) {               // Optimization for a common case.
             final Unit<?> step = that.getSystemUnit();
             if (target != step && !target.isCompatible(step)) {
                 throw new IncommensurableException(incompatible(that));
             }
-            c = target.getConverterToAny(step).concatenate(c);      // Usually leave 'c' unchanged.
+            c = target.getConverterToAny(step).concatenate(c);      // Usually leave `c` unchanged.
             c =   step.getConverterToAny(that).concatenate(c);
         }
         return c;
@@ -472,7 +470,7 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
      */
     @Override
     public Unit<Q> transform(UnitConverter operation) {
-        ArgumentChecks.ensureNonNull("operation", operation);
+        Objects.requireNonNull(operation);
         AbstractUnit<Q> base = this;
         if (!isPrefixable()) {
             base = target;

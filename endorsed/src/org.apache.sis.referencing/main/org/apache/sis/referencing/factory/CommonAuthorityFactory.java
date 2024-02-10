@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Collections;
+import java.util.Objects;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
@@ -45,7 +46,6 @@ import org.apache.sis.referencing.operation.provider.TransverseMercator.Zoner;
 import org.apache.sis.referencing.util.GeodeticObjectBuilder;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.measure.Units;
@@ -341,7 +341,6 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      */
     @Override
     public Set<String> getAuthorityCodes(final Class<? extends IdentifiedObject> type) throws FactoryException {
-        ArgumentChecks.ensureNonNull("type", type);
         if (!type.isAssignableFrom(SingleCRS.class) && !SingleCRS.class.isAssignableFrom(type)) {
             return Collections.emptySet();
         }
@@ -480,8 +479,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      */
     @Override
     public CoordinateReferenceSystem createCoordinateReferenceSystem(final String code) throws FactoryException {
-        ArgumentChecks.ensureNonNull("code", code);
-        return createCoordinateReferenceSystem(code, new CommonAuthorityCode(code));
+        return createCoordinateReferenceSystem(Objects.requireNonNull(code), new CommonAuthorityCode(code));
     }
 
     /**

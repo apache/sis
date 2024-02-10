@@ -41,7 +41,7 @@ import org.apache.sis.util.collection.Containers;
  *
  * <h2>Thread safety</h2>
  * Instances of {@code DefaultInternationalString} are thread-safe. While those instances are not strictly immutable,
- * SIS typically references them as if they were immutable because of their <cite>add-only</cite> behavior.
+ * SIS typically references them as if they were immutable because of their <i>add-only</i> behavior.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.4

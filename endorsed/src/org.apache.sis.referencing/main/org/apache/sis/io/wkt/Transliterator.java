@@ -40,7 +40,7 @@ import org.apache.sis.util.Characters;
  * come from a controlled vocabulary.
  *
  * <h2>Permitted characters in Well Known Text</h2>
- * The ISO 19162 standard restricts <cite>Well Known Text</cite> to the following characters in all
+ * The ISO 19162 standard restricts <i>Well Known Text</i> to the following characters in all
  * {@linkplain Formatter#append(String, ElementKind) quoted texts} except in {@code REMARKS["…"]} elements:
  *
  * <blockquote><pre>{@literal A-Z a-z 0-9 _ [ ] ( ) { } < = > . , : ; + - (space) % & ' " * ^ / \ ? | °}</pre></blockquote>
@@ -151,7 +151,7 @@ public abstract class Transliterator implements Serializable {
      * replaces line feed and tabulations by single spaces, then remove control characters.</p>
      *
      * @param  text  the text to format without non-ASCII characters.
-     * @return the text to write in <cite>Well Known Text</cite>.
+     * @return the text to write in <i>Well Known Text</i>.
      *
      * @see org.apache.sis.util.Characters#isValidWKT(int)
      */
@@ -308,9 +308,9 @@ public abstract class Transliterator implements Serializable {
      *
      * <p>The default implementation performs at least the following mapping:</p>
      * <ul>
-     *   <li>λ → <var>L</var> (from German <cite>Länge</cite>) if used in an
+     *   <li>λ → <var>L</var> (from German <i>Länge</i>) if used in an
      *       {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS ellipsoidal CS}.</li>
-     *   <li>φ → <var>B</var> (from German <cite>Breite</cite>) if used in an
+     *   <li>φ → <var>B</var> (from German <i>Breite</i>) if used in an
      *       {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS ellipsoidal CS}.</li>
      *   <li>φ or φ′ or φ<sub>c</sub> or Ω → <var>U</var> if used in a
      *       {@linkplain org.apache.sis.referencing.cs.DefaultSphericalCS spherical CS}, regardless of whether the

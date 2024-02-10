@@ -138,7 +138,7 @@ abstract class ArrayVector<E extends Number> extends Vector implements CheckedCo
      * This method shall be invoked only for vector of floating point values (this is not verified).
      */
     static Vector compress(final Vector source, final double tolerance) {
-        if (!Float.class.equals(source.getElementType())) {
+        if (source.getElementType() != Float.class) {
             /*
              * For floating point types, verify if values are equivalent to `float` values.
              * There are two different ways to pad extra fraction digits in `double` values:

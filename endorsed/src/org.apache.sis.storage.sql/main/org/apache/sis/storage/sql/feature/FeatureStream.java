@@ -16,8 +16,9 @@
  */
 package org.apache.sis.storage.sql.feature;
 
-import java.util.Spliterator;
+import java.util.Objects;
 import java.util.Comparator;
+import java.util.Spliterator;
 import java.util.stream.Stream;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -153,7 +154,7 @@ final class FeatureStream extends DeferredStream<Feature> {
      */
     @Override
     public Stream<Feature> filter(final Predicate<? super Feature> predicate) {
-        ArgumentChecks.ensureNonNull("predicate", predicate);
+        Objects.requireNonNull(predicate);
         if (predicate == Filter.include()) return this;
         if (predicate == Filter.exclude()) return empty();
         if (isPagined()) {

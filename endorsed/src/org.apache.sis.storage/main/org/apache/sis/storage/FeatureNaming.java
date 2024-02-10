@@ -21,9 +21,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.ConcurrentModificationException;
 import java.util.Locale;
+import java.util.Objects;
 import org.opengis.util.GenericName;
 import org.opengis.util.ScopedName;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.storage.internal.Resources;
@@ -183,10 +183,8 @@ public class FeatureNaming<E> {
      * @throws IllegalNameException if another element is already registered for the given name.
      */
     public void add(final DataStore store, GenericName name, final E value) throws IllegalNameException {
-        ArgumentChecks.ensureNonNull("name",  name);
-        ArgumentChecks.ensureNonNull("value", value);
         final String key = name.toString();
-        final E previous = values.put(key, value);
+        final E previous = values.put(key, Objects.requireNonNull(value));
         if (previous != null) {
             final List<String> fullNames = aliases.get(key);            // Null is synonymous of singletonList(key).
             if (fullNames == null || fullNames.contains(key)) {
@@ -243,7 +241,6 @@ public class FeatureNaming<E> {
      *         representation, but for which {@link ScopedName#tail()} returns different values.
      */
     public boolean remove(final DataStore store, GenericName name) throws IllegalNameException {
-        ArgumentChecks.ensureNonNull("name", name);
         final String key = name.toString();
         if (values.remove(key) == null) {
             return false;

@@ -35,7 +35,6 @@ import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.logging.Logging;
@@ -128,11 +127,9 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      * @param  type     the type of objects included in this set.
      */
     public IdentifiedObjectSet(final AuthorityFactory factory, final Class<T> type) {
-        ArgumentChecks.ensureNonNull("factory", factory);
-        ArgumentChecks.ensureNonNull("type", type);
-        proxy = AuthorityFactoryProxy.getInstance(type);
-        this.factory = factory;
-        this.type = type;
+        this.factory = Objects.requireNonNull(factory);
+        this.type    = Objects.requireNonNull(type);
+        this.proxy   = AuthorityFactoryProxy.getInstance(type);
     }
 
     /**

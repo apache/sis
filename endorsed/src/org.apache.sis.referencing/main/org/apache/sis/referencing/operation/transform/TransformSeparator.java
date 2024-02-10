@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Arrays;
+import java.util.Objects;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -121,8 +122,7 @@ public class TransformSeparator {
      * @param factory    the factory to use for creating new math transforms, or {@code null} if none.
      */
     public TransformSeparator(final MathTransform transform, final MathTransformFactory factory) {
-        ArgumentChecks.ensureNonNull("transform", transform);
-        this.transform = transform;
+        this.transform = Objects.requireNonNull(transform);
         this.factory   = ReferencingUtilities.nonNull(factory);
     }
 
@@ -177,6 +177,7 @@ public class TransformSeparator {
      * @throws IllegalArgumentException if a {@code dimensions} value does not met the conditions.
      */
     private static int[] add(int[] sequence, final int[] dimensions, final int max) throws IllegalArgumentException {
+        ArgumentChecks.ensureNonNull("dimensions", dimensions);
         int offset = 0;
         int previous = -1;                          // This initial value will ensure that we have no negative value.
         if (sequence != null && (offset = sequence.length) != 0) {
@@ -268,7 +269,6 @@ public class TransformSeparator {
      *         or if values are not in a strictly increasing order.
      */
     public void addSourceDimensions(final int... dimensions) throws IllegalArgumentException {
-        ArgumentChecks.ensureNonNull("dimensions", dimensions);
         sourceDimensions = add(sourceDimensions, dimensions, transform.getSourceDimensions());
     }
 
@@ -332,7 +332,6 @@ public class TransformSeparator {
      *         or if values are not in a strictly increasing order.
      */
     public void addTargetDimensions(final int... dimensions) throws IllegalArgumentException {
-        ArgumentChecks.ensureNonNull("dimensions", dimensions);
         targetDimensions = add(targetDimensions, dimensions, transform.getTargetDimensions());
     }
 

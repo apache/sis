@@ -48,10 +48,10 @@ import org.apache.sis.util.iso.Types;
  *   <li><b>Example of quantitative observation:</b>
  *   another sample dimension may have a {@code Category} instance specifying that sample values in the range [0…100]
  *   stands for elevation data. Those sample values are related to measurements in the real world (altitudes in metres)
- *   through a <cite>transfer function</cite>, for example <var>altitude</var> = (<var>sample value</var>)×100 - 25.</li>
+ *   through a <i>transfer function</i>, for example <var>altitude</var> = (<var>sample value</var>)×100 - 25.</li>
  * </ul>
  *
- * Some image mixes both qualitative and quantitative categories. For example, images of <cite>Sea Surface Temperature</cite>
+ * Some image mixes both qualitative and quantitative categories. For example, images of <i>Sea Surface Temperature</i>
  * (SST) may have a quantitative category for temperature with values ranging from -2 to 35°C, and three qualitative categories
  * for cloud, land and ice. There is usually at most one quantitative category per sample dimension, but Apache SIS accepts an
  * arbitrary number of them.
@@ -62,7 +62,7 @@ import org.apache.sis.util.iso.Types;
  *
  * <blockquote><var>x</var> = offset + scale × <var>s</var></blockquote>
  *
- * More general equation are allowed. For example, <cite>SeaWiFS</cite> images use a logarithmic transform.
+ * More general equation are allowed. For example, <i>SeaWiFS</i> images use a logarithmic transform.
  * General conversions are expressed with a {@link MathTransform1D} object.
  *
  * <p>All {@code Category} objects are immutable and thread-safe.</p>
@@ -220,6 +220,7 @@ public class Category implements Serializable {
      * @throws IllegalSampleDimensionException if the {@code samples} range of values is empty
      *         or the transfer function cannot be used.
      */
+    @SuppressWarnings("this-escape")
     protected Category(final CharSequence name, NumberRange<?> samples, final MathTransform1D toUnits, final Unit<?> units,
              final DoubleToIntFunction toNaN)
     {
@@ -439,10 +440,10 @@ public class Category implements Serializable {
     }
 
     /**
-     * Returns the <cite>transfer function</cite> from sample values to real values in units of measurement.
+     * Returns the <i>transfer function</i> from sample values to real values in units of measurement.
      * The function is absent if this category is not a {@linkplain #isQuantitative() quantitative} category.
      *
-     * @return the <cite>transfer function</cite> from sample values to real values.
+     * @return the <i>transfer function</i> from sample values to real values.
      *
      * @see SampleDimension#getTransferFunction()
      */

@@ -108,9 +108,9 @@ final class SubTypes {
         final CoordinateSystemAxis axis = axes[0];
         final AxisDirection dir = AxisDirections.absolute(axis.getDirection());
         final boolean isTemporal;
-        if (AxisDirection.UP.equals(dir)) {
+        if (dir == AxisDirection.UP) {
             isTemporal = false;
-        } else if (AxisDirection.FUTURE.equals(dir)) {          // Happen with Minkowski coordinate system.
+        } else if (dir == AxisDirection.FUTURE) {           // Happen with Minkowski coordinate system.
             isTemporal = true;
         } else {
             throw AbstractCS.unexpectedDimension(axes, 2, 3);

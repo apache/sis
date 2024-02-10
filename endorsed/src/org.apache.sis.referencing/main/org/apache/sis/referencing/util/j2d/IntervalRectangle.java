@@ -562,7 +562,7 @@ public class IntervalRectangle extends Rectangle2D implements Serializable {
      * Returns the {@code String} representation of this {@code Rectangle2D}. The coordinate order is
      * (<var>x</var><sub>min</sub>, <var>y</var><sub>min</sub>, <var>x</var><sub>max</sub>, <var>y</var><sub>max</sub>),
      * which is consistent with the {@link #IntervalRectangle(double, double, double, double)} constructor
-     * and with the {@code BBOX} <cite>Well Known Text</cite> (WKT) syntax.
+     * and with the {@code BBOX} <i>Well Known Text</i> (WKT) syntax.
      *
      * @return a {@code String} representing this {@code Rectangle2D}.
      */

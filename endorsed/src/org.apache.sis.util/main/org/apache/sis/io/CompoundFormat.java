@@ -45,6 +45,7 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.MetadataServices;
 import org.apache.sis.util.internal.LocalizedParseException;
 import static org.apache.sis.util.internal.StandardDateFormat.UTC;
@@ -53,7 +54,7 @@ import static org.apache.sis.util.internal.StandardDateFormat.UTC;
 /**
  * Base class of {@link Format} implementations which delegate part of their work to other
  * {@code Format} instances. {@code CompoundFormat} subclasses typically work on relatively
- * large blocks of data, for example a metadata tree or a <cite>Well Known Text</cite> (WKT).
+ * large blocks of data, for example a metadata tree or a <i>Well Known Text</i> (WKT).
  * Those blocks of data usually contain smaller elements like numbers and dates, whose parsing
  * and formatting can be delegated to {@link NumberFormat} and {@link DateFormat} respectively.
  * Subclasses can obtain instances of those formats by call to {@link #getFormat(Class)} where
@@ -356,9 +357,10 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     @Override
     public StringBuffer format(final Object object, final StringBuffer toAppendTo, final FieldPosition pos) {
         final Class<? extends T> valueType = getValueType();
-        ArgumentChecks.ensureCanCast("object", valueType, object);
         try {
             format(valueType.cast(object), toAppendTo);
+        } catch (ClassCastException e) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalClass_2, valueType, Classes.getClass(object)), e);
         } catch (IOException e) {
             /*
              * Should never happen when writing into a StringBuffer, unless the user

@@ -61,7 +61,7 @@ import org.apache.sis.storage.geotiff.writer.ReformattedImage;
  * An image writer for GeoTIFF files. This writer duplicates the implementations performed by other libraries,
  * but we nevertheless provide our own writer in Apache SIS for better control on the internal file structure,
  * such as keeping metadata close to each other (for Cloud Optimized GeoTIFF) and tiles order.
- * This image writer can also handle <cite>Big TIFF</cite> images.
+ * This image writer can also handle <i>Big TIFF</i> images.
  *
  * <p>This writer supports only the tile layout. It does not support the writing of stripped images,
  * because they are not useful for geospatial applications. This restriction does not reduce the set
@@ -184,7 +184,7 @@ final class Writer extends IOBase implements Flushable {
          * Note that it does not necessarily mean that the stream has no bytes before current position.
          */
         output.relocateOrigin();
-        output.writeShort(ByteOrder.LITTLE_ENDIAN.equals(output.buffer.order()) ? LITTLE_ENDIAN : BIG_ENDIAN);
+        output.writeShort((output.buffer.order() == ByteOrder.LITTLE_ENDIAN) ? LITTLE_ENDIAN : BIG_ENDIAN);
         output.writeShort(isBigTIFF ? BIG_TIFF : CLASSIC);
         if (isBigTIFF) {
             output.writeShort((short) Long.BYTES);            // Byte size of offsets.

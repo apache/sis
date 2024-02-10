@@ -19,8 +19,8 @@ package org.apache.sis.util.internal;
 import java.util.Set;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import org.apache.sis.util.collection.CheckedContainer;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
@@ -59,9 +59,7 @@ public final class CheckedHashSet<E> extends LinkedHashSet<E> implements Checked
      * @param type  the element type (cannot be null).
      */
     public CheckedHashSet(final Class<E> type) {
-        super();
-        this.type = type;
-        ensureNonNull("type", type);
+        this.type = Objects.requireNonNull(type);
     }
 
     /**
@@ -72,8 +70,7 @@ public final class CheckedHashSet<E> extends LinkedHashSet<E> implements Checked
      */
     public CheckedHashSet(final Class<E> type, final int capacity) {
         super(capacity);
-        this.type = type;
-        ensureNonNull("type", type);
+        this.type = Objects.requireNonNull(type);
     }
 
     /**

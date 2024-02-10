@@ -25,7 +25,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
  *
  * <h2>Usage note</h2>
  * This exception extends {@code NoninvertibleTransformException} because the matrices in this package
- * are used in <cite>Coordinate Operation Steps</cite>, in which case a singular matrix means that the
+ * are used in <i>Coordinate Operation Steps</i>, in which case a singular matrix means that the
  * operation is not invertible.
  *
  * @author  Martin Desruisseaux (Geomatys)

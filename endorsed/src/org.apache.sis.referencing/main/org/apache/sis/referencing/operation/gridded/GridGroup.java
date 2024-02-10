@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation.gridded;
 
 import java.util.Map;
 import java.util.List;
-import java.util.LinkedHashMap;
 import java.io.IOException;
 import java.awt.Dimension;
 import java.awt.Rectangle;
@@ -33,7 +32,7 @@ import org.apache.sis.referencing.util.j2d.TileOrganizer;
 import org.apache.sis.referencing.util.j2d.Tile;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.internal.CollectionsExt;
-import org.apache.sis.util.collection.Containers;
+import org.apache.sis.pending.jdk.JDK19;
 
 
 /**
@@ -159,7 +158,7 @@ public final class GridGroup<C extends Quantity<C>, T extends Quantity<T>> exten
             throws IOException, FactoryException, NoninvertibleTransformException
     {
         final TileOrganizer mosaic = new TileOrganizer(null);
-        final Map<Tile,LoadedGrid<C,T>> grids = new LinkedHashMap<>(Containers.hashMapCapacity(subgrids.size()));
+        final Map<Tile,LoadedGrid<C,T>> grids = JDK19.newLinkedHashMap(subgrids.size());
         for (final LoadedGrid<C,T> grid : subgrids) {
             final int[] size = grid.getGridSize();
             final Tile  tile = new Tile(new Rectangle(size[0], size[1]),

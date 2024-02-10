@@ -477,7 +477,6 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      */
     @Override
     public boolean add(final Range<E> range) throws IllegalArgumentException {
-        ArgumentChecks.ensureNonNull("range", range);
         if (range.isEmpty()) {
             return false;
         }
@@ -816,7 +815,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @return {@code true} if the given object is contained in this set.
      */
     public boolean contains(final Range<E> range, final boolean exact) {
-        ArgumentChecks.ensureNonNull("range", range);
+        // Implicit null value check below.
         if (exact) {
             if (range.isMinIncluded() && !range.isMaxIncluded()) {
                 final int index = binarySearch(range.getMinValue(), 0, length);
@@ -907,8 +906,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      * @return a view of the specified range within this range set.
      */
     public SortedSet<Range<E>> intersect(final Range<E> subRange) {
-        ArgumentChecks.ensureNonNull("subRange", subRange);
-        return new SubSet(subRange);
+        return new SubSet(Objects.requireNonNull(subRange));
     }
 
     /**
@@ -961,7 +959,6 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      */
     @Override
     public SortedSet<Range<E>> headSet(final Range<E> upper) {
-        ArgumentChecks.ensureNonNull("upper", upper);
         final E maxValue = upper.getMinValue();
         if (maxValue == null) {
             throw new IllegalArgumentException(Errors.format(
@@ -984,7 +981,6 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
      */
     @Override
     public SortedSet<Range<E>> tailSet(final Range<E> lower) {
-        ArgumentChecks.ensureNonNull("lower", lower);
         return intersect(new Range<>(elementType, lower.getMinValue(), lower.isMinIncluded(), null, false));
     }
 

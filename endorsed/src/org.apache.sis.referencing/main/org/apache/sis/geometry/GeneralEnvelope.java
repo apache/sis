@@ -24,6 +24,7 @@ package org.apache.sis.geometry;
  */
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.Objects;
 import java.time.Instant;
 import java.io.Serializable;
 import java.lang.reflect.Field;
@@ -38,12 +39,12 @@ import org.opengis.geometry.MismatchedReferenceSystemException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.referencing.util.TemporalAccessor;
 import org.apache.sis.referencing.util.AxisDirections;
-import org.apache.sis.util.internal.ArgumentCheckByAssertion;
+import org.apache.sis.util.ArgumentCheckByAssertion;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 
-import static org.apache.sis.util.ArgumentChecks.*;
+import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 import static org.apache.sis.math.MathFunctions.isSameSign;
 import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.math.MathFunctions.isNegativeZero;
@@ -55,7 +56,7 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  * as two {@linkplain AbstractDirectPosition direct positions} (coordinate tuples).
  * To encode an {@code Envelope}, it is sufficient to encode these two points.
  *
- * <p>{@code Envelope} uses an arbitrary <cite>Coordinate Reference System</cite>, which does not need to be geographic.
+ * <p>{@code Envelope} uses an arbitrary <i>Coordinate Reference System</i>, which does not need to be geographic.
  * This is different than the {@code GeographicBoundingBox} class provided in the metadata package, which can be used
  * as a kind of envelope restricted to a Geographic CRS having Greenwich prime meridian.</p>
  *
@@ -70,7 +71,7 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
  *   <li>{@linkplain #GeneralEnvelope(Envelope) From a another envelope} (copy constructor).</li>
  *   <li>{@linkplain #GeneralEnvelope(GeographicBoundingBox) From a geographic bounding box}.</li>
  *   <li>{@linkplain #GeneralEnvelope(CharSequence) From a character sequence}
- *       representing a {@code BBOX} or a <cite>Well Known Text</cite> (WKT) format.</li>
+ *       representing a {@code BBOX} or a <i>Well Known Text</i> (WKT) format.</li>
  * </ul>
  *
  * <h2>Crossing the anti-meridian of a Geographic CRS</h2>
@@ -223,7 +224,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
 
     /**
      * Constructs a new envelope initialized to the values parsed from the given string in
-     * {@code BOX} or <cite>Well Known Text</cite> (WKT) format. The given string is typically
+     * {@code BOX} or <i>Well Known Text</i> (WKT) format. The given string is typically
      * a {@code BOX} element like below:
      *
      * {@snippet lang="wkt" :
@@ -340,7 +341,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             throws IndexOutOfBoundsException
     {
         final int d = coordinates.length >>> 1;
-        ensureValidIndex(d, dimension);
+        Objects.checkIndex(dimension, d);
         /*
          * The check performed here shall be identical to ArrayEnvelope.verifyRanges(crs, coordinates),
          * except that there is no loop.
@@ -403,7 +404,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
         if (envelope == this) {
             return;     // Optimization for methods chaining like env.setEnvelope(Envelopes.transform(env, crs))
         }
-        ensureNonNull("envelope", envelope);
+        Objects.requireNonNull(envelope);
         final int beginIndex = beginIndex();
         final int dimension = endIndex() - beginIndex;
         ensureDimensionMatches("envelope", dimension, envelope);
@@ -470,7 +471,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * <p>Null value means no time limit. More specifically
      * null {@code startTime} is mapped to {@linkplain Double#NEGATIVE_INFINITY −∞} and
      * null {@code endTime}   is mapped to {@linkplain Double#POSITIVE_INFINITY +∞}.
-     * This rule makes easy to create <cite>is before</cite> or <cite>is after</cite> temporal filters,
+     * This rule makes easy to create <q>is before</q> or <q>is after</q> temporal filters,
      * which can be combined with other envelopes using {@linkplain #intersect(Envelope) intersection}
      * for logical AND, or {@linkplain #add(Envelope) union} for logical OR operations.</p>
      *
@@ -513,7 +514,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @since 0.5
      */
     public void translate(final double... vector) {
-        ensureNonNull("vector", vector);
+        Objects.requireNonNull(vector);
         final int beginIndex = beginIndex();
         ensureDimensionMatches("vector", endIndex() - beginIndex, vector);
         final int upperIndex = beginIndex + (coordinates.length >>> 1);
@@ -521,23 +522,6 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             final double t = vector[i];
             coordinates[beginIndex + i] += t;
             coordinates[upperIndex + i] += t;
-        }
-    }
-
-    /**
-     * Adds to this envelope a point of the given array.
-     * This method does not check for anti-meridian crossing. It is invoked only
-     * by the {@link Envelopes} transform methods, which build "normal" envelopes.
-     *
-     * @param  array   the array which contains the coordinate values.
-     * @param  offset  index of the first valid coordinate value in the given array.
-     */
-    final void addSimple(final double[] array, final int offset) {
-        final int d = coordinates.length >>> 1;
-        for (int i=0; i<d; i++) {
-            final double value = array[offset + i];
-            if (value < coordinates[i  ]) coordinates[i  ] = value;
-            if (value > coordinates[i+d]) coordinates[i+d] = value;
         }
     }
 
@@ -551,7 +535,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *
      * <h4>Preconditions</h4>
      * This method assumes that the specified point uses a CRS equivalent to this envelope CRS.
-     * For performance reasons, it will no be verified unless Java assertions are enabled.
+     * For performance reasons, this condition is not verified unless Java assertions are enabled.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * This method supports envelopes crossing the anti-meridian. In such cases it is possible to
@@ -570,7 +554,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      */
     @ArgumentCheckByAssertion
     public void add(final DirectPosition position) throws MismatchedDimensionException {
-        ensureNonNull("position", position);
+        Objects.requireNonNull(position);
         final int beginIndex = beginIndex();
         final int dimension = endIndex() - beginIndex;
         ensureDimensionMatches("position", dimension, position);
@@ -629,7 +613,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *
      * <h4>Preconditions</h4>
      * This method assumes that the specified envelope uses a CRS equivalent to this envelope CRS.
-     * For performance reasons, it will no be verified unless Java assertions are enabled.
+     * For performance reasons, this condition is not verified unless Java assertions are enabled.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * This method supports envelopes crossing the anti-meridian. If one or both envelopes cross
@@ -673,7 +657,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      */
     @ArgumentCheckByAssertion
     public void add(final Envelope envelope) throws MismatchedDimensionException {
-        ensureNonNull("envelope", envelope);
+        Objects.requireNonNull(envelope);
         final int beginIndex = beginIndex();
         final int dimension = endIndex() - beginIndex;
         ensureDimensionMatches("envelope", dimension, envelope);
@@ -786,7 +770,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      *
      * <h4>Preconditions</h4>
      * This method assumes that the specified envelope uses a CRS equivalent to this envelope CRS.
-     * For performance reasons, it will no be verified unless Java assertions are enabled.
+     * For performance reasons, this condition is not verified unless Java assertions are enabled.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * This method supports envelopes crossing the anti-meridian.
@@ -830,7 +814,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      */
     @ArgumentCheckByAssertion
     public void intersect(final Envelope envelope) throws MismatchedDimensionException {
-        ensureNonNull("envelope", envelope);
+        Objects.requireNonNull(envelope);
         final int beginIndex = beginIndex();
         final int dimension = endIndex() - beginIndex;
         ensureDimensionMatches("envelope", dimension, envelope);
@@ -1038,10 +1022,10 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             final double  minimum = axis.getMinimumValue();
             final double  maximum = axis.getMaximumValue();
             final RangeMeaning rm = axis.getRangeMeaning();
-            if (RangeMeaning.EXACT.equals(rm)) {
+            if (rm == RangeMeaning.EXACT) {
                 if (coordinates[iLower] < minimum) {coordinates[iLower] = minimum; changed = true;}
                 if (coordinates[iUpper] > maximum) {coordinates[iUpper] = maximum; changed = true;}
-            } else if (RangeMeaning.WRAPAROUND.equals(rm)) {
+            } else if (rm == RangeMeaning.WRAPAROUND) {
                 final double cycle = maximum - minimum;
                 if (cycle > 0 && cycle < Double.POSITIVE_INFINITY) {
                     double o1 = coordinates[iLower];
@@ -1267,7 +1251,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      */
     // Must be overridden in SubEnvelope
     public GeneralEnvelope subEnvelope(final int beginIndex, final int endIndex) throws IndexOutOfBoundsException {
-        ensureValidIndexRange(coordinates.length >>> 1, beginIndex, endIndex);
+        Objects.checkFromToIndex(beginIndex, endIndex, coordinates.length >>> 1);
         return new SubEnvelope(coordinates, beginIndex, endIndex);
         /*
          * Do not check if we could return "this" as an optimization, in order to keep

@@ -35,7 +35,7 @@ import org.apache.sis.measure.Units;
 
 
 /**
- * The provider for the NetCDF <cite>Rotated Latitude/Longitude</cite> coordinate operation.
+ * The provider for the NetCDF <q>Rotated Latitude/Longitude</q> coordinate operation.
  * This is similar to the WMO Rotated Latitude/Longitude but rotating north pole instead of south pole.
  * The 0° rotated meridian is defined as the meridian that runs through both the geographical and the rotated North pole.
  *

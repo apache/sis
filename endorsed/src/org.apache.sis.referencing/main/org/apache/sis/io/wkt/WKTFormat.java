@@ -65,7 +65,7 @@ import org.opengis.metadata.Identifier;
 
 
 /**
- * Parser and formatter for <cite>Well Known Text</cite> (WKT) strings.
+ * Parser and formatter for <i>Well Known Text</i> (WKT) strings.
  * This format handles a pair of {@link org.apache.sis.io.wkt.Parser} and {@link Formatter},
  * used by the {@code parse(…)} and {@code format(…)} methods respectively.
  * {@code WKTFormat} objects allow the following configuration:
@@ -708,13 +708,13 @@ public class WKTFormat extends CompoundFormat<Object> {
      * Verifies if the given type is a valid key for the {@link #factories} map.
      */
     private void ensureValidFactoryType(final Class<?> type) throws IllegalArgumentException {
-        ArgumentChecks.ensureNonNull("type", type);
         if (type != CRSFactory.class            &&
             type != CSFactory.class             &&
             type != DatumFactory.class          &&
             type != MathTransformFactory.class  &&
             type != CoordinateOperationFactory.class)
         {
+            ArgumentChecks.ensureNonNull("type", type);
             throw new IllegalArgumentException(errors().getString(Errors.Keys.IllegalArgumentValue_2, "type", type));
         }
     }

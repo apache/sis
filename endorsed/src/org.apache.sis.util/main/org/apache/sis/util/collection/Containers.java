@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.Iterator;
 import java.util.Collection;
+import java.util.Objects;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverter;
@@ -50,7 +51,7 @@ public final class Containers extends Static {
      * then the given collection is guaranteed to be non-null and to contain at least
      * one element.
      *
-     * <p>This is a convenience method for classes implementing the <cite>lazy instantiation</cite>
+     * <p>This is a convenience method for classes implementing the <i>lazy instantiation</i>
      * pattern. In such cases, null collections (i.e. collections not yet instantiated) are typically
      * considered as {@linkplain Collection#isEmpty() empty}.</p>
      *
@@ -66,7 +67,7 @@ public final class Containers extends Static {
      * If this method returns {@code false}, then the given map is guaranteed to be non-null and
      * to contain at least one element.
      *
-     * <p>This is a convenience method for classes implementing the <cite>lazy instantiation</cite>
+     * <p>This is a convenience method for classes implementing the <i>lazy instantiation</i>
      * pattern. In such cases, null maps (i.e. maps not yet instantiated) are typically considered
      * as {@linkplain Map#isEmpty() empty}.</p>
      *
@@ -118,13 +119,12 @@ public final class Containers extends Static {
      * @throws IndexOutOfBoundsException if the lower or upper value are out of bounds.
      */
     public static <E> List<? extends E> unmodifiableList(final E[] array, final int lower, final int upper) {
-        ArgumentChecks.ensureNonNull("array", array);
-        ArgumentChecks.ensureValidIndexRange(array.length, lower, upper);
+        Objects.checkFromToIndex(lower, upper, array.length);
         return UnmodifiableArrayList.wrap(array, lower, upper);
     }
 
     /**
-     * Returns a set whose elements are derived <cite>on-the-fly</cite> from the given set.
+     * Returns a set whose elements are derived <i>on-the-fly</i> from the given set.
      * Conversions from the original elements to the derived elements are performed when needed
      * by invoking the {@link ObjectConverter#apply(Object)} method on the given converter.
      * Those conversions are repeated every time a {@code Set} method is invoked; there is no cache.
@@ -164,7 +164,7 @@ public final class Containers extends Static {
     }
 
     /**
-     * Returns a map whose keys and values are derived <cite>on-the-fly</cite> from the given map.
+     * Returns a map whose keys and values are derived <i>on-the-fly</i> from the given map.
      * Conversions from the original entries to the derived entries are performed when needed
      * by invoking the {@link ObjectConverter#apply(Object)} method on the given converters.
      * Those conversions are repeated every time a {@code Map} method is invoked; there is no cache.
@@ -251,26 +251,24 @@ public final class Containers extends Static {
     }
 
     /**
-     * Returns the capacity to be given to the {@link java.util.HashMap#HashMap(int) HashMap}
-     * constructor for holding the given number of elements. This method computes the capacity
-     * for the default <cite>load factor</cite>, which is 0.75.
+     * Returns the capacity to give to the {@code HashMap} and {@code HashSet} constructors for holding the
+     * given number of elements. This method computes the capacity for the default load factor, which is 0.75.
+     * This capacity is applicable to the following classes:
+     * {@link java.util.HashSet},
+     * {@link java.util.HashMap},
+     * {@link java.util.LinkedHashSet} and
+     * {@link java.util.LinkedHashMap}.
+     * This capacity is <strong>not</strong> applicable to {@link java.util.IdentityHashMap}.
      *
-     * <p>The same calculation can be used for {@link java.util.LinkedHashMap} and
-     * {@link java.util.HashSet} as well, which are built on top of {@code HashMap}.
-     * However, it is not needed for {@link java.util.IdentityHashMap}.</p>
-     *
-     * <h4>Future evolution</h4>
-     * This method may be deprecated in favor of {@code HashMap.newHashMap(int)}
-     * when Apache SIS will be allowed to compile for JDK19.
+     * <p>Since Java 19, the static factory methods in above-cited classes should be used instead of this method.
+     * However, this {@code hashMapCapacity} method is still useful in a few cases where the standard factory methods
+     * cannot be invoked, for example because the collection to construct is a subclasses for the standard classes.</p>
      *
      * @param  count  the number of elements to be put into the hash map or hash set.
      * @return the minimal initial capacity to be given to the hash map constructor.
      */
     public static int hashMapCapacity(final int count) {
-        /*
-         * Dividing 'count' by 0.75 is equivalent to multiplying by 1.333333…
-         * rounded to next integer.
-         */
+        // Dividing `count` by 0.75 is equivalent to multiplying by 1.333333… rounded to next integer.
         return (count * 4 + 2) / 3;
     }
 

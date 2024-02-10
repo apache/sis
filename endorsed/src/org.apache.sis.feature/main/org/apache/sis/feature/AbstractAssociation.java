@@ -21,7 +21,6 @@ import java.util.Iterator;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.quality.DataQuality;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.feature.internal.Resources;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -86,7 +85,6 @@ public abstract class AbstractAssociation extends Field<Feature> implements Feat
      * @see DefaultAssociationRole#newInstance()
      */
     public static AbstractAssociation create(final FeatureAssociationRole role) {
-        ArgumentChecks.ensureNonNull("role", role);
         return isSingleton(role.getMaximumOccurs())
                ? new SingletonAssociation(role)
                : new MultiValuedAssociation(role);
@@ -100,7 +98,6 @@ public abstract class AbstractAssociation extends Field<Feature> implements Feat
      * @return the new association.
      */
     static AbstractAssociation create(final FeatureAssociationRole role, final Object value) {
-        ArgumentChecks.ensureNonNull("role", role);
         return isSingleton(role.getMaximumOccurs())
                ? new SingletonAssociation(role, (Feature) value)
                : new MultiValuedAssociation(role, value);

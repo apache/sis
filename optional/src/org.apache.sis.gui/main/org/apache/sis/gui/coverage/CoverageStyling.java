@@ -64,7 +64,6 @@ final class CoverageStyling extends ColorColumnHandler<Category> implements Func
     /**
      * Creates a new styling instance.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     CoverageStyling(final CoverageCanvas canvas) {
         customizedColors = new HashMap<>();
         this.canvas = canvas;

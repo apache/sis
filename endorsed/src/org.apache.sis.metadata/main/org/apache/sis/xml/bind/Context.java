@@ -284,7 +284,6 @@ public final class Context extends MarshalContext {
      * @param  converter        the converter in use.
      * @param  logFilter        the object to inform about warnings.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public Context(int                       bitMasks,
                    final MarshallerPool      pool,
                    final Locale              locale,

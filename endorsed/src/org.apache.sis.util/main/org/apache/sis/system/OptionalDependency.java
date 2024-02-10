@@ -43,7 +43,6 @@ public abstract class OptionalDependency extends SystemListener {
      * @param module  a constant from the {@link Modules} class which identify the module that need the optional dependency.
      * @param dependency  the name of the optional module on which the specified {@code module} depends.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     protected OptionalDependency(final String module, final String dependency) {
         super(module);
         this.dependency = dependency;

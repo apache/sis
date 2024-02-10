@@ -24,7 +24,7 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * The colors to use for formatting <cite>Well Known Text</cite> (WKT) objects.
+ * The colors to use for formatting <i>Well Known Text</i> (WKT) objects.
  * Colors are identified by their names and can be mapped to {@link ElementKind}.
  * The currently supported color names are:
  *

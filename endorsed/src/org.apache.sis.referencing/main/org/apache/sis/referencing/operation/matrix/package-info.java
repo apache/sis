@@ -34,8 +34,8 @@
  * <p>This package provides public implementations of small square matrices, with size ranging from 1×1 to 4×4.
  * Those implementations are convenient for working with Coordinate Reference Systems (CRS) of fixed dimensions.
  * If the number of CRS dimensions is fixed to 3,
- * then <cite>affine transforms</cite> between those CRS can be represented by 4×4 matrices,
- * and the <cite>derivatives</cite> of those transforms can be represented by 3×3 matrices.
+ * then <i>affine transforms</i> between those CRS can be represented by 4×4 matrices,
+ * and the <i>derivatives</i> of those transforms can be represented by 3×3 matrices.
  * When the number of dimensions is fixed at compile-time, matrix elements can be accessed
  * directly with the <var>m</var><sub><var>row</var> <var>column</var></sub> fields.</p>
  *
@@ -48,11 +48,11 @@
  *
  * <h2>Extended floating point precision</h2>
  * This package uses extended floating point precision for most arithmetic operations like matrix multiplications and
- * inversions. SIS needs extended precision because <cite>affine transforms</cite> concatenations like conversion from
+ * inversions. SIS needs extended precision because <i>affine transforms</i> concatenations like conversion from
  * degrees to radians, followed by some operations, followed by conversion back from radians to degrees, are very frequent.
  * Without extended precision, we often obtain values like 0.99999… where we would expect an identity transform.
  * The usual workaround - namely comparing the floating point values with a small <var>epsilon</var> tolerance value -
- * is dangerous in this particular case because <cite>datum shifts</cite>, when expressed as a matrix from their
+ * is dangerous in this particular case because <i>datum shifts</i>, when expressed as a matrix from their
  * {@linkplain org.apache.sis.referencing.datum.BursaWolfParameters Bursa-Wolf parameters}, are very close to the
  * identity transform.
  *

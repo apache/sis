@@ -21,7 +21,7 @@
  * {@link javax.imageio.ImageReader} and {@link javax.imageio.ImageWriter} instances.
  * The data stores delegate the reading and writing of pixel values to the wrapped reader or writer,
  * completed with an additional source of information for georeferencing the image.
- * A commonly-used convention is the <cite>World File</cite> format.
+ * A commonly-used convention is the <i>World File</i> format.
  *
  * <h2>Limitations</h2>
  * The World File reader and writer currently have the following limitations.

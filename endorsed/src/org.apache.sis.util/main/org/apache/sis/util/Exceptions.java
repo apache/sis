@@ -63,7 +63,7 @@ public final class Exceptions extends Static {
      *
      * @param  exception  the exception from which to get the localize message, or {@code null}.
      * @param  locale     the preferred locale for the message, or {@code null} for the JVM default locale.
-     *                    This locale is honored on a <cite>best-effort</cite> basis only.
+     *                    This locale is honored on a <em>best effort</em> basis only.
      * @return the message in the given locale if possible, or {@code null} if the {@code exception}
      *         argument was {@code null} or if the exception does not contain a message.
      *

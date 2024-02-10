@@ -44,8 +44,8 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * Creates geodetic objects from codes defined by an authority.
- * An <cite>authority</cite> is an organization that maintains definitions of authority codes.
- * An <cite>authority code</cite> is a compact string defined by an authority to reference a particular spatial reference object.
+ * An <dfn>authority</dfn> is an organization that maintains definitions of authority codes.
+ * An <dfn>authority code</dfn> is a compact string defined by an authority to reference a particular spatial reference object.
  * A frequently used set of authority codes is the <a href="https://epsg.org/">EPSG geodetic dataset</a>,
  * a database of coordinate systems and other spatial referencing objects where each object has a code number ID.
  *
@@ -1237,7 +1237,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * Creates a finder which can be used for looking up unidentified objects.
      * The finder tries to fetch a fully {@linkplain AbstractIdentifiedObject identified object}
      * from an incomplete one, for example from an object without "{@code ID[…]}" or
-     * "{@code AUTHORITY[…]}" element in <cite>Well Known Text</cite>.
+     * "{@code AUTHORITY[…]}" element in <i>Well Known Text</i>.
      *
      * @return a finder to use for looking up unidentified objects.
      * @throws FactoryException if the finder cannot be created.

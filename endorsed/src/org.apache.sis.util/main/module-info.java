@@ -20,14 +20,6 @@
  * It includes a few mathematical functions, collection classes, I/O utilities,
  * operations on common Java types like Arrays and character strings, logging, and more.
  *
- * <p>Some functionalities provided by this module may overlap some external libraries
- * like Common Logging and Commons collections.
- * Since this is not the purpose of this module to compete with dedicated libraries,
- * this module should be considered as mostly internal to the Apache SIS project.
- * For example any future SIS release may change the collection implementations
- * (how they perform synchronizations, how they handle exceptions, <i>etc.</i>)
- * in order to fit SIS needs.</p>
- *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
  * @version 1.5
@@ -165,6 +157,7 @@ module org.apache.sis.util {
             org.apache.sis.referencing.database;        // In the "non-free" sub-project.
 
     exports org.apache.sis.pending.jdk to
+            org.apache.sis.metadata,
             org.apache.sis.referencing,
             org.apache.sis.referencing.gazetteer,
             org.apache.sis.feature,

@@ -222,9 +222,9 @@ final class CanvasExtent extends GridExtent {
                 final DimensionNameType[] axisTypes = new DimensionNameType[i];
                 while (--i >= displayDimension) {
                     final AxisDirection dir = AxisDirections.absolute(cs.getAxis(i).getDirection());
-                    if (AxisDirection.FUTURE.equals(dir)) {
+                    if (dir == AxisDirection.FUTURE) {
                         axisTypes[i] = DimensionNameType.TIME;
-                    } else if (AxisDirection.UP.equals(dir)) {
+                    } else if (dir == AxisDirection.UP) {
                         axisTypes[i] = DimensionNameType.VERTICAL;
                     }
                 }

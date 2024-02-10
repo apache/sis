@@ -39,7 +39,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
 
-import static org.apache.sis.util.ArgumentChecks.*;
+import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 import static org.apache.sis.math.MathFunctions.isNegative;
 import static org.apache.sis.referencing.util.Formulas.isPoleToPole;
 
@@ -127,8 +127,6 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      * @throws MismatchedDimensionException if the two sequences do not have the same length.
      */
     public ArrayEnvelope(final double[] lowerCorner, final double[] upperCorner) throws MismatchedDimensionException {
-        ensureNonNull("lowerCorner", lowerCorner);
-        ensureNonNull("upperCorner", upperCorner);
         ensureSameDimension(lowerCorner.length, upperCorner.length);
         coordinates = Arrays.copyOf(lowerCorner, lowerCorner.length + upperCorner.length);
         System.arraycopy(upperCorner, 0, coordinates, lowerCorner.length, upperCorner.length);
@@ -151,7 +149,6 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      * @param  crs  the coordinate reference system.
      */
     public ArrayEnvelope(final CoordinateReferenceSystem crs) {
-        ensureNonNull("crs", crs);
         coordinates = new double[crs.getCoordinateSystem().getDimension() * 2];
         this.crs = crs;
     }
@@ -162,7 +159,6 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      * @param envelope  the envelope to copy.
      */
     public ArrayEnvelope(final Envelope envelope) {
-        ensureNonNull("envelope", envelope);
         /*
          * Do not optimize with `if (envelope instanceof ArrayEnvelope)` because subclasses may change the semantic.
          * In particular the SubEnvelope subclass uses only a subrange of this array. If we still want to optimize,
@@ -189,7 +185,6 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      * @param box  the bounding box to copy.
      */
     public ArrayEnvelope(final GeographicBoundingBox box) {
-        ensureNonNull("box", box);
         coordinates = new double[] {
             box.getWestBoundLongitude(),
             box.getSouthBoundLatitude(),
@@ -208,7 +203,7 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
 
     /**
      * Constructs a new envelope initialized to the values parsed from the given string in
-     * {@code BOX} or <cite>Well Known Text</cite> (WKT) format. The given string is typically
+     * {@code BOX} or <i>Well Known Text</i> (WKT) format. The given string is typically
      * a {@code BOX} element like below:
      *
      * {@snippet lang="wkt" :
@@ -223,7 +218,6 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      * @throws IllegalArgumentException if the given string cannot be parsed.
      */
     public ArrayEnvelope(final CharSequence wkt) throws IllegalArgumentException {
-        ensureNonNull("wkt", wkt);
         int levelParenth = 0;               // Number of opening parenthesis: (
         int levelBracket = 0;               // Number of opening brackets: [
         int dimLimit     = 4;               // The length of minimum and maximum arrays.
@@ -439,8 +433,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      */
     @Override                                       // Must also be overridden in SubEnvelope
     public double getLower(final int dimension) throws IndexOutOfBoundsException {
-        ensureValidIndex(coordinates.length >>> 1, dimension);
-        return coordinates[dimension];
+        return coordinates[Objects.checkIndex(dimension, coordinates.length >>> 1)];
     }
 
     /**
@@ -449,8 +442,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     @Override                                       // Must also be overridden in SubEnvelope
     public double getUpper(final int dimension) throws IndexOutOfBoundsException {
         final int d = coordinates.length >>> 1;
-        ensureValidIndex(d, dimension);
-        return coordinates[dimension + d];
+        return coordinates[Objects.checkIndex(dimension, d) + d];
     }
 
     /**
@@ -458,8 +450,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      */
     @Override
     public double getMinimum(final int dimension) throws IndexOutOfBoundsException {
-        ensureValidIndex(endIndex(), dimension);
-        final int i = dimension + beginIndex();
+        final int i = Objects.checkIndex(dimension, endIndex()) + beginIndex();
         double lower = coordinates[i];
         if (isNegative(coordinates[i + (coordinates.length >>> 1)] - lower)) {    // Special handling for -0.0
             final CoordinateSystemAxis axis = getAxis(crs, dimension);
@@ -473,8 +464,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      */
     @Override
     public double getMaximum(final int dimension) throws IndexOutOfBoundsException {
-        ensureValidIndex(endIndex(), dimension);
-        final int i = dimension + beginIndex();
+        final int i = Objects.checkIndex(dimension, endIndex()) + beginIndex();
         double upper = coordinates[i + (coordinates.length >>> 1)];
         if (isNegative(upper - coordinates[i])) {                               // Special handling for -0.0
             final CoordinateSystemAxis axis = getAxis(crs, dimension);
@@ -488,8 +478,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      */
     @Override
     public double getMedian(final int dimension) throws IndexOutOfBoundsException {
-        ensureValidIndex(endIndex(), dimension);
-        final int i = dimension + beginIndex();
+        final int i = Objects.checkIndex(dimension, endIndex()) + beginIndex();
         final double minimum = coordinates[i];
         final double maximum = coordinates[i + (coordinates.length >>> 1)];
         double median = 0.5 * (minimum + maximum);
@@ -504,8 +493,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
      */
     @Override
     public double getSpan(final int dimension) throws IndexOutOfBoundsException {
-        ensureValidIndex(endIndex(), dimension);
-        final int i = dimension + beginIndex();
+        final int i = Objects.checkIndex(dimension, endIndex()) + beginIndex();
         double span = coordinates[i + (coordinates.length >>> 1)] - coordinates[i];
         if (isNegative(span)) {                                                 // Special handling for -0.0
             span = fixSpan(getAxis(crs, dimension), span);

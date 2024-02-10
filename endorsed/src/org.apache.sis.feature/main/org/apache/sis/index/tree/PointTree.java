@@ -20,6 +20,7 @@ import java.util.Optional;
 import java.util.AbstractSet;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
@@ -34,8 +35,8 @@ import org.apache.sis.util.collection.CheckedContainer;
 
 /**
  * A <var>k</var>-dimensional tree index for points.
- * For <var>k</var>=2, this is a <cite>point QuadTree</cite>.
- * For <var>k</var>=3, this is a point <cite>Octree</cite>.
+ * For <var>k</var>=2, this is a <dfn>point QuadTree</dfn>.
+ * For <var>k</var>=3, this is a point <dfn>Octree</dfn>.
  * Higher dimensions are also accepted up to {@value #MAXIMUM_DIMENSIONS} dimensions.
  * Elements are stored in this {@code PointTree} as arbitrary non-null objects with their coordinates
  * computed by a user-specified {@code locator} function. That function expects an element {@code E}
@@ -315,8 +316,7 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E> 
      */
     @Override
     public boolean add(final E element) {
-        ArgumentChecks.ensureNonNull("element", element);
-        final boolean modified = insert(root, treeRegion, element, new double[getDimension()]);
+        final boolean modified = insert(root, treeRegion, Objects.requireNonNull(element), new double[getDimension()]);
         if (modified) count++;
         return modified;
     }
@@ -330,7 +330,6 @@ public class PointTree<E> extends AbstractSet<E> implements CheckedContainer<E> 
      */
     @Override
     public boolean addAll(final Collection<? extends E> elements) {
-        ArgumentChecks.ensureNonNull("elements", elements);
         final double[] buffer = new double[getDimension()];
         boolean modified = false;
         int i = 0;

@@ -19,6 +19,7 @@ package org.apache.sis.storage.base;
 import java.util.Locale;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Objects;
 import java.lang.reflect.Modifier;
 import org.opengis.util.GenericName;
 import org.apache.sis.storage.Aggregate;
@@ -29,7 +30,6 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IncompatibleResourceException;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Localized;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.util.collection.BackingStoreException;
 
@@ -90,8 +90,7 @@ public final class WritableAggregateSupport implements Localized {
      * @throws IncompatibleResourceException if the given resource is not for a grid coverage.
      */
     public GridCoverageResource asGridCoverage(final Resource resource) throws DataStoreException {
-        ArgumentChecks.ensureNonNull("resource", resource);
-        if (resource instanceof GridCoverageResource) {
+        if (Objects.requireNonNull(resource) instanceof GridCoverageResource) {
             return (GridCoverageResource) resource;
         }
         throw new IncompatibleResourceException(message(GridCoverageResource.class, resource));

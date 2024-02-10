@@ -323,6 +323,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      *         (too many exception types to list them all).
      */
     @Override
+    @SuppressWarnings("try")
     protected final Raster[] readTiles(final AOI iterator) throws IOException, DataStoreException {
         /*
          * Prepare an array for all tiles to be returned. Tiles that are already in memory will be stored

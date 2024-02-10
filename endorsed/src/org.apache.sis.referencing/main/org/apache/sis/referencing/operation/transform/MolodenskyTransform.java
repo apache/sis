@@ -179,8 +179,8 @@ public class MolodenskyTransform extends DatumShiftTransform {
     /**
      * The square of eccentricity of the source ellipsoid.
      * This can be computed by ℯ² = (a²-b²)/a² where
-     * <var>a</var> is the <cite>semi-major</cite> axis length and
-     * <var>b</var> is the <cite>semi-minor</cite> axis length.
+     * <var>a</var> is the <i>semi-major</i> axis length and
+     * <var>b</var> is the <i>semi-minor</i> axis length.
      *
      * @see DefaultEllipsoid#getEccentricitySquared()
      */
@@ -207,10 +207,10 @@ public class MolodenskyTransform extends DatumShiftTransform {
      * need to be concatenated with the following affine transforms:
      *
      * <ul>
-     *   <li><cite>Normalization</cite> before {@code MolodenskyTransform}:<ul>
+     *   <li><i>Normalization</i> before {@code MolodenskyTransform}:<ul>
      *     <li>Conversion of (λ,φ) from degrees to radians.</li>
      *   </ul></li>
-     *   <li><cite>Denormalization</cite> after {@code MolodenskyTransform}:<ul>
+     *   <li><i>Denormalization</i> after {@code MolodenskyTransform}:<ul>
      *     <li>Conversion of (λ,φ) from radians to degrees.</li>
      *   </ul></li>
      * </ul>
@@ -280,6 +280,7 @@ public class MolodenskyTransform extends DatumShiftTransform {
      * @param isAbridged  {@code true} for the abridged formula, or {@code false} for the complete one.
      * @param descriptor  the contextual parameter descriptor.
      */
+    @SuppressWarnings("this-escape")
     private MolodenskyTransform(final Ellipsoid source, final boolean isSource3D,
                                 final Ellipsoid target, final boolean isTarget3D,
                                 final double tX, final double tY, final double tZ,

@@ -459,7 +459,7 @@ final class TensorValues<E> extends AbstractParameterDescriptor
     }
 
     /**
-     * Formats this group as a pseudo-<cite>Well Known Text</cite> element.
+     * Formats this group as a pseudo-<i>Well Known Text</i> element.
      *
      * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "ParameterGroup"}.

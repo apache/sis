@@ -208,7 +208,7 @@ public abstract class AbstractMetadata implements LenientComparable, Emptiable {
      * Calls to {@code put(…)} replace the previous value, with one noticeable exception: if the metadata
      * property associated to the given key is a {@link java.util.Collection} but the given value is a single
      * element (not a collection), then the given value is {@linkplain java.util.Collection#add(Object) added}
-     * to the existing collection. In other words, the returned map behaves as a <cite>multi-values map</cite>
+     * to the existing collection. In other words, the returned map behaves as a <i>multi-values map</i>
      * for the properties that allow multiple values. If the intent is to unconditionally discard all previous
      * values, then make sure that the given value is a collection when the associated metadata property expects
      * such collection.

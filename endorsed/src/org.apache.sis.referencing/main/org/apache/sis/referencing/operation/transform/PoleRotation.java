@@ -92,7 +92,7 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
 
     /**
      * The parameters used for creating this transform.
-     * They are used for formatting <cite>Well Known Text</cite> (WKT).
+     * They are used for formatting <i>Well Known Text</i> (WKT).
      *
      * @see #getContextualParameters()
      */
@@ -352,8 +352,8 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
      * the grid pole latitude (which is handled by this transform), but also the grid pole longitude and the
      * grid angle of rotation (which are handled by affine transforms before or after this transform).
      *
-     * @return the parameter values for the sequence of <cite>normalize</cite> →
-     *         {@code this} → <cite>denormalize</cite> transforms.
+     * @return the parameter values for the sequence of <i>normalize</i> →
+     *         {@code this} → <i>denormalize</i> transforms.
      */
     @Override
     protected ContextualParameters getContextualParameters() {
