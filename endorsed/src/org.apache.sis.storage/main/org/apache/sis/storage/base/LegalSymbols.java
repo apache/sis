@@ -19,12 +19,18 @@ package org.apache.sis.storage.base;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.Collections;
-import org.opengis.metadata.citation.*;
-import org.opengis.metadata.constraint.*;
+import org.opengis.metadata.citation.Role;
+import org.opengis.metadata.citation.DateType;
+import org.opengis.metadata.constraint.Restriction;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.metadata.iso.citation.*;
-import org.apache.sis.metadata.iso.constraint.*;
+import org.apache.sis.metadata.iso.citation.AbstractParty;
+import org.apache.sis.metadata.iso.citation.DefaultCitation;
+import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
+import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
 import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 
 
 /**
