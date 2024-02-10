@@ -277,7 +277,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     }
 
     /**
-     * Formats this CRS as a <cite>Well Known Text</cite> {@code GeodeticCRS[…]} element.
+     * Formats this CRS as a <i>Well Known Text</i> {@code GeodeticCRS[…]} element.
      *
      * <h4>Example</h4>
      * Well-Known Text (version 2)

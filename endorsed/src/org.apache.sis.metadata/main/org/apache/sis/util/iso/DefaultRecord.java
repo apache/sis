@@ -30,7 +30,6 @@ import org.opengis.util.MemberName;
 import org.opengis.util.Record;
 import org.opengis.util.RecordType;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.internal.AbstractMapEntry;
@@ -91,8 +90,7 @@ public class DefaultRecord implements Record, Serializable {
      * @param type  the type definition of the new record.
      */
     public DefaultRecord(final RecordType type) {
-        ArgumentChecks.ensureNonNull("type", type);
-        if (type instanceof RecordDefinition) {
+        if (Objects.requireNonNull(type) instanceof RecordDefinition) {
             definition = (RecordDefinition) type;
         } else {
             definition = new RecordDefinition.Adapter(type);
@@ -352,7 +350,6 @@ public class DefaultRecord implements Record, Serializable {
      * @throws ClassCastException if a value is not an instance of the expected type for this record.
      */
     public void setAll(final Object... newValues) {
-        ArgumentChecks.ensureNonNull("values", newValues);
         final int length = Array.getLength(values);
         if (newValues.length != length) {
             throw new IllegalArgumentException(Errors.format(

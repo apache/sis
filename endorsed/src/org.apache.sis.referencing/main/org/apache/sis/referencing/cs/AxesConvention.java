@@ -97,7 +97,7 @@ import org.apache.sis.measure.Units;
  * designed to work in that range. This is also the range of {@link Math} trigonometric functions like {@code atan2(y,x)}.
  * However, some data use the [0 … 360]° range instead. A geographic CRS can be shifted to that range of longitude values
  * using the {@link #POSITIVE_RANGE} enumeration value. The choice of longitude range will impact not only some
- * coordinate conversions, but also the methods that verify the <cite>domain of validity</cite>
+ * coordinate conversions, but also the methods that verify the <i>domain of validity</i>
  * (e.g. {@link org.apache.sis.geometry.GeneralEnvelope#normalize()}).
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -174,7 +174,7 @@ public enum AxesConvention implements AxisFilter {
     /**
      * Axes are reordered and oriented toward directions commonly used for displaying purpose.
      * Units of measurement are unchanged. This convention can be used for deriving a coordinate system with the
-     * <i>(<var>longitude</var>, <var>latitude</var>)</i> or <i>(<var>x</var>,<var>y</var>)</i> axis order.
+     * (<var>longitude</var>, <var>latitude</var>) or (<var>x</var>,<var>y</var>) axis order.
      * A similar concept appears in the Web Map Services (WMS) 1.3 specification, quoted here:
      *
      * <blockquote><b>6.7.2 Map CS</b> —
@@ -184,9 +184,8 @@ public enum AxesConvention implements AxisFilter {
      * orthographic projection over the South Pole. The convention to be followed is that, wherever possible, East shall
      * be to the right edge and North shall be toward the upper edge of the Map CS.</blockquote>
      *
-     * The above-cited <i>(<var>i</var>,<var>j</var>)</i> axes are mapped to <cite>display right</cite> and
-     * <cite>display down</cite> directions respectively.
-     * Other kinds of axis are mapped to <cite>east</cite> and <cite>north</cite> directions when possible.
+     * The above-cited (<var>i</var>, <var>j</var>) axes are mapped to <i>display right</i> and <i>display down</i>
+     * directions respectively. Other kinds of axis are mapped to <i>east</i> and <i>north</i> directions when possible.
      * More specifically, Apache SIS tries to setup the following directions
      * (replacing a direction by its "forward" counterpart when necessary, e.g. {@code SOUTH} → {@code NORTH})
      * in the order shown below:
@@ -199,10 +198,10 @@ public enum AxesConvention implements AxisFilter {
      *   </tr><tr>
      *     <td>{@link AxisDirection#EAST EAST}, {@link AxisDirection#NORTH NORTH},
      *         {@link AxisDirection#UP UP}, {@link AxisDirection#FUTURE FUTURE}</td>
-     *     <td>Commonly used <i>(<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>)</i> directions for coordinates.</td>
+     *     <td>Commonly used (<var>x</var>, <var>y</var>, <var>z</var>, <var>t</var>) directions for coordinates.</td>
      *   </tr><tr>
      *     <td>{@link AxisDirection#DISPLAY_RIGHT DISPLAY_RIGHT}, {@link AxisDirection#DISPLAY_DOWN DISPLAY_DOWN}</td>
-     *     <td>Commonly used <i>(<var>x</var>, <var>y</var>)</i> directions for screen devices.</td>
+     *     <td>Commonly used (<var>x</var>, <var>y</var>) directions for screen devices.</td>
      *   </tr><tr>
      *     <td>{@link AxisDirection#ROW_POSITIVE ROW_POSITIVE},
      *         {@link AxisDirection#COLUMN_POSITIVE COLUMN_POSITIVE}</td>
@@ -213,10 +212,10 @@ public enum AxesConvention implements AxisFilter {
      * <h4>API notes</h4>
      * we do not provide a <q>longitude or <var>x</var> axis first</q> enumeration value because such criterion
      * is hard to apply to inter-cardinal directions and has no meaning for map projections over a pole.
-     * The <cite>display oriented</cite> enumeration name applies to a wider range of cases,
+     * The <i>display oriented</i> enumeration name applies to a wider range of cases,
      * but still have a loosely definition which may be adjusted in future Apache SIS versions.
      * If a more stable definition is needed, consider using {@link #RIGHT_HANDED} instead since
-     * <cite>right-handed</cite> coordinate systems have a more precise meaning in Apache SIS.
+     * <i>right-handed</i> coordinate systems have a more precise meaning in Apache SIS.
      *
      * @since 1.0
      */
@@ -227,7 +226,7 @@ public enum AxesConvention implements AxisFilter {
     },
 
     /**
-     * Axes are ordered for a <cite>right-handed</cite> coordinate system. Axis directions, ranges or coordinate values
+     * Axes are ordered for a <i>right-handed</i> coordinate system. Axis directions, ranges or coordinate values
      * and units of measurement are unchanged. In the two-dimensional case, the handedness is defined from the point of
      * view of an observer above the plane of the system.
      *
@@ -255,7 +254,7 @@ public enum AxesConvention implements AxisFilter {
     RIGHT_HANDED,
 
     /**
-     * Axes having a <cite>wraparound</cite> range meaning are shifted to their ranges of positive values.
+     * Axes having a <i>wraparound</i> range meaning are shifted to their ranges of positive values.
      * The units of measurement and range period (difference between
      * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getMaximumValue() maximum} and
      * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getMinimumValue() minimum value})

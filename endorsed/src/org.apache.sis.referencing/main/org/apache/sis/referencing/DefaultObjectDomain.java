@@ -247,7 +247,7 @@ public class DefaultObjectDomain extends FormattableObject implements LenientCom
     }
 
     /**
-     * Formats the inner part of the <cite>Well Known Text</cite> (WKT) representation for this object.
+     * Formats the inner part of the <i>Well Known Text</i> (WKT) representation for this object.
      * The default implementation writes the following elements:
      *
      * <ul>

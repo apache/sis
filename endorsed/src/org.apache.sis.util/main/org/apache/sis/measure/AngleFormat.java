@@ -405,8 +405,7 @@ public class AngleFormat extends Format implements Localized {
      */
     @SuppressWarnings("PointlessBitwiseExpression")  // We rely on the compiler for simplifying the expression.
     public AngleFormat(final Locale locale) {
-        ArgumentChecks.ensureNonNull("locale", locale);
-        this.locale = locale;
+        this.locale = Objects.requireNonNull(locale);
         degreesFieldWidth   = 1;
         minutesFieldWidth   = 2;
         secondsFieldWidth   = 2;
@@ -438,9 +437,7 @@ public class AngleFormat extends Format implements Localized {
      * @throws IllegalArgumentException if the specified pattern is illegal.
      */
     public AngleFormat(final String pattern, final Locale locale) throws IllegalArgumentException {
-        ArgumentChecks.ensureNonEmpty("pattern", pattern);
-        ArgumentChecks.ensureNonNull("locale", locale);
-        this.locale = locale;
+        this.locale = Objects.requireNonNull(locale);
         applyPattern(pattern, SYMBOLS, '.');
     }
 
@@ -758,8 +755,7 @@ public class AngleFormat extends Format implements Localized {
      * @since 0.8
      */
     public void setRoundingMode(final RoundingMode mode) {
-        ArgumentChecks.ensureNonNull("mode", mode);
-        if (mode == RoundingMode.HALF_UP || mode == RoundingMode.HALF_DOWN) {
+        if (Objects.requireNonNull(mode) == RoundingMode.HALF_UP || mode == RoundingMode.HALF_DOWN) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.UnsupportedArgumentValue_1, mode));
         }
         roundingMode = mode;

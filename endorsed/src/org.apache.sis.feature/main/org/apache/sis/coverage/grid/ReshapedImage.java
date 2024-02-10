@@ -31,7 +31,6 @@ import static java.lang.Math.subtractExact;
 import static java.lang.Math.floorDiv;
 import static java.lang.Math.toIntExact;
 import org.apache.sis.image.PlanarImage;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -242,7 +241,6 @@ final class ReshapedImage extends PlanarImage {
      */
     @Override
     public Raster getData(final Rectangle aoi) {
-        ArgumentChecks.ensureNonNull("aoi", aoi);
         return copyData(new Rectangle(aoi));
     }
 

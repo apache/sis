@@ -75,7 +75,6 @@ public final class Logging extends Static {
      * @since 1.0
      */
     public static Logger getLogger(final Class<?> source) {
-        ArgumentChecks.ensureNonNull("source", source);
         return Logger.getLogger(source.getPackageName());
     }
 

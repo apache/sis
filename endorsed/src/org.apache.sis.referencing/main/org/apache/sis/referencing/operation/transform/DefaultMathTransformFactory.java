@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.ServiceLoader;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -100,14 +101,14 @@ import org.apache.sis.util.resources.Errors;
  * The set of parameters varies for each operation or projection, but the following can be considered typical:
  *
  * <ul>
- *   <li>A <cite>semi-major</cite> and <cite>semi-minor</cite> axis length in metres.</li>
- *   <li>A <cite>central meridian</cite> and <cite>latitude of origin</cite> in decimal degrees.</li>
- *   <li>A <cite>scale factor</cite>, which default to 1.</li>
- *   <li>A <cite>false easting</cite> and <cite>false northing</cite> in metres, which default to 0.</li>
+ *   <li>A <var>semi-major</var> and <var>semi-minor</var> axis length in metres.</li>
+ *   <li>A <var>central meridian</var> and <var>latitude of origin</var> in decimal degrees.</li>
+ *   <li>A <var>scale factor</var>, which default to 1.</li>
+ *   <li>A <var>false easting</var> and <var>false northing</var> in metres, which default to 0.</li>
  * </ul>
  *
  * <p>Each descriptor has many aliases, and those aliases may vary between different projections.
- * For example, the <cite>false easting</cite> parameter is usually called {@code "false_easting"}
+ * For example, the <i>false easting</i> parameter is usually called {@code "false_easting"}
  * by OGC, while EPSG uses various names like <q>False easting</q> or <q>Easting at
  * false origin</q>.</p>
  *
@@ -133,10 +134,10 @@ import org.apache.sis.util.resources.Errors;
  *
  *
  * <h2><a id="Obligation">Mandatory and optional parameters</a></h2>
- * Parameters are flagged as either <cite>mandatory</cite> or <cite>optional</cite>.
+ * Parameters are flagged as either <i>mandatory</i> or <i>optional</i>.
  * A parameter may be mandatory and still have a default value. In the context of this package, "mandatory"
  * means that the parameter is an essential part of the projection defined by standards.
- * Such mandatory parameters will always appears in any <cite>Well Known Text</cite> (WKT) formatting,
+ * Such mandatory parameters will always appears in any <i>Well Known Text</i> (WKT) formatting,
  * even if not explicitly set by the user. For example, the central meridian is typically a mandatory
  * parameter with a default value of 0° (the Greenwich meridian).
  *
@@ -232,7 +233,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     private final WeakHashSet<MathTransform> pool;
 
     /**
-     * The <cite>Well Known Text</cite> parser for {@code MathTransform} instances.
+     * The <i>Well Known Text</i> parser for {@code MathTransform} instances.
      * This parser is not thread-safe, so we need to prevent two threads from using
      * the same instance at the same time.
      */
@@ -310,8 +311,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @param  methods  the operation methods to use, stored by reference (not copied).
      */
     public DefaultMathTransformFactory(final Iterable<? extends OperationMethod> methods) {
-        ArgumentChecks.ensureNonNull("methods", methods);
-        this.methods  = methods;
+        this.methods  = Objects.requireNonNull(methods);
         methodsByName = new ConcurrentHashMap<>();
         methodsByType = new IdentityHashMap<>();
         lastMethod    = new ThreadLocal<>();
@@ -416,10 +416,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      */
     @Override
     public Set<OperationMethod> getAvailableMethods(final Class<? extends SingleOperation> type) {
-        ArgumentChecks.ensureNonNull("type", type);
         OperationMethodSet set;
         synchronized (methodsByType) {
-            set = methodsByType.get(type);
+            set = methodsByType.get(Objects.requireNonNull(type));
         }
         if (set == null) {
             /*
@@ -1207,7 +1206,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         RuntimeException failure = null;
         MathTransform transform;
         try {
-            ArgumentChecks.ensureNonNull("parameters", parameters);
             final ParameterDescriptorGroup descriptor = parameters.getDescriptor();
             final String methodName = descriptor.getName().getCode();
             String methodIdentifier = IdentifiedObjects.toString(IdentifiedObjects.getIdentifier(descriptor, Citations.EPSG));
@@ -1290,8 +1288,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *
      * <h4>Example</h4>
      * The most typical examples of transforms with normalized inputs/outputs are normalized
-     * map projections expecting (<cite>longitude</cite>, <cite>latitude</cite>) inputs in degrees
-     * and calculating (<cite>x</cite>, <cite>y</cite>) coordinates in metres,
+     * map projections expecting (<var>longitude</var>, <var>latitude</var>) inputs in degrees
+     * and calculating (<var>x</var>, <var>y</var>) coordinates in metres,
      * both of them with ({@linkplain org.opengis.referencing.cs.AxisDirection#EAST East},
      * {@linkplain org.opengis.referencing.cs.AxisDirection#NORTH North}) axis orientations.
      *
@@ -1660,8 +1658,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
 
     /**
      * Creates a math transform object from a
-     * <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html"><cite>Well
-     * Known Text</cite> (WKT)</a>.
+     * <a href="http://www.geoapi.org/snapshot/javadoc/org/opengis/referencing/doc-files/WKT.html">Well Known Text (WKT)</a>.
      * If the given text contains non-fatal anomalies (unknown or unsupported WKT elements,
      * inconsistent unit definitions, <i>etc.</i>), warnings may be reported in a
      * {@linkplain java.util.logging.Logger logger} named {@code "org.apache.sis.io.wkt"}.

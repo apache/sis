@@ -469,7 +469,7 @@ public final class Assertions extends Static {
      * for easier readability of {@link String} constants in Java code.
      *
      * @param expected  the expected text, or {@code null} if {@code object} is expected to be null.
-     * @param object    the object to format in <cite>Well Known Text</cite> format, or {@code null}.
+     * @param object    the object to format in <i>Well Known Text</i> format, or {@code null}.
      */
     public static void assertWktEquals(final String expected, final Object object) {
         assertWktEquals(Convention.WKT2, expected, object);
@@ -482,7 +482,7 @@ public final class Assertions extends Static {
      *
      * @param convention  the WKT convention to use.
      * @param expected    the expected text, or {@code null} if {@code object} is expected to be null.
-     * @param object      the object to format in <cite>Well Known Text</cite> format, or {@code null}.
+     * @param object      the object to format in <i>Well Known Text</i> format, or {@code null}.
      */
     public static void assertWktEquals(final Convention convention, final String expected, final Object object) {
         if (expected == null) {
@@ -506,7 +506,7 @@ public final class Assertions extends Static {
      *
      * @param convention  the WKT convention to use.
      * @param expected    the expected regular expression, or {@code null} if {@code object} is expected to be null.
-     * @param object      the object to format in <cite>Well Known Text</cite> format, or {@code null}.
+     * @param object      the object to format in <i>Well Known Text</i> format, or {@code null}.
      */
     public static void assertWktEqualsRegex(final Convention convention, final String expected, final Object object) {
         if (expected == null) {

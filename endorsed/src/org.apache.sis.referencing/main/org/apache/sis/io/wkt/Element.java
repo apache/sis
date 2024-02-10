@@ -37,7 +37,7 @@ import static org.apache.sis.util.CharSequences.skipLeadingWhitespaces;
 
 
 /**
- * An element in a <cite>Well Know Text</cite> (WKT). An {@code Element} is made of {@link String},
+ * An element in a <i>Well Know Text</i> (WKT). An {@code Element} is made of {@link String},
  * {@link Number} and other {@link Element}. For example:
  *
  * {@snippet lang="wkt" :
@@ -47,7 +47,7 @@ import static org.apache.sis.util.CharSequences.skipLeadingWhitespaces;
  * Each {@code Element} object can contain an arbitrary number of other elements.
  * The result is a tree, which can be seen with {@link #toString()} for debugging purpose.
  * Elements can be pulled by their name and other children (numbers, dates, strings)
- * can be pulled in a <cite>first in, first out</cite> order.
+ * can be pulled in a <i>first in, first out</i> order.
  *
  * <h2>Sharing repetitive information</h2>
  * {@link Element} instances are mutable because {@link AbstractParser} needs to remove elements from

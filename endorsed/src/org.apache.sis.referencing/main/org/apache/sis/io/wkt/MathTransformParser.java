@@ -169,7 +169,7 @@ class MathTransformParser extends AbstractParser {
     }
 
     /**
-     * Parses the next element in the specified <cite>Well Know Text</cite> (WKT) tree.
+     * Parses the next element in the specified <i>Well Know Text</i> (WKT) tree.
      *
      * @param  element  the element to be parsed.
      * @return the parsed object, or {@code null} if the element is not recognized.
@@ -181,7 +181,7 @@ class MathTransformParser extends AbstractParser {
     }
 
     /**
-     * Parses the next {@code MathTransform} in the specified <cite>Well Know Text</cite> (WKT) tree.
+     * Parses the next {@code MathTransform} in the specified <i>Well Know Text</i> (WKT) tree.
      *
      * @param  element    the parent element.
      * @param  mandatory  {@code true} if a math transform must be present, or {@code false} if optional.

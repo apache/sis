@@ -285,8 +285,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
     @Override
     @SuppressWarnings("unchecked")
     public <T extends Quantity<T>> Unit<T> asType(final Class<T> type) throws ClassCastException {
-        ArgumentChecks.ensureNonNull("type", type);
-        if (type == quantity) {
+        if (Objects.requireNonNull(type) == quantity) {
             if (getSymbol() == null) {
                 // If this unit has no symbol, opportunistically supply a symbol if we find it.
                 final SystemUnit<T> unit = Units.get(type);
@@ -350,7 +349,6 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
      */
     @Override
     public UnitConverter getConverterTo(final Unit<Q> unit) throws UnconvertibleException {
-        ArgumentChecks.ensureNonNull("unit", unit);
         final Unit<Q> step = unit.getSystemUnit();
         if (step != this && !equalsIgnoreMetadata(step)) {
             // Should never occur unless parameterized type has been compromised.
@@ -381,7 +379,6 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
      */
     @Override
     public UnitConverter getConverterToAny(final Unit<?> unit) throws IncommensurableException {
-        ArgumentChecks.ensureNonNull("unit", unit);
         final Unit<?> step = unit.getSystemUnit();
         if (step != this && !isCompatible(step)) {
             throw new IncommensurableException(incompatible(unit));
@@ -454,8 +451,8 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
      */
     @Override
     public Unit<?> multiply(final Unit<?> multiplier) {
-        ArgumentChecks.ensureNonNull("multiplier", multiplier);
         if (multiplier == this) return pow(2);                      // For formating e.g. "K²" instead of "K⋅K".
+        ArgumentChecks.ensureNonNull("multiplier", multiplier);
         return product(multiplier, false);
     }
 

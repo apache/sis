@@ -18,6 +18,7 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import java.util.List;
+import java.util.Objects;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -139,7 +140,6 @@ public class DefaultCompoundCS extends AbstractCS {
      * Returns a clone of the given array, making sure that it contains only non-null elements.
      */
     private static CoordinateSystem[] clone(CoordinateSystem[] components) {
-        ArgumentChecks.ensureNonNull("components", components);
         components = components.clone();
         for (int i=0; i<components.length; i++) {
             ArgumentChecks.ensureNonNullElement("components", i, components[i]);
@@ -186,9 +186,8 @@ public class DefaultCompoundCS extends AbstractCS {
      */
     @Override
     public DefaultCompoundCS forConvention(final AxesConvention convention) {
-        ArgumentChecks.ensureNonNull("convention", convention);
         synchronized (forConvention) {
-            DefaultCompoundCS cs = (DefaultCompoundCS) forConvention.get(convention);
+            var cs = (DefaultCompoundCS) forConvention.get(Objects.requireNonNull(convention));
             if (cs == null) {
                 cs = this;
                 boolean changed = false;

@@ -105,7 +105,7 @@ final class VerticalInfo {
      *         became empty as a result of this operation.
      */
     final VerticalInfo resolve(final VerticalCRS crs) {
-        if (crs != null && VerticalDatumType.GEOIDAL.equals(crs.getDatum().getVerticalDatumType())) {
+        if (crs != null && crs.getDatum().getVerticalDatumType() == VerticalDatumType.GEOIDAL) {
             return resolve(crs, crs.getCoordinateSystem().getAxis(0));
         }
         return this;
@@ -120,7 +120,7 @@ final class VerticalInfo {
             next = next.resolve(crs, axis);
         }
         final Unit<?> crsUnit = axis.getUnit();
-        if (AxisDirection.UP.equals(axis.getDirection()) && unit.equals(crsUnit)) {
+        if (axis.getDirection() == AxisDirection.UP && unit.equals(crsUnit)) {
             extent.setVerticalCRS(crs);
             return next;
         } else if (unit.isCompatible(crsUnit)) {
@@ -151,7 +151,7 @@ final class VerticalInfo {
         final Object name;
         final String abbreviation;
         CoordinateSystemAxis axis = compatibleCRS.getCoordinateSystem().getAxis(0);
-        final boolean isUP = AxisDirection.UP.equals(axis.getDirection());
+        final boolean isUP = (axis.getDirection() == AxisDirection.UP);
         if (isUP) {
             name = axis.getName();
             abbreviation = axis.getAbbreviation();

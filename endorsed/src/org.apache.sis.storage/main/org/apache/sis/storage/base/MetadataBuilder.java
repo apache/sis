@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage.base;
 
-import java.time.LocalDate;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Locale;
@@ -29,6 +28,7 @@ import java.util.LinkedHashSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.logging.Level;
 import java.net.URI;
@@ -59,7 +59,6 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.AbstractInternationalString;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.iso.Names;
@@ -96,7 +95,6 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.pending.jdk.JDK21;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 // Specific to the main branch:
 import org.apache.sis.feature.DefaultFeatureType;
@@ -625,12 +623,11 @@ public class MetadataBuilder {
      * @param  type  whether the party to create is an individual or an organization.
      */
     public final void newParty(final PartyType type) {
-        ArgumentChecks.ensureNonNull("type", type);
         if (party != null) {
             addIfNotPresent(responsibility().getParties(), party);
             party = null;
         }
-        partyType = type;
+        partyType = Objects.requireNonNull(type);
     }
 
     /**
@@ -790,7 +787,6 @@ public class MetadataBuilder {
      * @param type  whether the next grid should be an instance of {@link DefaultGeorectified} or {@link DefaultGeoreferenceable}.
      */
     public final void newGridRepresentation(final GridType type) {
-        ArgumentChecks.ensureNonNull("type", type);
         if (gridRepresentation != null) {
             final int n = gridRepresentation.getAxisDimensionProperties().size();
             if (n != 0) {
@@ -803,7 +799,7 @@ public class MetadataBuilder {
             addIfNotPresent(metadata.getSpatialRepresentationInfo(), gridRepresentation);
             gridRepresentation = null;
         }
-        gridType = type;
+        gridType = Objects.requireNonNull(type);
     }
 
     /**
@@ -963,7 +959,6 @@ public class MetadataBuilder {
      * @see #addIdentifier(CharSequence, String, Scope)
      */
     public final void addIdentifier(Identifier id, final Scope scope) {
-        ArgumentChecks.ensureNonNull("scope", scope);
         if (id != null) {
             id = (Identifier) sharedValues.getOrDefault(id, id);
             if (scope != Scope.RESOURCE) metadata().setMetadataIdentifier(id);
@@ -992,7 +987,6 @@ public class MetadataBuilder {
      * @see #addIdentifier(Identifier, Scope)
      */
     public final void addIdentifier(final CharSequence authority, String code, final Scope scope) {
-        ArgumentChecks.ensureNonNull("scope", scope);
         code = Strings.trimOrNull(code);
         if (code != null) {
             final Identifier id = sharedIdentifier(authority, code);
@@ -1061,7 +1055,6 @@ public class MetadataBuilder {
      * @param  scope     whether the language applies to data, to metadata or to both.
      */
     public final void addLanguage(final Locale language, final Charset encoding, final Scope scope) {
-        ArgumentChecks.ensureNonNull("scope", scope);
         if (language != null) {
             if (scope != Scope.RESOURCE) metadata().getLocalesAndCharsets().put(language, encoding);
             if (scope != Scope.METADATA) identification().getLocalesAndCharsets().put(language, encoding);
@@ -1111,7 +1104,6 @@ public class MetadataBuilder {
      * @see #addAcquisitionTime(Date)
      */
     public final void addCitationDate(final Date date, final DateType type, final Scope scope) {
-        ArgumentChecks.ensureNonNull("scope", scope);
         if (date != null) {
             final DefaultCitationDate cd = new DefaultCitationDate(date, type);
             if (scope != Scope.RESOURCE) addEarliest(metadata().getDateInfo(), cd, type);
@@ -1229,7 +1221,6 @@ public class MetadataBuilder {
      * @see #addIdentifier(CharSequence, String, Scope)
      */
     public final void addTitleOrIdentifier(final String code, Scope scope) {
-        ArgumentChecks.ensureNonNull("scope", scope);
         if (scope != Scope.METADATA) {
             if (citation == null || citation.getTitle() == null) {
                 addTitle(code);
@@ -1524,9 +1515,8 @@ public class MetadataBuilder {
      * @param  scope    whether the contact applies to data, to metadata or to both.
      */
     public final void addPointOfContact(final ResponsibleParty contact, final Scope scope) {
-        ArgumentChecks.ensureNonNull("scope", scope);
         if (contact != null) {
-            if (scope != Scope.RESOURCE)     addIfNotPresent(metadata().getContacts(), contact);
+            if (scope != Scope.RESOURCE) addIfNotPresent(metadata().getContacts(), contact);
             if (scope != Scope.METADATA) addIfNotPresent(identification().getPointOfContacts(), contact);
         }
     }
@@ -1563,193 +1553,6 @@ public class MetadataBuilder {
             if (!c.isEmpty()) {
                 addIfNotPresent(identification().getCredits(), c);
             }
-        }
-    }
-
-    /**
-     * Elements to omit in the legal notice to be parsed by {@link MetadataBuilder#parseLegalNotice(String)}.
-     * Some of those elements are implied by the metadata were the legal notice will be stored.
-     */
-    private static final class LegalSymbols {
-        /**
-         * Symbols associated to restrictions.
-         */
-        private static final LegalSymbols[] VALUES = {
-            new LegalSymbols(Restriction.COPYRIGHT, "COPYRIGHT", "(C)", "©", "All rights reserved"),
-            new LegalSymbols(Restriction.TRADEMARK, "TRADEMARK", "(TM)", "™", "(R)", "®")
-        };
-
-        /**
-         * The restriction to use if an item in the {@linkplain #symbols} list is found.
-         */
-        private final Restriction restriction;
-
-        /**
-         * Symbols to use as an indication that the {@linkplain #restriction} applies.
-         */
-        private final String[] symbols;
-
-        /**
-         * Creates a new enumeration value for the given symbol.
-         */
-        private LegalSymbols(final Restriction restriction, final String... symbols) {
-            this.restriction = restriction;
-            this.symbols = symbols;
-        }
-
-        /**
-         * Returns {@code true} if the given character is a space or a punctuation of category "other".
-         * The punctuation characters include coma, dot, semi-colon, <i>etc.</i> but do not include
-         * parenthesis or connecting punctuation.
-         *
-         * @param c the Unicode code point of the character to test.
-         */
-        private static boolean isSpaceOrPunctuation(final int c) {
-            switch (Character.getType(c)) {
-                case Character.LINE_SEPARATOR:
-                case Character.SPACE_SEPARATOR:
-                case Character.PARAGRAPH_SEPARATOR:
-                case Character.OTHER_PUNCTUATION: return true;
-                default: return false;
-            }
-        }
-
-        /**
-         * Implementation of {@link MetadataBuilder#parseLegalNotice(String)}, provided here for reducing
-         * the number of class loading in the common case where there is no legal notice to parse.
-         */
-        static void parse(final String notice, final DefaultLegalConstraints constraints) {
-            final int length = notice.length();
-            final StringBuilder buffer = new StringBuilder(length);
-            int     year           = 0;         // The copyright year, or 0 if none.
-            int     quoteLevel     = 0;         // Incremented on ( [ « characters, decremented on ) ] » characters.
-            boolean isCopyright    = false;     // Whether the word parsed by previous iteration was "Copyright" or "(C)".
-            boolean wasSeparator   = true;      // Whether the caracter parsed by the previous iteration was a word separator.
-            boolean wasPunctuation = true;      // Whether the previous character was a punctuation of Unicode category "other".
-            boolean skipNextChars  = true;      // Whether the next spaces and some punction characters should be ignored.
-parse:      for (int i = 0; i < length;) {
-                final int c = notice.codePointAt(i);
-                final int n = Character.charCount(c);
-                int     quoteChange   = 0;
-                boolean isSeparator   = false;
-                boolean isPunctuation;
-                switch (Character.getType(c)) {
-                    case Character.INITIAL_QUOTE_PUNCTUATION:
-                    case Character.START_PUNCTUATION: {
-                        quoteChange   = +1;                     //  ( [ «  etc.
-                        skipNextChars = false;
-                        isPunctuation = false;
-                        break;
-                    }
-                    case Character.FINAL_QUOTE_PUNCTUATION:
-                    case Character.END_PUNCTUATION: {
-                        quoteChange   = -1;                     //  ) ] »  etc.
-                        skipNextChars = false;
-                        isPunctuation = false;
-                        break;
-                    }
-                    default: {                                  // Letter, digit, hyphen, etc.
-                        skipNextChars = false;
-                        isPunctuation = false;
-                        break;
-                    }
-                    case Character.OTHER_PUNCTUATION: {         //  , . : ; / " etc. but not -.
-                        isPunctuation = true;
-                        isSeparator   = true;
-                        break;
-                    }
-                    case Character.LINE_SEPARATOR:
-                    case Character.SPACE_SEPARATOR:
-                    case Character.PARAGRAPH_SEPARATOR: {
-                        isPunctuation = wasPunctuation;
-                        isSeparator   = true;
-                        break;
-                    }
-                }
-                if (wasSeparator && !isSeparator && quoteLevel == 0) {
-                    /*
-                     * Found the beginning of a new word. Ignore textes like "(C)" or "All rights reserved".
-                     * Some of those textes are implied by the metadata where the legal notice will be stored.
-                     */
-                    for (final LegalSymbols r : VALUES) {
-                        for (final String symbol : r.symbols) {
-                            if (notice.regionMatches(true, i, symbol, 0, symbol.length())) {
-                                final int after = i + symbol.length();
-                                if (after >= length || isSpaceOrPunctuation(notice.codePointAt(after))) {
-                                    isCopyright |= Restriction.COPYRIGHT.equals(r.restriction);
-                                    constraints.getUseConstraints().add(r.restriction);
-                                    wasPunctuation = true;      // Pretend that "Copyright" was followed by a coma.
-                                    skipNextChars  = true;      // Ignore spaces and punctuations until the next word.
-                                    i = after;                  // Skip the "Copyright" (or other) word.
-                                    continue parse;
-                                }
-                            }
-                        }
-                    }
-                    /*
-                     * If a copyright notice is followed by digits, assume that those digits are the copyright year.
-                     * We require the year is followed by punctuations or non-breaking space in order to reduce the
-                     * risk of confusion with postal addresses. So this block should accept "John, 1992." but not
-                     * "1992-1 Nowhere road".
-                     */
-                    if (isCopyright && wasPunctuation && year == 0 && c >= '0' && c <= '9') {
-                        int endOfDigits = i + n;            // After the last digit in sequence.
-                        while (endOfDigits < length) {
-                            final int d = notice.codePointAt(endOfDigits);
-                            if (d < '0' || d > '9') break;
-                            endOfDigits++;              // No need to use Character.charCount(s) here.
-                        }
-                        // Verify if the digits are followed by a punctuation.
-                        final int endOfToken = CharSequences.skipLeadingWhitespaces(notice, endOfDigits, length);
-                        if (endOfToken > endOfDigits || isSpaceOrPunctuation(notice.codePointAt(endOfToken))) try {
-                            year = Integer.parseInt(notice.substring(i, endOfDigits));
-                            if (year >= 1800 && year <= 9999) {                     // Those limits are arbitrary.
-                                skipNextChars = true;
-                                i = endOfToken;
-                                continue;
-                            }
-                            year = 0;                                               // Reject as not a copyright year.
-                        } catch (NumberFormatException e) {
-                            // Not an integer - ignore, will be handled as text.
-                        }
-                    }
-                }
-                /*
-                 * End of the block that was executed at the beginning of each new word.
-                 * Following is executed for every characters, except if the above block
-                 * skipped a portion of the input string.
-                 */
-                wasPunctuation = isPunctuation;
-                wasSeparator   = isSeparator;
-                quoteLevel    += quoteChange;
-                if (!skipNextChars && !Character.isIdentifierIgnorable(c)) {
-                    buffer.appendCodePoint(c);
-                }
-                i += n;
-            }
-            /*
-             * End of parsing. Omit trailing spaces and some punctuations if any, then store the result.
-             */
-            int i = buffer.length();
-            while (i > 0) {
-                final int c = buffer.codePointBefore(i);
-                if (!isSpaceOrPunctuation(c)) break;
-                i -= Character.charCount(c);
-            }
-            final DefaultCitation c = new DefaultCitation(notice);
-            if (year != 0) {
-                final Date date = new Date(LocalDate.of(year, 1, 1).toEpochDay() * MILLISECONDS_PER_DAY);
-                c.setDates(Collections.singleton(new DefaultCitationDate(date, DateType.valueOf("IN_FORCE"))));
-            }
-            if (i != 0) {
-                buffer.setLength(i);
-                // Same limitation as MetadataBuilder.party().
-                final AbstractParty party = new AbstractParty(buffer, null);
-                final DefaultResponsibleParty r = new DefaultResponsibleParty(Role.OWNER);
-                r.setParties(Collections.singleton(party));
-                c.setCitedResponsibleParties(Collections.singleton(r));
-            }
-            constraints.getReferences().add(c);
         }
     }
 
@@ -2232,7 +2035,7 @@ parse:      for (int i = 0; i < length;) {
     }
 
     /**
-     * Adds <cite>check points</cite> (if georectified) or <cite>ground control points</cite> (if georeferenceable).
+     * Adds <i>check points</i> (if georectified) or <i>ground control points</i> (if georeferenceable).
      * Ground control points (GCP) are large marked targets on the ground. GCP should not be used for storing the
      * localization grid (e.g. "model tie points" in a GeoTIFF file).
      * Storage locations are:

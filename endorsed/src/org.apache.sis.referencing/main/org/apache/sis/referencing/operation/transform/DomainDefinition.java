@@ -16,13 +16,13 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.Objects;
 import java.util.Optional;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 
@@ -219,7 +219,7 @@ public class DomainDefinition {
      * @param  domain  the domain to intersect with.
      */
     public void intersect(final Envelope domain) {
-        ArgumentChecks.ensureNonNull("domain", domain);
+        Objects.requireNonNull(domain);
         if (limits == null) {
             limits = domain;
         } else {

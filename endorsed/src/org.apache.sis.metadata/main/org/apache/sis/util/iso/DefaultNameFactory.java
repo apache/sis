@@ -144,7 +144,6 @@ public class DefaultNameFactory extends AbstractFactory implements NameFactory {
      */
     @Override
     public InternationalString createInternationalString(final Map<Locale,String> strings) {
-        ArgumentChecks.ensureNonNull("strings", strings);
         switch (strings.size()) {
             case 0:  throw new IllegalArgumentException(Errors.format(Errors.Keys.EmptyDictionary));
             case 1:  return new SimpleInternationalString(strings.values().iterator().next());

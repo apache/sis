@@ -19,6 +19,7 @@ package org.apache.sis.coverage.grid;
 import java.util.Map;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.awt.image.RenderedImage;
 import org.opengis.geometry.Envelope;
@@ -104,10 +105,8 @@ public abstract class GridCoverage extends BandedCoverage {
      * @throws IllegalArgumentException if the {@code range} list is empty.
      */
     protected GridCoverage(final GridGeometry domain, final List<? extends SampleDimension> ranges) {
-        gridGeometry     = domain;
+        gridGeometry     = Objects.requireNonNull(domain);
         sampleDimensions = ranges.toArray(SampleDimension[]::new);
-        ArgumentChecks.ensureNonNull ("domain", domain);
-        ArgumentChecks.ensureNonEmpty("ranges", sampleDimensions);
         for (int i=0; i<sampleDimensions.length; i++) {
             ArgumentChecks.ensureNonNullElement("ranges", i, sampleDimensions[i]);
         }
@@ -160,7 +159,7 @@ public abstract class GridCoverage extends BandedCoverage {
     }
 
     /**
-     * Returns information about the <cite>domain</cite> of this grid coverage.
+     * Returns information about the <i>domain</i> of this grid coverage.
      * Information includes the grid extent, CRS and conversion from cell indices to CRS.
      * {@code GridGeometry} can also provide derived information like bounding box and resolution.
      *
@@ -173,7 +172,7 @@ public abstract class GridCoverage extends BandedCoverage {
     }
 
     /**
-     * Returns information about the <cite>range</cite> of this grid coverage.
+     * Returns information about the <i>range</i> of this grid coverage.
      * Information include names, sample value ranges, fill values and transfer functions for all bands in this grid coverage.
      * The length of the returned list should be equal to the {@linkplain java.awt.image.SampleModel#getNumBands() number of
      * bands} in the rendered image.
@@ -447,8 +446,8 @@ public abstract class GridCoverage extends BandedCoverage {
      *
      * <h4>How to compute a slice extent from a slice point in "real world" coordinates</h4>
      * The {@code sliceExtent} is specified to this method as grid indices. If the <var>z</var> and <var>t</var> values
-     * are not grid indices but are relative to some Coordinate Reference System (CRS) instead, then the slice extent can
-     * be computed as below. First, a <cite>slice point</cite> containing the <var>z</var> and <var>t</var> coordinates
+     * are not grid indices but are relative to some Coordinate Reference System (CRS) instead, then the slice extent
+     * can be computed as below. First, a <i>slice point</i> containing the <var>z</var> and <var>t</var> coordinates
      * should be constructed as a {@link DirectPosition} in one of the following ways:
      *
      * <ul>
@@ -535,8 +534,7 @@ public abstract class GridCoverage extends BandedCoverage {
      */
     @Debug
     public TreeTable toTree(final Locale locale, final int bitmask) {
-        ArgumentChecks.ensureNonNull("locale", locale);
-        final Vocabulary vocabulary = Vocabulary.forLocale(locale);
+        final Vocabulary vocabulary = Vocabulary.forLocale(Objects.requireNonNull(locale));
         final TableColumn<CharSequence> column = TableColumn.VALUE_AS_TEXT;
         final TreeTable tree = new DefaultTreeTable(column);
         final TreeTable.Node root = tree.getRoot();

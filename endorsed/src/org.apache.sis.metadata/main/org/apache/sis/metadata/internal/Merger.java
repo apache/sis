@@ -31,6 +31,7 @@ import org.apache.sis.metadata.KeyNamePolicy;
 import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.internal.Unsafe;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -41,7 +42,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * <ul>
  *   <li>If the target metadata does not have a non-null and non-empty value for the same property, then the
- *     reference to the value from the source metadata is stored <cite>as-is</cite> in the target metadata.</li>
+ *     reference to the value from the source metadata is stored <em>as-is</em> in the target metadata.</li>
  *   <li>Otherwise if the target value is a collection, then:
  *     <ul>
  *       <li>For each element of the source collection, a corresponding element of the target collection is searched.
@@ -181,7 +182,8 @@ public class Merger {
                                                : targetMap.putIfAbsent(propertyName, sourceValue);
             if (targetValue != null) {
                 if (targetValue instanceof ModifiableMetadata) {
-                    success = copy(sourceValue, (ModifiableMetadata) targetValue, dryRun);
+                    final var md = (ModifiableMetadata) targetValue;
+                    success = copy(sourceValue, md, dryRun);
                     if (!success) {
                         /*
                          * This exception may happen if the source is a subclass of the target. This is the converse
@@ -192,8 +194,7 @@ public class Merger {
                          */
                         if (dryRun) break;
                         throw new InvalidMetadataException(errors().getString(Errors.Keys.IllegalPropertyValueClass_3,
-                                name(target, propertyName), ((ModifiableMetadata) targetValue).getInterface(),
-                                Classes.getClass(sourceValue)));
+                                    name(target, propertyName), md.getInterface(), Classes.getClass(sourceValue)));
                     }
                 } else if (targetValue instanceof Collection<?>) {
                     /*
@@ -315,11 +316,11 @@ distribute:                 while (it.hasNext()) {
                     }
                 } else {
                     /*
-                     * No @SuppressWarnings("unchecked") because this is really unchecked. However, since the two maps
-                     * have been fetched by calls to the same getter method on two org.apache.sis.metadata.iso objects,
-                     * the types should.
+                     * The two maps have been fetched by calls to the same getter method on the two metadata objects,
+                     * so they should have the same types declared by the method signature. However we cannot be sure
+                     * that the user didn't override the method with specialized types.
                      */
-                    ((Map) target).merge(pe.getKey(), newValue, this);
+                    Unsafe.merge(target, pe.getKey(), newValue, this);
                 }
             }
             return true;

@@ -24,7 +24,7 @@ import org.opengis.geometry.MismatchedDimensionException;
  *
  * <h2>Usage note</h2>
  * This exception extends {@code MismatchedDimensionException} because the matrices in this package
- * are used in <cite>Coordinate Operation Steps</cite>, in which case a mismatched matrix size means
+ * are used in <i>Coordinate Operation Steps</i>, in which case a mismatched matrix size means
  * that the operation involves two Coordinate Reference Systems of incompatible dimensions.
  *
  * @author  Martin Desruisseaux (Geomatys)

@@ -217,7 +217,7 @@ public final class GeoEncoder {
                   throws FactoryException, IncommensurableException
     {
         citation  = CollectionsExt.first(metadata.transformationDimension);
-        isPoint   = CellGeometry.POINT.equals(CollectionsExt.first(metadata.cellGeometry));
+        isPoint   = CollectionsExt.first(metadata.cellGeometry) == CellGeometry.POINT;
         gridToCRS = MathTransforms.getMatrix(grid.getGridToCRS(isPoint ? PixelInCell.CELL_CENTER : PixelInCell.CELL_CORNER));
         if (gridToCRS == null) {
             warning(resources().getString(Resources.Keys.CanNotEncodeNonLinearModel), null);

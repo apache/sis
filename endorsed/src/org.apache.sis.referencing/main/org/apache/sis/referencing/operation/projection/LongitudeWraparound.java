@@ -165,7 +165,7 @@ final class LongitudeWraparound extends AbstractMathTransform2D implements Seria
     }
 
     /**
-     * Returns the parameters for a sequence of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite>.
+     * Returns the parameters for a sequence of <i>normalize</i> → {@code this} → <i>denormalize</i>.
      * Delegates to {@link #projection} since this {@code LongitudeWraparound} is hidden.
      * This is used by WKT formatting.
      */

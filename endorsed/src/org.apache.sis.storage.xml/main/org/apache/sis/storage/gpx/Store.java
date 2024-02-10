@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.gpx;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -31,7 +32,6 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.storage.xml.stream.StaxDataStore;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.setup.OptionKey;
@@ -140,8 +140,7 @@ public class Store extends StaxDataStore implements FeatureSet {
      * @throws DataStoreException if an error occurred while setting the format.
      */
     public synchronized void setVersion(final Version version) throws DataStoreException {
-        ArgumentChecks.ensureNonNull("version", version);
-        this.version = version;
+        this.version = Objects.requireNonNull(version);
     }
 
     /**

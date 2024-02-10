@@ -82,7 +82,7 @@ public final class Formulas extends Static {
     public static final double LONGITUDE_MAX = Numerics.MAX_INTEGER_CONVERTIBLE_TO_DOUBLE/2 * ANGULAR_TOLERANCE;
 
     /**
-     * The length of a <cite>Julian year</cite> in milliseconds.
+     * The length of a <i>Julian year</i> in milliseconds.
      * From Wikipedia, <q>In astronomy, a Julian year (symbol: <b>a</b>) is a unit of measurement of time
      * defined as exactly 365.25 days of 86,400 SI seconds each.</q>.
      *

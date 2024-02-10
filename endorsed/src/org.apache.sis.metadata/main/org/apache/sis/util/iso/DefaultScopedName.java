@@ -114,7 +114,6 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
      * @param names  the local names. This list must have at least two elements.
      */
     protected DefaultScopedName(final NameSpace scope, final List<? extends CharSequence> names) {
-        ArgumentChecks.ensureNonNull("names", names);
         final int size = names.size();
         ArgumentChecks.ensureCountBetween("names", true, 2, Integer.MAX_VALUE, size);
         DefaultNameSpace ns = DefaultNameSpace.castOrCopy(scope);

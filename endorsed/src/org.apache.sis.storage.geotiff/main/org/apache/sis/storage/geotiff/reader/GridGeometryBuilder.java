@@ -70,7 +70,7 @@ import org.apache.sis.math.Vector;
  *         GeographicTypeGeoKey = 4326 (GCS_WGS_84)</pre>
  *
  * The former is {@link PixelInCell#CELL_CORNER} convention while the latter is {@link PixelInCell#CELL_CENTER}.
- * Note that the translation coefficients in the <cite>grid to CRS</cite> matrix is {@code crs - grid × scale}.
+ * Note that the translation coefficients in the <i>grid to CRS</i> matrix is {@code crs - grid × scale}.
  * So compared to the {@code CELL_CORNER} case, the {@code CELL_CENTER} case has a translation of +0.5 × scale.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -292,7 +292,7 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
             case 0:  break;
         }
         final GridExtent extent = new GridExtent(axisTypes, null, high, true);
-        boolean pixelIsPoint = CellGeometry.POINT.equals(cellGeometry);
+        boolean pixelIsPoint = (cellGeometry == CellGeometry.POINT);
         final MathTransformFactory factory = DefaultMathTransformFactory.provider();
         GridGeometry gridGeometry;
         try {
@@ -361,9 +361,9 @@ public final class GridGeometryBuilder extends GeoKeysLoader {
              */
             metadata.setCellGeometry(cellGeometry);
             final PixelOrientation po;
-            if (CellGeometry.POINT.equals(cellGeometry)) {
+            if (cellGeometry == CellGeometry.POINT) {
                 po = PixelOrientation.CENTER;
-            } else if (CellGeometry.AREA.equals(cellGeometry)) {
+            } else if (cellGeometry == CellGeometry.AREA) {
                 po = PixelOrientation.UPPER_LEFT;
             } else {
                 return;

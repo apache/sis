@@ -241,7 +241,7 @@ class SimpleLocation extends AbstractLocation implements DirectPosition, Envelop
 
     /**
      * Indication of whether the bounding polygon encompasses an area covered by the data
-     * (<cite>inclusion</cite>) or an area where data is not present (<cite>exclusion</cite>).
+     * (<dfn>inclusion</dfn>) or an area where data is not present (<dfn>exclusion</dfn>).
      * The value is fixed to {@code true}.
      */
     @Override

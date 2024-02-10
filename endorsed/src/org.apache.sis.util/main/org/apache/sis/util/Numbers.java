@@ -109,7 +109,6 @@ public final class Numbers extends Static {
     /**
      * Creates an entry for a type which is not a primitive type.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     private Numbers(final Class<?> type, final boolean isFloat, final boolean isInteger, final byte ordinal) {
         primitive = wrapper = type;
         this.isFloat   = isFloat;
@@ -126,7 +125,6 @@ public final class Numbers extends Static {
     /**
      * Creates a mapping between a primitive type and its wrapper.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     private Numbers(final Class<?> primitive, final Class<?> wrapper,
                     final boolean  isFloat,   final boolean  isInteger,
                     final byte     size,      final byte     ordinal,
@@ -803,7 +801,7 @@ asLong: if (mapping != null) {
      *       method returns {@link Boolean#FALSE}.</li>
      *
      *   <li>If the given type is an array or a collection, then this method returns an empty
-     *       array or collection. The given type is honored on a <cite>best effort</cite> basis.</li>
+     *       array or collection. The given type is honored on a <em>best effort</em> basis.</li>
      *
      *   <li>For all other cases, including the wrapper classes of primitive types, this method
      *       returns {@code null}.</li>

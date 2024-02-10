@@ -302,7 +302,6 @@ public class Line implements DoubleUnaryOperator, Cloneable, Serializable {
      * @throws MismatchedDimensionException if a point is not two-dimensional.
      */
     public double fit(final Iterable<? extends DirectPosition> points) {
-        ArgumentChecks.ensureNonNull("points", points);
         int i = 0, n = 0;
         DoubleDouble mean_x = DoubleDouble.ZERO;
         DoubleDouble mean_y = DoubleDouble.ZERO;

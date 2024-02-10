@@ -108,7 +108,7 @@ final class FinalLocationType extends AbstractLocationType implements Serializab
      * @param rs        the reference system that comprises this location type.
      * @param existing  other {@code FinalLocationType} instances created before this one.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     private FinalLocationType(final AbstractLocationType source, final ReferencingByIdentifiers rs,
             final Map<AbstractLocationType, FinalLocationType> existing)
     {
@@ -210,7 +210,9 @@ final class FinalLocationType extends AbstractLocationType implements Serializab
     private static Object unmodifiable(Object metadata) {
         if (metadata instanceof ModifiableMetadata) {
             metadata = MetadataCopier.forModifiable(((ModifiableMetadata) metadata).getStandard()).copy(metadata);
-            ((ModifiableMetadata) metadata).transitionTo(ModifiableMetadata.State.FINAL);
+            if (metadata instanceof ModifiableMetadata) {
+                ((ModifiableMetadata) metadata).transitionTo(ModifiableMetadata.State.FINAL);
+            }
         }
         return metadata;
     }

@@ -74,6 +74,7 @@ public final class FactoryForUCAR implements CoordSystemBuilderFactory {
      * @return the coordinate system builder for the given dataset.
      */
     @Override
+    @SuppressWarnings("rawtypes")
     public CoordSystemBuilder open(NetcdfDataset.Builder dsb) {         // TODO: add <?> with UCAR netCDF 6.
         return new CSBuilder(dsb);
     }
@@ -107,6 +108,7 @@ public final class FactoryForUCAR implements CoordSystemBuilderFactory {
          * Only called for variables already identified as Coordinate Axes.
          */
         @Override
+        @SuppressWarnings("rawtypes")
         protected AxisType getAxisType(final VariableDS.Builder variable) {       // TODO: add <?> with UCAR netCDF 6.
             final AxisType type = super.getAxisType(variable);
             if (type == null) {

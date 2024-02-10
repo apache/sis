@@ -192,7 +192,7 @@ public final class QualityParameter extends Parameter {
 
     /**
      * Suggests a type name for the components of given collection or array class.
-     * The component type is fetched on a <cite>best effort</cite> basis only.
+     * The component type is fetched on a <em>best effort</em> basis only.
      * This method does the following checks:
      * <ul>
      *   <li>If the given class is a class, then its {@linkplain Class#getComponentType() component type} is used.</li>

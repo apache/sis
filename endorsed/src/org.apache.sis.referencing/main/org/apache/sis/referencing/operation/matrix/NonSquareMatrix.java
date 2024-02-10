@@ -138,7 +138,7 @@ final class NonSquareMatrix extends GeneralMatrix {
      * However, it will still produce NaN for the full row in matrix multiplications.</p>
      *
      * <p>Conversely, if the matrix has more rows than columns (in a system of linear equations, the system would
-     * be <cite>overdetermined</cite>), then we omit the rows containing only zero or NaN values. After the matrix
+     * be <i>overdetermined</i>), then we omit the rows containing only zero or NaN values. After the matrix
      * inversion, we insert columns having only zero values for the dimensions associated to those rows.
      * Semantically, the inverse matrix is a (x₁,y₁,z,t) → (x₂,y₂) transform that just discards the coordinate values
      * at the dimensions corresponding to those rows.</p>

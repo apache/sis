@@ -143,8 +143,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
      */
     AbstractSingleOperation(final Map<String,?> properties, final OperationMethod method) {
         super(properties);
-        ArgumentChecks.ensureNonNull("method", method);
-        this.method = method;
+        this.method = Objects.requireNonNull(method);
     }
 
     /**

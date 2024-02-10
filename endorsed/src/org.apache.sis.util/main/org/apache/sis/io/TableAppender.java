@@ -19,13 +19,13 @@ package org.apache.sis.io;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.io.Flushable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import org.apache.sis.pending.jdk.JDK21;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.X364;
 import static org.apache.sis.util.Characters.isLineOrParagraphSeparator;
@@ -274,12 +274,9 @@ public class TableAppender extends Appender implements Flushable {
      */
     public TableAppender(final Appendable out, final String leftBorder, final String separator, final String rightBorder) {
         super(out);
-        ArgumentChecks.ensureNonNull("leftBorder",  leftBorder);
-        ArgumentChecks.ensureNonNull("separator",   separator);
-        ArgumentChecks.ensureNonNull("rightBorder", rightBorder);
-        this.leftBorder      = leftBorder;
-        this.rightBorder     = rightBorder;
-        this.columnSeparator = separator;
+        this.leftBorder      = Objects.requireNonNull(leftBorder);
+        this.rightBorder     = Objects.requireNonNull(rightBorder);
+        this.columnSeparator = Objects.requireNonNull(separator);
     }
 
     /**
@@ -506,7 +503,7 @@ public class TableAppender extends Appender implements Flushable {
     @Override
     @SuppressWarnings("fallthrough")
     public TableAppender append(final CharSequence sequence, int start, int end) {
-        ArgumentChecks.ensureValidIndexRange(sequence.length(), start, end);
+        Objects.checkFromToIndex(start, end, sequence.length());
         if (lineSeparator == null) {
             lineSeparator = lineSeparator(sequence, start, end);
         }
@@ -868,7 +865,7 @@ public class TableAppender extends Appender implements Flushable {
     private static void repeat(final Appendable out, final char car, int count) throws IOException {
         if (out instanceof StringBuilder) {
             if (count > 0) {
-                StringBuilders.repeat((StringBuilder) out, car, count);
+                JDK21.repeat((StringBuilder) out, car, count);
             }
         } else while (--count >= 0) {
             out.append(car);

@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Map;
 import java.util.List;
 import java.util.BitSet;
+import java.util.Objects;
 import java.util.Optional;
 import java.awt.geom.AffineTransform;
 import javax.measure.UnitConverter;
@@ -125,7 +126,7 @@ public final class MathTransforms extends Static {
      * @since 1.0
      */
     public static LinearTransform translation(final double... vector) {
-        ArgumentChecks.ensureNonNull("vector", vector);
+        // Implicit null value check below.
         final LinearTransform tr;
         switch (vector.length) {
             case 0:  return IdentityTransform.create(0);
@@ -146,7 +147,7 @@ public final class MathTransforms extends Static {
      * @since 1.0
      */
     public static LinearTransform scale(final double... factors) {
-        ArgumentChecks.ensureNonNull("factors", factors);
+        // Implicit null value check below.
         final LinearTransform tr;
         switch (factors.length) {
             case 0:  return IdentityTransform.create(0);
@@ -190,7 +191,6 @@ public final class MathTransforms extends Static {
      * @see DefaultMathTransformFactory#createAffineTransform(Matrix)
      */
     public static LinearTransform linear(final Matrix matrix) {
-        ArgumentChecks.ensureNonNull("matrix", matrix);
         final int sourceDimension = matrix.getNumCol() - 1;
         final int targetDimension = matrix.getNumRow() - 1;
         if (sourceDimension == targetDimension) {
@@ -268,8 +268,7 @@ public final class MathTransforms extends Static {
      */
     @SuppressWarnings("fallthrough")
     public static MathTransform1D convert(final UnitConverter converter) {
-        ArgumentChecks.ensureNonNull("converter", converter);
-        return UnitConversion.create(converter);
+        return UnitConversion.create(Objects.requireNonNull(converter));
     }
 
     /**
@@ -329,8 +328,7 @@ public final class MathTransforms extends Static {
      * @since 1.0
      */
     public static MathTransform specialize(final MathTransform global, final Map<Envelope,MathTransform> specializations) {
-        ArgumentChecks.ensureNonNull("generic", global);
-        ArgumentChecks.ensureNonNull("specializations", specializations);
+        ArgumentChecks.ensureNonNull("global", global);
         final SpecializableTransform tr;
         if (specializations.isEmpty()) {
             return global;
@@ -441,7 +439,7 @@ public final class MathTransforms extends Static {
      * @since 0.6
      */
     public static MathTransform compound(final MathTransform... components) {
-        ArgumentChecks.ensureNonNull("components", components);
+        // Implicit null value check below.
         int sum = 0;
         final int[] dimensions = new int[components.length];
         for (int i=0; i<components.length; i++) {
@@ -693,7 +691,6 @@ public final class MathTransforms extends Static {
      * @see #tangent(MathTransform, DirectPosition)
      */
     public static Matrix getMatrix(final MathTransform toApproximate, final DirectPosition tangentPoint) throws TransformException {
-        ArgumentChecks.ensureNonNull("toApproximate", toApproximate);
         final int srcDim = toApproximate.getSourceDimensions();
         ArgumentChecks.ensureDimensionMatches("tangentPoint", srcDim, tangentPoint);    // Null position is okay for now.
         final Matrix affine = getMatrix(toApproximate);

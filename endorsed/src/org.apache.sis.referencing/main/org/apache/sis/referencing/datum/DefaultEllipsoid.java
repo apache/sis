@@ -77,7 +77,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * <p>Choice 1 in the following list is the easiest but most restrictive way to get an ellipsoid.
  * The other choices provide more freedom. Each choice delegates its work to the subsequent items
- * (in the default configuration), so this list can be seen as <cite>top to bottom</cite> API.</p>
+ * (in the default configuration), so this list can be seen as <i>top to bottom</i> API.</p>
  *
  * <ol>
  *   <li>Create an {@code Ellipsoid} from one of the static convenience shortcuts listed in
@@ -649,7 +649,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     }
 
     /**
-     * Formats this ellipsoid as a <cite>Well Known Text</cite> {@code Ellipsoid[…]} element.
+     * Formats this ellipsoid as a <i>Well Known Text</i> {@code Ellipsoid[…]} element.
      *
      * @return {@code "Ellipsoid"} (WKT 2) or {@code "Spheroid"} (WKT 1).
      *

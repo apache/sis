@@ -20,9 +20,9 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Objects;
 import java.awt.Image;
 import java.awt.image.RenderedImage;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -51,8 +51,7 @@ final class UserProperties extends ImageAdapter {
     @SuppressWarnings("AssignmentToCollectionOrArrayFieldFromParameter")
     UserProperties(final RenderedImage source, final Map<String,Object> properties) {
         super(source);
-        ArgumentChecks.ensureNonNull("properties", properties);
-        this.properties = properties;
+        this.properties = Objects.requireNonNull(properties);
     }
 
     /**

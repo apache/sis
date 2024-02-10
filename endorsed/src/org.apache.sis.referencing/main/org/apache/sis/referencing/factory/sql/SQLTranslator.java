@@ -25,7 +25,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.Constants;
 import static org.apache.sis.util.internal.Strings.isNullOrEmpty;
@@ -42,7 +41,7 @@ import org.apache.sis.metadata.sql.util.SQLUtilities;
  * adapted to the target database dialect before to be executed.
  *
  * <h2>Example</h2>
- * SQL statements for an EPSG dataset hosted on the <cite>PostgreSQL</cite> database need to have their brackets
+ * SQL statements for an EPSG dataset hosted on the <i>PostgreSQL</i> database need to have their brackets
  * ({@code '['} and {@code ']'}) replaced by the quote character ({@code '"'}) before to be sent to the database
  * driver. Furthermore, table names may be different. So the following MS-Access query:
  *
@@ -62,8 +61,8 @@ import org.apache.sis.metadata.sql.util.SQLUtilities;
  *
  * <h2>ANSI SQL</h2>
  * In addition to the file in MS-Access format, EPSG also provides the dataset as SQL files for PostgreSQL,
- * MySQL and Oracle databases. Those SQL files are used as both <cite>Data Description Language</cite> (DDL)
- * and <cite>Data Manipulation Language</cite> (DML).
+ * MySQL and Oracle databases. Those SQL files are used as both <i>Data Description Language</i> (DDL)
+ * and <i>Data Manipulation Language</i> (DML).
  * But the table names and some column names in those scripts differ from the ones used in the MS-Access database.
  * The following table summarizes the name changes:
  *
@@ -248,7 +247,6 @@ public class SQLTranslator implements Function<String,String> {
      * @throws SQLException if an error occurred while querying the database metadata.
      */
     public SQLTranslator(final DatabaseMetaData md, final String catalog, final String schema) throws SQLException {
-        ArgumentChecks.ensureNonNull("md", md);
         quote = md.getIdentifierQuoteString().trim();
         accessToAnsi = new HashMap<>(4);
         this.catalog = catalog;

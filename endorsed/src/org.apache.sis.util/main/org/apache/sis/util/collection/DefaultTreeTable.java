@@ -28,8 +28,8 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.internal.Cloner;
 import org.apache.sis.util.internal.Acyclic;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
+import org.apache.sis.pending.jdk.JDK19;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
 
 /**
@@ -137,7 +137,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      * @param  root  the tree table root (cannot be null).
      */
     public DefaultTreeTable(final Node root) {
-        ArgumentChecks.ensureNonNull("root", root);
+        // Implicit null check below.
         this.root = root;
         columnIndices = root.columnIndices;
     }
@@ -153,8 +153,8 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
         Map<TableColumn<?>,Integer> map;
         switch (columns.length) {
             case 0:  map = Map.of(); break;
-            case 1:  map = null; break; // Will be created inside the loop (common case).
-            default: map = new LinkedHashMap<>(hashMapCapacity(columns.length)); break;
+            case 1:  map = null; break;         // Will be created inside the loop (common case).
+            default: map = JDK19.newLinkedHashMap(columns.length); break;
         }
         for (int i=0; i<columns.length; i++) {
             final TableColumn<?> column = columns[i];
@@ -220,14 +220,13 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
      *         with the table columns in this {@code DefaultTreeTable}.
      */
     public void setRoot(final TreeTable.Node root) {
-        ArgumentChecks.ensureNonNull("root", root);
         if (root instanceof Node) {
             final Map<TableColumn<?>,Integer> other = ((Node) root).columnIndices;
             if (other != columnIndices && !columnIndices.keySet().containsAll(other.keySet())) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.InconsistentTableColumns));
             }
         }
-        this.root = root;
+        this.root = Objects.requireNonNull(root);
     }
 
     /**
@@ -430,7 +429,7 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * @param  table  the table for which this node is created.
          */
         public Node(final TreeTable table) {
-            ArgumentChecks.ensureNonNull("table", table);
+            // Implicit null check below.
             if (table instanceof DefaultTreeTable) {
                 // Share the same instance if possible.
                 columnIndices = ((DefaultTreeTable) table).columnIndices;
@@ -447,8 +446,8 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          *
          * @param  parent  the parent of the new node.
          */
+        @SuppressWarnings("this-escape")
         public Node(final Node parent) {
-            ArgumentChecks.ensureNonNull("parent", parent);
             this.parent = parent;
             columnIndices = parent.columnIndices;
             final TreeNodeList addTo = (TreeNodeList) parent.getChildren();
@@ -463,17 +462,16 @@ public class DefaultTreeTable implements TreeTable, Cloneable, Serializable {
          * @param  parent  the parent of the new node.
          * @param  index   the index where to add the new node in the parent list of children.
          */
+        @SuppressWarnings("this-escape")
         public Node(final Node parent, final int index) {
-            ArgumentChecks.ensureNonNull("parent", parent);
             this.parent = parent;
             columnIndices = parent.columnIndices;
             final TreeNodeList addTo = (TreeNodeList) parent.getChildren();
-            ArgumentChecks.ensureValidIndex(addTo.size() + 1, index);
-            addTo.addChild(index, this);
+            addTo.addChild(Objects.checkIndex(index, addTo.size() + 1), this);
         }
 
         /**
-         * Creates a node with a single column for object names (<cite>convenience constructor</cite>).
+         * Creates a node with a single column for object names (<i>convenience constructor</i>).
          * The node will have the following columns:
          *
          * <table class="sis">

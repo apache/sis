@@ -43,7 +43,7 @@ import org.apache.sis.measure.UnitFormat;
 
 
 /**
- * Parses <cite>Well Known Text</cite> (WKT). Parsers are the converse of {@link Formatter}.
+ * Parses <i>Well Known Text</i> (WKT). Parsers are the converse of {@link Formatter}.
  * Like the latter, a parser is constructed with a given set of {@linkplain Symbols symbols}.
  * Parsers also need a set of factories to be used for instantiating the parsed objects.
  *
@@ -275,7 +275,7 @@ abstract class AbstractParser implements Parser {
     }
 
     /**
-     * Parses a <cite>Well-Know Text</cite> from specified position as a geodetic object.
+     * Parses a <i>Well-Know Text</i> from specified position as a geodetic object.
      * Caller should invoke {@link #getAndClearWarnings(Object)} in a {@code finally} block
      * after this method and should decide what to do with remaining character at the end of the string.
      *
@@ -313,7 +313,7 @@ abstract class AbstractParser implements Parser {
     }
 
     /**
-     * Parses the <cite>Well Know Text</cite> from specified position as a tree of {@link Element}s.
+     * Parses the <i>Well Know Text</i> from specified position as a tree of {@link Element}s.
      * This tree can be given to {@link #buildFromTree(Element)} for producing a geodetic object.
      *
      * @param  wkt       the Well-Known Text to be parsed.
@@ -348,7 +348,7 @@ abstract class AbstractParser implements Parser {
     }
 
     /**
-     * Parses the next element in the specified <cite>Well Know Text</cite> (WKT) tree.
+     * Parses the next element in the specified <i>Well Know Text</i> (WKT) tree.
      * Subclasses will typically get the name of the first element and delegate to a specialized method
      * such as {@code parseAxis(…)}, {@code parseEllipsoid(…)}, {@code parseTimeDatum(…)}, <i>etc</i>.
      *

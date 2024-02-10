@@ -283,8 +283,7 @@ public final class AxisDirections extends Static {
      * @return {@code true} if the direction is vertical, or {@code false} otherwise.
      */
     public static boolean isVertical(final AxisDirection dir) {
-        if (dir == null) return false;
-        return ((dir.ordinal() - UP.ordinal()) & ~1) == 0;
+        return dir == UP || dir == DOWN;
     }
 
     /**
@@ -294,8 +293,7 @@ public final class AxisDirections extends Static {
      * @return {@code true} if the direction is temporal, or {@code false} otherwise.
      */
     public static boolean isTemporal(final AxisDirection dir) {
-        if (dir == null) return false;
-        return ((dir.ordinal() - FUTURE.ordinal()) & ~1) == 0;
+        return dir == FUTURE || dir == PAST;
     }
 
     /**
@@ -306,9 +304,7 @@ public final class AxisDirections extends Static {
      * @return {@code true} if the given direction is one of geocentric directions.
      */
     public static boolean isGeocentric(final AxisDirection dir) {
-        if (dir == null) return false;
-        final int ordinal = dir.ordinal();
-        return ordinal >= GEOCENTRIC_X.ordinal() && ordinal <= GEOCENTRIC_Z.ordinal();
+        return dir == GEOCENTRIC_X || dir == GEOCENTRIC_Y || dir == GEOCENTRIC_Z;
     }
 
     /**
@@ -470,7 +466,7 @@ public final class AxisDirections extends Static {
                     final Unit<?> candidate = axis.getUnit();
                     if (Units.isAngular(candidate)) {
                         fallback = candidate.asType(Angle.class);
-                        if (AxisDirection.EAST.equals(absolute(axis.getDirection()))) {
+                        if (absolute(axis.getDirection()) == AxisDirection.EAST) {
                             break;                                                      // Found the longitude axis.
                         }
                     }

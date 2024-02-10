@@ -21,12 +21,12 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.IdentityHashMap;
+import java.util.Objects;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.feature.internal.AttributeConvention;
-import static org.apache.sis.util.ArgumentChecks.*;
 
 
 /**
@@ -36,7 +36,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
  * <ul>
  *   <li><b>Aggregation</b> represents associations between features which can exist even if the aggregate is destroyed.</li>
  *   <li><b>Composition</b> represents relationships where the owned features are destroyed together with the composite.</li>
- *   <li><b>Spatial</b> association represents spatial or topological relationships that may exist between features (e.g. “<cite>east of</cite>”).</li>
+ *   <li><b>Spatial</b> association represents spatial or topological relationships that may exist between features (e.g. <q>east of</q>).</li>
  *   <li><b>Temporal</b> association may represent for example a sequence of changes over time involving the replacement of some
  *       feature instances by other feature instances.</li>
  * </ul>
@@ -126,8 +126,7 @@ public class DefaultAssociationRole extends FieldType {
             final int minimumOccurs, final int maximumOccurs)
     {
         super(identification, minimumOccurs, maximumOccurs);
-        ensureNonNull("valueType", valueType);
-        this.valueType = valueType;
+        this.valueType = Objects.requireNonNull(valueType);
     }
 
     /**
@@ -169,8 +168,7 @@ public class DefaultAssociationRole extends FieldType {
             final int minimumOccurs, final int maximumOccurs)
     {
         super(identification, minimumOccurs, maximumOccurs);
-        ensureNonNull("valueType", valueType);
-        this.valueType = new NamedFeatureType(valueType);
+        this.valueType = new NamedFeatureType(Objects.requireNonNull(valueType));
     }
 
     /**

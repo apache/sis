@@ -143,7 +143,6 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
             final MathTransformFactory mtFactory) throws FactoryException
     {
         super(properties);
-        ArgumentChecks.ensureNonNull("operations", operations);
         if (operations.length < 2) {
             throw new InvalidGeodeticParameterException(Errors.forProperties(properties).getString(
                     Errors.Keys.TooFewOccurrences_2, 2, CoordinateOperation.class));

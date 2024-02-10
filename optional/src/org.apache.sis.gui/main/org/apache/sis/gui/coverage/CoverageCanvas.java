@@ -252,6 +252,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * @param  controls  the controls of this canvas, or {@code null} if none.
      * @param  locale    the locale to use for labels and some messages, or {@code null} for default.
      */
+    @SuppressWarnings("this-escape")
     CoverageCanvas(final CoverageControls controls, final Locale locale) {
         super(locale);
         this.controls         = controls;

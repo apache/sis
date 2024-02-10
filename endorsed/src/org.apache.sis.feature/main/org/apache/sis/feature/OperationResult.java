@@ -44,7 +44,8 @@ abstract class OperationResult<V> extends AbstractAttribute<V> {
     /**
      * Creates a new operation for a result of the given type.
      *
-     * @param type  information about the attribute (base Java class, domain of values, <i>etc.</i>).
+     * @param type     information about the attribute (base Java class, domain of values, <i>etc.</i>).
+     * @param feature  the feature instance to use as a source for computing the result.
      */
     protected OperationResult(final DefaultAttributeType<V> type, final AbstractFeature feature) {
         super(type);

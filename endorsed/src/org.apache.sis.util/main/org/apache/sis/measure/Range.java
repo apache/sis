@@ -23,10 +23,10 @@ import java.util.FormattableFlags;
 import java.io.Serializable;
 import javax.measure.Unit;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArgumentCheckByAssertion;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.internal.Strings;
-import org.apache.sis.util.internal.ArgumentCheckByAssertion;
 import org.apache.sis.util.collection.CheckedContainer;
 
 
@@ -40,10 +40,10 @@ import org.apache.sis.util.collection.CheckedContainer;
  * within the range. Null values are always considered <em>exclusive</em>,
  * since iterations over the values will never reach the infinite endpoint.
  *
- * <p>The minimal and maximal values (the <cite>endpoints</cite>) may be inclusive or exclusive.
- * Numeric ranges where both endpoints are inclusive are called <cite>closed intervals</cite>
+ * <p>The minimal and maximal values (the <dfn>endpoints</dfn>) may be inclusive or exclusive.
+ * Numeric ranges where both endpoints are inclusive are called <dfn>closed intervals</dfn>
  * and are represented by square brackets, for example "{@code [0 … 255]}".
- * Numeric ranges where both endpoints are exclusive are called <cite>open intervals</cite>
+ * Numeric ranges where both endpoints are exclusive are called <dfn>open intervals</dfn>
  * and are represented by parenthesis, for example "{@code (0 … 256)}".</p>
  *
  * <h2>Type and value of range elements</h2>
@@ -149,12 +149,11 @@ public class Range<E extends Comparable<? super E>> implements CheckedContainer<
             final E minValue, final boolean isMinIncluded,
             final E maxValue, final boolean isMaxIncluded)
     {
-        ArgumentChecks.ensureNonNull("elementType", elementType);
         /*
          * The `isMin/Maxincluded` flags must be forced to `false` if `minValue` or `maxValue`
          * are null. This is required for proper working of algorithms implemented in this class.
          */
-        this.elementType   = elementType;
+        this.elementType   = Objects.requireNonNull(elementType);
         this.minValue      = minValue;
         this.isMinIncluded = isMinIncluded && (minValue != null);
         this.maxValue      = maxValue;

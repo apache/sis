@@ -623,8 +623,8 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
          * coordinate operation may shift some coordinate values (typically ±360° on longitudes).
          */
         final CoordinateSystemAxis that = (CoordinateSystemAxis) object;
-        if (!equalsIgnoreMetadata(that, mode, RangeMeaning.WRAPAROUND.equals(this.getRangeMeaning()) &&
-                                              RangeMeaning.WRAPAROUND.equals(that.getRangeMeaning())))
+        if (!equalsIgnoreMetadata(that, mode, this.getRangeMeaning() == RangeMeaning.WRAPAROUND &&
+                                              that.getRangeMeaning() == RangeMeaning.WRAPAROUND))
         {
             return false;
         }
@@ -700,7 +700,7 @@ public class DefaultCoordinateSystemAxis extends AbstractIdentifiedObject implem
     }
 
     /**
-     * Formats this axis as a <cite>Well Known Text</cite> {@code Axis[…]} element.
+     * Formats this axis as a <i>Well Known Text</i> {@code Axis[…]} element.
      *
      * <h4>Constraints for WKT validity</h4>
      * The ISO 19162 specification puts many constraints on axis names, abbreviations and directions allowed in WKT.

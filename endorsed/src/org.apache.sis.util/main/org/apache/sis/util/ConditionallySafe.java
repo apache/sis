@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.internal;
+package org.apache.sis.util;
 
+import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -23,15 +24,15 @@ import java.lang.annotation.Target;
 
 
 /**
- * Marker annotation for public methods which use assertions for validating users arguments.
- * This is not recommended for public API, but we do that in a few places where unconditional
- * argument checks may be too expensive. This annotation is used for tracking those methods.
+ * Annotates a code with parameterized types that are safe only under some conditions.
+ * The source code of the method typically has a {@code @SuppressWarnings("unchecked")}
+ * annotation despite the fact that the warning is not fully resolved. The Javadoc shall
+ * document the conditions that are necessary for the method to be safe.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@Target({
-    ElementType.METHOD,
-    ElementType.CONSTRUCTOR})
+@Documented
 @Retention(RetentionPolicy.SOURCE)
-public @interface ArgumentCheckByAssertion {
+@Target({ElementType.METHOD, ElementType.LOCAL_VARIABLE})
+public @interface ConditionallySafe {
 }

@@ -73,7 +73,7 @@ final class ConvertedCategory extends Category {
     }
 
     /**
-     * Returns the <cite>transfer function</cite> from sample values to real values in units of measurement.
+     * Returns the <i>transfer function</i> from sample values to real values in units of measurement.
      * The function is absent if this category is not a {@linkplain #isQuantitative() quantitative} category.
      */
     @Override

@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
+import java.util.Objects;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -30,7 +31,6 @@ import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.xml.bind.referencing.CS_CoordinateSystem;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -142,8 +142,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
                                  final CoordinateSystem cs)
     {
         super(properties, cs);
-        this.datum = datum;
-        ArgumentChecks.ensureNonNull("datum", datum);
+        this.datum = Objects.requireNonNull(datum);
     }
 
     /**
@@ -235,7 +234,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
     }
 
     /**
-     * Formats this CRS as a <cite>Well Known Text</cite> {@code EngineeringCRS[…]} element.
+     * Formats this CRS as a <i>Well Known Text</i> {@code EngineeringCRS[…]} element.
      *
      * @return {@code "EngineeringCRS"} (WKT 2) or {@code "Local_CS"} (WKT 1).
      *

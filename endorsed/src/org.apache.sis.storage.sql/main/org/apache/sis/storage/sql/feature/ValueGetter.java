@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.sql.feature;
 
+import java.util.Objects;
 import java.util.Collection;
 import java.sql.Array;
 import java.sql.ResultSet;
@@ -32,7 +33,6 @@ import java.time.ZoneOffset;
 import java.math.BigDecimal;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.StandardDateFormat;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 
@@ -103,8 +103,7 @@ public class ValueGetter<T> {
      * @param  valueType  the type of Java objects fetched from the column.
      */
     protected ValueGetter(final Class<? extends T> valueType) {
-        ArgumentChecks.ensureNonNull("valueType", valueType);
-        this.valueType = valueType;
+        this.valueType = Objects.requireNonNull(valueType);
     }
 
     /**

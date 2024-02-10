@@ -153,7 +153,7 @@ public class DefaultEngineeringDatum extends AbstractDatum implements Engineerin
     }
 
     /**
-     * Formats this datum as a <cite>Well Known Text</cite> {@code EngineeringDatum[…]} element.
+     * Formats this datum as a <i>Well Known Text</i> {@code EngineeringDatum[…]} element.
      *
      * @return {@code "EngineeringDatum"} (WKT 2) or {@code "Local_Datum"} (WKT 1).
      *

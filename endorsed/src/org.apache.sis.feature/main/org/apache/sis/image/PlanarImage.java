@@ -25,12 +25,12 @@ import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import java.awt.image.RenderedImage;
+import java.util.Objects;
 import java.util.Vector;
 import java.util.function.DoubleUnaryOperator;
 import static java.lang.Math.multiplyFull;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Disposable;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.coverage.SampleDimension;
@@ -270,7 +270,7 @@ public abstract class PlanarImage implements RenderedImage {
      */
     @Override
     public Object getProperty(String key) {
-        ArgumentChecks.ensureNonNull("key", key);
+        Objects.requireNonNull(key);
         return Image.UndefinedProperty;
     }
 
@@ -451,7 +451,6 @@ public abstract class PlanarImage implements RenderedImage {
      */
     @Override
     public Raster getData(final Rectangle aoi) {
-        ArgumentChecks.ensureNonNull("aoi", aoi);
         if (!getBounds().contains(aoi)) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.OutsideDomainOfValidity));
         }

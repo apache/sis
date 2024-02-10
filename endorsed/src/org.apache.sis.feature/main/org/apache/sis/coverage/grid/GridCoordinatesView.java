@@ -17,7 +17,7 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Arrays;
-import org.apache.sis.util.ArgumentChecks;
+import java.util.Objects;
 
 
 /**
@@ -68,8 +68,7 @@ final class GridCoordinatesView {
      * Returns the coordinate value for the specified dimension.
      */
     public final long getCoordinateValue(final int index) {
-        ArgumentChecks.ensureValidIndex(getDimension(), index);
-        return coordinates[offset + index];
+        return coordinates[offset + Objects.checkIndex(index, getDimension())];
     }
 
     /**

@@ -19,6 +19,7 @@ package org.apache.sis.util.iso;
 import java.util.Map;
 import java.util.Iterator;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import org.opengis.util.Type;
@@ -160,8 +161,7 @@ public class DefaultRecordSchema implements RecordSchema {
      * @since 1.3
      */
     public TypeName createRecordTypeName(final CharSequence typeName) {
-        ArgumentChecks.ensureNonNull("typeName", typeName);
-        return nameFactory.createTypeName(namespace, typeName, null);
+        return nameFactory.createTypeName(namespace, Objects.requireNonNull(typeName), null);
     }
 
     /**

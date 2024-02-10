@@ -84,19 +84,19 @@ public class TimeDependentBWP extends BursaWolfParameters {
 
     /**
      * Rate of change of X-axis rotation in milli arc-seconds per year (EPSG:1043),
-     * sign following the <cite>Position Vector</cite> convention.
+     * sign following the <i>Position Vector</i> convention.
      */
     public double drX;
 
     /**
      * Rate of change of Y-axis rotation in milli arc-seconds per year (EPSG:1044),
-     * sign following the <cite>Position Vector</cite> convention.
+     * sign following the <i>Position Vector</i> convention.
      */
     public double drY;
 
     /**
      * Rate of change of Z-axis rotation in milli arc-seconds per year (EPSG:1045),
-     * sign following the <cite>Position Vector</cite> convention.
+     * sign following the <i>Position Vector</i> convention.
      */
     public double drZ;
 
@@ -122,7 +122,6 @@ public class TimeDependentBWP extends BursaWolfParameters {
      */
     public TimeDependentBWP(final GeodeticDatum targetDatum, final Extent domainOfValidity, final Date timeReference) {
         super(targetDatum, domainOfValidity);
-        ensureNonNull("timeReference", timeReference);
         this.timeReference = timeReference.getTime();
     }
 

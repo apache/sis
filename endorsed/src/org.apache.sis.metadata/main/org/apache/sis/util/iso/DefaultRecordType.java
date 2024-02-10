@@ -37,11 +37,10 @@ import org.opengis.util.NameSpace;
 import org.opengis.util.Record;
 import org.opengis.util.RecordType;
 import org.opengis.util.RecordSchema;
+import org.apache.sis.pending.jdk.JDK19;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.converter.SurjectiveConverter;
 import org.apache.sis.metadata.internal.RecordSchemaSIS;
 
@@ -147,13 +146,12 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      *
      * @deprecated The {@code RecordSchema} interface has been removed in the 2015 revision of the ISO 19103 standard.
      */
+    @SuppressWarnings("this-escape")
     @Deprecated(since = "1.5", forRemoval = true)
     public DefaultRecordType(final TypeName typeName, final RecordSchema container,
             final Map<? extends MemberName, ? extends Type> fields)
     {
-        ArgumentChecks.ensureNonNull("typeName", typeName);
-        ArgumentChecks.ensureNonNull("field",    fields);
-        this.typeName   = typeName;
+        this.typeName   = Objects.requireNonNull(typeName);
         this.container  = container;
         this.fieldTypes = computeTransientFields(fields);
         /*
@@ -199,7 +197,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
         this.typeName  = typeName;
         this.container = container;
         final NameSpace namespace = nameFactory.createNameSpace(typeName, null);
-        final Map<MemberName,Type> fieldTypes = new LinkedHashMap<>(Containers.hashMapCapacity(fields.size()));
+        final Map<MemberName,Type> fieldTypes = JDK19.newLinkedHashMap(fields.size());
         for (final Map.Entry<? extends CharSequence, ? extends Type> entry : fields.entrySet()) {
             final Type         type   = entry.getValue();
             final CharSequence name   = entry.getKey();
@@ -222,7 +220,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
     private void readObject(final ObjectInputStream in) throws IOException, ClassNotFoundException {
         in.defaultReadObject();
         final int size = in.readInt();
-        final Map<MemberName,Type> fields = new LinkedHashMap<>(Containers.hashMapCapacity(size));
+        final Map<MemberName,Type> fields = JDK19.newLinkedHashMap(size);
         for (int i=0; i<size; i++) {
             final MemberName member = (MemberName) in.readObject();
             final Type type = (Type) in.readObject();

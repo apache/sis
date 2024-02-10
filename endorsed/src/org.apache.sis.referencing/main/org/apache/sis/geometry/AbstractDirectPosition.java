@@ -213,11 +213,11 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
                 final double  minimum = axis.getMinimumValue();
                 final double  maximum = axis.getMaximumValue();
                 final RangeMeaning rm = axis.getRangeMeaning();
-                if (RangeMeaning.EXACT.equals(rm)) {
+                if (rm == RangeMeaning.EXACT) {
                          if (coordinate < minimum) coordinate = minimum;
                     else if (coordinate > maximum) coordinate = maximum;
                     else continue;
-                } else if (RangeMeaning.WRAPAROUND.equals(rm)) {
+                } else if (rm == RangeMeaning.WRAPAROUND) {
                     final double csSpan = maximum - minimum;
                     final double shift  = Math.floor((coordinate - minimum) / csSpan) * csSpan;
                     if (shift == 0) {
@@ -233,7 +233,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
     }
 
     /**
-     * Formats this position in the <cite>Well Known Text</cite> (WKT) format.
+     * Formats this position in the <i>Well Known Text</i> (WKT) format.
      * The format is like below, where {@code x₀}, {@code x₁}, {@code x₂}, <i>etc.</i>
      * are the coordinate values at index 0, 1, 2, <i>etc.</i>:
      *
@@ -260,7 +260,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
     }
 
     /**
-     * Formats this position in the <cite>Well Known Text</cite> (WKT) format.
+     * Formats this position in the <i>Well Known Text</i> (WKT) format.
      * The returned string is like below, where {@code x₀}, {@code x₁}, {@code x₂}, <i>etc.</i>
      * are the coordinate values at index 0, 1, 2, <i>etc.</i>:
      *
@@ -272,7 +272,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      * The string returned by this method can be {@linkplain GeneralDirectPosition#GeneralDirectPosition(CharSequence) parsed}
      * by the {@code GeneralDirectPosition} constructor.
      *
-     * @return this position as a {@code POINT} in <cite>Well Known Text</cite> (WKT) format.
+     * @return this position as a {@code POINT} in <i>Well Known Text</i> (WKT) format.
      */
     @Override
     public String toString() {
@@ -281,7 +281,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
 
     /**
      * Implementation of the public {@link #toString()} and {@link DirectPosition2D#toString()} methods
-     * for formatting a {@code POINT} element from a direct position in <cite>Well Known Text</cite>
+     * for formatting a {@code POINT} element from a direct position in <i>Well Known Text</i>
      * (WKT) format.
      *
      * @param  position           the position to format.

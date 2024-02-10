@@ -175,10 +175,10 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
      * need to be concatenated with the following affine transforms:
      *
      * <ul>
-     *   <li><cite>Normalization</cite> before {@code InterpolatedGeocentricTransform}:<ul>
+     *   <li><i>Normalization</i> before {@code InterpolatedGeocentricTransform}:<ul>
      *     <li>Conversion of (λ,φ) from degrees to radians.</li>
      *   </ul></li>
-     *   <li><cite>Denormalization</cite> after {@code InterpolatedGeocentricTransform}:<ul>
+     *   <li><i>Denormalization</i> after {@code InterpolatedGeocentricTransform}:<ul>
      *     <li>Conversion of (λ,φ) from radians to degrees.</li>
      *   </ul></li>
      * </ul>
@@ -211,6 +211,7 @@ public class InterpolatedGeocentricTransform extends DatumShiftTransform {
      * If {@code inverse} is {@code null}, then this constructor creates the forward transformation.
      * Otherwise this constructor creates the inverse of the given {@code inverse} transformation.
      */
+    @SuppressWarnings("this-escape")
     private InterpolatedGeocentricTransform(final Ellipsoid source, final boolean isSource3D,
                                             final Ellipsoid target, final boolean isTarget3D,
                                             final DatumShiftGrid<?,?> grid,

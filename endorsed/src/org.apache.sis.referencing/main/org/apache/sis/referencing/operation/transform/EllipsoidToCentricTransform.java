@@ -150,15 +150,15 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
 
     /**
      * The square of eccentricity: ℯ² = (a²-b²)/a² where
-     * <var>a</var> is the <cite>semi-major</cite> axis length and
-     * <var>b</var> is the <cite>semi-minor</cite> axis length.
+     * <var>a</var> is the <i>semi-major</i> axis length and
+     * <var>b</var> is the <i>semi-minor</i> axis length.
      */
     protected final double eccentricitySquared;
 
     /**
      * The b/a ratio where
-     * <var>a</var> is the <cite>semi-major</cite> axis length and
-     * <var>b</var> is the <cite>semi-minor</cite> axis length.
+     * <var>a</var> is the <i>semi-major</i> axis length and
+     * <var>b</var> is the <i>semi-minor</i> axis length.
      * Since the {@code EllipsoidToCentricTransform} class works on an ellipsoid where a = 1
      * (because of the work performed by the normalization matrices), we just drop <var>a</var>
      * in the formulas - so this field could be written as just <var>b</var>.
@@ -198,7 +198,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
 
     /**
      * The parameters used for creating this conversion.
-     * They are used for formatting <cite>Well Known Text</cite> (WKT) and error messages.
+     * They are used for formatting <i>Well Known Text</i> (WKT) and error messages.
      *
      * @see #getContextualParameters()
      */
@@ -239,11 +239,11 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
      * instances need to be concatenated with the following affine transforms:
      *
      * <ul>
-     *   <li><cite>Normalization</cite> before {@code EllipsoidToCentricTransform}:<ul>
+     *   <li><i>Normalization</i> before {@code EllipsoidToCentricTransform}:<ul>
      *     <li>Conversion of (λ,φ) from degrees to radians</li>
      *     <li>Division of (h) by the semi-major axis length</li>
      *   </ul></li>
-     *   <li><cite>Denormalization</cite> after {@code EllipsoidToCentricTransform}:<ul>
+     *   <li><i>Denormalization</i> after {@code EllipsoidToCentricTransform}:<ul>
      *     <li>Multiplication of (X,Y,Z) by the semi-major axis length</li>
      *   </ul></li>
      * </ul>
@@ -391,12 +391,12 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
 
     /**
      * Returns the parameters used for creating the complete conversion. Those parameters describe a sequence
-     * of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite> transforms, <strong>not</strong>
+     * of <i>normalize</i> → {@code this} → <i>denormalize</i> transforms, <strong>not</strong>
      * including {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes axis swapping}.
-     * Those parameters are used for formatting <cite>Well Known Text</cite> (WKT) and error messages.
+     * Those parameters are used for formatting <i>Well Known Text</i> (WKT) and error messages.
      *
      * @return the parameter values for the sequence of
-     *         <cite>normalize</cite> → {@code this} → <cite>denormalize</cite> transforms.
+     *         <i>normalize</i> → {@code this} → <i>denormalize</i> transforms.
      */
     @Override
     protected ContextualParameters getContextualParameters() {
@@ -846,7 +846,6 @@ next:   while (--numPts >= 0) {
          */
         @Override
         public Matrix derivative(final DirectPosition point) throws TransformException {
-            ArgumentChecks.ensureNonNull("point", point);
             final double[] coordinate = point.getCoordinate();
             ArgumentChecks.ensureDimensionMatches("point", 3, coordinate);
             return this.transform(coordinate, 0, coordinate, 0, true);

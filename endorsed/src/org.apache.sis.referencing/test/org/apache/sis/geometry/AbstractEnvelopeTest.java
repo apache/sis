@@ -23,7 +23,7 @@ import org.opengis.geometry.DirectPosition;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
@@ -67,7 +67,7 @@ public final class AbstractEnvelopeTest extends TestCase {
         final Envelope envelope;
         switch (type) {
             case GENERAL: {
-                final GeneralEnvelope ge = new GeneralEnvelope(2);
+                final var ge = new GeneralEnvelope(2);
                 ge.setCoordinateReferenceSystem(WGS84);
                 ge.setRange(0, xmin, xmax);
                 ge.setRange(1, ymin, ymax);
@@ -83,7 +83,7 @@ public final class AbstractEnvelopeTest extends TestCase {
                 break;
             }
             case SUBENVELOPE: {
-                GeneralEnvelope ge = new GeneralEnvelope(5);
+                var ge = new GeneralEnvelope(5);
                 ge.setRange(1, xmin, xmax);
                 ge.setRange(2, ymin, ymax);
                 ge.setRange(0, 2, 3);               // Following values will be verified in verifyInvariants(…)
@@ -111,12 +111,12 @@ public final class AbstractEnvelopeTest extends TestCase {
             case SUBENVELOPE: {
                 // Asserts that other dimensions in the original envelope has not been modified.
                 final double[] coordinates = ((SubEnvelope) envelope).coordinates;
-                assertEquals(2, coordinates[0], STRICT);
-                assertEquals(3, coordinates[5], STRICT);
-                assertEquals(4, coordinates[3], STRICT);
-                assertEquals(6, coordinates[8], STRICT);
-                assertEquals(8, coordinates[4], STRICT);
-                assertEquals(9, coordinates[9], STRICT);
+                assertEquals(2, coordinates[0]);
+                assertEquals(3, coordinates[5]);
+                assertEquals(4, coordinates[3]);
+                assertEquals(6, coordinates[8]);
+                assertEquals(8, coordinates[4]);
+                assertEquals(9, coordinates[9]);
                 break;
             }
         }
@@ -133,39 +133,39 @@ public final class AbstractEnvelopeTest extends TestCase {
      */
     @Test
     public void testSimpleEnvelope() {
-        final DirectPosition2D inside  = new DirectPosition2D( 3, 32);
-        final DirectPosition2D outside = new DirectPosition2D(-5, 32);
-        final Envelope2D contained = (Envelope2D) create(RECTANGLE, -2, 10, 35, 40);
-        final Envelope2D intersect = (Envelope2D) create(RECTANGLE, -2, 16, 35, 40);
+        final var inside    = new DirectPosition2D( 3, 32);
+        final var outside   = new DirectPosition2D(-5, 32);
+        final var contained = (Envelope2D) create(RECTANGLE, -2, 10, 35, 40);
+        final var intersect = (Envelope2D) create(RECTANGLE, -2, 16, 35, 40);
         final Envelope2D disjoint  = (Envelope2D) create(RECTANGLE, 14, 16, 35, 40);
         for (int type=0; type<LAST; type++) {
             final String label = "Type " + type;
             final Envelope envelope = create(type, -4, 12, 30, 50);
-            assertEquals(label, 30, envelope.getMinimum(1), STRICT);
-            assertEquals(label, 50, envelope.getMaximum(1), STRICT);
-            assertEquals(label, 40, envelope.getMedian (1), STRICT);
-            assertEquals(label, 20, envelope.getSpan   (1), STRICT);
-            assertEquals(label, -4, envelope.getMinimum(0), STRICT);
-            assertEquals(label, 12, envelope.getMaximum(0), STRICT);
-            assertEquals(label,  4, envelope.getMedian (0), STRICT);
-            assertEquals(label, 16, envelope.getSpan   (0), STRICT);
+            assertEquals(30, envelope.getMinimum(1), label);
+            assertEquals(50, envelope.getMaximum(1), label);
+            assertEquals(40, envelope.getMedian (1), label);
+            assertEquals(20, envelope.getSpan   (1), label);
+            assertEquals(-4, envelope.getMinimum(0), label);
+            assertEquals(12, envelope.getMaximum(0), label);
+            assertEquals( 4, envelope.getMedian (0), label);
+            assertEquals(16, envelope.getSpan   (0), label);
             switch (type) {
                 default: {
-                    final AbstractEnvelope ext = (AbstractEnvelope) envelope;
-                    assertTrue (label, ext.contains  (inside));
-                    assertFalse(label, ext.contains  (outside));
-                    assertFalse(label, ext.contains  (intersect, false));
-                    assertTrue (label, ext.intersects(intersect, false));
+                    final var ext = (AbstractEnvelope) envelope;
+                    assertTrue (ext.contains  (inside),           label);
+                    assertFalse(ext.contains  (outside),          label);
+                    assertFalse(ext.contains  (intersect, false), label);
+                    assertTrue (ext.intersects(intersect, false), label);
                     assertDisjoint(ext, disjoint);
                     assertContains(ext, contained);
                     break;
                 }
                 case RECTANGLE: {
-                    final Rectangle2D ext = (Rectangle2D) envelope;
-                    assertTrue (label, ext.contains  (inside));
-                    assertFalse(label, ext.contains  (outside));
-                    assertFalse(label, ext.contains  (intersect));
-                    assertTrue (label, ext.intersects(intersect));
+                    final var ext = (Rectangle2D) envelope;
+                    assertTrue (ext.contains  (inside),    label);
+                    assertFalse(ext.contains  (outside),   label);
+                    assertFalse(ext.contains  (intersect), label);
+                    assertTrue (ext.intersects(intersect), label);
                     assertDisjoint(ext, disjoint);
                     assertContains(ext, contained);
                     break;
@@ -186,45 +186,45 @@ public final class AbstractEnvelopeTest extends TestCase {
      */
     @Test
     public void testCrossingAntiMeridian() {
-        final DirectPosition2D inside  = new DirectPosition2D(18, 32);
-        final DirectPosition2D outside = new DirectPosition2D( 3, 32);
-        final Envelope2D contained  = (Envelope2D) create(RECTANGLE, 14, 16, 35, 40);
-        final Envelope2D intersect  = (Envelope2D) create(RECTANGLE, -2, 16, 35, 40);
-        final Envelope2D disjoint   = (Envelope2D) create(RECTANGLE, -2, 10, 35, 40);
-        final Envelope2D spanning   = (Envelope2D) create(RECTANGLE, 16, -8, 35, 40);
+        final var inside     = new DirectPosition2D(18, 32);
+        final var outside    = new DirectPosition2D( 3, 32);
+        final var contained  = (Envelope2D) create(RECTANGLE, 14, 16, 35, 40);
+        final var intersect  = (Envelope2D) create(RECTANGLE, -2, 16, 35, 40);
+        final var disjoint   = (Envelope2D) create(RECTANGLE, -2, 10, 35, 40);
+        final var spanning   = (Envelope2D) create(RECTANGLE, 16, -8, 35, 40);
         for (int type=0; type<LAST; type++) {
             final String label = "Type " + type;
             final Envelope envelope = create(type, 12, -4, 30, 50);
             final DirectPosition lower = envelope.getLowerCorner();
             final DirectPosition upper = envelope.getUpperCorner();
-            assertEquals(label,   30, envelope.getMinimum (1), STRICT);
-            assertEquals(label,   50, envelope.getMaximum (1), STRICT);
-            assertEquals(label,   40, envelope.getMedian  (1), STRICT);
-            assertEquals(label,   20, envelope.getSpan    (1), STRICT);
-            assertEquals(label,   12, lower   .getOrdinate(0), STRICT);
-            assertEquals(label, -180, envelope.getMinimum (0), STRICT);
-            assertEquals(label,   -4, upper   .getOrdinate(0), STRICT);
-            assertEquals(label, +180, envelope.getMaximum (0), STRICT);
-            assertEquals(label, -176, envelope.getMedian  (0), STRICT);
-            assertEquals(label,  344, envelope.getSpan    (0), STRICT);         // 360° - testSimpleEnvelope()
+            assertEquals(  30, envelope.getMinimum (1), label);
+            assertEquals(  50, envelope.getMaximum (1), label);
+            assertEquals(  40, envelope.getMedian  (1), label);
+            assertEquals(  20, envelope.getSpan    (1), label);
+            assertEquals(  12, lower   .getOrdinate(0), label);
+            assertEquals(-180, envelope.getMinimum (0), label);
+            assertEquals(  -4, upper   .getOrdinate(0), label);
+            assertEquals(+180, envelope.getMaximum (0), label);
+            assertEquals(-176, envelope.getMedian  (0), label);
+            assertEquals( 344, envelope.getSpan    (0), label);         // 360° - testSimpleEnvelope()
             switch (type) {
                 default: {
-                    final AbstractEnvelope ext = (AbstractEnvelope) envelope;
-                    assertTrue (label, ext.contains  (inside));
-                    assertFalse(label, ext.contains  (outside));
-                    assertFalse(label, ext.contains  (intersect, false));
-                    assertTrue (label, ext.intersects(intersect, false));
+                    final var ext = (AbstractEnvelope) envelope;
+                    assertTrue (ext.contains  (inside),           label);
+                    assertFalse(ext.contains  (outside),          label);
+                    assertFalse(ext.contains  (intersect, false), label);
+                    assertTrue (ext.intersects(intersect, false), label);
                     assertDisjoint(ext, disjoint);
                     assertContains(ext, contained);
                     assertContains(ext, spanning);
                     break;
                 }
                 case RECTANGLE: {
-                    final Rectangle2D ext = (Rectangle2D) envelope;
-                    assertTrue (label, ext.contains  (inside));
-                    assertFalse(label, ext.contains  (outside));
-                    assertFalse(label, ext.contains  (intersect));
-                    assertTrue (label, ext.intersects(intersect));
+                    final var ext = (Rectangle2D) envelope;
+                    assertTrue (ext.contains  (inside),    label);
+                    assertFalse(ext.contains  (outside),   label);
+                    assertFalse(ext.contains  (intersect), label);
+                    assertTrue (ext.intersects(intersect), label);
                     assertDisjoint(ext, disjoint);
                     assertContains(ext, contained);
                     assertContains(ext, spanning);
@@ -247,47 +247,47 @@ public final class AbstractEnvelopeTest extends TestCase {
      */
     @Test
     public void testCrossingAntiMeridianTwice() {
-        final DirectPosition2D inside  = new DirectPosition2D(18, 32);
-        final DirectPosition2D outside = new DirectPosition2D( 3, 32);
-        final Envelope2D contained  = (Envelope2D) create(RECTANGLE, 14, 16, 35, 40);
-        final Envelope2D intersect  = (Envelope2D) create(RECTANGLE, -2, 16, 35, 40);
-        final Envelope2D disjoint   = (Envelope2D) create(RECTANGLE, -2, 10, 35, 40);
-        final Envelope2D spanning   = (Envelope2D) create(RECTANGLE, 16, -8, 35, 40);
+        final var inside     = new DirectPosition2D(18, 32);
+        final var outside    = new DirectPosition2D( 3, 32);
+        final var contained  = (Envelope2D) create(RECTANGLE, 14, 16, 35, 40);
+        final var intersect  = (Envelope2D) create(RECTANGLE, -2, 16, 35, 40);
+        final var disjoint   = (Envelope2D) create(RECTANGLE, -2, 10, 35, 40);
+        final var spanning   = (Envelope2D) create(RECTANGLE, 16, -8, 35, 40);
         for (int type=0; type<LAST; type++) {
             final String label = "Type " + type;
             final Envelope envelope = create(type, 12, -364, 30, 50);
             final DirectPosition lower = envelope.getLowerCorner();
             final DirectPosition upper = envelope.getUpperCorner();
-            assertEquals(label,   30, envelope.getMinimum (1), STRICT);
-            assertEquals(label,   50, envelope.getMaximum (1), STRICT);
-            assertEquals(label,   40, envelope.getMedian  (1), STRICT);
-            assertEquals(label,   20, envelope.getSpan    (1), STRICT);
-            assertEquals(label,   12, lower   .getOrdinate(0), STRICT);
-            assertEquals(label, -180, envelope.getMinimum (0), STRICT);
-            assertEquals(label, -364, upper   .getOrdinate(0), STRICT);
-            assertEquals(label, +180, envelope.getMaximum (0), STRICT);
-            assertEquals(label,    4, envelope.getMedian  (0), STRICT);     // Note the alternance with the previous test methods.
-            assertEquals(label,  NaN, envelope.getSpan    (0), STRICT);     // testCrossingAntiMeridian() + 360°.
+            assertEquals(  30, envelope.getMinimum (1), label);
+            assertEquals(  50, envelope.getMaximum (1), label);
+            assertEquals(  40, envelope.getMedian  (1), label);
+            assertEquals(  20, envelope.getSpan    (1), label);
+            assertEquals(  12, lower   .getOrdinate(0), label);
+            assertEquals(-180, envelope.getMinimum (0), label);
+            assertEquals(-364, upper   .getOrdinate(0), label);
+            assertEquals(+180, envelope.getMaximum (0), label);
+            assertEquals(   4, envelope.getMedian  (0), label);     // Note the alternance with the previous test methods.
+            assertEquals( NaN, envelope.getSpan    (0), label);     // testCrossingAntiMeridian() + 360°.
             if (envelope instanceof AbstractEnvelope) {
-                final AbstractEnvelope ext = (AbstractEnvelope) envelope;
-                assertTrue (label, ext.contains  (inside));
-                assertFalse(label, ext.contains  (outside));
-                assertFalse(label, ext.contains  (intersect, false));
-                assertTrue (label, ext.intersects(intersect, false));
-                assertFalse(label, ext.contains  (spanning,  false));
-                assertTrue (label, ext.intersects(spanning,  false));
+                final var ext = (AbstractEnvelope) envelope;
+                assertTrue (ext.contains  (inside),           label);
+                assertFalse(ext.contains  (outside),          label);
+                assertFalse(ext.contains  (intersect, false), label);
+                assertTrue (ext.intersects(intersect, false), label);
+                assertFalse(ext.contains  (spanning,  false), label);
+                assertTrue (ext.intersects(spanning,  false), label);
                 assertDisjoint(ext, disjoint);
                 assertContains(ext, contained);
                 break;
             }
             if (envelope instanceof Rectangle2D) {
-                final Rectangle2D ext = (Rectangle2D) envelope;
-                assertTrue (label, ext.contains  (inside));
-                assertFalse(label, ext.contains  (outside));
-                assertFalse(label, ext.contains  (intersect));
-                assertTrue (label, ext.intersects(intersect));
-                assertFalse(label, ext.contains  (spanning));
-                assertTrue (label, ext.intersects(spanning));
+                final var ext = (Rectangle2D) envelope;
+                assertTrue (ext.contains  (inside),    label);
+                assertFalse(ext.contains  (outside),   label);
+                assertFalse(ext.contains  (intersect), label);
+                assertTrue (ext.intersects(intersect), label);
+                assertFalse(ext.contains  (spanning),  label);
+                assertTrue (ext.intersects(spanning),  label);
                 assertDisjoint(ext, disjoint);
                 assertContains(ext, contained);
                 break;
@@ -302,45 +302,45 @@ public final class AbstractEnvelopeTest extends TestCase {
      */
     @Test
     public void testCrossingAntiMeridianThreeTimes() {
-        final DirectPosition2D wasInside = new DirectPosition2D(18, 32);
-        final DirectPosition2D outside   = new DirectPosition2D( 3, 32);
-        final Envelope2D wasContained = (Envelope2D) create(RECTANGLE, 14, 16, 35, 40);
-        final Envelope2D wasIntersect = (Envelope2D) create(RECTANGLE, -2, 16, 35, 40);
-        final Envelope2D disjoint     = (Envelope2D) create(RECTANGLE, -2, 10, 35, 40);
-        final Envelope2D spanning     = (Envelope2D) create(RECTANGLE, 16, -8, 35, 40);
+        final var wasInside    = new DirectPosition2D(18, 32);
+        final var outside      = new DirectPosition2D( 3, 32);
+        final var wasContained = (Envelope2D) create(RECTANGLE, 14, 16, 35, 40);
+        final var wasIntersect = (Envelope2D) create(RECTANGLE, -2, 16, 35, 40);
+        final var disjoint     = (Envelope2D) create(RECTANGLE, -2, 10, 35, 40);
+        final var spanning     = (Envelope2D) create(RECTANGLE, 16, -8, 35, 40);
         for (int type=0; type<LAST; type++) {
             final String label = "Type " + type;
             final Envelope envelope = create(type, 372, -364, 30, 50);
             final DirectPosition lower = envelope.getLowerCorner();
             final DirectPosition upper = envelope.getUpperCorner();
-            assertEquals(label,   30, envelope.getMinimum (1), STRICT);
-            assertEquals(label,   50, envelope.getMaximum (1), STRICT);
-            assertEquals(label,   40, envelope.getMedian  (1), STRICT);
-            assertEquals(label,   20, envelope.getSpan    (1), STRICT);
-            assertEquals(label,  372, lower   .getOrdinate(0), STRICT);
-            assertEquals(label, -180, envelope.getMinimum (0), STRICT);
-            assertEquals(label, -364, upper   .getOrdinate(0), STRICT);
-            assertEquals(label, +180, envelope.getMaximum (0), STRICT);
-            assertEquals(label, -176, envelope.getMedian  (0), STRICT);     // Note the alternance with the previous test methods.
-            assertEquals(label,  NaN, envelope.getSpan    (0), STRICT);     // testCrossingAntiMeridianTwice() + 360°.
+            assertEquals(  30, envelope.getMinimum (1), label);
+            assertEquals(  50, envelope.getMaximum (1), label);
+            assertEquals(  40, envelope.getMedian  (1), label);
+            assertEquals(  20, envelope.getSpan    (1), label);
+            assertEquals( 372, lower   .getOrdinate(0), label);
+            assertEquals(-180, envelope.getMinimum (0), label);
+            assertEquals(-364, upper   .getOrdinate(0), label);
+            assertEquals(+180, envelope.getMaximum (0), label);
+            assertEquals(-176, envelope.getMedian  (0), label);     // Note the alternance with the previous test methods.
+            assertEquals( NaN, envelope.getSpan    (0), label);     // testCrossingAntiMeridianTwice() + 360°.
             switch (type) {
                 default: {
-                    final AbstractEnvelope ext = (AbstractEnvelope) envelope;
-                    assertFalse(label, ext.contains  (wasInside));
-                    assertFalse(label, ext.contains  (outside));
-                    assertFalse(label, ext.contains  (spanning,  false));
-                    assertTrue (label, ext.intersects(spanning,  false));
+                    final var ext = (AbstractEnvelope) envelope;
+                    assertFalse(ext.contains  (wasInside),       label);
+                    assertFalse(ext.contains  (outside),         label);
+                    assertFalse(ext.contains  (spanning, false), label);
+                    assertTrue (ext.intersects(spanning, false), label);
                     assertDisjoint(ext, wasIntersect);
                     assertDisjoint(ext, disjoint);
                     assertDisjoint(ext, wasContained);
                     break;
                 }
                 case RECTANGLE: {
-                    final Rectangle2D ext = (Rectangle2D) envelope;
-                    assertFalse(label, ext.contains  (wasInside));
-                    assertFalse(label, ext.contains  (outside));
-                    assertFalse(label, ext.contains  (spanning));
-                    assertTrue (label, ext.intersects(spanning));
+                    final var ext = (Rectangle2D) envelope;
+                    assertFalse(ext.contains  (wasInside), label);
+                    assertFalse(ext.contains  (outside),   label);
+                    assertFalse(ext.contains  (spanning),  label);
+                    assertTrue (ext.intersects(spanning),  label);
                     assertDisjoint(ext, wasIntersect);
                     assertDisjoint(ext, disjoint);
                     assertDisjoint(ext, wasContained);
@@ -356,44 +356,44 @@ public final class AbstractEnvelopeTest extends TestCase {
      */
     @Test
     public void testRange0() {
-        final DirectPosition2D wasInside = new DirectPosition2D(18, 32);
-        final DirectPosition2D outside   = new DirectPosition2D( 3, 32);
-        final Envelope2D wasContained = (Envelope2D) create(RECTANGLE, 14, 16, 35, 40);
-        final Envelope2D intersect    = (Envelope2D) create(RECTANGLE, -2, 16, 35, 40);
-        final Envelope2D spanning     = (Envelope2D) create(RECTANGLE, 16, -8, 35, 40);
+        final var wasInside    = new DirectPosition2D(18, 32);
+        final var outside      = new DirectPosition2D( 3, 32);
+        final var wasContained = (Envelope2D) create(RECTANGLE, 14, 16, 35, 40);
+        final var intersect    = (Envelope2D) create(RECTANGLE, -2, 16, 35, 40);
+        final var spanning     = (Envelope2D) create(RECTANGLE, 16, -8, 35, 40);
         for (int type=0; type<LAST; type++) {
             final String label = "Type " + type;
             final Envelope envelope = create(type, -0.0, 0.0, 30, 50);
-            assertEquals(label,   30, envelope.getMinimum(1), STRICT);
-            assertEquals(label,   50, envelope.getMaximum(1), STRICT);
-            assertEquals(label,   40, envelope.getMedian (1), STRICT);
-            assertEquals(label,   20, envelope.getSpan   (1), STRICT);
-            assertEquals(label, -0.0, envelope.getMinimum(0), STRICT);
-            assertEquals(label,  0.0, envelope.getMaximum(0), STRICT);
-            assertEquals(label,    0, envelope.getMedian (0), STRICT);
-            assertEquals(label,    0, envelope.getSpan   (0), STRICT);
+            assertEquals(  30, envelope.getMinimum(1), label);
+            assertEquals(  50, envelope.getMaximum(1), label);
+            assertEquals(  40, envelope.getMedian (1), label);
+            assertEquals(  20, envelope.getSpan   (1), label);
+            assertEquals(-0.0, envelope.getMinimum(0), label);
+            assertEquals( 0.0, envelope.getMaximum(0), label);
+            assertEquals(   0, envelope.getMedian (0), label);
+            assertEquals(   0, envelope.getSpan   (0), label);
             switch (type) {
                 default: {
-                    final AbstractEnvelope ext = (AbstractEnvelope) envelope;
-                    assertFalse(label, ext.contains  (wasInside));
-                    assertFalse(label, ext.contains  (outside));
-                    assertFalse(label, ext.contains  (intersect, false));
-                    assertTrue (label, ext.intersects(intersect, false));
-                    assertFalse(label, ext.contains  (spanning,  false));
-                    assertFalse(label, ext.intersects(spanning,  false));
-                    assertFalse(label, ext.intersects(spanning,  false));
+                    final var ext = (AbstractEnvelope) envelope;
+                    assertFalse(ext.contains  (wasInside),        label);
+                    assertFalse(ext.contains  (outside),          label);
+                    assertFalse(ext.contains  (intersect, false), label);
+                    assertTrue (ext.intersects(intersect, false), label);
+                    assertFalse(ext.contains  (spanning,  false), label);
+                    assertFalse(ext.intersects(spanning,  false), label);
+                    assertFalse(ext.intersects(spanning,  false), label);
                     assertDisjoint(ext, wasContained);
                     break;
                 }
                 case RECTANGLE: {
-                    final Rectangle2D ext = (Rectangle2D) envelope;
-                    assertFalse(label, ext.contains  (wasInside));
-                    assertFalse(label, ext.contains  (outside));
-                    assertFalse(label, ext.contains  (intersect));
-                    assertTrue (label, ext.intersects(intersect));
-                    assertFalse(label, ext.contains  (spanning));
-                    assertFalse(label, ext.intersects(spanning));
-                    assertFalse(label, ext.intersects(spanning));
+                    final var ext = (Rectangle2D) envelope;
+                    assertFalse(ext.contains  (wasInside), label);
+                    assertFalse(ext.contains  (outside),   label);
+                    assertFalse(ext.contains  (intersect), label);
+                    assertTrue (ext.intersects(intersect), label);
+                    assertFalse(ext.contains  (spanning),  label);
+                    assertFalse(ext.intersects(spanning),  label);
+                    assertFalse(ext.intersects(spanning),  label);
                     assertDisjoint(ext, wasContained);
                     break;
                 }
@@ -403,45 +403,45 @@ public final class AbstractEnvelopeTest extends TestCase {
     }
 
     /**
-     * Tests a case crossing the anti-meridian crossing, from 0° to -0°.
+     * Tests a case crossing the anti-meridian, from 0° to -0°.
      */
     @Test
     public void testRange360() {
-        final DirectPosition2D inside     = new DirectPosition2D(18, 32);
-        final DirectPosition2D wasOutside = new DirectPosition2D( 3, 32);
-        final Envelope2D contained = (Envelope2D) create(RECTANGLE, 14, 16, 35, 40);
-        final Envelope2D intersect = (Envelope2D) create(RECTANGLE, -2, 16, 35, 40);
-        final Envelope2D spanning  = (Envelope2D) create(RECTANGLE, 16, -8, 35, 40);
+        final var inside     = new DirectPosition2D(18, 32);
+        final var wasOutside = new DirectPosition2D( 3, 32);
+        final var contained  = (Envelope2D) create(RECTANGLE, 14, 16, 35, 40);
+        final var intersect  = (Envelope2D) create(RECTANGLE, -2, 16, 35, 40);
+        final var spanning   = (Envelope2D) create(RECTANGLE, 16, -8, 35, 40);
         for (int type=0; type<LAST; type++) {
             final String label = "Type " + type;
             final Envelope envelope = create(type, 0.0, -0.0, 30, 50);
             final DirectPosition lower = envelope.getLowerCorner();
             final DirectPosition upper = envelope.getUpperCorner();
-            assertEquals(label,   30, envelope.getMinimum (1), STRICT);
-            assertEquals(label,   50, envelope.getMaximum (1), STRICT);
-            assertEquals(label,   40, envelope.getMedian  (1), STRICT);
-            assertEquals(label,   20, envelope.getSpan    (1), STRICT);
-            assertEquals(label,  0.0, lower   .getOrdinate(0), STRICT);
-            assertEquals(label, -180, envelope.getMinimum (0), STRICT);
-            assertEquals(label, -0.0, upper   .getOrdinate(0), STRICT);
-            assertEquals(label, +180, envelope.getMaximum (0), STRICT);
-            assertEquals(label,  180, envelope.getMedian  (0), STRICT);
-            assertEquals(label,  360, envelope.getSpan    (0), STRICT);
+            assertEquals(  30, envelope.getMinimum (1), label);
+            assertEquals(  50, envelope.getMaximum (1), label);
+            assertEquals(  40, envelope.getMedian  (1), label);
+            assertEquals(  20, envelope.getSpan    (1), label);
+            assertEquals( 0.0, lower   .getOrdinate(0), label);
+            assertEquals(-180, envelope.getMinimum (0), label);
+            assertEquals(-0.0, upper   .getOrdinate(0), label);
+            assertEquals(+180, envelope.getMaximum (0), label);
+            assertEquals( 180, envelope.getMedian  (0), label);
+            assertEquals( 360, envelope.getSpan    (0), label);
             switch (type) {
                 default: {
-                    final AbstractEnvelope ext = (AbstractEnvelope) envelope;
-                    assertTrue(label, ext.contains(inside));
-                    assertTrue(label, ext.contains(wasOutside));
-                    assertTrue(label, ext.intersects(intersect, false));
+                    final var ext = (AbstractEnvelope) envelope;
+                    assertTrue(ext.contains(inside), label);
+                    assertTrue(ext.contains(wasOutside), label);
+                    assertTrue(ext.intersects(intersect, false), label);
                     assertContains(ext, contained);
                     assertContains(ext, spanning);
                     break;
                 }
                 case RECTANGLE: {
-                    final Rectangle2D ext = (Rectangle2D) envelope;
-                    assertTrue(label, ext.contains(inside));
-                    assertTrue(label, ext.contains(wasOutside));
-                    assertTrue(label, ext.intersects(intersect));
+                    final var ext = (Rectangle2D) envelope;
+                    assertTrue(ext.contains(inside),      label);
+                    assertTrue(ext.contains(wasOutside),  label);
+                    assertTrue(ext.intersects(intersect), label);
                     assertContains(ext, contained);
                     assertContains(ext, spanning);
                     break;
@@ -458,7 +458,7 @@ public final class AbstractEnvelopeTest extends TestCase {
     public void testToSimpleEnvelopesOnEmptyEnvelope() {
         for (int type=0; type<LAST; type++) {
             if (type != RECTANGLE) {
-                final AbstractEnvelope envelope = (AbstractEnvelope) create(type, 0, 0, 0, 0);
+                final var envelope = (AbstractEnvelope) create(type, 0, 0, 0, 0);
                 assertEquals(0, envelope.toSimpleEnvelopes().length);
             }
         }
@@ -472,7 +472,7 @@ public final class AbstractEnvelopeTest extends TestCase {
     public void testToSimpleEnvelopesOnSimpleEnvelope() {
         for (int type=0; type<LAST; type++) {
             if (type != RECTANGLE) {
-                final AbstractEnvelope envelope = (AbstractEnvelope) create(type, -20, 30, -10, 15);
+                final var envelope = (AbstractEnvelope) create(type, -20, 30, -10, 15);
                 final Envelope[] simples = envelope.toSimpleEnvelopes();
                 assertEquals(1, simples.length);
                 assertSame(envelope, simples[0]);
@@ -488,25 +488,25 @@ public final class AbstractEnvelopeTest extends TestCase {
     public void testToSimpleEnvelopesOverAntiMeridian() {
         for (int type=0; type<LAST; type++) {
             if (type != RECTANGLE) {
-                final AbstractEnvelope envelope = (AbstractEnvelope) create(type, 155, -150, 0, 50);
+                final var envelope = (AbstractEnvelope) create(type, 155, -150, 0, 50);
                 final Envelope[] simples = envelope.toSimpleEnvelopes();
                 assertEquals(2, simples.length);
-                final AbstractEnvelope e0 = (AbstractEnvelope) simples[0];
-                final AbstractEnvelope e1 = (AbstractEnvelope) simples[1];
+                final var e0 = (AbstractEnvelope) simples[0];
+                final var e1 = (AbstractEnvelope) simples[1];
 
-                assertEquals( 155.0, e0.getLower(0), STRICT);
-                assertEquals(   0.0, e0.getLower(1), STRICT);
-                assertEquals( 180.0, e0.getUpper(0), STRICT);
-                assertEquals(  50.0, e0.getUpper(1), STRICT);
-                assertEquals(  25.0, e0.getSpan (0), STRICT);
-                assertEquals(  50.0, e0.getSpan (1), STRICT);
+                assertEquals( 155.0, e0.getLower(0));
+                assertEquals(   0.0, e0.getLower(1));
+                assertEquals( 180.0, e0.getUpper(0));
+                assertEquals(  50.0, e0.getUpper(1));
+                assertEquals(  25.0, e0.getSpan (0));
+                assertEquals(  50.0, e0.getSpan (1));
 
-                assertEquals(-180.0, e1.getLower(0), STRICT);
-                assertEquals(   0.0, e1.getLower(1), STRICT);
-                assertEquals(-150.0, e1.getUpper(0), STRICT);
-                assertEquals(  50.0, e1.getUpper(1), STRICT);
-                assertEquals(  30.0, e1.getSpan (0), STRICT);
-                assertEquals(  50.0, e1.getSpan (1), STRICT);
+                assertEquals(-180.0, e1.getLower(0));
+                assertEquals(   0.0, e1.getLower(1));
+                assertEquals(-150.0, e1.getUpper(0));
+                assertEquals(  50.0, e1.getUpper(1));
+                assertEquals(  30.0, e1.getSpan (0));
+                assertEquals(  50.0, e1.getSpan (1));
             }
         }
     }

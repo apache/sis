@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.MissingResourceException;
+import java.util.Objects;
 
 
 /**
@@ -87,8 +88,7 @@ public abstract class ResourceInternationalString extends AbstractInternationalS
      * @param key  the key for the resource to fetch.
      */
     protected ResourceInternationalString(final String key) {
-        ArgumentChecks.ensureNonNull("key", key);
-        this.key = key;
+        this.key = Objects.requireNonNull(key);
     }
 
     /**

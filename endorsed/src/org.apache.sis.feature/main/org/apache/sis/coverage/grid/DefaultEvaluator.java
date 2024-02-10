@@ -159,8 +159,7 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
      * @see GridCoverage#evaluator()
      */
     protected DefaultEvaluator(final GridCoverage coverage) {
-        ArgumentChecks.ensureNonNull("coverage", coverage);
-        this.coverage = coverage;
+        this.coverage = Objects.requireNonNull(coverage);
     }
 
     /**
@@ -421,9 +420,8 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
      */
     @Override
     public FractionalGridCoordinates toGridCoordinates(final DirectPosition point) throws TransformException {
-        ArgumentChecks.ensureNonNull("point", point);
         try {
-            return new FractionalGridCoordinates(toGridPosition(point));
+            return new FractionalGridCoordinates(toGridPosition(Objects.requireNonNull(point)));
         } catch (FactoryException e) {
             throw new TransformException(e.getMessage(), e);
         }

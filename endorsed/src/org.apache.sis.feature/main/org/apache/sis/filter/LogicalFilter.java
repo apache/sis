@@ -19,6 +19,7 @@ package org.apache.sis.filter;
 import java.util.List;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.Objects;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.filter.internal.Node;
 import org.apache.sis.util.internal.CollectionsExt;
@@ -230,8 +231,7 @@ abstract class LogicalFilter<R> extends Node implements LogicalOperator<R>, Opti
 
         /** Creates a new operator. */
         Not(final Filter<R> operand) {
-            ArgumentChecks.ensureNonNull("operand", operand);
-            this.operand = operand;
+            this.operand = Objects.requireNonNull(operand);
         }
 
         /** Identification of the operation. */
@@ -327,7 +327,7 @@ abstract class LogicalFilter<R> extends Node implements LogicalOperator<R>, Opti
          *     A OR  NOT(A) = TRUE
          */
         for (Filter<R> f : effective) {
-            if (LogicalOperatorName.NOT.equals(f.getOperatorType())) {
+            if (f.getOperatorType() == LogicalOperatorName.NOT) {
                 if (effective.containsAll(((LogicalOperator<?>) f).getOperands())) {
                     return shortCircuit;
                 }

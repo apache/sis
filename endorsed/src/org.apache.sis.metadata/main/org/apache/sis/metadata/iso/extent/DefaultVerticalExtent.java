@@ -31,7 +31,6 @@ import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.bind.gco.GO_Real;
 import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.math.MathFunctions;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 
@@ -282,7 +281,6 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      */
     public void intersect(final VerticalExtent other) throws IllegalArgumentException {
         checkWritePermission(value());
-        ArgumentChecks.ensureNonNull("other", other);
         Double min = other.getMinimumValue();
         Double max = other.getMaximumValue();
         try {

@@ -18,7 +18,7 @@
 
 /**
  * Mapping between geographic identifiers (addresses, grid indexes…) and locations (descriptions, coordinates…).
- * This package provides base classes implementing the <cite>Spatial referencing by geographic identifiers</cite>
+ * This package provides base classes implementing the <i>Spatial referencing by geographic identifiers</i>
  * (ISO 19112) standard. Those base classes are
  * {@link org.apache.sis.referencing.gazetteer.AbstractLocation},
  * {@link org.apache.sis.referencing.gazetteer.ModifiableLocationType} and

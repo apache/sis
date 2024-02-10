@@ -105,7 +105,6 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * @param  transform1  the first math transform.
      * @param  transform2  the second math transform.
      */
-    @SuppressWarnings("OverridableMethodCallInConstructor")
     protected ConcatenatedTransform(final MathTransform transform1,
                                     final MathTransform transform2)
     {
@@ -209,6 +208,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
         boolean inverseCaseTested = false;
         if (tr1 instanceof AbstractMathTransform) {
             // TODO: after removal of the deprecated method, invoke `tryConcatenate(Joiner)` only once.
+            @SuppressWarnings("removal")
             final MathTransform optimized = ((AbstractMathTransform) tr1).tryConcatenate(false, tr2, factory);
             inverseCaseTested = true;
             if (optimized != null) {
@@ -217,6 +217,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
             }
         }
         if (tr2 instanceof AbstractMathTransform) {
+            @SuppressWarnings("removal")
             final MathTransform optimized = ((AbstractMathTransform) tr2).tryConcatenate(true, tr1, factory);
             inverseCaseTested = true;
             if (optimized != null) {
@@ -386,7 +387,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
-     * Returns all concatenated transforms. The returned list contains only <cite>single</cite> transforms,
+     * Returns all concatenated transforms. The returned list contains only <i>single</i> transforms,
      * i.e. all nested concatenated transforms (if any) have been flattened.
      *
      * @return all single math transforms performed by this concatenated transform.
@@ -539,7 +540,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * Returns the parameter values, or {@code null} if none. Concatenated transforms usually have
      * no parameters; instead the parameters of the individual components ({@link #transform1} and
      * {@link #transform2}) need to be inspected. However, map projections in SIS are implemented as
-     * (<cite>normalize</cite> – <cite>non-linear kernel</cite> – <cite>denormalize</cite>) tuples.
+     * (<i>normalize</i> – <i>non-linear kernel</i> – <i>denormalize</i>) tuples.
      * This method detects such concatenation chains in order to return the parameter values that
      * describe the projection as a whole.
      */
@@ -985,7 +986,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
-     * Formats the inner part of a <cite>Well Known Text</cite> version 1 (WKT 1) element.
+     * Formats the inner part of a <i>Well Known Text</i> version 1 (WKT 1) element.
      *
      * <h4>Compatibility note</h4>
      * {@code Concat_MT} is defined in the WKT 1 specification only.

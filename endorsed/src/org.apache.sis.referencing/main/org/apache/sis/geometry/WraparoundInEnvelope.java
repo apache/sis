@@ -180,7 +180,6 @@ final class WraparoundInEnvelope extends WraparoundTransform {
          * Creates a new instance using the given transform. If the given transform contains wraparound steps,
          * then the transform stored in the {@link #transform} will be a different transform chains instance.
          */
-        @SuppressWarnings("ThisEscapedInObjectConstruction")
         Controller(final MathTransform transform) {
             this.transform = replace(transform, this);
         }

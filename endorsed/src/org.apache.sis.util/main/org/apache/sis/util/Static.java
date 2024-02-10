@@ -99,7 +99,7 @@ package org.apache.sis.util;
  *     <td>Format a stack trace summary or change the exception message.</td></tr>
  * <tr><td>{@link org.apache.sis.util.logging.Logging}</td>
  *     <td>Get a JDK {@linkplain java.util.logging.Logger logger}, which may be a wrapper around
- *         the <cite>Apache Commons Logging</cite> or <cite>Log4J</cite> framework.</td></tr>
+ *         the <i>Apache Commons Logging</i> or <i>Log4J</i> framework.</td></tr>
  * </table>
  *
  * @author  Martin Desruisseaux (Geomatys)

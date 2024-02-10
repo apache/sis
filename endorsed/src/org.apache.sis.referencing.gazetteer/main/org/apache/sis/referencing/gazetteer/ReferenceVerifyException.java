@@ -22,8 +22,8 @@ package org.apache.sis.referencing.gazetteer;
  * Examples:
  *
  * <ul>
- *   <li>The <cite>100 000-metres square identification</cite> of a {@linkplain MilitaryGridReferenceSystem MGRS}
- *       reference is not consistent with the <cite>Grid Zone Designation</cite>.</li>
+ *   <li>The <i>100 000-metres square identification</i> of a {@linkplain MilitaryGridReferenceSystem MGRS}
+ *       reference is not consistent with the <i>Grid Zone Designation</i>.</li>
  * </ul>
  *
  * The purpose of those verifications is to perform some error detection.

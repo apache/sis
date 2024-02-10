@@ -80,14 +80,25 @@ public final class JDK21 {
         } else {
             list = new ArrayList<>(sequenced);
         }
-        return new Iterable<>() {
-            @Override public Iterator<E> iterator() {
-                final ListIterator<E> it = list.listIterator(list.size());
-                return new Iterator<E>() {
-                    @Override public boolean hasNext() {return it.hasPrevious();}
-                    @Override public E       next()    {return it.previous();}
-                };
-            }
+        return () -> {
+            final ListIterator<E> it = list.listIterator(list.size());
+            return new Iterator<E>() {
+                @Override public boolean hasNext() {return it.hasPrevious();}
+                @Override public E       next()    {return it.previous();}
+            };
         };
+    }
+
+    /**
+     * Appends the given character <var>n</var> times.
+     *
+     * @param  buffer  the buffer where to append the character.
+     * @param  c       the character to repeat.
+     * @param  count   number of times to repeat the given character.
+     */
+    public static void repeat(final StringBuilder buffer, final char c, int count) {
+        while (--count >= 0) {
+            buffer.append(c);
+        }
     }
 }

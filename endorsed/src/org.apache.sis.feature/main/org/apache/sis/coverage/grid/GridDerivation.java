@@ -18,6 +18,7 @@ package org.apache.sis.coverage.grid;
 
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Objects;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.math.RoundingMode;
@@ -72,8 +73,8 @@ import org.apache.sis.coverage.PointOutsideCoverageException;
  * Then the grid geometry is created by a call to {@link #build()}.
  * The {@link #getIntersection()} method can also be invoked for the {@link GridExtent} part without subsampling.
  *
- * <p>All methods in this class preserve the number of dimensions. For example, the {@link #slice(DirectPosition)} method sets
- * the {@linkplain GridExtent#getSize(int) grid size} to 1 in all dimensions specified by the <cite>slice point</cite>,
+ * <p>All methods in this class preserve the number of dimensions. For example, the {@link #slice(DirectPosition)} method
+ * sets the {@linkplain GridExtent#getSize(int) grid size} to 1 in all dimensions specified by the <i>slice point</i>,
  * but does not remove those dimensions from the grid geometry.
  * For dimensionality reduction, see {@link GridGeometry#selectDimensions(int[])}.</p>
  *
@@ -221,8 +222,7 @@ public class GridDerivation {
      * @see GridGeometry#derive()
      */
     protected GridDerivation(final GridGeometry base) {
-        ArgumentChecks.ensureNonNull("base", base);
-        this.base  = base;
+        this.base  = Objects.requireNonNull(base);
         baseExtent = base.extent;                    // May be null.
         rounding   = GridRoundingMode.NEAREST;
         clipping   = GridClippingMode.STRICT;
@@ -256,9 +256,8 @@ public class GridDerivation {
      *         has already been invoked.
      */
     public GridDerivation rounding(final GridRoundingMode mode) {
-        ArgumentChecks.ensureNonNull("mode", mode);
         ensureSubgridNotSet();
-        rounding = mode;
+        rounding = Objects.requireNonNull(mode);
         return this;
     }
 
@@ -274,9 +273,8 @@ public class GridDerivation {
      * @since 1.1
      */
     public GridDerivation clipping(final GridClippingMode mode) {
-        ArgumentChecks.ensureNonNull("mode", mode);
         ensureSubgridNotSet();
-        clipping = mode;
+        clipping = Objects.requireNonNull(mode);
         return this;
     }
 
@@ -474,7 +472,6 @@ public class GridDerivation {
      */
     public GridDerivation subgrid(final GridGeometry areaOfInterest) {
         ensureSubgridNotSet();
-        ArgumentChecks.ensureNonNull("areaOfInterest", areaOfInterest);
         if (areaOfInterest.isEnvelopeOnly()) {
             return subgrid(areaOfInterest.envelope, (double[]) null);
         }

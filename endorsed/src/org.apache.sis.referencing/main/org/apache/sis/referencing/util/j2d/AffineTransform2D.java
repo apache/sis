@@ -408,10 +408,10 @@ public class AffineTransform2D extends ImmutableAffineTransform
      * <p>Most SIS implementations require that the objects being compared are unconditionally of the same class in
      * order to be considered equal. However, many JDK implementations, including {@link AffineTransform}, do not have
      * this requirement. Consequently, the above condition (i.e. require the same class only if the given object is an
-     * {@code AffineTransform2D} or a subclass) is necessary in order to preserve the <cite>symmetricity</cite> contract
+     * {@code AffineTransform2D} or a subclass) is necessary in order to preserve the <i>symmetricity</i> contract
      * of {@link Object#equals(Object)}.</p>
      *
-     * <p>A side-effect of this implementation is that the <cite>transitivity</cite> contract of
+     * <p>A side-effect of this implementation is that the <i>transitivity</i> contract of
      * {@code Object.equals(Object)} may be broken is some corner cases. This contract said:</p>
      *
      * <blockquote>

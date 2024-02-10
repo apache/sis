@@ -32,7 +32,7 @@ import org.apache.sis.storage.DataStoreException;
  * <h2>Image indices</h2>
  * All image {@code index} arguments in this interfaces starts with 0 for the first (potentially pyramided) image
  * and are incremented by 1 after each <em>pyramid</em>, as defined by the cloud Optimized GeoTIFF specification.
- * Consequently, those indices may differ from TIFF <cite>Image File Directory</cite> (IFD) indices.
+ * Consequently, those indices may differ from TIFF <i>Image File Directory</i> (IFD) indices.
  *
  * @todo May move to public API (in revised form) in a future version.
  *

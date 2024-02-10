@@ -18,6 +18,7 @@ package org.apache.sis.util.collection;
 
 import java.util.Arrays;
 import java.util.AbstractList;
+import java.util.Objects;
 import java.util.RandomAccess;
 import java.util.Spliterator;
 import java.util.PrimitiveIterator;
@@ -281,8 +282,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      * @throws IndexOutOfBoundsException if the given index is out of bounds.
      */
     public int getInt(final int index) throws IndexOutOfBoundsException {
-        ArgumentChecks.ensureValidIndex(size, index);
-        return getUnchecked(index);
+        return getUnchecked(Objects.checkIndex(index, size));
     }
 
     /**
@@ -333,7 +333,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      * @throws IllegalArgumentException if the given value is out of bounds.
      */
     public void setInt(int index, int value) throws IndexOutOfBoundsException {
-        ArgumentChecks.ensureValidIndex(size, index);
+        Objects.checkIndex(index, size);
         ArgumentChecks.ensureBetween("value", 0, mask, value);
         modCount++;
         setUnchecked(index, value);
@@ -399,7 +399,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
      */
     @Override
     protected void removeRange(int lower, int upper) {
-        ArgumentChecks.ensureValidIndexRange(size, lower, upper);
+        Objects.checkFromToIndex(lower, upper, size);
         int lo = lower * bitCount;
         int hi = upper * bitCount;
         final int offset = (lo & OFFSET_MASK);
@@ -445,7 +445,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
 
     /**
      * Returns an iterator over the elements in this list in increasing index order.
-     * The iterator is <cite>fail-fast</cite> and supports the remove operation.
+     * The iterator is <i>fail-fast</i> and supports the remove operation.
      *
      * @return iterator over the integer values in this list.
      *
@@ -458,7 +458,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
 
     /**
      * Returns an spliterator over the elements in this list in increasing index order.
-     * The iterator is <cite>fail-fast</cite>.
+     * The iterator is <i>fail-fast</i>.
      *
      * @return spliterator over the integer values in this list.
      *
@@ -472,7 +472,7 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     /**
      * Returns a stream of integers with this {@code IntegerList} as its source.
      * This method is similar to {@link #stream()}, but does not box the values.
-     * The returned stream is <cite>fail-fast</cite>, meaning that any modification to the list
+     * The returned stream is <i>fail-fast</i>, meaning that any modification to the list
      * while using the stream will cause a {@link ConcurrentModificationException} to be thrown.
      *
      * <p>The default implementation creates a parallel or sequential stream from {@link #spliterator()}.</p>

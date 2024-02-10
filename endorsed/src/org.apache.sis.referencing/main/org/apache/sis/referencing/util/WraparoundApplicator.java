@@ -202,13 +202,13 @@ public final class WraparoundApplicator {
      */
     static double range(final CoordinateSystem cs, final int dimension) {
         final CoordinateSystemAxis axis = cs.getAxis(dimension);
-        if (axis != null && RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning())) {
+        if (axis != null && axis.getRangeMeaning() == RangeMeaning.WRAPAROUND) {
             double period = axis.getMaximumValue() - axis.getMinimumValue();
             if (period > 0 && period != Double.POSITIVE_INFINITY) {
                 return period;
             }
             final AxisDirection dir = AxisDirections.absolute(axis.getDirection());
-            if (AxisDirection.EAST.equals(dir) && cs instanceof EllipsoidalCS) {
+            if (dir == AxisDirection.EAST && cs instanceof EllipsoidalCS) {
                 period = Longitude.MAX_VALUE - Longitude.MIN_VALUE;
                 final Unit<?> unit = axis.getUnit();
                 if (unit != null) {

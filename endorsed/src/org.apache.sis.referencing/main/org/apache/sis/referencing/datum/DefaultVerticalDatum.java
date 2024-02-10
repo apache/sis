@@ -32,7 +32,6 @@ import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.metadata.internal.ImplementationHelper;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;
@@ -148,8 +147,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      */
     public DefaultVerticalDatum(final Map<String,?> properties, final VerticalDatumType type) {
         super(properties);
-        this.type = type;
-        ensureNonNull("type", type);
+        this.type = Objects.requireNonNull(type);
     }
 
     /**
@@ -287,7 +285,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     }
 
     /**
-     * Formats this datum as a <cite>Well Known Text</cite> {@code VerticalDatum[…]} element.
+     * Formats this datum as a <i>Well Known Text</i> {@code VerticalDatum[…]} element.
      *
      * <h4>Compatibility note</h4>
      * OGC 01-009 defined numerical codes for various vertical datum types, for example 2005 for geoidal height

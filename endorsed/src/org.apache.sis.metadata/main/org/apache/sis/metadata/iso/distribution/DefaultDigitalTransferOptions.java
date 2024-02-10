@@ -178,7 +178,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     /**
      * Returns tiles, layers, geographic areas, <i>etc.</i>, in which data is available.
      *
-     * @return tiles, layers, geographic areas, <cite>etc.</cite> in which data is available, or {@code null}.
+     * @return tiles, layers, geographic areas, <i>etc.</i> in which data is available, or {@code null}.
      */
     @Override
     @XmlElement(name = "unitsOfDistribution")

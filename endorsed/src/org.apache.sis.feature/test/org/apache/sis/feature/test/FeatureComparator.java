@@ -25,9 +25,9 @@ import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import org.opengis.util.GenericName;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.internal.CollectionsExt;
 
@@ -134,8 +134,6 @@ public class FeatureComparator {
      * @param  actual    the actual feature instance.
      */
     public FeatureComparator(final AbstractFeature expected, final AbstractFeature actual) {
-        ArgumentChecks.ensureNonNull("expected", expected);
-        ArgumentChecks.ensureNonNull("actual", actual);
         expectedInstance = expected;
         expectedType     = expected.getType();
         actualInstance   = actual;
@@ -149,12 +147,10 @@ public class FeatureComparator {
      * @param  actual    the actual feature type.
      */
     public FeatureComparator(final DefaultFeatureType expected, final DefaultFeatureType actual) {
-        ArgumentChecks.ensureNonNull("expected", expected);
-        ArgumentChecks.ensureNonNull("actual",   actual);
         expectedInstance = null;
-        expectedType     = expected;
+        expectedType     = Objects.requireNonNull(expected);
         actualInstance   = null;
-        actualType       = actual;
+        actualType       = Objects.requireNonNull(actual);
     }
 
     /**

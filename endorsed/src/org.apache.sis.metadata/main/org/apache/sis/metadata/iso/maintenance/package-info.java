@@ -56,7 +56,7 @@
  *
  * <p>Unless the metadata object has been marked as unmodifiable and unless otherwise noted in the Javadoc,
  * all collections returned by getter methods are <em>live</em>: adding new elements in the collection
- * modify directly the underlying metadata object. Noticeable exceptions to this rule are <cite>union</cite>
+ * modify directly the underlying metadata object. Noticeable exceptions to this rule are <i>union</i>
  * structures, for which only one property can be non-empty in the same object.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)

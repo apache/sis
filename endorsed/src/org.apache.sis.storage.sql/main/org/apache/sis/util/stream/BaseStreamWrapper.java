@@ -16,8 +16,8 @@
  */
 package org.apache.sis.util.stream;
 
+import java.util.Objects;
 import java.util.stream.BaseStream;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -49,8 +49,7 @@ public abstract class BaseStreamWrapper<T, S extends BaseStream<T,S>> implements
      * @param  source  the stream to wrap.
      */
     protected BaseStreamWrapper(final S source) {
-        ArgumentChecks.ensureNonNull("source", source);
-        toClose = source;
+        toClose = Objects.requireNonNull(source);
     }
 
     /**

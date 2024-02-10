@@ -17,9 +17,9 @@
 package org.apache.sis.math;
 
 import java.io.Serializable;
+import java.util.Objects;
 import java.util.function.IntSupplier;
 import org.apache.sis.measure.NumberRange;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -119,8 +119,7 @@ final class RepeatedVector extends Vector implements Serializable {
      * Converts the given index from this vector domain to an index in the {@linkplain #base} vector.
      */
     private int toBase(final int index) {
-        ArgumentChecks.ensureValidIndex(size, index);
-        return (index / occurrences) % cycleLength;
+        return (Objects.checkIndex(index, size) / occurrences) % cycleLength;
     }
 
     /**

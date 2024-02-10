@@ -127,7 +127,7 @@ public final class GridOrientation implements Serializable {
      *
      * <h4>When to use</h4>
      * This orientation can be used for deriving a coordinate reference system with the
-     * <i>(<var>longitude</var>, <var>latitude</var>)</i> or <i>(<var>x</var>,<var>y</var>)</i> axis order,
+     * (<var>longitude</var>, <var>latitude</var>) or (<var>x</var>,<var>y</var>) axis order,
      * but without altering grid axes order.
      *
      * <h4>Alternative</h4>
@@ -135,7 +135,7 @@ public final class GridOrientation implements Serializable {
      * Consequently, the {@link GridExtent} may be different then the specified extent
      * but the {@code gridToCRS} transform always has the form shown in {@link #REFLECTION_Y}.
      * This alternative can be used for deriving a coordinate reference system with the
-     * <i>(<var>longitude</var>, <var>latitude</var>)</i> or <i>(<var>x</var>,<var>y</var>)</i> axis order,
+     * (<var>longitude</var>, <var>latitude</var>) or (<var>x</var>,<var>y</var>) axis order,
      * and modify grid cell layout (i.e. replace the {@link GridExtent} instance)
      * in way that allows {@link java.awt.image.RenderedImage} to appear with expected orientation.
      *

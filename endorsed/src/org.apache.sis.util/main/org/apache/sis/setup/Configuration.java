@@ -17,12 +17,12 @@
 package org.apache.sis.setup;
 
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
-import javax.sql.DataSource;
-import java.sql.SQLException;
 import java.util.function.Supplier;
 import java.util.concurrent.TimeUnit;
-import org.apache.sis.util.ArgumentChecks;
+import javax.sql.DataSource;
+import java.sql.SQLException;
 import org.apache.sis.util.internal.MetadataServices;
 
 
@@ -144,7 +144,6 @@ public final class Configuration {
      * @see <a href="https://sis.apache.org/epsg.html#jndi">How to use EPSG geodetic dataset</a>
      */
     public void setDatabase(final Supplier<DataSource> source) {
-        ArgumentChecks.ensureNonNull("source", source);
-        MetadataServices.getInstance().setDataSource(source);
+        MetadataServices.getInstance().setDataSource(Objects.requireNonNull(source));
     }
 }

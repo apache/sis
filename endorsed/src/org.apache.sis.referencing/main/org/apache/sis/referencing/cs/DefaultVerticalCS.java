@@ -161,7 +161,7 @@ public class DefaultVerticalCS extends AbstractCS implements VerticalCS {
      */
     @Override
     final int validateAxis(final AxisDirection direction, Unit<?> unit) {
-        if (!AxisDirection.UP.equals(AxisDirections.absolute(direction))) {
+        if (!AxisDirections.isVertical(direction)) {
             return INVALID_DIRECTION;
         }
         unit = unit.getSystemUnit();

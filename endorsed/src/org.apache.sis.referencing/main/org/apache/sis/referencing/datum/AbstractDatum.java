@@ -56,7 +56,7 @@ import org.apache.sis.referencing.internal.Legacy;
  * {@linkplain org.apache.sis.referencing.crs.AbstractCRS coordinate reference system}.
  *
  * <h2>Instantiation</h2>
- * This class is conceptually <cite>abstract</cite>, even if it is technically possible to instantiate it.
+ * This class is conceptually <i>abstract</i>, even if it is technically possible to instantiate it.
  * Typical applications should create instances of the most specific subclass prefixed by {@code Default} instead.
  *
  * <h2>Immutability and thread safety</h2>
@@ -408,7 +408,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     }
 
     /**
-     * Formats the inner part of the <cite>Well Known Text</cite> (WKT) representation for this datum.
+     * Formats the inner part of the <i>Well Known Text</i> (WKT) representation for this datum.
      * See {@link AbstractIdentifiedObject#formatTo(Formatter)} for more information.
      *
      * @param  formatter  the formatter where to format the inner content of this WKT element.

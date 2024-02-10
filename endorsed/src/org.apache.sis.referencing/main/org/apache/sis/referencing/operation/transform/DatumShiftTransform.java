@@ -82,7 +82,7 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
     private static final long serialVersionUID = -4492222496475405226L;
 
     /**
-     * The parameters used for creating this datum shift. They are used for formatting <cite>Well Known Text</cite> (WKT)
+     * The parameters used for creating this datum shift. They are used for formatting <i>Well Known Text</i> (WKT)
      * and error messages. Subclasses shall not use the values defined in this object for computation purpose, except at
      * construction time.
      *
@@ -252,12 +252,12 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
 
     /**
      * Returns the parameters used for creating the complete transformation. Those parameters describe a sequence
-     * of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite> transforms, <strong>not</strong>
+     * of <i>normalize</i> → {@code this} → <i>denormalize</i> transforms, <strong>not</strong>
      * including {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes axis swapping}.
-     * Those parameters are used for formatting <cite>Well Known Text</cite> (WKT) and error messages.
+     * Those parameters are used for formatting <i>Well Known Text</i> (WKT) and error messages.
      *
      * @return the parameter values for the sequence of
-     *         <cite>normalize</cite> → {@code this} → <cite>denormalize</cite> transforms.
+     *         <i>normalize</i> → {@code this} → <i>denormalize</i> transforms.
      */
     @Override
     protected ContextualParameters getContextualParameters() {

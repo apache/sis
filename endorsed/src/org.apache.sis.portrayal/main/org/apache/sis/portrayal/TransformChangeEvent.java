@@ -16,6 +16,7 @@
  */
 package org.apache.sis.portrayal;
 
+import java.util.Objects;
 import java.util.Optional;
 import java.awt.geom.AffineTransform;
 import java.beans.PropertyChangeEvent;
@@ -26,7 +27,6 @@ import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 
 
@@ -159,8 +159,7 @@ public class TransformChangeEvent extends PropertyChangeEvent {
                                 final Reason reason)
     {
         super(source, Canvas.OBJECTIVE_TO_DISPLAY_PROPERTY, oldValue, newValue);
-        ArgumentChecks.ensureNonNull("reason", reason);
-        this.reason = reason;
+        this.reason = Objects.requireNonNull(reason);
     }
 
     /**

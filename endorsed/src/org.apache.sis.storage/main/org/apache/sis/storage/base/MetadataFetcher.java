@@ -223,7 +223,7 @@ public abstract class MetadataFetcher<T> {
      */
     protected boolean accept(final CitationDate info) {
         if (creationDate == null) {
-            if (DateType.CREATION.equals(info.getDateType())) {
+            if (info.getDateType() == DateType.CREATION) {
                 creationDate = List.of(convertDate(info.getDate()));
             } else {
                 return false;       // Search another date.

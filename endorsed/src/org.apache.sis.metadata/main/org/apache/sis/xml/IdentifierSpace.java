@@ -61,7 +61,7 @@ public interface IdentifierSpace<T> extends Citation {
      *
      * <p>The XML {@linkplain #getName() attribute name} is {@code "gml:id"}, but is also used
      * for {@code "gco:id"} in metadata documents. However, the {@code "gco:"} prefix is omitted
-     * in XML documents (i.e. the {@code gco:id} attribute is <cite>unqualified</cite>).</p>
+     * in XML documents (i.e. the {@code gco:id} attribute is <i>unqualified</i>).</p>
      *
      * <p>Elements with {@code gml:id} or {@code gco:id} attribute can be referenced from other XML elements
      * using the {@code xlink:href} attribute. This is done automatically by Apache SIS implementations at
@@ -79,7 +79,7 @@ public interface IdentifierSpace<T> extends Citation {
      *
      * <p>The XML {@linkplain #getName() attribute name} is {@code "gco:uuid"}. However, the
      * {@code "gco:"} prefix is omitted in XML documents (i.e. the {@code gco:uuid} attribute
-     * is <cite>unqualified</cite>).</p>
+     * is <i>unqualified</i>).</p>
      *
      * <p>Elements with {@code gco:uuid} attribute can be referenced from other XML elements using the
      * {@code gco:uuidref} attribute. However, this is not done automatically by Apache SIS. Users need

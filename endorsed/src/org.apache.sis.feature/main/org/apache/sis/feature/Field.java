@@ -18,7 +18,6 @@ package org.apache.sis.feature;
 
 import java.util.Collection;
 import java.util.Iterator;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.resources.Errors;
 
@@ -91,7 +90,6 @@ abstract class Field<V> extends Property {
      */
     public void setValues(final Collection<? extends V> values) throws IllegalArgumentException {
         V value = null;
-        ArgumentChecks.ensureNonNull("values", values);
         final Iterator<? extends V> it = values.iterator();
         if (it.hasNext()) {
             value = it.next();

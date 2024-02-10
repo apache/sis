@@ -134,7 +134,7 @@ public final class SyncWindowList extends TabularWidget implements ListChangeLis
      * @param  vocabulary  localized resources, given because already known by the caller
      *                     (those arguments would be removed if this constructor was public API).
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
+    @SuppressWarnings("unchecked")
     public SyncWindowList(final WindowHandler owner, final Resources resources, final Vocabulary vocabulary) {
         this.owner = owner;
         table = newTable();

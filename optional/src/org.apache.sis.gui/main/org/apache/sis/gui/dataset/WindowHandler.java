@@ -28,7 +28,6 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.property.StringProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ObservableList;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.storage.Resource;
@@ -126,7 +125,6 @@ public abstract class WindowHandler {
      * @return a handler for the window of the given widget.
      */
     public static WindowHandler create(final CoverageExplorer widget) {
-        ArgumentChecks.ensureNonNull("widget", widget);
         return new ForCoverage(null, widget.getLocale(), widget).finish();
     }
 
@@ -137,7 +135,6 @@ public abstract class WindowHandler {
      * @return a handler for the window of the given widget.
      */
     public static WindowHandler create(final FeatureTable widget) {
-        ArgumentChecks.ensureNonNull("widget", widget);
         return new ForFeatures(null, widget.textLocale, widget).finish();
     }
 

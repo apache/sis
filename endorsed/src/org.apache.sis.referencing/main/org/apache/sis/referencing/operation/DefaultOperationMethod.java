@@ -76,13 +76,13 @@ import org.apache.sis.io.wkt.FormattableObject;
  * because names can sometimes be ambiguous or be spelled in different ways.</p>
  *
  * <h2>Example</h2>
- * An operation method named “<cite>Mercator (variant A)</cite>” (EPSG:9804) expects the following parameters:
+ * An operation method named <q>Mercator (variant A)</q> (EPSG:9804) expects the following parameters:
  * <ul>
- *   <li>“<cite>Latitude of natural origin</cite>” in degrees. Default value is 0°.</li>
- *   <li>“<cite>Longitude of natural origin</cite>” in degrees. Default value is 0°.</li>
- *   <li>“<cite>Scale factor at natural origin</cite>” as a dimensionless number. Default value is 1.</li>
- *   <li>“<cite>False easting</cite>” in metres. Default value is 0 m.</li>
- *   <li>“<cite>False northing</cite>” in metres. Default value is 0 m.</li>
+ *   <li><q>Latitude of natural origin</q> in degrees. Default value is 0°.</li>
+ *   <li><q>Longitude of natural origin</q> in degrees. Default value is 0°.</li>
+ *   <li><q>Scale factor at natural origin</q> as a dimensionless number. Default value is 1.</li>
+ *   <li><q>False easting</q> in metres. Default value is 0 m.</li>
+ *   <li><q>False northing</q> in metres. Default value is 0 m.</li>
  * </ul>
  *
  * <h2>Departure from the ISO 19111 standard</h2>
@@ -384,7 +384,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
 
     /**
      * Number of dimensions in the source CRS of this operation method.
-     * May be null if unknown, as in an <cite>Affine Transform</cite>.
+     * May be null if unknown, as in an <i>Affine Transform</i>.
      *
      * @return the dimension of source CRS, or {@code null} if unknown.
      *
@@ -402,7 +402,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
 
     /**
      * Number of dimensions in the target CRS of this operation method.
-     * May be null if unknown, as in an <cite>Affine Transform</cite>.
+     * May be null if unknown, as in an <i>Affine Transform</i>.
      *
      * @return the dimension of target CRS, or {@code null} if unknown.
      *
@@ -512,7 +512,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
     }
 
     /**
-     * Formats this operation as a <cite>Well Known Text</cite> {@code Method[…]} element.
+     * Formats this operation as a <i>Well Known Text</i> {@code Method[…]} element.
      *
      * @return {@code "Method"} (WKT 2) or {@code "Projection"} (WKT 1).
      *

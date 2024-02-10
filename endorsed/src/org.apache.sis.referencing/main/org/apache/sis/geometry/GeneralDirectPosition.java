@@ -142,7 +142,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
 
     /**
      * Constructs a position initialized to the values parsed
-     * from the given string in <cite>Well Known Text</cite> (WKT) format.
+     * from the given string in <i>Well Known Text</i> (WKT) format.
      * The given string is typically a {@code POINT} element like below:
      *
      * {@snippet lang="wkt" :

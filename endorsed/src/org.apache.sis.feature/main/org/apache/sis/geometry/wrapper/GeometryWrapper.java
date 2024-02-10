@@ -212,7 +212,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
          * No common CRS. Consider that we have no intersection, no overlap, etc.
          * since the two geometries are existing in different coordinate spaces.
          */
-        return SpatialOperationContext.negativeResult(type);
+        return SpatialOperationContext.emptyResult(type);
     }
 
     /**
@@ -244,7 +244,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
          * No common CRS. Consider that we have no intersection, no overlap, etc.
          * since the two geometries are existing in different coordinate spaces.
          */
-        return SpatialOperationContext.negativeResult(type);
+        return SpatialOperationContext.emptyResult(type);
     }
 
     /**
@@ -554,7 +554,7 @@ public abstract class GeometryWrapper extends AbstractGeometry implements Geomet
      */
     @Override
     public final boolean equals(final Object obj) {
-        return (obj != null) && obj.getClass().equals(getClass()) &&
+        return (obj != null) && obj.getClass() == getClass() &&
                 Objects.equals(((GeometryWrapper) obj).implementation(), implementation());
     }
 

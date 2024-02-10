@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.Objects;
 import java.nio.ByteBuffer;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
@@ -28,7 +29,6 @@ import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import static java.util.logging.Logger.getLogger;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.system.Modules;
 
@@ -248,10 +248,8 @@ public class OptionKey<T> implements Serializable {
      * @param type  the type of values.
      */
     protected OptionKey(final String name, final Class<T> type) {
-        ArgumentChecks.ensureNonEmpty("name", name);
-        ArgumentChecks.ensureNonNull ("type", type);
-        this.name = name;
-        this.type = type;
+        this.name = Objects.requireNonNull(name);
+        this.type = Objects.requireNonNull(type);
     }
 
     /**
@@ -278,7 +276,6 @@ public class OptionKey<T> implements Serializable {
      *
      * {@snippet lang="java" :
      *     public <T> T getOption(final OptionKey<T> key) {
-     *         ArgumentChecks.ensureNonNull("key", key);
      *         return key.getValueFrom(options);
      *     }
      *     }
@@ -296,7 +293,6 @@ public class OptionKey<T> implements Serializable {
      *
      * {@snippet lang="java" :
      *     public <T> void setOption(final OptionKey<T> key, final T value) {
-     *         ArgumentChecks.ensureNonNull("key", key);
      *         options = key.setValueInto(options, value);
      *     }
      *     }

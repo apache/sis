@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import jakarta.xml.bind.annotation.XmlType;
@@ -489,9 +490,8 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      */
     @Override
     public DefaultCompoundCRS forConvention(final AxesConvention convention) {
-        ArgumentChecks.ensureNonNull("convention", convention);
         synchronized (forConvention) {
-            DefaultCompoundCRS crs = (DefaultCompoundCRS) forConvention.get(convention);
+            var crs = (DefaultCompoundCRS) forConvention.get(Objects.requireNonNull(convention));
             if (crs == null) {
                 crs = this;
                 boolean changed = false;
@@ -565,7 +565,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     }
 
     /**
-     * Formats this CRS as a <cite>Well Known Text</cite> {@code CompoundCRS[…]} element.
+     * Formats this CRS as a <i>Well Known Text</i> {@code CompoundCRS[…]} element.
      *
      * <h4>WKT validity</h4>
      * The WKT version 2 format restricts compound CRS to the following components in that order:

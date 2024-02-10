@@ -38,7 +38,7 @@ import org.apache.sis.util.internal.UnmodifiableArrayList;
 
 /**
  * A parameter value group which cannot be modified. This is especially important for parameters of
- * <cite>defining conversions</cite> since the same instance can be used for various source and target CRS.
+ * <i>defining conversions</i> since the same instance can be used for various source and target CRS.
  * Since {@link org.apache.sis.referencing.factory.sql.EPSGFactory} caches the {@code Conversion} instances,
  * unexpected behavior results if the parameters of a cached conversion have been modified, for example with
  * the addition of {@code semi_major} and {@code semi_minor} parameters by {@code DefaultMathTransformFactory}.
@@ -150,8 +150,7 @@ class UnmodifiableParameterValueGroup extends Parameters implements LenientCompa
      */
     @Override
     public final ParameterValue<?> parameter(final String name) throws ParameterNotFoundException {
-        ArgumentChecks.ensureNonNull("name", name);
-        final ParameterValue<?> value = parameterIfExist(name);
+        final ParameterValue<?> value = parameterIfExist(Objects.requireNonNull(name));
         if (value != null) {
             return value;
         }
@@ -164,7 +163,7 @@ class UnmodifiableParameterValueGroup extends Parameters implements LenientCompa
      */
     @Override
     public List<ParameterValueGroup> groups(final String name) throws ParameterNotFoundException {
-        ArgumentChecks.ensureNonNull("name", name);
+        Objects.requireNonNull(name);
         final List<ParameterValueGroup> groups = new ArrayList<>(4);
         for (final GeneralParameterValue value : values) {
             if (value instanceof ParameterValueGroup) {

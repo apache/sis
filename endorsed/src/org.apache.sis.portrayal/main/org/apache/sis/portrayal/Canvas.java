@@ -90,8 +90,8 @@ import org.apache.sis.coverage.CannotEvaluateException;
  * involved in the rendering of geospatial data:
  *
  * <ol class="verbose">
- *   <li>The <cite>data CRS</cite> is specific to the data to be displayed.
- *       It may be anything convertible to the <cite>objective CRS</cite>.
+ *   <li>The <dfn>data CRS</dfn> is specific to the data to be displayed.
+ *       It may be anything convertible to the <i>objective CRS</i>.
  *       Different graphic elements may use different data CRS,
  *       potentially with a different number of dimensions.</li>
  *   <li>The {@linkplain #getObjectiveCRS objective CRS} is the common CRS in which all data
@@ -162,7 +162,7 @@ public class Canvas extends Observable implements Localized {
     public static final String OBJECTIVE_CRS_PROPERTY = "objectiveCRS";
 
     /**
-     * The {@value} property name, used for notifications about changes in <cite>objective to display</cite> conversion.
+     * The {@value} property name, used for notifications about changes in <i>objective to display</i> conversion.
      * This conversion maps coordinates in the {@linkplain #getObjectiveCRS() objective CRS} to coordinates in the
      * {@linkplain #getDisplayCRS() display CRS}. Associated values are instances of {@link LinearTransform}.
      * The event class is the {@link TransformChangeEvent} specialization.
@@ -501,7 +501,7 @@ public class Canvas extends Observable implements Localized {
      * all listeners registered for the {@value #OBJECTIVE_CRS_PROPERTY} property.</p>
      *
      * <p>If the transform between old and new CRS is not identity, then this method recomputes the
-     * <cite>objective to display</cite> conversion in a way preserving the display coordinates of the given anchor,
+     * <i>objective to display</i> conversion in a way preserving the display coordinates of the given anchor,
      * together with the scales and orientations of features in close neighborhood of that point.
      * This calculation may cause {@value #OBJECTIVE_TO_DISPLAY_PROPERTY} property change event
      * with the {@link TransformChangeEvent.Reason#CRS_CHANGE} reason to be sent to listeners.
@@ -670,10 +670,10 @@ public class Canvas extends Observable implements Localized {
      * The source coordinates shall be in the CRS given by {@link #getObjectiveCRS()} and the
      * converted coordinates will be in the CRS given by {@link #getDisplayCRS()}.
      *
-     * <p>The <cite>objective to display</cite> conversion changes every time that user zooms
+     * <p>The <i>objective to display</i> conversion changes every time that user zooms
      * or scrolls on viewed data. However, the transform returned by this method is a snapshot
-     * taken at the time this method is invoked; subsequent changes in the <cite>objective to
-     * display</cite> conversion are not reflected in the returned transform.</p>
+     * taken at the time this method is invoked; subsequent changes in the <i>objective to
+     * display</i> conversion are not reflected in the returned transform.</p>
      *
      * @return snapshot of the (usually affine) conversion from objective CRS
      *         to display coordinate system (never {@code null}).
@@ -690,7 +690,7 @@ public class Canvas extends Observable implements Localized {
     }
 
     /**
-     * Returns the current <cite>objective to display</cite> conversion managed by the subclass.
+     * Returns the current <i>objective to display</i> conversion managed by the subclass.
      * This method is invoked only if {@link #objectiveToDisplay} is {@code null}, which may
      * happen either at initialization time or if the subclass uses its own specialized field
      * instead of {@link #objectiveToDisplay} for managing changes in the zooms or viewed area.
@@ -714,9 +714,9 @@ public class Canvas extends Observable implements Localized {
      * It does not update the {@value #POINT_OF_INTEREST_PROPERTY} property however. The point of interest may move
      * outside the view area as a result of this method call.</p>
      *
-     * @param  newValue  the new <cite>objective to display</cite> conversion.
+     * @param  newValue  the new <i>objective to display</i> conversion.
      * @throws IllegalArgumentException if given the transform does not have the expected number of dimensions or is not affine.
-     * @throws RenderException if the <cite>objective to display</cite> transform cannot be set to the given value for another reason.
+     * @throws RenderException if the <i>objective to display</i> transform cannot be set to the given value for another reason.
      */
     public void setObjectiveToDisplay(final LinearTransform newValue) throws RenderException {
         ArgumentChecks.ensureNonNull(OBJECTIVE_TO_DISPLAY_PROPERTY, newValue);
@@ -923,7 +923,7 @@ public class Canvas extends Observable implements Localized {
      * augmented with all (if possible) or some supplemental dimensions found in the point of interest.
      * For example if the canvas manages only (<var>x</var>,<var>y</var>) coordinates but the point of
      * interest includes also a <var>t</var> coordinate, then a third dimension (which we call the
-     * <cite>supplemental dimension</cite>) for <var>t</var> is added to the CRS, {@link GridExtent}
+     * <i>supplemental dimension</i>) for <var>t</var> is added to the CRS, {@link GridExtent}
      * and "grid to CRS" transform of the returned grid geometry.</p>
      *
      * <table class="sis">

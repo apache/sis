@@ -18,7 +18,7 @@ package org.apache.sis.style.se1;
 
 import java.net.URI;
 import java.awt.Color;
-import org.apache.sis.util.ArgumentChecks;
+import java.util.Objects;
 import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 
@@ -96,8 +96,7 @@ public class StyleFactory<R> {
      * @param  filterFactory  the factory to use for creating expressions.
      */
     public StyleFactory(final DefaultFilterFactory<R,?,?> filterFactory) {
-        ArgumentChecks.ensureNonNull("filterFactory", filterFactory);
-        this.filterFactory = filterFactory;
+        this.filterFactory = Objects.requireNonNull(filterFactory);
         enabled   = filterFactory.literal(Boolean.TRUE);
         disabled  = filterFactory.literal(Boolean.FALSE);
         zeroAsInt = filterFactory.literal(0);

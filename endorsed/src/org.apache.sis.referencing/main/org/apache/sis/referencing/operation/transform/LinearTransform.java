@@ -49,7 +49,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
  *
  * <h2>Projective transform</h2>
  * If the last matrix row does not met the above constraints, then the transform is not affine.
- * A <cite>projective</cite> transform can be used as a generalization of affine transforms.
+ * A <i>projective</i> transform can be used as a generalization of affine transforms.
  * In such case the computation performed by SIS is similar to {@code PerspectiveTransform}
  * in <cite>Java Advanced Imaging</cite>.
  * For example, a square matrix of size 4×4 is used for transforming three-dimensional coordinates.

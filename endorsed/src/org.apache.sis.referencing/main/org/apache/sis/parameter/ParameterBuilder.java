@@ -16,6 +16,7 @@
  */
 package org.apache.sis.parameter;
 
+import java.util.Objects;
 import javax.measure.Unit;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -24,7 +25,7 @@ import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Range;
 import org.apache.sis.referencing.Builder;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -273,7 +274,7 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
     public <T extends Comparable<? super T>> ParameterDescriptor<T> createBounded(final Class<T> valueClass,
             final T minimumValue, final T maximumValue, final T defaultValue)
     {
-        ensureNonNull("valueClass", valueClass);
+        ArgumentChecks.ensureNonNull("valueClass", valueClass);
         final Range<T> valueDomain;
         if (minimumValue == null && maximumValue == null) {
             valueDomain = null;
@@ -297,7 +298,6 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
     public <T extends Comparable<? super T>> ParameterDescriptor<T> createBounded(
             final Range<T> valueDomain, final T defaultValue)
     {
-        ensureNonNull("valueDomain", valueDomain);
         return create(valueDomain.getElementType(), valueDomain, null, defaultValue);
     }
 
@@ -317,8 +317,7 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
      * @return the parameter descriptor for the given set of valid values.
      */
     public <T> ParameterDescriptor<T> createEnumerated(final Class<T> valueClass, final T[] validValues, final T defaultValue) {
-        ensureNonNull("valueClass", valueClass);
-        return create(valueClass, null, validValues, defaultValue);
+        return create(Objects.requireNonNull(valueClass), null, validValues, defaultValue);
     }
 
     /**
@@ -403,7 +402,7 @@ public class ParameterBuilder extends Builder<ParameterBuilder> {
 
     /**
      * Creates a descriptor group for a map projection. This method automatically adds mandatory parameters
-     * for the <cite>semi-major</cite> and <cite>semi-minor axis length</cite>. Those parameters are usually
+     * for the <i>semi-major</i> and <i>semi-minor axis length</i>. Those parameters are usually
      * not explicitly included in parameter definitions since the axis lengths can be inferred from the
      * {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid ellipsoid}.
      * However, {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory} needs them.

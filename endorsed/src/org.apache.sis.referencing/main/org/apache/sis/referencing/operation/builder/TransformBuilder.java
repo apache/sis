@@ -24,7 +24,7 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 
 /**
  * Creates a transform which will map approximately the given source positions to the given target positions.
- * The transform may be a linear approximation the minimize the errors in a <cite>least square</cite> sense,
+ * The transform may be a linear approximation the minimize the errors in a <i>least square</i> sense,
  * or a more accurate transform using a localization grid.
  *
  * <p>Builders are not thread-safe. Builders can be used only once;

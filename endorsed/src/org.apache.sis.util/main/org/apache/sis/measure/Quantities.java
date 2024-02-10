@@ -27,7 +27,6 @@ import javax.measure.quantity.Length;
 import javax.measure.format.MeasurementParseException;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -78,7 +77,6 @@ public final class Quantities extends Static {
      * @see UnitServices#getQuantityFactory(Class)
      */
     public static <Q extends Quantity<Q>> Q create(final double value, final Unit<Q> unit) {
-        ArgumentChecks.ensureNonNull("unit", unit);
         final Unit<Q> system = unit.getSystemUnit();
         if (system instanceof SystemUnit<?>) {
             final UnitConverter c = unit.getConverterTo(system);

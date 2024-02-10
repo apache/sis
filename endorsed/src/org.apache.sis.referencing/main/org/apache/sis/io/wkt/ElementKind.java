@@ -29,7 +29,7 @@ import org.apache.sis.util.Numbers;
 
 
 /**
- * Kind of an element in a <cite>Well Known Text</cite>.
+ * Kind of an element in a <i>Well Known Text</i>.
  * Different kinds of elements can be associated to different {@linkplain Colors colors}.
  *
  * @author  Martin Desruisseaux (Geomatys)

@@ -30,7 +30,7 @@ import java.util.Collection;
  *       See {@link org.opengis.metadata.maintenance.ScopeCode#SERIES} for more examples.</li>
  *   <li><b>Sensor series:</b> a collection of resources observed by the same sensor.</li>
  *   <li><b>Platform series:</b> a collection of resources observed by sensors installed on the same platform.
- *       The {@linkplain #components() components} of a platform series are <cite>sensor series</cite>.
+ *       The {@linkplain #components() components} of a platform series are <i>sensor series</i>.
  *       Those components usually share the same geospatial geometry.</li>
  *   <li><b>Production series:</b> a collection of resources produced using the same process. Members of a production
  *       series share {@linkplain org.apache.sis.metadata.iso.DefaultMetadata#getResourceLineages() lineage} and
@@ -41,7 +41,7 @@ import java.util.Collection;
  * </ul>
  *
  * The same resource may be part of more than one aggregate. For example, the same resource could be part of
- * a <cite>production series</cite> and a <cite>transfer aggregate</cite>. In Apache SIS implementation,
+ * a <i>production series</i> and a <i>transfer aggregate</i>. In Apache SIS implementation,
  * those two kinds of aggregate will usually be implemented by different {@link DataStore} instances.
  *
  * <h2>Metadata</h2>

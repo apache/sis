@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Iterator;
+import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
@@ -32,14 +33,13 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Localized;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Vocabulary;
 
 
 /**
- * Warnings that occurred during a <cite>Well Known Text</cite> (WKT) parsing or formatting.
+ * Warnings that occurred during a <i>Well Known Text</i> (WKT) parsing or formatting.
  * Information provided by this object include:
  *
  * <ul>
@@ -243,7 +243,7 @@ public final class Warnings implements Localized, Serializable {
      * @return the <var>i</var>-th warning message.
      */
     public String getMessage(int index) {
-        ArgumentChecks.ensureValidIndex(getNumMessages(), index);
+        Objects.checkIndex(index, getNumMessages());
         index *= 2;
         final InternationalString i18n = (InternationalString) messages.get(index);
         if (i18n != null) {
@@ -266,7 +266,7 @@ public final class Warnings implements Localized, Serializable {
      * @return the exception which was the cause of the warning message, or {@code null} if none.
      */
     public Exception getException(final int index) {
-        ArgumentChecks.ensureValidIndex(getNumMessages(), index);
+        Objects.checkIndex(index, getNumMessages());
         return (Exception) messages.get(index*2 + 1);
     }
 

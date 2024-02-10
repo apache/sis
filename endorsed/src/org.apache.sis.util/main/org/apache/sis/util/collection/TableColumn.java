@@ -17,12 +17,12 @@
 package org.apache.sis.util.collection;
 
 import java.util.Map;
+import java.util.Objects;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import java.io.InvalidObjectException;
 import org.opengis.annotation.Obligation;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.resources.Vocabulary;
 
@@ -52,7 +52,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *     }
  *
  * <h2>Identity comparisons and serialization</h2>
- * This base class relies on <cite>identity comparisons</cite> instead of defining the
+ * This base class relies on <em>identity comparisons</em> instead of defining the
  * {@code equals(Object)} method, because the {@linkplain #getElementType() element type}
  * is not a sufficient criterion for differentiating the columns (many columns have values
  * of the same type) and the {@linkplain #getHeader() header} is arbitrary. Consequently
@@ -286,8 +286,8 @@ public class TableColumn<V> implements CheckedContainer<V> {
      * @param header  the text to display as column header.
      */
     public TableColumn(final Class<V> type, final CharSequence header) {
-        ArgumentChecks.ensureNonNull("type",   this.type   = type);
-        ArgumentChecks.ensureNonNull("header", this.header = header);
+        this.type   = Objects.requireNonNull(type);
+        this.header = Objects.requireNonNull(header);
     }
 
     /**

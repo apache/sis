@@ -17,7 +17,6 @@
 package org.apache.sis.util.iso;
 
 import java.util.Map;
-import java.util.LinkedHashMap;
 import java.io.Serializable;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -29,8 +28,8 @@ import org.opengis.util.MemberName;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.pending.jdk.JDK19;
 
 // Specific to the main branch:
 import org.apache.sis.metadata.simple.SimpleAttributeType;
@@ -147,7 +146,7 @@ abstract class RecordDefinition {                                       // Inten
     final Type[] computeTransientFields(final Map<? extends MemberName, ? extends Type> fieldTypes) {
         final int size = fieldTypes.size();
         fieldNames   = new MemberName[size];
-        fieldIndices = new LinkedHashMap<>(Containers.hashMapCapacity(size));
+        fieldIndices = JDK19.newLinkedHashMap(size);
         final Type[] types = new Type[size];
         int i = 0;
         for (final Map.Entry<? extends MemberName, ? extends Type> entry : fieldTypes.entrySet()) {

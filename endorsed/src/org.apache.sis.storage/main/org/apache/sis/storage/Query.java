@@ -78,7 +78,7 @@ public abstract class Query {
      * {@linkplain org.apache.sis.coverage.BandedCoverage#getSampleDimensions() sample dimensions}.
      *
      * <p><b>Note:</b> in this context, the "projection" word come from relational database terminology.
-     * It is unrelated to <cite>map projection</cite>.</p>
+     * It is unrelated to <i>map projection</i>.</p>
      *
      * @param  properties  properties to retrieve, or {@code null} to retrieve all properties.
      * @throws IllegalArgumentException if a property is duplicated.

@@ -35,7 +35,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 /**
  * An immutable {@code Envelope} (a minimum bounding box or rectangle) of arbitrary dimension.
  * This class is final in order to ensure that the immutability contract cannot be broken
- * (assuming not using <cite>Java Native Interface</cite> or reflections).
+ * (assuming not using <i>Java Native Interface</i> or reflections).
  *
  * <h2>Immutability and thread safety</h2>
  * This final class is immutable and thus inherently thread-safe if the {@link CoordinateReferenceSystem}
@@ -134,7 +134,7 @@ public final class ImmutableEnvelope extends ArrayEnvelope implements Serializab
 
     /**
      * Constructs a new envelope initialized to the values parsed from the given string in
-     * {@code BOX} or <cite>Well Known Text</cite> (WKT) format. The given string is typically
+     * {@code BOX} or <i>Well Known Text</i> (WKT) format. The given string is typically
      * a {@code BOX} element like below:
      *
      * {@snippet lang="wkt" :

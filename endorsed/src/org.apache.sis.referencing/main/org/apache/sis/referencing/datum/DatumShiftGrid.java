@@ -40,7 +40,7 @@ import org.apache.sis.measure.Units;
 
 /**
  * Small but non-constant translations to apply on coordinates for datum shifts or other transformation process.
- * The main purpose of this class is to encapsulate the data provided by <cite>datum shift grid files</cite>
+ * The main purpose of this class is to encapsulate the data provided by <i>datum shift grid files</i>
  * like NTv2, NADCON or RGF93. But this class could also be used for other kind of transformations,
  * provided that the shifts are relatively small (otherwise algorithms may not converge).
  *
@@ -87,7 +87,7 @@ import org.apache.sis.measure.Units;
  *   </li>
  *
  *   <li><b>Localization grid of raster data</b><br>
- *   Some remote sensing raster data are provided with a <cite>localization grid</cite> giving pixel coordinates
+ *   Some remote sensing raster data are provided with a <i>localization grid</i> giving pixel coordinates
  *   (e.g. latitude and longitude). This can be seen as a change from {@linkplain DefaultEngineeringDatum
  *   image datum} to {@linkplain DefaultGeodeticDatum geodetic datum}. The coordinate transformation process
  *   can sometimes be performed by a mathematical conversion (for example an affine transform) applied as a
@@ -266,7 +266,6 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * @param  other  the other datum shift grid from which to copy the grid geometry.
      */
     protected DatumShiftGrid(final DatumShiftGrid<C,T> other) {
-        ArgumentChecks.ensureNonNull("other", other);
         coordinateUnit   = other.coordinateUnit;
         coordinateToGrid = other.coordinateToGrid;
         isCellValueRatio = other.isCellValueRatio;

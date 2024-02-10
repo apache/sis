@@ -155,7 +155,6 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
             final int minimumOccurs, final int maximumOccurs, GeneralParameterDescriptor... parameters)
     {
         super(properties, minimumOccurs, maximumOccurs);
-        ArgumentChecks.ensureNonNull("parameters", parameters);
         verifyNames(properties, parameters = parameters.clone());
         descriptors = asList(parameters);
     }

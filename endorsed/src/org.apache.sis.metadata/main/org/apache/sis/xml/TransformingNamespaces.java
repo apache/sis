@@ -113,7 +113,7 @@ class TransformingNamespaces implements NamespaceContext {
          * If no unique namespace can be mapped (for example if asking the namespace of legacy
          * {@code "gmd"} prefix), returns {@link XMLConstants#NULL_NS_URI}.
          *
-         * <p>Except for {@code NULL_NS_URI}, this is usually an <cite>injective</cite> function:
+         * <p>Except for {@code NULL_NS_URI}, this is usually an <i>injective</i> function:
          * each namespace can be created from at most one prefix.</p>
          *
          * @see TransformedEvent.Start#getNamespaceURI(String)
@@ -127,7 +127,7 @@ class TransformingNamespaces implements NamespaceContext {
          * {@code "http://standards.iso.org/iso/19115/-3/mdb/1.0"} namespace from ISO 19115-3,
          * this method returns {@code "gmd"} which was the prefix used in legacy ISO 19139:2007.
          *
-         * <p>This is a <cite>surjective</cite> function:
+         * <p>This is a <i>surjective</i> function:
          * many prefixes can be created from the same namespace.</p>
          */
         @Override
@@ -139,7 +139,7 @@ class TransformingNamespaces implements NamespaceContext {
          * Returns all prefixes for the given namespace. There is usually only one, contrarily
          * to {@link TransformingNamespaces#getPrefixes(String)} which have many.
          *
-         * <p>This is a <cite>surjective</cite> function:
+         * <p>This is a <i>surjective</i> function:
          * many prefixes can be created from the same namespace.</p>
          */
         @Override

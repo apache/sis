@@ -92,7 +92,7 @@ import org.apache.sis.referencing.internal.Legacy;
 
 
 /**
- * Provides support methods for formatting a <cite>Well Known Text</cite> (WKT).
+ * Provides support methods for formatting a <i>Well Known Text</i> (WKT).
  *
  * <p>{@code Formatter} instances are created by {@link WKTFormat} and given to the
  * {@link FormattableObject#formatTo(Formatter)} method of the object to format.

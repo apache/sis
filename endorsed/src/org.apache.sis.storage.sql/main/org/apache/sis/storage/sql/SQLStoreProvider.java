@@ -17,10 +17,11 @@
 package org.apache.sis.storage.sql;
 
 import java.util.Map;
+import java.util.Objects;
+import java.util.logging.Logger;
 import java.sql.Connection;
 import java.sql.SQLException;
 import javax.sql.DataSource;
-import java.util.logging.Logger;
 import org.opengis.util.GenericName;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -41,7 +42,6 @@ import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.util.UnconvertibleObjectException;
-import org.apache.sis.util.ArgumentChecks;
 import static org.apache.sis.storage.sql.feature.Database.WILDCARD;
 
 
@@ -106,13 +106,15 @@ public class SQLStoreProvider extends DataStoreProvider {
      *
      * @since 1.1
      */
-    public static final ParameterDescriptor<Map> QUERIES_PARAM;
+    public static final ParameterDescriptor<Map<?,?>> QUERIES_PARAM;
 
     /**
      * The parameter descriptor to be returned by {@link #getOpenParameters()}.
      */
     private static final ParameterDescriptorGroup OPEN_DESCRIPTOR;
     static {
+        @SuppressWarnings("unchecked")
+        final Class<Map<?,?>> map = (Class) Map.class;
         final ParameterBuilder builder = new ParameterBuilder();
         SOURCE_PARAM = builder.addName(LOCATION).setRequired(true)
                               .setDescription(Resources.formatInternational(Resources.Keys.DataSource))
@@ -122,7 +124,7 @@ public class SQLStoreProvider extends DataStoreProvider {
                               .create(GenericName[].class, null);
         QUERIES_PARAM = builder.addName(QUERIES)
                               .setDescription(Resources.formatInternational(Resources.Keys.MappedSQLQueries))
-                              .create(Map.class, null);
+                              .create(map, null);
         OPEN_DESCRIPTOR = builder.addName(NAME).createGroup(SOURCE_PARAM, TABLES_PARAM, QUERIES_PARAM);
     }
 
@@ -184,6 +186,7 @@ public class SQLStoreProvider extends DataStoreProvider {
      * @throws DataStoreException if an SQL error occurred.
      */
     @Override
+    @SuppressWarnings("try")
     public ProbeResult probeContent(final StorageConnector connector) throws DataStoreException {
         final DataSource ds = connector.getStorageAs(DataSource.class);
         if (ds != null) {
@@ -221,9 +224,8 @@ public class SQLStoreProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
-        ArgumentChecks.ensureNonNull("parameters", parameters);
         try {
-            final Parameters p = Parameters.castOrWrap(parameters);
+            final Parameters p = Parameters.castOrWrap(Objects.requireNonNull(parameters));
             final StorageConnector connector = new StorageConnector(p.getValue(SOURCE_PARAM));
             final GenericName[] tableNames = p.getValue(TABLES_PARAM);
             final Map<?,?> queries = p.getValue(QUERIES_PARAM);

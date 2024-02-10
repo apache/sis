@@ -154,9 +154,9 @@ public enum AxisType {
                      */
                     if (Units.isAngular(axis.getUnit())) {
                         final AxisDirection direction = AxisDirections.absolute(Axis.direction(axis.getUnitsString()));
-                        if (AxisDirection.EAST.equals(direction)) {
+                        if (direction == AxisDirection.EAST) {
                             return 'λ';
-                        } else if (AxisDirection.NORTH.equals(direction)) {
+                        } else if (direction == AxisDirection.NORTH) {
                             return 'φ';
                         }
                     }

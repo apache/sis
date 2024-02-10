@@ -243,7 +243,7 @@ public final class Numerics extends Static {
 
     /**
      * Returns {@code x+y} with saturation if the result overflows long capacity.
-     * This is <cite>saturation arithmetic</cite>.
+     * This is <i>saturation arithmetic</i>.
      *
      * @param  x  the value for which to add something.
      * @param  y  the value to add to {@code x}.
@@ -257,7 +257,7 @@ public final class Numerics extends Static {
 
     /**
      * Returns {@code x-y} with saturation if the result overflows long capacity.
-     * This is <cite>saturation arithmetic</cite>.
+     * This is <i>saturation arithmetic</i>.
      *
      * @param  x  the value for which to add something.
      * @param  y  the value to subtract from {@code x}.

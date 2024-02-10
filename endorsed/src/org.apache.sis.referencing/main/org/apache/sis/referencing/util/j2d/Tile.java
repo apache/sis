@@ -160,7 +160,6 @@ public class Tile implements Serializable {
      *                     This argument can be understood as pixel size relative to finest resolution.
      */
     public Tile(final Point location, final Dimension subsampling) {
-        ArgumentChecks.ensureNonNull("location", location);
         x = location.x;
         y = location.y;
         setSubsampling(subsampling);
@@ -178,7 +177,6 @@ public class Tile implements Serializable {
      * @throws IllegalArgumentException if the given region {@linkplain Rectangle#isEmpty() is empty}.
      */
     public Tile(final Rectangle region, final Dimension subsampling) {
-        ArgumentChecks.ensureNonNull("location", region);
         x      = region.x;
         y      = region.y;
         width  = region.width;
@@ -427,7 +425,7 @@ public class Tile implements Serializable {
      *
      * <h4>Tip</h4>
      * The <a href="https://en.wikipedia.org/wiki/World_file">World File</a> coefficients of this tile
-     * (i.e. the <cite>grid to CRS</cite> transform that we would have if the pixel in the upper-left
+     * (i.e. the <i>grid to CRS</i> transform that we would have if the pixel in the upper-left
      * corner always had indices (0,0)) can be computed as below:
      *
      * {@snippet lang="java" :

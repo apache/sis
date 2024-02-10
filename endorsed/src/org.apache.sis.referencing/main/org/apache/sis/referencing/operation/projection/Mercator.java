@@ -62,7 +62,7 @@ import static org.apache.sis.math.MathFunctions.isPositive;
  * equator (if a scale factor other than 1 is used).
  *
  * <p>This projection is used to represent areas close to the equator. It is also often used for maritime navigation
- * because all the straight lines on the chart are <cite>loxodrome</cite> lines, i.e. a ship following this line would
+ * because all the straight lines on the chart are <dfn>loxodrome</dfn> lines, i.e. a ship following this line would
  * keep a constant azimuth on its compass.</p>
  *
  * <p>This implementation handles both the 1 and 2 standard parallel cases.
@@ -334,7 +334,7 @@ public class Mercator extends ConformalProjection {
     }
 
     /**
-     * Returns the sequence of <cite>normalization</cite> → {@code this} → <cite>denormalization</cite> transforms
+     * Returns the sequence of <i>normalization</i> → {@code this} → <i>denormalization</i> transforms
      * as a whole. The transform returned by this method expects (<var>longitude</var>, <var>latitude</var>)
      * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
      *

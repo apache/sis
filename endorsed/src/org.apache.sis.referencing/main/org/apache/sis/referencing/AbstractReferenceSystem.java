@@ -39,7 +39,7 @@ import org.apache.sis.referencing.internal.Legacy;
  * and {@linkplain #getRemarks() remarks} from the parent class.</p>
  *
  * <h2>Instantiation</h2>
- * This class is conceptually <cite>abstract</cite>, even if it is technically possible to instantiate it.
+ * This class is conceptually <i>abstract</i>, even if it is technically possible to instantiate it.
  * Typical applications should create instances of the most specific subclass prefixed by {@code Default} instead.
  *
  * <h2>Immutability and thread safety</h2>

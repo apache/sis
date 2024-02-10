@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.builder;
 
 import java.util.Map;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -54,7 +55,7 @@ import static org.apache.sis.referencing.operation.builder.ResidualGrid.SOURCE_D
 
 /**
  * Creates an "almost linear" transform mapping the given source points to the given target points.
- * The transform is backed by a <cite>grid of localization</cite>, a two-dimensional array of coordinate tuples.
+ * The transform is backed by a <dfn>grid of localization</dfn>, a two-dimensional array of coordinate tuples.
  * Grid size is {@code width} × {@code height} and input coordinates are (<var>i</var>,<var>j</var>) indices in the grid,
  * where <var>i</var> must be in the [0…{@code width}-1] range and <var>j</var> in the [0…{@code height}-1] range inclusive.
  * Output coordinates are the values stored in the grid of localization at the specified index.
@@ -215,7 +216,6 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * @since 1.0
      */
     public LocalizationGridBuilder(final LinearTransformBuilder localizations) {
-        ArgumentChecks.ensureNonNull("localizations", localizations);
         int n = localizations.getGridDimensions();
         if (n == SOURCE_DIMENSION) {
             linearBuilder = localizations;
@@ -371,7 +371,6 @@ public class LocalizationGridBuilder extends TransformBuilder {
      */
     public void setSourceToGrid(final LinearTransform sourceToGrid) {
         ensureModifiable();
-        ArgumentChecks.ensureNonNull("sourceToGrid", sourceToGrid);
         int isTarget = 0;
         int dim = sourceToGrid.getSourceDimensions();
         if (dim >= SOURCE_DIMENSION) {
@@ -451,8 +450,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      */
     public void setControlPoints(final Vector... coordinates) {
         ensureModifiable();
-        ArgumentChecks.ensureNonNull("coordinates", coordinates);
-        linearBuilder.setControlPoints(coordinates);
+        linearBuilder.setControlPoints(Objects.requireNonNull(coordinates));
     }
 
     /**
@@ -594,7 +592,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * identity transform} should be included in the given {@code projections} map.
      *
      * <p>The linearizers are specified as {@link MathTransform}s from current {@linkplain #getControlPoint(int, int)
-     * target coordinates of control points} to other spaces where <cite>sources to new targets</cite> transforms may
+     * target coordinates of control points} to other spaces where <i>sources to new targets</i> transforms may
      * be more linear. The keys in the map are arbitrary identifiers.
      * The {@code projToGrid} argument specifies which control point dimensions to use as {@code projections} source
      * coordinates and can be null or omitted if the projections shall be applied on all target coordinates.
@@ -618,9 +616,8 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * @since 1.1
      */
     public void addLinearizers(final Map<String,MathTransform> projections, final boolean compensate, final int... projToGrid) {
-        ArgumentChecks.ensureNonNull("projections", projections);
         ensureModifiable();
-        linearBuilder.addLinearizers(projections, compensate, projToGrid);
+        linearBuilder.addLinearizers(Objects.requireNonNull(projections), compensate, projToGrid);
     }
 
     /**
@@ -738,7 +735,7 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * In such case, {@link LinearTransformBuilder} selects a linearizer identified by the returned
      * <var>key</var> - <var>value</var> entry. The entry key is one of the keys of the maps given
      * to {@code addLinearizers(…)}. The entry value is the associated {@code MathTransform},
-     * possibly modified as described in the <cite>axis order</cite> section below.
+     * possibly modified as described in the <i>axis order</i> section below.
      *
      * <p>All control points returned by {@link #getControlPoint(int, int)} are projected by the selected transform.
      * Consequently, if the target coordinates of original control points are desired, then the transform computed by

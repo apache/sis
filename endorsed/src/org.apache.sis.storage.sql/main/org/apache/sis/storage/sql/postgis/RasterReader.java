@@ -59,7 +59,7 @@ import org.apache.sis.pending.jdk.JDK18;
 
 
 /**
- * A reader of rasters encoded in <cite>Well Known Binary</cite> (WKB) format.
+ * A reader of rasters encoded in <i>Well Known Binary</i> (WKB) format.
  * This format is specific to PostGIS 2 (this is not yet an OGC standard at the
  * time of writing this class), but it can nevertheless be used elsewhere.
  *
@@ -74,7 +74,7 @@ import org.apache.sis.pending.jdk.JDK18;
 public final class RasterReader extends RasterFormat {
     /**
      * Conversion from pixel coordinates to CRS coordinates.
-     * This is defined by 6 affine transform coefficients similar to the <cite>World File</cite> format.
+     * This is defined by 6 affine transform coefficients similar to the <i>World File</i> format.
      */
     private AffineTransform2D gridToCRS;
 

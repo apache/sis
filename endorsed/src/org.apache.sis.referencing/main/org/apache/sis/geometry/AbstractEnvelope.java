@@ -36,22 +36,21 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.RangeMeaning;
+import org.apache.sis.util.ArgumentCheckByAssertion;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.referencing.util.TemporalAccessor;
-import org.apache.sis.util.internal.ArgumentCheckByAssertion;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.measure.Range;
 import org.apache.sis.math.Vector;
 
 import static java.lang.Double.doubleToLongBits;
 import static org.apache.sis.util.internal.Numerics.SIGN_BIT_MASK;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 import static org.apache.sis.util.StringBuilders.trimFractionalPart;
 import static org.apache.sis.math.MathFunctions.epsilonEqual;
@@ -191,8 +190,6 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
                                                   final DirectPosition upperCorner)
             throws MismatchedReferenceSystemException
     {
-        ensureNonNull("lowerCorner", lowerCorner);
-        ensureNonNull("upperCorner", upperCorner);
         final CoordinateReferenceSystem crs1 = lowerCorner.getCoordinateReferenceSystem();
         final CoordinateReferenceSystem crs2 = upperCorner.getCoordinateReferenceSystem();
         if (crs1 == null) {
@@ -241,9 +238,11 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * @param  axis  the axis to test, or {@code null}.
      * @return {@code true} if the range meaning is {@code WRAPAROUND}.
+     *
+     * @see org.apache.sis.referencing.util.CoordinateOperations#isWrapAround(CoordinateSystemAxis)
      */
     static boolean isWrapAround(final CoordinateSystemAxis axis) {
-        return (axis != null) && RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning());
+        return (axis != null) && axis.getRangeMeaning() == RangeMeaning.WRAPAROUND;
     }
 
     /**
@@ -437,7 +436,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * dimension is {@linkplain RangeMeaning#WRAPAROUND wraparound}, then the median calculated
      * above is actually in the middle of the space <em>outside</em> the envelope. In such cases,
      * this method shifts the <var>median</var> value by half of the periodicity (180° in the
-     * longitude case) in order to switch from <cite>outer</cite> space to <cite>inner</cite>
+     * longitude case) in order to switch from <i>outer</i> space to <i>inner</i>
      * space. If the axis range meaning is not {@code WRAPAROUND}, then this method returns
      * {@link Double#NaN NaN}.
      *
@@ -581,7 +580,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *   <li>If this envelope {@linkplain #isEmpty() is empty}, then this method returns an empty array.</li>
      *   <li>If this envelope does not have any wraparound behavior, then this method returns {@code this}
      *       in an array of length 1. This envelope is <strong>not</strong> cloned.</li>
-     *   <li>If this envelope crosses the <cite>anti-meridian</cite> (a.k.a. <cite>date line</cite>)
+     *   <li>If this envelope crosses the <i>anti-meridian</i> (a.k.a. <i>date line</i>)
      *       then this method returns two separated envelopes covering the same area as this envelopes.
      *   <li>While uncommon, the envelope could theoretically crosses the limit of other axis having
      *       wraparound range meaning. If wraparounds occur along <var>n</var> axes, then this method
@@ -767,7 +766,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * <h4>Preconditions</h4>
      * This method assumes that the specified point uses a CRS equivalent to this envelope CRS.
-     * For performance reasons, it will no be verified unless Java assertions are enabled.
+     * For performance reasons, this condition is not verified unless Java assertions are enabled.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * For any dimension, if <var>upper</var> &lt; <var>lower</var> then this method uses an
@@ -782,7 +781,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      */
     @ArgumentCheckByAssertion
     public boolean contains(final DirectPosition position) throws MismatchedDimensionException {
-        ensureNonNull("position", position);
+        // Implicit null check below.
         final int dimension = getDimension();
         ensureDimensionMatches("point", dimension, position);
         assert assertEquals(getCoordinateReferenceSystem(), position.getCoordinateReferenceSystem()) : position;
@@ -819,7 +818,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * <h4>Preconditions</h4>
      * This method assumes that the specified envelope uses the same CRS as this envelope.
-     * For performance reasons, it will no be verified unless Java assertions are enabled.
+     * For performance reasons, this condition is not verified unless Java assertions are enabled.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * For every cases illustrated below, the yellow box is considered completely enclosed
@@ -861,7 +860,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      */
     @ArgumentCheckByAssertion
     public boolean contains(final Envelope envelope, final boolean edgesInclusive) throws MismatchedDimensionException {
-        ensureNonNull("envelope", envelope);
+        // Implicit null check below.
         final int dimension = getDimension();
         ensureDimensionMatches("envelope", dimension, envelope);
         assert assertEquals(getCoordinateReferenceSystem(), envelope.getCoordinateReferenceSystem()) : envelope;
@@ -949,7 +948,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * <h4>Preconditions</h4>
      * This method assumes that the specified envelope uses the same CRS as this envelope.
-     * For performance reasons, it will no be verified unless Java assertions are enabled.
+     * For performance reasons, this condition is not verified unless Java assertions are enabled.
      *
      * <h4>Crossing the anti-meridian of a Geographic CRS</h4>
      * This method can handle envelopes crossing the anti-meridian.
@@ -997,7 +996,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      */
     @ArgumentCheckByAssertion
     public boolean intersects(final Envelope envelope, final boolean touch) throws MismatchedDimensionException {
-        ensureNonNull("envelope", envelope);
+        // Implicit null check below.
         final int dimension = getDimension();
         ensureDimensionMatches("envelope", dimension, envelope);
         assert assertEquals(getCoordinateReferenceSystem(), envelope.getCoordinateReferenceSystem()) : envelope;
@@ -1105,7 +1104,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * @see #intersects(Envelope)
      */
     public boolean equals(final Envelope other, final double eps, final boolean epsIsRelative) {
-        ensureNonNull("other", other);
+        // Implicit null check below.
         final int dimension = getDimension();
         if (other.getDimension() != dimension ||
                 !equals(getCoordinateReferenceSystem(), other.getCoordinateReferenceSystem(),
@@ -1211,7 +1210,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * by the {@code GeneralEnvelope} constructor.
      *
      * <h4>Note on standards</h4>
-     * The {@code BOX} element is not part of the standard <cite>Well Known Text</cite> (WKT) format.
+     * The {@code BOX} element is not part of the standard <i>Well Known Text</i> (WKT) format.
      * However, it is understood by many software libraries, for example GDAL and PostGIS.
      *
      * @return this envelope as a {@code BOX} or {@code BOX3D} (most typical dimensions) element.
@@ -1274,7 +1273,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * adjusted for the axis unit of measurement and the planet size if different than Earth).</p>
      *
      * <h4>Note on standards</h4>
-     * The {@code BOX} element is not part of the standard <cite>Well Known Text</cite> (WKT) format.
+     * The {@code BOX} element is not part of the standard <i>Well Known Text</i> (WKT) format.
      * However, it is understood by many software libraries, for example GDAL and PostGIS.
      *
      * @param  formatter  the formatter where to format the inner content of this envelope.

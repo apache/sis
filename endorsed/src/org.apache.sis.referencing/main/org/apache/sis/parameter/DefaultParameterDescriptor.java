@@ -31,17 +31,16 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
-import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.gco.PropertyType;
 import org.apache.sis.xml.bind.metadata.replace.QualityParameter;
 import org.apache.sis.xml.bind.referencing.CC_OperationParameter;
 import org.apache.sis.referencing.IdentifiedObjects;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
-import static org.apache.sis.util.ArgumentChecks.ensureCanCast;
 
 
 /**
@@ -204,8 +203,8 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
                                       final T             defaultValue)
     {
         super(properties, minimumOccurs, maximumOccurs);
-        ensureNonNull("valueClass",   valueClass);
-        ensureCanCast("defaultValue", valueClass, defaultValue);
+        ArgumentChecks.ensureNonNull("valueClass",   valueClass);
+        ArgumentChecks.ensureCanCast("defaultValue", valueClass, defaultValue);
         if (valueDomain != null) {
             Class<?> componentType = valueClass.getComponentType();
             if (componentType != null) {

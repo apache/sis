@@ -56,11 +56,6 @@ import org.apache.sis.util.resources.Errors;
  *     {@link #ensureCanCast(String, Class, Object) ensureCanCast}.
  *   </td>
  * </tr><tr>
- *   <td>{@link IndexOutOfBoundsException}</td>
- *   <td class="sep">
- *     {@link #ensureValidIndex(int, int) ensureValidIndex}.
- *   </td>
- * </tr><tr>
  *   <td>{@link MismatchedDimensionException}</td>
  *   <td class="sep">
  *     {@link #ensureDimensionMatches(String, int, DirectPosition) ensureDimensionMatches}.
@@ -98,14 +93,31 @@ public final class ArgumentChecks extends Static {
     /**
      * Makes sure that an argument is non-null. If the given {@code object} is null, then a
      * {@link NullPointerException} is thrown with a localized message containing the given name.
+     * This method differs from {@link java.util.Objects#requireNonNull(Object, String)} in that
+     * the {@code String} argument is only the parameter name, not the full exception message.
+     *
+     * <h4>Suggestions about when to use</h4>
+     * This method is helpful for validating arguments in a method receiving many arguments,
+     * when there is a potential ambiguity about which argument is {@code null}.
+     * This method is also useful when the validation is done in a private method invoked by a public method,
+     * because it is no longer obvious that a {@link NullPointerException} is caused by a null argument given
+     * to the public method.
+     *
+     * <h4>Suggestions about when to not use</h4>
+     * When there is no ambiguity, for example in methods receiving a single argument, the standard
+     * {@link java.util.Objects#requireNonNull(Object)} method should be preferred as it is more efficient.
+     * Another situation where to not use this method is when an implicit null check would occur early
+     * because the argument is used immediately. Since Java 14, the exception thrown by implicit null
+     * checks contains sufficiently <a href="https://openjdk.org/jeps/358">helpful message</a>.
      *
      * @param  name    the name of the argument to be checked. Used only if an exception is thrown.
      * @param  object  the user argument to check against null value.
      * @throws NullPointerException if {@code object} is null.
+     *
+     * @see java.util.Objects#requireNonNull(Object)
+     * @see java.util.Objects#requireNonNull(Object, String)
      */
-    public static void ensureNonNull(final String name, final Object object)
-            throws NullPointerException
-    {
+    public static void ensureNonNull(final String name, final Object object) throws NullPointerException {
         if (object == null) {
             throw new NullPointerException(Errors.format(Errors.Keys.NullArgument_1, name));
         }
@@ -332,7 +344,10 @@ public final class ArgumentChecks extends Static {
      * @throws IndexOutOfBoundsException if the given index is negative or not lower than the given upper value.
      *
      * @see #ensurePositive(String, int)
+     *
+     * @deprecated As of Java 9, replaced by {@link Objects#checkIndex(int, int)}.
      */
+    @Deprecated(since="1.5", forRemoval=true)
     public static void ensureValidIndex(final int upper, final int index) throws IndexOutOfBoundsException {
         if (index < 0 || index >= upper) {
             throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IndexOutOfBounds_1, index));
@@ -356,7 +371,10 @@ public final class ArgumentChecks extends Static {
      *         range is out of the sequence index range.
      *
      * @see #ensureCountBetween(String, boolean, int, int, int)
+     *
+     * @deprecated As of Java 9, replaced by {@link Objects#checkFromToIndex(int, int, int)}.
      */
+    @Deprecated(since="1.5", forRemoval=true)
     public static void ensureValidIndexRange(final int length, final int lower, final int upper) throws IndexOutOfBoundsException {
         if (lower < 0 || upper < lower || upper > length) {
             throw new IndexOutOfBoundsException(Errors.format(Errors.Keys.IllegalRange_2, lower, upper));
@@ -366,13 +384,12 @@ public final class ArgumentChecks extends Static {
     /**
      * Ensures that the given integer value is greater than or equals to zero.
      * This method is used for checking values that are <strong>not</strong> index.
-     * For checking index values, use {@link #ensureValidIndex(int, int)} instead.
+     * For checking index values, use {@link Objects#checkIndex(int, int)} instead.
      *
      * @param  name   the name of the argument to be checked, used only if an exception is thrown.
      * @param  value  the user argument to check.
      * @throws IllegalArgumentException if the given value is negative.
      *
-     * @see #ensureValidIndex(int, int)
      * @see #ensureStrictlyPositive(String, int)
      */
     public static void ensurePositive(final String name, final int value)
@@ -565,7 +582,7 @@ public final class ArgumentChecks extends Static {
      * <ul>
      *   <li>{@link #ensureCountBetween(String, boolean, int, int, int) ensureCountBetween(…)}
      *       if the {@code value} argument is a collection size or an array length.</li>
-     *   <li>{@link #ensureValidIndex(int, int) ensureValidIndex(…)} if the {@code value}
+     *   <li>{@link Objects#checkIndex(int, int)} if the {@code value}
      *       argument is an index in a list or an array.</li>
      * </ul>
      *
@@ -576,8 +593,6 @@ public final class ArgumentChecks extends Static {
      * @throws IllegalArgumentException if the given value is not in the given range.
      *
      * @see #ensureCountBetween(String, boolean, int, int, int)
-     * @see #ensureValidIndex(int, int)
-     * @see #ensureValidIndexRange(int, int, int)
      */
     public static void ensureBetween(final String name, final int min, final int max, final int value)
             throws IllegalArgumentException
@@ -657,7 +672,6 @@ public final class ArgumentChecks extends Static {
      * @throws IllegalArgumentException if the given value is not in the given range.
      *
      * @see #ensureBetween(String, int, int, int)
-     * @see #ensureValidIndexRange(int, int, int)
      *
      * @since 1.4
      */

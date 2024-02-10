@@ -332,7 +332,7 @@ final class Normalizer implements Comparable<Normalizer> {
                  * If we were not allowed to normalize the axis direction, we may have a
                  * left-handed coordinate system here. If so, make it right-handed.
                  */
-                if (AxisDirections.CLOCKWISE.equals(newAxes[1].getDirection()) && isLengthAndAngle(newAxes, 0)) {
+                if (newAxes[1].getDirection() == AxisDirections.CLOCKWISE && isLengthAndAngle(newAxes, 0)) {
                     ArraysExt.swap(newAxes, 0, 1);
                 }
             }
@@ -394,7 +394,7 @@ final class Normalizer implements Comparable<Normalizer> {
         final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[cs.getDimension()];
         for (int i=0; i<axes.length; i++) {
             CoordinateSystemAxis axis = cs.getAxis(i);
-            if (RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning())) {
+            if (axis.getRangeMeaning() == RangeMeaning.WRAPAROUND) {
                 double min = axis.getMinimumValue();
                 if (min < 0) {
                     double max = axis.getMaximumValue();

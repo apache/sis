@@ -41,7 +41,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
  * <h2>Relationship with Java Content Repository (JCR) names</h2>
  * In the Java standard {@link javax.xml.namespace.QName} class and in the Java Content Repository (JCR) specification,
  * a name is an ordered pair of ({@code namespace}, {@code localPart}) strings. A JCR name can take two lexical forms:
- * <cite>expanded form</cite> and <cite>qualified form</cite>. Those names are mapped to generic names as below:
+ * <i>expanded form</i> and <i>qualified form</i>. Those names are mapped to generic names as below:
  *
  * <blockquote><table class="sis" style="white-space: nowrap">
  *   <caption>Equivalence between JCR name and {@code GenericName}</caption>
@@ -440,7 +440,7 @@ public final class Names extends Static {
     }
 
     /**
-     * Formats the given name in <cite>expanded form</cite> close to the Java Content Repository (JCR) definition.
+     * Formats the given name in <i>expanded form</i> close to the Java Content Repository (JCR) definition.
      * The expanded form is defined as below:
      *
      * <blockquote><pre> ExpandedName ::= '{' NameSpace '}' LocalPart

@@ -18,9 +18,7 @@ package org.apache.sis.storage;
 
 import java.util.Arrays;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.OptionalLong;
 import java.util.function.Function;
@@ -41,10 +39,10 @@ import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.internal.SortByComparator;
 import org.apache.sis.filter.internal.XPath;
 import org.apache.sis.storage.internal.Resources;
+import org.apache.sis.pending.jdk.JDK19;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.resources.Vocabulary;
 
@@ -69,9 +67,9 @@ import org.apache.sis.pending.geoapi.filter.SortProperty;
  * <h2>Terminology</h2>
  * This class uses relational database terminology:
  * <ul>
- *   <li>A <cite>selection</cite> is a filter choosing the features instances to include in the subset.
+ *   <li>A <dfn>selection</dfn> is a filter choosing the features instances to include in the subset.
  *       In relational databases, a feature instances are mapped to table rows.</li>
- *   <li>A <cite>projection</cite> (not to be confused with map projection) is the set of feature properties to keep.
+ *   <li>A <dfn>projection</dfn> (not to be confused with map projection) is the set of feature properties to keep.
  *       In relational databases, feature properties are mapped to table columns.</li>
  * </ul>
  *
@@ -99,7 +97,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
     /**
      * The properties to retrieve, or {@code null} if all properties shall be included in the query.
      * In a database, "properties" are table columns.
-     * Subset of columns is called <cite>projection</cite> in relational database terminology.
+     * Subset of columns is called <dfn>projection</dfn> in relational database terminology.
      *
      * @see #getProjection()
      * @see #setProjection(NamedExpression[])
@@ -109,7 +107,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
     /**
      * The filter for trimming feature instances.
      * In a database, "feature instances" are table rows.
-     * Subset of rows is called <cite>selection</cite> in relational database terminology.
+     * Subset of rows is called <dfn>selection</dfn> in relational database terminology.
      *
      * @see #getSelection()
      * @see #setSelection(Filter)
@@ -215,7 +213,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      * in the returned features.
      *
      * <p>This is equivalent to the column names in the {@code SELECT} clause of a SQL statement.
-     * Subset of columns is called <cite>projection</cite> in relational database terminology.</p>
+     * Subset of columns is called <dfn>projection</dfn> in relational database terminology.</p>
      *
      * @param  properties  properties to retrieve, or {@code null} to retrieve all properties.
      * @throws IllegalArgumentException if a property or an alias is duplicated.
@@ -225,7 +223,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
         if (properties != null) {
             ArgumentChecks.ensureNonEmpty("properties", properties);
             properties = properties.clone();
-            final Map<Object,Integer> uniques = new LinkedHashMap<>(Containers.hashMapCapacity(properties.length));
+            final Map<Object,Integer> uniques = JDK19.newLinkedHashMap(properties.length);
             for (int i=0; i<properties.length; i++) {
                 final NamedExpression c = properties[i];
                 ArgumentChecks.ensureNonNullElement("properties", i, c);
@@ -441,8 +439,8 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      *
      * <h2>Analogy with relational databases</h2>
      * The terminology used in this enumeration is close to the one used in relational database.
-     * A <cite>projection</cite> is the set of feature properties to keep in the query results.
-     * The projection may contain <cite>generated columns</cite>, which are specified in SQL by
+     * A <dfn>projection</dfn> is the set of feature properties to keep in the query results.
+     * The projection may contain <dfn>generated columns</dfn>, which are specified in SQL by
      * {@code SQL GENERATED ALWAYS} statement, optionally with {@code STORED} or {@code VIRTUAL}
      * modifier.
      *
@@ -516,7 +514,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      *
      * <h2>Analogy with relational databases</h2>
      * A {@code NamedExpression} instance can be understood as the definition of a column in a SQL database table.
-     * In relational database terminology, subset of columns is called <cite>projection</cite>.
+     * In relational database terminology, subset of columns is called <dfn>projection</dfn>.
      * A projection is specified by a SQL {@code SELECT} statement, which maps to {@code NamedExpression} as below:
      *
      * <p>{@code SELECT} {@link #expression} {@code AS} {@link #alias}</p>
@@ -582,8 +580,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
          * @param alias       the name to assign to the expression result, or {@code null} if unspecified.
          */
         public NamedExpression(final Expression<? super AbstractFeature,?> expression, final String alias) {
-            ArgumentChecks.ensureNonNull("expression", expression);
-            this.expression = expression;
+            this.expression = Objects.requireNonNull(expression);
             this.alias = (alias != null) ? Names.createLocalName(null, null, alias) : null;
             this.type = ProjectionType.STORED;
         }
@@ -598,11 +595,9 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
          * @since 1.4
          */
         public NamedExpression(final Expression<? super AbstractFeature,?> expression, final GenericName alias, ProjectionType type) {
-            ArgumentChecks.ensureNonNull("expression", expression);
-            ArgumentChecks.ensureNonNull("type", type);
-            this.expression = expression;
-            this.alias = alias;
-            this.type  = type;
+            this.expression = Objects.requireNonNull(expression);
+            this.type       = Objects.requireNonNull(type);
+            this.alias      = alias;
         }
 
         /**
@@ -703,7 +698,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
      * @since 1.2
      */
     protected FeatureSet execute(final FeatureSet source) throws DataStoreException {
-        ArgumentChecks.ensureNonNull("source", source);
+        Objects.requireNonNull(source);
         final FeatureQuery query = clone();
         if (query.selection != null) {
             final Optimization optimization = new Optimization();
@@ -758,7 +753,7 @@ public class FeatureQuery extends Query implements Cloneable, Serializable {
                  * We may have collision of their `String` representations however, which is okay.
                  */
                 if (names == null) {
-                    names = new HashSet<>(Containers.hashMapCapacity(projection.length));
+                    names = JDK19.newHashSet(projection.length);
                     for (final NamedExpression p : projection) {
                         if (p.alias != null) {
                             names.add(p.alias.toString());

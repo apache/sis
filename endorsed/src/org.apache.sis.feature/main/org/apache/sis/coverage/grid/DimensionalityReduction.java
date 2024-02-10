@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Objects;
 import java.util.function.UnaryOperator;
 import java.io.Serializable;
 import org.opengis.util.FactoryException;
@@ -32,9 +33,9 @@ import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArgumentCheckByAssertion;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.internal.Numerics;
-import org.apache.sis.util.internal.ArgumentCheckByAssertion;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.geometry.GeneralDirectPosition;
@@ -303,8 +304,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
     private static BitSet bitmask(final int[] axes, final int sourceDim) {
         final BitSet bitmask = new BitSet(sourceDim);
         for (final int dim : axes) {
-            ArgumentChecks.ensureValidIndex(sourceDim, dim);
-            bitmask.set(dim);
+            bitmask.set(Objects.checkIndex(dim, sourceDim));
         }
         return bitmask;
     }
@@ -321,7 +321,6 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
      * @throws IllegalGridGeometryException if the dimensions to keep cannot be separated from the dimensions to omit.
      */
     public static DimensionalityReduction select(final GridGeometry source, final int... gridAxesToPass) {
-        ArgumentChecks.ensureNonNull("source", source);
         final BitSet bitmask = bitmask(gridAxesToPass, source.getDimension());
         try {
             return new DimensionalityReduction(source, bitmask, null);
@@ -362,7 +361,6 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
      * @throws IllegalGridGeometryException if the dimensions to keep cannot be separated from the dimensions to omit.
      */
     public static DimensionalityReduction remove(final GridGeometry source, final int... gridAxesToRemove) {
-        ArgumentChecks.ensureNonNull("source", source);
         final int sourceDim = source.getDimension();
         final BitSet bitmask = bitmask(gridAxesToRemove, sourceDim);
         bitmask.flip(0, sourceDim);
@@ -385,7 +383,6 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
      * @see #select2D(GridGeometry)
      */
     public static DimensionalityReduction reduce(final GridGeometry source) {
-        ArgumentChecks.ensureNonNull("source", source);
         final GridExtent extent = source.getExtent();
         final int sourceDim = extent.getDimension();
         final BitSet bitmask = new BitSet(sourceDim);
@@ -511,9 +508,9 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
      * @return removed part of the conversion from grid coordinates to "real world" coordinates.
      */
     private MathTransform getRemovedGridToCRS(final PixelInCell anchor) {
-        if (PixelInCell.CELL_CENTER.equals(anchor)) {
+        if (anchor == PixelInCell.CELL_CENTER) {
             return removedGridToCRS;
-        } else if (PixelInCell.CELL_CORNER.equals(anchor)) {
+        } else if (anchor == PixelInCell.CELL_CORNER) {
             return removedCornerToCRS;
         }  else {
             return PixelTranslation.translate(removedGridToCRS, PixelInCell.CELL_CENTER, anchor);
@@ -630,9 +627,11 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
 
     /**
      * Returns a coordinate tuple on which dimensionality reduction has been applied.
+     *
+     * <h4>Precondition</h4>
      * The coordinate reference system of the given {@code source} should be either
      * null or equal (ignoring metadata) to the CRS of the source grid geometry.
-     * For performance reason, this is not verified unless assertions are enabled.
+     * For performance reason, this condition is not verified unless Java assertions are enabled.
      *
      * @param  source  the source coordinate tuple, or {@code null}.
      * @return the reduced coordinate tuple, or {@code null} if the given source was null.
@@ -732,7 +731,6 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
      */
     @Override
     public GridCoverage apply(final GridCoverage source) {
-        ArgumentChecks.ensureNonNull("source", source);
         ensureSameAxes(sourceGeometry.extent, source.getGridGeometry().extent);
         if (isIdentity()) return source;
         if (source instanceof DimensionAppender) try {
@@ -942,7 +940,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
      * @throws PointOutsideCoverageException if the given point is outside the source grid extent.
      */
     public DimensionalityReduction withSlicePoint(final long[] point) {
-        ArgumentChecks.ensureNonNull("point", point);
+        Objects.requireNonNull(point);
         final GridExtent extent = sourceGeometry.getExtent();
         final int sourceDim = extent.getDimension();
         final Map<Integer,Long> slices = new HashMap<>();

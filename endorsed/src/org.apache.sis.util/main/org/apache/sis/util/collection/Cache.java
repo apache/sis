@@ -106,13 +106,13 @@ import org.apache.sis.system.ReferenceQueueConsumer;
  * <h2>Eviction of eldest values</h2>
  *
  * <ul>
- *   <li>The <cite>cost</cite> of a value is the value returned by {@link #cost}. The default
+ *   <li>The <dfn>cost</dfn> of a value is the value returned by {@link #cost}. The default
  *       implementation returns 1 in all cases, but subclasses can override this method for
  *       more elaborated cost computation.</li>
- *   <li>The <cite>total cost</cite> is the sum of the cost of all values held by strong
+ *   <li>The <dfn>total cost</dfn> is the sum of the cost of all values held by strong
  *       reference in this cache. The total cost does not include the cost of values held
  *       by {@linkplain Reference weak or soft reference}.</li>
- *   <li>The <cite>cost limit</cite> is the maximal value allowed for the total cost. If
+ *   <li>The <dfn>cost limit</dfn> is the maximal value allowed for the total cost. If
  *       the total cost exceed this value, then strong references to the eldest values are
  *       replaced by {@linkplain Reference weak or soft references} until the total cost
  *       become equals or lower than the cost limit.</li>
@@ -204,9 +204,9 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * a little bit of CPU time may be saved if the expected capacity is known before the cache
      * is created.
      *
-     * <p>The <cite>cost limit</cite> is the maximal value of the <cite>total cost</cite> (the sum
-     * of the {@linkplain #cost cost} of all values) before to replace eldest strong references by
-     * {@linkplain Reference weak or soft references}.</p>
+     * <p>The <dfn>cost limit</dfn> is the maximal value of the <dfn>total cost</dfn> (the sum
+     * of the {@linkplain #cost cost} of all values) before to replace eldest strong references
+     * by {@linkplain Reference weak or soft references}.</p>
      *
      * @param initialCapacity  the initial capacity.
      * @param costLimit        the maximum cost (inclusive) of objects to keep by strong reference.

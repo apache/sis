@@ -18,6 +18,7 @@ package org.apache.sis.storage.base;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.Objects;
 import java.awt.image.RenderedImage;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.SampleDimension;
@@ -29,7 +30,6 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -61,13 +61,12 @@ public final class MemoryGridResource extends AbstractGridCoverageResource {
      */
     public MemoryGridResource(final StoreListeners parent, final GridCoverage coverage, final GridCoverageProcessor processor) {
         super(parent, false);
-        ArgumentChecks.ensureNonNull("coverage", coverage);
-        this.coverage = coverage;
+        this.coverage  = Objects.requireNonNull(coverage);
         this.processor = (processor != null) ? processor : new GridCoverageProcessor();
     }
 
     /**
-     * Returns information about the <cite>domain</cite> of wrapped grid coverage.
+     * Returns information about the <i>domain</i> of wrapped grid coverage.
      *
      * @return extent of grid coordinates together with their mapping to "real world" coordinates.
      */
@@ -77,7 +76,7 @@ public final class MemoryGridResource extends AbstractGridCoverageResource {
     }
 
     /**
-     * Returns information about the <cite>ranges</cite> of wrapped grid coverage.
+     * Returns information about the <i>ranges</i> of wrapped grid coverage.
      *
      * @return ranges of sample values together with their mapping to "real values".
      */

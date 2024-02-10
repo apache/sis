@@ -20,12 +20,12 @@ import java.util.Map;
 import java.util.HashMap;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.AbstractMap;
 import org.apache.sis.util.internal.CollectionsExt;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.resources.Errors;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
+import org.apache.sis.pending.jdk.JDK19;
 
 
 /**
@@ -106,11 +106,12 @@ final class CharacteristicTypeMap extends AbstractMap<String,DefaultAttributeTyp
     private CharacteristicTypeMap(final DefaultAttributeType<?> source, final DefaultAttributeType<?>[] characterizedBy) {
         this.characterizedBy = characterizedBy;
         int index = 0;
-        final Map<String,Integer> indices = new HashMap<>(Containers.hashMapCapacity(characterizedBy.length));
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final Map<String,Integer> indices = JDK19.newHashMap(characterizedBy.length);
         final Map<String,Integer> aliases = new HashMap<>();
         for (int i=0; i<characterizedBy.length; i++) {
             final DefaultAttributeType<?> attribute = characterizedBy[i];
-            ensureNonNullElement("characterizedBy", i, attribute);
+            ArgumentChecks.ensureNonNullElement("characterizedBy", i, attribute);
             GenericName name = attribute.getName();
             String key = AbstractIdentifiedType.toString(name, source, "characterizedBy", i);
             final Integer value = index++;

@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.gridded;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.AbstractMap;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.concurrent.Callable;
@@ -44,7 +43,6 @@ import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
@@ -53,6 +51,7 @@ import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.InterpolatedTransform;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
+import org.apache.sis.pending.jdk.JDK19;
 
 
 /**
@@ -495,7 +494,7 @@ public abstract class LoadedGrid<C extends Quantity<C>, T extends Quantity<T>> e
         if (subgrids == null) {
             return global;
         }
-        final Map<Envelope,MathTransform> specializations = new LinkedHashMap<>(Containers.hashMapCapacity(subgrids.length));
+        final Map<Envelope,MathTransform> specializations = JDK19.newLinkedHashMap(subgrids.length);
         for (final LoadedGrid<Angle,Angle> sg : subgrids) try {
             final Envelope domain = sg.getDomainOfValidity(Units.DEGREE);
             final MathTransform st = createGeodeticTransformation(provider, factory, sg);

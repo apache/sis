@@ -19,6 +19,7 @@ package org.apache.sis.referencing.factory.sql;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -41,7 +42,6 @@ import org.apache.sis.metadata.sql.util.Initializer;
 import org.apache.sis.referencing.internal.DeferredCoordinateOperation;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.util.ReferencingFactoryContainer;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Localized;
@@ -228,7 +228,7 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      *  </tr><tr>
      *   <td>{@code locale}</td>
      *   <td>{@link Locale}</td>
-     *   <td>The locale for producing error messages on a <cite>best effort</cite> basis.</td>
+     *   <td>The locale for producing error messages on a <em>best effort</em> basis.</td>
      *  </tr>
      * </table>
      *
@@ -375,10 +375,9 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * @see InstallationScriptProvider
      */
     public synchronized void install(final Connection connection) throws UnavailableFactoryException {
-        ArgumentChecks.ensureNonNull("connection", connection);
         String    message = null;
         Exception failure = null;
-        try (EPSGInstaller installer = new EPSGInstaller(connection)) {
+        try (EPSGInstaller installer = new EPSGInstaller(Objects.requireNonNull(connection))) {
             final boolean ac = connection.getAutoCommit();
             if (ac) {
                 connection.setAutoCommit(false);

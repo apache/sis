@@ -40,7 +40,7 @@ import org.apache.sis.io.wkt.Formatter;
  * image resampling operations for avoiding to project the coordinates of every pixels
  * when a bilinear interpolation between nearby pixels would be sufficient. Coordinate
  * conversions applied by this class are from <em>target</em> grid cell <em>centers</em>
- * to <cite>source</cite> grid cell centers.
+ * to <em>source</em> grid cell centers.
  *
  * <p>{@code ResamplingGrid} operates on a delimited space specified by a {@link Rectangle}.
  * This space is subdivided into "tiles" (not necessarily coincident with image tiles) where

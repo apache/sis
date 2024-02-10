@@ -30,7 +30,7 @@ import org.opengis.util.GenericName;
  * However, the number of dimensions must be the same for all tile matrices.
  *
  * <p>The {@code TileMatrixSet} concept is derived from OGC standards. The same concept is called
- * <cite>image pyramid</cite> or <cite>resolution levels</cite> in some other standards.
+ * <i>image pyramid</i> or <i>resolution levels</i> in some other standards.
  * Some standards require that all scales must be related by a power of 2,
  * but {@code TileMatrixSet} does not have this restriction.</p>
  *

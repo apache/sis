@@ -17,12 +17,12 @@
 package org.apache.sis.filter;
 
 import java.util.Collection;
+import java.util.Objects;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometry.WraparoundMethod;
 import org.apache.sis.geometry.wrapper.SpatialOperationContext;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.geometry.wrapper.Geometries;
-import org.apache.sis.util.ArgumentChecks;
 
 // Specific to the main branch:
 import org.apache.sis.pending.geoapi.filter.SpatialOperatorName;
@@ -81,8 +81,7 @@ final class BinarySpatialFilter<R> extends BinaryGeometryFilter<R> {
                         final Expression<R,?> geometry2)
     {
         super(library, geometry1, geometry2, null);
-        this.operatorType = operatorType;
-        ArgumentChecks.ensureNonNull("operatorType", operatorType);
+        this.operatorType = Objects.requireNonNull(operatorType);
     }
 
     /**
@@ -144,14 +143,14 @@ final class BinarySpatialFilter<R> extends BinaryGeometryFilter<R> {
                 warning(e, true);
             }
         }
-        return negativeResult();
+        return emptyResult();
     }
 
     /**
      * Returns the value to return when a test cannot be applied.
      */
     @Override
-    protected boolean negativeResult() {
-        return SpatialOperationContext.negativeResult(operatorType);
+    protected boolean emptyResult() {
+        return SpatialOperationContext.emptyResult(operatorType);
     }
 }

@@ -18,7 +18,6 @@ package org.apache.sis.feature;
 
 import java.util.Map;
 import org.opengis.util.GenericName;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.internal.Cloner;
 import org.apache.sis.util.internal.CloneAccess;
 import org.apache.sis.util.internal.AbstractMap;
@@ -163,7 +162,6 @@ final class CharacteristicMap extends AbstractMap<String,AbstractAttribute<?>> i
      * @throws IllegalArgumentException if the given key is not the name of a characteristic in this map.
      */
     private int indexOf(final String key) {
-        ArgumentChecks.ensureNonNull("key", key);
         final Integer index = types.indices.get(key);
         if (index == null) {
             throw new IllegalArgumentException(Resources.format(
@@ -200,7 +198,6 @@ final class CharacteristicMap extends AbstractMap<String,AbstractAttribute<?>> i
     @Override
     public AbstractAttribute<?> put(final String key, final AbstractAttribute<?> value) {
         final int index = indexOf(key);
-        ArgumentChecks.ensureNonNull("value", value);
         verifyAttributeType(index, value.getType());
         if (characterizedBy == null) {
             characterizedBy = new AbstractAttribute<?>[types.characterizedBy.length];
@@ -241,7 +238,6 @@ final class CharacteristicMap extends AbstractMap<String,AbstractAttribute<?>> i
      */
     @Override
     protected boolean addValue(final AbstractAttribute<?> value) {
-        ArgumentChecks.ensureNonNull("value", value);
         final int index = indexOf(value.getName().toString());
         verifyAttributeType(index, value.getType());
         if (characterizedBy == null) {
@@ -336,7 +332,6 @@ final class CharacteristicMap extends AbstractMap<String,AbstractAttribute<?>> i
 
         /** Sets the attribute characteristic. */
         @Override public AbstractAttribute<?> setValue(final AbstractAttribute<?> value) {
-            ArgumentChecks.ensureNonNull("value", value);
             verifyAttributeType(index, value.getType());
             final AbstractAttribute<?> previous = this.value;
             characterizedBy[index] = value;

@@ -20,6 +20,7 @@ import java.io.Reader;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import javax.imageio.stream.ImageInputStream;
+import java.util.Objects;
 import java.util.logging.Logger;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -610,8 +611,7 @@ public abstract class DataStoreProvider {
      * @since 0.8
      */
     public DataStore open(final ParameterValueGroup parameters) throws DataStoreException {
-        ArgumentChecks.ensureNonNull("parameter", parameters);
-        return open(URIDataStoreProvider.connector(this, parameters));
+        return open(URIDataStoreProvider.connector(this, Objects.requireNonNull(parameters)));
     }
 
     /**

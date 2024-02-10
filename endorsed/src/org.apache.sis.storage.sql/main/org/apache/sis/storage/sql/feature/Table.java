@@ -17,7 +17,6 @@
 package org.apache.sis.storage.sql.feature;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Optional;
 import java.util.stream.Stream;
 import java.sql.Connection;
@@ -31,9 +30,9 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.metadata.sql.util.Reflection;
 import org.apache.sis.metadata.sql.util.SQLBuilder;
+import org.apache.sis.pending.jdk.JDK19;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.collection.WeakValueHashMap;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.iso.DefaultNameSpace;
 
@@ -365,7 +364,7 @@ final class Table extends AbstractFeatureSet {
         synchronized (this) {
             m = attributeToColumns;
             if (m == null) {
-                m = new HashMap<>(Containers.hashMapCapacity(attributes.length));
+                m = JDK19.newHashMap(attributes.length);
                 for (final Column c : attributes) {
                     String label = c.propertyName;
                     m.put(label, c);

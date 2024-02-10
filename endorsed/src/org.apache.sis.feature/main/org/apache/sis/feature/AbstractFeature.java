@@ -104,8 +104,7 @@ public abstract class AbstractFeature implements Serializable {
      * @see DefaultFeatureType#newInstance()
      */
     protected AbstractFeature(final DefaultFeatureType type) {
-        ArgumentChecks.ensureNonNull("type", type);
-        this.type = type;
+        this.type = Objects.requireNonNull(type);
     }
 
     /**
@@ -205,7 +204,6 @@ public abstract class AbstractFeature implements Serializable {
      * @see #setPropertyValue(String, Object)
      */
     public void setProperty(final Object property) throws IllegalArgumentException {
-        ArgumentChecks.ensureNonNull("property", property);
         final String name = ((Property) property).getName().toString();
         verifyPropertyType(name, (Property) property);
         if (property instanceof AbstractAttribute<?> && !Containers.isNullOrEmpty(((AbstractAttribute<?>) property).characteristics())) {
@@ -376,7 +374,7 @@ public abstract class AbstractFeature implements Serializable {
      *
      * Note that if a property of the given name exists but has no value, then this method returns the
      * {@linkplain DefaultAttributeType#getDefaultValue() default value} (which may be {@code null}).
-     * <cite>Property without value</cite> is not equivalent to <cite>non-existent property</cite>.
+     * <i>Property without value</i> is not equivalent to <i>non-existent property</i>.
      *
      * @param  name  the property name.
      * @param  missingPropertyFallback  the (potentially {@code null}) value to return

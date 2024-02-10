@@ -18,9 +18,9 @@ package org.apache.sis.xml;
 
 import java.util.Map;
 import java.util.Locale;
+import java.util.Objects;
 import javax.xml.XMLConstants;
 import org.apache.sis.util.Static;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import static org.apache.sis.metadata.internal.ImplementationHelper.ISO_NAMESPACE;
 
@@ -592,8 +592,7 @@ public final class Namespaces extends Static {
      *         and the {@code defaultValue} is null.
      */
     public static String getPreferredPrefix(String namespace, final String defaultValue) {
-        ArgumentChecks.ensureNonNull("namespace", namespace);
-        String prefix = SPECIFIC_URLS.get(namespace);
+        String prefix = SPECIFIC_URLS.get(Objects.requireNonNull(namespace));
         if (prefix != null) {
             return prefix;
         }

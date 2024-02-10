@@ -74,9 +74,9 @@ import org.apache.sis.feature.internal.Resources;
  * assignable to the super-type property.
  *
  * <div class="note"><b>Analogy:</b> compared to the Java language, the above rule is similar to overriding a method
- * with a more specific return type (a.k.a. <cite>covariant return type</cite>). This is also similar to Java arrays,
- * which are implicitly <cite>covariant</cite> (i.e. {@code String[]} can be casted to {@code CharSequence[]}, which
- * is safe for read operations but not for write operations — the latter may throw {@link ArrayStoreException}).</div>
+ * with a more specific return type (a.k.a. <dfn>covariant return type</dfn>). This is also similar to Java arrays,
+ * which are implicitly <i>covariant</i> (i.e. {@code String[]} can be casted to {@code CharSequence[]}, which is
+ * safe for read operations but not for write operations — the latter may throw {@link ArrayStoreException}).</div>
  *
  * <h2>Instantiation</h2>
  * {@code DefaultFeatureType} can be instantiated directly by a call to its {@linkplain #DefaultFeatureType constructor}.
@@ -257,7 +257,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
      *
      * @see org.apache.sis.feature.builder.FeatureTypeBuilder
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
+    @SuppressWarnings("this-escape")
     public DefaultFeatureType(final Map<String,?> identification, final boolean isAbstract,
             final DefaultFeatureType[] superTypes, final AbstractIdentifiedType... properties)
     {
@@ -674,8 +674,7 @@ public class DefaultFeatureType extends AbstractIdentifiedType implements Featur
         if (type == this) {
             return true;                            // Optimization for a common case.
         }
-        ArgumentChecks.ensureNonNull("type", type);
-        if (!maybeAssignableFrom(this, type)) {
+        if (!maybeAssignableFrom(this, Objects.requireNonNull(type))) {
             return false;
         }
         /*

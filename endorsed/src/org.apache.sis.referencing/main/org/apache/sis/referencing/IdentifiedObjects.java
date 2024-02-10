@@ -669,7 +669,7 @@ public final class IdentifiedObjects extends Static {
      *   <li>All characters that are not {@linkplain Character#isLetterOrDigit(int) letters or digits}
      *       (e.g. {@code "Mercator (1SP)"} and {@code "Mercator_1SP"} are considered equal).</li>
      *   <li>Namespaces or scopes, because this method is typically invoked with either the value of another
-     *       <code>IdentifiedObject.getName().getCode()</code> or with the <cite>Well Known Text</cite> (WKT)
+     *       <code>IdentifiedObject.getName().getCode()</code> or with the <i>Well Known Text</i> (WKT)
      *       projection or parameter name.</li>
      * </ul>
      *

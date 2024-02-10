@@ -29,7 +29,6 @@ import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Errors;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 
 /**
@@ -195,16 +194,16 @@ public class AbstractIdentifiedType implements Deprecable, Serializable {
      * the {@code "definition_fr_CA"} property stands for remarks in {@linkplain Locale#CANADA_FRENCH French Canadian}.
      * They are convenience properties for building the {@code InternationalString} value.
      *
-     * <p>The {@code "locale"} property applies only in case of exception for formatting the error message, and
-     * is used only on a <cite>best effort</cite> basis. The locale is discarded after successful construction
-     * since localizations are applied by the {@link InternationalString#toString(Locale)} method.</p>
+     * <p>The {@code "locale"} property applies only in case of exception for formatting the error message,
+     * and is used only on a <em>best effort</em> basis. The locale is discarded after successful construction
+     * because localizations are applied by the {@link InternationalString#toString(Locale)} method.</p>
      *
      * @param  identification  the name and other information to be given to this identified type.
      * @throws IllegalArgumentException if a property has an invalid value.
      */
-    @SuppressWarnings("OverridableMethodCallInConstructor")
+    @SuppressWarnings("this-escape")
     protected AbstractIdentifiedType(final Map<String,?> identification) throws IllegalArgumentException {
-        ensureNonNull("identification", identification);
+        // Implicit null value check.
         Object value = identification.get(NAME_KEY);
         if (value == null) {
             throw new IllegalArgumentException(Errors.forProperties(identification)

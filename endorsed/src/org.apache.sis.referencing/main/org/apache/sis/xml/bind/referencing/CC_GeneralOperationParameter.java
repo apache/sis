@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import jakarta.xml.bind.annotation.XmlElementRef;
@@ -39,13 +38,13 @@ import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.util.CorruptedObjectException;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.IdentifiedObject;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.gco.PropertyType;
-import org.apache.sis.util.resources.Errors;
+import org.apache.sis.pending.jdk.JDK19;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.ReferenceIdentifier;
@@ -324,7 +323,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
                                           boolean                            canSubstitute)
     {
         boolean isCompatible = true;
-        final Set<GeneralParameterDescriptor> included = new HashSet<>(Containers.hashMapCapacity(provided.length));
+        final Set<GeneralParameterDescriptor> included = JDK19.newHashSet(provided.length);
         for (int i=0; i<provided.length; i++) {
             final GeneralParameterDescriptor p = provided[i];
             try {
@@ -422,7 +421,7 @@ public final class CC_GeneralOperationParameter extends PropertyType<CC_GeneralO
             if (size == 0) {
                 return false;
             }
-            final Set<NamedIdentifier> c = new HashSet<>(Containers.hashMapCapacity(size));
+            final Set<NamedIdentifier> c = JDK19.newHashSet(size);
             for (final T e : complete) {
                 c.add(toNamedIdentifier(e));
             }

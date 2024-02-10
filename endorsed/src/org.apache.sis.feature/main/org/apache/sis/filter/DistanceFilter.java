@@ -18,13 +18,13 @@ package org.apache.sis.filter;
 
 import java.util.List;
 import java.util.Collection;
+import java.util.Objects;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Geometry;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.geometry.wrapper.SpatialOperationContext;
-import org.apache.sis.util.ArgumentChecks;
 
 // Specific to the main branch:
 import org.apache.sis.pending.geoapi.filter.Literal;
@@ -77,8 +77,7 @@ final class DistanceFilter<R> extends BinaryGeometryFilter<R> {
                    final Quantity<Length> distance)
     {
         super(library, geometry1, geometry2, distance.getUnit().getSystemUnit());
-        ArgumentChecks.ensureNonNull("operatorType", operatorType);
-        this.operatorType = operatorType;
+        this.operatorType = Objects.requireNonNull(operatorType);
         this.distance     = distance;
     }
 
@@ -161,14 +160,14 @@ final class DistanceFilter<R> extends BinaryGeometryFilter<R> {
                 warning(e, true);
             }
         }
-        return negativeResult();
+        return emptyResult();
     }
 
     /**
      * Returns the value to return when a test cannot be applied.
      */
     @Override
-    protected boolean negativeResult() {
-        return SpatialOperationContext.negativeResult(operatorType);
+    protected boolean emptyResult() {
+        return SpatialOperationContext.emptyResult(operatorType);
     }
 }

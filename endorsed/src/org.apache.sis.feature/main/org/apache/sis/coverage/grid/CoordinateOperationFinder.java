@@ -17,7 +17,6 @@
 package org.apache.sis.coverage.grid;
 
 import java.util.Arrays;
-import java.util.Objects;
 import java.util.function.Supplier;
 import javax.measure.Quantity;
 import javax.measure.quantity.Length;
@@ -239,7 +238,9 @@ final class CoordinateOperationFinder implements Supplier<double[]> {
      */
     final void verifyPresenceOfCRS(final boolean rs) {
         if ((rs ? target : source).isDefined(GridGeometry.CRS)) {
-            Objects.requireNonNull((rs ? source : target).getCoordinateReferenceSystem());
+            if ((rs ? source : target).getCoordinateReferenceSystem() == null) {
+                throw new IncompleteGridGeometryException();
+            }
         }
     }
 

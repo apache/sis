@@ -142,7 +142,6 @@ public final class PropertyView implements Localized, ChangeListener<Number> {
      * @param  view        the property where to set the node showing the value.
      * @param  background  the image background color, or {@code null} if none.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     public PropertyView(final Locale locale, final ObjectProperty<Node> view, final ObjectProperty<Background> background) {
         formats = new PropertyValueFormats(locale);
         this.view = view;

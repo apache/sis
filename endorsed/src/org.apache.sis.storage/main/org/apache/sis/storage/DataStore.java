@@ -19,6 +19,7 @@ package org.apache.sis.storage;
 import java.util.Locale;
 import java.util.Map;
 import java.util.IdentityHashMap;
+import java.util.Objects;
 import java.util.Optional;
 import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
@@ -131,7 +132,6 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * @since 0.8
      */
     protected DataStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
-        ArgumentChecks.ensureNonNull("connector", connector);
         this.provider  = provider;
         this.name      = connector.getStorageName();
         this.locale    = Locale.getDefault(Locale.Category.DISPLAY);
@@ -161,7 +161,6 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
     protected DataStore(final DataStore parent, final DataStoreProvider provider, final StorageConnector connector,
                         final boolean hidden) throws DataStoreException
     {
-        ArgumentChecks.ensureNonNull("connector", connector);
         this.provider = provider;
         name = connector.getStorageName();
         final StoreListeners forwardTo;
@@ -225,7 +224,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * Sets the locale to use for formatting warnings and other messages.
      * In a client-server architecture, it should be the locale on the <em>client</em> side.
      *
-     * <p>This locale is used on a <cite>best-effort</cite> basis; whether messages will honor this locale or not
+     * <p>This locale is used on a <em>best effort</em> basis; whether messages will honor this locale or not
      * depends on the code that logged warnings or threw exceptions. In Apache SIS implementation, this locale has
      * better chances to be honored by the {@link DataStoreException#getLocalizedMessage()} method rather than
      * {@code getMessage()}. See {@code getLocalizedMessage()} javadoc for more information.</p>
@@ -235,8 +234,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * @see DataStoreException#getLocalizedMessage()
      */
     public synchronized void setLocale(final Locale locale) {
-        ArgumentChecks.ensureNonNull("locale", locale);
-        this.locale = locale;
+        this.locale = Objects.requireNonNull(locale);
     }
     // See class javadoc for a note on synchronization.
 

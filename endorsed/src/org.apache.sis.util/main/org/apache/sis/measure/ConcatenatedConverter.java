@@ -19,7 +19,6 @@ package org.apache.sis.measure;
 import java.util.List;
 import java.util.ArrayList;
 import javax.measure.UnitConverter;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.Utilities;
@@ -123,7 +122,6 @@ final class ConcatenatedConverter extends AbstractConverter implements LenientCo
      */
     @Override
     public UnitConverter concatenate(final UnitConverter converter) {
-        ArgumentChecks.ensureNonNull("converter", converter);
         if (equals(converter.inverse())) {
             return IdentityConverter.INSTANCE;
         }

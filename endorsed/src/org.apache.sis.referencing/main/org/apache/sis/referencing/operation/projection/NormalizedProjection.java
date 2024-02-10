@@ -69,7 +69,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *   <li>On input, the {@link #transform(double[], int, double[], int, boolean) transform(…)} method
  *   expects (<var>longitude</var>, <var>latitude</var>) angles in <strong>radians</strong>,
  *   sometimes pre-multiplied by other projection-specific factors (see point #3 below).
- *   Longitudes have the <cite>central meridian</cite> (λ₀) removed before the transform method is invoked.
+ *   Longitudes have the <i>central meridian</i> (λ₀) removed before the transform method is invoked.
  *   The conversion from degrees to radians and the longitude rotation are applied by the
  *   {@linkplain ContextualParameters#normalizeGeographicInputs normalization} affine transform.</li>
  *
@@ -196,7 +196,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     private static final Map<Class<?>,ParameterDescriptorGroup> DESCRIPTORS = new HashMap<>();
 
     /**
-     * The parameters used for creating this projection. They are used for formatting <cite>Well Known Text</cite> (WKT)
+     * The parameters used for creating this projection. They are used for formatting <i>Well Known Text</i> (WKT)
      * and error messages. Subclasses shall not use the values defined in this object for computation purpose, except at
      * construction time.
      *
@@ -213,8 +213,8 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     /**
      * The square of eccentricity: ℯ² = (a²-b²)/a² where
      * <var>ℯ</var> is the {@linkplain #eccentricity eccentricity},
-     * <var>a</var> is the <cite>semi-major</cite> axis length and
-     * <var>b</var> is the <cite>semi-minor</cite> axis length.
+     * <var>a</var> is the <i>semi-major</i> axis length and
+     * <var>b</var> is the <i>semi-minor</i> axis length.
      */
     protected final double eccentricitySquared;
 
@@ -246,7 +246,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      */
     protected enum ParameterRole {
         /**
-         * Maps the <cite>semi-major axis length</cite> parameter (symbol: <var>a</var>).
+         * Maps the <i>semi-major axis length</i> parameter (symbol: <var>a</var>).
          * This value is used for computing {@link NormalizedProjection#eccentricity},
          * and is also a multiplication factor for the denormalization matrix.
          *
@@ -256,7 +256,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         SEMI_MAJOR,
 
         /**
-         * Maps the <cite>semi-minor axis length</cite> parameter (symbol: <var>b</var>).
+         * Maps the <i>semi-minor axis length</i> parameter (symbol: <var>b</var>).
          * This value is used for computing {@link NormalizedProjection#eccentricity}.
          *
          * <p>Unless specified otherwise, this is always mapped to a parameter named {@code "semi_minor"}.
@@ -283,7 +283,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         LATITUDE_OF_CONFORMAL_SPHERE_RADIUS,
 
         /**
-         * Maps the <cite>central meridian</cite> parameter (symbol: λ₀).
+         * Maps the <i>central meridian</i> parameter (symbol: λ₀).
          * This value is subtracted from the longitude values before the map projections.
          *
          * <p>Some common names for this parameter are:</p>
@@ -298,7 +298,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         CENTRAL_MERIDIAN,
 
         /**
-         * Maps the <cite>scale factor</cite> parameter (symbol: <var>k₀</var>).
+         * Maps the <i>scale factor</i> parameter (symbol: <var>k₀</var>).
          * This is a multiplication factor for the (<var>x</var>,<var>y</var>) values obtained after map projections.
          *
          * <p>Some common names for this parameter are:</p>
@@ -311,7 +311,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         SCALE_FACTOR,
 
         /**
-         * Maps the <cite>false easting</cite> parameter (symbol: <var>FE</var>).
+         * Maps the <i>false easting</i> parameter (symbol: <var>FE</var>).
          * This is a translation term for the <var>x</var> values obtained after map projections.
          *
          * <p>Some common names for this parameter are:</p>
@@ -324,7 +324,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         FALSE_EASTING,
 
         /**
-         * Maps the <cite>false westing</cite> parameter (symbol: <var>FW</var>).
+         * Maps the <i>false westing</i> parameter (symbol: <var>FW</var>).
          * This is the same <var>x</var> translation than {@link #FALSE_EASTING}, but of opposite sign.
          *
          * <p>Actually, there is usually no parameter named "false westing" in a map projection.
@@ -335,7 +335,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         FALSE_WESTING,
 
         /**
-         * Maps the <cite>false northing</cite> parameter (symbol: <var>FN</var>).
+         * Maps the <i>false northing</i> parameter (symbol: <var>FN</var>).
          * This is a translation term for the <var>y</var> values obtained after map projections.
          *
          * <p>Some common names for this parameter are:</p>
@@ -348,7 +348,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
         FALSE_NORTHING,
 
         /**
-         * Maps the <cite>false southing</cite> parameter (symbol: <var>FS</var>).
+         * Maps the <i>false southing</i> parameter (symbol: <var>FS</var>).
          * This is the same <var>y</var> translation than {@link #FALSE_NORTHING}, but of opposite sign.
          *
          * <p>Actually, there is usually no parameter named "false southing" in a map projection.
@@ -368,22 +368,22 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *   <li>On the <b>normalization</b> matrix (to be applied before {@code this} transform):
      *     <ul>
      *       <li>{@linkplain ContextualParameters#normalizeGeographicInputs(double) Subtract}
-     *           the <cite>central meridian</cite> value.</li>
+     *           the <i>central meridian</i> value.</li>
      *       <li>Convert from degrees to radians.</li>
      *     </ul>
      *   </li>
      *   <li>On the <b>denormalization</b> matrix (to be applied after {@code this} transform):
      *     <ul>
-     *       <li>{@linkplain MatrixSIS#convertAfter(int, Number, Number) Scale} by the <cite>semi-major</cite> axis length.</li>
+     *       <li>{@linkplain MatrixSIS#convertAfter(int, Number, Number) Scale} by the <i>semi-major</i> axis length.</li>
      *       <li>If a scale factor is present (not all map projections have a scale factor), apply that scale.</li>
-     *       <li>Translate by the <cite>false easting</cite> and <cite>false northing</cite> (after the scale).</li>
+     *       <li>Translate by the <i>false easting</i> and <i>false northing</i> (after the scale).</li>
      *     </ul>
      *   </li>
      *   <li>On the <b>contextual parameters</b> (not the parameters of {@code this} transform):
      *     <ul>
-     *       <li>Store the values for <cite>semi-major</cite> axis length, <cite>semi-minor</cite> axis length,
-     *         <cite>scale factor</cite> (if present), <cite>central meridian</cite>,
-     *         <cite>false easting</cite> and <cite>false northing</cite> values.</li>
+     *       <li>Store the values for <i>semi-major</i> axis length, <i>semi-minor</i> axis length,
+     *         <i>scale factor</i> (if present), <i>central meridian</i>,
+     *         <i>false easting</i> and <i>false northing</i> values.</li>
      *     </ul>
      *   </li>
      * </ul>
@@ -402,8 +402,8 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * </table>
      *
      * <h4>Which parameters are considered</h4>
-     * The {@code roles} map specifies which parameters to look for <cite>central meridian</cite>,
-     * <cite>scale factor</cite>, <cite>false easting</cite>, <cite>false northing</cite> and other values.
+     * The {@code roles} map specifies which parameters to look for <i>central meridian</i>,
+     * <i>scale factor</i>, <i>false easting</i>, <i>false northing</i> and other values.
      * All entries in the {@code roles} map are optional.
      * All descriptors in the map shall comply to the following constraints:
      *
@@ -422,8 +422,8 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      *
      * @param method      description of the map projection parameters.
      * @param parameters  the parameters of the projection to be created.
-     * @param roles       parameters to look for <cite>central meridian</cite>, <cite>scale factor</cite>,
-     *                    <cite>false easting</cite>, <cite>false northing</cite> and other values.
+     * @param roles       parameters to look for <i>central meridian</i>, <i>scale factor</i>,
+     *                    <i>false easting</i>, <i>false northing</i> and other values.
      */
     protected NormalizedProjection(final OperationMethod method, final Parameters parameters,
             final Map<ParameterRole, ? extends ParameterDescriptor<? extends Number>> roles)
@@ -492,7 +492,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
     }
 
     /**
-     * Returns the sequence of <cite>normalization</cite> → {@code this} → <cite>denormalization</cite> transforms
+     * Returns the sequence of <i>normalization</i> → {@code this} → <i>denormalization</i> transforms
      * as a whole. The transform returned by this method expects (<var>longitude</var>, <var>latitude</var>)
      * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
      * Conversion to other units and {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes
@@ -595,13 +595,13 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
 
     /**
      * Returns the parameters used for creating the complete map projection. Those parameters describe a sequence of
-     * <cite>normalize</cite> → {@code this} → <cite>denormalize</cite> transforms, <strong>not</strong> including
+     * <i>normalize</i> → {@code this} → <i>denormalize</i> transforms, <strong>not</strong> including
      * {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes axis swapping}.
-     * Those parameters are used for formatting <cite>Well Known Text</cite> (WKT) and error messages.
+     * Those parameters are used for formatting <i>Well Known Text</i> (WKT) and error messages.
      * Subclasses shall not use the values defined in the returned object for computation purpose,
      * except at construction time.
      *
-     * @return the parameter values for the sequence of <cite>normalize</cite> → {@code this} → <cite>denormalize</cite>
+     * @return the parameter values for the sequence of <i>normalize</i> → {@code this} → <i>denormalize</i>
      *         transforms, or {@code null} if unspecified.
      */
     @Override
@@ -613,7 +613,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * Returns a copy of non-linear internal parameter values of this {@code NormalizedProjection}.
      * The returned group contains at least the {@link #eccentricity} parameter value.
      * Some subclasses add more non-linear parameters, but most of them do not because many parameters
-     * like the <cite>scale factor</cite> or the <cite>false easting/northing</cite> are handled by the
+     * like the <i>scale factor</i> or the <i>false easting/northing</i> are handled by the
      * {@linkplain ContextualParameters#getMatrix (de)normalization affine transforms} instead.
      *
      * <div class="note"><b>Note:</b>
@@ -732,10 +732,10 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * <h4>Normalization</h4>
      * The input coordinates are (<var>λ</var>,<var>φ</var>) (the variable names for <var>longitude</var> and
      * <var>latitude</var> respectively) angles in radians, eventually pre-multiplied by projection-specific factors.
-     * Input coordinates shall have the <cite>central meridian</cite> removed from the longitude by the caller
+     * Input coordinates shall have the <i>central meridian</i> removed from the longitude by the caller
      * before this method is invoked. After this method is invoked, the caller will need to multiply the output
-     * coordinates by the global <cite>scale factor</cite>,
-     * apply the (<cite>false easting</cite>, <cite>false northing</cite>) offset
+     * coordinates by the global <i>scale factor</i>,
+     * apply the (<i>false easting</i>, <i>false northing</i>) offset
      * and eventually other projection-specific factors.
      * This means that projections that implement this method are performed on a sphere or ellipse
      * having a semi-major axis length of 1.
@@ -743,7 +743,7 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * <div class="note"><b>Note 1:</b> it is generally not necessary to know the projection-specific additional
      * factors applied by subclasses on the input and output values, because {@code NormalizedProjection} should
      * never be used directly. {@code NormalizedProjection} instances are used only indirectly as a step in a
-     * concatenated transform that include the <cite>normalization</cite> and <cite>denormalization</cite>
+     * concatenated transform that include the <i>normalization</i> and <i>denormalization</i>
      * matrices documented in this class javadoc.</div>
      *
      * <div class="note"><b>Note 2:</b> in the <a href="https://proj.org/">PROJ</a> library, the same standardization,
@@ -777,9 +777,9 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * angles in radians, usually (but not necessarily) in the range [-π … π] and [-π/2 … π/2] respectively.
      *
      * <h4>Normalization</h4>
-     * Input coordinates shall have the (<cite>false easting</cite>, <cite>false northing</cite>) removed
-     * by the caller and the result divided by the global <cite>scale factor</cite> before this method is invoked.
-     * After this method is invoked, the caller will need to add the <cite>central meridian</cite> to the longitude
+     * Input coordinates shall have the (<i>false easting</i>, <i>false northing</i>) removed
+     * by the caller and the result divided by the global <i>scale factor</i> before this method is invoked.
+     * After this method is invoked, the caller will need to add the <i>central meridian</i> to the longitude
      * in the output coordinates. This means that projections that implement this method are performed on a sphere
      * or ellipse having a semi-major axis of 1.
      * Additional projection-specific factors may also need to be applied (see class javadoc).
@@ -934,8 +934,8 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * or {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}.</p>
      *
      * <h4>Example</h4>
-     * A {@linkplain Mercator Mercator} projection can be created in the 2SP case with a <cite>standard parallel</cite>
-     * value of 60°. The same projection can also be created in the 1SP case with a <cite>scale factor</cite> of 0.5.
+     * A {@linkplain Mercator Mercator} projection can be created in the 2SP case with a <i>standard parallel</i>
+     * value of 60°. The same projection can also be created in the 1SP case with a <i>scale factor</i> of 0.5.
      * Nevertheless those two map projections applied on a sphere gives identical results. Considering them as
      * equivalent allows the referencing module to transform coordinates between those two projections more efficiently.
      *

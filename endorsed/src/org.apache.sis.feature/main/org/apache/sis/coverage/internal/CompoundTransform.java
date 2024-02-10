@@ -65,7 +65,6 @@ public abstract class CompoundTransform extends AbstractMathTransform {
      * @return compound transforms with the given components.
      */
     public static MathTransform create(final MathTransform[] components) {
-        ArgumentChecks.ensureNonNull("components", components);
         final int n = components.length;
         if (n == 0) {
             return MathTransforms.identity(0);

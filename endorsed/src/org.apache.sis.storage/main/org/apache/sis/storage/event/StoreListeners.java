@@ -18,8 +18,8 @@ package org.apache.sis.storage.event;
 
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.IdentityHashMap;
 import java.util.logging.Level;
@@ -35,14 +35,14 @@ import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.internal.Strings;
+import org.apache.sis.pending.jdk.JDK19;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.storage.base.StoreUtilities;
-import org.apache.sis.util.internal.Strings;
 
 
 /**
@@ -106,7 +106,7 @@ public class StoreListeners implements Localized {
 
     /**
      * All types of of events that may be fired, or {@code null} if no restriction.
-     * This is a <cite>copy on write</cite> set: no elements are modified after a set has been created.
+     * This is a <i>copy on write</i> set: no elements are modified after a set has been created.
      *
      * @see #setUsableEventTypes(Class...)
      */
@@ -141,7 +141,7 @@ public class StoreListeners implements Localized {
 
         /**
          * The listeners for the {@linkplain #type event type}, or {@code null} if none.
-         * This is a <cite>copy on write</cite> array: no elements are modified after an array has been created.
+         * This is a <i>copy on write</i> array: no elements are modified after an array has been created.
          */
         @SuppressWarnings("VolatileArrayField")
         private volatile StoreListener<? super E>[] listeners;
@@ -291,8 +291,7 @@ public class StoreListeners implements Localized {
      * @param source  the source of events. Cannot be null.
      */
     public StoreListeners(final StoreListeners parent, Resource source) {
-        ArgumentChecks.ensureNonNull("source", source);
-        this.source = source;
+        this.source = Objects.requireNonNull(source);
         this.parent = parent;
         if (parent != null) {
             permittedEventTypes = parent.permittedEventTypes;
@@ -425,7 +424,7 @@ public class StoreListeners implements Localized {
      * @param  message  the warning message to report.
      */
     public void warning(final String message) {
-        ArgumentChecks.ensureNonNull("message", message);
+        // Null value check done by invoked method.
         warning(Level.WARNING, message, null);
     }
 
@@ -441,8 +440,7 @@ public class StoreListeners implements Localized {
      * @param  exception  the exception to report.
      */
     public void warning(final Exception exception) {
-        ArgumentChecks.ensureNonNull("exception", exception);
-        warning(Level.WARNING, null, exception);
+        warning(Level.WARNING, null, Objects.requireNonNull(exception));
     }
 
     /**
@@ -734,7 +732,7 @@ public class StoreListeners implements Localized {
         if (isPossibleEvent(permittedEventTypes, eventType)) {
             ForType<E> ce = null;
             for (ForType<?> e = listeners; e != null; e = e.next) {
-                if (e.type.equals(eventType)) {
+                if (e.type == eventType) {
                     ce = (ForType<E>) e;
                     break;
                 }
@@ -791,7 +789,7 @@ public class StoreListeners implements Localized {
         ArgumentChecks.ensureNonNull("listener",  listener);
         ArgumentChecks.ensureNonNull("eventType", eventType);
         for (ForType<?> e = listeners; e != null; e = e.next) {
-            if (e.type.equals(eventType)) {
+            if (e.type == eventType) {
                 if (((ForType<E>) e).remove(listener) && cascadedListeners != null) {
                     final StoreListener cascade = cascadedListeners.remove(eventType);
                     if (cascade != null) {
@@ -821,7 +819,7 @@ public class StoreListeners implements Localized {
         ArgumentChecks.ensureNonNull("listener",  listener);
         ArgumentChecks.ensureNonNull("eventType", eventType);
         for (ForType<?> e = listeners; e != null; e = e.next) {
-            if (e.type.equals(eventType) && e.hasListener(listener)) {
+            if (e.type == eventType && e.hasListener(listener)) {
                 return true;
             }
         }
@@ -886,7 +884,7 @@ public class StoreListeners implements Localized {
     public synchronized void setUsableEventTypes(final Class<?>... permitted) {
         ArgumentChecks.ensureNonEmpty("permitted", permitted);
         final Set<Class<? extends StoreEvent>> current = permittedEventTypes;
-        final Set<Class<? extends StoreEvent>> types = new HashSet<>(Containers.hashMapCapacity(permitted.length));
+        final Set<Class<? extends StoreEvent>> types = JDK19.newHashSet(permitted.length);
         for (final Class<?> type : permitted) {
             if (current != null ? current.contains(type) : StoreEvent.class.isAssignableFrom(type)) {
                 types.add((Class<? extends StoreEvent>) type);

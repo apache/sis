@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Locale;
 import java.util.Collections;
+import java.util.Objects;
 import java.text.NumberFormat;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.MathTransform;
@@ -28,7 +29,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -140,10 +140,8 @@ final class ProjectedTransformTry implements Comparable<ProjectedTransformTry>, 
     ProjectedTransformTry(final String name, final MathTransform projection, final int[] projToGrid, int expectedDimension,
                           final boolean reverseAfterLinearization)
     {
-        ArgumentChecks.ensureNonNull("name", name);
-        ArgumentChecks.ensureNonNull("projection", projection);
-        this.name       = name;
-        this.projection = projection;
+        this.name       = Objects.requireNonNull(name);
+        this.projection = Objects.requireNonNull(projection);
         this.projToGrid = projToGrid;
         this.reverseAfterLinearization = reverseAfterLinearization;
         int side = 0;                           // 0 = problem with source dimensions, 1 = problem with target dimensions.

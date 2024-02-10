@@ -18,9 +18,9 @@ package org.apache.sis.style.se1;
 
 import java.awt.Color;
 import java.util.Arrays;
+import java.util.Objects;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.ArgumentChecks;
 
 // Specific to the main branch:
 import org.apache.sis.filter.Expression;
@@ -53,8 +53,7 @@ public abstract class StyleElement<R> implements Cloneable {
      * @param  factory  the factory to use for creating expressions and child elements.
      */
     StyleElement(final StyleFactory<R> factory) {
-        ArgumentChecks.ensureNonNull("factory", factory);
-        this.factory = factory;
+        this.factory = Objects.requireNonNull(factory);
     }
 
     /**

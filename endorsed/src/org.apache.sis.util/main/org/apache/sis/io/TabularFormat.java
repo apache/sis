@@ -197,7 +197,7 @@ public abstract class TabularFormat<T> extends CompoundFormat<T> {
      * the {@link Matcher#find()} method for determining the column boundaries.</p>
      *
      * <p>The characters listed below have special meaning in the pattern.
-     * Other characters are appended <cite>as-is</cite> between the columns.</p>
+     * Other characters are appended <i>as-is</i> between the columns.</p>
      *
      * <table class="sis">
      *   <caption>Reserved characters</caption>

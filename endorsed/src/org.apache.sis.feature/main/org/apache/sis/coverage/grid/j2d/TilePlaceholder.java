@@ -17,6 +17,7 @@
 package org.apache.sis.coverage.grid.j2d;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.awt.Point;
 import java.awt.color.ColorSpace;
 import java.awt.image.ColorModel;
@@ -29,7 +30,6 @@ import java.awt.image.BufferedImage;
 import java.lang.ref.WeakReference;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.system.ReferenceQueueConsumer;
@@ -117,8 +117,7 @@ public class TilePlaceholder {
      * @param  model  sample model of the empty tiles.
      */
     protected TilePlaceholder(final SampleModel model) {
-        ArgumentChecks.ensureNonNull("model", model);
-        this.model = model;
+        this.model = Objects.requireNonNull(model);
     }
 
     /**

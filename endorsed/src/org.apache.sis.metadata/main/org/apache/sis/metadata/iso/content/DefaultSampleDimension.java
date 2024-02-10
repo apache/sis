@@ -61,8 +61,8 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * </div>
  *
  * <h2>Terminology</h2>
- * <cite>Data values</cite> should be physical values expressed in the unit of measurement
- * given by {@link #getUnits()}. <cite>Cell values</cite> are values stored in the device,
+ * <i>Data values</i> should be physical values expressed in the unit of measurement
+ * given by {@link #getUnits()}. <i>Cell values</i> are values stored in the device,
  * before conversion to data values by application of {@linkplain #getScaleFactor() scale
  * factor} and {@linkplain #getOffset() offset}.
  *

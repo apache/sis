@@ -21,12 +21,12 @@ import org.opengis.referencing.cs.AxisDirection;        // For javadoc
 
 /**
  * The angular height of an object measured from the horizontal plane.
- * The elevation angle is part of <cite>local topocentric coordinates</cite> together with azimuth and distance.
+ * The elevation angle is part of <i>local topocentric coordinates</i> together with azimuth and distance.
  * For visible objects the elevation is an angle between 0° and 90°.
  *
  * <div class="note"><b>Note:</b>
- * <cite>Elevation angle</cite> and <cite>altitude angle</cite> may be used interchangeably.
- * Both <cite>altitude</cite> and <cite>elevation</cite> words are also used to describe the
+ * <i>Elevation angle</i> and <i>altitude angle</i> may be used interchangeably.
+ * Both <i>altitude</i> and <i>elevation</i> words are also used to describe the
  * height in meters above sea level.</div>
  *
  * <h2>Immutability and thread safety</h2>

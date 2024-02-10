@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Objects;
 import java.lang.reflect.Type;
 import java.lang.reflect.ParameterizedType;
 import org.opengis.util.NameSpace;
@@ -34,10 +35,11 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.internal.DeprecatedCode;
 import org.apache.sis.referencing.internal.DeprecatedName;
 import org.apache.sis.util.Deprecable;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArgumentCheckByAssertion;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Errors;
-import static org.apache.sis.util.ArgumentChecks.*;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.ReferenceIdentifier;
@@ -94,8 +96,8 @@ import org.opengis.referencing.ReferenceIdentifier;
  *       The result is a {@linkplain org.apache.sis.util.iso.DefaultScopedName scoped name} or identifier,
  *       in which the code space information is shown by the {@code toString()} method.</li>
  *
- *   <li>The {@code addIdentifier(Identifier)}, {@code addName(Identifier)} and {@link #addName(GenericName)}
- *       methods take the given object <cite>as-is</cite>. Any authority, code space, version or description
+ *   <li>The {@link #addIdentifier(ReferenceIdentifier)}, {@link #addName(ReferenceIdentifier)} and {@link #addName(GenericName)}
+ *       methods take the given object <em>as-is</em>. Any authority, code space, version or description
  *       information given to the {@code Builder} are ignored.</li>
  * </ul>
  *
@@ -221,6 +223,7 @@ public abstract class Builder<B extends Builder<B>> {
      *
      * @throws AssertionError if assertions are enabled and the {@code <B>} type is not the type of {@code this}.
      */
+    @ArgumentCheckByAssertion
     protected Builder() {
         assert verifyParameterizedType(getClass());
         properties  = new HashMap<>(8);
@@ -499,7 +502,7 @@ public abstract class Builder<B extends Builder<B>> {
      * @return {@code this}, for method call chaining.
      */
     public B addName(final CharSequence name) {
-        ensureNonNull("name", name);
+        ArgumentChecks.ensureNonEmpty("name", name);
         if (isDeprecated()) {
             aliases.add(new DeprecatedName(getAuthority(), getCodeSpace(), name, getVersion(), getRemarks()));
         } else if (properties.putIfAbsent(IdentifiedObject.NAME_KEY, name.toString()) != null) {
@@ -538,7 +541,7 @@ public abstract class Builder<B extends Builder<B>> {
      * @see #addIdentifier(Citation, String)
      */
     public B addName(final Citation authority, final CharSequence name) {
-        ensureNonNull("name", name);
+        ArgumentChecks.ensureNonEmpty("name", name);
         final boolean isDeprecated = isDeprecated();
         if (!isDeprecated && properties.get(IdentifiedObject.NAME_KEY) != null) {
             // A primary name is already present. Add the given name as an alias instead.
@@ -582,8 +585,7 @@ public abstract class Builder<B extends Builder<B>> {
      * @return {@code this}, for method call chaining.
      */
     public B addName(final ReferenceIdentifier name) {
-        ensureNonNull("name", name);
-        if (properties.putIfAbsent(IdentifiedObject.NAME_KEY, name) != null) {
+        if (properties.putIfAbsent(IdentifiedObject.NAME_KEY, Objects.requireNonNull(name)) != null) {
             // A primary name is already present. Add the given name as an alias instead.
             aliases.add(name instanceof GenericName ? (GenericName) name : new NamedIdentifier(name));
         }
@@ -608,7 +610,7 @@ public abstract class Builder<B extends Builder<B>> {
      * @return {@code this}, for method call chaining.
      */
     public B addName(final GenericName name) {
-        ensureNonNull("name", name);
+        Objects.requireNonNull(name);
         if (properties.get(IdentifiedObject.NAME_KEY) == null) {
             properties.put(IdentifiedObject.NAME_KEY, toIdentifier(name));
         } else {
@@ -637,7 +639,7 @@ public abstract class Builder<B extends Builder<B>> {
      * @return {@code this}, for method call chaining.
      */
     public B addIdentifier(final String identifier) {
-        ensureNonNull("identifier", identifier);
+        ArgumentChecks.ensureNonEmpty("identifier", identifier);
         identifiers.add(createIdentifier(getAuthority(), getCodeSpace(), identifier, getVersion()));
         return self();
     }
@@ -656,7 +658,7 @@ public abstract class Builder<B extends Builder<B>> {
      * @see #addName(Citation, CharSequence)
      */
     public B addIdentifier(final Citation authority, final String identifier) {
-        ensureNonNull("identifier", identifier);
+        ArgumentChecks.ensureNonEmpty("identifier", identifier);
         identifiers.add(createIdentifier(authority, identifier));
         return self();
     }
@@ -674,8 +676,7 @@ public abstract class Builder<B extends Builder<B>> {
      * @return {@code this}, for method call chaining.
      */
     public B addIdentifier(final ReferenceIdentifier identifier) {
-        ensureNonNull("identifier", identifier);
-        identifiers.add(identifier);
+        identifiers.add(Objects.requireNonNull(identifier));
         return self();
     }
 
@@ -702,7 +703,6 @@ public abstract class Builder<B extends Builder<B>> {
      * @since 0.6
      */
     public B addNamesAndIdentifiers(final IdentifiedObject object) {
-        ensureNonNull("object", object);
         for (final ReferenceIdentifier id : object.getIdentifiers()) {
             if (isValid(id)) {
                 addIdentifier(id);
@@ -731,8 +731,7 @@ public abstract class Builder<B extends Builder<B>> {
      * @since 1.1
      */
     public B addNameAndIdentifier(final Citation authority, final IdentifiedObject object) {
-        ensureNonNull("authority", authority);
-        ensureNonNull("object", object);
+        ArgumentChecks.ensureNonNull("authority", authority);
         for (final ReferenceIdentifier id : object.getIdentifiers()) {
             if (isValid(id) && authority.equals(id.getAuthority())) {
                 addIdentifier(id);
@@ -780,7 +779,7 @@ public abstract class Builder<B extends Builder<B>> {
      * @since 0.6
      */
     public B rename(final Citation authority, final CharSequence... replacements) {
-        ensureNonNull("authority", authority);
+        ArgumentChecks.ensureNonNull("authority", authority);
         final int length = (replacements != null) ? replacements.length : 0;
         /*
          * IdentifiedObjects store the "primary name" separately from aliases. Consequently, we will start
@@ -807,7 +806,7 @@ public abstract class Builder<B extends Builder<B>> {
              */
             if (next < length) {
                 final CharSequence name;
-                ensureNonNullElement("replacements", next, name = replacements[next++]);
+                ArgumentChecks.ensureNonNullElement("replacements", next, name = replacements[next++]);
                 /*
                  * If the current name matches the specified replacement, we can leave the name as-is.
                  * Only if the name (in its local part) is not the same, proceed to the replacement.
@@ -836,7 +835,7 @@ public abstract class Builder<B extends Builder<B>> {
          */
         while (next < length) {
             final CharSequence name;
-            ensureNonNullElement("replacements", next, name = replacements[next++]);
+            ArgumentChecks.ensureNonNullElement("replacements", next, name = replacements[next++]);
             aliases.add(insertAt++, createName(authority, name));
         }
         /*
@@ -879,7 +878,7 @@ public abstract class Builder<B extends Builder<B>> {
      * @since 0.8
      */
     public B reidentify(final Citation authority, final String... replacements) {
-        ensureNonNull("authority", authority);
+        ArgumentChecks.ensureNonNull("authority", authority);
         final int length = (replacements != null) ? replacements.length : 0;
         int next = 0;
         int insertAt = identifiers.size();
@@ -888,7 +887,7 @@ public abstract class Builder<B extends Builder<B>> {
             if (authority.equals(old.getAuthority())) {
                 if (next < length) {
                     final String code;
-                    ensureNonNullElement("replacements", next, code = replacements[next++]);
+                    ArgumentChecks.ensureNonNullElement("replacements", next, code = replacements[next++]);
                     if (!code.equals(old.getCode())) {
                         identifiers.set(i, createIdentifier(authority, code));
                         insertAt = i + 1;
@@ -900,7 +899,7 @@ public abstract class Builder<B extends Builder<B>> {
         }
         while (next < length) {
             final String code;
-            ensureNonNullElement("replacements", next, code = replacements[next++]);
+            ArgumentChecks.ensureNonNullElement("replacements", next, code = replacements[next++]);
             identifiers.add(insertAt++, createIdentifier(authority, code));
         }
         return self();

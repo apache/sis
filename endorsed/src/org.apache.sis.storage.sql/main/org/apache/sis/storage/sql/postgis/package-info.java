@@ -17,7 +17,7 @@
 
 /**
  * Specialization of {@code org.apache.sis.storage.sql.feature} for the PostGIS database.
- * Provides also support for <cite>Well Known Binary</cite> (WKB) raster format, which at
+ * Provides also support for <i>Well Known Binary</i> (WKB) raster format, which at
  * the time of writing is PostGIS-specific (so the "well known" part of the format name
  * is not accurate).
  *

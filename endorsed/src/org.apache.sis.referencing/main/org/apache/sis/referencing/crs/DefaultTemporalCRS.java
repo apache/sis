@@ -18,6 +18,7 @@ package org.apache.sis.referencing.crs;
 
 import java.util.Map;
 import java.util.Date;
+import java.util.Objects;
 import java.time.Instant;
 import java.time.Duration;
 import java.io.IOException;
@@ -39,7 +40,6 @@ import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Fraction;
-import org.apache.sis.util.ArgumentChecks;
 import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_SECOND;
 import static org.apache.sis.util.internal.StandardDateFormat.MILLIS_PER_SECOND;
 
@@ -158,8 +158,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
                               final TimeCS        cs)
     {
         super(properties, cs);
-        this.datum = datum;
-        ArgumentChecks.ensureNonNull("datum", datum);
+        this.datum = Objects.requireNonNull(datum);
         initializeConverter();
     }
 
@@ -449,7 +448,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     }
 
     /**
-     * Formats this CRS as a <cite>Well Known Text</cite> {@code TimeCRS[…]} element.
+     * Formats this CRS as a <i>Well Known Text</i> {@code TimeCRS[…]} element.
      *
      * <h4>Compatibility note</h4>
      * {@code TimeCRS} is defined in the WKT 2 specification only.

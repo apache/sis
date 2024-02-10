@@ -16,6 +16,7 @@
  */
 package org.apache.sis.image;
 
+import java.util.Objects;
 import java.util.Vector;
 import java.awt.Image;
 import java.awt.Rectangle;
@@ -24,7 +25,6 @@ import java.awt.image.SampleModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Disposable;
 
 
@@ -58,8 +58,7 @@ abstract class ImageAdapter extends PlanarImage {
      * @param  source  the image to wrap.
      */
     protected ImageAdapter(final RenderedImage source) {
-        ArgumentChecks.ensureNonNull("source", source);
-        this.source = source;
+        this.source = Objects.requireNonNull(source);
     }
 
     /**
@@ -155,7 +154,7 @@ abstract class ImageAdapter extends PlanarImage {
      */
     @Override
     public boolean equals(final Object object) {
-        if (object != null && object.getClass().equals(getClass())) {
+        if (object != null && object.getClass() == getClass()) {
             return source.equals(((ImageAdapter) object).source);
         }
         return false;

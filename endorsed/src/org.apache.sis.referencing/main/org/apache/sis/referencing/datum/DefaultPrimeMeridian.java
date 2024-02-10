@@ -40,7 +40,6 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.measure.Units;
 import static org.apache.sis.util.ArgumentChecks.ensureFinite;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;
@@ -57,7 +56,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * <p>Choice 1 in the following list is the easiest but most restrictive way to get a prime meridian.
  * The other choices provide more freedom. Each choice delegates its work to the subsequent items
- * (in the default configuration), so this list can be seen as <cite>top to bottom</cite> API.</p>
+ * (in the default configuration), so this list can be seen as <i>top to bottom</i> API.</p>
  *
  * <ol>
  *   <li>Create a {@code PrimeMeridian} from one of the static convenience shortcuts listed in
@@ -156,9 +155,8 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     {
         super(properties);
         ensureFinite("greenwichLongitude", greenwichLongitude);
-        ensureNonNull("angularUnit", angularUnit);
         this.greenwichLongitude = greenwichLongitude;
-        this.angularUnit = angularUnit;
+        this.angularUnit = Objects.requireNonNull(angularUnit);
     }
 
     /**
@@ -356,7 +354,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
     }
 
     /**
-     * Formats this prime meridian as a <cite>Well Known Text</cite> {@code PrimeMeridian[…]} element.
+     * Formats this prime meridian as a <i>Well Known Text</i> {@code PrimeMeridian[…]} element.
      *
      * @return {@code "PrimeMeridian"} (WKT 2) or {@code "PrimeM"} (WKT 1).
      *

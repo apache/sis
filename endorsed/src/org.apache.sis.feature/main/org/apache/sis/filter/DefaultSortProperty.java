@@ -18,8 +18,8 @@ package org.apache.sis.filter;
 
 import java.util.Iterator;
 import java.util.Collections;
+import java.util.Objects;
 import java.io.Serializable;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 
@@ -62,10 +62,8 @@ final class DefaultSortProperty<R> implements SortProperty<R>, Serializable {
      * @param order     the desired order: {@code ASCENDING} or {@code DESCENDING}.
      */
     DefaultSortProperty(final ValueReference<R,?> property, final SortOrder order) {
-        ArgumentChecks.ensureNonNull("property", property);
-        ArgumentChecks.ensureNonNull("order",    order);
-        this.property = property;
-        descending = SortOrder.DESCENDING.equals(order);
+        this.property = Objects.requireNonNull(property);
+        descending = order.equals(SortOrder.DESCENDING);        // Implicit null check.
     }
 
     /**

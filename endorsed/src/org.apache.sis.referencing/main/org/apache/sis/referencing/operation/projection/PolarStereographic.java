@@ -49,7 +49,7 @@ import static org.apache.sis.referencing.util.Formulas.fastHypot;
  * <cite>Polar Stereographic</cite> projection (EPSG codes 9810, 9829, 9830).
  * This is a special case of {@link ObliqueStereographic} when the projection origin is at a pole.
  *
- * <p>EPSG defines three variants for this projection, <cite>A</cite>, <cite>B</cite> and <cite>C</cite>,
+ * <p>EPSG defines three variants for this projection, <i>A</i>, <i>B</i> and <i>C</i>,
  * which differ by the way the parameters are specified. The <q>Polar Stereographic (variant B)</q>
  * projection includes a <q>Latitude of standard parallel</q> parameter where is effective the scale factor
  * (normally 1). The <q>Polar Stereographic (variant A)</q> forces its <q>Latitude of natural origin</q>
@@ -278,7 +278,7 @@ public class PolarStereographic extends ConformalProjection {
     }
 
     /**
-     * Returns the sequence of <cite>normalization</cite> → {@code this} → <cite>denormalization</cite> transforms
+     * Returns the sequence of <i>normalization</i> → {@code this} → <i>denormalization</i> transforms
      * as a whole. The transform returned by this method expects (<var>longitude</var>, <var>latitude</var>)
      * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
      *

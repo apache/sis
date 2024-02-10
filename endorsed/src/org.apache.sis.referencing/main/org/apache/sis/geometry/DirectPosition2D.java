@@ -25,7 +25,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 
 
@@ -36,7 +35,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * <p>This class inherits {@linkplain #x x} and {@linkplain #y y} fields.
  * But despite their names, they don't need to be oriented toward {@linkplain AxisDirection#EAST East} and
  * {@linkplain AxisDirection#NORTH North} respectively. The (<var>x</var>,<var>y</var>) axis can have any
- * direction and should be understood as <cite>coordinate 0</cite> and <cite>coordinate 1</cite> values instead.
+ * direction and should be understood as <dfn>coordinate 0</dfn> and <dfn>coordinate 1</dfn> values instead.
  * This is not specific to this implementation; in Java2D too, the visual axis orientation depend
  * on the {@linkplain java.awt.Graphics2D#getTransform() affine transform in the graphics context}.</p>
  *
@@ -148,7 +147,6 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * @see #setLocation(Point2D)
      */
     public DirectPosition2D(final DirectPosition position) throws MismatchedDimensionException {
-        ensureNonNull("position", position);
         ensureDimensionMatches("position", 2, position);
         x   = position.getOrdinate(0);
         y   = position.getOrdinate(1);
@@ -157,7 +155,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
 
     /**
      * Constructs a position initialized to the values parsed from the given string in
-     * <cite>Well Known Text</cite> (WKT) format. The given string is typically a {@code POINT}
+     * <i>Well Known Text</i> (WKT) format. The given string is typically a {@code POINT}
      * element like below:
      *
      * {@snippet lang="wkt" :
@@ -291,7 +289,7 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
     }
 
     /**
-     * Formats this position in the <cite>Well Known Text</cite> (WKT) format.
+     * Formats this position in the <i>Well Known Text</i> (WKT) format.
      * The output is like below:
      *
      * {@snippet lang="wkt" :

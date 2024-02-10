@@ -28,7 +28,6 @@ import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.iso.DefaultNameSpace;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.Characters.Filter.LETTERS_AND_DIGITS;
 
 // Specific to the main and geoapi-3.1 branches:
@@ -57,8 +56,7 @@ public final class NameToIdentifier implements ReferenceIdentifier {
      * @param  name  the name from which to infer the identifier properties.
      */
     public NameToIdentifier(final GenericName name) {
-        ensureNonNull("name", name);
-        this.name = name;
+        this.name = Objects.requireNonNull(name);
     }
 
     /**

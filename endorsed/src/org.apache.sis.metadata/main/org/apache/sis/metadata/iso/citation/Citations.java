@@ -850,7 +850,7 @@ public final class Citations extends Static {
      *       if any, and returns the result.</li>
      * </ul>
      *
-     * Examples of ignorable identifier characters are <cite>zero width space</cite> or <cite>word joiner</cite>.
+     * Examples of ignorable identifier characters are <i>zero width space</i> or <i>word joiner</i>.
      * Those characters are illegal in XML identifiers, and should therefore be removed if the Unicode identifier
      * may also be used as XML identifier.
      *

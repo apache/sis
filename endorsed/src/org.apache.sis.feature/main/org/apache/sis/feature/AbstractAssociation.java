@@ -21,7 +21,6 @@ import java.util.Iterator;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.quality.DataQuality;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.feature.internal.Resources;
 
 
@@ -77,7 +76,6 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * @see DefaultAssociationRole#newInstance()
      */
     public static AbstractAssociation create(final DefaultAssociationRole role) {
-        ArgumentChecks.ensureNonNull("role", role);
         return isSingleton(role.getMaximumOccurs())
                ? new SingletonAssociation(role)
                : new MultiValuedAssociation(role);
@@ -91,7 +89,6 @@ public abstract class AbstractAssociation extends Field<AbstractFeature> impleme
      * @return the new association.
      */
     static AbstractAssociation create(final DefaultAssociationRole role, final Object value) {
-        ArgumentChecks.ensureNonNull("role", role);
         return isSingleton(role.getMaximumOccurs())
                ? new SingletonAssociation(role, (AbstractFeature) value)
                : new MultiValuedAssociation(role, value);

@@ -63,7 +63,7 @@ import org.apache.sis.setup.OptionKey;
 
 
 /**
- * A data store which creates grid coverages from Image I/O readers using <cite>World File</cite> convention.
+ * A data store which creates grid coverages from Image I/O readers using <i>World File</i> convention.
  * Georeferencing is defined by two auxiliary files having the same name as the image file but different suffixes:
  *
  * <ul class="verbose">
@@ -80,8 +80,8 @@ import org.apache.sis.setup.OptionKey;
  *       <li>The {@code "wld"} extension.</li>
  *     </ol>
  *   </li>
- *   <li>A text file containing the <cite>Coordinate Reference System</cite> (CRS) definition
- *     in <cite>Well Known Text</cite> (WKT) syntax.
+ *   <li>A text file containing the <i>Coordinate Reference System</i> (CRS) definition
+ *     in <i>Well Known Text</i> (WKT) syntax.
  *     The reader looks for a file having the {@code ".prj"} extension.</li>
  * </ul>
  *

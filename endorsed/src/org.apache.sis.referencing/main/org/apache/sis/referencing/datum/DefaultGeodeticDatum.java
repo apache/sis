@@ -67,8 +67,8 @@ import org.opengis.referencing.ReferenceIdentifier;
  * <h2>Bursa-Wolf parameters</h2>
  * One or many {@link BursaWolfParameters} can optionally be associated to each {@code DefaultGeodeticDatum} instance.
  * This association is not part of the ISO 19111 model, but still a common practice (especially in older standards).
- * Associating Bursa-Wolf parameters to geodetic datum is known as the <cite>early-binding</cite> approach.
- * A recommended alternative, discussed below, is the <cite>late-binding</cite> approach.
+ * Associating Bursa-Wolf parameters to geodetic datum is known as the <i>early-binding</i> approach.
+ * A recommended alternative, discussed below, is the <i>late-binding</i> approach.
  *
  * <p>The Bursa-Wolf parameters serve two purposes:</p>
  * <ol class="verbose">
@@ -82,7 +82,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *     <p>Apache SIS searches for datum shift methods (including Bursa-Wolf parameters) in the EPSG database when a
  *     {@link org.opengis.referencing.operation.CoordinateOperation} or a
  *     {@link org.opengis.referencing.operation.MathTransform} is requested for a pair of CRS.
- *     This is known as the <cite>late-binding</cite> approach.
+ *     This is known as the <i>late-binding</i> approach.
  *     If a datum shift method is found in the database, it will have precedence over any {@code BursaWolfParameters}
  *     instance associated to this {@code DefaultGeodeticDatum}. Only if no datum shift method is found in the database,
  *     then the {@code BursaWolfParameters} associated to the datum may be used as a fallback.</p>
@@ -90,9 +90,9 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  *   <li><b>WKT version 1 formatting</b><br>
  *     The Bursa-Wolf parameters association serves another purpose: when a CRS is formatted in the older
- *     <cite>Well Known Text</cite> (WKT 1) format, the formatted string may contain a {@code TOWGS84[…]} element
+ *     <i>Well Known Text</i> (WKT 1) format, the formatted string may contain a {@code TOWGS84[…]} element
  *     with the parameter values of the transformation to the WGS 84 datum. This element is provided as a help
- *     for other Geographic Information Systems that support only the <cite>early-binding</cite> approach.
+ *     for other Geographic Information Systems that support only the <i>early-binding</i> approach.
  *     Apache SIS usually does not need the {@code TOWGS84} element, except as a fallback for datum that
  *     do not exist in the EPSG database.
  *   </li>
@@ -260,10 +260,8 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                                 final PrimeMeridian primeMeridian)
     {
         super(properties);
-        ensureNonNull("ellipsoid",     ellipsoid);
-        ensureNonNull("primeMeridian", primeMeridian);
-        this.ellipsoid     = ellipsoid;
-        this.primeMeridian = primeMeridian;
+        this.ellipsoid     = Objects.requireNonNull(ellipsoid);
+        this.primeMeridian = Objects.requireNonNull(primeMeridian);
         bursaWolf = CollectionsExt.nonEmpty(CollectionsExt.nonNullArraySet(
                 BURSA_WOLF_KEY, properties.get(BURSA_WOLF_KEY), EMPTY_ARRAY));
         if (bursaWolf != null) {
@@ -612,7 +610,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     }
 
     /**
-     * Formats this datum as a <cite>Well Known Text</cite> {@code Datum[…]} element.
+     * Formats this datum as a <i>Well Known Text</i> {@code Datum[…]} element.
      *
      * <h4>Example</h4>
      * Well-Known Text of a WGS 84 datum.

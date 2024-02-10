@@ -48,7 +48,7 @@ import org.apache.sis.util.internal.DoubleDouble;
  *
  * <p>If the samples are (at least conceptually) the result of some <var>y</var>=<var>f</var>(<var>x</var>)
  * function for <var>x</var> values increasing or decreasing at a constant interval Δ<var>x</var>,
- * then one can get the statistics on the <cite>discrete derivatives</cite> by a call to
+ * then one can get the statistics on the <i>discrete derivatives</i> by a call to
  * <code>differences().{@linkplain #scale(double) scale}(1/Δx)</code>.</p>
  *
  * <p>Statistics are computed on the fly using the
@@ -262,7 +262,6 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * @see #differences()
      */
     public static Statistics forSeries(final CharSequence name, final CharSequence... differenceNames) {
-        ArgumentChecks.ensureNonNull("differenceNames", differenceNames);
         Statistics stats = null;
         for (int i=differenceNames.length; --i >= -1;) {
             final CharSequence n = (i >= 0) ? differenceNames[i] : name;
@@ -377,8 +376,6 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
      * @param  stats  the statistics to be added to {@code this}.
      */
     public void combine(final Statistics stats) {
-        ArgumentChecks.ensureNonNull("stats", stats);
-
         // "if (a < b)" is equivalent to "if (!isNaN(a) && a < b)".
         if (isNaN(minimum) || stats.minimum < minimum) minimum = stats.minimum;
         if (isNaN(maximum) || stats.maximum > maximum) maximum = stats.maximum;
@@ -746,7 +743,6 @@ public class Statistics implements DoubleConsumer, LongConsumer, Cloneable, Seri
          */
         @Override
         public void combine(final Statistics stats) throws ClassCastException {
-            ArgumentChecks.ensureNonNull("stats", stats);
             delta.combine(stats.differences());
             super.combine(stats);
             if (stats instanceof WithDelta) {

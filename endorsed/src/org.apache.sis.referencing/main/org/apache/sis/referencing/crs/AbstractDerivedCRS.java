@@ -293,7 +293,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
     }
 
     /**
-     * Invoked by JAXB at unmarshalling time for setting the <cite>defining conversion</cite>.
+     * Invoked by JAXB at unmarshalling time for setting the <i>defining conversion</i>.
      * At this state, the given conversion has null {@code sourceCRS} and {@code targetCRS}.
      * Those CRS will be set later, in {@link #afterUnmarshal(Unmarshaller, Object)}.
      */

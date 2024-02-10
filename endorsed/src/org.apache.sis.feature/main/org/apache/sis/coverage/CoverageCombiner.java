@@ -118,7 +118,6 @@ public class CoverageCombiner {
      * @throws CannotEvaluateException if the coverage does not have at least 2 dimensions.
      */
     public CoverageCombiner(final GridCoverage destination) {
-        ArgumentChecks.ensureNonNull("destination", destination);
         this.destination = destination.forConvertedValues(true);
         isConverted = (this.destination == destination);
         final int[] dim = destination.getGridGeometry().getExtent().getLargestDimensions(BIDIMENSIONAL);
@@ -222,7 +221,6 @@ public class CoverageCombiner {
      *         is not convertible to the unit of measurement of the corresponding target sample dimension.
      */
     public boolean acceptAll(GridCoverage... sources) throws TransformException, IncommensurableException {
-        ArgumentChecks.ensureNonNull("sources", sources);
         sources = sources.clone();
         final GridGeometry        targetGG            = destination.getGridGeometry();
         final GridExtent          targetEx            = targetGG.getExtent();

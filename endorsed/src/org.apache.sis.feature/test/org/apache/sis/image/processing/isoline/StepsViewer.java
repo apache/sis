@@ -154,7 +154,6 @@ public final class StepsViewer extends JComponent implements BiConsumer<String,I
      * @param  data  the source of data for isolines.
      * @param  pane  the container where to add components.
      */
-    @SuppressWarnings("ThisEscapedInObjectConstruction")
     private StepsViewer(final RenderedImage data, final Container pane) {
         isolines    = new EnumMap<>(PolylineStage.class);
         stageColors = new Color[] {Color.YELLOW, Color.PINK, Color.BLUE};

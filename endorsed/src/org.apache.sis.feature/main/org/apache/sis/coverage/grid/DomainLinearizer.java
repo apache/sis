@@ -133,16 +133,15 @@ public class DomainLinearizer {
     }
 
     /**
-     * Returns a grid coverage with a linear approximation of the <cite>grid to CRS</cite> conversion.
-     * The linear approximation is computed by {@link #apply(GridGeometry)}. If the <cite>grid to CRS</cite>
+     * Returns a grid coverage with a linear approximation of the <i>grid to CRS</i> conversion.
+     * The linear approximation is computed by {@link #apply(GridGeometry)}. If the <i>grid to CRS</i>
      * conversion of the given coverage is already linear, then this method returns {@code coverage}.
      *
-     * @param  coverage  the grid coverage in which to make the <cite>grid to CRS</cite> conversion linear.
-     * @return a grid coverage with a linear approximation of the <cite>grid to CRS</cite> conversion.
+     * @param  coverage  the grid coverage in which to make the <i>grid to CRS</i> conversion linear.
+     * @return a grid coverage with a linear approximation of the <i>grid to CRS</i> conversion.
      * @throws TransformException if some cell coordinates cannot be computed.
      */
     public GridCoverage apply(final GridCoverage coverage) throws TransformException {
-        ArgumentChecks.ensureNonNull("coverage", coverage);
         final GridGeometry gg = coverage.getGridGeometry();
         final GridGeometry linearized = apply(gg);
         if (gg.equals(linearized)) {
@@ -152,19 +151,18 @@ public class DomainLinearizer {
     }
 
     /**
-     * Creates a grid geometry with a linear approximation of the <cite>grid to CRS</cite> conversion.
-     * The approximation is computed by <cite>Least Mean Squares</cite> method: the affine transform
+     * Creates a grid geometry with a linear approximation of the <i>grid to CRS</i> conversion.
+     * The approximation is computed by <i>Least Mean Squares</i> method: the affine transform
      * coefficients are chosen in way making the average value of (<var>position</var> − <var>linear
      * approximation of position</var>)² as small as possible for all cells in given grid geometry.
-     * If the <cite>grid to CRS</cite> conversion of the given grid geometry is already linear,
+     * If the <i>grid to CRS</i> conversion of the given grid geometry is already linear,
      * then this method returns {@code gg}.
      *
-     * @param  gg  the grid geometry in which to make the <cite>grid to CRS</cite> conversion linear.
-     * @return a grid geometry with a linear approximation of the <cite>grid to CRS</cite> conversion.
+     * @param  gg  the grid geometry in which to make the <i>grid to CRS</i> conversion linear.
+     * @return a grid geometry with a linear approximation of the <i>grid to CRS</i> conversion.
      * @throws TransformException if some cell coordinates cannot be computed.
      */
     public GridGeometry apply(final GridGeometry gg) throws TransformException {
-        ArgumentChecks.ensureNonNull("gg", gg);
         if (gg.nonLinears != 0) try {
             MathTransform   gridToCRS   = gg.requireGridToCRS(true);
             GeneralEnvelope domain      = gg.extent.toEnvelope();
@@ -203,7 +201,7 @@ public class DomainLinearizer {
 
     /**
      * Callback for custom modification of linear approximation. This method is invoked by {@link #apply(GridGeometry)}
-     * after a linear "grid to CRS" approximation has been computed by the <cite>Least Mean Squares</cite> method.
+     * after a linear "grid to CRS" approximation has been computed by the <i>Least Mean Squares</i> method.
      * Subclasses can override this method for example in order to scale the conversion by some arbitrary factor.
      *
      * <h4>Tip</h4>

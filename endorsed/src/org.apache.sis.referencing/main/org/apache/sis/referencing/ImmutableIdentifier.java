@@ -36,7 +36,6 @@ import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.ElementKind;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.collection.Containers.property;
 
 // Specific to the main and geoapi-3.1 branches:
@@ -67,7 +66,7 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
  * The following examples show an identifier for a Geographic Coordinate Reference System (CRS)
  * identified by code 4326 in the "EPSG" code space:
  *
- * <ul class="verbose"><li><b><cite>Well Known Text</cite> (WKT) version 1</b><br>
+ * <ul class="verbose"><li><b><i>Well Known Text</i> (WKT) version 1</b><br>
  * The WKT 1 format contains only the {@linkplain #getCodeSpace() code space} and the {@linkplain #getCode() code}.
  * If there is no code space, then the {@linkplain #getAuthority() authority} abbreviation is used as a fallback.
  * Example:
@@ -76,7 +75,7 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
  *   AUTHORITY["EPSG", "4326"]
  *   }
  *
- * </li><li><b><cite>Well Known Text</cite> (WKT) version 2</b><br>
+ * </li><li><b><i>Well Known Text</i> (WKT) version 2</b><br>
  * The WKT 2 format contains the {@linkplain #getCodeSpace() code space}, the {@linkplain #getCode() code},
  * the {@linkplain #getVersion() version} and the {@linkplain #getAuthority() authority} citation if available.
  * The WKT can optionally provides a {@code URI} element, which expresses the same information in a different way
@@ -88,7 +87,7 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
  *   }
  *
  * </li><li><b>XML in referencing objects</b><br>
- * The <cite>Definition identifier URNs in OGC namespace</cite> paper defines a syntax for identifiers commonly
+ * The <i>Definition identifier URNs in OGC namespace</i> paper defines a syntax for identifiers commonly
  * found in Geographic Markup Language (GML) documents. Example:
  *
  * {@snippet lang="xml" :
@@ -174,7 +173,6 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      * @see #castOrCopy(ReferenceIdentifier)
      */
     public ImmutableIdentifier(final ReferenceIdentifier identifier) {
-        ensureNonNull("identifier", identifier);
         code        = identifier.getCode();
         codeSpace   = identifier.getCodeSpace();
         authority   = identifier.getAuthority();
@@ -280,7 +278,6 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
      * @throws IllegalArgumentException if a property has an illegal value.
      */
     public ImmutableIdentifier(final Map<String,?> properties) throws IllegalArgumentException {
-        ensureNonNull("properties", properties);
         code        = Strings.trimOrNull(property(properties, CODE_KEY,    String.class));
         version     = Strings.trimOrNull(property(properties, VERSION_KEY, String.class));
         description = Types.toInternationalString(properties, DESCRIPTION_KEY);
@@ -470,7 +467,7 @@ public class ImmutableIdentifier extends FormattableObject implements ReferenceI
     }
 
     /**
-     * Formats this identifier as a <cite>Well Known Text</cite> {@code Id[…]} element.
+     * Formats this identifier as a <i>Well Known Text</i> {@code Id[…]} element.
      * See class javadoc for more information on the WKT format.
      *
      * @param  formatter  the formatter where to format the inner content of this WKT element.

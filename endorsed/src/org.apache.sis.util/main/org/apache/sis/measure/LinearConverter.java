@@ -16,10 +16,10 @@
  */
 package org.apache.sis.measure;
 
+import java.util.Objects;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import javax.measure.UnitConverter;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
@@ -285,7 +285,7 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      */
     @Override
     public Number convert(Number value) {
-        ArgumentChecks.ensureNonNull("value", value);
+        Objects.requireNonNull(value);
         if (!isIdentity()) {
             if (value instanceof DoubleDouble) {
                 var dd = (DoubleDouble) value;
@@ -295,9 +295,11 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
                 value = new BigDecimal((BigInteger) value);
             }
             if (value instanceof BigDecimal) {
-                BigDecimal scale10  = this.scale10;
-                BigDecimal offset10 = this.offset10;
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
+                BigDecimal scale10  = this.scale10,
+                           offset10 = this.offset10;
                 if (scale10 == null || offset10 == null) {
+                    @SuppressWarnings("LocalVariableHidesMemberVariable")
                     final BigDecimal divisor = BigDecimal.valueOf(this.divisor);
                     scale10  = BigDecimal.valueOf(scale) .divide(divisor);
                     offset10 = BigDecimal.valueOf(offset).divide(divisor);
@@ -337,7 +339,6 @@ final class LinearConverter extends AbstractConverter implements LenientComparab
      */
     @Override
     public UnitConverter concatenate(final UnitConverter converter) {
-        ArgumentChecks.ensureNonNull("converter", converter);
         if (converter.isIdentity()) {
             return this;
         }

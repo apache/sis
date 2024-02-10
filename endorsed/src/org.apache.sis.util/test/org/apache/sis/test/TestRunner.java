@@ -23,8 +23,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.io.PrintWriter;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.pending.jdk.JDK19;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.util.collection.Containers.hashMapCapacity;
 
 // Test dependencies
 import org.junit.Test;
@@ -178,7 +178,7 @@ public final class TestRunner extends BlockJUnit4ClassRunner {
         final TestClass testClass = getTestClass();
         final List<FrameworkMethod> depends = testClass.getAnnotatedMethods(DependsOnMethod.class);
         if (!isNullOrEmpty(depends)) {
-            final Set<String> dependencies = new HashSet<>(hashMapCapacity(depends.size()));
+            final Set<String> dependencies = JDK19.newHashSet(depends.size());
             for (final FrameworkMethod method : depends) {
                 for (final String value : method.getAnnotation(DependsOnMethod.class).value()) {
                     dependencies.add(value);

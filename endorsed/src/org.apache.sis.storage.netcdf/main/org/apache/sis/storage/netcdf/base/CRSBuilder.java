@@ -438,7 +438,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
             final CoordinateSystem cs = referenceSystem.getCoordinateSystem();
             for (int i=cs.getDimension(); --i >= 0;) {
                 final CoordinateSystemAxis axis = cs.getAxis(i);
-                if (RangeMeaning.WRAPAROUND.equals(axis.getRangeMeaning())) {
+                if (axis.getRangeMeaning() == RangeMeaning.WRAPAROUND) {
                     final NumberRange<?> range = axes[i].read().range();                // Vector is cached.
                     if (range != null) {
                         // Note: minimum/maximum are not necessarily first and last values in the vector.
@@ -635,8 +635,8 @@ previous:   for (int i=components.size(); --i >= 0;) {
             final Axis axis = getFirstAxis();
             final Unit<?> unit = axis.getUnit();
             if (unit == null || expected.equals(unit)) {
-                isLongitudeFirst = AxisDirection.EAST.equals(axis.direction);
-                if (isLongitudeFirst || AxisDirection.NORTH.equals(axis.direction)) {
+                isLongitudeFirst = (axis.direction == AxisDirection.EAST);
+                if (isLongitudeFirst || (axis.direction == AxisDirection.NORTH)) {
                     return true;
                 }
             }
@@ -877,7 +877,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
             final Unit<?> unit = axis.getUnit();
             final CommonCRS.Vertical predefined;
             if (Units.METRE.equals(unit)) {
-                if (AxisDirection.UP.equals(axis.direction)) {
+                if (axis.direction == AxisDirection.UP) {
                     predefined = CommonCRS.Vertical.MEAN_SEA_LEVEL;
                 } else {
                     predefined = CommonCRS.Vertical.DEPTH;

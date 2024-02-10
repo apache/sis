@@ -33,7 +33,7 @@ import java.lang.reflect.GenericDeclaration;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Modifier;
 import org.opengis.annotation.UML;
-import static org.apache.sis.util.collection.Containers.hashMapCapacity;
+import org.apache.sis.pending.jdk.JDK19;
 
 
 /**
@@ -160,7 +160,7 @@ public final class Classes extends Static {
      *   <li>{@code Set<Number>}: returns {@code Number.class}.</li>
      *   <li>{@code Set<? extends Number>}: returns {@code Number.class} as well,
      *       because that collection cannot contain instances of super-classes.
-     *       {@code Number} is the <cite>upper bound</cite>.</li>
+     *       {@code Number} is the <i>upper bound</i>.</li>
      *   <li>{@code Set<? super Number>}: returns {@code Object.class},
      *       because that collection is allowed to contain such elements.</li>
      *   <li>{@code Set}: returns {@code null} because that collection is declared with raw type.</li>
@@ -466,7 +466,7 @@ public final class Classes extends Static {
         final Class<?>[] interfaces = type.getInterfaces();
         for (int i=0; i<interfaces.length; i++) {
             if (addTo == null) {
-                addTo = new LinkedHashSet<>(hashMapCapacity(interfaces.length));
+                addTo = JDK19.newLinkedHashSet(interfaces.length);
             }
             if (!addTo.add(interfaces[i])) {
                 interfaces[i] = null;           // Remember that this interface is already present.

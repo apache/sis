@@ -94,7 +94,7 @@ public abstract class BandedCoverage {
     public abstract Optional<Envelope> getEnvelope();
 
     /**
-     * Returns information about the <cite>range</cite> of this coverage.
+     * Returns information about the <i>range</i> of this coverage.
      * Information include names, sample value ranges, fill values and transfer functions for all bands in this coverage.
      * The length of the returned list should be equal to the {@linkplain java.awt.image.SampleModel#getNumBands() number
      * of bands} in rendered images.

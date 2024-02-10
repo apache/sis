@@ -32,7 +32,6 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.internal.Resources;
@@ -50,7 +49,7 @@ import org.apache.sis.referencing.util.DirectPositionView;
  *
  * <h2>Input and output coordinates</h2>
  * First, <q>real world</q> input coordinates (<var>x</var>,<var>y</var>) are converted to
- * <cite>grid</cite> coordinates (<var>gridX</var>, <var>gridY</var>), which are zero-based indices
+ * <i>grid</i> coordinates (<var>gridX</var>, <var>gridY</var>), which are zero-based indices
  * in the two-dimensional grid. This conversion is applied by an affine transform <em>before</em>
  * to be passed to the {@code transform} methods of this {@code InterpolatedTransform} class.
  *
@@ -110,9 +109,9 @@ public class InterpolatedTransform extends DatumShiftTransform {
      * with the following affine transforms:
      *
      * <ul>
-     *   <li><cite>Normalization</cite> before {@code InterpolatedTransform}
+     *   <li><i>Normalization</i> before {@code InterpolatedTransform}
      *     for converting the geodetic coordinates into grid coordinates.</li>
-     *   <li><cite>Denormalization</cite> after {@code InterpolatedTransform}
+     *   <li><i>Denormalization</i> after {@code InterpolatedTransform}
      *     for converting grid coordinates into geodetic coordinates.</li>
      * </ul>
      *
@@ -128,7 +127,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
      *
      * @see #createGeodeticTransformation(MathTransformFactory, DatumShiftGrid)
      */
-    @SuppressWarnings( {"OverridableMethodCallInConstructor", "fallthrough"})
+    @SuppressWarnings("fallthrough")
     protected <T extends Quantity<T>> InterpolatedTransform(final DatumShiftGrid<T,T> grid) throws NoninvertibleMatrixException {
         /*
          * Create the contextual parameters using the descriptor of the provider that created the datum shift grid.
@@ -216,7 +215,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
     public static <T extends Quantity<T>> MathTransform createGeodeticTransformation(
             final MathTransformFactory factory, final DatumShiftGrid<T,T> grid) throws FactoryException
     {
-        ArgumentChecks.ensureNonNull("grid", grid);
+        // Implicit null value check below.
         final InterpolatedTransform tr;
         try {
             if (grid.getTranslationDimensions() == 2) {
@@ -421,7 +420,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
      * <em>gradient</em> direction. Instead, we use <em>positional error</em> direction computed with Jacobian matrix.
      * Instead of moving in the opposite of gradient direction, we move in the opposite of positional error vector.
      * This algorithm works well when the errors are small, which is the case for datum shift grids such as NADCON.
-     * It may work not so well with strongly curved <cite>localization grids</cite> as found in some netCDF files.
+     * It may work not so well with strongly curved <i>localization grids</i> as found in some netCDF files.
      * In such case, the iterative algorithm may throw a {@link TransformException} with "No convergence" message.
      * We could improve the algorithm by multiplying the translation vector by some factor {@literal 0 < γ < 1},
      * for example by taking inspiration from the Barzilai–Borwein method. But this is not yet done for avoiding

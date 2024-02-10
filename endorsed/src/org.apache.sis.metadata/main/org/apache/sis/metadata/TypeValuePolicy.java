@@ -56,7 +56,7 @@ public enum TypeValuePolicy {
      *       collection. For example if the property type is {@code Collection<String>}, then the element type
      *       is {@code String}.</li>
      *   <li>If the implementation declares a more specific property type than the interface (as allowed by
-     *       <cite>covariant return type</cite>), then the element type will be that specialized type.</li>
+     *       <i>covariant return type</i>), then the element type will be that specialized type.</li>
      * </ul>
      */
     ELEMENT_TYPE,

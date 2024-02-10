@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
@@ -409,7 +410,6 @@ public class MetadataSource implements AutoCloseable {
      * @param  source  the source from which to copy the configuration.
      */
     public MetadataSource(final MetadataSource source) {
-        ArgumentChecks.ensureNonNull("source", source);
         standard     = source.standard;
         dataSource   = source.dataSource;
         catalog      = source.catalog;
@@ -661,8 +661,7 @@ public class MetadataSource implements AutoCloseable {
      *         of the expected package, or if an error occurred while searching in the database.
      */
     public String search(final Object metadata) throws MetadataStoreException {
-        ArgumentChecks.ensureNonNull("metadata", metadata);
-        String identifier = proxy(metadata);
+        String identifier = proxy(Objects.requireNonNull(metadata));
         if (identifier == null) {
             /*
              * Code lists do not need to be stored in the database. Some code list tables may

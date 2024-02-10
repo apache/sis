@@ -30,7 +30,6 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.metadata.InvalidMetadataException;
@@ -85,8 +84,8 @@ import org.apache.sis.metadata.internal.ReferencingServices;
  * any {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getDirection() direction} (some maps are south-oriented)
  * and may use any units of measurement. By contrast, geographic bounding box are restricted to two-dimensional
  * geographic CRS with latitude and longitude in decimal degrees, inside the [-90 … +90]° and [-180 … +180]° range
- * respectively, increasing toward north and east respectively, and longitude measured from the <cite>international
- * reference meridian</cite> (Greenwich on Earth). However, {@code GeographicBoundingBox} said nothing about the
+ * respectively, increasing toward north and east respectively, and longitude measured from the <i>international
+ * reference meridian</i> (Greenwich on Earth). However, {@code GeographicBoundingBox} said nothing about the
  * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum}. Consequently, this bounding
  * box should be used only as a convenient way to give an <em>approximate</em> description of a location.
  * Users can assume a precision of about 0.01° for the latitude and longitude values in this class.
@@ -514,9 +513,8 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * @see DefaultTemporalExtent#setBounds(Envelope)
      */
     public void setBounds(final Envelope envelope) throws TransformException {
-        ArgumentChecks.ensureNonNull("envelope", envelope);
         checkWritePermission(isNonEmpty());
-        if (ReferencingServices.getInstance().setBounds(envelope, this, null) == null) {
+        if (ReferencingServices.getInstance().setBounds(Objects.requireNonNull(envelope), this, null) == null) {
             throw new NotSpatioTemporalException(0, envelope);
         }
     }
@@ -527,7 +525,6 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      * @param  box  the geographic bounding box to use for setting the values of this box.
      */
     public void setBounds(final GeographicBoundingBox box) {
-        ArgumentChecks.ensureNonNull("box", box);
         setBounds(box.getWestBoundLongitude(), box.getEastBoundLongitude(),
                   box.getSouthBoundLatitude(), box.getNorthBoundLatitude());
         setInclusion(box.getInclusion());                               // Set only on success.
@@ -618,7 +615,7 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
     /**
      * Adds a geographic bounding box to this box.
      * This method behavior depends on whether the bounding boxes encompass an area covered by the data
-     * (<cite>inclusion</cite>) or an area where data is not present (<cite>exclusion</cite>):
+     * (<dfn>inclusion</dfn>) or an area where data is not present (<dfn>exclusion</dfn>):
      *
      * <ul>
      *   <li>If the {@linkplain #getInclusion() inclusion} status is the same for this box and the box to be added,
@@ -644,7 +641,6 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      */
     public void add(final GeographicBoundingBox box) {
         checkWritePermission(isNonEmpty());
-        ArgumentChecks.ensureNonNull("box", box);
         double λmin = box.getWestBoundLongitude();
         double λmax = box.getEastBoundLongitude();
         double φmin = box.getSouthBoundLatitude();
@@ -702,7 +698,6 @@ public class DefaultGeographicBoundingBox extends AbstractGeographicExtent imple
      */
     public void intersect(final GeographicBoundingBox box) throws IllegalArgumentException {
         checkWritePermission(isNonEmpty());
-        ArgumentChecks.ensureNonNull("box", box);
         if (getInclusion(getInclusion()) != getInclusion(box.getInclusion())) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.IncompatiblePropertyValue_1, "inclusion"));
         }

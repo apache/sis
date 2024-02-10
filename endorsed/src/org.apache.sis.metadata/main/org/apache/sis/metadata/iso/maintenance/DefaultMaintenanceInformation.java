@@ -270,7 +270,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
             final Collection<CitationDate> dates = getMaintenanceDates();
             if (dates != null) {                                                // May be null on XML marshalling.
                 for (final CitationDate date : dates) {
-                    if (NEXT_UPDATE.equals(date.getDateType())) {
+                    if (date.getDateType() == NEXT_UPDATE) {
                         return date.getDate();
                     }
                 }
@@ -293,7 +293,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
             final Iterator<CitationDate> it = dates.iterator();
             while (it.hasNext()) {
                 final CitationDate date = it.next();
-                if (NEXT_UPDATE.equals(date.getDateType())) {
+                if (date.getDateType() == NEXT_UPDATE) {
                     if (newValue == null) {
                         it.remove();
                         return;

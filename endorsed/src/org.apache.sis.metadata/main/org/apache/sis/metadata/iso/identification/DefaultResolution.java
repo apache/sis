@@ -51,7 +51,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * {@code   ├─levelOfDetail…………} Brief textual description of the spatial resolution of the resource.
  * {@code   └─vertical………………………} Vertical sampling distance.</div>
  *
- * ISO 19115 defines {@code Resolution} as an <cite>union</cite> (in the C/C++ sense):
+ * ISO 19115 defines {@code Resolution} as an <i>union</i> (in the C/C++ sense):
  * only one of the properties in this class can be set to a non-empty value.
  * Setting any property to a non-empty value discard all the other ones.
  * See the {@linkplain #DefaultResolution(Resolution) constructor javadoc}

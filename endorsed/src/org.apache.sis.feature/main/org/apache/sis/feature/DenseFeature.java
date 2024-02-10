@@ -86,6 +86,7 @@ final class DenseFeature extends AbstractFeature implements CloneAccess {
         if (index != null) {
             return index;
         }
+        ArgumentChecks.ensureNonNull("name", name);
         throw new IllegalArgumentException(propertyNotFound(type, getName(), name));
     }
 
@@ -98,7 +99,7 @@ final class DenseFeature extends AbstractFeature implements CloneAccess {
      */
     @Override
     public Object getProperty(final String name) throws IllegalArgumentException {
-        ArgumentChecks.ensureNonNull("name", name);
+        // Null value check done by the invoked method.
         final int index = getIndex(name);
         if (index < 0) {
             return getOperationResult(name);
@@ -131,7 +132,6 @@ final class DenseFeature extends AbstractFeature implements CloneAccess {
      */
     @Override
     public void setProperty(final Object property) throws IllegalArgumentException {
-        ArgumentChecks.ensureNonNull("property", property);
         final String name = ((Property) property).getName().toString();
         verifyPropertyType(name, (Property) property);
         if (!(properties instanceof Property[])) {
@@ -223,7 +223,7 @@ final class DenseFeature extends AbstractFeature implements CloneAccess {
      */
     @Override
     public void setPropertyValue(final String name, Object value) throws IllegalArgumentException {
-        ArgumentChecks.ensureNonNull("name", name);
+        // Null value check done by the invoked method.
         final int index = getIndex(name);
         if (index < 0) {
             setOperationValue(name, value);

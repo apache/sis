@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.folder;
 
+import java.util.Objects;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Files;
@@ -38,7 +39,6 @@ import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.storage.base.ResourceOnFileSystem;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.io.stream.IOUtilities;
-import org.apache.sis.util.ArgumentChecks;
 
 
 /**
@@ -74,8 +74,7 @@ final class WritableStore extends Store implements WritableAggregate {
      */
     @Override
     public synchronized Resource add(final Resource resource) throws DataStoreException {
-        ArgumentChecks.ensureNonNull("resource", resource);
-        if (!(resource instanceof FeatureSet)) {
+        if (!(Objects.requireNonNull(resource) instanceof FeatureSet)) {
             throw new DataStoreException(message(Resources.Keys.CanNotStoreResourceType_2, new Object[] {
                 StoreProvider.NAME, StoreUtilities.getInterface(resource.getClass())
             }));

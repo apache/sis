@@ -1128,7 +1128,6 @@ public final class ArraysExt extends Static {
      * @see #concatenate(Object[][])
      */
     public static <T> T[] append(final T[] array, final T element) {
-        ArgumentChecks.ensureNonNull("array", array);
         final T[] copy = Arrays.copyOf(array, array.length + 1);
         copy[array.length] = element;
         return copy;

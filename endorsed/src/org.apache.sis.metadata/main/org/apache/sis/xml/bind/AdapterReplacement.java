@@ -24,7 +24,7 @@ import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 
 /**
  * An interface for {@link XmlAdapter} to be used in replacement of the instance created by JAXB.
- * This interface provides a way to replace <cite>default</cite> adapters by <cite>configured</cite>
+ * This interface provides a way to replace <i>default</i> adapters by <i>configured</i>
  * ones. It does not allow the addition of new adapters (i.e. it cannot be used in replacement of
  * the {@link jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter} annotation).
  *

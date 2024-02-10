@@ -33,7 +33,6 @@ import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;
@@ -147,7 +146,6 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      */
     public DefaultTemporalDatum(final Map<String,?> properties, final Date origin) {
         super(properties);
-        ensureNonNull("origin", origin);
         this.origin = origin.getTime();
     }
 
@@ -251,7 +249,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     }
 
     /**
-     * Formats this datum as a <cite>Well Known Text</cite> {@code TimeDatum[…]} element.
+     * Formats this datum as a <i>Well Known Text</i> {@code TimeDatum[…]} element.
      *
      * <h4>Compatibility note</h4>
      * {@code TimeDatum} is defined in the WKT 2 specification only.

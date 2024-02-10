@@ -22,7 +22,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Objects;
 import org.apache.sis.xml.bind.Context;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.internal.AbstractIterator;
 import org.apache.sis.util.resources.Messages;
@@ -235,8 +234,7 @@ public abstract class LegacyPropertyAdapter<L,N> extends AbstractCollection<L> {
      */
     @Override
     public boolean add(final L value) {
-        ArgumentChecks.ensureNonNull("value", value);
-        return elements.add(wrap(value));
+        return elements.add(wrap(Objects.requireNonNull(value)));
     }
 
     /**

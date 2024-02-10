@@ -41,7 +41,7 @@ import org.apache.sis.util.resources.Errors;
 
 /**
  * An operation concatenating the string representations of the values of multiple properties.
- * This operation can be used for creating a <cite>compound key</cite> as a {@link String}
+ * This operation can be used for creating a <dfn>compound key</dfn> as a {@link String}
  * that consists of two or more attribute values that uniquely identify a feature instance.
  *
  * <p>This operation supports both reading and writing. When setting a value on the attribute
@@ -290,8 +290,7 @@ final class StringJoinOperation extends AbstractOperation {
      */
     @Override
     public Property apply(AbstractFeature feature, ParameterValueGroup parameters) {
-        ArgumentChecks.ensureNonNull("feature", feature);
-        return new Result(feature);
+        return new Result(Objects.requireNonNull(feature));
     }
 
 

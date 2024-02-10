@@ -24,6 +24,7 @@ import java.text.DecimalFormat;
 import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.Arrays;
@@ -554,10 +555,10 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                  * Type is LONGITUDE, LATITUDE or ANGLE depending on axis direction.
                  */
                 byte type = ANGLE;
-                if      (AxisDirection.NORTH.equals(direction)) {type = LATITUDE;}
-                else if (AxisDirection.EAST .equals(direction)) {type = LONGITUDE;}
-                else if (AxisDirection.SOUTH.equals(direction)) {type = LATITUDE;  negate(i);}
-                else if (AxisDirection.WEST .equals(direction)) {type = LONGITUDE; negate(i);}
+                if      (direction == AxisDirection.NORTH) {type = LATITUDE;}
+                else if (direction == AxisDirection.EAST)  {type = LONGITUDE;}
+                else if (direction == AxisDirection.SOUTH) {type = LATITUDE;  negate(i);}
+                else if (direction == AxisDirection.WEST)  {type = LONGITUDE; negate(i);}
                 types  [i] = type;
                 formats[i] = getFormat(Angle.class);
                 setConverter(dimension, i, unit.asType(javax.measure.quantity.Angle.class).getConverterTo(Units.DEGREE));
@@ -576,7 +577,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                     formats[i] = getFormat(Date.class);
                     epochs [i] = ((TemporalCRS) t).getDatum().getOrigin().getTime();
                     setConverter(dimension, i, unit.asType(Time.class).getConverterTo(Units.MILLISECOND));
-                    if (AxisDirection.PAST.equals(direction)) {
+                    if (direction == AxisDirection.PAST) {
                         negate(i);
                     }
                     continue;
@@ -925,8 +926,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * @since 1.1
      */
     public void setGroundPrecision(final Quantity<?> precision) {
-        ArgumentChecks.ensureNonNull("precision", precision);
-        groundPrecision = precision;
+        groundPrecision = Objects.requireNonNull(precision);
         if (isPrecisionApplied) {
             applyGroundPrecision(lastCRS);
         }
@@ -1539,8 +1539,6 @@ abort:  if (dimensions != 0 && groundAccuracy != null) try {
      */
     @Override
     public DirectPosition parse(final CharSequence text, final ParsePosition pos) throws ParseException {
-        ArgumentChecks.ensureNonNull("text", text);
-        ArgumentChecks.ensureNonNull("pos",  pos);
         final int start  = pos.getIndex();
         final int length = text.length();
         /*
@@ -1569,6 +1567,7 @@ abort:  if (dimensions != 0 && groundAccuracy != null) try {
         }
         final double[] coordinates;
         Format format;
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Format[] formats = this.formats;
         if (formats != null) {
             format      = null;

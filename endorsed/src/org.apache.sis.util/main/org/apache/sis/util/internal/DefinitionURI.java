@@ -56,7 +56,7 @@ import static org.apache.sis.util.CharSequences.*;
  *   <li>an arbitrary number of {@linkplain #parameters}</li>
  * </ul>
  *
- * The <cite>object type</cite> can be one of the following name.
+ * The <i>object type</i> can be one of the following name.
  * Mapping between those names and GeoAPI interfaces is provided by the
  * {@link org.apache.sis.metadata.internal.NameMeaning} class.
  * <table class="sis">
@@ -87,7 +87,7 @@ import static org.apache.sis.util.CharSequences.*;
  *   <tr><td>verticalDatumType</td>   <td>Vertical datum type code definition</td></tr>
  * </table>
  *
- * Some examples of <cite>authorities</cite> are:
+ * Some examples of <i>authorities</i> are:
  * <table class="sis">
  *   <caption>Authority examples</caption>
  *   <tr><th>Authority</th>      <th>Purpose</th></tr>
@@ -505,7 +505,7 @@ public final class DefinitionURI {
      * This method is useful when:
      *
      * <ul>
-     *   <li>the URI is expected to have a specific <cite>object type</cite> and <cite>authority</cite>;</li>
+     *   <li>the URI is expected to have a specific <i>object type</i> and <i>authority</i>;</li>
      *   <li>the version number is considered irrelevant;</li>
      *   <li>the code is expected to have no parameters.</li>
      * </ul>

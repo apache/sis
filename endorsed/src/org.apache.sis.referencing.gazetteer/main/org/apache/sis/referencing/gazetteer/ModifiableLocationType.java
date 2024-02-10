@@ -38,7 +38,7 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
 
 /**
  * Helper class for building the description of a location. Temporary instances of this class can be used
- * during the construction of <cite>spatial reference systems using geographic identifiers</cite>.
+ * during the construction of <i>spatial reference systems using geographic identifiers</i>.
  * Since {@code ModifiableLocationType} instances are modifiable, they should not be published directly.
  * Instead, unmodifiable {@linkplain #snapshot snapshots} should be published.
  * The same {@code ModifiableLocationType} instance can be used for many snapshots.
@@ -158,7 +158,7 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      * @param name  the location type name.
      */
     public ModifiableLocationType(final CharSequence name) {
-        ArgumentChecks.ensureNonNull("name", name);
+        ArgumentChecks.ensureNonEmpty("name", name);
         this.name       = Types.toInternationalString(name);
         identifications = new LinkedHashMap<>();
         parents         = new LinkedHashMap<>();
@@ -263,7 +263,7 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      * @throws IllegalArgumentException if the given value is already defined.
      */
     public void addIdentification(final CharSequence value) {
-        ArgumentChecks.ensureNonNull("value", value);
+        ArgumentChecks.ensureNonEmpty("value", value);
         final String key = value.toString();
         if (identifications.putIfAbsent(key, Types.toInternationalString(value)) != null) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementAlreadyPresent_1, key));
@@ -277,7 +277,7 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      * @throws IllegalArgumentException if the given value is not found.
      */
     public void removeIdentification(final CharSequence value) {
-        ArgumentChecks.ensureNonNull("value", value);
+        ArgumentChecks.ensureNonEmpty("value", value);
         final String key = value.toString();
         if (identifications.remove(key) == null) {
             throw new IllegalArgumentException(Errors.format(Errors.Keys.ElementNotFound_1, key));
@@ -430,7 +430,6 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      * @throws IllegalArgumentException if the given parent already have a child of the same name as this location type.
      */
     public void addParent(final ModifiableLocationType parent) {
-        ArgumentChecks.ensureNonNull("parent", parent);
         final String parentName = parent.name.toString();
         if (parents.putIfAbsent(parentName, parent) != null) {
             throw new IllegalStateException(Resources.format(Resources.Keys.ParentAlreadyExists_1, parentName));
@@ -466,7 +465,6 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      * @throws IllegalArgumentException if the given parent has not been found.
      */
     public void removeParent(final ModifiableLocationType parent) {
-        ArgumentChecks.ensureNonNull("parent", parent);
         final String key = parent.name.toString();
         final ModifiableLocationType removed = parents.remove(key);
         if (removed == null) {

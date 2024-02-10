@@ -18,6 +18,7 @@ package org.apache.sis.io.wkt;
 
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Objects;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import java.text.NumberFormat;
@@ -29,7 +30,7 @@ import static org.apache.sis.util.ArgumentChecks.*;
 
 
 /**
- * The set of symbols to use for <cite>Well Known Text</cite> (WKT) parsing and formatting.
+ * The set of symbols to use for <i>Well Known Text</i> (WKT) parsing and formatting.
  * The two constants defined in this class, namely {@link #SQUARE_BRACKETS} and {@link #CURLY_BRACKETS},
  * define the symbols for ISO 19162 compliant WKT formatting. Their properties are:
  *
@@ -207,7 +208,6 @@ public class Symbols implements Localized, Cloneable, Serializable {
      * @param symbols  the symbols to copy.
      */
     public Symbols(final Symbols symbols) {
-        ensureNonNull("symbols", symbols);
         locale           = symbols.locale;
         brackets         = symbols.brackets;
         quotes           = symbols.quotes;
@@ -282,8 +282,7 @@ public class Symbols implements Localized, Cloneable, Serializable {
      */
     public void setLocale(final Locale locale) {
         checkWritePermission();
-        ensureNonNull("locale", locale);
-        this.locale = locale;
+        this.locale = Objects.requireNonNull(locale);
     }
 
     /**
