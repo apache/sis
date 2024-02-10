@@ -207,9 +207,13 @@ public final class CoordinateOperations extends Static {
     /**
      * Returns {@code true} if the given axis is of kind "Wrap Around".
      * Defined here because used together with {@link #wrapAroundChanges wrapAroundChanges(…)}.
+     * This method can be used in contexts of coordinate operations, when the caller wants to
+     * be consistent with whatever policy change may happen in the future in this class.
      *
      * @param  axis  the axis to test.
      * @return {@code true} if the given axis has "wrap around" range meaning.
+     *
+     * @see org.apache.sis.geometry.AbstractEnvelope#isWrapAround(CoordinateSystemAxis)
      */
     public static boolean isWrapAround(final CoordinateSystemAxis axis) {
         return axis.getRangeMeaning() == RangeMeaning.WRAPAROUND;

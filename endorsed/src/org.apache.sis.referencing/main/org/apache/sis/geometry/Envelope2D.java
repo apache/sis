@@ -38,9 +38,6 @@ import static org.apache.sis.math.MathFunctions.isNegativeZero;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
 import static org.apache.sis.referencing.util.Formulas.isPoleToPole;
 import static org.apache.sis.geometry.AbstractEnvelope.getAxis;
-import static org.apache.sis.geometry.AbstractEnvelope.getCommonCRS;
-import static org.apache.sis.geometry.AbstractEnvelope.fixSpan;
-import static org.apache.sis.geometry.AbstractEnvelope.fixMedian;
 import static org.apache.sis.geometry.AbstractEnvelope.isWrapAround;
 import static org.apache.sis.geometry.AbstractEnvelope.isNegativeUnsafe;
 
@@ -95,7 +92,7 @@ import org.opengis.geometry.MismatchedReferenceSystemException;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.1
+ * @version 1.5
  *
  * @see GeneralEnvelope
  * @see org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox
@@ -180,8 +177,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
     public Envelope2D(final DirectPosition lowerCorner, final DirectPosition upperCorner)
             throws MismatchedReferenceSystemException, MismatchedDimensionException
     {
-        // The call to getCommonCRS(…) performs a check against null values.
-        this(getCommonCRS(lowerCorner, upperCorner), lowerCorner, upperCorner);
+        this(AbstractEnvelope.getCommonCRS(lowerCorner, upperCorner), lowerCorner, upperCorner);
     }
 
     /**
@@ -365,7 +361,9 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      */
     @Override
     public DirectPosition2D getUpperCorner() {
-        return new DirectPosition2D(crs, x+width, y+height);
+        return new DirectPosition2D(crs,
+                (x != 0) ? x+width  : width,        // Preserve the sign of `width` if -0.0.
+                (y != 0) ? y+height : height);
     }
 
     /**
@@ -457,7 +455,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
         }
         value += 0.5*span;
         if (isNegative(span)) {                                         // Special handling for -0.0
-            value = fixMedian(getAxis(crs, dimension), value);
+            value = AbstractEnvelope.fixMedian(getAxis(crs, dimension), value);
         }
         return value;
     }
@@ -479,7 +477,7 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
             default: throw indexOutOfBounds(dimension);
         }
         if (isNegative(span)) {                                         // Special handling for -0.0
-            span = fixSpan(getAxis(crs, dimension), span);
+            span = AbstractEnvelope.fixSpan(getAxis(crs, dimension), span);
         }
         return span;
     }

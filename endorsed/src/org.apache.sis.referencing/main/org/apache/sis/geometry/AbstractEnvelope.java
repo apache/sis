@@ -239,6 +239,8 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      *
      * @param  axis  the axis to test, or {@code null}.
      * @return {@code true} if the range meaning is {@code WRAPAROUND}.
+     *
+     * @see org.apache.sis.referencing.util.CoordinateOperations#isWrapAround(CoordinateSystemAxis)
      */
     static boolean isWrapAround(final CoordinateSystemAxis axis) {
         return (axis != null) && axis.getRangeMeaning() == RangeMeaning.WRAPAROUND;
