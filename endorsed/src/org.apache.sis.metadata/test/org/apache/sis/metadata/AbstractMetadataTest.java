@@ -18,7 +18,7 @@ package org.apache.sis.metadata;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.toTreeStructure;
@@ -47,7 +47,7 @@ public final class AbstractMetadataTest extends TestCase {
     @Test
     public void testHashCodeOnCyclicMetadata() {
         final int code = MetadataStandardTest.createCyclicMetadata().hashCode();
-        assertEquals("hashCode", code, MetadataStandardTest.createCyclicMetadata().hashCode());
+        assertEquals(code, MetadataStandardTest.createCyclicMetadata().hashCode());
     }
 
     /**
@@ -80,8 +80,8 @@ public final class AbstractMetadataTest extends TestCase {
          * We cannot perform a full comparison of the string since it is locale-dependent.
          * Compare only the tree structure. The full tree in English is shown in javadoc.
          */
-        assertTrue(text, text.startsWith("Acquisition information"));
-        assertArrayEquals("toTreeStructure", new String[] {
+        assertTrue(text.startsWith("Acquisition information"), text);
+        assertArrayEquals(new String[] {
             "",                             // Acquisition information
             "  └─",                         // Platform
             "      ├─",                     // Description

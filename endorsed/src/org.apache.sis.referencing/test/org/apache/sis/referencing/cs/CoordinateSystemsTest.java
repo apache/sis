@@ -38,7 +38,7 @@ import static org.apache.sis.referencing.cs.CoordinateSystems.*;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -69,14 +69,14 @@ public final class CoordinateSystemsTest extends TestCase {
      */
     @Test
     public void testParseAxisDirection() {
-        assertEquals("NORTH",            AxisDirection.NORTH,            parseAxisDirection("NORTH"));
-        assertEquals("north",            AxisDirection.NORTH,            parseAxisDirection("north"));
-        assertEquals("  north ",         AxisDirection.NORTH,            parseAxisDirection("  north "));
-        assertEquals("east",             AxisDirection.EAST,             parseAxisDirection("east"));
-        assertEquals("NORTH_EAST",       AxisDirection.NORTH_EAST,       parseAxisDirection("NORTH_EAST"));
-        assertEquals("north-east",       AxisDirection.NORTH_EAST,       parseAxisDirection("north-east"));
-        assertEquals("north east",       AxisDirection.NORTH_EAST,       parseAxisDirection("north east"));
-        assertEquals("south-south-east", AxisDirection.SOUTH_SOUTH_EAST, parseAxisDirection("south-south-east"));
+        assertEquals(AxisDirection.NORTH,            parseAxisDirection("NORTH"));
+        assertEquals(AxisDirection.NORTH,            parseAxisDirection("north"));
+        assertEquals(AxisDirection.NORTH,            parseAxisDirection("  north "));
+        assertEquals(AxisDirection.EAST,             parseAxisDirection("east"));
+        assertEquals(AxisDirection.NORTH_EAST,       parseAxisDirection("NORTH_EAST"));
+        assertEquals(AxisDirection.NORTH_EAST,       parseAxisDirection("north-east"));
+        assertEquals(AxisDirection.NORTH_EAST,       parseAxisDirection("north east"));
+        assertEquals(AxisDirection.SOUTH_SOUTH_EAST, parseAxisDirection("south-south-east"));
         assertEquals("South along 180°", parseAxisDirection("South along 180 deg").name());
         assertEquals("South along 180°", parseAxisDirection("South along 180°").name());
         assertEquals("South along 180°", parseAxisDirection(" SOUTH  along  180 ° ").name());
@@ -148,8 +148,8 @@ public final class CoordinateSystemsTest extends TestCase {
     {
         final AxisDirection dir1 = parseAxisDirection(source);
         final AxisDirection dir2 = parseAxisDirection(target);
-        assertNotNull(source, dir1);
-        assertNotNull(target, dir2);
+        assertNotNull(dir1, source);
+        assertNotNull(dir2, target);
         assertAngleEquals(isElevation, expected, dir1, dir2);
     }
 
@@ -164,8 +164,9 @@ public final class CoordinateSystemsTest extends TestCase {
         final Angle inverse = angle(target, source);
         assertEquals(isElevation, forward instanceof ElevationAngle);
         assertEquals(isElevation, inverse instanceof ElevationAngle);
-        assertEquals(+expected, (forward != null) ? forward.degrees() : Double.NaN, STRICT);
+        assertEquals(+expected, (forward != null) ? forward.degrees() : Double.NaN);
         assertEquals(-expected, (inverse != null) ? inverse.degrees() : Double.NaN, STRICT);
+        // `STRICT` is needed for ignoring the sign of zero.
     }
 
     /**

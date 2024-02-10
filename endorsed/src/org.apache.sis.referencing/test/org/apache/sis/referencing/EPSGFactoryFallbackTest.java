@@ -40,7 +40,7 @@ import org.apache.sis.util.Utilities;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -185,32 +185,32 @@ public final class EPSGFactoryFallbackTest extends TestCase {
      * Asserts that the result of {@link EPSGFactoryFallback#createObject(String)} is the given prime meridian.
      */
     private static void verifyCreatePrimeMeridian(final PrimeMeridian expected, final String code) throws FactoryException {
-        assertSame(code, expected, EPSGFactoryFallback.INSTANCE.createPrimeMeridian(code));
-        assertSame(code, expected, EPSGFactoryFallback.INSTANCE.createObject(code));
+        assertSame(expected, EPSGFactoryFallback.INSTANCE.createPrimeMeridian(code), code);
+        assertSame(expected, EPSGFactoryFallback.INSTANCE.createObject(code), code);
     }
 
     /**
      * Asserts that the result of {@link EPSGFactoryFallback#createObject(String)} is the given ellipsoid.
      */
     private static void verifyCreateEllipsoid(final Ellipsoid expected, final String code) throws FactoryException {
-        assertSame(code, expected, EPSGFactoryFallback.INSTANCE.createEllipsoid(code));
-        assertSame(code, expected, EPSGFactoryFallback.INSTANCE.createObject(code));
+        assertSame(expected, EPSGFactoryFallback.INSTANCE.createEllipsoid(code), code);
+        assertSame(expected, EPSGFactoryFallback.INSTANCE.createObject(code), code);
     }
 
     /**
      * Asserts that the result of {@link EPSGFactoryFallback#createObject(String)} is the given datum.
      */
     private static void verifyCreateDatum(final Datum expected, final String code) throws FactoryException {
-        assertSame(code, expected, EPSGFactoryFallback.INSTANCE.createDatum(code));
-        assertSame(code, expected, EPSGFactoryFallback.INSTANCE.createObject(code));
+        assertSame(expected, EPSGFactoryFallback.INSTANCE.createDatum(code), code);
+        assertSame(expected, EPSGFactoryFallback.INSTANCE.createObject(code), code);
     }
 
     /**
      * Asserts that the result of {@link EPSGFactoryFallback#createObject(String)} is the given CRS.
      */
     private static void verifyCreateCRS(final SingleCRS expected, final String code) throws FactoryException {
-        assertSame(code, expected, EPSGFactoryFallback.INSTANCE.createCoordinateReferenceSystem(code));
-        assertSame(code, expected, EPSGFactoryFallback.INSTANCE.createObject(code));
+        assertSame(expected, EPSGFactoryFallback.INSTANCE.createCoordinateReferenceSystem(code), code);
+        assertSame(expected, EPSGFactoryFallback.INSTANCE.createObject(code), code);
     }
 
     /**
@@ -221,7 +221,7 @@ public final class EPSGFactoryFallbackTest extends TestCase {
     private static void verifyCreateCS(final CoordinateReferenceSystem crs, final String code) throws FactoryException {
         final CoordinateSystem expected = crs.getCoordinateSystem();
         final CoordinateSystem actual = EPSGFactoryFallback.INSTANCE.createCoordinateSystem(code);
-        assertEquals(code, actual, EPSGFactoryFallback.INSTANCE.createObject(code));
+        assertEquals(actual, EPSGFactoryFallback.INSTANCE.createObject(code), code);
         assertEqualsIgnoreMetadata(expected, actual);
     }
 
@@ -246,12 +246,12 @@ public final class EPSGFactoryFallbackTest extends TestCase {
         final GeodeticAuthorityFactory EPSG = AuthorityFactories.EPSG();
         try {
             setEPSGFactory(EPSGFactoryFallback.INSTANCE);
-            final ArrayList<String> codes = new ArrayList<>(EPSGFactoryFallback.INSTANCE.getAuthorityCodes(CoordinateReferenceSystem.class));
+            final var codes = new ArrayList<String>(EPSGFactoryFallback.INSTANCE.getAuthorityCodes(CoordinateReferenceSystem.class));
             Collections.shuffle(codes, TestUtilities.createRandomNumberGenerator());
             for (final String code : codes) {
                 final CoordinateReferenceSystem crs = EPSGFactoryFallback.INSTANCE.createCoordinateReferenceSystem(code);
                 final CoordinateReferenceSystem expected = EPSG.createCoordinateReferenceSystem(code);
-                assertTrue(code, Utilities.deepEquals(expected, crs, ComparisonMode.DEBUG));
+                assertTrue(Utilities.deepEquals(expected, crs, ComparisonMode.DEBUG), code);
             }
         } finally {
             setEPSGFactory(EPSG);

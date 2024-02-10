@@ -21,10 +21,11 @@ import java.util.HashMap;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
@@ -63,23 +64,23 @@ public final class MultiValuedAttributeTest extends TestCase {
     @Test
     public void testValue() {
         final AbstractAttribute<String> attribute = universities();
-        assertNull("value",  attribute.getValue());
-        assertTrue("values", attribute.getValues().isEmpty());
+        assertNull(attribute.getValue());
+        assertTrue(attribute.getValues().isEmpty());
 
         final String   value  = "University of arts";
         final String[] values = {value};
 
         attribute.setValue(value);
-        assertEquals     ("value",  value,  attribute.getValue());
-        assertArrayEquals("values", values, attribute.getValues().toArray());
+        assertEquals     (value,  attribute.getValue());
+        assertArrayEquals(values, attribute.getValues().toArray());
 
         attribute.setValue(null);
-        assertNull("value",  attribute.getValue());
-        assertTrue("values", attribute.getValues().isEmpty());
+        assertNull(attribute.getValue());
+        assertTrue(attribute.getValues().isEmpty());
 
         attribute.setValues(Arrays.asList(values));
-        assertEquals     ("value",  value,  attribute.getValue());
-        assertArrayEquals("values", values, attribute.getValues().toArray());
+        assertEquals     (value,  attribute.getValue());
+        assertArrayEquals(values, attribute.getValues().toArray());
     }
 
     /**
@@ -95,14 +96,11 @@ public final class MultiValuedAttributeTest extends TestCase {
             "University of international development"
         };
         attribute.setValues(Arrays.asList(values));
-        assertArrayEquals("values", values, attribute.getValues().toArray());
-        try {
-            attribute.getValue();
-            fail("getValue() shall not be allowed when there is more than one value.");
-        } catch (IllegalStateException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("universities"));
-        }
+        assertArrayEquals(values, attribute.getValues().toArray());
+
+        var e = assertThrows(IllegalStateException.class, () -> attribute.getValue(),
+                             "getValue() shall not be allowed when there is more than one value.");
+        assertMessageContains(e, "universities");
     }
 
     /**
@@ -112,16 +110,16 @@ public final class MultiValuedAttributeTest extends TestCase {
     @DependsOnMethod("testValue")
     public void testDefaultValue() {
         final AbstractAttribute<String> attribute = new MultiValuedAttribute<>(DefaultAttributeTypeTest.city());
-        assertEquals     ("value",                "Utopia",  attribute.getValue());
-        assertArrayEquals("values", new String[] {"Utopia"}, attribute.getValues().toArray());
+        assertEquals     (              "Utopia",  attribute.getValue());
+        assertArrayEquals(new String[] {"Utopia"}, attribute.getValues().toArray());
 
         attribute.setValue("Atlantide");
-        assertEquals     ("value",                "Atlantide",  attribute.getValue());
-        assertArrayEquals("values", new String[] {"Atlantide"}, attribute.getValues().toArray());
+        assertEquals     (              "Atlantide",  attribute.getValue());
+        assertArrayEquals(new String[] {"Atlantide"}, attribute.getValues().toArray());
 
         attribute.setValue(null);
-        assertNull("value",  attribute.getValue());
-        assertTrue("values", attribute.getValues().isEmpty());
+        assertNull(attribute.getValue());
+        assertTrue(attribute.getValues().isEmpty());
     }
 
     /**
@@ -133,7 +131,7 @@ public final class MultiValuedAttributeTest extends TestCase {
     public void testEquals() {
         final AbstractAttribute<Integer> a1 = population();
         final AbstractAttribute<Integer> a2 = population();
-        assertFalse("equals(null)", a1.equals(null));
+        assertFalse(a1.equals(null));
         SingletonAttributeTest.testEquals(a1, a2);
     }
 

@@ -27,12 +27,13 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.referencing.Assertions.assertAxisEquals;
 import static org.apache.sis.referencing.Assertions.assertEpsgIdentifierEquals;
@@ -100,36 +101,33 @@ public final class DefaultCartesianCSTest extends TestCase {
     @Test
     public void testConstructorArgumentChecks() {
         final Map<String,?> properties = Map.of(DefaultCartesianCS.NAME_KEY, "Test");
-        /*
-         * (λ,φ) : illegal units.
-         */
-        try {
-            final DefaultCartesianCS cs = new DefaultCartesianCS(properties,
-                    HardCodedAxes.GEODETIC_LONGITUDE,
-                    HardCodedAxes.GEODETIC_LATITUDE);
-            fail("Angular units should not be accepted for " + cs);
-        } catch (IllegalArgumentException e) {
-            assertFalse(e.getMessage().isEmpty());
-        }
-        /*
-         * (S,N) : co-linear axes.
-         */
-        try {
-            final DefaultCartesianCS cs = new DefaultCartesianCS(properties,
-                    HardCodedAxes.SOUTHING,
-                    HardCodedAxes.NORTHING);
-            fail("Colinear units should not be accepted for " + cs);
-        } catch (IllegalArgumentException e) {
-            assertFalse(e.getMessage().isEmpty());
-        }
-        try {
-            final DefaultCartesianCS cs = new DefaultCartesianCS(properties,
-                    HardCodedAxes.NORTH_EAST,
-                    HardCodedAxes.EASTING);
-            fail("Non-perpendicular axis should not be accepted for " + cs);
-        } catch (IllegalArgumentException e) {
-            assertFalse(e.getMessage().isEmpty());
-        }
+
+        forIllegalAxes(properties,
+                       HardCodedAxes.GEODETIC_LONGITUDE,
+                       HardCodedAxes.GEODETIC_LATITUDE,
+                       "Angular units should not be accepted.");
+
+        forIllegalAxes(properties,
+                       HardCodedAxes.SOUTHING,
+                       HardCodedAxes.NORTHING,
+                       "Colinear units should not be accepted.");
+
+        forIllegalAxes(properties,
+                       HardCodedAxes.NORTH_EAST,
+                       HardCodedAxes.EASTING,
+                       "Non-perpendicular axis should not be accepted.");
+    }
+
+    /**
+     * Tests the construction of a coordinate system having illegal axes.
+     */
+    private static void forIllegalAxes(Map<String,?> properties,
+            CoordinateSystemAxis a1, CoordinateSystemAxis a2, String message)
+    {
+        var e = assertThrows(IllegalArgumentException.class,
+                () -> new DefaultCartesianCS(properties, a1, a2),
+                message);
+        assertMessageContains(e);
     }
 
     /**
@@ -225,8 +223,8 @@ public final class DefaultCartesianCSTest extends TestCase {
          */
         final CoordinateSystemAxis E = cs.getAxis(0);
         final CoordinateSystemAxis N = cs.getAxis(1);
-        assertEquals("name",    "Easting, northing (E,N)", cs.getName().getCode());
-        assertEquals("remarks", "Used in ProjectedCRS.", cs.getRemarks().toString());
+        assertEquals("Easting, northing (E,N)", cs.getName().getCode());
+        assertEquals("Used in ProjectedCRS.", cs.getRemarks().toString());
         assertEpsgIdentifierEquals("4400", getSingleton(cs.getIdentifiers()));
         assertEpsgIdentifierEquals("1",    getSingleton(E.getIdentifiers()));
         assertEpsgIdentifierEquals("2",    getSingleton(N.getIdentifiers()));

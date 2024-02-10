@@ -36,9 +36,8 @@ import org.apache.sis.referencing.datum.GeodeticDatumMock;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -80,12 +79,12 @@ public final class StandardDefinitionsTest extends TestCase {
     @DependsOnMethod("testCreateAxis")
     public void testCreateCoordinateSystem() {
         CoordinateSystem cs = StandardDefinitions.createCoordinateSystem((short) 4400, true);
-        assertInstanceOf("projected", CartesianCS.class, cs);
-        assertEquals("dimension", 2, cs.getDimension());
-        assertEquals("unit",      Units.METRE,         cs.getAxis(0).getUnit());
-        assertEquals("unit",      Units.METRE,         cs.getAxis(1).getUnit());
-        assertEquals("direction", AxisDirection.EAST,  cs.getAxis(0).getDirection());
-        assertEquals("direction", AxisDirection.NORTH, cs.getAxis(1).getDirection());
+        assertInstanceOf(CartesianCS.class, cs);
+        assertEquals(2, cs.getDimension());
+        assertEquals(Units.METRE,         cs.getAxis(0).getUnit());
+        assertEquals(Units.METRE,         cs.getAxis(1).getUnit());
+        assertEquals(AxisDirection.EAST,  cs.getAxis(0).getDirection());
+        assertEquals(AxisDirection.NORTH, cs.getAxis(1).getDirection());
     }
 
     /**
@@ -96,13 +95,13 @@ public final class StandardDefinitionsTest extends TestCase {
     @DependsOnMethod("testCreateGeographicCRS")
     public void testCreateUTM() {
         final ProjectedCRS crs = StandardDefinitions.createUniversal(32610, HardCodedCRS.WGS84, true, 15, -122, HardCodedCS.PROJECTED);
-        assertEquals("name", "WGS 84 / UTM zone 10N", crs.getName().getCode());
+        assertEquals("WGS 84 / UTM zone 10N", crs.getName().getCode());
         final ParameterValueGroup pg = crs.getConversionFromBase().getParameterValues();
-        assertEquals(Constants.LATITUDE_OF_ORIGIN,    0, pg.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(), STRICT);
-        assertEquals(Constants.CENTRAL_MERIDIAN,   -123, pg.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue(), STRICT);
-        assertEquals(Constants.SCALE_FACTOR,     0.9996, pg.parameter(Constants.SCALE_FACTOR)      .doubleValue(), STRICT);
-        assertEquals(Constants.FALSE_EASTING,    500000, pg.parameter(Constants.FALSE_EASTING)     .doubleValue(), STRICT);
-        assertEquals(Constants.FALSE_NORTHING,        0, pg.parameter(Constants.FALSE_NORTHING)    .doubleValue(), STRICT);
+        assertEquals(     0, pg.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(), Constants.LATITUDE_OF_ORIGIN);
+        assertEquals(  -123, pg.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue(), Constants.CENTRAL_MERIDIAN);
+        assertEquals(0.9996, pg.parameter(Constants.SCALE_FACTOR)      .doubleValue(), Constants.SCALE_FACTOR);
+        assertEquals(500000, pg.parameter(Constants.FALSE_EASTING)     .doubleValue(), Constants.FALSE_EASTING);
+        assertEquals(     0, pg.parameter(Constants.FALSE_NORTHING)    .doubleValue(), Constants.FALSE_NORTHING);
     }
 
     /**
@@ -114,13 +113,13 @@ public final class StandardDefinitionsTest extends TestCase {
     @DependsOnMethod("testCreateGeographicCRS")
     public void testCreateUPS() {
         final ProjectedCRS crs = StandardDefinitions.createUniversal(5041, HardCodedCRS.WGS84, false, 90, -122, HardCodedCS.PROJECTED);
-        assertEquals("name", "WGS 84 / Universal Polar Stereographic North", crs.getName().getCode());
+        assertEquals("WGS 84 / Universal Polar Stereographic North", crs.getName().getCode());
         final ParameterValueGroup pg = crs.getConversionFromBase().getParameterValues();
-        assertEquals(Constants.LATITUDE_OF_ORIGIN,  90, pg.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(), STRICT);
-        assertEquals(Constants.CENTRAL_MERIDIAN,     0, pg.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue(), STRICT);
-        assertEquals(Constants.SCALE_FACTOR,     0.994, pg.parameter(Constants.SCALE_FACTOR)      .doubleValue(), STRICT);
-        assertEquals(Constants.FALSE_EASTING,  2000000, pg.parameter(Constants.FALSE_EASTING)     .doubleValue(), STRICT);
-        assertEquals(Constants.FALSE_NORTHING, 2000000, pg.parameter(Constants.FALSE_NORTHING)    .doubleValue(), STRICT);
+        assertEquals(     90, pg.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(), Constants.LATITUDE_OF_ORIGIN);
+        assertEquals(      0, pg.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue(), Constants.CENTRAL_MERIDIAN);
+        assertEquals(  0.994, pg.parameter(Constants.SCALE_FACTOR)      .doubleValue(), Constants.SCALE_FACTOR);
+        assertEquals(2000000, pg.parameter(Constants.FALSE_EASTING)     .doubleValue(), Constants.FALSE_EASTING);
+        assertEquals(2000000, pg.parameter(Constants.FALSE_NORTHING)    .doubleValue(), Constants.FALSE_NORTHING);
     }
 
     /**
@@ -171,25 +170,25 @@ public final class StandardDefinitionsTest extends TestCase {
      * Compares only the properties which are known to be defined in {@link StandardDefinitions}.
      */
     private static void compare(final GeographicCRS expected, final GeographicCRS actual) {
-        assertEquals("name", expected.getName().getCode(), actual.getName().getCode());
+        assertEquals(expected.getName().getCode(), actual.getName().getCode(), "name");
     }
 
     /**
      * Compares only the properties which are known to be defined in {@link StandardDefinitions}.
      */
     private static void compare(final GeodeticDatum expected, final GeodeticDatum actual) {
-        assertEquals("name", expected.getName().getCode(), actual.getName().getCode());
+        assertEquals(expected.getName().getCode(), actual.getName().getCode(), "name");
     }
 
     /**
      * Compares only the properties which are known to be defined in {@link StandardDefinitions}.
      */
     private static void compare(final Ellipsoid expected, final Ellipsoid actual) {
-        assertEquals("semiMajorAxis",     expected.getSemiMajorAxis(),     actual.getSemiMajorAxis(), STRICT);
-        assertEquals("semiMinorAxis",     expected.getSemiMinorAxis(),     actual.getSemiMinorAxis(), STRICT);
-        assertEquals("inverseFlattening", expected.getInverseFlattening(), actual.getInverseFlattening(), expected.isIvfDefinitive() ? STRICT : 1E-11);
-        assertEquals("isIvfDefinitive",   expected.isIvfDefinitive(),      actual.isIvfDefinitive());
-        assertEquals("isSphere",          expected.isSphere(),             actual.isSphere());
+        assertEquals(expected.getSemiMajorAxis(),     actual.getSemiMajorAxis());
+        assertEquals(expected.getSemiMinorAxis(),     actual.getSemiMinorAxis());
+        assertEquals(expected.getInverseFlattening(), actual.getInverseFlattening(), expected.isIvfDefinitive() ? STRICT : 1E-11);
+        assertEquals(expected.isIvfDefinitive(),      actual.isIvfDefinitive());
+        assertEquals(expected.isSphere(),             actual.isSphere());
     }
 
     /**
@@ -222,13 +221,13 @@ public final class StandardDefinitionsTest extends TestCase {
      * Compares only the properties which are known to be defined in {@link StandardDefinitions}.
      */
     private static void compare(final CoordinateSystemAxis expected, final CoordinateSystemAxis actual) {
-        assertEquals("name",         expected.getName().getCode(), actual.getName().getCode());
-        assertEquals("abbreviation", expected.getAbbreviation(),   actual.getAbbreviation());
-        assertEquals("unit",         expected.getUnit(),           actual.getUnit());
-        assertEquals("direction",    expected.getDirection(),      actual.getDirection());
-        assertEquals("minimumValue", expected.getMinimumValue(),   actual.getMinimumValue(), STRICT);
-        assertEquals("maximumValue", expected.getMaximumValue(),   actual.getMaximumValue(), STRICT);
-        assertEquals("rangeMeaning", expected.getRangeMeaning(),   actual.getRangeMeaning());
+        assertEquals(expected.getName().getCode(), actual.getName().getCode());
+        assertEquals(expected.getAbbreviation(),   actual.getAbbreviation());
+        assertEquals(expected.getUnit(),           actual.getUnit());
+        assertEquals(expected.getDirection(),      actual.getDirection());
+        assertEquals(expected.getMinimumValue(),   actual.getMinimumValue());
+        assertEquals(expected.getMaximumValue(),   actual.getMaximumValue());
+        assertEquals(expected.getRangeMeaning(),   actual.getRangeMeaning());
     }
 
     /**
@@ -242,23 +241,23 @@ public final class StandardDefinitionsTest extends TestCase {
 
         datum = StandardDefinitions.createVerticalDatum(CommonCRS.Vertical.NAVD88.datum);
         crs = StandardDefinitions.createVerticalCRS(CommonCRS.Vertical.NAVD88.crs, datum);
-        assertEquals("name", "NAVD88 height", crs.getName().getCode());
-        assertEquals("identifier", "5703", IdentifiedObjects.getIdentifier(crs, Citations.EPSG).getCode());
-        assertEquals("identifier",   "88", IdentifiedObjects.getIdentifier(crs, Citations.WMS ).getCode());
-        assertEquals("direction", AxisDirection.UP, crs.getCoordinateSystem().getAxis(0).getDirection());
+        assertEquals("NAVD88 height", crs.getName().getCode());
+        assertEquals("5703", IdentifiedObjects.getIdentifier(crs, Citations.EPSG).getCode());
+        assertEquals(  "88", IdentifiedObjects.getIdentifier(crs, Citations.WMS ).getCode());
+        assertEquals(AxisDirection.UP, crs.getCoordinateSystem().getAxis(0).getDirection());
 
         datum = StandardDefinitions.createVerticalDatum(CommonCRS.Vertical.MEAN_SEA_LEVEL.datum);
         crs = StandardDefinitions.createVerticalCRS(CommonCRS.Vertical.MEAN_SEA_LEVEL.crs, datum);
-        assertEquals("name", "MSL height", crs.getName().getCode());
-        assertEquals("identifier", "5714", IdentifiedObjects.getIdentifier(crs, Citations.EPSG).getCode());
-        assertNull  ("identifier", IdentifiedObjects.getIdentifier(crs, Citations.OGC));
-        assertEquals("direction", AxisDirection.UP, crs.getCoordinateSystem().getAxis(0).getDirection());
+        assertEquals("MSL height", crs.getName().getCode());
+        assertEquals("5714", IdentifiedObjects.getIdentifier(crs, Citations.EPSG).getCode());
+        assertNull  (IdentifiedObjects.getIdentifier(crs, Citations.OGC));
+        assertEquals(AxisDirection.UP, crs.getCoordinateSystem().getAxis(0).getDirection());
 
         datum = StandardDefinitions.createVerticalDatum(CommonCRS.Vertical.DEPTH.datum);
         crs = StandardDefinitions.createVerticalCRS(CommonCRS.Vertical.DEPTH.crs, datum);
-        assertEquals("name", "MSL depth", crs.getName().getCode());
-        assertEquals("identifier", "5715", IdentifiedObjects.getIdentifier(crs, Citations.EPSG).getCode());
-        assertNull  ("identifier", IdentifiedObjects.getIdentifier(crs, Citations.OGC));
-        assertEquals("direction", AxisDirection.DOWN, crs.getCoordinateSystem().getAxis(0).getDirection());
+        assertEquals("MSL depth", crs.getName().getCode());
+        assertEquals("5715", IdentifiedObjects.getIdentifier(crs, Citations.EPSG).getCode());
+        assertNull  (IdentifiedObjects.getIdentifier(crs, Citations.OGC));
+        assertEquals(AxisDirection.DOWN, crs.getCoordinateSystem().getAxis(0).getDirection());
     }
 }

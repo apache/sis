@@ -27,7 +27,7 @@ import org.apache.sis.util.iso.DefaultNameFactory;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -60,18 +60,18 @@ public final class NamedIdentifierTest extends TestCase {
         Validators.validate((GenericName) identifier);
 
         // ImmutableIdentifier properties
-        assertEquals("code",       "4326",         identifier.getCode());
-        assertEquals("codeSpace",  "EPSG",         identifier.getCodeSpace());
-        assertSame  ("authority",  Citations.EPSG, identifier.getAuthority());
-        assertEquals("version",    "8.3",          identifier.getVersion());
-        assertNull  ("description",                identifier.getDescription());
+        assertEquals("4326",         identifier.getCode());
+        assertEquals("EPSG",         identifier.getCodeSpace());
+        assertSame  (Citations.EPSG, identifier.getAuthority());
+        assertEquals("8.3",          identifier.getVersion());
+        assertNull  (                identifier.getDescription());
 
         // NamedIdentifier properties
-        assertEquals("depth",  2,          identifier.depth());
-        assertEquals("tip",   "4326",      identifier.tip().toString());
-        assertEquals("head",  "EPSG",      identifier.head().toString());
-        assertEquals("name",  "EPSG:4326", identifier.toString());
-        assertTrue  ("scope.isGlobal",     identifier.scope().isGlobal());
+        assertEquals( 2,          identifier.depth());
+        assertEquals("4326",      identifier.tip().toString());
+        assertEquals("EPSG",      identifier.head().toString());
+        assertEquals("EPSG:4326", identifier.toString());
+        assertTrue  (             identifier.scope().isGlobal());
     }
 
     /**
@@ -86,20 +86,20 @@ public final class NamedIdentifierTest extends TestCase {
         Validators.validate((GenericName) identifier);
 
         // ImmutableIdentifier properties
-        assertEquals("code",      "4326", identifier.getCode());
-        assertEquals("codeSpace", "EPSG", identifier.getCodeSpace());
-        assertEquals("authority", "IOGP", Citations.toCodeSpace(identifier.getAuthority()));
-        assertNull  ("version",           identifier.getVersion());
-        assertNull  ("description",       identifier.getDescription());
+        assertEquals("4326", identifier.getCode());
+        assertEquals("EPSG", identifier.getCodeSpace());
+        assertEquals("IOGP", Citations.toCodeSpace(identifier.getAuthority()));
+        assertNull  (        identifier.getVersion());
+        assertNull  (        identifier.getDescription());
 
         // NamedIdentifier properties
-        assertEquals("depth",  2,          identifier.depth());
-        assertEquals("tip",   "4326",      identifier.tip().toString());
-        assertEquals("head",  "EPSG",      identifier.head().toString());
-        assertEquals("name",  "EPSG:4326", identifier.toString());
-        assertSame  ("scope", scope,       identifier.scope());
-        assertFalse ("scope.isGlobal",     scope.isGlobal());
-        assertEquals("scope", "IOGP",      scope.name().toString());
+        assertEquals( 2,          identifier.depth());
+        assertEquals("4326",      identifier.tip().toString());
+        assertEquals("EPSG",      identifier.head().toString());
+        assertEquals("EPSG:4326", identifier.toString());
+        assertSame  (scope,       identifier.scope());
+        assertFalse (             scope.isGlobal());
+        assertEquals("IOGP",      scope.name().toString());
     }
 
     /**
@@ -124,22 +124,22 @@ public final class NamedIdentifierTest extends TestCase {
         Validators.validate((GenericName) identifier);
 
         // ImmutableIdentifier properties
-        assertEquals("code",      "name",         identifier.getCode());
-        assertEquals("codeSpace", "EPSG",         identifier.getCodeSpace());
-        assertSame  ("authority", Citations.EPSG, identifier.getAuthority());
-        assertNull  ("version",                   identifier.getVersion());
-        assertNull  ("description",               identifier.getDescription());
+        assertEquals("name",         identifier.getCode());
+        assertEquals("EPSG",         identifier.getCodeSpace());
+        assertSame  (Citations.EPSG, identifier.getAuthority());
+        assertNull  (                identifier.getVersion());
+        assertNull  (                identifier.getDescription());
 
         // NamedIdentifier properties
-        assertEquals("depth",  2,          identifier.depth());
-        assertEquals("tip",   "name",      identifier.tip().toInternationalString().toString(Locale.ENGLISH));
-        assertEquals("tip",   "nom",       identifier.tip().toInternationalString().toString(Locale.FRENCH));
-        assertEquals("tip",   "名前",       identifier.tip().toInternationalString().toString(Locale.JAPANESE));
-        assertEquals("head",  "EPSG",      identifier.head().toString());
-        assertEquals("name",  "EPSG:name", identifier.toInternationalString().toString(Locale.ENGLISH));
-        assertEquals("name",  "EPSG:nom",  identifier.toInternationalString().toString(Locale.FRENCH));
-        assertEquals("name",  "EPSG:名前",  identifier.toInternationalString().toString(Locale.JAPANESE));
-        assertTrue  ("scope.isGlobal",     identifier.scope().isGlobal());
+        assertEquals( 2,          identifier.depth());
+        assertEquals("name",      identifier.tip().toInternationalString().toString(Locale.ENGLISH));
+        assertEquals("nom",       identifier.tip().toInternationalString().toString(Locale.FRENCH));
+        assertEquals("名前",       identifier.tip().toInternationalString().toString(Locale.JAPANESE));
+        assertEquals("EPSG",      identifier.head().toString());
+        assertEquals("EPSG:name", identifier.toInternationalString().toString(Locale.ENGLISH));
+        assertEquals("EPSG:nom",  identifier.toInternationalString().toString(Locale.FRENCH));
+        assertEquals("EPSG:名前",  identifier.toInternationalString().toString(Locale.JAPANESE));
+        assertTrue  (             identifier.scope().isGlobal());
     }
 
     /**

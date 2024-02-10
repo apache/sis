@@ -21,7 +21,7 @@ import org.apache.sis.io.wkt.Convention;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
@@ -100,8 +100,8 @@ public final class DirectionAlongMeridianTest extends TestCase {
     private static void assertOrdered(final String dir1, final String dir2) {
         final DirectionAlongMeridian m1 = DirectionAlongMeridian.parse(dir1);
         final DirectionAlongMeridian m2 = DirectionAlongMeridian.parse(dir2);
-        assertEquals(+90, m1.angle(m2), STRICT);
-        assertEquals(-90, m2.angle(m1), STRICT);
+        assertEquals(+90, m1.angle(m2));
+        assertEquals(-90, m2.angle(m1));
         assertEquals( -1, m1.compareTo(m2));
         assertEquals( +1, m2.compareTo(m1));
         assertFalse (m1.equals(m2));

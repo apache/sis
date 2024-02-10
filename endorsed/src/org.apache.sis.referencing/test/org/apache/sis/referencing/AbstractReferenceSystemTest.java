@@ -29,7 +29,7 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -64,14 +64,14 @@ public final class AbstractReferenceSystemTest extends TestCase {
         assertNull(properties.put("remarks",    "There is remarks"));
         assertNull(properties.put("remarks_fr", "Voici des remarques"));
 
-        final AbstractReferenceSystem reference = new AbstractReferenceSystem(properties);
+        final var reference = new AbstractReferenceSystem(properties);
         Validators.validate(reference);
 
-        assertEquals("name",       "This is a name",         reference.getName()   .getCode());
-        assertEquals("scope",      "This is a scope",        reference.getScope()  .toString(Locale.ROOT));
-        assertEquals("scope_fr",   "Valide dans ce domaine", reference.getScope()  .toString(Locale.FRENCH));
-        assertEquals("remarks",    "There is remarks",       reference.getRemarks().toString(Locale.ENGLISH));
-        assertEquals("remarks_fr", "Voici des remarques",    reference.getRemarks().toString(Locale.FRENCH));
+        assertEquals("This is a name",         reference.getName()   .getCode());
+        assertEquals("This is a scope",        reference.getScope()  .toString(Locale.ROOT));
+        assertEquals("Valide dans ce domaine", reference.getScope()  .toString(Locale.FRENCH));
+        assertEquals("There is remarks",       reference.getRemarks().toString(Locale.ENGLISH));
+        assertEquals("Voici des remarques",    reference.getRemarks().toString(Locale.FRENCH));
     }
 
     /**
@@ -87,7 +87,7 @@ public final class AbstractReferenceSystemTest extends TestCase {
         assertNull(properties.put("remarks",    "There is remarks"));
         assertNull(properties.put("remarks_fr", "Voici des remarques"));
 
-        final AbstractReferenceSystem object = new AbstractReferenceSystem(properties);
+        final var object = new AbstractReferenceSystem(properties);
         Validators.validate(object);
 
         assertNotSame(object, assertSerializedEquals(object));
@@ -110,7 +110,7 @@ public final class AbstractReferenceSystemTest extends TestCase {
                 new DefaultGeographicBoundingBox(2.54, 6.40, 51.43, 55.77),
                 new DefaultVerticalExtent(10, 1000, VerticalCRSMock.DEPTH),
                 new DefaultTemporalExtent()))); // TODO: needs sis-temporal module for testing that one.
-        final AbstractReferenceSystem object = new AbstractReferenceSystem(properties);
+        final var object = new AbstractReferenceSystem(properties);
 
         assertTrue(object.toString(Convention.WKT1).startsWith(
                 "ReferenceSystem[\"My “object”.\", AUTHORITY[\"EPSG\", \"4326\"]]"));

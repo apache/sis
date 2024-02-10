@@ -21,7 +21,8 @@ import java.util.Set;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
@@ -58,23 +59,18 @@ public final class PropertySingletonTest extends TestCase {
      */
     @Test
     public void testEmpty() {
-        assertEquals("size",    0, singleton.size());
-        assertTrue  ("isEmpty",    singleton.isEmpty());
-        assertEquals("toArray", 0, singleton.toArray().length);
-        assertFalse ("iterator.hasNext", singleton.iterator().hasNext());
-        assertFalse ("listIterator.hasNext", singleton.listIterator().hasNext());
-        try {
-            singleton.get(0);
-            fail("Element 0 is not expected to exist.");
-        } catch (IndexOutOfBoundsException e) {
-            assertNotNull(e.getMessage());
-        }
-        try {
-            singleton.remove(0);
-            fail("Element 0 is not expected to exist.");
-        } catch (IndexOutOfBoundsException e) {
-            assertNotNull(e.getMessage());
-        }
+        assertEquals(0, singleton.size());
+        assertTrue  (   singleton.isEmpty());
+        assertEquals(0, singleton.toArray().length);
+        assertFalse (singleton.iterator().hasNext());
+        assertFalse (singleton.listIterator().hasNext());
+
+        IndexOutOfBoundsException e;
+        e = assertThrows(IndexOutOfBoundsException.class, () -> singleton.get(0));
+        assertMessageContains(e);
+
+        e = assertThrows(IndexOutOfBoundsException.class, () -> singleton.remove(0));
+        assertMessageContains(e);
     }
 
     /**
@@ -85,20 +81,19 @@ public final class PropertySingletonTest extends TestCase {
     public void testSingleton() {
         final Integer a1 = 1000;
         final Integer a2 = 2000;
-        assertEquals("indexOf",  -1, singleton.indexOf(a1));
-        assertTrue  ("add",          singleton.add(a1));
-        assertEquals("size",      1, singleton.size());
-        assertFalse ("isEmpty",      singleton.isEmpty());
-        assertEquals("indexOf",   0, singleton.indexOf(a1));
-        assertSame  ("get",      a1, singleton.get(0));
-        assertSame  ("iterator", a1, getSingleton(singleton));
-        assertSame  ("set",      a1, singleton.set(0, a2));
-        assertSame  ("get",      a2, singleton.get(0));
-        assertSame  ("iterator", a2, getSingleton(singleton));
-        assertArrayEquals("toArray", new Object[] {a2}, singleton.toArray());
-
-        assertSame  ("remove",   a2, singleton.remove(0));
-        assertEquals("size",      0, singleton.size());
+        assertEquals(-1, singleton.indexOf(a1));
+        assertTrue  (    singleton.add(a1));
+        assertEquals( 1, singleton.size());
+        assertFalse (    singleton.isEmpty());
+        assertEquals( 0, singleton.indexOf(a1));
+        assertSame  (a1, singleton.get(0));
+        assertSame  (a1, getSingleton(singleton));
+        assertSame  (a1, singleton.set(0, a2));
+        assertSame  (a2, singleton.get(0));
+        assertSame  (a2, getSingleton(singleton));
+        assertArrayEquals(new Object[] {a2}, singleton.toArray());
+        assertSame  (a2, singleton.remove(0));
+        assertEquals( 0, singleton.size());
     }
 
     /**
@@ -109,14 +104,11 @@ public final class PropertySingletonTest extends TestCase {
     public void testMaximumOccurrence() {
         final Integer a1 = 1000;
         final Integer a2 = 2000;
-        assertTrue("add", singleton.add(a1));
-        try {
-            assertTrue("add", singleton.add(a2));
-            fail("Shall not be allowed to add more than 1 element.");
-        } catch (IllegalStateException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("test"));
-        }
+        assertTrue(singleton.add(a1));
+
+        var e = assertThrows(IllegalStateException.class, () -> assertTrue(singleton.add(a2)),
+                             "Shall not be allowed to add more than 1 element.");
+        assertMessageContains(e, "test");
     }
 
     /**

@@ -25,7 +25,7 @@ import org.apache.sis.image.PixelIterator;
 import org.apache.sis.util.Static;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.grid.SequenceType;
@@ -58,11 +58,11 @@ public final class Assertions extends Static {
                                          final RenderedImage actual,   final Rectangle boundsActual)
     {
         if (boundsExpected != null && boundsActual != null) {
-            assertEquals("width",  boundsExpected.width,  boundsActual.width);
-            assertEquals("height", boundsExpected.height, boundsActual.height);
+            assertEquals(boundsExpected.width,  boundsActual.width,  "width");
+            assertEquals(boundsExpected.height, boundsActual.height, "height");
         }
-        final PixelIterator ie = new PixelIterator.Builder().setIteratorOrder(SequenceType.LINEAR).setRegionOfInterest(boundsExpected).create(expected);
-        final PixelIterator ia = new PixelIterator.Builder().setIteratorOrder(SequenceType.LINEAR).setRegionOfInterest(boundsActual).create(actual);
+        final var ie = new PixelIterator.Builder().setIteratorOrder(SequenceType.LINEAR).setRegionOfInterest(boundsExpected).create(expected);
+        final var ia = new PixelIterator.Builder().setIteratorOrder(SequenceType.LINEAR).setRegionOfInterest(boundsActual).create(actual);
         double[] ev = null;
         double[] av = null;
         while (ie.next()) {
@@ -92,11 +92,11 @@ public final class Assertions extends Static {
      * @param  expected  the expected sample values.
      */
     public static void assertValuesEqual(final RenderedImage image, final int band, final double[][] expected) {
-        assertEquals("Height", expected.length, image.getHeight());
+        assertEquals(expected.length, image.getHeight(), "height");
         final PixelIterator it = new PixelIterator.Builder().setIteratorOrder(SequenceType.LINEAR).create(image);
         for (int j=0; j<expected.length; j++) {
             final double[] row = expected[j];
-            assertEquals("Width", row.length, image.getWidth());
+            assertEquals(row.length, image.getWidth(), "width");
             for (int i=0; i<row.length; i++) {
                 assertTrue(it.next());
                 final double a = it.getSampleDouble(band);
@@ -120,10 +120,10 @@ public final class Assertions extends Static {
     public static void assertValuesEqual(final Raster raster, final int band, final int[][] expected) {
         final int minX = raster.getMinX();
         final int minY = raster.getMinY();
-        assertEquals("Height", expected.length, raster.getHeight());
+        assertEquals(expected.length, raster.getHeight(), "height");
         for (int j=0; j<expected.length; j++) {
             final int[] row = expected[j];
-            assertEquals("Width", row.length, raster.getWidth());
+            assertEquals(row.length, raster.getWidth(), "width");
             final int y = minY + j;
             for (int i=0; i<row.length; i++) {
                 final int x = minX + i;
@@ -146,10 +146,10 @@ public final class Assertions extends Static {
     public static void assertValuesEqual(final Raster raster, final int band, final float[][] expected) {
         final int minX = raster.getMinX();
         final int minY = raster.getMinY();
-        assertEquals("Height", expected.length, raster.getHeight());
+        assertEquals(expected.length, raster.getHeight(), "height");
         for (int j=0; j<expected.length; j++) {
             final float[] row = expected[j];
-            assertEquals("Width", row.length, raster.getWidth());
+            assertEquals(row.length, raster.getWidth(), "width");
             final int y = minY + j;
             for (int i=0; i<row.length; i++) {
                 final int   x = minX + i;
@@ -180,28 +180,28 @@ public final class Assertions extends Static {
      */
     @SuppressWarnings("fallthrough")
     public static void assertPathEquals(final PathIterator expected, final PathIterator actual, final double tolerance) {
-        assertEquals("getWindingRule", expected.getWindingRule(), actual.getWindingRule());
+        assertEquals(expected.getWindingRule(), actual.getWindingRule(), "windingRule");
         final double[] buffer = new double[6];
         final double[] values = new double[6];
         while (!expected.isDone()) {
-            assertFalse("isDone", actual.isDone());
+            assertFalse(actual.isDone(), "isDone");
             final int type = expected.currentSegment(buffer);
-            assertEquals("currentSegment", type, actual.currentSegment(values));
+            assertEquals(type, actual.currentSegment(values), "currentSegment");
             switch (type) {
-                case PathIterator.SEG_CUBICTO: assertEquals("x₃", buffer[4], values[4], tolerance);
-                                               assertEquals("y₃", buffer[5], values[5], tolerance);
-                case PathIterator.SEG_QUADTO:  assertEquals("x₂", buffer[2], values[2], tolerance);
-                                               assertEquals("y₂", buffer[3], values[3], tolerance);
-                case PathIterator.SEG_LINETO:  assertEquals("x₁", buffer[0], values[0], tolerance);
-                                               assertEquals("y₁", buffer[1], values[1], tolerance); break;
-                case PathIterator.SEG_MOVETO:  assertEquals("x₀", buffer[0], values[0], tolerance);
-                                               assertEquals("y₀", buffer[1], values[1], tolerance);
+                case PathIterator.SEG_CUBICTO: assertEquals(buffer[4], values[4], tolerance, "x₃");
+                                               assertEquals(buffer[5], values[5], tolerance, "y₃");
+                case PathIterator.SEG_QUADTO:  assertEquals(buffer[2], values[2], tolerance, "x₂");
+                                               assertEquals(buffer[3], values[3], tolerance, "y₂");
+                case PathIterator.SEG_LINETO:  assertEquals(buffer[0], values[0], tolerance, "x₁");
+                                               assertEquals(buffer[1], values[1], tolerance, "y₁"); break;
+                case PathIterator.SEG_MOVETO:  assertEquals(buffer[0], values[0], tolerance, "x₀");
+                                               assertEquals(buffer[1], values[1], tolerance, "y₀");
                 case PathIterator.SEG_CLOSE:   break;
                 default: fail("Unexpected type: " + type);
             }
             expected.next();
             actual.next();
         }
-        assertTrue("isDone", actual.isDone());
+        assertTrue(actual.isDone(), "isDone");
     }
 }

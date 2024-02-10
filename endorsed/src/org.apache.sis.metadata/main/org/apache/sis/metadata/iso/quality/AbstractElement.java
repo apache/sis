@@ -169,7 +169,7 @@ public class AbstractElement extends ISOMetadata implements Element {
         if (object != null) {
             standaloneQualityReportDetails = object.getStandaloneQualityReportDetails();
             if ((measureReference = object.getMeasureReference()) == null) {
-                DefaultMeasureReference candidate = new DefaultMeasureReference();
+                final var candidate = new DefaultMeasureReference();
                 if (candidate.setLegacy(object)) measureReference = candidate;
             }
             evaluationMethod = object.getEvaluationMethod();

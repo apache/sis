@@ -26,7 +26,7 @@ import static org.apache.sis.referencing.IdentifiedObjects.*;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.mock.IdentifiedObjectMock;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -56,7 +56,7 @@ public final class IdentifiedObjectsTest extends TestCase {
     public void testIsHeuristicMatchForName() {
         final NameFactory factory = DefaultNameFactory.provider();
         final GenericName name = factory.createGenericName(null, "myScope", "myName");
-        IdentifiedObjectMock object = new IdentifiedObjectMock("myCode ", name); // Intentional trailing space.
+        IdentifiedObjectMock object = new IdentifiedObjectMock("myCode ", name);        // Intentional trailing space.
 
         // Test the code.
         assertFalse(isHeuristicMatchForName(object, "other"));
@@ -100,9 +100,9 @@ public final class IdentifiedObjectsTest extends TestCase {
      * @see CRSTest#testIdentifiedObjectLookup()
      */
     public static void testLookupEPSG() throws FactoryException {
-        assertEquals("EPSG:4326", Integer.valueOf(4326), IdentifiedObjects.lookupEPSG(HardCodedCRS.WGS84_LATITUDE_FIRST));
+        assertEquals(Integer.valueOf(4326), IdentifiedObjects.lookupEPSG(HardCodedCRS.WGS84_LATITUDE_FIRST));
         String urn = IdentifiedObjects.lookupURN(HardCodedCRS.WGS84_LATITUDE_FIRST, null);
-        assertTrue(urn, urn.matches("urn\\:ogc\\:def\\:crs\\:EPSG\\:.*\\:4326"));
+        assertTrue(urn.matches("urn\\:ogc\\:def\\:crs\\:EPSG\\:.*\\:4326"), urn);
     }
 
     /**
@@ -118,8 +118,8 @@ public final class IdentifiedObjectsTest extends TestCase {
      * @see CRSTest#testIdentifiedObjectLookup()
      */
     public static void testLookupWMS() throws FactoryException {
-        assertNull("CRS:84", IdentifiedObjects.lookupEPSG(HardCodedCRS.WGS84));
+        assertNull(IdentifiedObjects.lookupEPSG(HardCodedCRS.WGS84));
         String urn = IdentifiedObjects.lookupURN(HardCodedCRS.WGS84, null);
-        assertTrue(urn, urn.matches("urn\\:ogc\\:def\\:crs\\:OGC\\:.*\\:CRS84"));
+        assertTrue(urn.matches("urn\\:ogc\\:def\\:crs\\:OGC\\:.*\\:CRS84"), urn);
     }
 }

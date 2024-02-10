@@ -36,10 +36,11 @@ import org.apache.sis.util.collection.TreeTable;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -127,19 +128,19 @@ public final class TreeNodeTest extends TestCase {
     public void testRootNode() {
         final DefaultCitation citation = TreeNodeChildrenTest.metadataWithoutCollections();
         final TreeNode node = create(citation, Citation.class);
-        assertEquals("getName()",        "Citation",     node.getName());
-        assertEquals("getIdentifier()",  "CI_Citation",  node.getIdentifier());
-        assertEquals("baseType",         Citation.class, node.baseType);
-        assertSame  ("getUserObject()",  citation,       node.getUserObject());
-        assertFalse ("isWritable()",                     node.isWritable());
-        assertNull  ("getParent()",                      node.getParent());
-        assertFalse ("isLeaf()",                         node.isLeaf());
+        assertEquals("Citation",     node.getName());
+        assertEquals("CI_Citation",  node.getIdentifier());
+        assertEquals(Citation.class, node.baseType);
+        assertSame  (citation,       node.getUserObject());
+        assertFalse (                node.isWritable());
+        assertNull  (                node.getParent());
+        assertFalse (                node.isLeaf());
 
         final TreeNodeChildren children = (TreeNodeChildren) node.getChildren();
-        assertEquals("children.titleProperty", -1, children.titleProperty);
-        assertSame  ("children.metadata", citation, children.metadata);
-        assertFalse ("children.isEmpty()", node.getChildren().isEmpty());
-        assertSame  ("children.parent", node, children.iterator().next().getParent());
+        assertEquals(-1, children.titleProperty);
+        assertSame  (citation, children.metadata);
+        assertFalse (node.getChildren().isEmpty());
+        assertSame  (node, children.iterator().next().getParent());
     }
 
     /**
@@ -362,11 +363,11 @@ public final class TreeNodeTest extends TestCase {
          */
         TreeTable.Node child = node.newChild();
         child.setValue(TableColumn.IDENTIFIER, "title");
-        try {
-            child.setValue(TableColumn.VALUE, "A new title");
-            fail("Attemps to overwrite an existing value shall fail.");
-        } catch (IllegalStateException e) {
-            assertTrue(e.getMessage().contains("title"));
+        {
+            final var c = child;    // Because lambda expressions require constants.
+            var e = assertThrows(IllegalStateException.class, () -> c.setValue(TableColumn.VALUE, "A new title"),
+                                 "Attemps to overwrite an existing value shall fail.");
+            assertMessageContains(e, "title");
         }
         /*
          * Clear the title and try again. This time, it shall work.
@@ -406,8 +407,8 @@ public final class TreeNodeTest extends TestCase {
         if (valuePolicy == ValueExistencePolicy.COMPACT) {
             while (expected[count-1] == null) count--;
         }
-        assertEquals("Missing values in the tested metadata.", count,
-                assertColumnContentEquals(node, column, expected, 0));
+        assertEquals(count, assertColumnContentEquals(node, column, expected, 0),
+                     "Missing values in the tested metadata.");
     }
 
     /**
@@ -423,11 +424,11 @@ public final class TreeNodeTest extends TestCase {
         if (unlocalized instanceof InternationalString) {
             unlocalized = ((InternationalString) unlocalized).toString(Locale.ROOT);
         }
-        assertEquals("values[" + index + ']', expected[index++], unlocalized);
+        assertEquals(expected[index++], unlocalized, "values[" + index + ']');
         for (final TreeTable.Node child : node.getChildren()) {
             index = assertColumnContentEquals(child, column, expected, index);
         }
-        assertSame("Value shall be stable.", actual, node.getValue(column));
+        assertSame(actual, node.getValue(column), "Value shall be stable.");
         return index;
     }
 

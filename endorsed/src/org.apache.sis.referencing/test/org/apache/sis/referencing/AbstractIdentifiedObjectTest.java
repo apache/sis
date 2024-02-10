@@ -28,11 +28,13 @@ import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.function.Executable;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -63,7 +65,7 @@ public final class AbstractIdentifiedObjectTest extends TestCase {
      * @param  identifiers  the value for the {@code "identifiers"} property.
      */
     private static Map<String,Object> properties(final Set<Identifier> identifiers) {
-        final Map<String,Object> properties = new HashMap<>(8);
+        final var properties = new HashMap<String,Object>(8);
         assertNull(properties.put("name",       "GRS 1980"));
         assertNull(properties.put("identifiers", identifiers.toArray(Identifier[]::new)));
         assertNull(properties.put("codespace",  "EPSG"));
@@ -86,16 +88,16 @@ public final class AbstractIdentifiedObjectTest extends TestCase {
             final Set<Identifier> identifiers, final String gmlID)
     {
         Validators.validate(object);
-        final Identifier name = object.getName();
-        assertEquals("name",        "GRS 1980",                      name.getCode());
-        assertEquals("codespace",   "EPSG",                          name.getCodeSpace());
-        assertEquals("version",     "8.3",                           name.getVersion());
-        assertEquals("aliases",     "International 1979",            getSingleton(object.getAlias()).toString());
-        assertEquals("names",       name,                            getSingleton(object.getNames()));
-        assertEquals("identifiers", identifiers,                     object.getIdentifiers());
-        assertEquals("ID",          gmlID,                           object.getID());
-        assertEquals("remarks",     "Adopted by IUGG 1979 Canberra", object.getRemarks().toString(Locale.ENGLISH));
-        assertEquals("remarks_fr",  "Adopté par IUGG 1979 Canberra", object.getRemarks().toString(Locale.FRENCH));
+        final var name = object.getName();
+        assertEquals("GRS 1980",                      name.getCode(), "name");
+        assertEquals("EPSG",                          name.getCodeSpace(), "codespace");
+        assertEquals("8.3",                           name.getVersion(), "version");
+        assertEquals("International 1979",            getSingleton(object.getAlias()).toString(), "aliases");
+        assertEquals(name,                            getSingleton(object.getNames()), "names");
+        assertEquals(identifiers,                     object.getIdentifiers(), "identifiers");
+        assertEquals(gmlID,                           object.getID(), "ID");
+        assertEquals("Adopted by IUGG 1979 Canberra", object.getRemarks().toString(Locale.ENGLISH), "remarks");
+        assertEquals("Adopté par IUGG 1979 Canberra", object.getRemarks().toString(Locale.FRENCH), "remarks_fr");
         final Code code = object.getIdentifier();
         return (code != null) ? code.getIdentifier() : null;
     }
@@ -107,27 +109,22 @@ public final class AbstractIdentifiedObjectTest extends TestCase {
     @Test
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testMissingName() {
-        final Map<String,Object> properties = new HashMap<>(4);
+        final var properties = new HashMap<String,Object>(4);
         assertNull(properties.put(AbstractIdentifiedObject.REMARKS_KEY, "Not a name."));
-        try {
-            new AbstractIdentifiedObject(properties);
-            fail("Should not allow unnamed object.");
-        } catch (IllegalArgumentException e) {
-            /*
-             * The message may be in any language, but shall
-             * contain at least the missing property name.
-             */
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("name"));
-        }
+        final Executable test = () -> new AbstractIdentifiedObject(properties);
+        /*
+         * The message may be in any language, but shall
+         * contain at least the missing property name.
+         */
+        IllegalArgumentException exception;
+        exception = assertThrows(IllegalArgumentException.class, test, "Should not allow unnamed object.");
+        assertMessageContains(exception, "name");
+
         // Try again, with error messages forced to English.
         assertNull(properties.put(AbstractIdentifiedObject.LOCALE_KEY, Locale.US));
-        try {
-            new AbstractIdentifiedObject(properties);
-            fail("Should not allow unnamed object.");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Missing value for “name” property.", e.getMessage());
-        }
+        exception = assertThrows(IllegalArgumentException.class, test, "Should not allow unnamed object.");
+        assertEquals("Missing value for “name” property.", exception.getMessage());
+
         // "code" with String value is accepted as well.
         assertNull(properties.put("code", "Test"));
         assertEquals("Test", new AbstractIdentifiedObject(properties).getName().getCode());
@@ -139,10 +136,10 @@ public final class AbstractIdentifiedObjectTest extends TestCase {
      */
     @Test
     public void testWithoutIdentifier() {
-        final Set<Identifier>          identifiers = Set.of();
-        final AbstractIdentifiedObject object      = new AbstractIdentifiedObject(properties(identifiers));
-        final Identifier               gmlId       = validate(object, identifiers, "GRS1980");
-        assertNull("gmlId", gmlId);
+        final var identifiers = Set.<Identifier>of();
+        final var object      = new AbstractIdentifiedObject(properties(identifiers));
+        final var gmlId       = validate(object, identifiers, "GRS1980");
+        assertNull(gmlId);
     }
 
     /**
@@ -158,13 +155,13 @@ public final class AbstractIdentifiedObjectTest extends TestCase {
     @Test
     @DependsOnMethod("testWithoutIdentifier")
     public void testWithSingleIdentifier() {
-        final Identifier               identifier  = new ImmutableIdentifier(null, "EPSG", "7019");
-        final Set<Identifier>          identifiers = Set.of(identifier);
-        final AbstractIdentifiedObject object      = new AbstractIdentifiedObject(properties(identifiers));
-        final Identifier               gmlId       = validate(object, identifiers, "epsg-7019");
-        assertNotNull("gmlId",                   gmlId);
-        assertEquals ("gmlId.codespace", "EPSG", gmlId.getCodeSpace());
-        assertEquals ("gmlId.code",      "7019", gmlId.getCode());
+        final var identifier  = new ImmutableIdentifier(null, "EPSG", "7019");
+        final var identifiers = Set.<Identifier>of(identifier);
+        final var object      = new AbstractIdentifiedObject(properties(identifiers));
+        final var gmlId       = validate(object, identifiers, "epsg-7019");
+        assertNotNull(        gmlId);
+        assertEquals ("EPSG", gmlId.getCodeSpace());
+        assertEquals ("7019", gmlId.getCode());
     }
 
     /**
@@ -175,14 +172,14 @@ public final class AbstractIdentifiedObjectTest extends TestCase {
     @Test
     @DependsOnMethod("testWithSingleIdentifier")
     public void testWithManyIdentifiers() {
-        final Set<Identifier> identifiers = new LinkedHashSet<>(4);
+        final var identifiers = new LinkedHashSet<Identifier>(4);
         assertTrue(identifiers.add(new NamedIdentifier(EPSG, "7019")));
         assertTrue(identifiers.add(new NamedIdentifier(EPSG, "IgnoreMe")));
-        final AbstractIdentifiedObject object = new AbstractIdentifiedObject(properties(identifiers));
-        final Identifier gmlId  = validate(object, identifiers, "epsg-7019");
-        assertNotNull("gmlId",                   gmlId);
-        assertEquals ("gmlId.codespace", "EPSG", gmlId.getCodeSpace());
-        assertEquals ("gmlId.code",      "7019", gmlId.getCode());
+        final var object = new AbstractIdentifiedObject(properties(identifiers));
+        final var gmlId  = validate(object, identifiers, "epsg-7019");
+        assertNotNull(        gmlId);
+        assertEquals ("EPSG", gmlId.getCodeSpace());
+        assertEquals ("7019", gmlId.getCode());
     }
 
     /**
@@ -193,13 +190,13 @@ public final class AbstractIdentifiedObjectTest extends TestCase {
     @Test
     @DependsOnMethod("testWithManyIdentifiers")
     public void testAsSubtype() {
-        final Identifier               identifier  = new NamedIdentifier(EPSG, "7019");
-        final Set<Identifier>          identifiers = Set.of(identifier);
-        final AbstractIdentifiedObject object      = new AbstractDatum(properties(identifiers));
-        final Identifier               gmlId       = validate(object, identifiers, "epsg-datum-7019");
-        assertNotNull("gmlId",                   gmlId);
-        assertEquals ("gmlId.codespace", "EPSG", gmlId.getCodeSpace());
-        assertEquals ("gmlId.code",      "7019", gmlId.getCode());
+        final var identifier  = new NamedIdentifier(EPSG, "7019");
+        final var identifiers = Set.<Identifier>of(identifier);
+        final var object      = new AbstractDatum(properties(identifiers));
+        final var gmlId       = validate(object, identifiers, "epsg-datum-7019");
+        assertNotNull(        gmlId);
+        assertEquals ("EPSG", gmlId.getCodeSpace());
+        assertEquals ("7019", gmlId.getCode());
     }
 
     /**
@@ -209,24 +206,24 @@ public final class AbstractIdentifiedObjectTest extends TestCase {
     @Test
     @DependsOnMethod("testWithManyIdentifiers")
     public void testIdentifierCollision() {
-        final Map<String,Object> properties = new HashMap<>(4);
+        final var properties = new HashMap<String,Object>(4);
         assertNull(properties.put("name", "GRS 1980"));
         assertNull(properties.put("identifiers", new NamedIdentifier(EPSG, "7019")));
-        final AbstractIdentifiedObject o1 = new AbstractIdentifiedObject(properties);
-        final AbstractIdentifiedObject o2 = new AbstractIdentifiedObject(properties);
-        final AbstractIdentifiedObject o3 = new AbstractIdentifiedObject(properties);
-        final AbstractIdentifiedObject o4 = new AbstractIdentifiedObject(properties);
-        final Context context = new Context(0, null, null, null, null, null, null, null, null, null, null);
+        final var o1 = new AbstractIdentifiedObject(properties);
+        final var o2 = new AbstractIdentifiedObject(properties);
+        final var o3 = new AbstractIdentifiedObject(properties);
+        final var o4 = new AbstractIdentifiedObject(properties);
+        final var context = new Context(0, null, null, null, null, null, null, null, null, null, null);
         try {
             final String c1, c2, c3, c4;
-            assertEquals("o1", "epsg-7019", c1 = o1.getID());
-            assertEquals("o2", "GRS1980",   c2 = o2.getID());
-            assertEquals("o3", "GRS1980-1", c3 = o3.getID());
-            assertEquals("o4", "GRS1980-2", c4 = o4.getID());
-            assertSame  ("o1", c1, o1.getID());  // Verify that values are remembered.
-            assertSame  ("o2", c2, o2.getID());
-            assertSame  ("o3", c3, o3.getID());
-            assertSame  ("o4", c4, o4.getID());
+            assertEquals("epsg-7019", c1 = o1.getID());
+            assertEquals("GRS1980",   c2 = o2.getID());
+            assertEquals("GRS1980-1", c3 = o3.getID());
+            assertEquals("GRS1980-2", c4 = o4.getID());
+            assertSame  (c1, o1.getID());  // Verify that values are remembered.
+            assertSame  (c2, o2.getID());
+            assertSame  (c3, o3.getID());
+            assertSame  (c4, o4.getID());
         } finally {
             context.finish();
         }
@@ -238,10 +235,10 @@ public final class AbstractIdentifiedObjectTest extends TestCase {
     @Test
     @DependsOnMethod("testWithoutIdentifier")
     public void testSerialization() {
-        final Set<Identifier>     identifiers = Set.of();
-        final AbstractIdentifiedObject object = new AbstractIdentifiedObject(properties(identifiers));
-        final AbstractIdentifiedObject actual = assertSerializedEquals(object);
+        final var identifiers = Set.<Identifier>of();
+        final var object = new AbstractIdentifiedObject(properties(identifiers));
+        final var actual = assertSerializedEquals(object);
         assertNotSame(object, actual);
-        assertNull("gmlId", validate(actual, identifiers, "GRS1980"));
+        assertNull(validate(actual, identifiers, "GRS1980"), "gmlId");
     }
 }

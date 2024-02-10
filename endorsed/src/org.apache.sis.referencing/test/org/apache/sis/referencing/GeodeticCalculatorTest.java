@@ -42,7 +42,7 @@ import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADI
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Assert.assertBetween;
 import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.test.OptionalTestData;
@@ -85,8 +85,8 @@ public class GeodeticCalculatorTest extends TestCase {
      * @param ε  the tolerance threshold.
      */
     static void assertPositionEquals(final double φ, final double λ, final DirectPosition p, final double ε) {
-        assertEquals("φ", φ, p.getOrdinate(0), ε);
-        assertEquals("λ", λ, p.getOrdinate(1), ε);
+        assertEquals(φ, p.getOrdinate(0), ε, "φ");
+        assertEquals(λ, p.getOrdinate(1), ε, "λ");
     }
 
     /**
@@ -98,8 +98,8 @@ public class GeodeticCalculatorTest extends TestCase {
      * @param ε  the tolerance threshold.
      */
     private static void assertPointEquals(final double x, final double y, final Point2D p, final double ε) {
-        assertEquals("x", x, p.getX(), ε);
-        assertEquals("y", y, p.getY(), ε);
+        assertEquals(x, p.getX(), ε, "x");
+        assertEquals(y, p.getY(), ε, "y");
     }
 
     /**
@@ -140,10 +140,10 @@ public class GeodeticCalculatorTest extends TestCase {
         final GeodeticCalculator c = create(false);
         final double tolerance = 0.2;
         c.setStartGeographicPoint(20, 12);
-        c.setEndGeographicPoint(20, 13);  assertEquals("East",   90, c.getStartingAzimuth(), tolerance);
-        c.setEndGeographicPoint(21, 12);  assertEquals("North",   0, c.getStartingAzimuth(), tolerance);
-        c.setEndGeographicPoint(20, 11);  assertEquals("West",  -90, c.getStartingAzimuth(), tolerance);
-        c.setEndGeographicPoint(19, 12);  assertEquals("South", 180, c.getStartingAzimuth(), tolerance);
+        c.setEndGeographicPoint(20, 13);  assertEquals( 90, c.getStartingAzimuth(), tolerance, "East");
+        c.setEndGeographicPoint(21, 12);  assertEquals(  0, c.getStartingAzimuth(), tolerance, "North");
+        c.setEndGeographicPoint(20, 11);  assertEquals(-90, c.getStartingAzimuth(), tolerance, "West");
+        c.setEndGeographicPoint(19, 12);  assertEquals(180, c.getStartingAzimuth(), tolerance, "South");
     }
 
     /**
@@ -185,8 +185,8 @@ public class GeodeticCalculatorTest extends TestCase {
             final double x = (2*λmax) * random.nextDouble() - λmax;
             c.setEndGeographicPoint(0, x);
             final double expected = abs(x) * r;
-            assertEquals("Geodesic",   expected, c.getGeodesicDistance(), Formulas.LINEAR_TOLERANCE);
-            assertEquals("Rhumb line", expected, c.getRhumblineLength(),  Formulas.LINEAR_TOLERANCE);
+            assertEquals(expected, c.getGeodesicDistance(), Formulas.LINEAR_TOLERANCE, "Geodesic");
+            assertEquals(expected, c.getRhumblineLength(),  Formulas.LINEAR_TOLERANCE, "Rhumb line");
         }
     }
 
@@ -210,10 +210,10 @@ public class GeodeticCalculatorTest extends TestCase {
          *     α₂ = −78.42°
          *     Δσ = 168.56°   →    taking R = 6371 km, the distance is 18743 km.
          */
-        assertEquals(Units.METRE,         c.getDistanceUnit());
-        assertEquals("α₁",        -94.41, c.getStartingAzimuth(), 0.005);
-        assertEquals("α₂",        -78.42, c.getEndingAzimuth(),   0.005);
-        assertEquals("distance",   18743, c.getGeodesicDistance() / 1000, 0.5);
+        assertEquals(Units.METRE, c.getDistanceUnit());
+        assertEquals(-94.41, c.getStartingAzimuth(), 0.005, "α₁");
+        assertEquals(-78.42, c.getEndingAzimuth(),   0.005, "α₂");
+        assertEquals( 18743, c.getGeodesicDistance() / 1000, 0.5, "distance");
         assertPositionEquals(31.4, 121.8, c.getEndPoint(), 1E-12);                  // Should be the specified value.
         /*
          * Keep start point unchanged, but set above azimuth and distance.
@@ -221,9 +221,9 @@ public class GeodeticCalculatorTest extends TestCase {
          */
         c.setStartingAzimuth(-94.41);
         c.setGeodesicDistance(18743000);
-        assertEquals("α₁",        -94.41, c.getStartingAzimuth(), 1E-12);           // Should be the specified value.
-        assertEquals("α₂",        -78.42, c.getEndingAzimuth(),   0.01);
-        assertEquals("distance",   18743, c.getGeodesicDistance() / 1000, STRICT);  // Should be the specified value.
+        assertEquals(-94.41, c.getStartingAzimuth(), 1E-12, "α₁");          // Should be the specified value.
+        assertEquals(-78.42, c.getEndingAzimuth(),   0.01, "α₂");
+        assertEquals( 18743, c.getGeodesicDistance() / 1000, "distance");   // Should be the specified value.
         assertPositionEquals(31.4, 121.8, c.getEndPoint(), 0.01);
     }
 
@@ -280,10 +280,10 @@ public class GeodeticCalculatorTest extends TestCase {
             VisualCheck.show(region);
         }
         final Rectangle2D bounds = region.getBounds2D();
-        assertEquals("x",    -71.6, bounds.getCenterX(), 1E-3);
-        assertEquals("y",    -33.0, bounds.getCenterY(), 1E-3);
-        assertEquals("width",  2.1, bounds.getWidth(),   0.1);
-        assertEquals("height", 1.8, bounds.getHeight(),  0.1);
+        assertEquals(-71.6, bounds.getCenterX(), 1E-3);
+        assertEquals(-33.0, bounds.getCenterY(), 1E-3);
+        assertEquals( 2.1, bounds.getWidth(),   0.1);
+        assertEquals( 1.8, bounds.getHeight(),  0.1);
     }
 
     /**
@@ -332,7 +332,7 @@ public class GeodeticCalculatorTest extends TestCase {
         final double[] coords = new double[2];
         for (final PathIterator it = geodeticCurve.getPathIterator(null, 1); !it.isDone(); it.next()) {
             it.currentSegment(coords);
-            assertEquals ("φ",  0, coords[0], tolerance);
+            assertEquals(0, coords[0], tolerance, "φ");
             assertBetween("λ", 12, 20, coords[1]);
         }
     }
@@ -364,10 +364,10 @@ public class GeodeticCalculatorTest extends TestCase {
             final double geodesic  = c.getGeodesicDistance();
             final double rhumbLine = c.getRhumblineLength();
             final GeodesicData expected = reference.Inverse(φ1, λ1, φ2, λ2);
-            assertEquals("Geodesic distance", expected.s12,  geodesic,               Formulas.LINEAR_TOLERANCE);
-            assertEquals("Starting azimuth",  expected.azi1, c.getStartingAzimuth(), Formulas.ANGULAR_TOLERANCE);
-            assertEquals("Ending azimuth",    expected.azi2, c.getEndingAzimuth(),   Formulas.ANGULAR_TOLERANCE);
-            assertTrue  ("Rhumb ≥ geodesic",  rhumbLine >= geodesic);
+            assertEquals(expected.s12,  geodesic,               Formulas.LINEAR_TOLERANCE, "Geodesic distance");
+            assertEquals(expected.azi1, c.getStartingAzimuth(), Formulas.ANGULAR_TOLERANCE, "Starting azimuth");
+            assertEquals(expected.azi2, c.getEndingAzimuth(),   Formulas.ANGULAR_TOLERANCE, "Ending azimuth");
+            assertTrue  (rhumbLine >= geodesic, "Rhumb ≥ geodesic");
             if (VERBOSE) {
                 // Checks the geodesic path on only 10% of test data, because this computation is expensive.
                 if ((i % 10) == 0) {
@@ -511,7 +511,7 @@ public class GeodeticCalculatorTest extends TestCase {
                             potentialProblem = KnownProblem.NO_CONVERGENCE_ON_ANTIPODAL_POINTS;
                         }
                     }
-                    assertEquals("Consistency with accuracy reported in Javadoc.", 0.001, linearTolerance, 0.0005);
+                    assertEquals(0.001, linearTolerance, 0.0005, "Consistency with accuracy reported in Javadoc.");
                 }
                 /*
                  * Set input values, compute then verify results. The azimuth tolerance is divided by cos(φ).
@@ -530,14 +530,13 @@ public class GeodeticCalculatorTest extends TestCase {
                 final DirectPosition start = c.getStartPoint();
                 final DirectPosition end   = c.getEndPoint();
                 try {
-                    assertEquals("φ₁", expected[COLUMN_φ1], start.getOrdinate(0),    Formulas.ANGULAR_TOLERANCE);
-                    assertEquals("λ₁", expected[COLUMN_λ1], start.getOrdinate(1),    Formulas.ANGULAR_TOLERANCE);
-                    assertEquals("α₁", expected[COLUMN_α1], c.getStartingAzimuth(),  azimuthTolerance / cosφ1);
-                    assertEquals("φ₂", expected[COLUMN_φ2], end.getOrdinate(0),      latitudeTolerance);
-                    assertEquals("λ₂", expected[COLUMN_λ2], end.getOrdinate(1),      longitudeTolerance);
-                    assertEquals("α₂", expected[COLUMN_α2], c.getEndingAzimuth(),    azimuthTolerance / cosφ2);
-                    assertEquals("∆s", expected[COLUMN_Δs], c.getGeodesicDistance(), linearTolerance *
-                                                            relaxIfConfirmed(potentialProblem));
+                    assertEquals(expected[COLUMN_φ1], start.getOrdinate(0),    Formulas.ANGULAR_TOLERANCE, "φ₁");
+                    assertEquals(expected[COLUMN_λ1], start.getOrdinate(1),    Formulas.ANGULAR_TOLERANCE, "λ₁");
+                    assertEquals(expected[COLUMN_α1], c.getStartingAzimuth(),  azimuthTolerance / cosφ1,   "α₁");
+                    assertEquals(expected[COLUMN_φ2], end.getOrdinate(0),      latitudeTolerance,          "φ₂");
+                    assertEquals(expected[COLUMN_λ2], end.getOrdinate(1),      longitudeTolerance,         "λ₂");
+                    assertEquals(expected[COLUMN_α2], c.getEndingAzimuth(),    azimuthTolerance / cosφ2,   "α₂");
+                    assertEquals(expected[COLUMN_Δs], c.getGeodesicDistance(), linearTolerance * relaxIfConfirmed(potentialProblem), "∆s");
                     clear();
                 } catch (GeodeticException | AssertionError e) {
                     if (e instanceof GeodeticException) {
@@ -558,7 +557,7 @@ public class GeodeticCalculatorTest extends TestCase {
                 }
             }
         }
-        assertTrue("Unexpected number of no convergence errors.", noConvergenceCount <= 8);
+        assertTrue(noConvergenceCount <= 8, "Unexpected number of no convergence errors.");
     }
 
     /**
@@ -638,7 +637,7 @@ public class GeodeticCalculatorTest extends TestCase {
         c.setStartGeographicPoint(48+45.0/60, -61-31.1/60);
         c.setEndGeographicPoint  (48+45.0/60,   5+13.2/60);
         assertEquals(4892987, c.getRhumblineLength(), 1);
-        assertEquals(90, c.getConstantAzimuth(), STRICT);
+        assertEquals(90, c.getConstantAzimuth());
     }
 
     /**

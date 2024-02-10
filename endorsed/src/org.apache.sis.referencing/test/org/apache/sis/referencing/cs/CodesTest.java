@@ -27,7 +27,7 @@ import org.apache.sis.referencing.factory.TestFactorySource;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -67,7 +67,7 @@ public final class CodesTest extends TestCase {
                 assertEquals(i < 2 ? unit : VERTICAL_UNIT, cs.getAxis(i).getUnit());
                 directions[i] = cs.getAxis(i).getDirection();
             }
-            assertEquals("Codes.lookpup(…)", c.epsg, Codes.lookup(unit, directions));
+            assertEquals(c.epsg, Codes.lookup(unit, directions));
         }
     }
 }

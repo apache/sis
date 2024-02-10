@@ -29,7 +29,7 @@ import static org.apache.sis.metadata.ValueExistencePolicy.isNullOrEmpty;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -92,55 +92,55 @@ public final class PrunerTest extends TestCase {
         /*
          * Initially empty tree, or tree with only empty element.
          */
-        assertTrue("GeographicBoundingBox", bbox.isEmpty());
-        assertTrue("Extent",                extent.isEmpty());
-        assertTrue("Scale",                 scale.isEmpty());
-        assertTrue("DataIdentification",    identification.isEmpty());
-        assertTrue("Metadata",              metadata.isEmpty());
+        assertTrue(bbox.isEmpty());
+        assertTrue(extent.isEmpty());
+        assertTrue(scale.isEmpty());
+        assertTrue(identification.isEmpty());
+        assertTrue(metadata.isEmpty());
         /*
          * Set a non-empty identification info.
          */
         identification.setCitation(new DefaultCitation("A citation title"));
-        assertTrue ("GeographicBoundingBox", bbox.isEmpty());
-        assertTrue ("Extent",                extent.isEmpty());
-        assertTrue ("Scale",                 scale.isEmpty());
-        assertFalse("DataIdentification",    identification.isEmpty());
-        assertFalse("Metadata",              metadata.isEmpty());
+        assertTrue (bbox.isEmpty());
+        assertTrue (extent.isEmpty());
+        assertTrue (scale.isEmpty());
+        assertFalse(identification.isEmpty());
+        assertFalse(metadata.isEmpty());
         /*
          * Set a non-empty metadata info.
          */
         metadata.setMetadataIdentifier(new SimpleIdentifier(null, "A file identifiers", false));
-        assertTrue ("GeographicBoundingBox", bbox.isEmpty());
-        assertTrue ("Extent",                extent.isEmpty());
-        assertTrue ("Scale",                 scale.isEmpty());
-        assertFalse("DataIdentification",    identification.isEmpty());
-        assertFalse("Metadata",              metadata.isEmpty());
+        assertTrue (bbox.isEmpty());
+        assertTrue (extent.isEmpty());
+        assertTrue (scale.isEmpty());
+        assertFalse(identification.isEmpty());
+        assertFalse(metadata.isEmpty());
         /*
          * Set an empty string in an element.
          */
         identification.setCitation(new DefaultCitation("  "));
-        assertTrue ("GeographicBoundingBox", bbox.isEmpty());
-        assertTrue ("Extent",                extent.isEmpty());
-        assertTrue ("Scale",                 scale.isEmpty());
-        assertTrue ("DataIdentification",    identification.isEmpty());
-        assertFalse("Metadata",              metadata.isEmpty());
+        assertTrue (bbox.isEmpty());
+        assertTrue (extent.isEmpty());
+        assertTrue (scale.isEmpty());
+        assertTrue (identification.isEmpty());
+        assertFalse(metadata.isEmpty());
         /*
          * Set a representative fraction.
          */
         scale.setDenominator(1000);
-        assertTrue ("GeographicBoundingBox", bbox.isEmpty());
-        assertTrue ("Extent",                extent.isEmpty());
-        assertFalse("Scale",                 scale.isEmpty());
-        assertFalse("DataIdentification",    identification.isEmpty());
-        assertFalse("Metadata",              metadata.isEmpty());
+        assertTrue (bbox.isEmpty());
+        assertTrue (extent.isEmpty());
+        assertFalse(scale.isEmpty());
+        assertFalse(identification.isEmpty());
+        assertFalse(metadata.isEmpty());
         /*
          * Set an empty string in an element.
          */
         scale.setScale(Double.NaN);
         metadata.setMetadataIdentifier(new SimpleIdentifier(null, "   ", false));
-        assertTrue("Scale",                 scale.isEmpty());
-        assertTrue("DataIdentification",    identification.isEmpty());
-        assertTrue("Metadata",              metadata.isEmpty());
+        assertTrue(scale.isEmpty());
+        assertTrue(identification.isEmpty());
+        assertTrue(metadata.isEmpty());
     }
 
     /**

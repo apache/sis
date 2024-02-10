@@ -33,7 +33,7 @@ import org.apache.sis.util.collection.TreeTable;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
@@ -168,9 +168,9 @@ public final class TreeNodeChildrenTest extends TestCase {
             "Some edition",
             "Some other details"
         };
-        assertEquals("titleProperty", -1, children.titleProperty);
-        assertFalse ("isEmpty()", children.isEmpty());
-        assertEquals("size()", expected.length, children.size());
+        assertEquals(-1, children.titleProperty);
+        assertFalse (children.isEmpty());
+        assertEquals(expected.length, children.size());
         assertAllNextEqual(expected, children.iterator());
     }
 
@@ -190,9 +190,9 @@ public final class TreeNodeChildrenTest extends TestCase {
             "PresentationForm[MAP_DIGITAL]",
             "Some other details"
         };
-        assertEquals("titleProperty", -1, children.titleProperty);
-        assertFalse ("isEmpty()", children.isEmpty());
-        assertEquals("size()", expected.length, children.size());
+        assertEquals(-1, children.titleProperty);
+        assertFalse (children.isEmpty());
+        assertEquals(expected.length, children.size());
         assertAllNextEqual(expected, children.iterator());
     }
 
@@ -214,9 +214,9 @@ public final class TreeNodeChildrenTest extends TestCase {
             "PresentationForm[MAP_HARDCOPY]",
             "Some other details"
         };
-        assertEquals("titleProperty", -1, children.titleProperty);
-        assertFalse ("isEmpty()", children.isEmpty());
-        assertEquals("size()", expected.length, children.size());
+        assertEquals(-1, children.titleProperty);
+        assertFalse (children.isEmpty());
+        assertEquals(expected.length, children.size());
         assertAllNextEqual(expected, children.iterator());
     }
 
@@ -236,15 +236,15 @@ public final class TreeNodeChildrenTest extends TestCase {
          * We need to perform the tests on the "Date" node, not on the "DefaultCitation" node.
          */
         final TreeTable.Node node = TestUtilities.getSingleton(create(citation, ValueExistencePolicy.COMPACT));
-        assertEquals("value", 1325376000000L, ((Date) node.getValue(TableColumn.VALUE)).getTime());
+        assertEquals(1325376000000L, ((Date) node.getValue(TableColumn.VALUE)).getTime());
         final TreeNodeChildren children = (TreeNodeChildren) node.getChildren();
         final String[] expected = {
             // The "Date" node should be omitted because merged with the parent "Date" node.
             "DateType[CREATION]"
         };
-        assertEquals("titleProperty", 0, children.titleProperty);
-        assertFalse ("isEmpty()", children.isEmpty());
-        assertEquals("size()", expected.length, children.size());
+        assertEquals(0, children.titleProperty);
+        assertFalse (children.isEmpty());
+        assertEquals(expected.length, children.size());
         assertAllNextEqual(expected, children.iterator());
     }
 
@@ -256,7 +256,7 @@ public final class TreeNodeChildrenTest extends TestCase {
     public void testAdd() {
         final DefaultCitation  citation = metadataWithMultiOccurrences();
         final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
-        assertEquals("titleProperty", -1, children.titleProperty);
+        assertEquals(-1, children.titleProperty);
 
         final DefaultTreeTable.Node toAdd = new DefaultTreeTable.Node(new DefaultTreeTable(
                 TableColumn.IDENTIFIER,
@@ -274,7 +274,7 @@ public final class TreeNodeChildrenTest extends TestCase {
         };
         toAdd.setValue(TableColumn.IDENTIFIER, "edition");
         toAdd.setValue(TableColumn.VALUE, citation.getEdition());
-        assertFalse("Adding the same value shall be a no-op.", children.add(toAdd));
+        assertFalse(children.add(toAdd),"Adding the same value shall be a no-op.");
         toAdd.setValue(TableColumn.VALUE, "New edition");
         try {
             children.add(toAdd);
@@ -283,19 +283,19 @@ public final class TreeNodeChildrenTest extends TestCase {
             assertTrue(e.getMessage().contains("edition"));
         }
         citation.setEdition(null);                                                  // Clears so we are allowed to add.
-        assertTrue("Setting a new value shall be a change.", children.add(toAdd));
+        assertTrue(children.add(toAdd), "Setting a new value shall be a change.");
 
         toAdd.setValue(TableColumn.IDENTIFIER, "presentationForm");
         toAdd.setValue(TableColumn.VALUE, PresentationForm.MAP_DIGITAL);
-        assertFalse("Adding the same value shall be a no-op.", children.add(toAdd));
+        assertFalse(children.add(toAdd), "Adding the same value shall be a no-op.");
         toAdd.setValue(TableColumn.VALUE, PresentationForm.IMAGE_DIGITAL);
-        assertTrue("Adding a new value shall be a change.", children.add(toAdd));
+        assertTrue(children.add(toAdd), "Adding a new value shall be a change.");
 
         toAdd.setValue(TableColumn.IDENTIFIER, "alternateTitle");
         toAdd.setValue(TableColumn.VALUE, "Third alternate title");
-        assertTrue("Adding a new value shall be a change.", children.add(toAdd));
+        assertTrue(children.add(toAdd), "Adding a new value shall be a change.");
 
-        assertEquals("size()", expected.length, children.size());
+        assertEquals(expected.length, children.size());
         assertAllNextEqual(expected, children.iterator());
     }
 
@@ -307,7 +307,7 @@ public final class TreeNodeChildrenTest extends TestCase {
     public void testRemoveWithoutCollections() {
         final DefaultCitation  citation = metadataWithoutCollections();
         final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
-        assertEquals("titleProperty", -1, children.titleProperty);
+        assertEquals(-1, children.titleProperty);
         testRemove(TestUtilities.createRandomNumberGenerator(), children);
     }
 
@@ -323,7 +323,7 @@ public final class TreeNodeChildrenTest extends TestCase {
     public void testRemoveWithSingletonInCollections() {
         final DefaultCitation  citation = metadataWithSingletonInCollections();
         final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
-        assertEquals("titleProperty", -1, children.titleProperty);
+        assertEquals(-1, children.titleProperty);
         testRemove(TestUtilities.createRandomNumberGenerator(), children);
     }
 
@@ -339,7 +339,7 @@ public final class TreeNodeChildrenTest extends TestCase {
     public void testRemoveWithMultiOccurrences() {
         final DefaultCitation  citation = metadataWithSingletonInCollections();
         final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
-        assertEquals("titleProperty", -1, children.titleProperty);
+        assertEquals(-1, children.titleProperty);
         testRemove(TestUtilities.createRandomNumberGenerator(), children);
     }
 
@@ -350,10 +350,10 @@ public final class TreeNodeChildrenTest extends TestCase {
     public void testClear() {
         final DefaultCitation  citation = metadataWithSingletonInCollections();
         final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
-        assertEquals("titleProperty", -1, children.titleProperty);
-        assertFalse("isEmpty()", children.isEmpty());
+        assertEquals(-1, children.titleProperty);
+        assertFalse(children.isEmpty());
         children.clear();
-        assertTrue("isEmpty()", children.isEmpty());
+        assertTrue(children.isEmpty());
         assertNull(citation.getTitle());
         assertTrue(citation.getAlternateTitles().isEmpty());
     }
@@ -385,9 +385,9 @@ public final class TreeNodeChildrenTest extends TestCase {
             null, // onlineResources (collection)
             null  // graphics (collection)
         };
-        assertEquals("titleProperty", -1, children.titleProperty);
-        assertFalse ("isEmpty()", children.isEmpty());
-        assertEquals("size()", expected.length, children.size());
+        assertEquals(-1, children.titleProperty);
+        assertFalse (children.isEmpty());
+        assertEquals(expected.length, children.size());
         assertAllNextEqual(expected, children.iterator());
     }
 
@@ -412,10 +412,10 @@ public final class TreeNodeChildrenTest extends TestCase {
      */
     private static void assertAllNextEqual(final String[] expected, final Iterator<TreeTable.Node> it) {
         for (final String e : expected) {
-            assertTrue(e, it.hasNext());
-            assertEquals("Iterator.next()", e, valueOf(it.next()));
+            assertTrue(it.hasNext(), e);
+            assertEquals(e, valueOf(it.next()));
         }
-        assertFalse("Iterator.hasNext()", it.hasNext());
+        assertFalse(it.hasNext());
     }
 
     /**
@@ -427,10 +427,10 @@ public final class TreeNodeChildrenTest extends TestCase {
      */
     private static void assertAllNextEqual(final Iterator<?> expected, final Iterator<?> actual) {
         while (expected.hasNext()) {
-            assertTrue("Iterator.hasNext()", actual.hasNext());
-            assertEquals("Iterator.next()", expected.next(), actual.next());
+            assertTrue(actual.hasNext());
+            assertEquals(expected.next(), actual.next());
         }
-        assertFalse("Iterator.hasNext()", actual.hasNext());
+        assertFalse(actual.hasNext());
     }
 
     /**
@@ -443,7 +443,7 @@ public final class TreeNodeChildrenTest extends TestCase {
      */
     private static void testRemove(final Random random, final TreeNodeChildren children) {
         final List<TreeTable.Node> reference = new ArrayList<>(children);
-        assertFalse("The collection shall not be initially empty.", reference.isEmpty());
+        assertFalse(reference.isEmpty());
         do {
             final Iterator<TreeTable.Node> rit = reference.iterator();      // The reference iterator.
             final Iterator<TreeTable.Node> cit = children .iterator();      // The children iterator to be tested.

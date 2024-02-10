@@ -26,7 +26,7 @@ import org.apache.sis.referencing.GeodeticObjectVerifier;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -66,19 +66,19 @@ public final class DefaultEllipsoidalCSTest extends TestCase {
     public void testShiftLongitudeRange() {
         final DefaultEllipsoidalCS cs = HardCodedCS.GEODETIC_3D;
         CoordinateSystemAxis axis = cs.getAxis(0);
-        assertEquals("longitude.minimumValue", -180, axis.getMinimumValue(), STRICT);
-        assertEquals("longitude.maximumValue", +180, axis.getMaximumValue(), STRICT);
+        assertEquals(-180, axis.getMinimumValue(), "longitude.minimumValue");
+        assertEquals(+180, axis.getMaximumValue(), "longitude.maximumValue");
 
-        assertSame("Expected a no-op.", cs,  cs.forConvention(AxesConvention.NORMALIZED));
+        assertSame(cs, cs.forConvention(AxesConvention.NORMALIZED), "Expected a no-op.");
         final DefaultEllipsoidalCS shifted = cs.forConvention(AxesConvention.POSITIVE_RANGE);
-        assertNotSame("Expected a new CS.", cs, shifted);
+        assertNotSame(cs, shifted);
         Validators.validate(shifted);
 
         axis = shifted.getAxis(0);
-        assertEquals("longitude.minimumValue",   0, axis.getMinimumValue(), STRICT);
-        assertEquals("longitude.maximumValue", 360, axis.getMaximumValue(), STRICT);
-        assertSame("Expected a no-op.",         shifted, shifted.forConvention(AxesConvention.POSITIVE_RANGE));
-        assertSame("Expected cached instance.", shifted, cs     .forConvention(AxesConvention.POSITIVE_RANGE));
+        assertEquals(  0, axis.getMinimumValue(), "longitude.minimumValue");
+        assertEquals(360, axis.getMaximumValue(), "longitude.maximumValue");
+        assertSame(shifted, shifted.forConvention(AxesConvention.POSITIVE_RANGE), "Expected a no-op.");
+        assertSame(shifted, cs     .forConvention(AxesConvention.POSITIVE_RANGE), "Expected cached instance.");
     }
 
     /**
@@ -89,19 +89,19 @@ public final class DefaultEllipsoidalCSTest extends TestCase {
     public void testShiftLongitudeRangeGrads() {
         final DefaultEllipsoidalCS cs = HardCodedCS.ELLIPSOIDAL_gon;
         CoordinateSystemAxis axis = cs.getAxis(0);
-        assertEquals("longitude.minimumValue", -200, axis.getMinimumValue(), STRICT);
-        assertEquals("longitude.maximumValue", +200, axis.getMaximumValue(), STRICT);
+        assertEquals(-200, axis.getMinimumValue(), "longitude.minimumValue");
+        assertEquals(+200, axis.getMaximumValue(), "longitude.maximumValue");
 
-        assertSame("Expected a no-op.", cs,  cs.forConvention(AxesConvention.RIGHT_HANDED));
+        assertSame(cs, cs.forConvention(AxesConvention.RIGHT_HANDED), "Expected a no-op.");
         final DefaultEllipsoidalCS shifted = cs.forConvention(AxesConvention.POSITIVE_RANGE);
-        assertNotSame("Expected a new CS.", cs, shifted);
+        assertNotSame(cs, shifted);
         Validators.validate(shifted);
 
         axis = shifted.getAxis(0);
-        assertEquals("longitude.minimumValue",   0, axis.getMinimumValue(), STRICT);
-        assertEquals("longitude.maximumValue", 400, axis.getMaximumValue(), STRICT);
-        assertSame("Expected a no-op.",         shifted, shifted.forConvention(AxesConvention.POSITIVE_RANGE));
-        assertSame("Expected cached instance.", shifted, cs     .forConvention(AxesConvention.POSITIVE_RANGE));
+        assertEquals(  0, axis.getMinimumValue(), "longitude.minimumValue");
+        assertEquals(400, axis.getMaximumValue(), "longitude.maximumValue");
+        assertSame(shifted, shifted.forConvention(AxesConvention.POSITIVE_RANGE), "Expected a no-op.");
+        assertSame(shifted, cs     .forConvention(AxesConvention.POSITIVE_RANGE), "Expected cached instance.");
     }
 
     /**
@@ -111,18 +111,18 @@ public final class DefaultEllipsoidalCSTest extends TestCase {
     public void testUnitConversion() {
         final DefaultEllipsoidalCS cs = HardCodedCS.ELLIPSOIDAL_gon;
         CoordinateSystemAxis axis = cs.getAxis(0);
-        assertEquals("unit", Units.GRAD, axis.getUnit());
-        assertEquals("longitude.minimumValue", -200, axis.getMinimumValue(), STRICT);
-        assertEquals("longitude.maximumValue", +200, axis.getMaximumValue(), STRICT);
+        assertEquals(Units.GRAD, axis.getUnit());
+        assertEquals(-200, axis.getMinimumValue(), "longitude.minimumValue");
+        assertEquals(+200, axis.getMaximumValue(), "longitude.maximumValue");
 
         final DefaultEllipsoidalCS converted = cs.forConvention(AxesConvention.NORMALIZED);
-        assertNotSame("Expected a new CS.", cs, converted);
+        assertNotSame(cs, converted);
         Validators.validate(converted);
 
         axis = converted.getAxis(0);
-        assertEquals("unit", Units.DEGREE, axis.getUnit());
-        assertEquals("longitude.minimumValue", -180, axis.getMinimumValue(), STRICT);
-        assertEquals("longitude.maximumValue", +180, axis.getMaximumValue(), STRICT);
+        assertEquals(Units.DEGREE, axis.getUnit());
+        assertEquals(-180, axis.getMinimumValue(), "longitude.minimumValue");
+        assertEquals(+180, axis.getMaximumValue(), "longitude.maximumValue");
     }
 
     /**
@@ -141,8 +141,8 @@ public final class DefaultEllipsoidalCSTest extends TestCase {
          */
         final CoordinateSystemAxis φ = cs.getAxis(0);
         final CoordinateSystemAxis λ = cs.getAxis(1);
-        assertEquals("name",    "Latitude (north), Longitude (east)",     cs.getName().getCode());
-        assertEquals("remarks", "Used in two-dimensional GeographicCRS.", cs.getRemarks().toString());
+        assertEquals("Latitude (north), Longitude (east)",     cs.getName().getCode());
+        assertEquals("Used in two-dimensional GeographicCRS.", cs.getRemarks().toString());
         assertAxisEquals("Geodetic latitude",  "φ", AxisDirection.NORTH, -90,  +90, Units.DEGREE, RangeMeaning.EXACT, φ);
         assertAxisEquals("Geodetic longitude", "λ", AxisDirection.EAST, -180, +180, Units.DEGREE, RangeMeaning.WRAPAROUND, λ);
         assertEpsgIdentifierEquals("6422", getSingleton(cs.getIdentifiers()));

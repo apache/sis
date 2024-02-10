@@ -24,7 +24,7 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 
@@ -53,7 +53,7 @@ public final class DefaultCylindricalCSTest extends TestCase {
     public void testChangeClockwiseOrientation() {
         final DefaultCylindricalCS cs = HardCodedCS.CYLINDRICAL;
         final DefaultCylindricalCS normalized = cs.forConvention(AxesConvention.DISPLAY_ORIENTED);
-        assertNotSame("Should create a new CoordinateSystem.", cs, normalized);
+        assertNotSame(cs, normalized);
         assertAxisDirectionsEqual("Normalized", normalized,
                 AxisDirections.AWAY_FROM,
                 AxisDirections.COUNTER_CLOCKWISE,
@@ -76,14 +76,14 @@ public final class DefaultCylindricalCSTest extends TestCase {
                 radius);
 
         DefaultCylindricalCS normalized = cs.forConvention(AxesConvention.RIGHT_HANDED);
-        assertNotSame("Should create a new CoordinateSystem.", cs, normalized);
+        assertNotSame(cs, normalized);
         assertAxisDirectionsEqual("Right-handed", normalized,
                 AxisDirections.CLOCKWISE,                       // Interchanged (r,θ) order for making right handed.
                 AxisDirection.SOUTH,
                 AxisDirection.UP);
 
         normalized = cs.forConvention(AxesConvention.NORMALIZED);
-        assertNotSame("Should create a new CoordinateSystem.", cs, normalized);
+        assertNotSame(cs, normalized);
         assertAxisDirectionsEqual("Normalized", normalized,
                 AxisDirection.SOUTH,                            // Not modified to North because radius cannot be negative.
                 AxisDirections.COUNTER_CLOCKWISE,

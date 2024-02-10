@@ -22,10 +22,11 @@ import java.util.AbstractMap.SimpleEntry;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -70,84 +71,73 @@ public final class CharacteristicMapTest extends TestCase {
      */
     @Test
     public void testPut() {
-        final AbstractAttribute<?>     temperature     = temperature();
-        final AbstractAttribute<?>     units           = create(temperature, "units");
-        final AbstractAttribute<?>     accuracy        = create(temperature, "accuracy");
-        final Map<String,Attribute<?>> characteristics = temperature.characteristics();
+        final AbstractAttribute<?> temperature = temperature();
+        final AbstractAttribute<?> units       = create(temperature, "units");
+        final AbstractAttribute<?> accuracy    = create(temperature, "accuracy");
+        final var characteristics = temperature.characteristics();
         /*
          * Verify that the map is initially empty.
          */
-        assertTrue  ("isEmpty",       characteristics.isEmpty());
-        assertEquals("size", 0,       characteristics.size());
-        assertFalse ("containsKey",   characteristics.containsKey("units"));
-        assertFalse ("containsKey",   characteristics.containsKey("accuracy"));
-        assertFalse ("containsKey",   characteristics.containsKey("temperature"));
-        assertNull  ("get",           characteristics.get("units"));
-        assertNull  ("get",           characteristics.get("accuracy"));
-        assertNull  ("get",           characteristics.get("temperature"));
-        assertFalse ("containsValue", characteristics.containsValue(units));
-        assertFalse ("containsValue", characteristics.containsValue(accuracy));
-        assertFalse ("containsValue", characteristics.containsValue(temperature));
+        assertTrue  (   characteristics.isEmpty());
+        assertEquals(0, characteristics.size());
+        assertFalse (   characteristics.containsKey("units"));
+        assertFalse (   characteristics.containsKey("accuracy"));
+        assertFalse (   characteristics.containsKey("temperature"));
+        assertNull  (   characteristics.get("units"));
+        assertNull  (   characteristics.get("accuracy"));
+        assertNull  (   characteristics.get("temperature"));
+        assertFalse (   characteristics.containsValue(units));
+        assertFalse (   characteristics.containsValue(accuracy));
+        assertFalse (   characteristics.containsValue(temperature));
         /*
          * Store "units" characteristic and verify.
          */
-        assertNull  ("put",           characteristics.put("units", units));
-        assertFalse ("isEmpty",       characteristics.isEmpty());
-        assertEquals("size", 1,       characteristics.size());
-        assertTrue  ("containsKey",   characteristics.containsKey("units"));
-        assertFalse ("containsKey",   characteristics.containsKey("accuracy"));
-        assertFalse ("containsKey",   characteristics.containsKey("temperature"));
-        assertSame  ("get", units,    characteristics.get("units"));
-        assertNull  ("get",           characteristics.get("accuracy"));
-        assertNull  ("get",           characteristics.get("temperature"));
-        assertTrue  ("containsValue", characteristics.containsValue(units));
-        assertFalse ("containsValue", characteristics.containsValue(accuracy));
-        assertFalse ("containsValue", characteristics.containsValue(temperature));
+        assertNull  (       characteristics.put("units", units));
+        assertFalse (       characteristics.isEmpty());
+        assertEquals(1,     characteristics.size());
+        assertTrue  (       characteristics.containsKey("units"));
+        assertFalse (       characteristics.containsKey("accuracy"));
+        assertFalse (       characteristics.containsKey("temperature"));
+        assertSame  (units, characteristics.get("units"));
+        assertNull  (       characteristics.get("accuracy"));
+        assertNull  (       characteristics.get("temperature"));
+        assertTrue  (       characteristics.containsValue(units));
+        assertFalse (       characteristics.containsValue(accuracy));
+        assertFalse (       characteristics.containsValue(temperature));
         /*
          * Store "accuracy" characteristic and verify.
          */
-        assertNull  ("put",           characteristics.put("accuracy", accuracy));
-        assertFalse ("isEmpty",       characteristics.isEmpty());
-        assertEquals("size", 2,       characteristics.size());
-        assertTrue  ("containsKey",   characteristics.containsKey("units"));
-        assertTrue  ("containsKey",   characteristics.containsKey("accuracy"));
-        assertFalse ("containsKey",   characteristics.containsKey("temperature"));
-        assertSame  ("get", units,    characteristics.get("units"));
-        assertSame  ("get", accuracy, characteristics.get("accuracy"));
-        assertNull  ("get",           characteristics.get("temperature"));
-        assertTrue  ("containsValue", characteristics.containsValue(units));
-        assertTrue  ("containsValue", characteristics.containsValue(accuracy));
-        assertFalse ("containsValue", characteristics.containsValue(temperature));
+        assertNull  (          characteristics.put("accuracy", accuracy));
+        assertFalse (          characteristics.isEmpty());
+        assertEquals(2,        characteristics.size());
+        assertTrue  (          characteristics.containsKey("units"));
+        assertTrue  (          characteristics.containsKey("accuracy"));
+        assertFalse (          characteristics.containsKey("temperature"));
+        assertSame  (units,    characteristics.get("units"));
+        assertSame  (accuracy, characteristics.get("accuracy"));
+        assertNull  (          characteristics.get("temperature"));
+        assertTrue  (          characteristics.containsValue(units));
+        assertTrue  (          characteristics.containsValue(accuracy));
+        assertFalse (          characteristics.containsValue(temperature));
         /*
          * Overwrite values. Map shall stay unchanged.
          */
-        assertSame  ("put",  accuracy, characteristics.put("accuracy", accuracy));
-        assertSame  ("put",  units,    characteristics.put("units",    units));
-        assertEquals("size", 2,        characteristics.size());
+        assertSame  (accuracy, characteristics.put("accuracy", accuracy));
+        assertSame  (units,    characteristics.put("units",    units));
+        assertEquals(2,        characteristics.size());
         /*
          * Try putting an attribute for a non-existent name.
          * Map shall stay unchanged.
          */
-        try {
-            characteristics.put("dummy", units);
-            fail("Operation shall not have been allowed.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("dummy"));       // Message shall contain the wrong name.
-            assertTrue(message, message.contains("temperature")); // Message shall contain the enclosing attribute name.
-        }
+        IllegalArgumentException e;
+        e = assertThrows(IllegalArgumentException.class, () -> characteristics.put("dummy", units));
+        assertMessageContains(e, "dummy", "temperature");
         /*
          * Try putting an attribute of the wrong type.
          * Map shall stay unchanged.
          */
-        try {
-            characteristics.put("units", accuracy);
-            fail("Operation shall not have been allowed.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("accuracy"));
-            assertTrue(message, message.contains("temperature:units"));
-        }
+        e = assertThrows(IllegalArgumentException.class, () -> characteristics.put("units", accuracy));
+        assertMessageContains(e, "accuracy", "temperature:units");
         assertEntriesEqual(units, accuracy, characteristics);
         assertSame(characteristics, temperature.characteristics());
     }
@@ -158,54 +148,49 @@ public final class CharacteristicMapTest extends TestCase {
     @Test
     @DependsOnMethod("testPut")
     public void testAddValue() {
-        final AbstractAttribute<?>     temperature     = temperature();
-        final AbstractAttribute<?>     units           = create(temperature, "units");
-        final AbstractAttribute<?>     accuracy        = create(temperature, "accuracy");
-        final Map<String,Attribute<?>> characteristics = temperature.characteristics();
-        final Collection<Attribute<?>> values          = characteristics.values();
+        final AbstractAttribute<?> temperature = temperature();
+        final AbstractAttribute<?> units       = create(temperature, "units");
+        final AbstractAttribute<?> accuracy    = create(temperature, "accuracy");
+        final var characteristics = temperature.characteristics();
+        final var values = characteristics.values();
         /*
          * Verify that the collection is initially empty.
          */
-        assertTrue  ("isEmpty",  values.isEmpty());
-        assertEquals("size", 0,  values.size());
-        assertFalse ("contains", values.contains(units));
-        assertFalse ("contains", values.contains(accuracy));
-        assertFalse ("contains", values.contains(temperature));
+        assertTrue  (   values.isEmpty());
+        assertEquals(0, values.size());
+        assertFalse (   values.contains(units));
+        assertFalse (   values.contains(accuracy));
+        assertFalse (   values.contains(temperature));
         /*
          * Store "units" characteristic and verify.
          */
-        assertTrue  ("add",      values.add(units));
-        assertFalse ("isEmpty",  values.isEmpty());
-        assertEquals("size", 1,  values.size());
-        assertTrue  ("contains", values.contains(units));
-        assertFalse ("contains", values.contains(accuracy));
-        assertFalse ("contains", values.contains(temperature));
+        assertTrue  (   values.add(units));
+        assertFalse (   values.isEmpty());
+        assertEquals(1, values.size());
+        assertTrue  (   values.contains(units));
+        assertFalse (   values.contains(accuracy));
+        assertFalse (   values.contains(temperature));
         /*
          * Store "accuracy" characteristic and verify.
          */
-        assertTrue  ("add",      values.add(accuracy));
-        assertFalse ("isEmpty",  values.isEmpty());
-        assertEquals("size", 2,  values.size());
-        assertTrue  ("contains", values.contains(units));
-        assertTrue  ("contains", values.contains(accuracy));
-        assertFalse ("contains", values.contains(temperature));
+        assertTrue  (   values.add(accuracy));
+        assertFalse (   values.isEmpty());
+        assertEquals(2, values.size());
+        assertTrue  (   values.contains(units));
+        assertTrue  (   values.contains(accuracy));
+        assertFalse (   values.contains(temperature));
         /*
          * Overwrite values. Map shall stay unchanged.
          */
-        assertFalse ("add",     values.add(accuracy));
-        assertFalse ("add",     values.add(units));
-        assertEquals("size", 2, values.size());
+        assertFalse (   values.add(accuracy));
+        assertFalse (   values.add(units));
+        assertEquals(2, values.size());
         /*
          * Try adding an attribute of the wrong type.
          * Map shall stay unchanged.
          */
-        try {
-            values.add(temperature);
-            fail("Operation shall not have been allowed.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("temperature"));
-        }
+        var e = assertThrows(IllegalArgumentException.class, () -> values.add(temperature));
+        assertMessageContains(e, "temperature");
         assertEntriesEqual(units, accuracy, characteristics);
         assertSame(characteristics, temperature.characteristics());
     }
@@ -217,55 +202,49 @@ public final class CharacteristicMapTest extends TestCase {
     @DependsOnMethod("testPut")
     public void testAddKey() {
         final Attribute<?> units, accuracy;
-        final AbstractAttribute<?>     temperature     = temperature();
-        final Map<String,Attribute<?>> characteristics = temperature.characteristics();
-        final Collection<String>       keys            = characteristics.keySet();
+        final AbstractAttribute<?> temperature = temperature();
+        final var characteristics = temperature.characteristics();
+        final Collection<String> keys = characteristics.keySet();
         /*
          * Verify that the collection is initially empty.
          */
-        assertTrue  ("isEmpty",  keys.isEmpty());
-        assertEquals("size", 0,  keys.size());
-        assertFalse ("contains", keys.contains("units"));
-        assertFalse ("contains", keys.contains("accuracy"));
-        assertFalse ("contains", keys.contains("temperature"));
+        assertTrue  (   keys.isEmpty());
+        assertEquals(0, keys.size());
+        assertFalse (   keys.contains("units"));
+        assertFalse (   keys.contains("accuracy"));
+        assertFalse (   keys.contains("temperature"));
         /*
          * Store "units" characteristic and verify.
          */
-        assertTrue   ("add",      keys.add("units"));
-        assertFalse  ("isEmpty",  keys.isEmpty());
-        assertEquals ("size", 1,  keys.size());
-        assertTrue   ("contains", keys.contains("units"));
-        assertFalse  ("contains", keys.contains("accuracy"));
-        assertFalse  ("contains", keys.contains("temperature"));
-        assertNotNull("get",      units = characteristics.get("units"));
+        assertTrue   (   keys.add("units"));
+        assertFalse  (   keys.isEmpty());
+        assertEquals (1, keys.size());
+        assertTrue   (   keys.contains("units"));
+        assertFalse  (   keys.contains("accuracy"));
+        assertFalse  (   keys.contains("temperature"));
+        assertNotNull(units = characteristics.get("units"));
         /*
          * Store "accuracy" characteristic and verify.
          */
-        assertTrue  ("add",       keys.add("accuracy"));
-        assertFalse ("isEmpty",   keys.isEmpty());
-        assertEquals("size", 2,   keys.size());
-        assertTrue  ("contains",  keys.contains("units"));
-        assertTrue  ("contains",  keys.contains("accuracy"));
-        assertFalse ("contains",  keys.contains("temperature"));
-        assertNotNull("get",      accuracy = characteristics.get("accuracy"));
+        assertTrue  (   keys.add("accuracy"));
+        assertFalse (   keys.isEmpty());
+        assertEquals(2, keys.size());
+        assertTrue  (   keys.contains("units"));
+        assertTrue  (   keys.contains("accuracy"));
+        assertFalse (   keys.contains("temperature"));
+        assertNotNull(accuracy = characteristics.get("accuracy"));
         /*
          * Overwrite values. Map shall stay unchanged.
          */
-        assertFalse ("add",     keys.add("accuracy"));
-        assertFalse ("add",     keys.add("units"));
-        assertEquals("size", 2, keys.size());
+        assertFalse (   keys.add("accuracy"));
+        assertFalse (   keys.add("units"));
+        assertEquals(2, keys.size());
         /*
          * Try adding an attribute of the wrong type.
          * Map shall stay unchanged.
          */
-        try {
-            keys.add("dummy");
-            fail("Operation shall not have been allowed.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("temperature"));
-            assertTrue(message, message.contains("dummy"));
-        }
+        var e = assertThrows(IllegalArgumentException.class, () -> keys.add("dummy"));
+        assertMessageContains(e, "temperature", "dummy");
         assertEntriesEqual(units, accuracy, characteristics);
         assertSame(characteristics, temperature.characteristics());
     }
@@ -280,9 +259,9 @@ public final class CharacteristicMapTest extends TestCase {
     private static void assertEntriesEqual(final Attribute<?> units, final Attribute<?> accuracy,
             final Map<String,Attribute<?>> characteristics)
     {
-        assertArrayEquals("keySet", new String[] {"accuracy", "units"}, characteristics.keySet().toArray());
-        assertArrayEquals("values", new Object[] { accuracy ,  units }, characteristics.values().toArray());
-        assertArrayEquals("entrySet", new Object[] {
+        assertArrayEquals(new String[] {"accuracy", "units"}, characteristics.keySet().toArray());
+        assertArrayEquals(new Object[] { accuracy ,  units }, characteristics.values().toArray());
+        assertArrayEquals(new Object[] {
                 new SimpleEntry<>("accuracy", accuracy),
                 new SimpleEntry<>("units",    units)
             }, characteristics.entrySet().toArray());
@@ -296,8 +275,8 @@ public final class CharacteristicMapTest extends TestCase {
      * @param  value        the new accuracy value.
      */
     private static void setAccuracy(final AbstractAttribute<Float> temperature, final boolean isFirstTime, final float value) {
-        assertEquals("keySet.add", isFirstTime, temperature.characteristics().keySet().add("accuracy"));
-        final Attribute<Float> accuracy = Features.cast(temperature.characteristics().get("accuracy"), Float.class);
+        assertEquals(isFirstTime, temperature.characteristics().keySet().add("accuracy"));
+        final var accuracy = Features.cast(temperature.characteristics().get("accuracy"), Float.class);
         accuracy.setValue(value);
     }
 
@@ -309,19 +288,22 @@ public final class CharacteristicMapTest extends TestCase {
     public void testEquals() {
         final AbstractAttribute<Float> t1 = temperature();
         final AbstractAttribute<Float> t2 = temperature();
-        assertEquals("equals",   t1, t2);
-        assertEquals("hashCode", t1.hashCode(), t2.hashCode());
+        assertEquals(t1, t2);
+        assertEquals(t1.hashCode(), t2.hashCode());
+
         setAccuracy(t1, true, 0.2f);
-        assertFalse("equals",   t1.equals(t2));
-        assertFalse("equals",   t2.equals(t1));
-        assertFalse("hashCode", t1.hashCode() == t2.hashCode());
+        assertNotEquals(t1, t2);
+        assertNotEquals(t2, t1);
+        assertNotEquals(t1.hashCode(), t2.hashCode());
+
         setAccuracy(t2, true, 0.3f);
-        assertFalse("equals",   t1.equals(t2));
-        assertFalse("equals",   t2.equals(t1));
-        assertFalse("hashCode", t1.hashCode() == t2.hashCode());
+        assertNotEquals(t1, t2);
+        assertNotEquals(t2, t1);
+        assertNotEquals(t1.hashCode(), t2.hashCode());
+
         setAccuracy(t1, false, 0.3f);
-        assertEquals("equals",   t1, t2);
-        assertEquals("hashCode", t1.hashCode(), t2.hashCode());
+        assertEquals(t1, t2);
+        assertEquals(t1.hashCode(), t2.hashCode());
     }
 
     /**

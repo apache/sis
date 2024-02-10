@@ -23,7 +23,7 @@ import static org.apache.sis.feature.DefaultAssociationRole.NAME_KEY;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -68,10 +68,10 @@ public final class CharacteristicTypeMapTest extends TestCase {
         final DefaultAttributeType<Float> t1 = temperature();
         final DefaultAttributeType<Float> t2 = temperature();
         assertNotSame(t1, t2); // Remaining of this test is useless if instances are the same.
-        assertTrue  ("equals",   t1.equals(t2));
-        assertTrue  ("equals",   t2.equals(t1));
-        assertEquals("hashCode", t1.hashCode(), t2.hashCode());
-        assertSame  ("shared",   t1.characteristics(), t2.characteristics());
+        assertTrue  (t1.equals(t2));
+        assertTrue  (t2.equals(t1));
+        assertEquals(t1.hashCode(), t2.hashCode());
+        assertSame  (t1.characteristics(), t2.characteristics());
     }
 
     /**
@@ -81,24 +81,24 @@ public final class CharacteristicTypeMapTest extends TestCase {
     public void testMapMethods() {
         final AttributeType<?> units, accuracy;
         final DefaultAttributeType<Float> temperature = temperature();
-        final Map<String, AttributeType<?>> characteristics = temperature.characteristics();
+        final var characteristics = temperature.characteristics();
 
-        assertFalse  ("isEmpty",        characteristics.isEmpty());
-        assertEquals ("size", 2,        characteristics.size());
-        assertTrue   ("containsKey",    characteristics.containsKey("units"));
-        assertTrue   ("containsKey",    characteristics.containsKey("accuracy"));
-        assertFalse  ("containsKey",    characteristics.containsKey("temperature"));
-        assertNotNull("get", units    = characteristics.get("units"));
-        assertNotNull("get", accuracy = characteristics.get("accuracy"));
-        assertNull   ("get",            characteristics.get("temperature"));
-        assertSame   ("get", units,     characteristics.get("units"));
-        assertSame   ("get", accuracy,  characteristics.get("accuracy"));
-        assertTrue   ("containsValue",  characteristics.containsValue(units));
-        assertTrue   ("containsValue",  characteristics.containsValue(accuracy));
-        assertFalse  ("containsValue",  characteristics.containsValue(temperature));
-        assertArrayEquals("keySet", new String[] {"accuracy", "units"}, characteristics.keySet().toArray());
-        assertArrayEquals("values", new Object[] { accuracy ,  units }, characteristics.values().toArray());
-        assertArrayEquals("entrySet", new Object[] {
+        assertFalse  (           characteristics.isEmpty());
+        assertEquals (2,         characteristics.size());
+        assertTrue   (           characteristics.containsKey("units"));
+        assertTrue   (           characteristics.containsKey("accuracy"));
+        assertFalse  (           characteristics.containsKey("temperature"));
+        assertNotNull(units    = characteristics.get("units"));
+        assertNotNull(accuracy = characteristics.get("accuracy"));
+        assertNull   (           characteristics.get("temperature"));
+        assertSame   (units,     characteristics.get("units"));
+        assertSame   (accuracy,  characteristics.get("accuracy"));
+        assertTrue   (           characteristics.containsValue(units));
+        assertTrue   (           characteristics.containsValue(accuracy));
+        assertFalse  (           characteristics.containsValue(temperature));
+        assertArrayEquals(new String[] {"accuracy", "units"}, characteristics.keySet().toArray());
+        assertArrayEquals(new Object[] { accuracy ,  units }, characteristics.values().toArray());
+        assertArrayEquals(new Object[] {
                 new SimpleEntry<>("accuracy", accuracy),
                 new SimpleEntry<>("units",    units)
             }, characteristics.entrySet().toArray());
@@ -126,12 +126,12 @@ public final class CharacteristicTypeMapTest extends TestCase {
         a3 = new DefaultAttributeType<>(Map.of(NAME_KEY, Names.parseGenericName(null, null, "ns2:s3:units")), String.class, 1, 1, "°C");
         tp = new DefaultAttributeType<>(Map.of(NAME_KEY, "temperature"), Float.class, 1, 1, null, a1, a2, a3);
 
-        final Map<String, AttributeType<?>> characteristics = tp.characteristics();
-        assertSame("ns1:accuracy", a1, characteristics.get("ns1:accuracy"));
-        assertSame("ns2:accuracy", a2, characteristics.get("ns2:accuracy"));
-        assertSame("ns2:s3:units", a3, characteristics.get("ns2:s3:units"));
-        assertSame(    "s3:units", a3, characteristics.get(    "s3:units"));
-        assertSame(       "units", a3, characteristics.get(       "units"));
-        assertNull("    accuracy",     characteristics.get("    accuracy"));        // Because ambiguous.
+        final var characteristics = tp.characteristics();
+        assertSame(a1, characteristics.get("ns1:accuracy"));
+        assertSame(a2, characteristics.get("ns2:accuracy"));
+        assertSame(a3, characteristics.get("ns2:s3:units"));
+        assertSame(a3, characteristics.get(    "s3:units"));
+        assertSame(a3, characteristics.get(       "units"));
+        assertNull(    characteristics.get("    accuracy"));        // Because ambiguous.
     }
 }

@@ -29,10 +29,11 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
@@ -100,13 +101,8 @@ public final class MetadataCopierTest extends TestCase {
     public void testWrongArgument() {
         final MetadataCopier copier = new MetadataCopier(MetadataStandard.ISO_19115);
         final DefaultCitation original = HardCodedCitations.EPSG;
-        try {
-            copier.copy(DefaultCitation.class, original);
-            fail("Should not have accepted implementation class argument.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("DefaultCitation"));
-        }
+        var e = assertThrows(IllegalArgumentException.class, () -> copier.copy(DefaultCitation.class, original));
+        assertMessageContains(e, "DefaultCitation");
     }
 
     /**

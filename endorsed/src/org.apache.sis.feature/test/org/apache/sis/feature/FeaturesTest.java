@@ -18,7 +18,8 @@ package org.apache.sis.feature;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
@@ -48,15 +49,9 @@ public final class FeaturesTest extends TestCase {
     public void testCastAttributeType() {
         final DefaultAttributeType<String> parliament = DefaultAttributeTypeTest.parliament();
         assertSame(parliament, Features.cast(parliament, String.class));
-        try {
-            Features.cast(parliament, CharSequence.class);
-            fail("Shall not be allowed to cast to a different type.");
-        } catch (ClassCastException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("parliament"));
-            assertTrue(message, message.contains("String"));
-            assertTrue(message, message.contains("CharSequence"));
-        }
+
+        var e = assertThrows(ClassCastException.class, () -> Features.cast(parliament, CharSequence.class));
+        assertMessageContains(e, "parliament", "String", "CharSequence");
     }
 
     /**
@@ -66,15 +61,9 @@ public final class FeaturesTest extends TestCase {
     public void testCastAttributeInstance() {
         final AbstractAttribute<String> parliament = SingletonAttributeTest.parliament();
         assertSame(parliament, Features.cast(parliament, String.class));
-        try {
-            Features.cast(parliament, CharSequence.class);
-            fail("Shall not be allowed to cast to a different type.");
-        } catch (ClassCastException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("parliament"));
-            assertTrue(message, message.contains("String"));
-            assertTrue(message, message.contains("CharSequence"));
-        }
+
+        var e = assertThrows(ClassCastException.class, () -> Features.cast(parliament, CharSequence.class));
+        assertMessageContains(e, "parliament", "String", "CharSequence");
     }
 
     /**
@@ -83,15 +72,13 @@ public final class FeaturesTest extends TestCase {
     @Test
     public void testValidate() {
         final Feature feature = DefaultFeatureTypeTest.city().newInstance();
-
-        // Should not pass validation.
-        try {
-            Features.validate(feature);
-            fail("Feature is invalid because of missing property “population”. Validation should have raised an exception.");
-        } catch (InvalidPropertyValueException ex) {
-            String message = ex.getMessage();
-            assertTrue(message, message.contains("city") || message.contains("population"));
-        }
+        /*
+         * Feature is invalid because of missing property “population”.
+         * Validation should raise an exception.
+         */
+        var e = assertThrows(InvalidPropertyValueException.class, () -> Features.validate(feature));
+        String message = e.getMessage();
+        assertTrue(message.contains("city") || message.contains("population"), message);
 
         // Should pass validation.
         feature.setPropertyValue("city", "Utopia");

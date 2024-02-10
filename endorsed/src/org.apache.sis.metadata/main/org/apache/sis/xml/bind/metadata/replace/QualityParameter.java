@@ -167,7 +167,7 @@ public final class QualityParameter extends Parameter {
     @Override
     public synchronized Identifier getName() {
         if (name == null && code != null) {
-            final DefaultIdentifier id = new DefaultIdentifier(code);
+            var id = new DefaultIdentifier(code);
             id.setDescription(definition);
             id.transitionTo(DefaultIdentifier.State.FINAL);
             name = id;

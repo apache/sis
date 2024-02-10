@@ -55,8 +55,7 @@ import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -131,16 +130,16 @@ public final class PropertyAccessorTest extends TestCase {
             final String   propertyName  = (String)   expected[i++];
             final String   umlIdentifier = (String)   expected[i++];
             final String   sentence      = (String)   expected[i++];
-            assertEquals("methodName",    methodName,    accessor.name(index, KeyNamePolicy.METHOD_NAME));
-            assertEquals("propertyName",  propertyName,  accessor.name(index, KeyNamePolicy.JAVABEANS_PROPERTY));
-            assertEquals("umlIdentifier", umlIdentifier, accessor.name(index, KeyNamePolicy.UML_IDENTIFIER));
-            assertEquals("sentence",      sentence,      accessor.name(index, KeyNamePolicy.SENTENCE));
-            assertEquals("declaringType", declaringType, accessor.type(index, TypeValuePolicy.DECLARING_INTERFACE));
-            assertEquals(methodName,      index,         accessor.indexOf(methodName,    false));
-            assertEquals(propertyName,    index,         accessor.indexOf(propertyName,  false));
-            assertEquals(umlIdentifier,   index,         accessor.indexOf(umlIdentifier, false));
-            assertEquals(propertyName,    index,         accessor.indexOf(propertyName .toLowerCase(Locale.ROOT), false));
-            assertEquals(umlIdentifier,   index,         accessor.indexOf(umlIdentifier.toLowerCase(Locale.ROOT), false));
+            assertEquals(methodName,    accessor.name(index, KeyNamePolicy.METHOD_NAME));
+            assertEquals(propertyName,  accessor.name(index, KeyNamePolicy.JAVABEANS_PROPERTY));
+            assertEquals(umlIdentifier, accessor.name(index, KeyNamePolicy.UML_IDENTIFIER));
+            assertEquals(sentence,      accessor.name(index, KeyNamePolicy.SENTENCE));
+            assertEquals(declaringType, accessor.type(index, TypeValuePolicy.DECLARING_INTERFACE));
+            assertEquals(index,         accessor.indexOf(methodName,    false), methodName);
+            assertEquals(index,         accessor.indexOf(propertyName,  false), propertyName);
+            assertEquals(index,         accessor.indexOf(umlIdentifier, false), umlIdentifier);
+            assertEquals(index,         accessor.indexOf(propertyName .toLowerCase(Locale.ROOT), false), propertyName);
+            assertEquals(index,         accessor.indexOf(umlIdentifier.toLowerCase(Locale.ROOT), false), umlIdentifier);
             /*
              * Verifies the type of values. This need special handling for collections.
              */
@@ -158,10 +157,10 @@ public final class PropertyAccessorTest extends TestCase {
             } else if (propertyType == Map.class) {
                 elementType = Map.Entry.class;
             }
-            assertEquals(propertyName,  propertyType, accessor.type(index, TypeValuePolicy.PROPERTY_TYPE));
-            assertEquals(umlIdentifier, elementType,  accessor.type(index, TypeValuePolicy.ELEMENT_TYPE));
+            assertEquals(propertyType, accessor.type(index, TypeValuePolicy.PROPERTY_TYPE), propertyName);
+            assertEquals(elementType,  accessor.type(index, TypeValuePolicy.ELEMENT_TYPE), umlIdentifier);
         }
-        assertEquals("Count of 'get' methods.", i/6, accessor.count());
+        assertEquals(i/6, accessor.count(), "Count of getter methods.");
     }
 
     /**
@@ -288,13 +287,13 @@ public final class PropertyAccessorTest extends TestCase {
 
         // Singleton value (not a collection)
         final Object title = accessor.get(accessor.indexOf("title", true), instance);
-        assertInstanceOf("title", InternationalString.class, title);
-        assertEquals("title", "Spatial referencing by coordinates", title.toString());
+        assertInstanceOf(InternationalString.class, title);
+        assertEquals("Spatial referencing by coordinates", title.toString());
 
         // Collection of InternationalStrings
         final Object alternateTitles = accessor.get(accessor.indexOf("alternateTitles", true), instance);
-        assertInstanceOf("alternateTitles", Collection.class, alternateTitles);
-        assertEquals("alternateTitles", "ISO 19111", getSingleton((Collection<?>) alternateTitles).toString());
+        assertInstanceOf(Collection.class, alternateTitles);
+        assertEquals("ISO 19111", getSingleton((Collection<?>) alternateTitles).toString());
 
         // Collection of Identifiers
         final Object identifiers = accessor.get(accessor.indexOf("identifiers", true), instance);
@@ -325,15 +324,15 @@ public final class PropertyAccessorTest extends TestCase {
 
         newValue = new SimpleInternationalString("Some title");
         index = accessor.indexOf("title", true);
-        assertNull("title", accessor.set(index, instance, newValue, RETURN_PREVIOUS));
-        assertSame("title", newValue, accessor.get(index, instance));
-        assertSame("title", newValue, instance.getTitle());
+        assertNull(accessor.set(index, instance, newValue, RETURN_PREVIOUS));
+        assertSame(newValue, accessor.get(index, instance));
+        assertSame(newValue, instance.getTitle());
 
         newValue = "Some ISBN code";
         index = accessor.indexOf("ISBN", true);
-        assertNull("ISBN", accessor.set(index, instance, newValue, RETURN_PREVIOUS));
-        assertSame("ISBN", newValue, accessor.get(index, instance));
-        assertSame("ISBN", newValue, instance.getISBN());
+        assertNull(accessor.set(index, instance, newValue, RETURN_PREVIOUS));
+        assertSame(newValue, accessor.get(index, instance));
+        assertSame(newValue, instance.getISBN());
     }
 
     /**
@@ -354,12 +353,12 @@ public final class PropertyAccessorTest extends TestCase {
         final int index = accessor.indexOf("title", true);
 
         assertEquals("Some title", title.toString()); // Sanity check before to continue.
-        assertNull("title", accessor.set(index, instance, null, RETURN_NULL));
-        assertNull("title", instance.getTitle());
+        assertNull(accessor.set(index, instance, null, RETURN_NULL));
+        assertNull(instance.getTitle());
 
         instance.setTitle(title);
-        assertSame("title", title, accessor.set(index, instance, null, RETURN_PREVIOUS));
-        assertNull("title", instance.getTitle());
+        assertSame(title, accessor.set(index, instance, null, RETURN_PREVIOUS));
+        assertNull(instance.getTitle());
     }
 
     /**
@@ -373,14 +372,14 @@ public final class PropertyAccessorTest extends TestCase {
                     DefaultCoverageDescription.class, DefaultCoverageDescription.class);
         final int indexOfDeprecated  = accessor.indexOf("contentType", true);
         final int indexOfReplacement = accessor.indexOf("attributeGroup", true);
-        assertTrue("Deprecated elements shall be sorted after non-deprecated ones.",
-                indexOfDeprecated > indexOfReplacement);
+        assertTrue(indexOfDeprecated > indexOfReplacement,
+                "Deprecated elements shall be sorted after non-deprecated ones.");
         /*
          * Writes a value using the deprecated property.
          */
         final DefaultCoverageDescription instance = new DefaultCoverageDescription();
-        assertNull("Shall be initially empty.", accessor.set(indexOfDeprecated, instance,
-                CoverageContentType.IMAGE, PropertyAccessor.RETURN_PREVIOUS));
+        assertNull(accessor.set(indexOfDeprecated, instance, CoverageContentType.IMAGE, PropertyAccessor.RETURN_PREVIOUS),
+                   "Shall be initially empty.");
         assertEquals(CoverageContentType.IMAGE, accessor.get(indexOfDeprecated, instance));
         /*
          * Compares with the non-deprecated property.
@@ -392,8 +391,8 @@ public final class PropertyAccessorTest extends TestCase {
          * While we can read/write the value through two properties,
          * only one should be visible.
          */
-        assertEquals("Deprecated property shall not be visible.", 1, accessor.count(
-                instance, ValueExistencePolicy.NON_EMPTY, PropertyAccessor.COUNT_SHALLOW));
+        assertEquals(1, accessor.count(instance, ValueExistencePolicy.NON_EMPTY, PropertyAccessor.COUNT_SHALLOW),
+                     "Deprecated property shall not be visible.");
     }
 
     /**
@@ -415,10 +414,10 @@ public final class PropertyAccessorTest extends TestCase {
         final Object           oldValue = accessor.set(index, instance, expected, RETURN_PREVIOUS);
         final Object           value    = accessor.get(index, instance);
 
-        assertNull      ("title", oldValue);
-        assertInstanceOf("title", InternationalString.class, value);
-        assertSame      ("title", expected, value.toString());
-        assertSame      ("title", value, instance.getTitle());
+        assertNull      (oldValue);
+        assertInstanceOf(InternationalString.class, value);
+        assertSame      (expected, value.toString());
+        assertSame      (value, instance.getTitle());
     }
 
     /**
@@ -453,9 +452,9 @@ public final class PropertyAccessorTest extends TestCase {
         final Object           newValue = accessor.get(index, instance);
 
         // Verify the values.
-        assertEquals("set(…, RETURN_PREVIOUS)", oldTitles, oldValue);
-        assertEquals("get(…)",                  newTitles, newValue);
-        assertSame  ("alternateTitles",         newValue, instance.getAlternateTitles());
+        assertEquals(oldTitles, oldValue, "set(…, RETURN_PREVIOUS)");
+        assertEquals(newTitles, newValue, "get(…)");
+        assertSame  (newValue, instance.getAlternateTitles());
         assertTitleEquals("title", "Ignored title", instance);
     }
 
@@ -508,21 +507,20 @@ public final class PropertyAccessorTest extends TestCase {
 
         // Insert the first value. Old collection shall be empty.
         Object oldValue = accessor.set(index, instance, conversion ? text1 : title1, RETURN_PREVIOUS);
-        assertInstanceOf("alternateTitles", Collection.class, oldValue);
-        assertTrue("alternateTitles", ((Collection<?>) oldValue).isEmpty());
+        assertTrue(assertInstanceOf(Collection.class, oldValue).isEmpty());
 
         // Insert the second value. Old collection shall contain the first value.
         oldValue = accessor.set(index, instance, conversion ? text2 : title2, RETURN_PREVIOUS);
-        assertInstanceOf("alternateTitles", Collection.class, oldValue);
+        assertInstanceOf(Collection.class, oldValue);
         oldValue = getSingleton((Collection<?>) oldValue);
-        assertSame("alternateTitles", text1, oldValue.toString());
+        assertSame(text1, oldValue.toString());
         if (!conversion) {
-            assertSame("InternationalString should have been stored as-is.", title1, oldValue);
+            assertSame(title1, oldValue, "InternationalString should have been stored as-is.");
         }
 
         // Check final collection content.
         final List<InternationalString> expected = List.of(title1, title2);
-        assertEquals("alternateTitles", expected, accessor.get(index, instance));
+        assertEquals(expected, accessor.get(index, instance));
         assertTitleEquals("title", "Ignored title", instance);
     }
 
@@ -565,20 +563,20 @@ public final class PropertyAccessorTest extends TestCase {
         final Object newValue = accessor.get(index, instance);
 
         // Verify the values.
-        assertEquals("set(…, APPEND)",  Boolean.TRUE, titleChanged);
-        assertEquals("set(…, APPEND)",  Boolean.TRUE, changed);
-        assertEquals("get(…)",          merged, newValue);
-        assertSame  ("alternateTitles", newValue, instance.getAlternateTitles());
+        assertEquals(Boolean.TRUE, titleChanged, "set(…, APPEND)");
+        assertEquals(Boolean.TRUE, changed, "set(…, APPEND)");
+        assertEquals(merged, newValue, "get(…)");
+        assertSame  (newValue, instance.getAlternateTitles());
         assertTitleEquals("title", "Added title", instance);
 
         // Test setting again the title to the same value.
         titleChanged = accessor.set(titleIndex, instance, "Added title", APPEND);
-        assertEquals("set(…, APPEND)", Boolean.FALSE, titleChanged);
+        assertEquals(Boolean.FALSE, titleChanged, "set(…, APPEND)");
         assertTitleEquals("title", "Added title", instance);
 
         // Test setting the title to a different value.
         titleChanged = accessor.set(titleIndex, instance, "Different title", APPEND);
-        assertNull("set(…, APPEND)", titleChanged); // Operation shall be refused.
+        assertNull(titleChanged, "set(…, APPEND)");     // Operation shall be refused.
         assertTitleEquals("title", "Added title", instance);
     }
 
@@ -601,17 +599,17 @@ public final class PropertyAccessorTest extends TestCase {
         final int    index  = accessor.indexOf("identifiers", true);
         final Object source = accessor.get(index, HardCodedCitations.EPSG);
         final Object target = accessor.get(index, citation);
-        assertInstanceOf("identifiers", Collection.class, source);
-        assertInstanceOf("identifiers", Collection.class, target);
-        assertNotSame("Distinct objects shall have distinct collections.", source, target);
-        assertEquals ("The two collections shall have the same content.",  source, target);
+        assertInstanceOf(Collection.class, source);
+        assertInstanceOf(Collection.class, target);
+        assertNotSame(source, target, "Distinct objects shall have distinct collections.");
+        assertEquals (source, target, "The two collections shall have the same content.");
         assertEquals ("EPSG", getSingletonCode(target));
 
         // Set the identifiers to null, which should clear the collection.
-        assertEquals("Expected the previous value.", source, accessor.set(index, citation, null, RETURN_PREVIOUS));
+        assertEquals(source, accessor.set(index, citation, null, RETURN_PREVIOUS), "Expected the previous value.");
         final Object value = accessor.get(index, citation);
-        assertNotNull("Should have replaced null by an empty collection.", value);
-        assertTrue("Should have replaced null by an empty collection.", ((Collection<?>) value).isEmpty());
+        assertNotNull(value, "Should have replaced null by an empty collection.");
+        assertTrue(((Collection<?>) value).isEmpty(), "Should have replaced null by an empty collection.");
     }
 
     /**
@@ -632,9 +630,8 @@ public final class PropertyAccessorTest extends TestCase {
      * @return {@link Identifier#getCode()}.
      */
     static String getSingletonCode(final Object identifiers) {
-        assertInstanceOf("identifiers", Collection.class, identifiers);
-        final Object identifier = getSingleton((Collection<?>) identifiers);
-        assertInstanceOf("identifier", Identifier.class, identifier);
-        return ((Identifier) identifier).getCode();
+        assertInstanceOf(Collection.class, identifiers);
+        Object identifier = getSingleton((Collection<?>) identifiers);
+        return assertInstanceOf(Identifier.class, identifier).getCode();
     }
 }

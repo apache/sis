@@ -25,7 +25,7 @@ import static org.apache.sis.metadata.KeyNamePolicy.*;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
@@ -74,7 +74,7 @@ public final class NameMapTest extends TestCase {
         }, map.entrySet().toArray());
 
         assertEquals("alternateTitles", map.get("alternateTitle"));
-        assertNull("Shall not exists.", map.get("dummy"));
+        assertNull(map.get("dummy"));
     }
 
     /**

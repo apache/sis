@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata;
 
-import org.opengis.util.InternationalString;
 import org.opengis.metadata.ExtendedElementInformation;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.measure.Latitude;
@@ -26,8 +25,7 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -71,14 +69,14 @@ public final class SpecialCasesTest extends TestCase {
      * and ensures that the result is equal to the expected value.
      */
     private void assertTypeEquals(final String name, final Class<?> expected) {
-        assertEquals(name, expected, accessor.type(accessor.indexOf(name, true), TypeValuePolicy.ELEMENT_TYPE));
+        assertEquals(expected, accessor.type(accessor.indexOf(name, true), TypeValuePolicy.ELEMENT_TYPE), name);
     }
 
     /**
      * Invokes {@link SpecialCases#get(int, Object)} and ensures that the result is equal to the expected value.
      */
     private void assertPropertyEquals(final String name, final Object expected) {
-        assertEquals(name, expected, accessor.get(accessor.indexOf(name, true), box));
+        assertEquals(expected, accessor.get(accessor.indexOf(name, true), box), name);
     }
 
     /**
@@ -87,7 +85,7 @@ public final class SpecialCasesTest extends TestCase {
      */
     private void assertPreviousEquals(final String name, final Object oldValue, final Object newValue) {
         final Object value = accessor.set(accessor.indexOf(name, true), box, newValue, PropertyAccessor.RETURN_PREVIOUS);
-        assertEquals(name, oldValue, value);
+        assertEquals(oldValue, value, name);
     }
 
     /**
@@ -96,7 +94,7 @@ public final class SpecialCasesTest extends TestCase {
      */
     private void assertAppendResultEquals(final String name, final Boolean changed, final Object newValue) {
         final Object value = accessor.set(accessor.indexOf(name, true), box, newValue, PropertyAccessor.APPEND);
-        assertEquals(name, changed, value);
+        assertEquals(changed, value, name);
     }
 
     /**
@@ -137,11 +135,11 @@ public final class SpecialCasesTest extends TestCase {
         assertPreviousEquals("northBoundLatitude", new Latitude ( 40), new Latitude ( 35));
         assertPreviousEquals("extentTypeCode",     Boolean.TRUE,       Boolean.FALSE);
 
-        assertEquals("westBoundLongitude", -15, box.getWestBoundLongitude(), STRICT);
-        assertEquals("eastBoundLongitude",  25, box.getEastBoundLongitude(), STRICT);
-        assertEquals("southBoundLatitude",  -5, box.getSouthBoundLatitude(), STRICT);
-        assertEquals("northBoundLatitude",  35, box.getNorthBoundLatitude(), STRICT);
-        assertEquals("extentTypeCode", Boolean.FALSE, box.getInclusion());
+        assertEquals(-15, box.getWestBoundLongitude(), "westBoundLongitude");
+        assertEquals( 25, box.getEastBoundLongitude(), "eastBoundLongitude");
+        assertEquals( -5, box.getSouthBoundLatitude(), "southBoundLatitude");
+        assertEquals( 35, box.getNorthBoundLatitude(), "northBoundLatitude");
+        assertEquals(Boolean.FALSE, box.getInclusion());
     }
 
     /**
@@ -157,11 +155,11 @@ public final class SpecialCasesTest extends TestCase {
         assertPreviousEquals("southBoundLatitude", new Latitude (-10),  -7f );
         assertPreviousEquals("northBoundLatitude", new Latitude ( 40), (short) 33);
 
-        assertEquals("westBoundLongitude", -14, box.getWestBoundLongitude(), STRICT);
-        assertEquals("eastBoundLongitude",  26, box.getEastBoundLongitude(), STRICT);
-        assertEquals("southBoundLatitude",  -7, box.getSouthBoundLatitude(), STRICT);
-        assertEquals("northBoundLatitude",  33, box.getNorthBoundLatitude(), STRICT);
-        assertEquals("extentTypeCode", Boolean.TRUE, box.getInclusion());
+        assertEquals(-14, box.getWestBoundLongitude(), "westBoundLongitude");
+        assertEquals( 26, box.getEastBoundLongitude(), "eastBoundLongitude");
+        assertEquals( -7, box.getSouthBoundLatitude(), "southBoundLatitude");
+        assertEquals( 33, box.getNorthBoundLatitude(), "northBoundLatitude");
+        assertEquals(Boolean.TRUE, box.getInclusion());
     }
 
     /**
@@ -177,11 +175,11 @@ public final class SpecialCasesTest extends TestCase {
         assertAppendResultEquals("northBoundLatitude", null, 40.0);
         assertAppendResultEquals("extentTypeCode", false, Boolean.TRUE);
 
-        assertEquals("westBoundLongitude", -20, box.getWestBoundLongitude(), STRICT);
-        assertEquals("eastBoundLongitude",  30, box.getEastBoundLongitude(), STRICT);
-        assertEquals("southBoundLatitude", -10, box.getSouthBoundLatitude(), STRICT);
-        assertEquals("northBoundLatitude",  40, box.getNorthBoundLatitude(), STRICT);
-        assertEquals("extentTypeCode", Boolean.TRUE, box.getInclusion());
+        assertEquals(-20, box.getWestBoundLongitude(), "westBoundLongitude");
+        assertEquals( 30, box.getEastBoundLongitude(), "eastBoundLongitude");
+        assertEquals(-10, box.getSouthBoundLatitude(), "southBoundLatitude");
+        assertEquals( 40, box.getNorthBoundLatitude(), "northBoundLatitude");
+        assertEquals(Boolean.TRUE, box.getInclusion());
     }
 
     /**
@@ -191,10 +189,8 @@ public final class SpecialCasesTest extends TestCase {
     public void testPropertyInformation() {
         final ExtendedElementInformation info = accessor.information(
                 HardCodedCitations.ISO_19115, accessor.indexOf("westBoundLongitude", true));
-        final InternationalString domain = info.getDomainValue();
-        assertInstanceOf("Expected numerical information about range.", NumberRange.class, domain);
-        final NumberRange<?> range = (NumberRange) domain;
-        assertEquals(-180, range.getMinDouble(), STRICT);
-        assertEquals(+180, range.getMaxDouble(), STRICT);
+        final NumberRange<?> range = assertInstanceOf(NumberRange.class, info.getDomainValue());
+        assertEquals(-180, range.getMinDouble());
+        assertEquals(+180, range.getMaxDouble());
     }
 }

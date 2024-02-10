@@ -30,10 +30,11 @@ import org.apache.sis.io.wkt.Convention;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
@@ -78,14 +79,14 @@ public final class ImmutableIdentifierTest extends TestCase {
         final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
 
-        assertEquals     (CODE_KEY,            "This is a code",         identifier.getCode());
-        assertNull       (CODESPACE_KEY,                                 identifier.getCodeSpace());
-        assertTitleEquals(AUTHORITY_KEY,       "This is an authority",   identifier.getAuthority());
-        assertEquals     (VERSION_KEY,         "This is a version",      identifier.getVersion());
-        assertEquals     ("description",       "There is a description", identifier.getDescription().toString(Locale.ENGLISH));
-        assertEquals     ("description_fr",    "Voici une description",  identifier.getDescription().toString(Locale.FRENCH));
-        assertEquals     ("description_fr_CA", "Pareil",                 identifier.getDescription().toString(Locale.CANADA_FRENCH));
-        assertEquals     ("description_fr_BE", "Voici une description",  identifier.getDescription().toString(new Locale("fr", "BE")));
+        assertEquals     ("This is a code",         identifier.getCode());
+        assertNull       (                          identifier.getCodeSpace());
+        assertTitleEquals(AUTHORITY_KEY, "This is an authority", identifier.getAuthority());
+        assertEquals     ("This is a version",      identifier.getVersion());
+        assertEquals     ("There is a description", identifier.getDescription().toString(Locale.ENGLISH));
+        assertEquals     ("Voici une description",  identifier.getDescription().toString(Locale.FRENCH));
+        assertEquals     ("Pareil",                 identifier.getDescription().toString(Locale.CANADA_FRENCH));
+        assertEquals     ("Voici une description",  identifier.getDescription().toString(new Locale("fr", "BE")));
         // TODO: use Locale.of(…) with JDK19.
     }
 
@@ -100,13 +101,13 @@ public final class ImmutableIdentifierTest extends TestCase {
         final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
 
-        assertEquals     (CODE_KEY,            "This is a code",          identifier.getCode());
-        assertNull       (CODESPACE_KEY,                                  identifier.getCodeSpace());
-        assertTitleEquals(AUTHORITY_KEY,       "This is an authority",    identifier.getAuthority());
-        assertEquals     (VERSION_KEY,         "This is a version",       identifier.getVersion());
-        assertEquals     ("description",       "Overwritten description", identifier.getDescription().toString(Locale.ENGLISH));
-        assertEquals     ("description_fr",    "Voici une description",   identifier.getDescription().toString(Locale.FRENCH));
-        assertEquals     ("description_fr_CA", "Pareil",                  identifier.getDescription().toString(Locale.CANADA_FRENCH));
+        assertEquals     ("This is a code",          identifier.getCode());
+        assertNull       (                           identifier.getCodeSpace());
+        assertTitleEquals(AUTHORITY_KEY, "This is an authority", identifier.getAuthority());
+        assertEquals     ("This is a version",       identifier.getVersion());
+        assertEquals     ("Overwritten description", identifier.getDescription().toString(Locale.ENGLISH));
+        assertEquals     ("Voici une description",   identifier.getDescription().toString(Locale.FRENCH));
+        assertEquals     ("Pareil",                  identifier.getDescription().toString(Locale.CANADA_FRENCH));
     }
 
     /**
@@ -120,13 +121,13 @@ public final class ImmutableIdentifierTest extends TestCase {
         final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
 
-        assertEquals     (CODE_KEY,            "This is a code",         identifier.getCode());
-        assertNull       (CODESPACE_KEY,                                 identifier.getCodeSpace());
-        assertTitleEquals(AUTHORITY_KEY,       "Another authority",      identifier.getAuthority());
-        assertEquals     (VERSION_KEY,         "This is a version",      identifier.getVersion());
-        assertEquals     ("description",       "There is a description", identifier.getDescription().toString(Locale.ENGLISH));
-        assertEquals     ("description_fr",    "Voici une description",  identifier.getDescription().toString(Locale.FRENCH));
-        assertEquals     ("description_fr_CA", "Pareil",                 identifier.getDescription().toString(Locale.CANADA_FRENCH));
+        assertEquals     ("This is a code",         identifier.getCode());
+        assertNull       (                          identifier.getCodeSpace());
+        assertTitleEquals(AUTHORITY_KEY, "Another authority", identifier.getAuthority());
+        assertEquals     ("This is a version",      identifier.getVersion());
+        assertEquals     ("There is a description", identifier.getDescription().toString(Locale.ENGLISH));
+        assertEquals     ("Voici une description",  identifier.getDescription().toString(Locale.FRENCH));
+        assertEquals     ("Pareil",                 identifier.getDescription().toString(Locale.CANADA_FRENCH));
     }
 
     /**
@@ -142,13 +143,13 @@ public final class ImmutableIdentifierTest extends TestCase {
         final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
 
-        assertEquals(CODE_KEY,            "This is a code",         identifier.getCode());
-        assertSame  (AUTHORITY_KEY,       Citations.EPSG,           identifier.getAuthority());
-        assertEquals(CODESPACE_KEY,       Constants.EPSG,           identifier.getCodeSpace()); // Inferred from authority.
-        assertEquals(VERSION_KEY,         "This is a version",      identifier.getVersion());
-        assertEquals("description",       "There is a description", identifier.getDescription().toString(Locale.ENGLISH));
-        assertEquals("description_fr",    "Voici une description",  identifier.getDescription().toString(Locale.FRENCH));
-        assertEquals("description_fr_CA", "Pareil",                 identifier.getDescription().toString(Locale.CANADA_FRENCH));
+        assertEquals("This is a code",         identifier.getCode());
+        assertSame  (Citations.EPSG,           identifier.getAuthority());
+        assertEquals(Constants.EPSG,           identifier.getCodeSpace());    // Inferred from authority.
+        assertEquals("This is a version",      identifier.getVersion());
+        assertEquals("There is a description", identifier.getDescription().toString(Locale.ENGLISH));
+        assertEquals("Voici une description",  identifier.getDescription().toString(Locale.FRENCH));
+        assertEquals("Pareil",                 identifier.getDescription().toString(Locale.CANADA_FRENCH));
     }
 
     /**
@@ -159,14 +160,8 @@ public final class ImmutableIdentifierTest extends TestCase {
     public void testConstructorWithWrongType() {
         final Map<String,Object> properties = properties();
         assertNotNull(properties.put(AUTHORITY_KEY, Locale.CANADA));
-        try {
-            final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
-            fail(identifier.toString());
-        } catch (IllegalArgumentException e) {
-            // This is the expected exception
-            final String message = e.getMessage();
-            assertTrue(message, message.contains(AUTHORITY_KEY));
-        }
+        var e = assertThrows(IllegalArgumentException.class, () -> new ImmutableIdentifier(properties));
+        assertMessageContains(e, AUTHORITY_KEY);
     }
 
     /**

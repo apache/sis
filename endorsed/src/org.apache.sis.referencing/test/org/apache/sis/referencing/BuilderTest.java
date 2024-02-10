@@ -31,7 +31,8 @@ import org.apache.sis.util.iso.DefaultNameFactory;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -58,13 +59,8 @@ public final class BuilderTest extends TestCase {
     public void testVerifyParameterizedType() {
         final class Invalid extends Builder<BuilderMock> {
         }
-        try {
-            new Invalid();
-            fail("Creation of Invalid builder shall not be allowed.");
-        } catch (AssertionError e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains(BuilderMock.class.getName()));
-        }
+        var exception = assertThrows(AssertionError.class, () -> new Invalid());
+        assertMessageContains(exception, BuilderMock.class.getName());
     }
 
     /**
@@ -72,7 +68,7 @@ public final class BuilderTest extends TestCase {
      */
     @Test
     public void testSetCodeSpace() {
-        final BuilderMock builder = new BuilderMock();
+        final var builder = new BuilderMock();
         builder.setCodeSpace(Citations.EPSG, "EPSG");
         builder.addName("Mercator (variant A)");
         /*
@@ -81,13 +77,8 @@ public final class BuilderTest extends TestCase {
          */
         final SimpleCitation IOGP = new SimpleCitation("IOGP");
         builder.setCodeSpace(Citations.EPSG, "EPSG");
-        try {
-            builder.setCodeSpace(IOGP, "EPSG");
-            fail("Setting a different codespace shall not be allowed.");
-        } catch (IllegalStateException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains(Identifier.AUTHORITY_KEY));
-        }
+        var exception = assertThrows(IllegalStateException.class, () -> builder.setCodeSpace(IOGP, "EPSG"));
+        assertMessageContains(exception, Identifier.AUTHORITY_KEY);
         /*
          * The failed attempt to set a new codespace shall not have modified builder state.
          */
@@ -117,9 +108,9 @@ public final class BuilderTest extends TestCase {
         final LocalName alias1 = factory.createLocalName(null, "Mercator (1SP)");
         final LocalName alias2 = factory.createLocalName(null, "Mercator_1SP");
         final LocalName alias3 = factory.createLocalName(null, "CT_Mercator");
-        assertTrue("That name should not have a scope.", alias1.scope().isGlobal());
-        assertTrue("That name should not have a scope.", alias2.scope().isGlobal());
-        assertTrue("That name should not have a scope.", alias3.scope().isGlobal());
+        assertTrue(alias1.scope().isGlobal());
+        assertTrue(alias2.scope().isGlobal());
+        assertTrue(alias3.scope().isGlobal());
         assertEquals("Mercator (1SP)", alias1.toString());
         assertEquals("Mercator_1SP",   alias2.toString());
         assertEquals("CT_Mercator",    alias3.toString());
@@ -144,7 +135,7 @@ public final class BuilderTest extends TestCase {
      * @return the builder with Mercator names and/or identifiers.
      */
     private static BuilderMock createMercator(final boolean withNames, final boolean withIdentifiers) {
-        final BuilderMock builder = new BuilderMock();
+        final var builder = new BuilderMock();
         assertSame(builder, builder.setCodeSpace(Citations.EPSG, "EPSG"));
         if (withNames) {
             assertSame(builder, builder.addName(                   "Mercator (variant A)"));    // EPSG version 7.6 and later.
@@ -173,9 +164,9 @@ public final class BuilderTest extends TestCase {
         final GenericName alias1 = factory.createLocalName(scope(factory, "EPSG"), "Mercator (1SP)");
         final GenericName alias2 = new NamedIdentifier(Citations.OGC,     "Mercator_1SP");
         final GenericName alias3 = new NamedIdentifier(Citations.GEOTIFF, "CT_Mercator");
-        assertTrue ("That name should not have a scope.", alias3.scope().isGlobal());
-        assertTrue ("That name should not have a scope.", alias2.scope().isGlobal());
-        assertFalse("That name should be in EPSG scope.", alias1.scope().isGlobal());
+        assertTrue (alias3.scope().isGlobal());
+        assertTrue (alias2.scope().isGlobal());
+        assertFalse(alias1.scope().isGlobal());
         assertEquals("EPSG",                 alias1.scope().name().toString());
         assertEquals("Mercator (1SP)",       alias1.toString());
         assertEquals("OGC:Mercator_1SP",     alias2.toString());
@@ -200,8 +191,8 @@ public final class BuilderTest extends TestCase {
     @Test
     public void testAddIdentifiers() {
         // Expected values to be used later in the test.
-        final Identifier id1 = new ImmutableIdentifier(Citations.EPSG,    "EPSG", "9804");
-        final Identifier id2 = new ImmutableIdentifier(Citations.GEOTIFF, "GeoTIFF", "7");
+        final var id1 = new ImmutableIdentifier(Citations.EPSG,    "EPSG", "9804");
+        final var id2 = new ImmutableIdentifier(Citations.GEOTIFF, "GeoTIFF", "7");
         assertEquals("EPSG:9804", IdentifiedObjects.toString(id1));
         assertEquals("GeoTIFF:7", IdentifiedObjects.toString(id2));
 
@@ -217,30 +208,30 @@ public final class BuilderTest extends TestCase {
     @DependsOnMethod({"testAddNameWithScope", "testAddIdentifiers"})
     public void testAddNamesAndIdentifiers() {
         final BuilderMock builder = createMercator(true, true);
-        final AbstractIdentifiedObject object = new AbstractIdentifiedObject(builder.properties);
+        final var object = new AbstractIdentifiedObject(builder.properties);
         builder.onCreate(true);
         for (final Map.Entry<String,?> entry : builder.properties.entrySet()) {
             final Object value = entry.getValue();
             switch (entry.getKey()) {
                 case Identifier.AUTHORITY_KEY: {
-                    assertSame("Authority and codespace shall be unchanged.", Citations.EPSG, value);
+                    assertSame(Citations.EPSG, value);      // Authority and codespace shall be unchanged.
                     break;
                 }
                 case Identifier.CODESPACE_KEY: {
-                    assertEquals("Authority and codespace shall be unchanged.", "EPSG", value);
+                    assertEquals("EPSG", value);            // Authority and codespace shall be unchanged.
                     break;
                 }
                 default: {
-                    assertNull("Should not contain any non-null value except the authority.", value);
+                    assertNull(value);      // Should not contain any non-null value except the authority.
                     break;
                 }
             }
         }
         assertSame(builder, builder.addNamesAndIdentifiers(object));
         builder.onCreate(false);
-        assertSame       ("name",        object.getName(),                  builder.getName());
-        assertArrayEquals("aliases",     object.getAlias().toArray(),       builder.getAliases());
-        assertArrayEquals("identifiers", object.getIdentifiers().toArray(), builder.getIdentifiers());
+        assertSame       (object.getName(),                  builder.getName());
+        assertArrayEquals(object.getAlias().toArray(),       builder.getAliases());
+        assertArrayEquals(object.getIdentifiers().toArray(), builder.getIdentifiers());
     }
 
     /**
@@ -295,22 +286,15 @@ public final class BuilderTest extends TestCase {
         assertNull(properties.put(AbstractIdentifiedObject.ALIAS_KEY,       "An alias"));
         assertNull(properties.put(AbstractIdentifiedObject.NAME_KEY,        "Dummy object"));
         assertNull(properties.put(AbstractIdentifiedObject.REMARKS_KEY,     "Some remarks"));
-        final BuilderMock builder = new BuilderMock(new AbstractIdentifiedObject(properties));
+        final var builder = new BuilderMock(new AbstractIdentifiedObject(properties));
 
-        assertEquals("Expected only name, remarks and deprecated status.", 3, builder.properties.size());
+        assertEquals(3, builder.properties.size());     // Expect only name, remarks and deprecated status.
         builder.onCreate(false);
-        assertEquals("Expected name, aliases, identifiers and remarks.", 5, builder.properties.size());
+        assertEquals(5, builder.properties.size());     // Expect name, aliases, identifiers and remarks.
 
-        assertEquals(AbstractIdentifiedObject.NAME_KEY, "Dummy object",
-                builder.properties.get(AbstractIdentifiedObject.NAME_KEY).toString());
-
-        assertEquals(AbstractIdentifiedObject.REMARKS_KEY, "Some remarks",
-                builder.properties.get(AbstractIdentifiedObject.REMARKS_KEY).toString());
-
-        assertEquals(AbstractIdentifiedObject.ALIAS_KEY, "An alias",
-                ((Object[]) builder.properties.get(AbstractIdentifiedObject.ALIAS_KEY))[0].toString());
-
-        assertSame(AbstractIdentifiedObject.IDENTIFIERS_KEY, id,
-                ((Object[]) builder.properties.get(AbstractIdentifiedObject.IDENTIFIERS_KEY))[0]);
+        assertEquals("Dummy object", builder.properties.get(AbstractIdentifiedObject.NAME_KEY).toString());
+        assertEquals("Some remarks", builder.properties.get(AbstractIdentifiedObject.REMARKS_KEY).toString());
+        assertEquals("An alias", ((Object[]) builder.properties.get(AbstractIdentifiedObject.ALIAS_KEY))[0].toString());
+        assertSame(id, ((Object[]) builder.properties.get(AbstractIdentifiedObject.IDENTIFIERS_KEY))[0]);
     }
 }

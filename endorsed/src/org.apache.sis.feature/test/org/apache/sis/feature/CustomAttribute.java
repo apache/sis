@@ -76,9 +76,9 @@ final class CustomAttribute<V> extends AbstractAttribute<V> {
     @Override
     @SuppressWarnings("deprecation")
     public DataQuality quality() {
-        final DefaultDataQuality        quality = (DefaultDataQuality) super.quality();
-        final DefaultDomainConsistency  report  = new DefaultDomainConsistency();
-        final DefaultQuantitativeResult result  = new DefaultQuantitativeResult();
+        final var quality = (DefaultDataQuality) super.quality();
+        final var report  = new DefaultDomainConsistency();
+        final var result  = new DefaultQuantitativeResult();
         result.setErrorStatistic(new SimpleInternationalString(ADDITIONAL_QUALITY_INFO));
         report.setMeasureIdentification(NamedIdentifier.castOrCopy(getName()));
         report .setResults(Set.of(result));

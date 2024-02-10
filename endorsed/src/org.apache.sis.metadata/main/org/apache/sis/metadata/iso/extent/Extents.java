@@ -116,10 +116,9 @@ public final class Extents extends Static {
      */
     public static final Extent WORLD;
     static {
-        final DefaultGeographicBoundingBox box = new DefaultGeographicBoundingBox(-180, 180, -90, 90);
+        final var box = new DefaultGeographicBoundingBox(-180, 180, -90, 90);
         box.transitionTo(DefaultGeographicBoundingBox.State.FINAL);
-        final DefaultExtent world = new DefaultExtent(
-                Vocabulary.formatInternational(Vocabulary.Keys.World), box, null, null);
+        var world = new DefaultExtent(Vocabulary.formatInternational(Vocabulary.Keys.World), box, null, null);
         world.transitionTo(DefaultExtent.State.FINAL);
         WORLD = world;
     }
@@ -345,7 +344,7 @@ public final class Extents extends Static {
          */
         if (bounds == null) {
             for (final Envelope envelope : fallbacks) {
-                final DefaultGeographicBoundingBox item = new DefaultGeographicBoundingBox();
+                final var item = new DefaultGeographicBoundingBox();
                 item.setBounds(envelope);
                 if (bounds == null) {
                     bounds = modifiable = item;

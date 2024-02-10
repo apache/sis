@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -165,11 +165,11 @@ public final class AbstractFeatureTest extends FeatureTestCase {
     boolean assertSameProperty(final String name, final Property expected, final boolean modified) {
         final Property actual = feature.getProperty(name);
         if ((expected instanceof PropertyView) == (actual instanceof PropertyView)) {
-            assertEquals(name, expected, actual);
+            assertEquals(expected, actual, name);
         }
-        assertSame("name", expected.getName(), actual.getName());
+        assertSame(expected.getName(), actual.getName(), "name");
         if (!modified) {
-            assertSame("value", expected.getValue(), actual.getValue());
+            assertSame(expected.getValue(), actual.getValue(), "value");
         }
         return actual == expected;
     }

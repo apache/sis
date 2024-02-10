@@ -29,7 +29,7 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
@@ -233,20 +233,20 @@ public final class NormalizerTest extends TestCase {
      */
     @Test
     public void testNormalize() {
-        final DefaultEllipsoidalCS cs = new DefaultEllipsoidalCS(
+        final var cs = new DefaultEllipsoidalCS(
                 Map.of(DefaultEllipsoidalCS.NAME_KEY, "lat lon height"),
                 HardCodedAxes.GEODETIC_LATITUDE,
                 HardCodedAxes.GEODETIC_LONGITUDE,
                 HardCodedAxes.ELLIPSOIDAL_HEIGHT);
         final AbstractCS normalized = Normalizer.forConvention(cs, AxesConvention.RIGHT_HANDED);
-        assertEquals("name", "Ellipsoidal CS: East (°), North (°), Up (m).", String.valueOf(normalized.getName()));
+        assertEquals("Ellipsoidal CS: East (°), North (°), Up (m).", String.valueOf(normalized.getName()));
         /*
          * Longitude and latitude axes shall be interchanged. Since they have no EPSG code, there
          * is no need to create new CoordinateSystemAxis instances; the same ones can be reused.
          */
-        assertSame("Latitude",  cs.getAxis(0), normalized.getAxis(1));
-        assertSame("Longitude", cs.getAxis(1), normalized.getAxis(0));
-        assertSame("Height",    cs.getAxis(2), normalized.getAxis(2));
+        assertSame(cs.getAxis(0), normalized.getAxis(1), "Latitude");
+        assertSame(cs.getAxis(1), normalized.getAxis(0), "Longitude");
+        assertSame(cs.getAxis(2), normalized.getAxis(2), "Height");
     }
 
     /**
@@ -256,13 +256,13 @@ public final class NormalizerTest extends TestCase {
      */
     @Test
     public void testIdentifierRemoval() {
-        final DefaultEllipsoidalCS cs = new DefaultEllipsoidalCS(           // EPSG::6423
+        final var cs = new DefaultEllipsoidalCS(          // EPSG::6423
                 Map.of(DefaultEllipsoidalCS.NAME_KEY, "lat lon height"),
                 addIdentifier(HardCodedAxes.GEODETIC_LATITUDE,  (short) 108),
                 addIdentifier(HardCodedAxes.GEODETIC_LONGITUDE, (short) 109),
                 addIdentifier(HardCodedAxes.ELLIPSOIDAL_HEIGHT, (short) 110));
         final AbstractCS normalized = Normalizer.forConvention(cs, AxesConvention.RIGHT_HANDED);
-        assertEquals("name", "Ellipsoidal CS: East (°), North (°), Up (m).", String.valueOf(normalized.getName()));
+        assertEquals("Ellipsoidal CS: East (°), North (°), Up (m).", String.valueOf(normalized.getName()));
         /*
          * Longitude and latitude axes shall be interchanged. In addition of that, since the EPSG codes
          * need to be removed, new CoordinateSystemAxis instances shall have been created except for
@@ -270,13 +270,13 @@ public final class NormalizerTest extends TestCase {
          */
         assertIdentifierRemoved(cs.getAxis(1), normalized.getAxis(0));
         assertIdentifierRemoved(cs.getAxis(0), normalized.getAxis(1));
-        assertSame("Height",    cs.getAxis(2), normalized.getAxis(2));
+        assertSame(cs.getAxis(2), normalized.getAxis(2), "Height");
         /*
          * The HardCodedAxes constants have no EPSG identifiers, so we can compare the normalized axes
          * with those constants for equality.
          */
-        assertEquals("Longitude", HardCodedAxes.GEODETIC_LONGITUDE, normalized.getAxis(0));
-        assertEquals("Latitude",  HardCodedAxes.GEODETIC_LATITUDE,  normalized.getAxis(1));
+        assertEquals(HardCodedAxes.GEODETIC_LONGITUDE, normalized.getAxis(0), "Longitude");
+        assertEquals(HardCodedAxes.GEODETIC_LATITUDE,  normalized.getAxis(1), "Latitude");
     }
 
     /**
@@ -284,7 +284,7 @@ public final class NormalizerTest extends TestCase {
      * This is a helper method for {@link #testIdentifierRemoval()}.
      */
     private static CoordinateSystemAxis addIdentifier(final CoordinateSystemAxis axis, final short epsg) {
-        final Map<String,Object> properties = new HashMap<>(8);
+        final var properties = new HashMap<String,Object>(8);
         properties.putAll(IdentifiedObjects.getProperties(axis));
         properties.put(DefaultCoordinateSystemAxis.IDENTIFIERS_KEY,   new ImmutableIdentifier(null, "EPSG", String.valueOf(epsg)));
         properties.put(DefaultCoordinateSystemAxis.MINIMUM_VALUE_KEY, axis.getMinimumValue());
@@ -303,8 +303,8 @@ public final class NormalizerTest extends TestCase {
     private static void assertIdentifierRemoved(final CoordinateSystemAxis original, final CoordinateSystemAxis normalized) {
         assertNotSame  (original, normalized);
         assertNotEquals(original, normalized);
-        assertFalse("identifiers.isEmpty()",   original.getIdentifiers().isEmpty());
-        assertTrue ("identifiers.isEmpty()", normalized.getIdentifiers().isEmpty());
+        assertFalse(original.getIdentifiers().isEmpty());
+        assertTrue (normalized.getIdentifiers().isEmpty());
         assertEqualsIgnoreMetadata(original, normalized);
     }
 }

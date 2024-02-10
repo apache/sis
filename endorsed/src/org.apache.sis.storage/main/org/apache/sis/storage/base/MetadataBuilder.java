@@ -925,7 +925,7 @@ public class MetadataBuilder {
      * @param  code       the identifier code (mandatory).
      */
     private Identifier sharedIdentifier(final CharSequence authority, final String code) {
-        final DefaultIdentifier id = new DefaultIdentifier(sharedCitation(trim(authority)), code);
+        final var id = new DefaultIdentifier(sharedCitation(trim(authority)), code);
         return (Identifier) sharedValues.getOrDefault(id, id);
     }
 
@@ -1102,7 +1102,7 @@ public class MetadataBuilder {
      */
     public final void addCitationDate(final Date date, final DateType type, final Scope scope) {
         if (date != null) {
-            final DefaultCitationDate cd = new DefaultCitationDate(date, type);
+            final var cd = new DefaultCitationDate(date, type);
             if (scope != Scope.RESOURCE) addEarliest(metadata().getDateInfo(), cd, type);
             if (scope != Scope.METADATA) addEarliest(citation().getDates(),    cd, type);
         }
@@ -1731,7 +1731,7 @@ public class MetadataBuilder {
      */
     public final void addExtent(final double[] coordinates, int index) {
         if (coordinates != null) {
-            final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox(
+            final var bbox = new DefaultGeographicBoundingBox(
                         coordinates[index], coordinates[++index], coordinates[++index], coordinates[++index]);
             if (!bbox.isEmpty()) {
                 addIfNotPresent(extent().getGeographicElements(), bbox);
@@ -1776,7 +1776,7 @@ public class MetadataBuilder {
      */
     public final void addTemporalExtent(final Date startTime, final Date endTime) {
         if (startTime != null || endTime != null) {
-            final DefaultTemporalExtent t = new DefaultTemporalExtent();
+            final var t = new DefaultTemporalExtent();
             t.setBounds(startTime, endTime);
             addIfNotPresent(extent().getTemporalElements(), t);
         }
@@ -1826,7 +1826,7 @@ public class MetadataBuilder {
      */
     public final void addFeatureType(final GenericName name, final long occurrences) {
         if (name != null && occurrences != 0) {
-            final DefaultFeatureTypeInfo info = new DefaultFeatureTypeInfo(name);
+            final var info = new DefaultFeatureTypeInfo(name);
             if (occurrences > 0) {
                 info.setFeatureInstanceCount(shared((int) Math.min(occurrences, Integer.MAX_VALUE)));
             }
@@ -1932,7 +1932,7 @@ public class MetadataBuilder {
      */
     public final void addResolution(final double distance) {
         if (!Double.isNaN(distance)) {
-            final DefaultResolution r = new DefaultResolution();
+            final var r = new DefaultResolution();
             r.setDistance(shared(distance));
             addIfNotPresent(identification().getSpatialResolutions(), r);
         }
@@ -2072,7 +2072,7 @@ public class MetadataBuilder {
             } else {
                 return;
             }
-            final DefaultGCP gcp = new DefaultGCP();
+            final var gcp = new DefaultGCP();
             gcp.setGeographicCoordinates(geographicCoordinates);
             if (accuracyReport != null) {
                 addIfNotPresent(gcp.getAccuracyReports(), accuracyReport);
@@ -2325,7 +2325,7 @@ public class MetadataBuilder {
         final InternationalString i18n = trim(name);
         final InternationalString def  = trim(definition);
         if (i18n != null && def != null) {
-            final DefaultRangeElementDescription element = new DefaultRangeElementDescription();
+            final var element = new DefaultRangeElementDescription();
             element.setName(i18n);
             element.setDefinition(def);
             addIfNotPresent(coverageDescription().getRangeElementDescriptions(), element);
@@ -2584,7 +2584,7 @@ public class MetadataBuilder {
     public final void addInstrument(final CharSequence authority, String identifier) {
         identifier = Strings.trimOrNull(identifier);
         if (identifier != null) {
-            final DefaultInstrument instrument = new DefaultInstrument();
+            final var instrument = new DefaultInstrument();
             instrument.setIdentifier(sharedIdentifier(authority, identifier));
             addIfNotPresent(platform().getInstruments(), instrument);
         }
@@ -2604,10 +2604,10 @@ public class MetadataBuilder {
      */
     public final void addAcquisitionTime(final Date time) {
         if (time != null) {
-            final DefaultEvent event = new DefaultEvent();
+            final var event = new DefaultEvent();
             event.setContext(Context.ACQUISITION);
             event.setTime(time);
-            final DefaultOperation op = new DefaultOperation();
+            final var op = new DefaultOperation();
             op.setSignificantEvents(Collections.singleton(event));
             op.setType(OperationType.REAL);
             op.setStatus(Progress.COMPLETED);
@@ -2656,7 +2656,7 @@ public class MetadataBuilder {
     public final void addAcquisitionOperation(final CharSequence program, String identifier) {
         identifier = Strings.trimOrNull(identifier);
         if (identifier != null) {
-            final DefaultOperation r = new DefaultOperation();
+            final var r = new DefaultOperation();
             r.setIdentifier(sharedIdentifier(program, identifier));
             addIfNotPresent(acquisition().getOperations(), r);
         }
@@ -2676,7 +2676,7 @@ public class MetadataBuilder {
     public final void addAcquisitionRequirement(final CharSequence authority, String identifier) {
         identifier = Strings.trimOrNull(identifier);
         if (identifier != null) {
-            final DefaultRequirement r = new DefaultRequirement();
+            final var r = new DefaultRequirement();
             r.setIdentifier(sharedIdentifier(authority, identifier));
             addIfNotPresent(acquisition().getAcquisitionRequirements(), r);
         }
@@ -2756,11 +2756,11 @@ public class MetadataBuilder {
     public final void addSource(final CharSequence description, final ScopeCode level, final CharSequence feature) {
         final InternationalString i18n = trim(description);
         if (i18n != null) {
-            final DefaultSource source = new DefaultSource(description);
+            final var source = new DefaultSource(description);
             if (level != null || feature != null) {
-                DefaultScope scope = new DefaultScope(level);
+                final var scope = new DefaultScope(level);
                 if (feature != null) {
-                    final DefaultScopeDescription sd = new DefaultScopeDescription();
+                    final var sd = new DefaultScopeDescription();
                     sd.getFeatures().add(feature);
                     scope.getLevelDescription().add(sd);
                 }
@@ -2795,8 +2795,8 @@ public class MetadataBuilder {
      */
     public final void addSource(final Metadata metadata, final ScopeCode level, final CharSequence... features) {
         if (metadata != null) {
-            final DefaultSource source = new DefaultSource();
-            final DefaultScope scope = new DefaultScope(level);
+            final var source = new DefaultSource();
+            final var scope  = new DefaultScope(level);
             source.setSourceReferenceSystem(CollectionsExt.first(metadata.getReferenceSystemInfo()));
             for (final Identification id : metadata.getIdentificationInfo()) {
                 source.setSourceCitation(id.getCitation());
@@ -2807,7 +2807,7 @@ public class MetadataBuilder {
                      * Note: the same ScopeDescription may be shared by many Source instances
                      * in the common case where many sources contain features of the same type.
                      */
-                    final DefaultScopeDescription sd = new DefaultScopeDescription();
+                    final var sd = new DefaultScopeDescription();
                     sd.setLevelDescription(level, new LinkedHashSet<>(Arrays.asList(features)));
                     scope.getLevelDescription().add(shared(DefaultScopeDescription.class, sd));
                 }
@@ -3022,7 +3022,7 @@ public class MetadataBuilder {
      */
     public final void addCompleteMetadata(final URI link) {
         if (link != null) {
-            final DefaultOnlineResource ln = new DefaultOnlineResource(link);
+            final var ln = new DefaultOnlineResource(link);
             ln.setFunction(OnLineFunction.COMPLETE_METADATA);
             ln.setProtocol(link.getScheme());
             addIfNotPresent(metadata().getMetadataLinkages(), ln);
