@@ -25,8 +25,8 @@ import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.iso.Types;
 
 
 /**
