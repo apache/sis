@@ -46,7 +46,7 @@ import org.apache.sis.style.se1.Symbology;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 
 /**

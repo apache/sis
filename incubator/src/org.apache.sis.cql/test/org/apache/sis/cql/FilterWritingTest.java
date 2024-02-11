@@ -29,8 +29,8 @@ import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
-import org.junit.Test;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -175,7 +175,7 @@ public final class FilterWritingTest extends CQLTestCase {
         assertEquals("att <= 15", cql);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testPropertyIsLike() throws CQLException {
         final Filter filter = FF.like(FF.property("att"),"%hello");
@@ -280,7 +280,7 @@ public final class FilterWritingTest extends CQLTestCase {
         assertEquals("WITHIN(att, POLYGON ((10 20, 30 40, 50 60, 10 20)))", cql);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testAfter() throws CQLException, ParseException {
         final Filter filter = FF.after(FF.property("att"), FF.literal(Instant.parse("2012-03-21T05:42:36Z")));
@@ -289,7 +289,7 @@ public final class FilterWritingTest extends CQLTestCase {
         assertEquals("att AFTER 2012-03-21T05:42:36Z", cql);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testAnyInteracts() throws CQLException, ParseException {
         final Filter filter = FF.anyInteracts(FF.property("att"), FF.literal(Instant.parse("2012-03-21T05:42:36Z")));
@@ -298,7 +298,7 @@ public final class FilterWritingTest extends CQLTestCase {
         assertEquals("att ANYINTERACTS 2012-03-21T05:42:36Z", cql);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testBefore() throws CQLException, ParseException {
         final Filter filter = FF.before(FF.property("att"), FF.literal(Instant.parse("2012-03-21T05:42:36Z")));
@@ -307,7 +307,7 @@ public final class FilterWritingTest extends CQLTestCase {
         assertEquals("att BEFORE 2012-03-21T05:42:36Z", cql);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testBegins() throws CQLException, ParseException {
         final Filter filter = FF.begins(FF.property("att"), FF.literal(Instant.parse("2012-03-21T05:42:36Z")));
@@ -316,7 +316,7 @@ public final class FilterWritingTest extends CQLTestCase {
         assertEquals("att BEGINS 2012-03-21T05:42:36Z", cql);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testBegunBy() throws CQLException, ParseException {
         final Filter filter = FF.begunBy(FF.property("att"), FF.literal(Instant.parse("2012-03-21T05:42:36Z")));
@@ -325,7 +325,7 @@ public final class FilterWritingTest extends CQLTestCase {
         assertEquals("att BEGUNBY 2012-03-21T05:42:36Z", cql);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testDuring() throws CQLException, ParseException {
         final Filter filter = FF.during(FF.property("att"), FF.literal(Instant.parse("2012-03-21T05:42:36Z")));
@@ -334,7 +334,7 @@ public final class FilterWritingTest extends CQLTestCase {
         assertEquals("att DURING 2012-03-21T05:42:36Z", cql);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testEndedBy() throws CQLException, ParseException {
         final Filter filter = FF.endedBy(FF.property("att"), FF.literal(Instant.parse("2012-03-21T05:42:36Z")));
@@ -343,7 +343,7 @@ public final class FilterWritingTest extends CQLTestCase {
         assertEquals("att ENDEDBY 2012-03-21T05:42:36Z", cql);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testEnds() throws CQLException, ParseException {
         final Filter filter = FF.ends(FF.property("att"), FF.literal(Instant.parse("2012-03-21T05:42:36Z")));
@@ -352,7 +352,7 @@ public final class FilterWritingTest extends CQLTestCase {
         assertEquals("att ENDS 2012-03-21T05:42:36Z", cql);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testMeets() throws CQLException, ParseException {
         final Filter filter = FF.meets(FF.property("att"), FF.literal(Instant.parse("2012-03-21T05:42:36Z")));
@@ -361,7 +361,7 @@ public final class FilterWritingTest extends CQLTestCase {
         assertEquals("att MEETS 2012-03-21T05:42:36Z", cql);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testMetBy() throws CQLException, ParseException {
         final Filter filter = FF.metBy(FF.property("att"), FF.literal(Instant.parse("2012-03-21T05:42:36Z")));
@@ -370,7 +370,7 @@ public final class FilterWritingTest extends CQLTestCase {
         assertEquals("att METBY 2012-03-21T05:42:36Z", cql);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testOverlappedBy() throws CQLException, ParseException {
         final Filter filter = FF.overlappedBy(FF.property("att"), FF.literal(Instant.parse("2012-03-21T05:42:36Z")));
@@ -379,7 +379,7 @@ public final class FilterWritingTest extends CQLTestCase {
         assertEquals("att OVERLAPPEDBY 2012-03-21T05:42:36Z", cql);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testTcontains() throws CQLException, ParseException {
         final Filter filter = FF.tcontains(FF.property("att"), FF.literal(Instant.parse("2012-03-21T05:42:36Z")));
@@ -388,7 +388,7 @@ public final class FilterWritingTest extends CQLTestCase {
         assertEquals("att TCONTAINS 2012-03-21T05:42:36Z", cql);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testTequals() throws CQLException, ParseException {
         final Filter filter = FF.tequals(FF.property("att"), FF.literal(Instant.parse("2012-03-21T05:42:36Z")));
@@ -397,7 +397,7 @@ public final class FilterWritingTest extends CQLTestCase {
         assertEquals("att TEQUALS 2012-03-21T05:42:36Z", cql);
     }
 
-    @Ignore
+    @Disabled
     @Test
     public void testToverlaps() throws CQLException, ParseException {
         final Filter filter = FF.toverlaps(FF.property("att"), FF.literal(Instant.parse("2012-03-21T05:42:36Z")));

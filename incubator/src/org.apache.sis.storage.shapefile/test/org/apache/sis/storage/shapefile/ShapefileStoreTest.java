@@ -44,8 +44,7 @@ import org.apache.sis.feature.internal.AttributeConvention;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.AttributeType;

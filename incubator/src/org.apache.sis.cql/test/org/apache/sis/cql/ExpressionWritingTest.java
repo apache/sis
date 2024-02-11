@@ -27,8 +27,8 @@ import org.opengis.filter.Expression;
 import org.opengis.feature.Feature;
 
 // Test dependencies
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -93,7 +93,7 @@ public final class ExpressionWritingTest extends CQLTestCase {
     }
 
     @Test
-    @Ignore("Unsupported temporal field: Year")
+    @Disabled("Unsupported temporal field: Year")
     public void testDate() throws CQLException, ParseException{
         final Expression<Feature,?> exp = FF.literal(Instant.parse("2012-03-21T05:42:36Z"));
         final String cql = CQL.write(exp);
@@ -151,7 +151,7 @@ public final class ExpressionWritingTest extends CQLTestCase {
     }
 
     @Test
-    @Ignore("Function `max` not yet supported.")
+    @Disabled("Function `max` not yet supported.")
     public void testFunction1() throws CQLException {
         final Expression<Feature,?> exp = FF.function("max", FF.property("att"), FF.literal(15));
         final String cql = CQL.write(exp);
@@ -160,7 +160,7 @@ public final class ExpressionWritingTest extends CQLTestCase {
     }
 
     @Test
-    @Ignore("Function `min` not yet supported.")
+    @Disabled("Function `min` not yet supported.")
     public void testFunction2() throws CQLException {
         final Expression<Feature,?> exp = FF.function("min",FF.property("att"), FF.function("cos", FF.literal(3.14d)));
         final String cql = CQL.write(exp);
@@ -196,7 +196,7 @@ public final class ExpressionWritingTest extends CQLTestCase {
     }
 
     @Test
-    @Ignore("Function `max` not yet supported.")
+    @Disabled("Function `max` not yet supported.")
     public void testCombine3() throws CQLException {
         final Expression<Feature,?> exp =
                 FF.add(

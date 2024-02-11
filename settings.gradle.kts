@@ -75,6 +75,7 @@ dependencyResolutionManagement {
             library("junit4",        "junit",                  "junit")                  .version {strictly("4.13.2")}
             library("junit5",        "org.junit.jupiter",      "junit-jupiter-api")      .version {strictly("5.10.1")}
             library("junit",         "org.junit.vintage",      "junit-vintage-engine")   .version {strictly("5.10.1")}
+            library("jupiter",       "org.junit.jupiter",      "junit-jupiter-engine")   .version {strictly("5.10.1")}
             library("junitLauncher", "org.junit.platform",     "junit-platform-launcher").version {strictly("1.10.1")}
             library("jama",          "gov.nist.math",          "jama")                   .version {strictly("1.0.3")}
             library("geographiclib", "net.sf.geographiclib",   "GeographicLib-Java")     .version {strictly("2.0")}

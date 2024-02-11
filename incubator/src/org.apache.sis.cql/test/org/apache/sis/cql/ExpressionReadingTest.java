@@ -38,8 +38,8 @@ import org.opengis.filter.Literal;
 import org.opengis.filter.ValueReference;
 
 // Test dependencies
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -201,7 +201,7 @@ public final class ExpressionReadingTest extends CQLTestCase {
     }
 
     @Test
-    @Ignore("String cannot be cast to Number.")
+    @Disabled("String cannot be cast to Number.")
     public void testAddition2() throws CQLException {
         final String cql = "'test' + '23'";
         final Object obj = CQL.parseExpression(cql);
@@ -239,7 +239,7 @@ public final class ExpressionReadingTest extends CQLTestCase {
     }
 
     @Test
-    @Ignore("Function `max` not yet supported.")
+    @Disabled("Function `max` not yet supported.")
     public void testFunction1() throws CQLException {
         final String cql = "max(\"att\",15)";
         final Object obj = CQL.parseExpression(cql);
@@ -249,7 +249,7 @@ public final class ExpressionReadingTest extends CQLTestCase {
     }
 
     @Test
-    @Ignore("Function `min` not yet supported.")
+    @Disabled("Function `min` not yet supported.")
     public void testFunction2() throws CQLException {
         final String cql = "min(\"att\",cos(3.14))";
         final Object obj = CQL.parseExpression(cql);
@@ -557,7 +557,7 @@ public final class ExpressionReadingTest extends CQLTestCase {
     }
 
     @Test
-    @Ignore("Function `max` not yet supported.")
+    @Disabled("Function `max` not yet supported.")
     public void testCombine3() throws CQLException {
         final String cql = "3*max(val,15)+2/4";
         final Object obj = CQL.parseExpression(cql);
@@ -575,7 +575,7 @@ public final class ExpressionReadingTest extends CQLTestCase {
     }
 
     @Test
-    @Ignore("Function `max` not yet supported.")
+    @Disabled("Function `max` not yet supported.")
     public void testCombine4() throws CQLException {
         final String cql = "3 * max ( val , 15 ) + 2 / 4";
         final Object obj = CQL.parseExpression(cql);
@@ -593,7 +593,7 @@ public final class ExpressionReadingTest extends CQLTestCase {
     }
 
     @Test
-    @Ignore("Difference in the class argument of `property(…)`.")
+    @Disabled("Difference in the class argument of `property(…)`.")
     public void testCombine5() throws CQLException {
         final String cql = "(\"NB-Curistes\"*50)/12000";
         final Object obj = CQL.parseExpression(cql);
