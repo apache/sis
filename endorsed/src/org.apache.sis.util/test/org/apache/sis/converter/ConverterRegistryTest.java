@@ -19,17 +19,18 @@ package org.apache.sis.converter;
 import java.util.Queue;
 import java.util.Deque;
 import java.util.ArrayDeque;
+import java.util.function.Supplier;
 import java.io.Serializable;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
 
@@ -73,7 +74,7 @@ public final class ConverterRegistryTest extends TestCase {
      * Registers a converter to test.
      */
     private void register(final ObjectConverter<?,?> converter) {
-        assertNotNull("Missing ObjectConverter", converter);
+        assertNotNull(converter);
         converters.add(converter);
         registry.register(converter);
     }
@@ -104,7 +105,7 @@ public final class ConverterRegistryTest extends TestCase {
                     targetClass.getSimpleName() + "‛ but got " + e);
             return;
         }
-        assertSame("Same converter shall be applicable to other target.", converter, actual);
+        assertSame(converter, actual, "Same converter shall be applicable to other target.");
     }
 
     /**
@@ -115,18 +116,8 @@ public final class ConverterRegistryTest extends TestCase {
     private void assertNoConverterForTarget(final Class<?> targetClass) {
         final ObjectConverter<?,?> converter = converters.peekLast();
         final Class<?> sourceClass = converter.getSourceClass();
-        final ObjectConverter<?,?> actual;
-        try {
-            actual = registry.find(sourceClass, targetClass);
-        } catch (UnconvertibleObjectException e) {
-            // This is the expected exception
-            final String message = e.getMessage();
-            assertTrue(message, message.contains(sourceClass.getSimpleName()));
-            assertTrue(message, message.contains(targetClass.getSimpleName()));
-            return;
-        }
-        fail("Expected no converter from ‘" + sourceClass.getSimpleName() + "‛ to ‘" +
-                targetClass.getSimpleName() + "‛ but got " + actual);
+        var e = assertThrows(UnconvertibleObjectException.class, () -> registry.find(sourceClass, targetClass));
+        assertMessageContains(e, sourceClass.getSimpleName(), targetClass.getSimpleName());
     }
 
     /**
@@ -138,10 +129,10 @@ public final class ConverterRegistryTest extends TestCase {
         final ObjectConverter<?,?> converter = converters.peekLast();
         final Class<?> sourceClass = converter.getSourceClass();
         final ObjectConverter<?,?> actual = registry.find(sourceClass, targetClass);
-        final String message = sourceClass.getSimpleName() + " ← " + targetClass.getSimpleName();
-        assertInstanceOf(message, IdentityConverter.class, actual);
-        assertSame(message, sourceClass, actual.getSourceClass());
-        assertSame(message, targetClass, actual.getTargetClass());
+        final Supplier<String> message = () -> sourceClass.getSimpleName() + " ← " + targetClass.getSimpleName();
+        assertInstanceOf(IdentityConverter.class, actual, message);
+        assertSame(sourceClass, actual.getSourceClass(), message);
+        assertSame(targetClass, actual.getTargetClass(), message);
     }
 
     /**
@@ -351,10 +342,10 @@ public final class ConverterRegistryTest extends TestCase {
     public void testArrayOfWrapperTypes() {
         register(new NumberConverter<>(Float.class, Double.class));
         final ObjectConverter<?,?> converter = registry.find(Float[].class, Double[].class);
-        assertInstanceOf("Array conversions", ArrayConverter.class, converter);
+        assertInstanceOf(ArrayConverter.class, converter, "Array conversions");
         assertEquals(Float [].class, converter.getSourceClass());
         assertEquals(Double[].class, converter.getTargetClass());
-        assertSame("Converter shall be cached.", converter, registry.find(Float[].class, Double[].class));
+        assertSame(converter, registry.find(Float[].class, Double[].class), "Converter shall be cached.");
     }
 
     /**
@@ -365,10 +356,10 @@ public final class ConverterRegistryTest extends TestCase {
     public void testArrayOfPrimitiveTypes() {
         register(new NumberConverter<>(Float.class, Double.class));
         final ObjectConverter<?,?> converter = registry.find(float[].class, double[].class);
-        assertInstanceOf("Array conversions", ArrayConverter.class, converter);
+        assertInstanceOf(ArrayConverter.class, converter, "Array conversions");
         assertEquals(float [].class, converter.getSourceClass());
         assertEquals(double[].class, converter.getTargetClass());
-        assertSame("Converter shall be cached.", converter, registry.find(float[].class, double[].class));
+        assertSame(converter, registry.find(float[].class, double[].class), "Converter shall be cached.");
     }
 
     /**
@@ -405,14 +396,9 @@ public final class ConverterRegistryTest extends TestCase {
             @Override public Class<Integer>      getTargetClass()      {return Integer.class;}
             @Override public Integer             apply(Serializable o) {return 44;}
         });
-        try {
-            registry.find(ArrayDeque.class, Integer.class);
-            fail("Should not find a converter when there is an ambiguity in the interfaces.");
-        } catch (UnconvertibleObjectException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("ArrayDeque"));
-            assertTrue(message, message.contains("Integer"));
-        }
+        var e = assertThrows(UnconvertibleObjectException.class, () -> registry.find(ArrayDeque.class, Integer.class),
+                             "Should not find a converter when there is an ambiguity in the interfaces.");
+        assertMessageContains(e, "ArrayDeque", "Integer");
     }
 
     /**
@@ -422,7 +408,7 @@ public final class ConverterRegistryTest extends TestCase {
     @Test
     public void testSourceInterface() {
         final ObjectConverter<?,Integer> child = registerSourceInterfaces();
-        assertSame("Shall fallback on most specific interface.", child, registry.find(ArrayDeque.class, Integer.class));
-        assertSame("Shall fallback on most specific interface.", child, registry.find(ArrayDeque.class, Number.class));
+        assertSame(child, registry.find(ArrayDeque.class, Integer.class), "Shall fallback on most specific interface.");
+        assertSame(child, registry.find(ArrayDeque.class, Number.class),  "Shall fallback on most specific interface.");
     }
 }

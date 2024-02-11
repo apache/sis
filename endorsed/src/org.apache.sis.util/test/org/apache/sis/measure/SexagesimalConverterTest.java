@@ -23,7 +23,8 @@ import static org.apache.sis.measure.SexagesimalConverter.*;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.TestCase;
 
 
@@ -102,14 +103,10 @@ public final class SexagesimalConverterTest extends TestCase {
     @Test
     public void testErrorMessage() {
         final UnitConverter converter = DMS.getConverterTo(Units.DEGREE);
-        assertEquals(10.5, converter.convert(10.3), STRICT);
-        try {
-            converter.convert(10.7);
-            fail("Conversion of illegal value should not be allowed.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertNotNull(message);     // Cannot test message content because it is locale-sensitive.
-        }
+        assertEquals(10.5, converter.convert(10.3));
+        var e = assertThrows(IllegalArgumentException.class, () -> converter.convert(10.7),
+                             "Conversion of illegal value should not be allowed.");
+        assertMessageContains(e);     // Cannot check message content because it is locale-sensitive.
     }
 
     /**
@@ -120,7 +117,7 @@ public final class SexagesimalConverterTest extends TestCase {
     @Test
     public void testRoundingErrorFix() {
         final UnitConverter c = DMS.getConverterTo(Units.DEGREE);
-        assertEquals(46.95240555555556, c.convert(46.570866), STRICT);
+        assertEquals(46.95240555555556, c.convert(46.570866));
     }
 
     /**

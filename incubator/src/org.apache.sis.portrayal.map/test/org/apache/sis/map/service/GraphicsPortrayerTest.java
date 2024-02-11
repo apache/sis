@@ -45,7 +45,7 @@ import org.apache.sis.style.se1.Symbolizer;
 import org.apache.sis.style.se1.Symbology;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.Test;
 
 
@@ -123,7 +123,6 @@ public class GraphicsPortrayerTest {
 
         final LineSymbolizer<Feature> symbolizer = new LineSymbolizer<>(FeatureTypeStyle.FACTORY);
         final Symbology style = createStyle(symbolizer);
-
 
         final MapLayer item = new MapLayer();
         item.setData(featureSet);

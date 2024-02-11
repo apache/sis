@@ -24,7 +24,7 @@ import static java.lang.Double.isNaN;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -61,7 +61,7 @@ public final class StatisticsTest extends TestCase {
      */
     @Test
     public void testInitialState() {
-        final Statistics statistics = new Statistics(null);
+        final var statistics = new Statistics(null);
         assertEquals(0,  statistics.count());
         assertEquals(0,  statistics.countNaN());
         assertTrue(isNaN(statistics.minimum()));
@@ -78,8 +78,8 @@ public final class StatisticsTest extends TestCase {
      */
     @Test
     public void testGaussian() {
-        final Random random = new Random(317780561);            // See class javadoc.
-        final Statistics statistics = new Statistics(null);
+        final var random = new Random(317780561);           // See class javadoc.
+        final var statistics = new Statistics(null);
         for (int i=0; i<10000; i++) {
             statistics.accept(random.nextGaussian());
         }
@@ -103,8 +103,8 @@ public final class StatisticsTest extends TestCase {
         final double stdDev = sqrt(range*range / 12);
 
         // Now tests.
-        final Random random = new Random(309080660);
-        final Statistics statistics = new Statistics(null);
+        final var random = new Random(309080660);
+        final var statistics = new Statistics(null);
         for (int i=0; i<10000; i++) {
             statistics.accept(random.nextDouble()*range + lower);
         }
@@ -130,8 +130,8 @@ public final class StatisticsTest extends TestCase {
         final double stdDev = sqrt(range*range / 12.0);
 
         // Now tests.
-        final Random random = new Random(309080660);
-        final Statistics statistics = new Statistics(null);
+        final var random = new Random(309080660);
+        final var statistics = new Statistics(null);
         for (int i=0; i<10000; i++) {
             statistics.accept(random.nextInt(range) + lower);
         }
@@ -171,13 +171,13 @@ public final class StatisticsTest extends TestCase {
             // We test this value only in order to test our test method...
             1E+20, 0
         };
-        final Random random = new Random(223386491);
+        final var random = new Random(223386491);
         final Statistics statistics = new Statistics(null);
         for (int k=0; k<offsetAndTolerancePairs.length; k++) {
             final double offset = offsetAndTolerancePairs[k];
             final double tolerance = offsetAndTolerancePairs[++k];
-            assertTrue("Possible misorder in offsetAndTolerancePairs", offset > 10);
-            assertTrue("Possible misorder in offsetAndTolerancePairs", tolerance < 0.2);
+            assertTrue(offset > 10,     "Possible misorder in offsetAndTolerancePairs");
+            assertTrue(tolerance < 0.2, "Possible misorder in offsetAndTolerancePairs");
             statistics.reset();
             statistics.accept(offset);
             for (int i=0; i<10000; i++) {
@@ -187,7 +187,7 @@ public final class StatisticsTest extends TestCase {
             final double expected = (tolerance != 0) ? 0.5 : 0;
             assertEquals(expected, r, tolerance);
 
-            statistics.accept(-offset); // Accuracy will be better than in previous test.
+            statistics.accept(-offset);         // Accuracy will be better than in previous test.
             assertEquals(expected, statistics.mean(), min(tolerance, 0.1));
         }
     }
@@ -198,13 +198,13 @@ public final class StatisticsTest extends TestCase {
      */
     @Test
     public void testInitializationToValues() {
-        final Statistics stats = new Statistics("Test", 20, 128, -75, 12, 8, 0.2, false);
+        final var stats = new Statistics("Test", 20, 128, -75, 12, 8, 0.2, false);
         assertEquals("Test", stats.name().toString());
         assertEquals( 20,    stats.countNaN());
         assertEquals(128,    stats.count());
-        assertEquals(-75,    stats.minimum(), STRICT);
-        assertEquals( 12,    stats.maximum(), STRICT);
-        assertEquals(  8,    stats.mean(),    STRICT);  // Comparison can be strict because `count` is a power of 2.
+        assertEquals(-75,    stats.minimum());
+        assertEquals( 12,    stats.maximum());
+        assertEquals(  8,    stats.mean());         // Comparison can be strict because `count` is a power of 2.
         assertEquals(0.2,    stats.standardDeviation(false), 1E-14);
     }
 
@@ -213,11 +213,11 @@ public final class StatisticsTest extends TestCase {
      */
     @Test
     public void testConcatenation() {
-        final Random random = new Random(429323868);            // See class javadoc.
-        final Statistics global = new Statistics(null);
-        final Statistics byBlock = new Statistics(null);
+        final var random  = new Random(429323868);      // See class javadoc.
+        final var global  = new Statistics(null);
+        final var byBlock = new Statistics(null);
         for (int i=0; i<10; i++) {
-            final Statistics block = new Statistics(null);
+            final var block = new Statistics(null);
             for (int j=0; j<1000; j++) {
                 final double value;
                 if (random.nextInt(800) == 0) {
@@ -230,18 +230,17 @@ public final class StatisticsTest extends TestCase {
             }
             byBlock.combine(block);
             if (i == 0) {
-                assertEquals("Adding for the first time; should have the same amount of data.",   block,  byBlock);
-                assertEquals("Adding for the first time; should have got exactly the same data.", global, byBlock);
+                assertEquals(block,  byBlock, "Adding for the first time; should have the same amount of data.");
+                assertEquals(global, byBlock, "Adding for the first time; should have got exactly the same data.");
             } else {
-                assertFalse("Should have more data that the block we just computed.",
-                        byBlock.equals(block));
+                assertFalse(byBlock.equals(block), "Should have more data that the block we just computed.");
             }
             assertEquals(global.count(),    byBlock.count());
             assertEquals(global.countNaN(), byBlock.countNaN());
-            assertEquals(global.minimum(),  byBlock.minimum(), STRICT);
-            assertEquals(global.maximum(),  byBlock.maximum(), STRICT);
-            assertEquals(global.mean(),     byBlock.mean(),    1E-15);
-            assertEquals(global.rms(),      byBlock.rms(),     1E-15);
+            assertEquals(global.minimum(),  byBlock.minimum());
+            assertEquals(global.maximum(),  byBlock.maximum());
+            assertEquals(global.mean(),     byBlock.mean(), 1E-15);
+            assertEquals(global.rms(),      byBlock.rms(),  1E-15);
         }
     }
 
@@ -252,7 +251,7 @@ public final class StatisticsTest extends TestCase {
      */
     @Test
     public void testSerialization() throws IOException {
-        final Statistics statistics = new Statistics(null);
+        final var statistics = new Statistics(null);
         statistics.accept(40);
         statistics.accept(10);
         statistics.accept(NaN);
@@ -261,8 +260,8 @@ public final class StatisticsTest extends TestCase {
         assertNotSame(statistics, after);
         assertEquals( 3,                 after.count());
         assertEquals( 1,                 after.countNaN());
-        assertEquals(10.0,               after.minimum(),             STRICT);
-        assertEquals(40.0,               after.maximum(),             STRICT);
+        assertEquals(10.0,               after.minimum());
+        assertEquals(40.0,               after.maximum());
         assertEquals(23.333333333333333, after.mean(),                   EPS);
         assertEquals(26.457513110645905, after.rms(),                    EPS);
         assertEquals(12.472191289246473, after.standardDeviation(true),  EPS);

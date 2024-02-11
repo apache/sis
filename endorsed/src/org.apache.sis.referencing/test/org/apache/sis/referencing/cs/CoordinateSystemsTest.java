@@ -165,8 +165,7 @@ public final class CoordinateSystemsTest extends TestCase {
         assertEquals(isElevation, forward instanceof ElevationAngle);
         assertEquals(isElevation, inverse instanceof ElevationAngle);
         assertEquals(+expected, (forward != null) ? forward.degrees() : Double.NaN);
-        assertEquals(-expected, (inverse != null) ? inverse.degrees() : Double.NaN, STRICT);
-        // `STRICT` is needed for ignoring the sign of zero.
+        assertEquals(-expected, (inverse != null) ? inverse.degrees() : Double.NaN, 0);     // Δ=0 for ignoring the sign of ±0.
     }
 
     /**

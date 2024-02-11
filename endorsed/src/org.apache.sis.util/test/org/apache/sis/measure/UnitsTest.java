@@ -26,7 +26,7 @@ import static org.apache.sis.measure.Units.*;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -190,8 +190,8 @@ public final class UnitsTest extends TestCase {
      */
     @Test
     public void testConversionFactors() {
-        assertEquals(1000, KILOMETRE        .getConverterTo(METRE)              .convert(    1), STRICT);
-        assertEquals( 3.6, METRES_PER_SECOND.getConverterTo(KILOMETRES_PER_HOUR).convert(    1), STRICT);
+        assertEquals(1000, KILOMETRE        .getConverterTo(METRE)              .convert(    1));
+        assertEquals( 3.6, METRES_PER_SECOND.getConverterTo(KILOMETRES_PER_HOUR).convert(    1));
         assertEquals(1E-6, BECQUEREL        .getConverterTo(CURIE)              .convert(37000),  1E-20);
     }
 
@@ -204,8 +204,8 @@ public final class UnitsTest extends TestCase {
      */
     @Test
     public void testSalinityConversionFactor() throws IncommensurableException {
-        assertEquals(0.001, PSU.getConverterToAny(UNITY)  .convert(1), STRICT);
-        assertEquals(0.1,   PSU.getConverterToAny(PERCENT).convert(1), STRICT);
+        assertEquals(0.001, PSU.getConverterToAny(UNITY)  .convert(1));
+        assertEquals(0.1,   PSU.getConverterToAny(PERCENT).convert(1));
     }
 
     /**
@@ -218,8 +218,8 @@ public final class UnitsTest extends TestCase {
     @Test
     public void testDecibelConversionFactor() throws IncommensurableException {
         final Unit<?> bel = Units.valueOf("B");
-        assertEquals(10,      bel.getConverterToAny(DECIBEL).convert(1), STRICT);
-        assertEquals(0.1,     DECIBEL.getConverterToAny(bel).convert(1), STRICT);
+        assertEquals(10,      bel.getConverterToAny(DECIBEL).convert(1));
+        assertEquals(0.1,     DECIBEL.getConverterToAny(bel).convert(1));
         assertEquals(3.16228,     bel.getConverterToAny(UNITY).convert(1), 5E-6);
         assertEquals(1.12202, DECIBEL.getConverterToAny(UNITY).convert(1), 5E-6);
         /*
@@ -273,14 +273,14 @@ public final class UnitsTest extends TestCase {
      * For a given {@code test} quantity class, verifies that {@link Units#get(Class)} gives the expected value.
      */
     private static <Q extends Quantity<Q>> void verifyGetFromQuantity(final Class<Q> test, final Unit<Q> expected) {
-        assertSame(test.getSimpleName(), expected, Units.get(test));
+        assertSame(expected, Units.get(test), test.getSimpleName());
     }
 
     /**
      * For a given {@code test} dimension, verifies that {@link Units#get(Dimension)} gives the expected value.
      */
     private static <Q extends Quantity<Q>> void verifyGetFromDimension(final Class<Q> label, final Unit<?> expected, final Unit<Q> test) {
-        assertSame(label.getSimpleName(), expected, Units.get(test.getDimension()));
+        assertSame(expected, Units.get(test.getDimension()), label.getSimpleName());
     }
 
     /**

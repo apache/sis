@@ -20,7 +20,7 @@ import org.apache.sis.measure.NumberRange;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -43,10 +43,10 @@ public final class LinearlyDerivedVectorTest extends TestCase {
     public void testBasicMethods() {
         Vector vec = Vector.create(new int[]    {10, 12, 15, -2}, false).transform(2, -3);
         final double[] expected =  new double[] {17, 21, 27, -7};
-        assertArrayEquals("floats", new float[] {17, 21, 27, -7}, vec.floatValues(), (float) STRICT);
-        assertArrayEquals(expected, vec.doubleValues(), STRICT);
-        assertTrue("equals", vec.equals(Vector.create(expected)));                      // 'equals' must be invoked on 'vec'.
-        assertEquals("range", NumberRange.create(-7d, true, 27d, true), vec.range());
+        assertArrayEquals(new float[] {17, 21, 27, -7}, vec.floatValues());
+        assertArrayEquals(expected, vec.doubleValues());
+        assertTrue(vec.equals(Vector.create(expected)));                      // `equals` must be invoked on `vec`.
+        assertEquals(NumberRange.create(-7d, true, 27d, true), vec.range());
     }
 
     /**
@@ -56,12 +56,12 @@ public final class LinearlyDerivedVectorTest extends TestCase {
     public void testSubList() {
         Vector vec = Vector.create(new int[]    {10, 12, 15, -2}, false).transform(2, -3).subList(0, 3);
         final double[] expected =  new double[] {17, 21, 27};
-        assertArrayEquals("floats", new float[] {17, 21, 27}, vec.floatValues(), (float) STRICT);
-        assertArrayEquals(expected, vec.doubleValues(), STRICT);
-        assertTrue  ("equals",    vec.equals(Vector.create(expected)));
-        assertEquals("range",     NumberRange.create(17d, true, 27d, true), vec.range());
-        assertNull  ("increment", vec.increment(0.9));
-        assertEquals("increment", 5d, vec.increment(2));
+        assertArrayEquals(new float[] {17, 21, 27}, vec.floatValues());
+        assertArrayEquals(expected, vec.doubleValues());
+        assertTrue  (vec.equals(Vector.create(expected)));
+        assertEquals(NumberRange.create(17d, true, 27d, true), vec.range());
+        assertNull  (vec.increment(0.9));
+        assertEquals(5d, vec.increment(2));
     }
 
     /**
@@ -75,12 +75,12 @@ public final class LinearlyDerivedVectorTest extends TestCase {
         Vector vec = Vector.create(new int[] {10, 12, 15, -2}, false);
         vec = vec.transform(2, -3);
         vec = vec.transform(-1, 2);
-        assertArrayEquals("floats", new float[] {-15, -19, -25, 9}, vec.floatValues(), (float) STRICT);
+        assertArrayEquals(new float[] {-15, -19, -25, 9}, vec.floatValues());
 
         vec = vec.subList(0, 2).transform(-1, 0);
-        assertArrayEquals("floats", new float[] {15, 19}, vec.floatValues(), (float) STRICT);
+        assertArrayEquals(new float[] {15, 19}, vec.floatValues());
 
         vec = vec.concatenate(Vector.create(new double[] {8, 3})).transform(0.25, 4);
-        assertArrayEquals("floats", new float[] {7.75f, 8.75f, 6f, 4.75f}, vec.floatValues(), (float) STRICT);
+        assertArrayEquals(new float[] {7.75f, 8.75f, 6f, 4.75f}, vec.floatValues());
     }
 }

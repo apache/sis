@@ -29,8 +29,7 @@ import static org.apache.sis.converter.SystemRegistry.INSTANCE;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -58,10 +57,10 @@ public final class SystemRegistryTest extends TestCase {
     public void testStringAndInteger() {
         final ObjectConverter<String,Integer> c1 = INSTANCE.findExact(String.class, Integer.class);
         final ObjectConverter<Integer,String> c2 = INSTANCE.findExact(Integer.class, String.class);
-        assertInstanceOf("Integer ← String", StringConverter.Integer.class, c1);
-        assertInstanceOf("String ← Integer", ObjectToString.class, c2);
-        assertSame("inverse()", c2, c1.inverse());
-        assertSame("inverse()", c1, c2.inverse());
+        assertInstanceOf(StringConverter.Integer.class, c1, "Integer ← String");
+        assertInstanceOf(ObjectToString.class,          c2, "String ← Integer");
+        assertSame(c2, c1.inverse());
+        assertSame(c1, c2.inverse());
         assertSame(c1, assertSerializedEquals(c1));
         assertSame(c2, assertSerializedEquals(c2));
     }
@@ -73,10 +72,10 @@ public final class SystemRegistryTest extends TestCase {
     public void testStringAndFile() {
         final ObjectConverter<String,File> c1 = INSTANCE.findExact(String.class, File.class);
         final ObjectConverter<File,String> c2 = INSTANCE.findExact(File.class, String.class);
-        assertInstanceOf("File ← String", StringConverter.File.class, c1);
-        assertInstanceOf("String ← File", ObjectToString.class, c2);
-        assertSame("inverse()", c2, c1.inverse());
-        assertSame("inverse()", c1, c2.inverse());
+        assertInstanceOf(StringConverter.File.class, c1, "File ← String");
+        assertInstanceOf(ObjectToString.class,       c2, "String ← File");
+        assertSame(c2, c1.inverse());
+        assertSame(c1, c2.inverse());
         assertSame(c1, assertSerializedEquals(c1));
         assertSame(c2, assertSerializedEquals(c2));
     }
@@ -88,10 +87,10 @@ public final class SystemRegistryTest extends TestCase {
     public void testStringAndCodeList() {
         final ObjectConverter<String, OnLineFunction> c1 = INSTANCE.findExact(String.class, OnLineFunction.class);
         final ObjectConverter<OnLineFunction, String> c2 = INSTANCE.findExact(OnLineFunction.class, String.class);
-        assertInstanceOf("OnLineFunction ← String", StringConverter.CodeList.class, c1);
-        assertInstanceOf("String ← OnLineFunction", ObjectToString.CodeList.class,  c2);
-        assertSame("inverse()", c2, c1.inverse());
-        assertSame("inverse()", c1, c2.inverse());
+        assertInstanceOf(StringConverter.CodeList.class, c1, "OnLineFunction ← String");
+        assertInstanceOf(ObjectToString.CodeList.class,  c2, "String ← OnLineFunction");
+        assertSame(c2, c1.inverse());
+        assertSame(c1, c2.inverse());
         assertSame(c1, assertSerializedEquals(c1));
         assertSame(c2, assertSerializedEquals(c2));
     }
@@ -103,10 +102,10 @@ public final class SystemRegistryTest extends TestCase {
     public void testStringAndEnum() {
         final ObjectConverter<String, ElementType> c1 = INSTANCE.findExact(String.class, ElementType.class);
         final ObjectConverter<ElementType, String> c2 = INSTANCE.findExact(ElementType.class, String.class);
-        assertInstanceOf("ElementType ← String", StringConverter.Enum.class, c1);
-        assertInstanceOf("String ← ElementType", ObjectToString.Enum.class,  c2);
-        assertSame("inverse()", c2, c1.inverse());
-        assertSame("inverse()", c1, c2.inverse());
+        assertInstanceOf(StringConverter.Enum.class, c1, "ElementType ← String");
+        assertInstanceOf(ObjectToString.Enum.class,  c2, "String ← ElementType");
+        assertSame(c2, c1.inverse());
+        assertSame(c1, c2.inverse());
         assertSame(c1, assertSerializedEquals(c1));
         assertSame(c2, assertSerializedEquals(c2));
     }
@@ -118,10 +117,10 @@ public final class SystemRegistryTest extends TestCase {
     public void testFloatAndDouble() {
         final ObjectConverter<Float,Double> c1 = INSTANCE.findExact(Float.class, Double.class);
         final ObjectConverter<Double,Float> c2 = INSTANCE.findExact(Double.class, Float.class);
-        assertInstanceOf("Double ← Float", NumberConverter.class, c1);
-        assertInstanceOf("Float ← Double", NumberConverter.class, c2);
-        assertSame("inverse()", c2, c1.inverse());
-        assertSame("inverse()", c1, c2.inverse());
+        assertInstanceOf(NumberConverter.class, c1, "Double ← Float");
+        assertInstanceOf(NumberConverter.class, c2, "Float ← Double");
+        assertSame(c2, c1.inverse());
+        assertSame(c1, c2.inverse());
         assertSame(c1, assertSerializedEquals(c1));
         assertSame(c2, assertSerializedEquals(c2));
     }
@@ -133,10 +132,10 @@ public final class SystemRegistryTest extends TestCase {
     public void testDateAndLong() {
         final ObjectConverter<Date,Long> c1 = INSTANCE.findExact(Date.class, Long.class);
         final ObjectConverter<Long,Date> c2 = INSTANCE.findExact(Long.class, Date.class);
-        assertInstanceOf("Long ← Date", DateConverter.Long.class, c1);
-        assertInstanceOf("Date ← Long", SystemConverter.class, c2);
-        assertSame("inverse()", c2, c1.inverse());
-        assertSame("inverse()", c1, c2.inverse());
+        assertInstanceOf(DateConverter.Long.class, c1, "Long ← Date");
+        assertInstanceOf(SystemConverter.class,    c2, "Date ← Long");
+        assertSame(c2, c1.inverse());
+        assertSame(c1, c2.inverse());
         assertSame(c1, assertSerializedEquals(c1));
         assertSame(c2, assertSerializedEquals(c2));
     }
@@ -149,10 +148,10 @@ public final class SystemRegistryTest extends TestCase {
     public void testDateAndSQL() {
         final ObjectConverter<Date, java.sql.Date> c1 = INSTANCE.findExact(Date.class, java.sql.Date.class);
         final ObjectConverter<java.sql.Date, Date> c2 = INSTANCE.findExact(java.sql.Date.class, Date.class);
-        assertInstanceOf("sql.Date ← Date", DateConverter.SQL.class, c1);
-        assertInstanceOf("Date ← sql.Date", IdentityConverter.class, c2);
-        assertSame("inverse()", c2, c1.inverse());
-        assertSame("inverse()", c1, c2.inverse());
+        assertInstanceOf(DateConverter.SQL.class, c1, "sql.Date ← Date");
+        assertInstanceOf(IdentityConverter.class, c2, "Date ← sql.Date");
+        assertSame(c2, c1.inverse());
+        assertSame(c1, c2.inverse());
         assertSame(c1, assertSerializedEquals(c1));
         assertSame(c2, assertSerializedEquals(c2));
     }
@@ -164,10 +163,10 @@ public final class SystemRegistryTest extends TestCase {
     public void testFileAndURI() {
         final ObjectConverter<File,URI> c1 = INSTANCE.findExact(File.class, URI.class);
         final ObjectConverter<URI,File> c2 = INSTANCE.findExact(URI.class, File.class);
-        assertInstanceOf("URI ← File", PathConverter.FileURI.class, c1);
-        assertInstanceOf("File ← URI", PathConverter.URIFile.class, c2);
-        assertSame("inverse()", c2, c1.inverse());
-        assertSame("inverse()", c1, c2.inverse());
+        assertInstanceOf(PathConverter.FileURI.class, c1, "URI ← File");
+        assertInstanceOf(PathConverter.URIFile.class, c2, "File ← URI");
+        assertSame(c2, c1.inverse());
+        assertSame(c1, c2.inverse());
         assertSame(c1, assertSerializedEquals(c1));
         assertSame(c2, assertSerializedEquals(c2));
     }
@@ -179,10 +178,10 @@ public final class SystemRegistryTest extends TestCase {
     public void testAngle() {
         final ObjectConverter<Angle,Double> c1 = INSTANCE.findExact(Angle.class, Double.class);
         final ObjectConverter<Double,Angle> c2 = INSTANCE.findExact(Double.class, Angle.class);
-        assertInstanceOf("Double ← Angle", AngleConverter.class, c1);
-        assertInstanceOf("Angle ← Double", AngleConverter.Inverse.class, c2);
-        assertSame("inverse()", c2, c1.inverse());
-        assertSame("inverse()", c1, c2.inverse());
+        assertInstanceOf(AngleConverter.class,         c1, "Double ← Angle");
+        assertInstanceOf(AngleConverter.Inverse.class, c2, "Angle ← Double");
+        assertSame(c2, c1.inverse());
+        assertSame(c1, c2.inverse());
         assertSame(c1, assertSerializedEquals(c1));
         assertSame(c2, assertSerializedEquals(c2));
     }
@@ -194,7 +193,7 @@ public final class SystemRegistryTest extends TestCase {
     @SuppressWarnings("rawtypes")
     public void testCollection() {
         final ObjectConverter<Collection,List> c1 = INSTANCE.findExact(Collection.class, List.class);
-        assertInstanceOf("List ← Collection", CollectionConverter.class, c1);
+        assertInstanceOf(CollectionConverter.class, c1, "List ← Collection");
         assertSame(c1, assertSerializedEquals(c1));
     }
 }

@@ -21,7 +21,7 @@ import org.apache.sis.util.ArraysExt;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -56,7 +56,7 @@ public final class PrefixesTest extends TestCase {
 
         f = Prefixes.class.getDeclaredField("POWERS");
         f.setAccessible(true);
-        assertEquals("length", prefixes.length, ((byte[]) f.get(null)).length);
+        assertEquals(prefixes.length, ((byte[]) f.get(null)).length);
     }
 
     /**
@@ -75,19 +75,19 @@ public final class PrefixesTest extends TestCase {
         for (final char prefix : (char[]) f.get(null)) {
             final LinearConverter lc = Prefixes.converter(prefix);
             final String asString = String.valueOf(prefix);
-            assertNotNull(asString, lc);
+            assertNotNull(lc, asString);
             /*
              * Ratio of previous scale with current scale shall be a power of 10.
              */
             final double scale = lc.derivative(0);
             final double power = StrictMath.log10(scale / previousScale);
-            assertTrue  (asString,    power >= 1);
-            assertEquals(asString, 0, power % 1, STRICT);
+            assertTrue(power >= 1, asString);
+            assertEquals(0, power % 1, asString);
             /*
              * At this point we got the LinearConverter to use for the test,
              * and we know the expected prefix. Verify that we get that value.
              */
-            assertEquals("Prefixes.converter(double)", asString, String.valueOf(Prefixes.symbol(scale, 1)));
+            assertEquals(asString, String.valueOf(Prefixes.symbol(scale, 1)));
             previousScale = scale;
         }
     }
@@ -139,9 +139,9 @@ public final class PrefixesTest extends TestCase {
      */
     @Test
     public void testGetUnit() {
-        assertEquals( "m" , 1,    Units.toStandardUnit(Prefixes.getUnit( "m" )), STRICT);
-        assertEquals( "m²", 1,    Units.toStandardUnit(Prefixes.getUnit( "m²")), STRICT);
-        assertEquals("km",  1E+3, Units.toStandardUnit(Prefixes.getUnit("km" )), STRICT);
-        assertEquals("km²", 1E+6, Units.toStandardUnit(Prefixes.getUnit("km²")), STRICT);
+        assertEquals(1,    Units.toStandardUnit(Prefixes.getUnit( "m" )),  "m" );
+        assertEquals(1,    Units.toStandardUnit(Prefixes.getUnit( "m²")),  "m²");
+        assertEquals(1E+3, Units.toStandardUnit(Prefixes.getUnit("km" )), "km");
+        assertEquals(1E+6, Units.toStandardUnit(Prefixes.getUnit("km²")), "km²");
     }
 }

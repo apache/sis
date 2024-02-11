@@ -22,8 +22,7 @@ import org.apache.sis.math.Fraction;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -52,16 +51,16 @@ public final class LinearConverterTest extends TestCase {
     static void assertScale(final int numerator, final int denominator, final AbstractConverter converter) {
         final double derivative = numerator / (double) denominator;
         final Number[] coefficients = converter.coefficients();
-        assertEquals("coefficients.length", 2, coefficients.length);
-        assertEquals("offset", 0, coefficients[0].doubleValue(), STRICT);
-        assertEquals("scale", derivative, coefficients[1].doubleValue(), STRICT);
+        assertEquals(2, coefficients.length, "coefficients.length");
+        assertEquals(0, coefficients[0].doubleValue(), 0, "offset");        // Δ=0 for ignoring the sign of ±0.
+        assertEquals(derivative, coefficients[1].doubleValue(), "scale");
         if (denominator != 1) {
-            assertInstanceOf("coefficients[1]", Fraction.class, coefficients[1]);
+            assertInstanceOf(Fraction.class, coefficients[1], "coefficients[1]");
             final Fraction f = (Fraction) coefficients[1];
-            assertEquals("numerator",   numerator,   f.numerator);
-            assertEquals("denominator", denominator, f.denominator);
+            assertEquals(numerator,   f.numerator,   "numerator");
+            assertEquals(denominator, f.denominator, "denominator");
         }
-        assertEquals("derivative", derivative, converter.derivative(0), STRICT);
+        assertEquals(derivative, converter.derivative(0), "derivative");
     }
 
     /**
@@ -97,12 +96,12 @@ public final class LinearConverterTest extends TestCase {
         AbstractConverter c = IdentityConverter.INSTANCE;
         assertTrue(c.isIdentity());
         assertTrue(c.isLinear());
-        assertEquals("coefficients.length", 0, c.coefficients().length);
+        assertEquals(0, c.coefficients().length);
 
         c = LinearConverter.scale(100, 100);
         assertTrue(c.isIdentity());
         assertTrue(c.isLinear());
-        assertEquals("coefficients.length", 0, c.coefficients().length);
+        assertEquals(0, c.coefficients().length);
 
         c = LinearConverter.scale(254, 100);
         assertFalse(c.isIdentity());
@@ -117,7 +116,7 @@ public final class LinearConverterTest extends TestCase {
     @Test
     public void testConvertDouble() {
         LinearConverter c = LinearConverter.scale(254, 100);            // inches to centimetres
-        assertEquals(1143, c.convert(450), STRICT);
+        assertEquals(1143, c.convert(450));
         /*
          * Below is an example of case giving a different result depending on whether we use the straightforward
          * y = (x⋅scale + offset)  equation or the longer  y = (x⋅scale + offset) ∕ divisor  equation.  This test
@@ -130,14 +129,14 @@ public final class LinearConverterTest extends TestCase {
          * floating point arithmetic and the scale factor are usually no more accurate in base 10 than base 2.
          * But unit conversions are special cases since the conversion factors are exact in base 10 by definition.
          */
-        c = LinearConverter.scale(1200, 3937);                          // US survey feet to metres
-        assertEquals(200, c.convert(656.16666666666667), STRICT);       // Really want STRICT; see above comment
+        c = LinearConverter.scale(1200, 3937);                  // US survey feet to metres
+        assertEquals(200, c.convert(656.16666666666667));       // Really want exact comparison; see above comment
         /*
          * Test conversion from degrees Celsius to Kelvin. The straightforward equation gives 300.15999999999997
          * while the longer equation used by UnitConverter gives 300.16 as expected.
          */
-        c = LinearConverter.offset(27315, 100);                         // Celsius to kelvin
-        assertEquals(300.16, c.convert(27.01), STRICT);                 // Really want STRICT; see above comment
+        c = LinearConverter.offset(27315, 100);                 // Celsius to kelvin
+        assertEquals(300.16, c.convert(27.01));                 // Really want exact comparison; see above comment
     }
 
     /**
@@ -149,8 +148,8 @@ public final class LinearConverterTest extends TestCase {
     public void testConvertFloat() {
         LinearConverter c = LinearConverter.offset(27315, 100);
         final Number n = c.convert(Float.valueOf(27.01f));
-        assertInstanceOf("convert(Float)", Double.class, n);
-        assertEquals(300.16, n.doubleValue(), STRICT);                  // Really want STRICT; see testConvertDouble()
+        assertInstanceOf(Double.class, n);
+        assertEquals(300.16, n.doubleValue());          // Really want exact comparison; see testConvertDouble()
     }
 
     /**
@@ -161,7 +160,7 @@ public final class LinearConverterTest extends TestCase {
     public void testConvertBigDecimal() {
         LinearConverter c = LinearConverter.offset(27315, 100);
         final Number n = c.convert(new BigDecimal("27.01"));
-        assertInstanceOf("convert(BigDecimal)", BigDecimal.class, n);
+        assertInstanceOf(BigDecimal.class, n);
         assertEquals(new BigDecimal("300.16"), n);
     }
 
@@ -174,7 +173,7 @@ public final class LinearConverterTest extends TestCase {
         LinearConverter inv = (LinearConverter) c.inverse();
         assertScale(254, 100, c);
         assertScale(100, 254, inv);
-        assertEquals(12.3, c.convert(inv.convert(12.3)), STRICT);
+        assertEquals(12.3, c.convert(inv.convert(12.3)));
         /*
          * Following is an example of case where our effort regarding preserving accuracy in base 10 does not work.
          * However, the concatenation of those two UnitConverter gives the identity converter, as expected.

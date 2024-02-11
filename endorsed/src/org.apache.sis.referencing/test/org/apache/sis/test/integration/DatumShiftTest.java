@@ -27,7 +27,7 @@ import org.apache.sis.referencing.operation.provider.NADCONTest;
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.Assume.assumeDataExists;
+import static org.apache.sis.test.Assumptions.assumeDataExists;
 
 
 /**

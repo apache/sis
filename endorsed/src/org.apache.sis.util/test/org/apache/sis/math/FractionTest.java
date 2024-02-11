@@ -18,7 +18,7 @@ package org.apache.sis.math;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -51,8 +51,8 @@ public final class FractionTest extends TestCase {
                 if ((s & 1) != 0) numerator   = -numerator;
                 if ((s & 2) != 0) denominator = -denominator;
                 final int[] expected = (numerator * denominator >= 0) ? positives : negatives;
-                final String label = "floor(" + numerator + '/' + denominator + ')';
-                assertEquals(label, expected[i], new Fraction(numerator, denominator).floor());
+                final var f = new Fraction(numerator, denominator);
+                assertEquals(expected[i], f.floor(), () -> "floor(" + f.numerator + '/' + f.denominator + ')');
             }
         }
     }
@@ -73,8 +73,8 @@ public final class FractionTest extends TestCase {
                 if ((s & 1) != 0) numerator   = -numerator;
                 if ((s & 2) != 0) denominator = -denominator;
                 final int[] expected = (numerator * denominator >= 0) ? positives : negatives;
-                final String label = "ceil(" + numerator + '/' + denominator + ')';
-                assertEquals(label, expected[i], new Fraction(numerator, denominator).ceil());
+                final var f = new Fraction(numerator, denominator);
+                assertEquals(expected[i], f.ceil(), () -> "ceil(" + f.numerator + '/' + f.denominator + ')');
             }
         }
     }
@@ -88,7 +88,7 @@ public final class FractionTest extends TestCase {
         final int[] denominators = { 3,  3, -3,  3, -3};
         final int[] signums      = { 0,  1, -1, -1,  1};
         for (int i=0; i<signums.length; i++) {
-            final Fraction f = new Fraction(numerators[i], denominators[i]);
+            final var f = new Fraction(numerators[i], denominators[i]);
             assertEquals(signums[i], f.signum());
         }
     }
@@ -109,8 +109,8 @@ public final class FractionTest extends TestCase {
                 if ((s & 1) != 0) numerator   = -numerator;
                 if ((s & 2) != 0) denominator = -denominator;
                 if (numerator * denominator < 0) expected = -expected;
-                final String label = "even(" + numerator + '/' + denominator + ')';
-                assertEquals(label, expected, new Fraction(numerator, denominator).round());
+                final var f = new Fraction(numerator, denominator);
+                assertEquals(expected, f.round(), () -> "even(" + f.numerator + '/' + f.denominator + ')');
             }
         }
     }
@@ -193,8 +193,8 @@ public final class FractionTest extends TestCase {
      */
     private static void verifyParsing(final int numerator, final int denominator, final String s) {
         final Fraction f = new Fraction(s);
-        assertEquals("numerator",   numerator,   f.numerator);
-        assertEquals("denominator", denominator, f.denominator);
+        assertEquals(numerator,   f.numerator,   "numerator");
+        assertEquals(denominator, f.denominator, "denominator");
     }
 
     /**

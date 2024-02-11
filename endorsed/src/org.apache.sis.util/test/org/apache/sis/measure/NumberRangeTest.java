@@ -24,7 +24,7 @@ import org.apache.sis.math.MathFunctions;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 
@@ -66,14 +66,14 @@ public final class NumberRangeTest extends TestCase {
     @Test
     public void testIntegerEndpoints() {
         final NumberRange<Integer> range = NumberRange.create(10, true, 20, true);
-        assertEquals(10, range.getMinDouble(     ), STRICT);
-        assertEquals(10, range.getMinDouble(true ), STRICT);
-        assertEquals( 9, range.getMinDouble(false), STRICT);
-        assertEquals(20, range.getMaxDouble(     ), STRICT);
-        assertEquals(20, range.getMaxDouble(true ), STRICT);
-        assertEquals(21, range.getMaxDouble(false), STRICT);
-        assertEquals(15, range.getMedian(),         STRICT);
-        assertEquals(10, range.getSpan(),           STRICT);
+        assertEquals(10, range.getMinDouble(     ));
+        assertEquals(10, range.getMinDouble(true ));
+        assertEquals( 9, range.getMinDouble(false));
+        assertEquals(20, range.getMaxDouble(     ));
+        assertEquals(20, range.getMaxDouble(true ));
+        assertEquals(21, range.getMaxDouble(false));
+        assertEquals(15, range.getMedian());
+        assertEquals(10, range.getSpan());
     }
 
     /**
@@ -159,7 +159,7 @@ public final class NumberRangeTest extends TestCase {
     public void testValueRangeAnnotation() throws NoSuchMethodException {
         final ValueRange values = NumberRangeTest.class
                 .getMethod("testValueRangeAnnotation").getAnnotation(ValueRange.class);
-        assertNotNull("Annotation not found.", values);
+        assertNotNull(values);
         final NumberRange<Short> range = new NumberRange<>(Short.class, values);
         assertEquals(NumberRange.create((short) 4, true, (short) 8, false), range);
     }

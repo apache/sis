@@ -24,7 +24,7 @@ import java.text.ParseException;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -220,11 +220,11 @@ public final class AngleFormatTest extends TestCase {
             final double eps) throws ParseException
     {
         f.applyPattern(pattern);
-        assertEquals("toPattern()", pattern, f.toPattern());
-        assertEquals("format(double)", e1,       f.format(48.5));
-        assertEquals("format(double)", e2,       f.format(-12.53125));
-        assertEquals("parse(String)",  48.5,     f.parse(e1).degrees(), 0.0);
-        assertEquals("parse(String)", -12.53125, f.parse(e2).degrees(), eps);
+        assertEquals(pattern,   f.toPattern());
+        assertEquals( e1,       f.format(48.5));
+        assertEquals( e2,       f.format(-12.53125));
+        assertEquals( 48.5,     f.parse(e1).degrees(), 0.0);
+        assertEquals(-12.53125, f.parse(e2).degrees(), eps);
     }
 
     /**
@@ -349,7 +349,7 @@ public final class AngleFormatTest extends TestCase {
     @Test
     public void testGetPrecision() {
         final AngleFormat f = new AngleFormat(Locale.CANADA);
-        f.applyPattern("D°");         assertEquals(     1,   f.getPrecision(), STRICT);
+        f.applyPattern("D°");         assertEquals(     1,   f.getPrecision());
         f.applyPattern("D.dd°");      assertEquals(  0.01,   f.getPrecision(),  1E-16);
         f.applyPattern("D°MM′");      assertEquals(1.0/60,   f.getPrecision(),  1E-16);
         f.applyPattern("D°MM′SS.s″"); assertEquals(0.1/3600, f.getPrecision(),  1E-16);
@@ -375,9 +375,9 @@ public final class AngleFormatTest extends TestCase {
             }
             final FieldPosition pos = new FieldPosition(field);
             assertEquals(FormattedCharacterIteratorTest.LATITUDE_STRING, f.format(latitude, buffer, pos).toString());
-            assertSame  ("getFieldAttribute", field, pos.getFieldAttribute());
-            assertEquals("getBeginIndex",     start, pos.getBeginIndex());
-            assertEquals("getEndIndex",       limit, pos.getEndIndex());
+            assertSame  (field, pos.getFieldAttribute());
+            assertEquals(start, pos.getBeginIndex());
+            assertEquals(limit, pos.getEndIndex());
             buffer.setLength(0);
         }
     }

@@ -23,8 +23,7 @@ import javax.measure.quantity.Temperature;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
@@ -48,8 +47,8 @@ public final class QuantitiesTest extends TestCase {
     @Test
     public void testCreate() {
         final Quantity<?> q = Quantities.create(5, "km");
-        assertEquals("value", 5, q.getValue().doubleValue(), STRICT);
-        assertSame  ("unit", Units.KILOMETRE, q.getUnit());
+        assertEquals(5, q.getValue().doubleValue());
+        assertSame  (Units.KILOMETRE, q.getUnit());
     }
 
     /**
@@ -78,8 +77,8 @@ public final class QuantitiesTest extends TestCase {
         };
         final Length c = Quantities.castOrCopy(q);
         assertNotSame(q, c);
-        assertEquals("value", 8, c.getValue().doubleValue(), STRICT);
-        assertSame  ("unit", Units.CENTIMETRE, c.getUnit());
+        assertEquals(8, c.getValue().doubleValue());
+        assertSame(Units.CENTIMETRE, c.getUnit());
     }
 
     /**
@@ -93,25 +92,25 @@ public final class QuantitiesTest extends TestCase {
         final Quantity<Temperature> q2 = Quantities.create( 3, Units.KELVIN);
         final Quantity<Temperature> q3 = Quantities.create(-8, Units.CELSIUS);
 
-        assertInstanceOf( "2°C", DerivedScalar.TemperatureMeasurement.class, q1);
-        assertInstanceOf( "3 K", DerivedScalar.Temperature.class,            q2);
-        assertInstanceOf("-8°C", DerivedScalar.TemperatureMeasurement.class, q3);
+        assertInstanceOf(DerivedScalar.TemperatureMeasurement.class, q1,  "2°C");
+        assertInstanceOf(DerivedScalar.Temperature.class,            q2,  "3 K");
+        assertInstanceOf(DerivedScalar.TemperatureMeasurement.class, q3, "-8°C");
 
         Quantity<Temperature> r = q1.add(q2);
-        assertSame  ("unit",  Units.CELSIUS, r.getUnit());
-        assertEquals("value", 5, r.getValue().doubleValue(), 1E-13);
+        assertSame(Units.CELSIUS, r.getUnit());
+        assertEquals(5, r.getValue().doubleValue(), 1E-13);
 
         r = q2.add(q1);
-        assertSame  ("unit",  Units.KELVIN, r.getUnit());
-        assertEquals("value", 278.15, r.getValue().doubleValue(), 1E-13);
+        assertSame(Units.KELVIN, r.getUnit());
+        assertEquals(278.15, r.getValue().doubleValue(), 1E-13);
 
         r = q1.add(q3);
-        assertSame  ("unit",  Units.CELSIUS, r.getUnit());
-        assertEquals("value", 267.15, r.getValue().doubleValue(), 1E-13);
+        assertSame(Units.CELSIUS, r.getUnit());
+        assertEquals(267.15, r.getValue().doubleValue(), 1E-13);
 
         r = q1.multiply(3);
-        assertSame  ("unit",  Units.CELSIUS, r.getUnit());
-        assertEquals("value", 552.3, r.getValue().doubleValue(), 1E-13);
+        assertSame(Units.CELSIUS, r.getUnit());
+        assertEquals(552.3, r.getValue().doubleValue(), 1E-13);
 
         r = q1.multiply(1);
         assertSame(q1, r);
@@ -123,8 +122,8 @@ public final class QuantitiesTest extends TestCase {
     @Test
     public void testUnspecialized() {
         final Quantity<?> quantity = Quantities.create(3, Units.CENTIMETRE).multiply(Quantities.create(4, Units.SECOND));
-        assertEquals("value", 12, quantity.getValue().doubleValue(), STRICT);
-        assertEquals("unit", "cm⋅s", quantity.getUnit().toString());
+        assertEquals(12, quantity.getValue().doubleValue());
+        assertEquals("cm⋅s", quantity.getUnit().toString());
     }
 
     /**

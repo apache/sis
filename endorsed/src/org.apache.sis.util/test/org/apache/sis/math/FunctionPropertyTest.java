@@ -21,7 +21,7 @@ import java.util.EnumSet;
 
 // Test dependencies
 import org.junit.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 

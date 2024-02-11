@@ -20,7 +20,7 @@ import java.util.Random;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -57,9 +57,9 @@ public final class PlaneTest extends TestCase {
     private Plane assertFitEquals(final double tolerance, final double[] x, final double[] y, final double[] z) {
         final Plane plan = new Plane();
         pearson = plan.fit(x, y, z);
-        assertEquals("Pearson correlation coefficient", 1, pearson, 0.01);
+        assertEquals(1, pearson, 0.01, "Pearson correlation coefficient");
         for (int i = 0; i < z.length; i++) {
-            assertEquals("z(x,y)", z[i], plan.z(x[i], y[i]), tolerance);
+            assertEquals(z[i], plan.z(x[i], y[i]), tolerance, "z(x,y)");
         }
         return plan;
     }
@@ -117,9 +117,9 @@ public final class PlaneTest extends TestCase {
          *   - fitted:        z(x,y) = 2.001595888896693⋅x + 3.0021028196088055⋅y + -4.105960575835259
          */
         final Plane fitted = assertFitEquals(6, x, y, z);
-        assertEquals("sx", reference.slopeX(), fitted.slopeX(), 0.002);
-        assertEquals("sy", reference.slopeY(), fitted.slopeY(), 0.003);
-        assertEquals("z₀", reference.z0(),     fitted.z0(),     0.2);
+        assertEquals(reference.slopeX(), fitted.slopeX(), 0.002, "sx");
+        assertEquals(reference.slopeY(), fitted.slopeY(), 0.003, "sy");
+        assertEquals(reference.z0(),     fitted.z0(),     0.2,   "z₀");
     }
 
     /**
@@ -150,9 +150,9 @@ public final class PlaneTest extends TestCase {
          *   - fitted:        z(x,y) = -45.96034442769177⋅x + 16.981792790278828⋅y + 34.901440258861314
          */
         final Plane fitted = assertFitEquals(7, x, y, z);
-        assertEquals("sx", reference.slopeX(), fitted.slopeX(), 0.05);
-        assertEquals("sy", reference.slopeY(), fitted.slopeY(), 0.02);
-        assertEquals("z₀", reference.z0(),     fitted.z0(),     0.1);
+        assertEquals(reference.slopeX(), fitted.slopeX(), 0.05, "sx");
+        assertEquals(reference.slopeY(), fitted.slopeY(), 0.02, "sy");
+        assertEquals(reference.z0(),     fitted.z0(),     0.1,  "z₀");
         final double ep = pearson;
         /*
          * Verify that the optimized code path for a grid produces the exact same result as the
@@ -160,10 +160,10 @@ public final class PlaneTest extends TestCase {
          */
         final Plane gf = new Plane();
         gf.fit(nx, ny, Vector.create(z));
-        assertEquals("sx", fitted.slopeX(), gf.slopeX(), STRICT);
-        assertEquals("sy", fitted.slopeY(), gf.slopeY(), STRICT);
-        assertEquals("z₀", fitted.z0(),     gf.z0(),     STRICT);
-        assertEquals("Pearson", ep,         pearson,     STRICT);
+        assertEquals(fitted.slopeX(), gf.slopeX(), "sx");
+        assertEquals(fitted.slopeY(), gf.slopeY(), "sy");
+        assertEquals(fitted.z0(),     gf.z0(),     "z₀");
+        assertEquals(ep, pearson, "Pearson");
     }
 
     /**

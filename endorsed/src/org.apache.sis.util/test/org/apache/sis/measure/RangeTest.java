@@ -21,8 +21,8 @@ import java.time.Instant;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assume.assumeTrue;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -359,7 +359,7 @@ public final class RangeTest extends TestCase {
          * value in a call to 'Range.formatTo(Formatter, …)`. So we verify only the year and the month.
          */
         final String result = String.format(Locale.CANADA_FRENCH, "%s", range);
-        assertTrue(result, result.matches("\\[2019-12-.+ … 2020-05-.+\\]"));
+        assertTrue(result.matches("\\[2019-12-.+ … 2020-05-.+\\]"), result);
     }
 
     /**

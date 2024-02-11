@@ -27,7 +27,8 @@ import org.apache.sis.measure.NumberRange;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
@@ -68,7 +69,7 @@ public final class CategoryListTest extends TestCase {
      */
     private static void assertNotConverted(final CategoryList categories) {
         for (final Category c : categories) {
-            assertFalse("isNaN", Double.isNaN(c.range.getMinDouble()));
+            assertFalse(Double.isNaN(c.range.getMinDouble()));
             assertFalse(c.range instanceof ConvertedRange);
         }
     }
@@ -85,15 +86,11 @@ public final class CategoryListTest extends TestCase {
             new Category("Clouds",  NumberRange.create( 2, true,  2, true), null, null, toNaN),
             new Category("Again",   NumberRange.create(10, true, 10, true), null, null, toNaN)       // Range overlaps.
         };
-        try {
-            assertNotConverted(CategoryList.create(categories.clone(), null));
-            fail("Should not have accepted range overlap.");
-        } catch (IllegalArgumentException exception) {
-            // This is the expected exception.
-            final String message = exception.getMessage();
-            assertTrue(message, message.contains("Land"));
-            assertTrue(message, message.contains("Again"));
-        }
+        IllegalArgumentException e;
+        final var clone = categories.clone();
+        e = assertThrows(IllegalArgumentException.class, () -> CategoryList.create(clone, null),
+                         "Should not have accepted range overlap.");
+        assertMessageContains(e, "Land", "Again");
         // Removes the wrong category. Now, construction should succeed.
         categories = Arrays.copyOf(categories, categories.length - 1);
         assertNotConverted(CategoryList.create(categories, null));
@@ -118,7 +115,7 @@ public final class CategoryListTest extends TestCase {
                 final double searchFor = random.nextInt(realNumberLimit);
                 int expected = Arrays.binarySearch(array, searchFor);
                 if (expected < 0) expected = ~expected - 1;
-                assertEquals("binarySearch", expected, CategoryList.binarySearch(array, searchFor));
+                assertEquals(expected, CategoryList.binarySearch(array, searchFor));
             }
             /*
              * Previous test didn't tested NaN values, which is the main difference between Arrays.binarySearch(…) and
@@ -153,13 +150,13 @@ public final class CategoryListTest extends TestCase {
                     final double before = array[foundAt];
                     assertFalse(search <= before);
                     if (!Double.isNaN(search)) {
-                        assertFalse("isNaN", Double.isNaN(before));
+                        assertFalse(Double.isNaN(before));
                     }
                     if (foundAt + 1 < array.length) {
                         final double after = array[foundAt + 1];
                         assertFalse(search >= after);
                         if (Double.isNaN(search)) {
-                            assertTrue("isNaN", Double.isNaN(after));
+                            assertTrue(Double.isNaN(after));
                         }
                     }
                 }
@@ -188,18 +185,18 @@ public final class CategoryListTest extends TestCase {
     public void testRanges() {
         final CategoryList list = CategoryList.create(categories(), null);
         assertSorted(list);
-        assertTrue  ("isMinIncluded",           list.range.isMinIncluded());
-        assertFalse ("isMaxIncluded",           list.range.isMaxIncluded());
-        assertFalse ("converse.isMinIncluded",  list.converse.range.isMinIncluded());     // Because computed from maxValue before conversion.
-        assertFalse ("converse.isMaxIncluded",  list.converse.range.isMaxIncluded());
-        assertEquals("minValue",             0, ((Number) list.range          .getMinValue()).doubleValue(), STRICT);
-        assertEquals("maxValue",           120, ((Number) list.range          .getMaxValue()).doubleValue(), STRICT);
-        assertEquals("converse.minValue", -117, ((Number) list.converse.range.getMinValue()).doubleValue(), STRICT);
-        assertEquals("converse.maxValue",   15, ((Number) list.converse.range.getMaxValue()).doubleValue(), STRICT);
-        assertEquals("converse.minValue", -117, list.converse.range.getMinDouble(false), STRICT);
-        assertEquals("converse.maxValue",   15, list.converse.range.getMaxDouble(false), STRICT);
-        assertEquals("converse.minValue", -116, list.converse.range.getMinDouble(true),  CategoryTest.EPS);
-        assertEquals("converse.maxValue", 14.9, list.converse.range.getMaxDouble(true),  CategoryTest.EPS);
+        assertTrue  (list.range.isMinIncluded());
+        assertFalse (list.range.isMaxIncluded());
+        assertFalse (list.converse.range.isMinIncluded());     // Because computed from maxValue before conversion.
+        assertFalse (list.converse.range.isMaxIncluded());
+        assertEquals(   0, ((Number) list.range          .getMinValue()).doubleValue());
+        assertEquals( 120, ((Number) list.range          .getMaxValue()).doubleValue());
+        assertEquals(-117, ((Number) list.converse.range.getMinValue()).doubleValue());
+        assertEquals(  15, ((Number) list.converse.range.getMaxValue()).doubleValue());
+        assertEquals(-117, list.converse.range.getMinDouble(false));
+        assertEquals(  15, list.converse.range.getMaxDouble(false));
+        assertEquals(-116, list.converse.range.getMinDouble(true),  CategoryTest.EPS);
+        assertEquals(14.9, list.converse.range.getMaxDouble(true),  CategoryTest.EPS);
     }
 
     /**
@@ -210,42 +207,42 @@ public final class CategoryListTest extends TestCase {
     public void testSearch() {
         final Category[] categories = categories();
         final CategoryList list = CategoryList.create(categories.clone(), null);
-        assertTrue("containsAll", list.containsAll(Arrays.asList(categories)));
+        assertTrue(list.containsAll(Arrays.asList(categories)));
         /*
          * Checks category searches for values that are insides the range of a category.
          */
-        assertSame(  "0", categories[0],          list.search(  0));
-        assertSame(  "7", categories[1],          list.search(  7));
-        assertSame(  "3", categories[2],          list.search(  3));
-        assertSame(" 10", categories[3],          list.search( 10));
-        assertSame(" 50", categories[3],          list.search( 50));
-        assertSame("100", categories[4],          list.search(100));
-        assertSame("110", categories[4],          list.search(110));
-        assertSame(  "0", categories[0].converse, list.converse.search(MathFunctions.toNanFloat(  0)));
-        assertSame(  "7", categories[1].converse, list.converse.search(MathFunctions.toNanFloat(  7)));
-        assertSame(  "3", categories[2].converse, list.converse.search(MathFunctions.toNanFloat(  3)));
-        assertSame(" 10", categories[3].converse, list.converse.search(  /* transform( 10) */     6 ));
-        assertSame(" 50", categories[3].converse, list.converse.search(  /* transform( 50) */    10 ));
-        assertSame("100", categories[4].converse, list.converse.search(  /* transform(100) */   -97 ));
-        assertSame("110", categories[4].converse, list.converse.search(  /* transform(110) */  -107 ));
+        assertSame(categories[0],          list.search(  0));
+        assertSame(categories[1],          list.search(  7));
+        assertSame(categories[2],          list.search(  3));
+        assertSame(categories[3],          list.search( 10));
+        assertSame(categories[3],          list.search( 50));
+        assertSame(categories[4],          list.search(100));
+        assertSame(categories[4],          list.search(110));
+        assertSame(categories[0].converse, list.converse.search(MathFunctions.toNanFloat(  0)));
+        assertSame(categories[1].converse, list.converse.search(MathFunctions.toNanFloat(  7)));
+        assertSame(categories[2].converse, list.converse.search(MathFunctions.toNanFloat(  3)));
+        assertSame(categories[3].converse, list.converse.search(  /* transform( 10) */     6 ));
+        assertSame(categories[3].converse, list.converse.search(  /* transform( 50) */    10 ));
+        assertSame(categories[4].converse, list.converse.search(  /* transform(100) */   -97 ));
+        assertSame(categories[4].converse, list.converse.search(  /* transform(110) */  -107 ));
         /*
          * Checks values outside the range of any category.  The category below requested value has its
          * domain expanded up to the next category, except if one category is qualitative and the other
          * one is quantitative, in which case the quantitative category has precedence.
          */
-        assertSame( "-1", categories[0],          list.search( -1));
-        assertSame(  "2", categories[0],          list.search(  2));
-        assertSame(  "4", categories[2],          list.search(  4));
-        assertSame(  "9", categories[3],          list.search(  9));
-        assertSame("120", categories[4],          list.search(120));
-        assertSame("200", categories[4],          list.search(200));
-        assertNull( "-1",                         list.converse.search(MathFunctions.toNanFloat(-1)));    // Nearest sample is 0
-        assertNull(  "2",                         list.converse.search(MathFunctions.toNanFloat( 2)));    // Nearest sample is 3
-        assertNull(  "4",                         list.converse.search(MathFunctions.toNanFloat( 4)));    // Nearest sample is 3
-        assertNull(  "9",                         list.converse.search(MathFunctions.toNanFloat( 9)));    // Nearest sample is 10
-        assertSame(  "9", categories[4].converse, list.converse.search( /* transform(  9) */   5.9 ));    // Nearest sample is 10
-        assertSame("120", categories[4].converse, list.converse.search( /* transform(120) */  -117 ));    // Nearest sample is 119
-        assertSame("200", categories[4].converse, list.converse.search( /* transform(200) */  -197 ));    // Nearest sample is 119
+        assertSame(categories[0],          list.search( -1));
+        assertSame(categories[0],          list.search(  2));
+        assertSame(categories[2],          list.search(  4));
+        assertSame(categories[3],          list.search(  9));
+        assertSame(categories[4],          list.search(120));
+        assertSame(categories[4],          list.search(200));
+        assertNull(                        list.converse.search(MathFunctions.toNanFloat(-1)));    // Nearest sample is 0
+        assertNull(                        list.converse.search(MathFunctions.toNanFloat( 2)));    // Nearest sample is 3
+        assertNull(                        list.converse.search(MathFunctions.toNanFloat( 4)));    // Nearest sample is 3
+        assertNull(                        list.converse.search(MathFunctions.toNanFloat( 9)));    // Nearest sample is 10
+        assertSame(categories[4].converse, list.converse.search( /* transform(  9) */   5.9 ));    // Nearest sample is 10
+        assertSame(categories[4].converse, list.converse.search( /* transform(120) */  -117 ));    // Nearest sample is 119
+        assertSame(categories[4].converse, list.converse.search( /* transform(200) */  -197 ));    // Nearest sample is 119
     }
 
     /**
@@ -261,13 +258,13 @@ public final class CategoryListTest extends TestCase {
         /*
          * Checks conversions. We verified in 'testSearch()' that correct categories are found for those values.
          */
-        assertTrue  (  "0", Double.isNaN(list.transform(  0)));
-        assertTrue  (  "7", Double.isNaN(list.transform(  7)));
-        assertTrue  (  "3", Double.isNaN(list.transform(  3)));
-        assertEquals( "10",           6, list.transform( 10), CategoryTest.EPS);
-        assertEquals( "50",          10, list.transform( 50), CategoryTest.EPS);
-        assertEquals("100",         -97, list.transform(100), CategoryTest.EPS);
-        assertEquals("110",        -107, list.transform(110), CategoryTest.EPS);
+        assertTrue  (Double.isNaN(list.transform(  0)));
+        assertTrue  (Double.isNaN(list.transform(  7)));
+        assertTrue  (Double.isNaN(list.transform(  3)));
+        assertEquals(          6, list.transform( 10), CategoryTest.EPS);
+        assertEquals(         10, list.transform( 50), CategoryTest.EPS);
+        assertEquals(        -97, list.transform(100), CategoryTest.EPS);
+        assertEquals(       -107, list.transform(110), CategoryTest.EPS);
         /*
          * Tests conversions using methods working on arrays.
          * We assume that the 'transform(double)' version can be used as a reference.
@@ -313,7 +310,7 @@ public final class CategoryListTest extends TestCase {
             if (expected >= 10 && expected < 120) {
                 // Values outside this range have been clamped.
                 // They would usually not be equal.
-                assertEquals("inverse", expected, output0[i], CategoryTest.EPS);
+                assertEquals(expected, output0[i], CategoryTest.EPS, "inverse");
             }
         }
     }
@@ -384,20 +381,15 @@ public final class CategoryListTest extends TestCase {
     @DependsOnMethod("testInverseTransform")
     public void testInverseTransformFailure() throws TransformException {
         final CategoryList list = createInverseTransform(null);
-        try {
-            list.transform(MathFunctions.toNanFloat(4));
-            fail("Expected TransformException");
-        } catch (TransformException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("NaN #4"));
-        }
+        var e = assertThrows(TransformException.class, () -> list.transform(MathFunctions.toNanFloat(4)));
+        assertMessageContains(e, "NaN #4");
     }
 
     /**
      * Compares two arrays. Special comparison is performed for NaN values.
      */
     private static void compare(final double[] output0, final double[] output1) {
-        assertEquals("length", output0.length, output1.length);
+        assertEquals(output0.length, output1.length);
         for (int i=0; i<output0.length; i++) {
             final double expected = output0[i];
             final double actual   = output1[i];

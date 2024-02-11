@@ -23,7 +23,7 @@ import static org.apache.sis.math.DecimalFunctions.*;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -48,10 +48,10 @@ public final class DecimalFunctionsTest extends TestCase {
      */
     @Test
     public void testConstants() {
-        assertEquals(0,  parseDouble("1E" +  EXPONENT_FOR_ZERO), STRICT);
+        assertEquals(0,  parseDouble("1E" +  EXPONENT_FOR_ZERO));
         assertTrue  (0 < parseDouble("1E" + (EXPONENT_FOR_ZERO + 1)));
         assertTrue  (POSITIVE_INFINITY > parseDouble("1E" +  EXPONENT_FOR_MAX));
-        assertEquals(POSITIVE_INFINITY,  parseDouble("1E" + (EXPONENT_FOR_MAX + 1)), STRICT);
+        assertEquals(POSITIVE_INFINITY,  parseDouble("1E" + (EXPONENT_FOR_MAX + 1)));
     }
 
     /**
@@ -63,7 +63,7 @@ public final class DecimalFunctionsTest extends TestCase {
     @DependsOnMethod("testConstants")
     public void testPow10() {
         for (int i=EXPONENT_FOR_ZERO; i<=EXPONENT_FOR_MAX; i++) { // Range of allowed exponents in base 10.
-            assertEquals(parseDouble("1E"+i), pow10(i), STRICT);
+            assertEquals(parseDouble("1E"+i), pow10(i));
         }
         assertEquals(1000000000000000000L, StrictMath.round(pow10(18))); // Highest value having an exact representation.
     }
@@ -74,21 +74,21 @@ public final class DecimalFunctionsTest extends TestCase {
     @Test
     @DependsOnMethod("testPow10")
     public void testFloatToDouble() {
-        assertEquals(NaN,               floatToDouble(Float.NaN),               STRICT);
-        assertEquals(POSITIVE_INFINITY, floatToDouble(Float.POSITIVE_INFINITY), STRICT);
-        assertEquals(NEGATIVE_INFINITY, floatToDouble(Float.NEGATIVE_INFINITY), STRICT);
+        assertEquals(NaN,               floatToDouble(Float.NaN));
+        assertEquals(POSITIVE_INFINITY, floatToDouble(Float.POSITIVE_INFINITY));
+        assertEquals(NEGATIVE_INFINITY, floatToDouble(Float.NEGATIVE_INFINITY));
 
-        assertEquals( 0.0,    floatToDouble( 0.0f),    STRICT);
-        assertEquals(-0.0,    floatToDouble(-0.0f),    STRICT);
-        assertEquals( 10,     floatToDouble( 10f),     STRICT);
-        assertEquals(-10,     floatToDouble(-10f),     STRICT);
-        assertEquals( 0.1,    floatToDouble( 0.1f),    STRICT);
-        assertEquals( 0.01,   floatToDouble( 0.01f),   STRICT);
-        assertEquals(-0.01,   floatToDouble(-0.01f),   STRICT);
-        assertEquals( 0.001,  floatToDouble( 0.001f),  STRICT);
-        assertEquals( 0.0001, floatToDouble( 0.0001f), STRICT);
-        assertEquals( 3.7E-8, floatToDouble( 3.7E-8f), STRICT);
-        assertEquals( 3.7E-9, floatToDouble( 3.7E-9f), STRICT);
+        assertEquals( 0.0,    floatToDouble( 0.0f));
+        assertEquals(-0.0,    floatToDouble(-0.0f));
+        assertEquals( 10,     floatToDouble( 10f));
+        assertEquals(-10,     floatToDouble(-10f));
+        assertEquals( 0.1,    floatToDouble( 0.1f));
+        assertEquals( 0.01,   floatToDouble( 0.01f));
+        assertEquals(-0.01,   floatToDouble(-0.01f));
+        assertEquals( 0.001,  floatToDouble( 0.001f));
+        assertEquals( 0.0001, floatToDouble( 0.0001f));
+        assertEquals( 3.7E-8, floatToDouble( 3.7E-8f));
+        assertEquals( 3.7E-9, floatToDouble( 3.7E-9f));
 
         final Random random = TestUtilities.createRandomNumberGenerator();
         for (int i=0; i<100; i++) {
@@ -107,25 +107,25 @@ public final class DecimalFunctionsTest extends TestCase {
     @Test
     @DependsOnMethod("testPow10")
     public void testDeltaForDoubleToDecimal() {
-        assertEquals(0, deltaForDoubleToDecimal(0),                 STRICT);
-        assertEquals(0, deltaForDoubleToDecimal(1),                 STRICT);
-        assertEquals(0, deltaForDoubleToDecimal(NaN),               STRICT);
-        assertEquals(0, deltaForDoubleToDecimal(POSITIVE_INFINITY), STRICT);
-        assertEquals(0, deltaForDoubleToDecimal(NEGATIVE_INFINITY), STRICT);
+        assertEquals(0, deltaForDoubleToDecimal(0));
+        assertEquals(0, deltaForDoubleToDecimal(1), 0);     // Δ=0 for ignoring the sign of ±0.
+        assertEquals(0, deltaForDoubleToDecimal(NaN));
+        assertEquals(0, deltaForDoubleToDecimal(POSITIVE_INFINITY));
+        assertEquals(0, deltaForDoubleToDecimal(NEGATIVE_INFINITY));
 
-        assertEquals(-2.2204460492503132E-17, deltaForDoubleToDecimal(0.9),      STRICT);
-        assertEquals(-5.5511151231257827E-18, deltaForDoubleToDecimal(0.1),      STRICT);
-        assertEquals(-2.0816681711721684E-19, deltaForDoubleToDecimal(0.01),     STRICT);
-        assertEquals(-2.0816681711721686E-20, deltaForDoubleToDecimal(0.001),    STRICT);
-        assertEquals(-4.7921736023859296E-21, deltaForDoubleToDecimal(0.0001),   STRICT);
-        assertEquals(-8.1803053914031310E-22, deltaForDoubleToDecimal(0.00001),  STRICT);
-        assertEquals( 4.5251888174113741E-23, deltaForDoubleToDecimal(0.000001), STRICT);
-        assertEquals(-1.3471890270011499E-17, deltaForDoubleToDecimal(0.201168), STRICT); // Link to metres
-        assertEquals(-1.5365486660812166E-17, deltaForDoubleToDecimal(0.3048),   STRICT); // Feet to metres
-        assertEquals( 9.4146912488213275E-18, deltaForDoubleToDecimal(0.9144),   STRICT); // Yard to metres
-        assertEquals( 1.8829382497642655E-17, deltaForDoubleToDecimal(1.8288),   STRICT); // Fathom to metres
-        assertEquals(-3.5527136788005009E-17, deltaForDoubleToDecimal(2.54),     STRICT); // Inch to centimetres
-        assertEquals(-1.3471890270011499E-15, deltaForDoubleToDecimal(20.1168),  STRICT); // Chain to metres
+        assertEquals(-2.2204460492503132E-17, deltaForDoubleToDecimal(0.9));
+        assertEquals(-5.5511151231257827E-18, deltaForDoubleToDecimal(0.1));
+        assertEquals(-2.0816681711721684E-19, deltaForDoubleToDecimal(0.01));
+        assertEquals(-2.0816681711721686E-20, deltaForDoubleToDecimal(0.001));
+        assertEquals(-4.7921736023859296E-21, deltaForDoubleToDecimal(0.0001));
+        assertEquals(-8.1803053914031310E-22, deltaForDoubleToDecimal(0.00001));
+        assertEquals( 4.5251888174113741E-23, deltaForDoubleToDecimal(0.000001));
+        assertEquals(-1.3471890270011499E-17, deltaForDoubleToDecimal(0.201168));   // Link to metres
+        assertEquals(-1.5365486660812166E-17, deltaForDoubleToDecimal(0.3048));     // Feet to metres
+        assertEquals( 9.4146912488213275E-18, deltaForDoubleToDecimal(0.9144));     // Yard to metres
+        assertEquals( 1.8829382497642655E-17, deltaForDoubleToDecimal(1.8288));     // Fathom to metres
+        assertEquals(-3.5527136788005009E-17, deltaForDoubleToDecimal(2.54));       // Inch to centimetres
+        assertEquals(-1.3471890270011499E-15, deltaForDoubleToDecimal(20.1168));    // Chain to metres
         /*
          * Tests random value that do not use the full 'double' accuracy.
          * This is a simpler case than the next one after this one, because the
@@ -137,7 +137,7 @@ public final class DecimalFunctionsTest extends TestCase {
                 final BigDecimal value = BigDecimal.valueOf(random.nextInt(1000000000)).movePointLeft(fractionDigits);
                 final double     ieee  = value.doubleValue(); // Inexact approximation of value.
                 final BigDecimal delta = value.subtract(new BigDecimal(ieee));
-                assertEquals(delta.doubleValue(), deltaForDoubleToDecimal(ieee), STRICT);
+                assertEquals(delta.doubleValue(), deltaForDoubleToDecimal(ieee), 0);  // Δ=0 for ignoring the sign of ±0.
             }
         }
         /*
@@ -148,7 +148,7 @@ public final class DecimalFunctionsTest extends TestCase {
          * The latter are sometimes high, but it does not really matter. What matter is the tolerance
          * relative to the given value, not to the returned delta.
          */
-        assertEquals(-1.9216378778219224E-23, deltaForDoubleToDecimal(3.3446045755169960E-7), STRICT);
+        assertEquals(-1.9216378778219224E-23, deltaForDoubleToDecimal(3.3446045755169960E-7));
         assertEquals(-4.1861088853329420E-24, deltaForDoubleToDecimal(3.5496578465465944E-7), 3E-39); //        4 ULP
         assertEquals(-4.1997787803848041E-17, deltaForDoubleToDecimal(0.7714013208272988),    2E-32); //        3 ULP
         assertEquals( 4.0373325589462183E-18, deltaForDoubleToDecimal(0.37197394704138476),   4E-33); //        4 ULP
@@ -166,7 +166,7 @@ public final class DecimalFunctionsTest extends TestCase {
             final double     delta = value.subtract(new BigDecimal(ieee)).doubleValue();
             final double    actual = deltaForDoubleToDecimal(ieee);
             if (!Double.isNaN(actual)) {
-                assertEquals(text, delta, actual, StrictMath.ulp(ieee) * 1E-12);
+                assertEquals(delta, actual, StrictMath.ulp(ieee) * 1E-12, text);
             }
         }
     }
@@ -243,12 +243,12 @@ public final class DecimalFunctionsTest extends TestCase {
         for (int i=EXPONENT_FOR_ZERO; i<=EXPONENT_FOR_MAX; i++) {
             final double value = pow10(i);
             final double accuracy = pow10(-fractionDigitsForValue(value));
-            assertEquals("Shall not be greater than ULP", 0, accuracy, StrictMath.ulp(value));
+            assertEquals(0, accuracy, StrictMath.ulp(value), "Shall not be greater than ULP");
         }
         for (int i=MIN_EXPONENT; i<=MAX_EXPONENT; i++) {
             final double value = StrictMath.scalb(1, i);
             final double accuracy = pow10(-fractionDigitsForValue(value));
-            assertEquals("Shall not be greater than ULP", 0, accuracy, StrictMath.ulp(value));
+            assertEquals(0, accuracy, StrictMath.ulp(value), "Shall not be greater than ULP");
         }
     }
 
@@ -261,15 +261,15 @@ public final class DecimalFunctionsTest extends TestCase {
         assertEquals(-EXPONENT_FOR_ZERO, fractionDigitsForValue(0, 2));
         assertEquals(0, fractionDigitsForValue(POSITIVE_INFINITY,  2));
 
-        assertEquals("Expected no rounding", 15, fractionDigitsForValue(39.666666666666667,  2));
-        assertEquals("Expected no rounding", 15, fractionDigitsForValue(-8.131906111111111,  2));
-        assertEquals("Expected no rounding", 16, fractionDigitsForValue( 0.6149999999999993, 1));
-        assertEquals("Expected rounding",    14, fractionDigitsForValue( 0.6149999999999993, 2));
-        assertEquals("Expected rounding",    14, fractionDigitsForValue(-0.6149999999999993, 2));
-        assertEquals("Expected rounding",    15, fractionDigitsForValue(-0.1979999999999998, 2));
-        assertEquals("Expected rounding",    11, fractionDigitsForValue( 179.12499999999824, 3));
-        assertEquals("Expected no rounding", 14, fractionDigitsForValue( 179.12499999999824, 2));
-        assertEquals("Expected no rounding", 14, fractionDigitsForValue( 179.12499997999999, 3));
+        assertEquals(15, fractionDigitsForValue(39.666666666666667,  2), "Expected no rounding");
+        assertEquals(15, fractionDigitsForValue(-8.131906111111111,  2), "Expected no rounding");
+        assertEquals(16, fractionDigitsForValue( 0.6149999999999993, 1), "Expected no rounding");
+        assertEquals(14, fractionDigitsForValue( 0.6149999999999993, 2), "Expected rounding");
+        assertEquals(14, fractionDigitsForValue(-0.6149999999999993, 2), "Expected rounding");
+        assertEquals(15, fractionDigitsForValue(-0.1979999999999998, 2), "Expected rounding");
+        assertEquals(11, fractionDigitsForValue( 179.12499999999824, 3), "Expected rounding");
+        assertEquals(14, fractionDigitsForValue( 179.12499999999824, 2), "Expected no rounding");
+        assertEquals(14, fractionDigitsForValue( 179.12499997999999, 3), "Expected no rounding");
     }
 
     /**
