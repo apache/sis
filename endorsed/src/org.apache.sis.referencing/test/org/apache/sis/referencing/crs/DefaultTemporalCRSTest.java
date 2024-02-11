@@ -27,7 +27,7 @@ import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_MILLISEC
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
@@ -97,10 +97,10 @@ public final class DefaultTemporalCRSTest extends TestCase {
         final double  value   = 58543.25;                               // 2019-03-01T06:00:00Z
         final Date    date    = crs.toDate(value);
         final Instant instant = crs.toInstant(value);
-        assertEquals("toInstant", Instant.ofEpochSecond(1551420000L), instant);
-        assertEquals("toDate",    instant, date.toInstant());
-        assertEquals("toValue",   value, crs.toValue(instant), STRICT);
-        assertEquals("toValue",   value, crs.toValue(date), STRICT);
+        assertEquals(Instant.ofEpochSecond(1551420000L), instant);
+        assertEquals(instant, date.toInstant());
+        assertEquals(value, crs.toValue(instant));
+        assertEquals(value, crs.toValue(date));
     }
 
     /**
@@ -127,10 +127,10 @@ public final class DefaultTemporalCRSTest extends TestCase {
          */
         final Instant t = Instant.ofEpochSecond(10002L*(60*60*24) + 15, 789 * NANOS_PER_MILLISECOND);
         final double  v = 2 + (15.789 - 12.345) / (60*60*24);
-        assertEquals("toValue",   v,            crs.toValue(t), ε);
-        assertEquals("toValue",   v,            crs.toValue(Date.from(t)), ε);
-        assertEquals("toInstant", t,            crs.toInstant(v));
-        assertEquals("toDate",    Date.from(t), crs.toDate(v));
+        assertEquals(v,            crs.toValue(t), ε);
+        assertEquals(v,            crs.toValue(Date.from(t)), ε);
+        assertEquals(t,            crs.toInstant(v));
+        assertEquals(Date.from(t), crs.toDate(v));
     }
 
     /**
@@ -142,6 +142,6 @@ public final class DefaultTemporalCRSTest extends TestCase {
         final Duration duration = crs.toDuration(4.25);
         assertEquals(  4, duration.toDays());
         assertEquals(102, duration.toHours());
-        assertEquals(4.25, crs.toValue(duration), STRICT);
+        assertEquals(4.25, crs.toValue(duration));
     }
 }

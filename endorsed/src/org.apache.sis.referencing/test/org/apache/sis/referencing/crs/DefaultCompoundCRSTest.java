@@ -33,9 +33,8 @@ import org.apache.sis.io.wkt.Convention;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
@@ -94,23 +93,21 @@ public final class DefaultCompoundCRSTest extends TestCase {
         final Map<String,Object> properties = new HashMap<>(4);
         assertNull(properties.put(DefaultCompoundCRS.LOCALE_KEY, Locale.ENGLISH));
         assertNull(properties.put(DefaultCompoundCRS.NAME_KEY,   "3D + illegal"));
-        try {
-            new DefaultCompoundCRS(properties, HardCodedCRS.WGS84, HEIGHT, HardCodedCRS.SPHERE);
-            fail("Should not allow construction with two horizontal components.");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Compound coordinate reference systems cannot contain two horizontal components.", e.getMessage());
-        }
+
+        IllegalArgumentException e;
+        e = assertThrows(IllegalArgumentException.class,
+                () -> new DefaultCompoundCRS(properties, HardCodedCRS.WGS84, HEIGHT, HardCodedCRS.SPHERE),
+                "Should not allow construction with two horizontal components.");
+        assertEquals("Compound coordinate reference systems cannot contain two horizontal components.", e.getMessage());
         /*
          * Try again with duplicated vertical components, opportunistically
          * testing localization in a different language.
          */
         properties.put(DefaultCompoundCRS.LOCALE_KEY, Locale.FRENCH);
-        try {
-            new DefaultCompoundCRS(properties, HardCodedCRS.WGS84, HEIGHT, HardCodedCRS.ELLIPSOIDAL_HEIGHT);
-            fail("Should not allow construction with two vertical components.");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Un système de référence des coordonnées ne peut pas contenir deux composantes verticales.", e.getMessage());
-        }
+        e = assertThrows(IllegalArgumentException.class,
+                () -> new DefaultCompoundCRS(properties, HardCodedCRS.WGS84, HEIGHT, HardCodedCRS.ELLIPSOIDAL_HEIGHT),
+                "Should not allow construction with two vertical components.");
+        assertEquals("Un système de référence des coordonnées ne peut pas contenir deux composantes verticales.", e.getMessage());
     }
 
     /**
@@ -124,13 +121,12 @@ public final class DefaultCompoundCRSTest extends TestCase {
         final Map<String,Object> properties = new HashMap<>(4);
         assertNull(properties.put(DefaultCompoundCRS.LOCALE_KEY, Locale.ENGLISH));
         assertNull(properties.put(DefaultCompoundCRS.NAME_KEY,   "3D"));
-        try {
-            new DefaultCompoundCRS(properties, HardCodedCRS.WGS84, HardCodedCRS.ELLIPSOIDAL_HEIGHT);
-            fail("Should not allow construction with ellipsoidal height.");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Compound coordinate reference systems should not contain ellipsoidal height. "
-                    + "Use a three-dimensional geographic system instead.", e.getMessage());
-        }
+
+        var e = assertThrows(IllegalArgumentException.class,
+                () -> new DefaultCompoundCRS(properties, HardCodedCRS.WGS84, HardCodedCRS.ELLIPSOIDAL_HEIGHT),
+                "Should not allow construction with ellipsoidal height.");
+        assertEquals("Compound coordinate reference systems should not contain ellipsoidal height. "
+                + "Use a three-dimensional geographic system instead.", e.getMessage());
         /*
          * We allow an ellipsoidal height if there is no horizontal CRS.
          * This is a departure from ISO 19111.
@@ -152,8 +148,8 @@ public final class DefaultCompoundCRSTest extends TestCase {
          * Verifies the coordinate system axes.
          */
         final CoordinateSystem cs = crs4.getCoordinateSystem();
-        assertInstanceOf("coordinateSystem", DefaultCompoundCS.class, cs);
-        assertEquals("dimension", 4, cs.getDimension());
+        assertInstanceOf(DefaultCompoundCS.class, cs);
+        assertEquals(4, cs.getDimension());
         assertSame(HardCodedAxes.GEODETIC_LONGITUDE,     cs.getAxis(0));
         assertSame(HardCodedAxes.GEODETIC_LATITUDE,      cs.getAxis(1));
         assertSame(HardCodedAxes.GRAVITY_RELATED_HEIGHT, cs.getAxis(2));
@@ -205,19 +201,19 @@ public final class DefaultCompoundCRSTest extends TestCase {
         final DefaultGeographicCRS crs3 = HardCodedCRS.WGS84_3D;
         final DefaultCompoundCRS   crs4 = new DefaultCompoundCRS(Map.of(NAME_KEY, "4D"), crs3, TIME);
         CoordinateSystemAxis axis = crs4.getCoordinateSystem().getAxis(0);
-        assertEquals("longitude.minimumValue", -180.0, axis.getMinimumValue(), STRICT);
-        assertEquals("longitude.maximumValue", +180.0, axis.getMaximumValue(), STRICT);
+        assertEquals(-180.0, axis.getMinimumValue(), STRICT);
+        assertEquals(+180.0, axis.getMaximumValue(), STRICT);
 
-        assertSame("Expected a no-op.", crs4, crs4.forConvention(AxesConvention.RIGHT_HANDED));
-        final DefaultCompoundCRS shifted =   crs4.forConvention(AxesConvention.POSITIVE_RANGE);
-        assertNotSame("Expected a new CRS.", crs4, shifted);
+        assertSame(crs4, crs4.forConvention(AxesConvention.RIGHT_HANDED), "Expected a no-op.");
+        final DefaultCompoundCRS shifted = crs4.forConvention(AxesConvention.POSITIVE_RANGE);
+        assertNotSame(crs4, shifted, "Expected a new CRS.");
         Validators.validate(shifted);
 
         axis = shifted.getCoordinateSystem().getAxis(0);
-        assertEquals("longitude.minimumValue",      0.0, axis.getMinimumValue(), STRICT);
-        assertEquals("longitude.maximumValue",    360.0, axis.getMaximumValue(), STRICT);
-        assertSame("Expected a no-op.",         shifted, shifted.forConvention(AxesConvention.POSITIVE_RANGE));
-        assertSame("Expected cached instance.", shifted, crs4   .forConvention(AxesConvention.POSITIVE_RANGE));
+        assertEquals(  0.0, axis.getMinimumValue(), STRICT);
+        assertEquals(360.0, axis.getMaximumValue(), STRICT);
+        assertSame(shifted, shifted.forConvention(AxesConvention.POSITIVE_RANGE), "Expected a no-op.");
+        assertSame(shifted, crs4   .forConvention(AxesConvention.POSITIVE_RANGE), "Expected cached instance.");
     }
 
     /**
@@ -345,8 +341,8 @@ public final class DefaultCompoundCRSTest extends TestCase {
          * Shallow verification of the components.
          */
         final List<CoordinateReferenceSystem> components = crs.getComponents();
-        assertSame("singleComponents", components, crs.getSingleComponents());
-        assertEquals("components.size", 2, components.size());
+        assertSame(components, crs.getSingleComponents());
+        assertEquals(2, components.size());
         assertEpsgNameAndIdentifierEqual("JGD2011",                   6668, components.get(0));
         assertEpsgNameAndIdentifierEqual("JGD2011 (vertical) height", 6695, components.get(1));
         /*

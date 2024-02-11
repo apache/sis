@@ -39,11 +39,12 @@ import org.apache.sis.measure.Units;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.Rule;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.xml.test.TestCase;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
@@ -109,13 +110,9 @@ public final class DefaultProjectedCRSTest extends TestCase {
     public void testConstructor() throws FactoryException {
         final ProjectedCRS crs = create(HardCodedCRS.NTF);
         verifyParameters(crs.getConversionFromBase().getParameterValues());
-        try {
-            create(HardCodedCRS.WGS84_3D);
-            fail("Should not accept a three-dimensional base geodetic CRS.");
-        } catch (InvalidGeodeticParameterException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("Lambert Conic Conformal (1SP)"));
-        }
+        var e = assertThrows(InvalidGeodeticParameterException.class, () -> create(HardCodedCRS.WGS84_3D),
+                             "Should not accept a three-dimensional base geodetic CRS.");
+        assertMessageContains(e, "Lambert Conic Conformal (1SP)");
     }
 
     /**
@@ -144,11 +141,11 @@ public final class DefaultProjectedCRSTest extends TestCase {
      * or something equivalent.
      */
     private static void verifyParameters(final ParameterValueGroup pg) {
-        assertEquals("Latitude of natural origin",    52,          pg.parameter("Latitude of natural origin")    .doubleValue(Units.GRAD),  STRICT);
-        assertEquals("Longitude of natural origin",    0,          pg.parameter("Longitude of natural origin")   .doubleValue(Units.GRAD),  STRICT);
-        assertEquals("Scale factor at natural origin", 0.99987742, pg.parameter("Scale factor at natural origin").doubleValue(),            STRICT);
-        assertEquals("False easting",             600000,          pg.parameter("False easting")                 .doubleValue(Units.METRE), STRICT);
-        assertEquals("False northing",           2200000,          pg.parameter("False northing")                .doubleValue(Units.METRE), STRICT);
+        assertEquals(52,          pg.parameter("Latitude of natural origin")    .doubleValue(Units.GRAD));
+        assertEquals( 0,          pg.parameter("Longitude of natural origin")   .doubleValue(Units.GRAD));
+        assertEquals( 0.99987742, pg.parameter("Scale factor at natural origin").doubleValue());
+        assertEquals( 600000,     pg.parameter("False easting")                 .doubleValue(Units.METRE));
+        assertEquals(2200000,     pg.parameter("False northing")                .doubleValue(Units.METRE));
     }
 
     /**
@@ -486,14 +483,14 @@ public final class DefaultProjectedCRSTest extends TestCase {
         Validators.validate(crs);
         assertEpsgNameAndIdentifierEqual("NTF (Paris) / Lambert zone II", 27572, crs);
         assertEpsgNameAndIdentifierEqual("NTF (Paris)", 4807, crs.getBaseCRS());
-        assertEquals("scope", "Large and medium scale topographic mapping and engineering survey.", crs.getScope().toString());
+        assertEquals("Large and medium scale topographic mapping and engineering survey.", crs.getScope().toString());
         assertAxisDirectionsEqual("baseCRS", crs.getBaseCRS().getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
         assertAxisDirectionsEqual("coordinateSystem", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
 
         final Projection conversion = crs.getConversionFromBase();
         assertEpsgNameAndIdentifierEqual("Lambert zone II", 18082, conversion);
         assertEpsgNameAndIdentifierEqual("Lambert Conic Conformal (1SP)", 9801, conversion.getMethod());
-        assertNotNull("conversion.mathTransform", conversion.getMathTransform());
+        assertNotNull(conversion.getMathTransform());
         verifyParameters(conversion.getParameterValues());
         /*
          * Test marshalling and compare with the original file. The comparison ignores the <gml:name> nodes because the
@@ -513,10 +510,11 @@ public final class DefaultProjectedCRSTest extends TestCase {
     public void testEquals() throws FactoryException {
         final ProjectedCRS standard   = create(CommonCRS.WGS84.geographic());
         final ProjectedCRS normalized = create(CommonCRS.WGS84.normalizedGeographic());
-        assertFalse("STRICT",          ((LenientComparable) standard).equals(normalized, ComparisonMode.STRICT));
-        assertFalse("BY_CONTRACT",     ((LenientComparable) standard).equals(normalized, ComparisonMode.BY_CONTRACT));
-        assertTrue ("IGNORE_METADATA", ((LenientComparable) standard).equals(normalized, ComparisonMode.IGNORE_METADATA));
-        assertTrue ("APPROXIMATE",     ((LenientComparable) standard).equals(normalized, ComparisonMode.APPROXIMATE));
-        assertTrue ("ALLOW_VARIANT",   ((LenientComparable) standard).equals(normalized, ComparisonMode.ALLOW_VARIANT));
+        final var c = assertInstanceOf(LenientComparable.class, standard);
+        assertFalse(c.equals(normalized, ComparisonMode.STRICT));
+        assertFalse(c.equals(normalized, ComparisonMode.BY_CONTRACT));
+        assertTrue (c.equals(normalized, ComparisonMode.IGNORE_METADATA));
+        assertTrue (c.equals(normalized, ComparisonMode.APPROXIMATE));
+        assertTrue (c.equals(normalized, ComparisonMode.ALLOW_VARIANT));
     }
 }

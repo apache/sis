@@ -27,7 +27,7 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -61,9 +61,9 @@ public final class DefaultGeocentricCRSTest extends TestCase {
         assertNotSame(crs, normalized);
         final CoordinateSystem cs = normalized.getCoordinateSystem();
         final CoordinateSystem ref = crs.getCoordinateSystem();
-        assertSame("longitude", ref.getAxis(1), cs.getAxis(0));
-        assertSame("latitude",  ref.getAxis(0), cs.getAxis(1));
-        assertSame("height",    ref.getAxis(2), cs.getAxis(2));
+        assertSame(ref.getAxis(1), cs.getAxis(0));
+        assertSame(ref.getAxis(0), cs.getAxis(1));
+        assertSame(ref.getAxis(2), cs.getAxis(2));
     }
 
     /**
@@ -74,18 +74,18 @@ public final class DefaultGeocentricCRSTest extends TestCase {
     public void testShiftLongitudeRange() {
         final DefaultGeocentricCRS crs = HardCodedCRS.SPHERICAL;
         CoordinateSystemAxis axis = crs.getCoordinateSystem().getAxis(1);
-        assertEquals("longitude.minimumValue", -180.0, axis.getMinimumValue(), STRICT);
-        assertEquals("longitude.maximumValue", +180.0, axis.getMaximumValue(), STRICT);
+        assertEquals(-180.0, axis.getMinimumValue(), STRICT);
+        assertEquals(+180.0, axis.getMaximumValue(), STRICT);
 
         final DefaultGeocentricCRS shifted =  crs.forConvention(AxesConvention.POSITIVE_RANGE);
-        assertNotSame("Expected a new CRS.", crs, shifted);
+        assertNotSame(crs, shifted, "Expected a new CRS.");
         Validators.validate(shifted);
 
         axis = shifted.getCoordinateSystem().getAxis(1);
-        assertEquals("longitude.minimumValue",      0.0, axis.getMinimumValue(), STRICT);
-        assertEquals("longitude.maximumValue",    360.0, axis.getMaximumValue(), STRICT);
-        assertSame("Expected a no-op.",         shifted, shifted.forConvention(AxesConvention.POSITIVE_RANGE));
-        assertSame("Expected cached instance.", shifted, crs    .forConvention(AxesConvention.POSITIVE_RANGE));
+        assertEquals(  0.0, axis.getMinimumValue(), STRICT);
+        assertEquals(360.0, axis.getMaximumValue(), STRICT);
+        assertSame(shifted, shifted.forConvention(AxesConvention.POSITIVE_RANGE), "Expected a no-op.");
+        assertSame(shifted,     crs.forConvention(AxesConvention.POSITIVE_RANGE), "Expected cached instance.");
     }
 
     /**

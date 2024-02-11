@@ -28,8 +28,7 @@ import org.apache.sis.xml.Namespaces;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
@@ -155,17 +154,17 @@ public final class DefaultEngineeringCRSTest extends TestCase {
                 xml, "xmlns:*");
 
         final DefaultEngineeringCRS crs = unmarshal(DefaultEngineeringCRS.class, xml);
-        assertEquals("name", "A construction site CRS", crs.getName().getCode());
-        assertEquals("datum.name", "P1", crs.getDatum().getName().getCode());
+        assertEquals("A construction site CRS", crs.getName().getCode());
+        assertEquals("P1", crs.getDatum().getName().getCode());
 
         final CoordinateSystem cs = crs.getCoordinateSystem();
-        assertInstanceOf("coordinateSystem", CartesianCS.class, cs);
-        assertEquals("cs.name", "Cartesian 2D", cs.getName().getCode());
-        assertEquals("cs.dimension", 2, cs.getDimension());
+        assertInstanceOf(CartesianCS.class, cs);
+        assertEquals("Cartesian 2D", cs.getName().getCode());
+        assertEquals(2, cs.getDimension());
         assertAxisDirectionsEqual("cartesianCS", cs, AxisDirection.EAST, AxisDirection.NORTH);
 
-        assertEquals("cs.axis[0].name", "x", cs.getAxis(0).getName().getCode());
-        assertEquals("cs.axis[1].name", "y", cs.getAxis(1).getName().getCode());
+        assertEquals("x", cs.getAxis(0).getName().getCode());
+        assertEquals("y", cs.getAxis(1).getName().getCode());
     }
 
     /**
@@ -222,20 +221,20 @@ public final class DefaultEngineeringCRSTest extends TestCase {
                 xml, "xmlns:*");
 
         final DefaultEngineeringCRS crs = unmarshal(DefaultEngineeringCRS.class, xml);
-        assertEquals("name", "A spherical CRS", crs.getName().getCode());
-        assertEquals("datum.name", "Centre", crs.getDatum().getName().getCode());
+        assertEquals("A spherical CRS", crs.getName().getCode());
+        assertEquals("Centre", crs.getDatum().getName().getCode());
 
         final CoordinateSystem cs = crs.getCoordinateSystem();
-        assertInstanceOf("coordinateSystem", SphericalCS.class, cs);
-        assertEquals("cs.name", "Spherical", cs.getName().getCode());
-        assertEquals("cs.dimension", 3, cs.getDimension());
+        assertInstanceOf(SphericalCS.class, cs);
+        assertEquals("Spherical", cs.getName().getCode());
+        assertEquals(3, cs.getDimension());
         assertAxisDirectionsEqual("cartesianCS", cs, AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
 
-        assertEquals("cs.axis[0].name", "Spherical latitude",  cs.getAxis(0).getName().getCode());
-        assertEquals("cs.axis[1].name", "Spherical longitude", cs.getAxis(1).getName().getCode());
-        assertEquals("cs.axis[2].name", "Geocentric radius",   cs.getAxis(2).getName().getCode());
-        assertEquals("cs.axis[0].abbreviation", "Ω",           cs.getAxis(0).getAbbreviation());
-        assertEquals("cs.axis[1].abbreviation", "θ",           cs.getAxis(1).getAbbreviation());
-        assertEquals("cs.axis[2].abbreviation", "r",           cs.getAxis(2).getAbbreviation());
+        assertEquals("Spherical latitude",  cs.getAxis(0).getName().getCode());
+        assertEquals("Spherical longitude", cs.getAxis(1).getName().getCode());
+        assertEquals("Geocentric radius",   cs.getAxis(2).getName().getCode());
+        assertEquals("Ω", cs.getAxis(0).getAbbreviation());
+        assertEquals("θ", cs.getAxis(1).getAbbreviation());
+        assertEquals("r", cs.getAxis(2).getAbbreviation());
     }
 }

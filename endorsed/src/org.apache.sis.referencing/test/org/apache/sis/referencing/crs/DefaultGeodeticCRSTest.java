@@ -22,7 +22,7 @@ import org.apache.sis.referencing.GeodeticObjectVerifier;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
@@ -71,7 +71,7 @@ public final class DefaultGeodeticCRSTest extends TestCase {
          * Values in the following tests are specific to our XML file.
          * The actual texts in the EPSG database are more descriptive.
          */
-        assertEquals("scope", "Horizontal component of 3D system.", crs.getScope().toString());
+        assertEquals("Horizontal component of 3D system.", crs.getScope().toString());
         /*
          * Marshal and compare with the original file.
          */
