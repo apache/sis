@@ -32,7 +32,7 @@ import static org.apache.sis.util.internal.Constants.STANDARD_PARALLEL_2;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
@@ -87,16 +87,16 @@ public final class MapProjectionParametersTest extends TestCase {
         final MapProjectionDescriptor descriptor = createDescriptor(0);
         final ParameterValueGroup parameters = descriptor.createValue();
 
-        parameters.parameter(SEMI_MAJOR).setValue(6378137.000); // WGS84
+        parameters.parameter(SEMI_MAJOR).setValue(6378137.000);                         // WGS84
         parameters.parameter(SEMI_MINOR).setValue(6356752.314);
-        assertEquals(6371007, parameters.parameter(EARTH_RADIUS).doubleValue(), 0.5); // Authalic radius.
+        assertEquals(6371007, parameters.parameter(EARTH_RADIUS).doubleValue(), 0.5);   // Authalic radius.
         assertEquals(6378137, parameters.parameter(SEMI_MAJOR)  .doubleValue(), 0.5);
         assertEquals(6356752, parameters.parameter(SEMI_MINOR)  .doubleValue(), 0.5);
 
         parameters.parameter(EARTH_RADIUS).setValue(6371000);
-        assertEquals(6371000, parameters.parameter(EARTH_RADIUS).doubleValue(), 0.0);
-        assertEquals(6371000, parameters.parameter(SEMI_MAJOR)  .doubleValue(), 0.0);
-        assertEquals(6371000, parameters.parameter(SEMI_MINOR)  .doubleValue(), 0.0);
+        assertEquals(6371000, parameters.parameter(EARTH_RADIUS).doubleValue());
+        assertEquals(6371000, parameters.parameter(SEMI_MAJOR)  .doubleValue());
+        assertEquals(6371000, parameters.parameter(SEMI_MINOR)  .doubleValue());
     }
 
     /**
@@ -112,19 +112,19 @@ public final class MapProjectionParametersTest extends TestCase {
         assertEquals(294.97870, parameters.parameter(INVERSE_FLATTENING).doubleValue(), 0.00001);
         assertEquals(6378206.4, parameters.parameter(SEMI_MAJOR)        .doubleValue(), 0.5);
         assertEquals(6356583.8, parameters.parameter(SEMI_MINOR)        .doubleValue(), 0.5);
-        assertFalse("isIvfDefinitive", parameters.parameter(IS_IVF_DEFINITIVE).booleanValue());
+        assertFalse(parameters.parameter(IS_IVF_DEFINITIVE).booleanValue());
 
         parameters.parameter(SEMI_MAJOR).setValue(6378137.0);  // WGS84
         parameters.parameter(INVERSE_FLATTENING).setValue(298.257223563);
         assertEquals(298.257, parameters.parameter(INVERSE_FLATTENING).doubleValue(), 0.001);
         assertEquals(6378137, parameters.parameter(SEMI_MAJOR)        .doubleValue(), 0.5);
         assertEquals(6356752, parameters.parameter(SEMI_MINOR)        .doubleValue(), 0.5);
-        assertTrue("isIvfDefinitive", parameters.parameter(IS_IVF_DEFINITIVE).booleanValue());
+        assertTrue(parameters.parameter(IS_IVF_DEFINITIVE).booleanValue());
 
         parameters.parameter(SEMI_MAJOR).setValue(6378350.9);  // Clarke 1858 (approximated)
         parameters.parameter(SEMI_MINOR).setValue(6356675.0);
         assertEquals(294.26, parameters.parameter(INVERSE_FLATTENING).doubleValue(), 0.001);
-        assertFalse("isIvfDefinitive", parameters.parameter(IS_IVF_DEFINITIVE).booleanValue());
+        assertFalse(parameters.parameter(IS_IVF_DEFINITIVE).booleanValue());
     }
 
     /**
@@ -160,16 +160,16 @@ public final class MapProjectionParametersTest extends TestCase {
         assertNotSame(p1, p);
         assertNotSame(p2, p);
 
-        /* Empty */      assertArrayEquals(new double[] {     }, p.doubleValueList(), 0.0);
-        p1.setValue(40); assertArrayEquals(new double[] {40   }, p.doubleValueList(), 0.0);
-        p2.setValue(60); assertArrayEquals(new double[] {40,60}, p.doubleValueList(), 0.0);
+        /* Empty */      assertArrayEquals(new double[] {     }, p.doubleValueList());
+        p1.setValue(40); assertArrayEquals(new double[] {40   }, p.doubleValueList());
+        p2.setValue(60); assertArrayEquals(new double[] {40,60}, p.doubleValueList());
 
         p.setValue(new double[] {30,40});
-        assertEquals(30, p1.doubleValue(), 0.0);
-        assertEquals(40, p2.doubleValue(), 0.0);
+        assertEquals(30, p1.doubleValue());
+        assertEquals(40, p2.doubleValue());
 
         p.setValue(new double[] {45});
-        assertEquals(45,         p1.doubleValue(), 0.0);
-        assertEquals(Double.NaN, p2.doubleValue(), 0.0);
+        assertEquals(45,         p1.doubleValue());
+        assertEquals(Double.NaN, p2.doubleValue());
     }
 }

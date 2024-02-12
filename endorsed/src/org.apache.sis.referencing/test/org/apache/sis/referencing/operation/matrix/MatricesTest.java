@@ -31,7 +31,7 @@ import org.apache.sis.util.iso.Types;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -97,10 +97,10 @@ public final class MatricesTest extends TestCase {
                 new AxisDirection[] {NORTH, EAST, UP});
 
         assertExtendedPrecision(matrix);
-        assertTrue ("isAffine",   matrix.isAffine());
-        assertTrue ("isIdentity", matrix.isIdentity());
-        assertEquals("numRow", 4, matrix.getNumRow());
-        assertEquals("numCol", 4, matrix.getNumCol());
+        assertTrue(matrix.isAffine());
+        assertTrue(matrix.isIdentity());
+        assertEquals(4, matrix.getNumRow());
+        assertEquals(4, matrix.getNumCol());
     }
 
     /**
@@ -119,10 +119,10 @@ public final class MatricesTest extends TestCase {
                 new AxisDirection[] {WEST, UP, SOUTH});
 
         assertExtendedPrecision(matrix);
-        assertTrue ("isAffine",   matrix.isAffine());
-        assertFalse("isIdentity", matrix.isIdentity());
-        assertEquals("numRow", 4, matrix.getNumRow());
-        assertEquals("numCol", 4, matrix.getNumCol());
+        assertTrue (matrix.isAffine());
+        assertFalse(matrix.isIdentity());
+        assertEquals(4, matrix.getNumRow());
+        assertEquals(4, matrix.getNumCol());
         assertMatrixEquals("(N,E,U) → (W,U,S)", Matrices.create(4, 4, new double[] {
              0,-1, 0, 0,
              0, 0, 1, 0,
@@ -146,9 +146,9 @@ public final class MatricesTest extends TestCase {
                 new AxisDirection[] {DOWN, NORTH});
 
         assertExtendedPrecision(matrix);
-        assertFalse("isIdentity", matrix.isIdentity());
-        assertEquals("numRow", 3, matrix.getNumRow());
-        assertEquals("numCol", 4, matrix.getNumCol());
+        assertFalse (matrix.isIdentity());
+        assertEquals(3, matrix.getNumRow());
+        assertEquals(4, matrix.getNumCol());
         assertMatrixEquals("(N,E,U) → (D,N)", Matrices.create(3, 4, new double[] {
             0, 0,-1, 0,
             1, 0, 0, 0,
@@ -171,9 +171,9 @@ public final class MatricesTest extends TestCase {
                 new AxisDirection[] {DOWN, DOWN});
 
         assertExtendedPrecision(matrix);
-        assertFalse("isIdentity", matrix.isIdentity());
-        assertEquals("numRow", 3, matrix.getNumRow());
-        assertEquals("numCol", 4, matrix.getNumCol());
+        assertFalse (matrix.isIdentity());
+        assertEquals(3, matrix.getNumRow());
+        assertEquals(4, matrix.getNumCol());
         assertMatrixEquals("(N,E,U) → (D,D)", Matrices.create(3, 4, new double[] {
             0, 0,-1, 0,
             0, 0,-1, 0,
@@ -190,14 +190,11 @@ public final class MatricesTest extends TestCase {
      */
     @Test
     public void testCreateTransformWithAxisNotInSource() {
-        try {
-            Matrices.createTransform(
-                    new AxisDirection[] {NORTH, EAST, UP},
-                    new AxisDirection[] {DOWN, GEOCENTRIC_X});
-            fail("Expected an exception.");
-        } catch (IllegalArgumentException e) {
-            assertMessageContainsDirection(e, GEOCENTRIC_X);
-        }
+        var e = assertThrows(IllegalArgumentException.class,
+                () -> Matrices.createTransform(
+                        new AxisDirection[] {NORTH, EAST, UP},
+                        new AxisDirection[] {DOWN, GEOCENTRIC_X}));
+        assertMessageContainsDirection(e, GEOCENTRIC_X);
     }
 
     /**
@@ -209,15 +206,12 @@ public final class MatricesTest extends TestCase {
      */
     @Test
     public void testCreateTransformWithColinearAxes() {
-        try {
-            Matrices.createTransform(
-                    new AxisDirection[] {NORTH, EAST, UP, WEST},
-                    new AxisDirection[] {NORTH, EAST, UP});
-            fail("Expected an exception.");
-        } catch (IllegalArgumentException e) {
-            assertMessageContainsDirection(e, EAST);
-            assertMessageContainsDirection(e, WEST);
-        }
+        var e = assertThrows(IllegalArgumentException.class,
+                () -> Matrices.createTransform(
+                        new AxisDirection[] {NORTH, EAST, UP, WEST},
+                        new AxisDirection[] {NORTH, EAST, UP}));
+        assertMessageContainsDirection(e, EAST);
+        assertMessageContainsDirection(e, WEST);
     }
 
     /**
@@ -252,10 +246,10 @@ public final class MatricesTest extends TestCase {
         final Envelope srcEnvelope = new Envelope2D(null, -20, -40, 100, 200);
         final Envelope dstEnvelope = new Envelope2D(null, -10, -25, 300, 500);
         MatrixSIS matrix = Matrices.createTransform(srcEnvelope, dstEnvelope);
-        assertTrue ("isAffine",   matrix.isAffine());
-        assertFalse("isIdentity", matrix.isIdentity());
-        assertEquals("numRow", 3, matrix.getNumRow());
-        assertEquals("numCol", 3, matrix.getNumCol());
+        assertTrue (matrix.isAffine());
+        assertFalse(matrix.isIdentity());
+        assertEquals(3, matrix.getNumRow());
+        assertEquals(3, matrix.getNumCol());
         assertEquals(Matrices.create(3, 3, new double[] {
             3.0,  0,    50,
             0,    2.5,  75,
@@ -268,8 +262,8 @@ public final class MatricesTest extends TestCase {
         expanded.subEnvelope(0, 2).setEnvelope(srcEnvelope);
         expanded.setRange(2, 1000, 2000);
         matrix = Matrices.createTransform(expanded, dstEnvelope);
-        assertEquals("numRow", 3, matrix.getNumRow());
-        assertEquals("numCol", 4, matrix.getNumCol());
+        assertEquals(3, matrix.getNumRow());
+        assertEquals(4, matrix.getNumCol());
         assertEquals(Matrices.create(3, 4, new double[] {
             3.0,  0,   0,  50,
             0,    2.5, 0,  75,
@@ -280,8 +274,8 @@ public final class MatricesTest extends TestCase {
          */
         expanded.subEnvelope(0, 2).setEnvelope(dstEnvelope);
         matrix = Matrices.createTransform(srcEnvelope, expanded);
-        assertEquals("numRow", 4, matrix.getNumRow());
-        assertEquals("numCol", 3, matrix.getNumCol());
+        assertEquals(4, matrix.getNumRow());
+        assertEquals(3, matrix.getNumCol());
         assertEquals(Matrices.create(4, 3, new double[] {
             3.0,  0,    50,
             0,    2.5,  75,
@@ -302,10 +296,10 @@ public final class MatricesTest extends TestCase {
         MatrixSIS matrix = Matrices.createTransform(
                 srcEnvelope, new AxisDirection[] {NORTH, WEST},
                 dstEnvelope, new AxisDirection[] {EAST, NORTH});
-        assertTrue ("isAffine",   matrix.isAffine());
-        assertFalse("isIdentity", matrix.isIdentity());
-        assertEquals("numRow", 3, matrix.getNumRow());
-        assertEquals("numCol", 3, matrix.getNumCol());
+        assertTrue (matrix.isAffine());
+        assertFalse(matrix.isIdentity());
+        assertEquals(3, matrix.getNumRow());
+        assertEquals(3, matrix.getNumCol());
         assertMatrixEquals("(N,E) → (E,N)", Matrices.create(3, 3, new double[] {
             0,   -3.0, 350,
             2.5,  0,    75,
@@ -320,8 +314,8 @@ public final class MatricesTest extends TestCase {
         matrix = Matrices.createTransform(
                 expanded,    new AxisDirection[] {NORTH, WEST, UP},
                 dstEnvelope, new AxisDirection[] {EAST, NORTH});
-        assertEquals("numRow", 3, matrix.getNumRow());
-        assertEquals("numCol", 4, matrix.getNumCol());
+        assertEquals(3, matrix.getNumRow());
+        assertEquals(4, matrix.getNumCol());
         assertMatrixEquals("(N,E,U) → (E,N)", Matrices.create(3, 4, new double[] {
             0,   -3.0, 0, 350,
             2.5,  0,   0,  75,
@@ -479,8 +473,8 @@ public final class MatricesTest extends TestCase {
     public void testCopy() {
         final Matrix matrix = new Matrix3(10, 20, 30, 40, 50, 60, 70, 80, 90);
         final Matrix copy = Matrices.copy(matrix);
-        assertNotSame("copy", matrix, copy);
-        assertEquals ("copy", matrix, copy);
+        assertNotSame(matrix, copy);
+        assertEquals (matrix, copy);
     }
 
     /**

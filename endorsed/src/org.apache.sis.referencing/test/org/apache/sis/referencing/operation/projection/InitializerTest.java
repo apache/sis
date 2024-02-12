@@ -27,7 +27,7 @@ import org.apache.sis.parameter.Parameters;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.TestCase;
 
 
@@ -89,6 +89,6 @@ public final class InitializerTest extends TestCase {
         final double φ0 = toRadians(initializer.getAndStore(ObliqueStereographic.LATITUDE_OF_ORIGIN));
         final double rc = initializer.radiusOfConformalSphere(sin(φ0)).doubleValue();
         assertTrue(φ0 > 0);
-        assertEquals("Conformal Sphere Radius", 6382644.571, 6377397.155 * rc, Formulas.LINEAR_TOLERANCE);
+        assertEquals(6382644.571, 6377397.155 * rc, Formulas.LINEAR_TOLERANCE, "Conformal Sphere Radius");
     }
 }

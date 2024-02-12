@@ -42,8 +42,8 @@ import org.apache.sis.util.iso.DefaultNameSpace;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
@@ -215,9 +215,9 @@ public final class ConsistencyTest extends TestCase {
                 int p = line.length();
                 int s = CharSequences.skipLeadingWhitespaces(line, 0, p);
                 if (CharSequences.regionMatches(line, s, "METHOD[\"")) {
-                    assertEquals(code, ',', line.charAt(--p));
-                    assertEquals(code, ']', line.charAt(--p));
-                    assertEquals(code, ']', line.charAt(--p));
+                    assertEquals(',', line.charAt(--p), code);
+                    assertEquals(']', line.charAt(--p), code);
+                    assertEquals(']', line.charAt(--p), code);
                     if (line.charAt(--p) == '"') {
                         p = CharSequences.lastIndexOf(line, ',', 0, p);
                         expectedLines[i] = line.subSequence(0, p) + "]],";
@@ -231,7 +231,7 @@ public final class ConsistencyTest extends TestCase {
         final int length = StrictMath.min(expectedLines.length, actualLines.length);
         try {
             for (int i=0; i<length; i++) {
-                assertEquals(code, expectedLines[i], actualLines[i]);
+                assertEquals(expectedLines[i], actualLines[i], code);
             }
         } catch (AssertionError e) {
             print(code, "ERROR", "WKT are not equal.");
@@ -251,7 +251,7 @@ public final class ConsistencyTest extends TestCase {
             out.println(table);
             throw e;
         }
-        assertEquals("Unexpected number of lines.", expectedLines.length, actualLines.length);
+        assertEquals(expectedLines.length, actualLines.length);
         return parsed;
     }
 
@@ -273,7 +273,7 @@ public final class ConsistencyTest extends TestCase {
         if (toStandardUnit(crs   .getCoordinateSystem().getAxis(0).getUnit()).equals(
             toStandardUnit(parsed.getCoordinateSystem().getAxis(0).getUnit())))
         {
-            assertTrue(urn, Utilities.deepEquals(crs, parsed, ComparisonMode.DEBUG));
+            assertTrue(Utilities.deepEquals(crs, parsed, ComparisonMode.DEBUG), urn);
             /*
              * Now test the lookup operation. Since the parsed CRS has an identifier,
              * that lookup operation should not do a lot of work actually.

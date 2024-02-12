@@ -20,7 +20,7 @@ import org.opengis.geometry.DirectPosition;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -88,8 +88,8 @@ public final class DirectPosition1DTest extends TestCase {
     public void testClone() {
         final DirectPosition1D p1 = new DirectPosition1D(20);
         final DirectPosition1D p2 = p1.clone();
-        assertEquals("Expected the same CRS and coordinates.", p1, p2);
-        assertEquals("Expected the same coordinates.", 20.0, p2.coordinate, 0.0);
+        assertEquals(p1, p2);
+        assertEquals(20.0, p2.coordinate, 0.0);
         validate(p2);
     }
 

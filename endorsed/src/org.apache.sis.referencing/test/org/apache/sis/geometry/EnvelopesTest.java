@@ -41,8 +41,7 @@ import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.test.DependsOn;
@@ -74,7 +73,7 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
      */
     @Override
     GeneralEnvelope createFromExtremums(CoordinateReferenceSystem crs, double xmin, double ymin, double xmax, double ymax) {
-        final GeneralEnvelope env = new GeneralEnvelope(crs);
+        final var env = new GeneralEnvelope(crs);
         env.setRange(0, xmin, xmax);
         env.setRange(1, ymin, ymax);
         return env;
@@ -142,7 +141,7 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
      */
     @Test
     public void testToString() {
-        final GeneralEnvelope envelope = new GeneralEnvelope(2);
+        final var envelope = new GeneralEnvelope(2);
         envelope.setRange(0, 40, 50);
         envelope.setRange(1, 20, 25);
         assertEquals("BOX(40 20, 50 25)", Envelopes.toString(envelope));
@@ -153,7 +152,7 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
      */
     @Test
     public void testToPolygonWKT() {
-        final GeneralEnvelope envelope = new GeneralEnvelope(2);
+        final var envelope = new GeneralEnvelope(2);
         envelope.setRange(0, 40, 50);
         envelope.setRange(1, 20, 25);
         assertEquals("POLYGON((40 20, 40 25, 50 25, 50 20, 40 20))", Envelopes.toPolygonWKT(envelope));
@@ -179,8 +178,8 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
         env.setRange(1, -80,   80);
         env.setRange(2, -50,  -50);
         env.setRange(3, Double.NaN, Double.NaN);
-        assertFalse("isAllNaN", env.isAllNaN());        // Opportunist test (not really the topic of this method).
-        assertTrue ("isEmpty",  env.isEmpty());         // Opportunist test (not really the topic of this method).
+        assertFalse(env.isAllNaN());        // Opportunist test (not really the topic of this method).
+        assertTrue (env.isEmpty());         // Opportunist test (not really the topic of this method).
         /*
          * If the referencing framework has selected the CopyTransform implementation
          * as expected, then the envelope coordinates should not be NaN.
@@ -225,8 +224,8 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
      * Implementation of {@link #testAxisRangeChange3D()} and {@link #testAxisRangeChangeWithDatumShift()}.
      */
     private void testAxisRangeChange3D(final GeographicCRS targetCRS) throws FactoryException, TransformException {
-        final GeneralEnvelope envelope  = new GeneralEnvelope(new double[] { -0.5, -90, 1000},
-                                                              new double[] {354.5, +90, 1002});
+        final var envelope  = new GeneralEnvelope(new double[] { -0.5, -90, 1000},
+                                                  new double[] {354.5, +90, 1002});
         envelope.setCoordinateReferenceSystem(CRS.compound(
                 HardCodedCRS.WGS84.forConvention(AxesConvention.POSITIVE_RANGE), HardCodedCRS.TIME));
         final GeneralEnvelope expected = createFromExtremums(targetCRS, -0.5, -90, -5.5, 90);
@@ -247,15 +246,15 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
      */
     @Test
     public void testFindOperation() throws FactoryException {
-        final GeneralEnvelope source = new GeneralEnvelope(HardCodedCRS.WGS84);
-        final GeneralEnvelope target = new GeneralEnvelope(HardCodedCRS.GEOCENTRIC);
+        final var source = new GeneralEnvelope(HardCodedCRS.WGS84);
+        final var target = new GeneralEnvelope(HardCodedCRS.GEOCENTRIC);
         source.setRange(0, 20, 30);
         source.setRange(1, 40, 45);
         target.setRange(0, 6000, 8000);
         target.setRange(1, 7000, 9000);
         target.setRange(2, 4000, 5000);
         CoordinateOperation op = Envelopes.findOperation(source, target);
-        assertInstanceOf("findOperation", Conversion.class, op);
+        assertInstanceOf(Conversion.class, op);
         assertEquals("Geographic/geocentric conversions", ((Conversion) op).getMethod().getName().getCode());
     }
 
@@ -266,9 +265,9 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
      */
     @Test
     public void testCompound() throws FactoryException {
-        final GeneralEnvelope element0 = new GeneralEnvelope(HardCodedCRS.WGS84);
-        final GeneralEnvelope element1 = new GeneralEnvelope(HardCodedCRS.TIME);
-        final GeneralEnvelope expected = new GeneralEnvelope(3);
+        final var element0 = new GeneralEnvelope(HardCodedCRS.WGS84);
+        final var element1 = new GeneralEnvelope(HardCodedCRS.TIME);
+        final var expected = new GeneralEnvelope(3);
         element0.setRange(0,   20,   30);
         expected.setRange(0,   20,   30);
         element0.setRange(1,   40,   45);
@@ -278,9 +277,9 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
         Envelope env = Envelopes.compound(element0, element1);
         final List<SingleCRS> crs = CRS.getSingleComponents(env.getCoordinateReferenceSystem());
         assertEnvelopeEquals(expected, env);
-        assertEquals("crs.components.count", 2, crs.size());
-        assertSame("crs.components[0]", HardCodedCRS.WGS84, crs.get(0));
-        assertSame("crs.components[1]", HardCodedCRS.TIME, crs.get(1));
+        assertEquals(2, crs.size());
+        assertSame(HardCodedCRS.WGS84, crs.get(0));
+        assertSame(HardCodedCRS.TIME,  crs.get(1));
         /*
          * Try again without CRS in the second component.
          * The compound envelope shall not have CRS anymore.
@@ -288,7 +287,7 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
         element1.setCoordinateReferenceSystem(null);
         env = Envelopes.compound(element0, element1);
         assertEnvelopeEquals(expected, env);
-        assertNull("crs.components", env.getCoordinateReferenceSystem());
+        assertNull(env.getCoordinateReferenceSystem());
     }
 
     /**
@@ -298,7 +297,7 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
      */
     @Test
     public void testToTimeRange() {
-        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_WITH_TIME);
+        final var envelope = new GeneralEnvelope(HardCodedCRS.WGS84_WITH_TIME);
         envelope.setToNaN();
         envelope.setRange(2, 58840, 59000.75);
         final Range<Instant> range = Envelopes.toTimeRange(envelope).get();
@@ -313,7 +312,7 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
      */
     @Test
     public void testWraparound() throws TransformException {
-        final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84);
+        final var envelope = new GeneralEnvelope(HardCodedCRS.WGS84);
         envelope.setRange(0, -200, -100);
         envelope.setRange(1, 5, 9);
         final MathTransform tr = WraparoundTransform.create(2, 0, 360, -180, 0);
@@ -349,7 +348,7 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
 
         final GeneralEnvelope targetEnvelope = Envelopes.transform(gridToCRS, gridExtent);
         final double expected = targetCRS.getDatum().getEllipsoid().getSemiMajorAxis() * Math.PI;
-        assertEquals("min X", -expected, targetEnvelope.getMinimum(0), 2);
-        assertEquals("max X", +expected, targetEnvelope.getMaximum(0), 2);
+        assertEquals(-expected, targetEnvelope.getMinimum(0), 2);
+        assertEquals(+expected, targetEnvelope.getMaximum(0), 2);
     }
 }

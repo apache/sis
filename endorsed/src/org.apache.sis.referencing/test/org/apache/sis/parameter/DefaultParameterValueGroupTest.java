@@ -33,13 +33,14 @@ import org.apache.sis.util.ComparisonMode;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 
 
 /**
@@ -112,7 +113,7 @@ public final class DefaultParameterValueGroupTest extends TestCase {
                 error = e;
             }
             if (param.getDescriptor().getMaximumOccurs() > 1) {
-                assertNotNull("Validation methods should have detected that the descriptor is invalid.", error);
+                assertNotNull(error, "Validation methods should have detected that the descriptor is invalid.");
             } else if (error != null) {
                 throw error;
             }
@@ -132,12 +133,12 @@ public final class DefaultParameterValueGroupTest extends TestCase {
             descriptors.get(3).createValue()
         };
         final DefaultParameterValueGroup  group  = new DefaultParameterValueGroup(descriptor);
-        assertEquals("parameter(“Mandatory 1”)", expected[0], group.parameter("Mandatory 1"));
-        assertEquals("parameter(“Mandatory 2”)", expected[1], group.parameter("Mandatory 2"));
-        assertEquals("parameter(“Optional 3”)",  expected[2], group.parameter("Optional 3"));
-        assertEquals("parameter(“Optional 4”)",  expected[3], group.parameter("Optional 4"));
-        assertEquals("parameter(“Alias 2”)",     expected[1], group.parameter("Alias 2"));
-        assertEquals("parameter(“Alias 3”)",     expected[2], group.parameter("Alias 3"));
+        assertEquals(expected[0], group.parameter("Mandatory 1"));
+        assertEquals(expected[1], group.parameter("Mandatory 2"));
+        assertEquals(expected[2], group.parameter("Optional 3"));
+        assertEquals(expected[3], group.parameter("Optional 4"));
+        assertEquals(expected[1], group.parameter("Alias 2"));
+        assertEquals(expected[2], group.parameter("Alias 3"));
     }
 
     /**
@@ -148,12 +149,11 @@ public final class DefaultParameterValueGroupTest extends TestCase {
     public void testValuesClear() {
         final DefaultParameterValueGroup  group  = createGroup(10);
         final List<GeneralParameterValue> values = group.values();
-        assertEquals("size", 4, values.size());
-        assertEquals("parameter(“Mandatory 2”)", 20, group.parameter("Mandatory 2").intValue());
+        assertEquals(4, values.size());
+        assertEquals(20, group.parameter("Mandatory 2").intValue());
         values.clear();
-        assertEquals("size", 2, values.size());
-        assertEquals("parameter(“Mandatory 2”)", DefaultParameterDescriptorGroupTest.DEFAULT_VALUE,
-                group.parameter("Mandatory 2").getValue());
+        assertEquals(2, values.size());
+        assertEquals(DefaultParameterDescriptorGroupTest.DEFAULT_VALUE, group.parameter("Mandatory 2").getValue());
     }
 
     /**
@@ -164,15 +164,11 @@ public final class DefaultParameterValueGroupTest extends TestCase {
     public void testValuesGet() {
         final DefaultParameterValueGroup  group  = new DefaultParameterValueGroup(descriptor);
         final List<GeneralParameterValue> values = group.values();
-        assertEquals("Initial size", 2, values.size());
+        assertEquals(2, values.size());
         assertEquals(descriptor.descriptors().get(0).createValue(), values.get(0));
         assertEquals(descriptor.descriptors().get(1).createValue(), values.get(1));
-        try {
-            values.get(2);
-            fail("Index 2 shall be out of bounds.");
-        } catch (IndexOutOfBoundsException e) {
-            assertNotNull(e.getMessage());
-        }
+        var e = assertThrows(IndexOutOfBoundsException.class, () -> values.get(2));
+        assertMessageContains(e);
         assertEquals(DefaultParameterDescriptorGroupTest.DEFAULT_VALUE, ((ParameterValue<?>) values.get(0)).getValue());
         assertEquals(DefaultParameterDescriptorGroupTest.DEFAULT_VALUE, ((ParameterValue<?>) values.get(1)).getValue());
     }
@@ -185,20 +181,16 @@ public final class DefaultParameterValueGroupTest extends TestCase {
     public void testValuesSet() {
         final DefaultParameterValueGroup  group  = new DefaultParameterValueGroup(descriptor);
         final List<GeneralParameterValue> values = group.values();
-        assertEquals("Initial size", 2, values.size());
+        assertEquals(2, values.size());
         final ParameterValue<?> p0 = (ParameterValue<?>) descriptor.descriptors().get(0).createValue();
         final ParameterValue<?> p1 = (ParameterValue<?>) descriptor.descriptors().get(1).createValue();
         p0.setValue(4);
         p1.setValue(5);
         assertEquals("Mandatory 1", values.set(0, p0).getDescriptor().getName().toString());
         assertEquals("Mandatory 2", values.set(1, p1).getDescriptor().getName().toString());
-        try {
-            values.set(2, p1);
-            fail("Index 2 shall be out of bounds.");
-        } catch (IndexOutOfBoundsException e) {
-            assertNotNull(e.getMessage());
-        }
-        assertEquals("size", 2, values.size()); // Size should be unchanged.
+        var e = assertThrows(IndexOutOfBoundsException.class, () -> values.set(2, p1));
+        assertMessageContains(e);
+        assertEquals(2, values.size()); // Size should be unchanged.
         assertEquals(4, ((ParameterValue<?>) values.get(0)).intValue());
         assertEquals(5, ((ParameterValue<?>) values.get(1)).intValue());
     }
@@ -226,11 +218,11 @@ public final class DefaultParameterValueGroupTest extends TestCase {
     public void testValuesAddAll() {
         final DefaultParameterValueGroup  group  = new DefaultParameterValueGroup(descriptor);
         final List<GeneralParameterValue> values = group.values();
-        assertEquals("Initial size", 2, values.size());
+        assertEquals(2, values.size());
 
         final DefaultParameterValue<?>[] parameters = createValues(10);
         assertTrue(Collections.addAll(values, parameters));
-        assertEquals("Final size", parameters.length, values.size());
+        assertEquals(parameters.length, values.size());
         for (int i=0; i<parameters.length; i++) {
             assertSame(parameters[i], values.get(i));
         }
@@ -282,11 +274,11 @@ public final class DefaultParameterValueGroupTest extends TestCase {
          * order in which we provided our GeneralParameterValue instances.
          */
         final List<GeneralParameterValue> values = group.createValue().values();
-        assertEquals("Initial size", 4,         values.size());
-        assertTrue  ("List shall be modified",  values.addAll(expected));
-        assertEquals("Size after addAll(…)", 6, values.size());
+        assertEquals(4, values.size());
+        assertTrue  (values.addAll(expected));
+        assertEquals(6, values.size());
         final ParameterValue<?> v1 = (ParameterValue<?>) values.get(0);
-        assertEquals("Default value", DefaultParameterDescriptorGroupTest.DEFAULT_VALUE, v1.getValue());
+        assertEquals(DefaultParameterDescriptorGroupTest.DEFAULT_VALUE, v1.getValue());
         assertTrue(expected.add(v1));
         assertSetEquals(expected, values);
     }
@@ -301,15 +293,12 @@ public final class DefaultParameterValueGroupTest extends TestCase {
         final List<GeneralParameterValue>  values = group.values();
         final ParameterValue<Integer> nonExistent = new DefaultParameterDescriptor<>(
                 Map.of(NAME_KEY, "Optional 5"), 0, 1, Integer.class, null, null, null).createValue();
-        try {
-            values.add(nonExistent);
-            fail("“Optional 5” is not a parameter for this group.");
-        } catch (InvalidParameterNameException e) {
-            assertEquals("Optional 5", e.getParameterName());
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("Optional 5"));
-            assertTrue(message, message.contains("Test group"));
-        }
+
+        var e = assertThrows(InvalidParameterNameException.class,
+                () -> values.add(nonExistent),
+                "“Optional 5” is not a parameter for this group.");
+        assertEquals("Optional 5", e.getParameterName());
+        assertMessageContains(e, "Optional 5", "Test group");
     }
 
     /**
@@ -321,46 +310,41 @@ public final class DefaultParameterValueGroupTest extends TestCase {
         final GeneralParameterValue[]      toAdd = createValues(-10);
         final DefaultParameterValueGroup   group = new DefaultParameterValueGroup(descriptor);
         final List<GeneralParameterValue> values = group.values();
-        assertEquals("size", 2, values.size()); // Because the descriptor declares 2 parameters as mandatory.
-        assertTrue  ("add(“Mandatory 1”)", values.add(toAdd[0])); assertEquals("size", 2, values.size());
-        assertTrue  ("add(“Mandatory 2”)", values.add(toAdd[1])); assertEquals("size", 2, values.size());
-        assertTrue  ("add(“Optional 3”)",  values.add(toAdd[2])); assertEquals("size", 3, values.size());
-        assertTrue  ("add(“Optional 4”)",  values.add(toAdd[3])); assertEquals("size", 4, values.size());
+        assertEquals(2, values.size());     // Because the descriptor declares 2 parameters as mandatory.
+        assertTrue  (values.add(toAdd[0])); assertEquals(2, values.size());
+        assertTrue  (values.add(toAdd[1])); assertEquals(2, values.size());
+        assertTrue  (values.add(toAdd[2])); assertEquals(3, values.size());
+        assertTrue  (values.add(toAdd[3])); assertEquals(4, values.size());
         /*
          * Test [1…1] multiplicity.
          */
-        try {
-            values.add(toAdd[1]);
-            fail("“Mandatory 2” is already present in this group.");
-        } catch (InvalidParameterCardinalityException e) {
-            assertEquals("Mandatory 2", e.getParameterName());
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("Mandatory 2"));
-        }
-        assertEquals("size", 4, values.size()); // Size shall be unchanged.
+        InvalidParameterCardinalityException e;
+        e = assertThrows(InvalidParameterCardinalityException.class,
+                () -> values.add(toAdd[1]),
+                "“Mandatory 2” is already present in this group.");
+        assertEquals("Mandatory 2", e.getParameterName());
+        assertMessageContains(e, "Mandatory 2");
+        assertEquals(4, values.size());             // Size shall be unchanged.
         /*
          * Test [0…1] multiplicity.
          */
-        try {
-            values.add(toAdd[2]);
-            fail("“Optional 3” is already present in this group.");
-        } catch (InvalidParameterCardinalityException e) {
-            assertEquals("Optional 3", e.getParameterName());
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("Optional 3"));
-        }
-        assertEquals("size", 4, values.size()); // Size shall be unchanged.
+        e = assertThrows(InvalidParameterCardinalityException.class,
+                () -> values.add(toAdd[2]),
+                "“Optional 3” is already present in this group.");
+        assertEquals("Optional 3", e.getParameterName());
+        assertMessageContains(e, "Optional 3");
+        assertEquals(4, values.size());             // Size shall be unchanged.
         /*
          * Test [0…2] multiplicity.
          */
-        assertTrue("add(“Optional 4”)",values.add(toAdd[3]));
-        assertEquals("size", 5, values.size());
+        assertTrue(values.add(toAdd[3]));
+        assertEquals(5, values.size());
         /*
          * Verifies parameter values.
          */
-        assertEquals("parameter(“Mandatory 1”)", -10, group.parameter("Mandatory 1").intValue());
-        assertEquals("parameter(“Mandatory 2”)", -20, group.parameter("Mandatory 2").intValue());
-        assertEquals("parameter(“Optional 3”)",  -30, group.parameter( "Optional 3").intValue());
+        assertEquals(-10, group.parameter("Mandatory 1").intValue());
+        assertEquals(-20, group.parameter("Mandatory 2").intValue());
+        assertEquals(-30, group.parameter( "Optional 3").intValue());
     }
 
     /**
@@ -373,15 +357,13 @@ public final class DefaultParameterValueGroupTest extends TestCase {
         final GeneralParameterValue[]  negatives = createValues(-10);
         final DefaultParameterValueGroup   group = createGroup(10);
         final List<GeneralParameterValue> values = group.values();
-        assertFalse(values.remove(negatives[0])); // Non-existant parameter.
-        try {
-            values.remove(values.get(0));
-            fail("“Mandatory 1” is a mandatory parameter; it should not be removeable.");
-        } catch (InvalidParameterCardinalityException e) {
-            assertEquals("Mandatory 1", e.getParameterName());
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("Mandatory 1"));
-        }
+        assertFalse(values.remove(negatives[0]));                       // Non-existant parameter.
+
+        var e = assertThrows(InvalidParameterCardinalityException.class,
+                () -> values.remove(values.get(0)),
+                "“Mandatory 1” is a mandatory parameter; it should not be removeable.");
+        assertEquals("Mandatory 1", e.getParameterName());
+        assertMessageContains(e, "Mandatory 1");
     }
 
     /**
@@ -396,9 +378,9 @@ public final class DefaultParameterValueGroupTest extends TestCase {
         validate(descriptor);
 
         final ParameterValueGroup groupValues = descriptor.createValue();
-        assertEquals("Size before add.", 0, groupValues.values().size());
+        assertEquals(0, groupValues.values().size(), "Size before add.");
         final ParameterValueGroup subGroupValues = groupValues.addGroup("theSubGroup");
-        assertEquals("Size after add.", 1, groupValues.values().size());
+        assertEquals(1, groupValues.values().size(), "Size after add.");
         assertSame(subGroupValues, groupValues.values().get(0));
         assertArrayEquals(new Object[] {subGroupValues}, groupValues.groups("theSubGroup").toArray());
     }
@@ -412,10 +394,10 @@ public final class DefaultParameterValueGroupTest extends TestCase {
         final DefaultParameterValueGroup g1 = createGroup( 10);
         final DefaultParameterValueGroup g2 = createGroup(-10);
         final DefaultParameterValueGroup g3 = createGroup( 10);
-        assertTrue  ("equals", g1.equals(g1));
-        assertFalse ("equals", g1.equals(g2));
-        assertTrue  ("equals", g1.equals(g3));
-        assertEquals("hashCode", g1.hashCode(), g3.hashCode());
+        assertTrue  (g1.equals(g1));
+        assertFalse (g1.equals(g2));
+        assertTrue  (g1.equals(g3));
+        assertEquals(g1.hashCode(), g3.hashCode());
     }
 
     /**
@@ -430,10 +412,10 @@ public final class DefaultParameterValueGroupTest extends TestCase {
         Collections.swap(values, 2, 3);
         g2.values().addAll(values);
 
-        assertFalse("STRICT",          g1.equals(g2, ComparisonMode.STRICT));
-        assertFalse("BY_CONTRACT",     g1.equals(g2, ComparisonMode.BY_CONTRACT));
-        assertTrue ("IGNORE_METADATA", g1.equals(g2, ComparisonMode.IGNORE_METADATA));
-        assertTrue ("APPROXIMATE",     g1.equals(g2, ComparisonMode.APPROXIMATE));
+        assertFalse(g1.equals(g2, ComparisonMode.STRICT));
+        assertFalse(g1.equals(g2, ComparisonMode.BY_CONTRACT));
+        assertTrue (g1.equals(g2, ComparisonMode.IGNORE_METADATA));
+        assertTrue (g1.equals(g2, ComparisonMode.APPROXIMATE));
     }
 
     /**

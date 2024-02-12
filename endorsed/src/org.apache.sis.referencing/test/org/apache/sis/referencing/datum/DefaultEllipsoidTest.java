@@ -22,8 +22,7 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
@@ -62,10 +61,10 @@ public final class DefaultEllipsoidTest extends TestCase {
     @Test
     public void testGetEccentricity() {
         final DefaultEllipsoid e = new DefaultEllipsoid(GeodeticDatumMock.WGS84.getEllipsoid());
-        assertEquals("semiMajorAxis",       6378137.0,            e.getSemiMajorAxis(),       STRICT);   // By definition
-        assertEquals("inverseFlattening",   298.257223563,        e.getInverseFlattening(),   STRICT);   // By definition
-        assertEquals("eccentricitySquared", 0.006694379990141317, e.getEccentricitySquared(), STRICT);
-        assertEquals("eccentricity",        0.0818191908426215,   e.getEccentricity(),        STRICT);
+        assertEquals(6378137.0,            e.getSemiMajorAxis());           // By definition
+        assertEquals(298.257223563,        e.getInverseFlattening());       // By definition
+        assertEquals(0.006694379990141317, e.getEccentricitySquared());
+        assertEquals(0.0818191908426215,   e.getEccentricity());
     }
 
     /**
@@ -75,8 +74,8 @@ public final class DefaultEllipsoidTest extends TestCase {
     @Test
     public void testSemiMajorAxisDifference() {
         final DefaultEllipsoid e = new DefaultEllipsoid(GeodeticDatumMock.WGS84.getEllipsoid());
-        assertEquals("semiMajorAxisDifference",   0, e.semiMajorAxisDifference(GeodeticDatumMock.WGS84.getEllipsoid()), STRICT);
-        assertEquals("semiMajorAxisDifference", 251, e.semiMajorAxisDifference(GeodeticDatumMock.ED50 .getEllipsoid()), STRICT);
+        assertEquals(  0, e.semiMajorAxisDifference(GeodeticDatumMock.WGS84.getEllipsoid()));
+        assertEquals(251, e.semiMajorAxisDifference(GeodeticDatumMock.ED50 .getEllipsoid()));
     }
 
     /**
@@ -86,8 +85,8 @@ public final class DefaultEllipsoidTest extends TestCase {
     @Test
     public void testFlatteningDifference() {
         final DefaultEllipsoid e = new DefaultEllipsoid(GeodeticDatumMock.WGS84.getEllipsoid());
-        assertEquals("flatteningDifference", 0.0,         e.flatteningDifference(GeodeticDatumMock.WGS84.getEllipsoid()), STRICT);
-        assertEquals("flatteningDifference", 1.41927E-05, e.flatteningDifference(GeodeticDatumMock.ED50 .getEllipsoid()), 1E-10);
+        assertEquals(0.0,         e.flatteningDifference(GeodeticDatumMock.WGS84.getEllipsoid()));
+        assertEquals(1.41927E-05, e.flatteningDifference(GeodeticDatumMock.ED50 .getEllipsoid()), 1E-10);
     }
 
     /**
@@ -98,11 +97,11 @@ public final class DefaultEllipsoidTest extends TestCase {
     public void testAuthalicRadius() {
         final DefaultEllipsoid sphere = DefaultEllipsoid.castOrCopy(GeodeticDatumMock.SPHERE.getEllipsoid());
         final DefaultEllipsoid GRS80  = DefaultEllipsoid.castOrCopy(GeodeticDatumMock.NAD83 .getEllipsoid());
-        assertInstanceOf("SPHERE", Sphere.class, sphere);
-        assertTrue  ("SPHERE", sphere.isSphere());
-        assertFalse ("GRS80",  GRS80 .isSphere());
-        assertEquals("SPHERE", 6371007, sphere.getAuthalicRadius(), 0.0);
-        assertEquals("GRS80",  6371007, GRS80 .getAuthalicRadius(), 0.2);
+        assertInstanceOf(Sphere.class, sphere);
+        assertTrue  (sphere.isSphere());
+        assertFalse (GRS80 .isSphere());
+        assertEquals(6371007, sphere.getAuthalicRadius(), 0.0);
+        assertEquals(6371007, GRS80 .getAuthalicRadius(), 0.2);
     }
 
     /**
@@ -134,14 +133,14 @@ public final class DefaultEllipsoidTest extends TestCase {
     @Test
     public void testEllipsoidXML() throws JAXBException {
         final DefaultEllipsoid ellipsoid = unmarshalFile(DefaultEllipsoid.class, openTestFile(false));
-        assertEquals("name", "Clarke 1880 (international foot)", ellipsoid.getName().getCode());
-        assertEquals("remarks", "Definition in feet assumed to be international foot.", ellipsoid.getRemarks().toString());
-        assertFalse ("isSphere",                              ellipsoid.isSphere());
-        assertFalse ("isIvfDefinitive",                       ellipsoid.isIvfDefinitive());
-        assertEquals("semiMajorAxis",     20926202,           ellipsoid.getSemiMajorAxis(), STRICT);
-        assertEquals("semiMinorAxis",     20854895,           ellipsoid.getSemiMinorAxis(), STRICT);
-        assertEquals("inverseFlattening", 293.46630765562986, ellipsoid.getInverseFlattening(), 1E-12);
-        assertEquals("axisUnit",          Units.FOOT,         ellipsoid.getAxisUnit());
+        assertEquals("Clarke 1880 (international foot)", ellipsoid.getName().getCode());
+        assertEquals("Definition in feet assumed to be international foot.", ellipsoid.getRemarks().toString());
+        assertFalse (                    ellipsoid.isSphere());
+        assertFalse (                    ellipsoid.isIvfDefinitive());
+        assertEquals(20926202,           ellipsoid.getSemiMajorAxis());
+        assertEquals(20854895,           ellipsoid.getSemiMinorAxis());
+        assertEquals(293.46630765562986, ellipsoid.getInverseFlattening(), 1E-12);
+        assertEquals(Units.FOOT,         ellipsoid.getAxisUnit());
         /*
          * Marshal and compare to the original file.
          */
@@ -158,14 +157,14 @@ public final class DefaultEllipsoidTest extends TestCase {
     @Test
     public void testSphereXML() throws JAXBException {
         final DefaultEllipsoid ellipsoid = unmarshalFile(DefaultEllipsoid.class, openTestFile(true));
-        assertEquals("name", "GRS 1980 Authalic Sphere", ellipsoid.getName().getCode());
-        assertEquals("remarks", "Authalic sphere derived from GRS 1980 ellipsoid (code 7019).", ellipsoid.getRemarks().toString());
-        assertTrue  ("isSphere",                                    ellipsoid.isSphere());
-        assertFalse ("isIvfDefinitive",                             ellipsoid.isIvfDefinitive());
-        assertEquals("semiMajorAxis",     6371007,                  ellipsoid.getSemiMajorAxis(), STRICT);
-        assertEquals("semiMinorAxis",     6371007,                  ellipsoid.getSemiMinorAxis(), STRICT);
-        assertEquals("inverseFlattening", Double.POSITIVE_INFINITY, ellipsoid.getInverseFlattening(), STRICT);
-        assertEquals("axisUnit",          Units.METRE,              ellipsoid.getAxisUnit());
+        assertEquals("GRS 1980 Authalic Sphere", ellipsoid.getName().getCode());
+        assertEquals("Authalic sphere derived from GRS 1980 ellipsoid (code 7019).", ellipsoid.getRemarks().toString());
+        assertTrue  (                          ellipsoid.isSphere());
+        assertFalse (                          ellipsoid.isIvfDefinitive());
+        assertEquals(6371007,                  ellipsoid.getSemiMajorAxis());
+        assertEquals(6371007,                  ellipsoid.getSemiMinorAxis());
+        assertEquals(Double.POSITIVE_INFINITY, ellipsoid.getInverseFlattening());
+        assertEquals(Units.METRE,              ellipsoid.getAxisUnit());
         /*
          * Marshal and compare to the original file.
          */

@@ -22,7 +22,7 @@ import org.opengis.referencing.operation.TransformException;
 
 // Test dependencies
 import org.junit.Test;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.referencing.Assertions.assertIsNotIdentity;
@@ -73,7 +73,7 @@ public final class LogarithmicTransform1DTest extends MathTransformTestCase {
     private void run(final Class<? extends MathTransform1D> expectedType, final double base, final double offset,
             final boolean preAffine, final boolean postAffine) throws TransformException
     {
-        assertInstanceOf("Expected the use of mathematical identities.", expectedType, transform);
+        assertInstanceOf(expectedType, transform, "Expected the use of mathematical identities.");
         assertIsNotIdentity(transform);
         validate();
 

@@ -26,8 +26,7 @@ import org.apache.sis.parameter.Parameters;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
@@ -58,13 +57,13 @@ public final class Geographic3Dto2DTest extends TestCase {
     public void testCreateMathTransform() throws FactoryException, NoninvertibleTransformException {
         final Geographic3Dto2D provider = new Geographic3Dto2D();
         final MathTransform mt = provider.createMathTransform(null, null);
-        assertSame("Expected cached instance.", mt, provider.createMathTransform(null, null));
+        assertSame(mt, provider.createMathTransform(null, null), "Expected cached instance.");
         /*
          * Verify the full matrix. Note that the longitude offset is expected to be in degrees.
          * This conversion from grad to degrees is specific to Apache SIS and may be revised in
          * future version. See org.apache.sis.referencing.operation package javadoc.
          */
-        assertInstanceOf("Shall be an affine transform.", LinearTransform.class, mt);
+        assertInstanceOf(LinearTransform.class, mt, "Shall be an affine transform.");
         assertMatrixEquals("Expected a Geographic 3D to 2D conversion.", Matrices.create(3, 4, new double[] {
                 1, 0, 0, 0,
                 0, 1, 0, 0,
@@ -82,10 +81,10 @@ public final class Geographic3Dto2DTest extends TestCase {
     @Test
     public void testRedimension() {
         final Geographic3Dto2D provider = new Geographic3Dto2D();
-        assertSame  ("3 → 2", provider,                    provider.redimension(3, 2));
-        assertEquals("2 → 3", Geographic2Dto3D.class,      provider.redimension(2, 3).getClass());
-        assertEquals("3 → 3", GeographicRedimension.class, provider.redimension(3, 3).getClass());
-        assertEquals("2 → 2", GeographicRedimension.class, provider.redimension(2, 2).getClass());
+        assertSame  (provider,                    provider.redimension(3, 2));
+        assertEquals(Geographic2Dto3D.class,      provider.redimension(2, 3).getClass());
+        assertEquals(GeographicRedimension.class, provider.redimension(3, 3).getClass());
+        assertEquals(GeographicRedimension.class, provider.redimension(2, 2).getClass());
     }
 
     /**
@@ -103,8 +102,8 @@ public final class Geographic3Dto2DTest extends TestCase {
     static MathTransform createDatumShiftForGeographic2D(final MathTransformFactory factory,
             final MathTransform affine, final Parameters pv) throws FactoryException
     {
-        assertEquals("sourceDimensions", 3, affine.getSourceDimensions());
-        assertEquals("targetDimensions", 3, affine.getTargetDimensions());
+        assertEquals(3, affine.getSourceDimensions());
+        assertEquals(3, affine.getTargetDimensions());
         /*
          * Create a "Geographic to Geocentric" conversion with ellipsoid axis length units converted to metres
          * (the unit implied by SRC_SEMI_MAJOR) because it is the unit of Bursa-Wolf parameters that we created above.
@@ -113,19 +112,19 @@ public final class Geographic3Dto2DTest extends TestCase {
         step.getOrCreate(MapProjection.SEMI_MAJOR).setValue(pv.doubleValue(GeocentricAffineBetweenGeographic.SRC_SEMI_MAJOR));
         step.getOrCreate(MapProjection.SEMI_MINOR).setValue(pv.doubleValue(GeocentricAffineBetweenGeographic.SRC_SEMI_MINOR));
         MathTransform toGeocentric = factory.createParameterizedTransform(step);
-        assertEquals("sourceDimensions", 3, toGeocentric.getSourceDimensions());
-        assertEquals("targetDimensions", 3, toGeocentric.getTargetDimensions());
+        assertEquals(3, toGeocentric.getSourceDimensions());
+        assertEquals(3, toGeocentric.getTargetDimensions());
 
         final MathTransform reduce = factory.createParameterizedTransform(factory.getDefaultParameters("Geographic3D to 2D conversion"));
-        assertEquals("sourceDimensions", 3, reduce.getSourceDimensions());
-        assertEquals("targetDimensions", 2, reduce.getTargetDimensions());
+        assertEquals(3, reduce.getSourceDimensions());
+        assertEquals(2, reduce.getTargetDimensions());
         try {
             toGeocentric = factory.createConcatenatedTransform(reduce.inverse(), toGeocentric);
         } catch (NoninvertibleTransformException e) {
             throw new FactoryException(e);
         }
-        assertEquals("sourceDimensions", 2, toGeocentric.getSourceDimensions());
-        assertEquals("targetDimensions", 3, toGeocentric.getTargetDimensions());
+        assertEquals(2, toGeocentric.getSourceDimensions());
+        assertEquals(3, toGeocentric.getTargetDimensions());
         /*
          * Create a "Geocentric to Geographic" conversion with ellipsoid axis length units converted to metres
          * because this is the unit of the Geocentric CRS used above.
@@ -134,12 +133,12 @@ public final class Geographic3Dto2DTest extends TestCase {
         step.getOrCreate(MapProjection.SEMI_MAJOR).setValue(pv.doubleValue(GeocentricAffineBetweenGeographic.TGT_SEMI_MAJOR));
         step.getOrCreate(MapProjection.SEMI_MINOR).setValue(pv.doubleValue(GeocentricAffineBetweenGeographic.TGT_SEMI_MINOR));
         MathTransform toGeographic = factory.createParameterizedTransform(step);
-        assertEquals("sourceDimensions", 3, toGeographic.getSourceDimensions());
-        assertEquals("targetDimensions", 3, toGeographic.getTargetDimensions());
+        assertEquals(3, toGeographic.getSourceDimensions());
+        assertEquals(3, toGeographic.getTargetDimensions());
 
         toGeographic = factory.createConcatenatedTransform(toGeographic, reduce);
-        assertEquals("sourceDimensions", 3, toGeographic.getSourceDimensions());
-        assertEquals("targetDimensions", 2, toGeographic.getTargetDimensions());
+        assertEquals(3, toGeographic.getSourceDimensions());
+        assertEquals(2, toGeographic.getTargetDimensions());
         /*
          * The  Geocentric → Affine → Geographic  chain.
          */

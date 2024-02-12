@@ -61,13 +61,13 @@ import static org.apache.sis.referencing.util.PositionalAccuracyConstant.DATUM_S
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -89,11 +89,6 @@ import org.opengis.test.Assert;
 public final class CoordinateOperationFinderTest extends MathTransformTestCase {
     /**
      * Tolerance threshold for strict comparisons of floating point numbers.
-     * This constant can be used like below, where {@code expected} and {@code actual} are {@code double} values:
-     *
-     * {@snippet lang="java" :
-     *     assertEquals(expected, actual, STRICT);
-     *     }
      */
     private static final double STRICT = 0;
 
@@ -192,11 +187,11 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      */
     private void testIdentityTransform(final CoordinateReferenceSystem crs) throws FactoryException {
         final CoordinateOperation operation = finder.createOperation(crs, crs);
-        assertSame      ("sourceCRS",  crs, operation.getSourceCRS());
-        assertSame      ("targetCRS",  crs, operation.getTargetCRS());
-        assertTrue      ("isIdentity", operation.getMathTransform().isIdentity());
-        assertTrue      ("accuracy",   operation.getCoordinateOperationAccuracy().isEmpty());
-        assertInstanceOf("operation",  Conversion.class, operation);
+        assertSame(crs, operation.getSourceCRS());
+        assertSame(crs, operation.getTargetCRS());
+        assertTrue(operation.getMathTransform().isIdentity());
+        assertTrue(operation.getCoordinateOperationAccuracy().isEmpty());
+        assertInstanceOf(Conversion.class, operation);
         finder = new CoordinateOperationFinder(null, factory, null);        // Reset for next call.
     }
 
@@ -273,13 +268,13 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
             throws ParseException, FactoryException, TransformException
     {
         final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
-        assertSame      ("sourceCRS",  sourceCRS,            operation.getSourceCRS());
-        assertSame      ("targetCRS",  targetCRS,            operation.getTargetCRS());
-        assertFalse     ("isIdentity",                       operation.getMathTransform().isIdentity());
-        assertEquals    ("name",       "Datum shift",        operation.getName().getCode());
-        assertSetEquals (Set.of(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
-        assertInstanceOf("operation",  Transformation.class, operation);
-        assertEquals    ("method", method, ((SingleOperation) operation).getMethod().getName().getCode());
+        assertSame(sourceCRS, operation.getSourceCRS());
+        assertSame(targetCRS, operation.getTargetCRS());
+        assertFalse(operation.getMathTransform().isIdentity());
+        assertEquals("Datum shift", operation.getName().getCode());
+        assertSetEquals(Set.of(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
+        assertInstanceOf(Transformation.class, operation);
+        assertEquals(method, ((SingleOperation) operation).getMethod().getName().getCode());
 
         transform  = operation.getMathTransform();
         tolerance  = ANGULAR_TOLERANCE;
@@ -334,13 +329,13 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         final GeographicCRS       targetCRS = CommonCRS.WGS84.geographic();
         final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
 
-        assertSame      ("sourceCRS",  sourceCRS,            operation.getSourceCRS());
-        assertSame      ("targetCRS",  targetCRS,            operation.getTargetCRS());
-        assertFalse     ("isIdentity",                       operation.getMathTransform().isIdentity());
-        assertEquals    ("name",       "Datum shift",        operation.getName().getCode());
-        assertSetEquals (Set.of(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
-        assertInstanceOf("operation",  Transformation.class, operation);
-        assertEquals("method", "Geocentric translations (geog2D domain)",
+        assertSame(sourceCRS, operation.getSourceCRS());
+        assertSame(targetCRS, operation.getTargetCRS());
+        assertFalse(operation.getMathTransform().isIdentity());
+        assertEquals("Datum shift", operation.getName().getCode());
+        assertSetEquals(Set.of(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
+        assertInstanceOf(Transformation.class, operation);
+        assertEquals("Geocentric translations (geog2D domain)",
                 ((SingleOperation) operation).getMethod().getName().getCode());
         /*
          * Same test point as the one used in FranceGeocentricInterpolationTest:
@@ -380,13 +375,13 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         final GeocentricCRS       targetCRS = CommonCRS.WGS84.geocentric();
         final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
 
-        assertSame      ("sourceCRS",  sourceCRS,            operation.getSourceCRS());
-        assertSame      ("targetCRS",  targetCRS,            operation.getTargetCRS());
-        assertFalse     ("isIdentity",                       operation.getMathTransform().isIdentity());
-        assertEquals    ("name",       "Datum shift",        operation.getName().getCode());
-        assertSetEquals (Set.of(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
-        assertInstanceOf("operation", Transformation.class,  operation);
-        assertEquals    ("method", "Geocentric translations (geocentric domain)",
+        assertSame(sourceCRS, operation.getSourceCRS());
+        assertSame(targetCRS, operation.getTargetCRS());
+        assertFalse(operation.getMathTransform().isIdentity());
+        assertEquals("Datum shift", operation.getName().getCode());
+        assertSetEquals(Set.of(DATUM_SHIFT_APPLIED), operation.getCoordinateOperationAccuracy());
+        assertInstanceOf(Transformation.class,  operation);
+        assertEquals("Geocentric translations (geocentric domain)",
                 ((SingleOperation) operation).getMethod().getName().getCode());
         /*
          * Same test point as the one used in FranceGeocentricInterpolationTest:
@@ -432,10 +427,10 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
             throws FactoryException
     {
         final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
-        assertSame      ("sourceCRS", sourceCRS,               operation.getSourceCRS());
-        assertSame      ("targetCRS", targetCRS,               operation.getTargetCRS());
-        assertEquals    ("name",      "Geocentric conversion", operation.getName().getCode());
-        assertInstanceOf("operation", Conversion.class,        operation);
+        assertSame(sourceCRS, operation.getSourceCRS());
+        assertSame(targetCRS, operation.getTargetCRS());
+        assertEquals("Geocentric conversion", operation.getName().getCode());
+        assertInstanceOf(Conversion.class, operation);
     }
 
     /**
@@ -463,19 +458,19 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
                 "    Unit[“US survey foot”, 0.304800609601219]]");
 
         final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
-        assertSame      ("sourceCRS", sourceCRS,        operation.getSourceCRS());
-        assertSame      ("targetCRS", targetCRS,        operation.getTargetCRS());
-        assertEquals    ("name",      "TM",             operation.getName().getCode());
-        assertInstanceOf("operation", Projection.class, operation);
+        assertSame(sourceCRS, operation.getSourceCRS());
+        assertSame(targetCRS, operation.getTargetCRS());
+        assertEquals("TM", operation.getName().getCode());
+        assertInstanceOf(Projection.class, operation);
 
         final ParameterValueGroup param = ((SingleOperation) operation).getParameterValues();
-        assertEquals("semi_major",     6370997, param.parameter("semi_major"        ).doubleValue(), STRICT);
-        assertEquals("semi_minor",     6370997, param.parameter("semi_minor"        ).doubleValue(), STRICT);
-        assertEquals("latitude_of_origin",  50, param.parameter("latitude_of_origin").doubleValue(), STRICT);
-        assertEquals("central_meridian",   170, param.parameter("central_meridian"  ).doubleValue(), STRICT);
-        assertEquals("scale_factor",      0.95, param.parameter("scale_factor"      ).doubleValue(), STRICT);
-        assertEquals("false_easting",        0, param.parameter("false_easting"     ).doubleValue(), STRICT);
-        assertEquals("false_northing",       0, param.parameter("false_northing"    ).doubleValue(), STRICT);
+        assertEquals(6370997, param.parameter("semi_major"        ).doubleValue());
+        assertEquals(6370997, param.parameter("semi_minor"        ).doubleValue());
+        assertEquals(     50, param.parameter("latitude_of_origin").doubleValue());
+        assertEquals(    170, param.parameter("central_meridian"  ).doubleValue());
+        assertEquals(   0.95, param.parameter("scale_factor"      ).doubleValue());
+        assertEquals(      0, param.parameter("false_easting"     ).doubleValue());
+        assertEquals(      0, param.parameter("false_northing"    ).doubleValue());
 
         transform = operation.getMathTransform();
         tolerance = ANGULAR_TOLERANCE;
@@ -617,7 +612,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
          */
         final double accuracy = CRS.getLinearAccuracy(operation);
         if (accuracy != PositionalAccuracyConstant.UNKNOWN_ACCURACY) {
-            assertEquals("accuracy", PositionalAccuracyConstant.INDIRECT_SHIFT_ACCURACY, accuracy, STRICT);
+            assertEquals(PositionalAccuracyConstant.INDIRECT_SHIFT_ACCURACY, accuracy);
         }
     }
 
@@ -631,14 +626,8 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
     public void testIncompatibleVerticalCRS() throws FactoryException {
         final VerticalCRS sourceCRS = CommonCRS.Vertical.NAVD88.crs();
         final VerticalCRS targetCRS = CommonCRS.Vertical.MEAN_SEA_LEVEL.crs();
-        try {
-            finder.createOperation(sourceCRS, targetCRS);
-            fail("The operation should have failed.");
-        } catch (OperationNotFoundException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("North American Vertical Datum"));
-            assertTrue(message, message.contains("Mean Sea Level"));
-        }
+        var e = assertThrows(OperationNotFoundException.class, () -> finder.createOperation(sourceCRS, targetCRS));
+        assertMessageContains(e, "North American Vertical Datum", "Mean Sea Level");
     }
 
     /**
@@ -655,10 +644,10 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         final TemporalCRS sourceCRS = CommonCRS.Temporal.UNIX.crs();
         final TemporalCRS targetCRS = CommonCRS.Temporal.MODIFIED_JULIAN.crs();
         final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
-        assertSame      ("sourceCRS", sourceCRS,        operation.getSourceCRS());
-        assertSame      ("targetCRS", targetCRS,        operation.getTargetCRS());
-        assertEquals    ("name",      "Axis changes",   operation.getName().getCode());
-        assertInstanceOf("operation", Conversion.class, operation);
+        assertSame(sourceCRS, operation.getSourceCRS());
+        assertSame(targetCRS, operation.getTargetCRS());
+        assertEquals("Axis changes", operation.getName().getCode());
+        assertInstanceOf(Conversion.class, operation);
 
         transform = operation.getMathTransform();
         tolerance = 2E-12;
@@ -694,13 +683,13 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         final CompoundCRS   sourceCRS = compound("Test4D", CommonCRS.WGS84.geographic3D(), CommonCRS.Temporal.UNIX.crs());
         final GeographicCRS targetCRS = CommonCRS.WGS84.geographic();
         final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
-        assertSame      ("sourceCRS", sourceCRS,        operation.getSourceCRS());
-        assertSame      ("targetCRS", targetCRS,        operation.getTargetCRS());
+        assertSame(sourceCRS, operation.getSourceCRS());
+        assertSame(targetCRS, operation.getTargetCRS());
 
         transform = operation.getMathTransform();
-        assertInstanceOf("transform", LinearTransform.class, transform);
-        assertEquals("sourceDimensions", 4, transform.getSourceDimensions());
-        assertEquals("targetDimensions", 2, transform.getTargetDimensions());
+        assertInstanceOf(LinearTransform.class, transform);
+        assertEquals(4, transform.getSourceDimensions());
+        assertEquals(2, transform.getTargetDimensions());
         Assert.assertMatrixEquals("transform.matrix", Matrices.create(3, 5, new double[] {
             1, 0, 0, 0, 0,
             0, 1, 0, 0, 0,
@@ -731,19 +720,19 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         final GeographicCRS sourceCRS = CommonCRS.WGS84.geographic3D();
         final GeographicCRS targetCRS = CommonCRS.WGS84.geographic();
         final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
-        assertSame      ("sourceCRS", sourceCRS,        operation.getSourceCRS());
-        assertSame      ("targetCRS", targetCRS,        operation.getTargetCRS());
-        assertEquals    ("name",      "Axis changes",   operation.getName().getCode());
-        assertInstanceOf("operation", Conversion.class, operation);
+        assertSame(sourceCRS, operation.getSourceCRS());
+        assertSame(targetCRS, operation.getTargetCRS());
+        assertEquals("Axis changes", operation.getName().getCode());
+        assertInstanceOf(Conversion.class, operation);
 
         final ParameterValueGroup parameters = ((SingleOperation) operation).getParameterValues();
-        assertEquals("parameters.descriptor", "Geographic3D to 2D conversion", parameters.getDescriptor().getName().getCode());
-        assertTrue  ("parameters.isEmpty", parameters.values().isEmpty());
+        assertEquals("Geographic3D to 2D conversion", parameters.getDescriptor().getName().getCode());
+        assertTrue(parameters.values().isEmpty());
 
         transform = operation.getMathTransform();
-        assertInstanceOf("transform", LinearTransform.class, transform);
-        assertEquals("sourceDimensions", 3, transform.getSourceDimensions());
-        assertEquals("targetDimensions", 2, transform.getTargetDimensions());
+        assertInstanceOf(LinearTransform.class, transform);
+        assertEquals(3, transform.getSourceDimensions());
+        assertEquals(2, transform.getTargetDimensions());
         Assert.assertMatrixEquals("transform.matrix", Matrices.create(3, 4, new double[] {
             1, 0, 0, 0,
             0, 1, 0, 0,
@@ -774,19 +763,19 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         final GeographicCRS sourceCRS = CommonCRS.WGS84.geographic();
         final GeographicCRS targetCRS = CommonCRS.WGS84.geographic3D();
         final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
-        assertSame      ("sourceCRS", sourceCRS,        operation.getSourceCRS());
-        assertSame      ("targetCRS", targetCRS,        operation.getTargetCRS());
-        assertEquals    ("name",      "Axis changes",   operation.getName().getCode());
-        assertInstanceOf("operation", Conversion.class, operation);
+        assertSame(sourceCRS, operation.getSourceCRS());
+        assertSame(targetCRS, operation.getTargetCRS());
+        assertEquals("Axis changes", operation.getName().getCode());
+        assertInstanceOf(Conversion.class, operation);
 
         final ParameterValueGroup parameters = ((SingleOperation) operation).getParameterValues();
-        assertEquals("parameters.descriptor", "Geographic2D to 3D conversion", parameters.getDescriptor().getName().getCode());
-        assertEquals("parameters.height", 0, parameters.parameter("height").doubleValue(), STRICT);
+        assertEquals("Geographic2D to 3D conversion", parameters.getDescriptor().getName().getCode());
+        assertEquals(0, parameters.parameter("height").doubleValue());
 
         transform = operation.getMathTransform();
-        assertInstanceOf("transform", LinearTransform.class, transform);
-        assertEquals("sourceDimensions", 2, transform.getSourceDimensions());
-        assertEquals("targetDimensions", 3, transform.getTargetDimensions());
+        assertInstanceOf(LinearTransform.class, transform);
+        assertEquals(2, transform.getSourceDimensions());
+        assertEquals(3, transform.getTargetDimensions());
         Assert.assertMatrixEquals("transform.matrix", Matrices.create(4, 3, new double[] {
             1, 0, 0,
             0, 1, 0,
@@ -818,15 +807,15 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         final CoordinateReferenceSystem sourceCRS = CommonCRS.WGS84.geographic3D();
         final CoordinateReferenceSystem targetCRS = HardCodedCRS.ELLIPSOIDAL_HEIGHT_cm;
         final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
-        assertSame      ("sourceCRS", sourceCRS,        operation.getSourceCRS());
-        assertSame      ("targetCRS", targetCRS,        operation.getTargetCRS());
-        assertEquals    ("name",      "Axis changes",   operation.getName().getCode());
-        assertInstanceOf("operation", Conversion.class, operation);
+        assertSame(sourceCRS, operation.getSourceCRS());
+        assertSame(targetCRS, operation.getTargetCRS());
+        assertEquals("Axis changes", operation.getName().getCode());
+        assertInstanceOf(Conversion.class, operation);
 
         transform = operation.getMathTransform();
-        assertInstanceOf("transform", LinearTransform.class, transform);
-        assertEquals("sourceDimensions", 3, transform.getSourceDimensions());
-        assertEquals("targetDimensions", 1, transform.getTargetDimensions());
+        assertInstanceOf(LinearTransform.class, transform);
+        assertEquals(3, transform.getSourceDimensions());
+        assertEquals(1, transform.getTargetDimensions());
         Assert.assertMatrixEquals("transform.matrix", Matrices.create(2, 4, new double[] {
             0, 0, 100, 0,
             0, 0,   0, 1
@@ -858,15 +847,15 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         final CompoundCRS sourceCRS = compound("Test4D", CommonCRS.WGS84.geographic3D(), CommonCRS.Temporal.JULIAN.crs());
         final VerticalCRS targetCRS = CommonCRS.Vertical.ELLIPSOIDAL.crs();
         final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
-        assertSame      ("sourceCRS", sourceCRS,        operation.getSourceCRS());
-        assertSame      ("targetCRS", targetCRS,        operation.getTargetCRS());
-        assertEquals    ("name",      "Axis changes",   operation.getName().getCode());
-        assertInstanceOf("operation", Conversion.class, operation);
+        assertSame(sourceCRS, operation.getSourceCRS());
+        assertSame(targetCRS, operation.getTargetCRS());
+        assertEquals("Axis changes", operation.getName().getCode());
+        assertInstanceOf(Conversion.class, operation);
 
         transform = operation.getMathTransform();
-        assertInstanceOf("transform", LinearTransform.class, transform);
-        assertEquals("sourceDimensions", 4, transform.getSourceDimensions());
-        assertEquals("targetDimensions", 1, transform.getTargetDimensions());
+        assertInstanceOf(LinearTransform.class, transform);
+        assertEquals(4, transform.getSourceDimensions());
+        assertEquals(1, transform.getTargetDimensions());
         Assert.assertMatrixEquals("transform.matrix", Matrices.create(2, 5, new double[] {
             0, 0, 1, 0, 0,
             0, 0, 0, 0, 1
@@ -928,18 +917,18 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         sourceCRS = compound("Mercator 4D", sourceCRS, CommonCRS.Temporal.MODIFIED_JULIAN.crs());
 
         final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
-        assertSame("sourceCRS", sourceCRS, operation.getSourceCRS());
-        assertSame("targetCRS", targetCRS, operation.getTargetCRS());
+        assertSame(sourceCRS, operation.getSourceCRS());
+        assertSame(targetCRS, operation.getTargetCRS());
 
         transform = operation.getMathTransform();
-        assertFalse("transform.isIdentity", transform.isIdentity());
-        assertInstanceOf("The somewhat complex MathTransform chain should have been simplified " +
-                         "to a single affine transform.", LinearTransform.class, transform);
-        assertInstanceOf("The operation should be a simple axis change, not a complex" +
-                         "chain of ConcatenatedOperations.", Conversion.class, operation);
+        assertFalse(transform.isIdentity());
+        assertInstanceOf(LinearTransform.class, transform,
+                "The somewhat complex MathTransform chain should have been simplified to a single affine transform.");
+        assertInstanceOf(Conversion.class, operation,
+                "The operation should be a simple axis change, not a complex chain of ConcatenatedOperations.");
 
-        assertEquals("sourceDimensions", 4, transform.getSourceDimensions());
-        assertEquals("targetDimensions", 2, transform.getTargetDimensions());
+        assertEquals(4, transform.getSourceDimensions());
+        assertEquals(2, transform.getTargetDimensions());
         Assert.assertMatrixEquals("transform.matrix", Matrices.create(3, 5, new double[] {
             1, 0, 0, 0, 0,
             0, 1, 0, 0, 0,
@@ -971,15 +960,15 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         final CompoundCRS sourceCRS = compound("Test3D", CommonCRS.WGS84.geographic(),   CommonCRS.Temporal.UNIX.crs());
         final CompoundCRS targetCRS = compound("Test4D", CommonCRS.WGS84.geographic3D(), CommonCRS.Temporal.MODIFIED_JULIAN.crs());
         final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
-        assertSame      ("sourceCRS", sourceCRS, operation.getSourceCRS());
-        assertSame      ("targetCRS", targetCRS, operation.getTargetCRS());
-        assertInstanceOf("operation", ConcatenatedOperation.class, operation);
-        assertEquals    ("name", "CompoundCRS[“Test3D”] ⟶ CompoundCRS[“Test4D”]", operation.getName().getCode());
+        assertSame(sourceCRS, operation.getSourceCRS());
+        assertSame(targetCRS, operation.getTargetCRS());
+        assertInstanceOf(ConcatenatedOperation.class, operation);
+        assertEquals("CompoundCRS[“Test3D”] ⟶ CompoundCRS[“Test4D”]", operation.getName().getCode());
 
         transform = operation.getMathTransform();
-        assertInstanceOf("transform", LinearTransform.class, transform);
-        assertEquals("sourceDimensions", 3, transform.getSourceDimensions());
-        assertEquals("targetDimensions", 4, transform.getTargetDimensions());
+        assertInstanceOf(LinearTransform.class, transform);
+        assertEquals(3, transform.getSourceDimensions());
+        assertEquals(4, transform.getTargetDimensions());
         Assert.assertMatrixEquals("transform.matrix", Matrices.create(5, 4, new double[] {
             1, 0, 0, 0,
             0, 1, 0, 0,
@@ -1021,13 +1010,13 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
                 })), HardCodedCS.DISPLAY);
 
         final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
-        assertSame("sourceCRS", sourceCRS, operation.getSourceCRS());
-        assertSame("targetCRS", targetCRS, operation.getTargetCRS());
+        assertSame(sourceCRS, operation.getSourceCRS());
+        assertSame(targetCRS, operation.getTargetCRS());
 
         transform = operation.getMathTransform();
-        assertInstanceOf("transform", LinearTransform.class, transform);
-        assertEquals("sourceDimensions", 3, transform.getSourceDimensions());
-        assertEquals("targetDimensions", 2, transform.getTargetDimensions());
+        assertInstanceOf(LinearTransform.class, transform);
+        assertEquals(3, transform.getSourceDimensions());
+        assertEquals(2, transform.getTargetDimensions());
         Assert.assertMatrixEquals("transform.matrix", Matrices.create(3, 4, new double[] {
             12,  0,  0, 480,
             0, -12,  0, 790,
@@ -1043,24 +1032,21 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      */
     @Test
     public void testEngineeringCRS() throws FactoryException {
-        DefaultEngineeringCRS sourceCRS = createEngineering("Screen display", AxisDirection.DISPLAY_DOWN);
-        DefaultEngineeringCRS targetCRS = createEngineering("Another device", AxisDirection.DISPLAY_DOWN);
-        try {
-            finder.createOperation(sourceCRS, targetCRS);
-            fail("Should not create operation between CRS of different datum.");
-        } catch (OperationNotFoundException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("A test CRS"));
-        }
-        targetCRS = createEngineering("Screen display", AxisDirection.DISPLAY_UP);
-        final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
-        assertSame("sourceCRS", sourceCRS, operation.getSourceCRS());
-        assertSame("targetCRS", targetCRS, operation.getTargetCRS());
+        final DefaultEngineeringCRS sourceCRS = createEngineering("Screen display", AxisDirection.DISPLAY_DOWN);
+        final DefaultEngineeringCRS targetCRS = createEngineering("Another device", AxisDirection.DISPLAY_DOWN);
+        var e = assertThrows(OperationNotFoundException.class, () -> finder.createOperation(sourceCRS, targetCRS),
+                "Should not create operation between CRS of different datum.");
+        assertMessageContains(e, "A test CRS");
+
+        final DefaultEngineeringCRS screenCRS = createEngineering("Screen display", AxisDirection.DISPLAY_UP);
+        final CoordinateOperation operation = finder.createOperation(sourceCRS, screenCRS);
+        assertSame(sourceCRS, operation.getSourceCRS());
+        assertSame(screenCRS, operation.getTargetCRS());
 
         transform = operation.getMathTransform();
-        assertInstanceOf("transform", LinearTransform.class, transform);
-        assertEquals("sourceDimensions", 2, transform.getSourceDimensions());
-        assertEquals("targetDimensions", 2, transform.getTargetDimensions());
+        assertInstanceOf(LinearTransform.class, transform);
+        assertEquals(2, transform.getSourceDimensions());
+        assertEquals(2, transform.getTargetDimensions());
         Assert.assertMatrixEquals("transform.matrix", Matrices.create(3, 3, new double[] {
             1,  0,  0,
             0, -1,  0,

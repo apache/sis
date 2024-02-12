@@ -27,7 +27,7 @@ import org.apache.sis.parameter.Parameters;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -94,8 +94,9 @@ public final class CassiniSoldnerTest extends MapProjectionTestCase {
             point.x = λ;
             point.y = PI/4;
             assertSame(point, transform.transform(point, point));
-            assertEquals("Given excentricity=0 and φ=45°, the spherical equation should simplify to a "
-                    + "very simple expression, which we are testing here.", yFromSimplified, point.y, 1E-9);
+            assertEquals(yFromSimplified, point.y, 1E-9,
+                    "Given excentricity=0 and φ=45°, the spherical equation should simplify "
+                    + "to a very simple expression, which we are testing here.");
         }
     }
 

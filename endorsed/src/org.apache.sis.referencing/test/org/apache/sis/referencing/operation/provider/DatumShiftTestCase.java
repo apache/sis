@@ -22,8 +22,8 @@ import java.net.URISyntaxException;
 import org.apache.sis.referencing.operation.gridded.GridFile;
 
 // Test dependencies
-import static org.junit.Assert.*;
 import static org.junit.Assume.assumeFalse;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 

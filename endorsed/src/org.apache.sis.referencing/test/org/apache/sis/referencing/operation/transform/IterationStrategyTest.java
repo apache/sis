@@ -24,7 +24,7 @@ import static org.apache.sis.referencing.operation.transform.IterationStrategy.*
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 
@@ -59,11 +59,11 @@ public final class IterationStrategyTest extends TestCase {
      */
     @Test
     public void testSuggest() {
-        assertEquals("Target replace source.", ASCENDING,  suggest(0, 1, 0, 1, 240));
-        assertEquals("Target before source.",  ASCENDING,  suggest(1, 1, 0, 1, 239));
-        assertEquals("Target after source.",   DESCENDING, suggest(0, 1, 1, 1, 239));
-        assertEquals("Overlaps.",           BUFFER_TARGET, suggest(0, 2, 1, 1, 120));
-        assertEquals("Overlaps.",           BUFFER_SOURCE, suggest(1, 1, 0, 2, 120));
+        assertEquals(ASCENDING,     suggest(0, 1, 0, 1, 240));    // Target replace source.
+        assertEquals(ASCENDING,     suggest(1, 1, 0, 1, 239));    // Target before source.
+        assertEquals(DESCENDING,    suggest(0, 1, 1, 1, 239));    // Target after source.
+        assertEquals(BUFFER_TARGET, suggest(0, 2, 1, 1, 120));    // Overlaps.
+        assertEquals(BUFFER_SOURCE, suggest(1, 1, 0, 2, 120));    // Overlaps.
     }
 
     /**
@@ -104,7 +104,7 @@ public final class IterationStrategyTest extends TestCase {
                         System.arraycopy(sourcePts, 0, sharedPts, 0, length);
                         tr.transform(sharedPts, srcOff, sharedPts, dstOff, numPts);
                         tr.transform(sourcePts, srcOff, targetPts, dstOff, numPts);
-                        assertEquals("Source points have been modified.", checksum, Arrays.hashCode(sourcePts));
+                        assertEquals(checksum, Arrays.hashCode(sourcePts), "Source points have been modified.");
                         final int stop = dstOff + numPts * targetDimension;
                         for (int i=dstOff; i<stop; i++) {
                             final double expected = targetPts[i];

@@ -32,8 +32,7 @@ import org.apache.sis.metadata.iso.extent.Extents;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
@@ -111,7 +110,7 @@ public final class EllipsoidalHeightCombinerTest extends TestCase {
         final Object[] components = CRS.getSingleComponents(compound).toArray();
         assertEquals(2, components.length);
         assertEqualsIgnoreMetadata(temporal, components[0]);
-        assertInstanceOf("Shall be a three-dimensional geographic CRS.", GeographicCRS.class, components[1]);
+        assertInstanceOf(GeographicCRS.class, components[1], "Shall be a three-dimensional geographic CRS.");
         assertAxisDirectionsEqual("Shall be a three-dimensional geographic CRS.",
                 ((CoordinateReferenceSystem) components[1]).getCoordinateSystem(),
                 AxisDirection.UP, AxisDirection.NORTH, AxisDirection.EAST);
@@ -156,7 +155,7 @@ public final class EllipsoidalHeightCombinerTest extends TestCase {
         final Object[] components = CRS.getSingleComponents(compound).toArray();
         assertEquals(2, components.length);
         assertEqualsIgnoreMetadata(temporal, components[0]);
-        assertInstanceOf("Shall be a three-dimensional projected CRS.", ProjectedCRS.class, components[1]);
+        assertInstanceOf(ProjectedCRS.class, components[1], "Shall be a three-dimensional projected CRS.");
         assertAxisDirectionsEqual("Shall be a three-dimensional projected CRS.",
                 ((CoordinateReferenceSystem) components[1]).getCoordinateSystem(),
                 AxisDirection.UP, AxisDirection.EAST, AxisDirection.NORTH);
@@ -170,6 +169,6 @@ public final class EllipsoidalHeightCombinerTest extends TestCase {
         final Map<String,?> properties = EllipsoidalHeightCombiner.properties(HardCodedCRS.WGS84, HardCodedCRS.GRAVITY_RELATED_HEIGHT, HardCodedCRS.TIME);
         assertEquals("WGS 84 + MSL height + Time", properties.remove("name"));
         assertEquals(Extents.WORLD, properties.remove("domainOfValidity"));
-        assertTrue("No other property expected.", properties.isEmpty());
+        assertTrue(properties.isEmpty());
     }
 }

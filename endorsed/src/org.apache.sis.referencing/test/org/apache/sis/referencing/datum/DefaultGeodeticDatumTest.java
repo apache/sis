@@ -36,9 +36,8 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestStep;
@@ -110,12 +109,12 @@ public final class DefaultGeodeticDatumTest extends TestCase {
      */
     private static void validate(final DefaultGeodeticDatum datum) {
         Validators.validate(datum);
-        assertEquals("name",       "This is a name",        datum.getName   ().getCode());
-        assertEquals("scope",      "This is a scope",       datum.getScope  ().toString(Locale.ROOT));
-        assertEquals("scope_fr",   "Valide pour tel usage", datum.getScope  ().toString(Locale.FRENCH));
-        assertEquals("remarks",    "There is remarks",      datum.getRemarks().toString(Locale.ROOT));
-        assertEquals("remarks_fr", "Voici des remarques",   datum.getRemarks().toString(Locale.FRENCH));
-        assertEquals("remarks_ja", "注です。",                datum.getRemarks().toString(Locale.JAPANESE));
+        assertEquals("This is a name",        datum.getName   ().getCode());
+        assertEquals("This is a scope",       datum.getScope  ().toString(Locale.ROOT));
+        assertEquals("Valide pour tel usage", datum.getScope  ().toString(Locale.FRENCH));
+        assertEquals("There is remarks",      datum.getRemarks().toString(Locale.ROOT));
+        assertEquals("Voici des remarques",   datum.getRemarks().toString(Locale.FRENCH));
+        assertEquals("注です。",                datum.getRemarks().toString(Locale.JAPANESE));
     }
 
     /**
@@ -170,16 +169,16 @@ public final class DefaultGeodeticDatumTest extends TestCase {
         final DefaultGeographicBoundingBox areaOfInterest = new DefaultGeographicBoundingBox(-2, 8, 55, 60);
         final DefaultExtent extent = new DefaultExtent("Around the North Sea", areaOfInterest, null, null);
         Matrix matrix = datum.getPositionVectorTransformation(GeodeticDatumMock.NAD83, extent);
-        assertNull("No BursaWolfParameters for NAD83", matrix);
+        assertNull(matrix, "No BursaWolfParameters for NAD83");
         matrix = datum.getPositionVectorTransformation(GeodeticDatumMock.WGS84, extent);
-        assertNotNull("BursaWolfParameters for WGS84", matrix);
+        assertNotNull(matrix, "BursaWolfParameters for WGS84");
         checkTransformationSignature(local, matrix, 0);
         /*
          * Expand the area of interest to something greater than North Sea, and test again.
          */
         areaOfInterest.setWestBoundLongitude(-8);
         matrix = datum.getPositionVectorTransformation(GeodeticDatumMock.WGS84, extent);
-        assertNotNull("BursaWolfParameters for WGS84", matrix);
+        assertNotNull(matrix, "BursaWolfParameters for WGS84");
         checkTransformationSignature(global, matrix, 0);
         /*
          * Search in the reverse direction.
@@ -199,9 +198,9 @@ public final class DefaultGeodeticDatumTest extends TestCase {
     private static void checkTransformationSignature(final BursaWolfParameters expected, final Matrix actual,
             final double tolerance)
     {
-        assertEquals("tX", expected.tX, actual.getElement(0, 3), tolerance);
-        assertEquals("tY", expected.tY, actual.getElement(1, 3), tolerance);
-        assertEquals("tZ", expected.tZ, actual.getElement(2, 3), tolerance);
+        assertEquals(expected.tX, actual.getElement(0, 3), tolerance, "tX");
+        assertEquals(expected.tY, actual.getElement(1, 3), tolerance, "tY");
+        assertEquals(expected.tZ, actual.getElement(2, 3), tolerance, "tZ");
     }
 
     /**
@@ -230,8 +229,8 @@ public final class DefaultGeodeticDatumTest extends TestCase {
          * Main test: verify that the transformation found is associated with accuracy information.
          */
         final Matrix m = local.getPositionVectorTransformation(global, null);
-        assertInstanceOf("Should have accuracy information.", AnnotatedMatrix.class, m);
-        assertSame(PositionalAccuracyConstant.INDIRECT_SHIFT_APPLIED, ((AnnotatedMatrix) m).accuracy);
+        assertSame(PositionalAccuracyConstant.INDIRECT_SHIFT_APPLIED,
+                assertInstanceOf(AnnotatedMatrix.class, m, "Should have accuracy information.").accuracy);
         /*
          * Following is an anti-regression test only (no authoritative values).
          * Verified only opportunistically.
@@ -308,15 +307,15 @@ public final class DefaultGeodeticDatumTest extends TestCase {
          * Values in the following tests are specific to our XML file.
          * The actual texts in the EPSG database are more descriptive.
          */
-        assertEquals("remarks", "No distinction between the original and subsequent WGS 84 frames.",
+        assertEquals("No distinction between the original and subsequent WGS 84 frames.",
                 datum.getRemarks().toString());
-        assertEquals("scope", "Satellite navigation.",
+        assertEquals("Satellite navigation.",
                 datum.getScope().toString());
-        assertEquals("anchorDefinition", "Station coordinates changed by a few centimetres in 1994, 1997, 2002 and 2012.",
+        assertEquals("Station coordinates changed by a few centimetres in 1994, 1997, 2002 and 2012.",
                 datum.getAnchorPoint().toString());
-        assertEquals("realizationEpoch", xmlDate("1984-01-01 00:00:00"),
+        assertEquals(xmlDate("1984-01-01 00:00:00"),
                 datum.getRealizationEpoch());
-        assertEquals("remarks", "Defining parameters cited in EPSG database.",
+        assertEquals("Defining parameters cited in EPSG database.",
                 datum.getEllipsoid().getRemarks().toString());
         return datum;
     }

@@ -33,7 +33,7 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
@@ -190,9 +190,9 @@ public final class DefaultPrimeMeridianTest extends TestCase {
     public void testParisMeridian() throws JAXBException {
         final DefaultPrimeMeridian pm = unmarshalFile(DefaultPrimeMeridian.class, openTestFile(false));
         assertIsParis(pm);
-        assertEquals("greenwichLongitude", 2.33722917, pm.getGreenwichLongitude(Units.DEGREE), 1E-12);
+        assertEquals(2.33722917, pm.getGreenwichLongitude(Units.DEGREE), 1E-12);
         assertEquals("Equivalent to 2°20′14.025″.", pm.getRemarks().toString());
-        assertNull("name.codeSpace", pm.getName().getCodeSpace());
+        assertNull(pm.getName().getCodeSpace());
         assertWktEquals(Convention.WKT1,
                 "PRIMEM[“Paris”, 2.33722917, AUTHORITY[“EPSG”, “8903”]]", pm);
         assertWktEquals(Convention.WKT2,

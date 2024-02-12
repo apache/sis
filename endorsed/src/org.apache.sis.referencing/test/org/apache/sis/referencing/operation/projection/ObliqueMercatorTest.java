@@ -25,7 +25,7 @@ import org.apache.sis.referencing.operation.provider.ObliqueMercatorCenter;
 import org.apache.sis.parameter.Parameters;
 
 // Test dependencies
-import org.junit.*;
+import org.junit.Test;
 import org.apache.sis.test.DependsOn;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

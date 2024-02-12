@@ -21,7 +21,7 @@ import org.apache.sis.util.internal.DoubleDouble;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -96,7 +96,7 @@ public final class GeneralMatrixTest extends MatrixTestCase {
         };
         GeneralMatrix matrix = new GeneralMatrix(2, 2, numbers);
         final Number[] elements = matrix.getElementAsNumbers(true);
-        assertNotSame("Shall be a copy.", numbers, elements);
+        assertNotSame(numbers, elements, "Shall be a copy.");
         /*
          * The constructor shall have replaced 0 by null value.
          */

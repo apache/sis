@@ -41,7 +41,7 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.extent.Extents;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.cs.HardCodedCS;
@@ -97,7 +97,7 @@ public final class AuthorityFactoryMock extends GeodeticAuthorityFactory impleme
     private static void add(final Set<String> codes, final int... values) {
         for (final int value : values) {
             final String s = Integer.toString(value);
-            assertTrue(s, codes.add(s));
+            assertTrue(codes.add(s), s);
         }
     }
 
@@ -106,7 +106,7 @@ public final class AuthorityFactoryMock extends GeodeticAuthorityFactory impleme
      */
     @Override
     public Set<String> getAuthorityCodes(Class<? extends IdentifiedObject> type) {
-        assertFalse("This factory has been closed.", isClosed());
+        assertFalse(isClosed());
         final Set<String> codes = new LinkedHashSet<>();
         if (type.isAssignableFrom(GeocentricCRS.class)) add(codes, 4979);
         if (type.isAssignableFrom(GeographicCRS.class)) add(codes, 84, 4326);
@@ -125,7 +125,7 @@ public final class AuthorityFactoryMock extends GeodeticAuthorityFactory impleme
      */
     @Override
     public IdentifiedObject createObject(final String code) throws NoSuchAuthorityCodeException {
-        assertFalse("This factory has been closed.", isClosed());
+        assertFalse(isClosed());
         final int n;
         try {
             n = Integer.parseInt(trimNamespace(code));
@@ -162,7 +162,7 @@ public final class AuthorityFactoryMock extends GeodeticAuthorityFactory impleme
      */
     @Override
     public Unit<?> createUnit(final String code) throws NoSuchAuthorityCodeException {
-        assertFalse("This factory has been closed.", isClosed());
+        assertFalse(isClosed());
         final int n;
         try {
             n = Integer.parseInt(trimNamespace(code));
@@ -184,7 +184,7 @@ public final class AuthorityFactoryMock extends GeodeticAuthorityFactory impleme
      */
     @Override
     public Extent createExtent(final String code) throws NoSuchAuthorityCodeException {
-        assertFalse("This factory has been closed.", isClosed());
+        assertFalse(isClosed());
         final int n;
         try {
             n = Integer.parseInt(trimNamespace(code));

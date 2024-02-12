@@ -23,7 +23,7 @@ import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 
 // Test dependencies
 import org.junit.Test;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 
 
@@ -65,7 +65,7 @@ public final class LinearTransformTest extends ProjectiveTransformTest {
     @Override
     public void testIdentity1D() throws FactoryException, TransformException {
         super.testIdentity1D();
-        assertInstanceOf("Unexpected implementation.", IdentityTransform1D.class, transform);
+        assertInstanceOf(IdentityTransform1D.class, transform, "Unexpected implementation.");
     }
 
     /**
@@ -78,7 +78,7 @@ public final class LinearTransformTest extends ProjectiveTransformTest {
     @Override
     public void testIdentity2D() throws FactoryException, TransformException {
         super.testIdentity2D();
-        assertInstanceOf("Unexpected implementation.", AffineTransform2D.class, transform);
+        assertInstanceOf(AffineTransform2D.class, transform, "Unexpected implementation.");
     }
 
     /**
@@ -91,7 +91,7 @@ public final class LinearTransformTest extends ProjectiveTransformTest {
     @Override
     public void testIdentity3D() throws FactoryException, TransformException {
         super.testIdentity3D();
-        assertInstanceOf("Unexpected implementation.", IdentityTransform.class, transform);
+        assertInstanceOf(IdentityTransform.class, transform, "Unexpected implementation.");
     }
 
     /**
@@ -104,7 +104,7 @@ public final class LinearTransformTest extends ProjectiveTransformTest {
     @Override
     public void testAxisSwapping2D() throws FactoryException, TransformException {
         super.testAxisSwapping2D();
-        assertInstanceOf("Unexpected implementation.", AffineTransform2D.class, transform);
+        assertInstanceOf(AffineTransform2D.class, transform, "Unexpected implementation.");
     }
 
     /**
@@ -117,7 +117,7 @@ public final class LinearTransformTest extends ProjectiveTransformTest {
     @Override
     public void testSouthOrientated2D() throws FactoryException, TransformException {
         super.testSouthOrientated2D();
-        assertInstanceOf("Unexpected implementation.", AffineTransform2D.class, transform);
+        assertInstanceOf(AffineTransform2D.class, transform, "Unexpected implementation.");
     }
 
     /**
@@ -130,7 +130,7 @@ public final class LinearTransformTest extends ProjectiveTransformTest {
     @Override
     public void testTranslatation2D() throws FactoryException, TransformException {
         super.testTranslatation2D();
-        assertInstanceOf("Unexpected implementation.", AffineTransform2D.class, transform);
+        assertInstanceOf(AffineTransform2D.class, transform, "Unexpected implementation.");
     }
 
     /**
@@ -143,7 +143,7 @@ public final class LinearTransformTest extends ProjectiveTransformTest {
     @Override
     public void testUniformScale2D() throws FactoryException, TransformException {
         super.testUniformScale2D();
-        assertInstanceOf("Unexpected implementation.", AffineTransform2D.class, transform);
+        assertInstanceOf(AffineTransform2D.class, transform, "Unexpected implementation.");
     }
 
     /**
@@ -156,7 +156,7 @@ public final class LinearTransformTest extends ProjectiveTransformTest {
     @Override
     public void testGenericScale2D() throws FactoryException, TransformException {
         super.testGenericScale2D();
-        assertInstanceOf("Unexpected implementation.", AffineTransform2D.class, transform);
+        assertInstanceOf(AffineTransform2D.class, transform, "Unexpected implementation.");
     }
 
     /**
@@ -169,7 +169,7 @@ public final class LinearTransformTest extends ProjectiveTransformTest {
     @Override
     public void testRotation2D() throws FactoryException, TransformException {
         super.testRotation2D();
-        assertInstanceOf("Unexpected implementation.", AffineTransform2D.class, transform);
+        assertInstanceOf(AffineTransform2D.class, transform, "Unexpected implementation.");
     }
 
     /**
@@ -182,7 +182,7 @@ public final class LinearTransformTest extends ProjectiveTransformTest {
     @Override
     public void testGeneral() throws FactoryException, TransformException {
         super.testGeneral();
-        assertInstanceOf("Unexpected implementation.", AffineTransform2D.class, transform);
+        assertInstanceOf(AffineTransform2D.class, transform, "Unexpected implementation.");
     }
 
     /**
@@ -195,6 +195,6 @@ public final class LinearTransformTest extends ProjectiveTransformTest {
     @Override
     public void testDimensionReduction() throws FactoryException, TransformException {
         super.testDimensionReduction();
-        assertInstanceOf("Unexpected implementation.", ProjectiveTransform.class, transform);
+        assertInstanceOf(ProjectiveTransform.class, transform, "Unexpected implementation.");
     }
 }

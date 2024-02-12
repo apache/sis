@@ -26,7 +26,7 @@ import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
@@ -148,8 +148,8 @@ public abstract class MatrixTestCase extends TestCase {
      * for additional checks, typically ensuring that it is an instance of the expected class.
      */
     void validateImplementation(final MatrixSIS matrix) {
-        assertEquals("numRow", getNumRow(), matrix.getNumRow());
-        assertEquals("numCol", getNumCol(), matrix.getNumCol());
+        assertEquals(getNumRow(), matrix.getNumRow(), "numRow");
+        assertEquals(getNumCol(), matrix.getNumCol(), "numCol");
         validate(matrix);
     }
 
@@ -168,20 +168,20 @@ public abstract class MatrixTestCase extends TestCase {
         final var extend = MatrixSIS.asExtendedPrecision(matrix);
         final Number[] numbers  = extend.getElementAsNumbers(false);
         final double[] elements = (matrix instanceof MatrixSIS) ? ((MatrixSIS) matrix).getElements() : null;
-        assertEquals("getElementAsNumbers", numRow * numCol, numbers.length);
+        assertEquals(numRow * numCol, numbers.length, "getElementAsNumbers");
         if (elements != null) {
-            assertEquals("getElements", numbers.length, elements.length);
+            assertEquals(numbers.length, elements.length, "getElements");
         }
         for (int k=0; k<numbers.length; k++) {
             final int j = k / numCol;
             final int i = k % numCol;
             final Number number  = numbers[k];
             final double element = matrix.getElement(j, i);
-            assertEquals("getElementOrNull", number, extend.getElementOrNull(j, i));
-            assertEquals("isZero", number == null, ExtendedPrecisionMatrix.isZero(number));
-            assertEquals("getElement", (number != null) ? number.doubleValue() : 0, element, STRICT);
+            assertEquals(number, extend.getElementOrNull(j, i), "getElementOrNull");
+            assertEquals(number == null, ExtendedPrecisionMatrix.isZero(number), "isZero");
+            assertEquals((number != null) ? number.doubleValue() : 0, element, "getElement");
             if (elements != null) {
-                assertEquals("getElements", element, elements[k], STRICT);
+                assertEquals(element, elements[k], "getElements");
             }
         }
     }
@@ -196,15 +196,15 @@ public abstract class MatrixTestCase extends TestCase {
     static void assertEqualsJAMA(final Matrix expected, final MatrixSIS actual, final double tolerance) {
         final int numRow = actual.getNumRow();
         final int numCol = actual.getNumCol();
-        assertEquals("numRow", expected.getRowDimension(),    numRow);
-        assertEquals("numCol", expected.getColumnDimension(), numCol);
+        assertEquals(expected.getRowDimension(),    numRow, "numRow");
+        assertEquals(expected.getColumnDimension(), numCol, "numCol");
         final String name = actual.getClass().getSimpleName();
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<numCol; i++) {
                 final double e = expected.get(j,i);
                 final double a = actual.getElement(j,i);
-                assertEquals(name, e, a, tolerance);
-                assertEquals(name, e, actual.getNumber(j,i).doubleValue(), tolerance);
+                assertEquals(e, a, tolerance, name);
+                assertEquals(e, actual.getNumber(j,i).doubleValue(), tolerance, name);
                 if (tolerance != STRICT && statistics != null) {
                     synchronized (statistics) {
                         statistics.accept(abs(e - a));
@@ -221,8 +221,8 @@ public abstract class MatrixTestCase extends TestCase {
     static void assertEqualsElements(final double[] expected, final int numRow, final int numCol,
             final MatrixSIS actual, final double tolerance)
     {
-        assertEquals("numRow", numRow, actual.getNumRow());
-        assertEquals("numCol", numCol, actual.getNumCol());
+        assertEquals(numRow, actual.getNumRow(), "numRow");
+        assertEquals(numCol, actual.getNumCol(), "numCol");
         assertArrayEquals(expected, actual.getElements(), tolerance);           // First because more informative in case of failure.
         assertTrue(Matrices.create(numRow, numCol, expected).equals(actual, tolerance));
     }
@@ -233,7 +233,7 @@ public abstract class MatrixTestCase extends TestCase {
     private static void assertEqualsRelative(final String message, final double expected,
             final MatrixSIS matrix, final int row, final int column)
     {
-        assertEquals(message, expected, matrix.getElement(row, column), abs(expected) * 1E-12);
+        assertEquals(expected, matrix.getElement(row, column), abs(expected) * 1E-12, message);
     }
 
     /**
@@ -285,7 +285,7 @@ public abstract class MatrixTestCase extends TestCase {
          * row-major array. So we have to transpose the JAMA matrix after construction.
          */
         assertEqualsJAMA(new Matrix(elements, numCol).transpose(), matrix, STRICT);
-        assertArrayEquals("getElements", elements, matrix.getElements(), STRICT);
+        assertArrayEquals(elements, matrix.getElements(), "getElements");
     }
 
     /**
@@ -336,20 +336,20 @@ public abstract class MatrixTestCase extends TestCase {
         /*
          * End of initialization - now perform the actual test.
          */
-        assertEquals("isAffine",   numRow == numCol, matrix.isAffine());
-        assertEquals("isIdentity", numRow == numCol, matrix.isIdentity());
+        assertEquals(numRow == numCol, matrix.isAffine());
+        assertEquals(numRow == numCol, matrix.isIdentity());
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<numCol; i++) {
                 final double element = matrix.getElement(j,i);
-                assertEquals((i == j) ? 1 : 0, element, STRICT);
+                assertEquals((i == j) ? 1 : 0, element);
                 matrix.setElement(j, i, random.nextDouble() - 1.1);
-                assertEquals("isAffine", (numRow == numCol) && (j != numRow-1), matrix.isAffine());
-                assertFalse("isIdentity", matrix.isIdentity());
+                assertEquals((numRow == numCol) && (j != numRow-1), matrix.isAffine());
+                assertFalse(matrix.isIdentity());
                 matrix.setElement(j, i, element);
             }
         }
-        assertEquals("isAffine",   numRow == numCol, matrix.isAffine());
-        assertEquals("isIdentity", numRow == numCol, matrix.isIdentity());
+        assertEquals(numRow == numCol, matrix.isAffine());
+        assertEquals(numRow == numCol, matrix.isIdentity());
     }
 
     /**
@@ -367,9 +367,9 @@ public abstract class MatrixTestCase extends TestCase {
         final MatrixSIS clone  = matrix.clone();
         validateImplementation(matrix);
         validateImplementation(clone);
-        assertNotSame("clone", matrix, clone);
-        assertEquals("equals", matrix, clone);
-        assertEquals("hashCode", matrix.hashCode(), clone.hashCode());
+        assertNotSame(matrix, clone);
+        assertEquals(matrix, clone);
+        assertEquals(matrix.hashCode(), clone.hashCode());
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<numCol; i++) {
                 final double element = clone.getElement(j,i);
@@ -379,7 +379,7 @@ public abstract class MatrixTestCase extends TestCase {
                 clone.setElement(j, i, element);
             }
         }
-        assertEquals("equals", matrix, clone);
+        assertEquals(matrix, clone);
     }
 
     /**
@@ -507,7 +507,7 @@ public abstract class MatrixTestCase extends TestCase {
         assertEqualsRelative("scaleY",     at.getScaleY(),     matrix, 1, 1);
         assertEqualsRelative("shearX",     at.getShearX(),     matrix, 0, 1);
         assertEqualsRelative("shearY",     at.getShearY(),     matrix, 1, 0);
-        assertTrue("isAffine", matrix.isAffine());
+        assertTrue(matrix.isAffine());
     }
 
     /**
@@ -603,8 +603,8 @@ public abstract class MatrixTestCase extends TestCase {
             vector[2] = 1;
             final double[] result = matrix.multiply(vector);        // The result to verify.
             at.transform(vector, 0, vector, 0, 1);                  // The expected result.
-            assertEquals("x", vector[0], result[0], TOLERANCE);
-            assertEquals("y", vector[1], result[1], TOLERANCE);
+            assertEquals(vector[0], result[0], TOLERANCE);
+            assertEquals(vector[1], result[1], TOLERANCE);
             validateImplementation(matrix);
         }
     }

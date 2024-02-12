@@ -32,7 +32,8 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
@@ -71,28 +72,19 @@ public final class ParametersTest extends TestCase {
     public void testCast() {
         final ParameterDescriptor<Integer> descriptor = DefaultParameterDescriptorTest.create("My param", 5, 15, 10);
         assertSame(descriptor, Parameters.cast(descriptor, Integer.class));
-        try {
-            assertSame(descriptor, Parameters.cast(descriptor, Double.class));
-            fail("Expected a ClassCastException.");
-        } catch (ClassCastException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("My param"));
-            assertTrue(message, message.contains("Integer"));
-        }
+
+        ClassCastException e;
+        e = assertThrows(ClassCastException.class, () -> Parameters.cast(descriptor, Double.class));
+        assertMessageContains(e, "My param", "Integer");
         /*
          * Tests the cast of values.
          */
         final ParameterValue<Integer> value = descriptor.createValue();
-        assertEquals("Expected a parameter initialized to the default value.", 10, value.intValue());
+        assertEquals(10, value.intValue(), "Expected a parameter initialized to the default value.");
         assertSame(value, Parameters.cast(value, Integer.class));
-        try {
-            assertSame(value, Parameters.cast(value, Double.class));
-            fail("Expected a ClassCastException.");
-        } catch (ClassCastException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("My param"));
-            assertTrue(message, message.contains("Integer"));
-        }
+
+        e = assertThrows(ClassCastException.class, () -> Parameters.cast(value, Double.class));
+        assertMessageContains(e, "My param", "Integer");
     }
 
     /**
@@ -189,11 +181,11 @@ public final class ParametersTest extends TestCase {
         assertSame(sourceSubgroup, TestUtilities.getSingleton(source.groups(subgroupName)));
         assertSame(targetSubgroup, TestUtilities.getSingleton(target.groups(subgroupName)));
         assertEquals("A value from the source", target.parameter("A parent parameter").getValue());
-        assertEquals("Mandatory 1",    10, targetSubgroup.parameter("Mandatory 1").intValue());
-        assertEquals("Mandatory 2",    20, targetSubgroup.parameter("Mandatory 2").intValue());
-        assertEquals("Optional 3",     30, targetSubgroup.parameter("Optional 3") .intValue());
-        assertEquals("Optional 4",     40, ((ParameterValue<?>) targetSubgroup.values().get(3)).intValue());
-        assertEquals("Optional 4 bis", 50, ((ParameterValue<?>) targetSubgroup.values().get(4)).intValue());
+        assertEquals(10, targetSubgroup.parameter("Mandatory 1").intValue());
+        assertEquals(20, targetSubgroup.parameter("Mandatory 2").intValue());
+        assertEquals(30, targetSubgroup.parameter("Optional 3") .intValue());
+        assertEquals(40, ((ParameterValue<?>) targetSubgroup.values().get(3)).intValue());
+        assertEquals(50, ((ParameterValue<?>) targetSubgroup.values().get(4)).intValue());
     }
 
     /**
@@ -209,15 +201,10 @@ public final class ParametersTest extends TestCase {
          * Test when the ParameterValueGroup is empty. We test both with the "incomplete" descriptor,
          * which contain no default value, and with the complete one, which provide a default value.
          */
-        assertNull("No value and no default value.", group.getValue(incomplete));
-        assertEquals("No value, should fallback on default.", Integer.valueOf(10), group.getValue(descriptor));
-        try {
-            group.intValue(incomplete);
-            fail("Cannot return when there is no value.");
-        } catch (IllegalStateException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("My param"));
-        }
+        assertNull(group.getValue(incomplete));
+        assertEquals(Integer.valueOf(10), group.getValue(descriptor));
+        var e = assertThrows(IllegalStateException.class, () -> group.intValue(incomplete));
+        assertMessageContains(e, "My param");
         /*
          * Define a value and test again.
          */

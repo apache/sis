@@ -28,7 +28,8 @@ import org.apache.sis.referencing.operation.matrix.Matrix3;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroupTest;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -64,28 +65,22 @@ public final class ContextualParametersTest extends TestCase {
     @Test
     public void testParameters() {
         final ContextualParameters p = create(1, 1);
-        assertTrue("values().isEmpty()",       p.values().isEmpty());
-        assertTrue("normalize.isIdentity()",   p.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION).isIdentity());
-        assertTrue("denormalize.isIdentity()", p.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION).isIdentity());
-        assertTrue("normalize.isIdentity()",   p.getMatrix(ContextualParameters.MatrixRole.INVERSE_NORMALIZATION).isIdentity());
-        assertTrue("denormalize.isIdentity()", p.getMatrix(ContextualParameters.MatrixRole.INVERSE_DENORMALIZATION).isIdentity());
+        assertTrue(p.values().isEmpty());
+        assertTrue(p.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION).isIdentity());
+        assertTrue(p.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION).isIdentity());
+        assertTrue(p.getMatrix(ContextualParameters.MatrixRole.INVERSE_NORMALIZATION).isIdentity());
+        assertTrue(p.getMatrix(ContextualParameters.MatrixRole.INVERSE_DENORMALIZATION).isIdentity());
 
         final ParameterValue<?> p1 = p.parameter("Mandatory 1");
         final ParameterValue<?> p2 = p.parameter("Mandatory 2");
-        try {
-            p.parameter("Mandatory 3");
-            fail("Shall not find a non-existent parameter.");
-        } catch (ParameterNotFoundException e) {
-            // This is the expected exception.
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("Mandatory 3"));
-        }
+        var e = assertThrows(ParameterNotFoundException.class, () -> p.parameter("Mandatory 3"));
+        assertMessageContains(e, "Mandatory 3");
 
         assertNotSame(p1, p2);
         assertSame(p1, p.parameter("Mandatory 1"));
         assertSame(p2, p.parameter("Mandatory 2"));
-        assertEquals("values().size()", 2, p.values().size());
-        assertArrayEquals("values.toArray()", new ParameterValue<?>[] {p1, p2}, p.values().toArray());
+        assertEquals(2, p.values().size());
+        assertArrayEquals(new ParameterValue<?>[] {p1, p2}, p.values().toArray());
     }
 
     /**
@@ -101,14 +96,9 @@ public final class ContextualParametersTest extends TestCase {
         p.parameter("Mandatory 1").setValue(4);
         final MathTransform kernel = MathTransforms.linear(3, 4);
         assertEquals(kernel, p.completeTransform(DefaultMathTransformFactoryTest.factory(), kernel));
-        try {
-            p.parameter("Mandatory 1").setValue(10);
-            fail("Shall not be allowed to modify an immutable instance.");
-        } catch (UnsupportedOperationException e) {
-            // This is the expected exception.
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("ParameterValue"));
-        }
+        var e = assertThrows(UnsupportedOperationException.class, () -> p.parameter("Mandatory 1").setValue(10),
+                             "Shall not be allowed to modify an immutable instance.");
+        assertMessageContains(e, "ParameterValue");
     }
 
     /**

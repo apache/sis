@@ -43,13 +43,13 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assert.assertMatrixEquals;
@@ -88,9 +88,9 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
     @org.junit.Ignore("Pending the completion of migration to JDK 9")
     public void testServiceProvider() {
         final MathTransformFactory factory = ServiceLoader.load(MathTransformFactory.class).findFirst().orElse(null);
-        assertNotNull("No Apache SIS implementation of MathTransformFactory found in “module-info”.", factory);
-        assertEquals("Expected the default implementation of MathTransformFactory to be first in “module-info”.",
-                DefaultMathTransformFactory.class, factory.getClass());
+        assertNotNull(factory, "No Apache SIS implementation of MathTransformFactory found in “module-info”.");
+        assertEquals(DefaultMathTransformFactory.class, factory.getClass(),
+                "Expected the default implementation of MathTransformFactory to be first in “module-info”.");
         assertSame(factory(), factory);
     }
 
@@ -125,13 +125,13 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
         final OperationMethod affine   = factory.getOperationMethod(Constants.AFFINE);
         final OperationMethod mercator = factory.getOperationMethod("Mercator (variant A)");
 
-        assertInstanceOf("Affine",               Affine.class,      affine);
-        assertInstanceOf("Mercator (variant A)", Mercator1SP.class, mercator);
+        assertInstanceOf(Affine.class,      affine);
+        assertInstanceOf(Mercator1SP.class, mercator);
 
         // Same as above, using EPSG code and alias.
-        assertSame("EPSG:9624",    affine,   factory.getOperationMethod("EPSG:9624"));
-        assertSame("EPSG:9804",    mercator, factory.getOperationMethod("EPSG:9804"));
-        assertSame("Mercator_1SP", mercator, factory.getOperationMethod("Mercator_1SP"));
+        assertSame(affine,   factory.getOperationMethod("EPSG:9624"));
+        assertSame(mercator, factory.getOperationMethod("EPSG:9804"));
+        assertSame(mercator, factory.getOperationMethod("Mercator_1SP"));
     }
 
     /**
@@ -141,13 +141,8 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
     @DependsOnMethod("testGetOperationMethod")
     public void testNonExistentCode() {
         final DefaultMathTransformFactory factory = factory();
-        try {
-            factory.getOperationMethod("EPXX:9624");
-            fail("Expected NoSuchIdentifierException");
-        } catch (NoSuchIdentifierException e) {
-            final String message = e.getLocalizedMessage();
-            assertTrue(message, message.contains("EPXX:9624"));
-        }
+        var e = assertThrows(NoSuchIdentifierException.class, () -> factory.getOperationMethod("EPXX:9624"));
+        assertMessageContains(e, "EPXX:9624");
     }
 
     /**
@@ -172,8 +167,8 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
         /*
          * Following tests will force instantiation of all remaining OperationMethod.
          */
-        assertTrue("Conversions should be a subset of transforms.",  transforms .containsAll(conversions));
-        assertTrue("Projections should be a subset of conversions.", conversions.containsAll(projections));
+        assertTrue(transforms .containsAll(conversions), "Conversions should be a subset of transforms.");
+        assertTrue(conversions.containsAll(projections), "Projections should be a subset of conversions.");
     }
 
     /**
@@ -188,7 +183,7 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
         final OperationMethod current    = factory.getOperationMethod("EPSG:1029");
         final OperationMethod deprecated = factory.getOperationMethod("EPSG:9823");
         assertSame(current, factory.getOperationMethod("Equidistant Cylindrical (Spherical)"));
-        assertSame("Should share the non-deprecated implementation.", current, deprecated);
+        assertSame(current, deprecated, "Should share the non-deprecated implementation.");
     }
 
     /**
@@ -289,14 +284,14 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
             if (mt instanceof LinearTransform) {
                 continue;
             }
-            assertInstanceOf(classification, Parameterized.class, mt);
+            assertInstanceOf(Parameterized.class, mt, classification);
             pg = ((Parameterized) mt).getParameterValues();
-            assertNotNull(classification, pg);
-            assertEquals(classification, pg.getDescriptor().getName().getCode());
-            assertEquals(classification, 6377563.396,       pg.parameter("semi_major").doubleValue(), 1E-4);
-            assertEquals(classification, 6356256.909237285, pg.parameter("semi_minor").doubleValue(), 1E-4);
+            assertNotNull(pg, classification);
+            assertEquals(pg.getDescriptor().getName().getCode(), classification);
+            assertEquals(6377563.396,       pg.parameter("semi_major").doubleValue(), 1E-4, classification);
+            assertEquals(6356256.909237285, pg.parameter("semi_minor").doubleValue(), 1E-4, classification);
             if (param != null) {
-                assertEquals(classification, value, pg.parameter(param).doubleValue(), 1E-4);
+                assertEquals(value, pg.parameter(param).doubleValue(), 1E-4, classification);
             }
             /*
              * Creates a ProjectedCRS from the map projection. This part is more an integration test than
@@ -308,8 +303,8 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
                     new DefaultConversion(dummyName, method, mt, null),
                     HardCodedCS.PROJECTED);
             final Conversion projection = crs.getConversionFromBase();
-            assertSame(classification, mt, projection.getMathTransform());
-            assertEquals(classification, projection.getMethod().getName().getCode());
+            assertSame(mt, projection.getMathTransform(), classification);
+            assertEquals(projection.getMethod().getName().getCode(), classification);
         }
     }
 
@@ -373,13 +368,10 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
          */
         context.setSource(HardCodedCS.CARTESIAN_2D);
         context.setTarget(HardCodedCS.CARTESIAN_3D);
-        try {
-            factory.swapAndScaleAxes(MathTransforms.identity(2), context);
-            fail("Should not have accepted the given coordinate systems.");
-        } catch (InvalidGeodeticParameterException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("2D → tr(2D → 2D) → 3D"));
-        }
+        var e = assertThrows(InvalidGeodeticParameterException.class,
+                () -> factory.swapAndScaleAxes(MathTransforms.identity(2), context),
+                "Should not have accepted the given coordinate systems.");
+        assertMessageContains(e, "2D → tr(2D → 2D) → 3D");
     }
 
     /**

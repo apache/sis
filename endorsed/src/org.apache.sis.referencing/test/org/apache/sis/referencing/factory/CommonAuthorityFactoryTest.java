@@ -45,8 +45,7 @@ import org.apache.sis.measure.Units;
 // Test dependencies
 import org.junit.Ignore;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -85,8 +84,7 @@ public final class CommonAuthorityFactoryTest extends TestCase {
      */
     @Test
     public void testGetAuthorityCodes() throws FactoryException {
-        assertTrue("getAuthorityCodes(Datum.class)",
-                factory.getAuthorityCodes(Datum.class).isEmpty());
+        assertTrue(factory.getAuthorityCodes(Datum.class).isEmpty());
         assertSetEquals(List.of("CRS:1", "CRS:27", "CRS:83", "CRS:84", "CRS:88",
                                 "AUTO2:42001", "AUTO2:42002", "AUTO2:42003", "AUTO2:42004", "AUTO2:42005",
                                 "OGC:JulianDate", "OGC:TruncatedJulianDate", "OGC:UnixTime"),
@@ -103,14 +101,14 @@ public final class CommonAuthorityFactoryTest extends TestCase {
                 factory.getAuthorityCodes(EngineeringCRS.class));
 
         final Set<String> codes = factory.getAuthorityCodes(GeographicCRS.class);
-        assertFalse("CRS:1",      codes.contains("CRS:1"));
-        assertTrue ("CRS:27",     codes.contains("CRS:27"));
-        assertTrue ("CRS:83",     codes.contains("CRS:83"));
-        assertTrue ("CRS:84",     codes.contains("CRS:84"));
-        assertFalse("CRS:88",     codes.contains("CRS:88"));
-        assertTrue ("0084",       codes.contains("0084"));
-        assertFalse("0088",       codes.contains("0088"));
-        assertTrue ("OGC:CRS084", codes.contains("OGC:CRS084"));
+        assertFalse(codes.contains("CRS:1"));
+        assertTrue (codes.contains("CRS:27"));
+        assertTrue (codes.contains("CRS:83"));
+        assertTrue (codes.contains("CRS:84"));
+        assertFalse(codes.contains("CRS:88"));
+        assertTrue (codes.contains("0084"));
+        assertFalse(codes.contains("0088"));
+        assertTrue (codes.contains("OGC:CRS084"));
     }
 
     /**
@@ -127,10 +125,10 @@ public final class CommonAuthorityFactoryTest extends TestCase {
         }
         assertFalse(expected.isEmpty());
         for (final String code : factory.getAuthorityCodes(TemporalCRS.class)) {
-            assertTrue(code, expected.remove(code));
+            assertTrue(expected.remove(code), code);
         }
         for (final String remaining : expected) {
-            assertFalse(remaining, remaining.startsWith(Constants.OGC));
+            assertFalse(remaining.startsWith(Constants.OGC), remaining);
         }
     }
 
@@ -229,33 +227,31 @@ public final class CommonAuthorityFactoryTest extends TestCase {
     @Test
     public void testAuto42001() throws FactoryException {
         final ProjectedCRS crs = factory.createProjectedCRS("AUTO:42001,-123,0");
-        assertSame("With other coord.",   crs, factory.createProjectedCRS("AUTO : 42001, -122, 10 "));
-        assertSame("Omitting namespace.", crs, factory.createProjectedCRS(" 42001, -122 , 10 "));
-        assertSame("With explicit unit.", crs, factory.createProjectedCRS("AUTO2 :  42001, 1, -122 , 10 "));
-        assertSame("With explicit unit.", crs, factory.createProjectedCRS("AUTO1 :  42001, 9001, -122 , 10 "));
-        assertSame("Legacy namespace.",   crs, factory.createProjectedCRS("AUTO:42001,9001,-122,10"));
-        assertSame("When the given parameters match exactly the UTM central meridian and latitude of origin,"
-                + " the CRS created by AUTO:42002 should be the same as the CRS created by AUTO:42001.",
-                crs, factory.createProjectedCRS("AUTO2:42002,1,-123,0"));
+        assertSame(crs, factory.createProjectedCRS("AUTO : 42001, -122, 10 "));
+        assertSame(crs, factory.createProjectedCRS(" 42001, -122 , 10 "));
+        assertSame(crs, factory.createProjectedCRS("AUTO2 :  42001, 1, -122 , 10 "));
+        assertSame(crs, factory.createProjectedCRS("AUTO1 :  42001, 9001, -122 , 10 "));
+        assertSame(crs, factory.createProjectedCRS("AUTO:42001,9001,-122,10"));
+        assertSame(crs, factory.createProjectedCRS("AUTO2:42002,1,-123,0"),
+                "When the given parameters match exactly the UTM central meridian and latitude of origin,"
+                + " the CRS created by AUTO:42002 should be the same as the CRS created by AUTO:42001.");
         /*
          * Do not use `assertEpsgNameAndIdentifierEqual(…)` because the "EPSG" authority is missing
          * (actually is "Subset of EPSG") if the CRS was built from the fallback factory.
          */
-        assertEquals("name", "WGS 84 / UTM zone 10N", crs.getName().getCode());
-        assertEquals("identifier", "32610", getSingleton(crs.getIdentifiers()).getCode());
+        assertEquals("WGS 84 / UTM zone 10N", crs.getName().getCode());
+        assertEquals("32610", getSingleton(crs.getIdentifiers()).getCode());
         final ParameterValueGroup p = crs.getConversionFromBase().getParameterValues();
         assertEquals(TransverseMercator.NAME, crs.getConversionFromBase().getMethod().getName().getCode());
         assertAxisDirectionsEqual("CS", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
-        assertEquals(Constants.CENTRAL_MERIDIAN, -123, p.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue(), STRICT);
-        assertEquals(Constants.LATITUDE_OF_ORIGIN,  0, p.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(), STRICT);
-        assertEquals(Constants.FALSE_NORTHING,      0, p.parameter(Constants.FALSE_NORTHING)    .doubleValue(), STRICT);
-        assertEquals("axis[0].unit", Units.METRE, crs.getCoordinateSystem().getAxis(0).getUnit());
-        try {
-            factory.createObject("AUTO:42001");
-            fail("Should not have accepted incomplete code.");
-        } catch (NoSuchAuthorityCodeException e) {
-            assertEquals("42001", e.getAuthorityCode());
-        }
+        assertEquals(-123, p.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue());
+        assertEquals(   0, p.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue());
+        assertEquals(   0, p.parameter(Constants.FALSE_NORTHING)    .doubleValue());
+        assertEquals(Units.METRE, crs.getCoordinateSystem().getAxis(0).getUnit());
+
+        var e = assertThrows(NoSuchAuthorityCodeException.class, () -> factory.createObject("AUTO:42001"),
+                             "Should not have accepted incomplete code.");
+        assertEquals("42001", e.getAuthorityCode());
     }
 
     /**
@@ -268,10 +264,10 @@ public final class CommonAuthorityFactoryTest extends TestCase {
     @DependsOnMethod("testAuto42001")
     public void testAuto42001_foot() throws FactoryException {
         final ProjectedCRS crs = factory.createProjectedCRS("AUTO2:42001, 0.3048, -123, 0");
-        assertSame("Legacy namespace.", crs, factory.createProjectedCRS("AUTO:42001,9002,-123,0"));
-        assertEquals("name", "WGS 84 / UTM zone 10N", crs.getName().getCode());
-        assertTrue("Expected no EPSG identifier because the axes are not in metres.", crs.getIdentifiers().isEmpty());
-        assertEquals("axis[0].unit", Units.FOOT, crs.getCoordinateSystem().getAxis(0).getUnit());
+        assertSame(crs, factory.createProjectedCRS("AUTO:42001,9002,-123,0"), "Legacy namespace.");
+        assertEquals("WGS 84 / UTM zone 10N", crs.getName().getCode());
+        assertTrue(crs.getIdentifiers().isEmpty(), "Expected no EPSG identifier because the axes are not in metres.");
+        assertEquals(Units.FOOT, crs.getCoordinateSystem().getAxis(0).getUnit());
     }
 
     /**
@@ -283,17 +279,17 @@ public final class CommonAuthorityFactoryTest extends TestCase {
     @DependsOnMethod("testAuto42001")
     public void testAuto42002() throws FactoryException {
         final ProjectedCRS crs = factory.createProjectedCRS("AUTO:42002,-122,10");
-        assertSame("Omitting namespace.", crs, factory.createProjectedCRS(" 42002, -122 , 10 "));
-        assertSame("With explicit unit.", crs, factory.createProjectedCRS("AUTO2 :  42002, 1, -122 , 10 "));
-        assertEquals("name", "Transverse Mercator", crs.getName().getCode());
-        assertTrue("Expected no EPSG identifier.", crs.getIdentifiers().isEmpty());
+        assertSame(crs, factory.createProjectedCRS(" 42002, -122 , 10 "), "Omitting namespace.");
+        assertSame(crs, factory.createProjectedCRS("AUTO2 :  42002, 1, -122 , 10 "), "With explicit unit.");
+        assertEquals("Transverse Mercator", crs.getName().getCode());
+        assertTrue(crs.getIdentifiers().isEmpty(), "Expected no EPSG identifier.");
 
         final ParameterValueGroup p = crs.getConversionFromBase().getParameterValues();
         assertEquals(TransverseMercator.NAME, crs.getConversionFromBase().getMethod().getName().getCode());
         assertAxisDirectionsEqual("CS", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
-        assertEquals(Constants.CENTRAL_MERIDIAN, -122, p.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue(), STRICT);
-        assertEquals(Constants.LATITUDE_OF_ORIGIN, 10, p.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(), STRICT);
-        assertEquals(Constants.FALSE_NORTHING,      0, p.parameter(Constants.FALSE_NORTHING)    .doubleValue(), STRICT);
+        assertEquals(-122, p.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue());
+        assertEquals(  10, p.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue());
+        assertEquals(   0, p.parameter(Constants.FALSE_NORTHING)    .doubleValue());
     }
 
     /**
@@ -308,8 +304,8 @@ public final class CommonAuthorityFactoryTest extends TestCase {
         final ProjectedCRS crs = factory.createProjectedCRS("AUTO:42003,9001,10,45");
         final ParameterValueGroup p = crs.getConversionFromBase().getParameterValues();
         assertAxisDirectionsEqual("CS", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
-        assertEquals(Constants.CENTRAL_MERIDIAN,   10, p.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue(), STRICT);
-        assertEquals(Constants.LATITUDE_OF_ORIGIN, 45, p.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue(), STRICT);
+        assertEquals(10, p.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue());
+        assertEquals(45, p.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue());
     }
 
     /**
@@ -323,11 +319,11 @@ public final class CommonAuthorityFactoryTest extends TestCase {
         final ProjectedCRS crs = factory.createProjectedCRS("AUTO2:42004,1,10,45");
         final ParameterValueGroup p = crs.getConversionFromBase().getParameterValues();
         assertAxisDirectionsEqual("CS", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
-        assertEquals(Constants.CENTRAL_MERIDIAN,   10, p.parameter(Constants.CENTRAL_MERIDIAN)   .doubleValue(), STRICT);
-        assertEquals(Constants.LATITUDE_OF_ORIGIN, 45, p.parameter(Constants.STANDARD_PARALLEL_1).doubleValue(), STRICT);
-        assertInstanceOf("Opportunistic check: in the special case of Equirectangular projection, "
-                + "SIS should have optimized the MathTransform as an affine transform.",
-                LinearTransform.class, crs.getConversionFromBase().getMathTransform());
+        assertEquals(10, p.parameter(Constants.CENTRAL_MERIDIAN)   .doubleValue());
+        assertEquals(45, p.parameter(Constants.STANDARD_PARALLEL_1).doubleValue());
+        assertInstanceOf(LinearTransform.class, crs.getConversionFromBase().getMathTransform(),
+                "Opportunistic check: in the special case of Equirectangular projection, "
+                + "SIS should have optimized the MathTransform as an affine transform.");
     }
 
     /**
@@ -341,7 +337,7 @@ public final class CommonAuthorityFactoryTest extends TestCase {
         final ProjectedCRS crs = factory.createProjectedCRS("AUTO:42005,9001,10,45");
         final ParameterValueGroup p = crs.getConversionFromBase().getParameterValues();
         assertAxisDirectionsEqual("CS", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
-        assertEquals(Constants.CENTRAL_MERIDIAN,   10, p.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue(), STRICT);
+        assertEquals(10, p.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue());
     }
 
     /**
@@ -361,9 +357,9 @@ public final class CommonAuthorityFactoryTest extends TestCase {
         tr2 = (AffineTransform) factory.createProjectedCRS("AUTO:42004,9002,0,35").getConversionFromBase().getMathTransform();
         tr2 = tr2.createInverse();
         tr2.concatenate(tr1);
-        assertEquals("Expected any kind of scale.", 0, tr2.getType() & ~AffineTransform.TYPE_MASK_SCALE);
-        assertEquals("Expected the conversion factor from foot to metre.", 0.3048, tr2.getScaleX(), 1E-9);
-        assertEquals("Expected the conversion factor from foot to metre.", 0.3048, tr2.getScaleY(), 1E-9);
+        assertEquals(0, tr2.getType() & ~AffineTransform.TYPE_MASK_SCALE, "Expected any kind of scale.");
+        assertEquals(0.3048, tr2.getScaleX(), 1E-9, "Expected the conversion factor from foot to metre.");
+        assertEquals(0.3048, tr2.getScaleY(), 1E-9, "Expected the conversion factor from foot to metre.");
     }
 
     /**

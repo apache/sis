@@ -32,7 +32,7 @@ import org.apache.sis.io.wkt.Convention;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
@@ -115,25 +115,25 @@ public final class DefaultTransformationTest extends TestCase {
      */
     @SuppressWarnings("SuspiciousToArrayCall")
     private static void verifyProperties(final DefaultTransformation op) {
-        assertEquals("name",       "Tokyo to JGD2000 (GSI)",  op.getName().getCode());
-        assertEquals("sourceCRS",  "Tokyo 1918",              op.getSourceCRS().getName().getCode());
-        assertEquals("targetCRS",  "JGD2000",                 op.getTargetCRS().getName().getCode());
-        assertEquals("method",     "Geocentric translations", op.getMethod().getName().getCode());
-        assertEquals("parameters", "Geocentric translations", op.getParameterDescriptors().getName().getCode());
+        assertEquals("Tokyo to JGD2000 (GSI)",  op.getName().getCode());
+        assertEquals("Tokyo 1918",              op.getSourceCRS().getName().getCode());
+        assertEquals("JGD2000",                 op.getTargetCRS().getName().getCode());
+        assertEquals("Geocentric translations", op.getMethod().getName().getCode());
+        assertEquals("Geocentric translations", op.getParameterDescriptors().getName().getCode());
 
         final ParameterValueGroup parameters = op.getParameterValues();
         final ParameterValue<?>[] values = parameters.values().toArray(new ParameterValue<?>[3]);
-        assertEquals("parameters",    "Geocentric translations", parameters.getDescriptor().getName().getCode());
-        assertEquals("parameters[0]", "X-axis translation",      values[0] .getDescriptor().getName().getCode());
-        assertEquals("parameters[1]", "Y-axis translation",      values[1] .getDescriptor().getName().getCode());
-        assertEquals("parameters[2]", "Z-axis translation",      values[2] .getDescriptor().getName().getCode());
-        assertEquals("parameters[0]", -146.414, values[0].doubleValue(), STRICT);
-        assertEquals("parameters[1]",  507.337, values[1].doubleValue(), STRICT);
-        assertEquals("parameters[2]",  680.507, values[2].doubleValue(), STRICT);
+        assertEquals("Geocentric translations", parameters.getDescriptor().getName().getCode());
+        assertEquals("X-axis translation",      values[0] .getDescriptor().getName().getCode());
+        assertEquals("Y-axis translation",      values[1] .getDescriptor().getName().getCode());
+        assertEquals("Z-axis translation",      values[2] .getDescriptor().getName().getCode());
+        assertEquals(-146.414, values[0].doubleValue());
+        assertEquals( 507.337, values[1].doubleValue());
+        assertEquals( 680.507, values[2].doubleValue());
         assertEquals(3, values.length);
 
         final Matrix m = MathTransforms.getMatrix(op.getMathTransform());
-        assertNotNull("transform", m);
+        assertNotNull(m);
         for (int j=m.getNumRow(); --j >= 0;) {
             for (int i=m.getNumCol(); --i >= 0;) {
                 double expected = (i == j) ? 1 : 0;
@@ -142,7 +142,7 @@ public final class DefaultTransformationTest extends TestCase {
                     case 1: expected =  507.337; break;
                     case 2: expected =  680.507; break;
                 }
-                assertEquals(expected, m.getElement(j,i), STRICT);
+                assertEquals(expected, m.getElement(j,i));
             }
         }
     }

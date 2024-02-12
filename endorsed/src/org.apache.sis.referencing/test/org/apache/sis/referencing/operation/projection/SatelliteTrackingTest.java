@@ -30,7 +30,7 @@ import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**

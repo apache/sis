@@ -41,8 +41,8 @@ import org.apache.sis.metadata.sql.util.Reflection;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -209,7 +209,7 @@ public final class EPSGInstallerTest extends TestCase {
         final Map<String,Object> properties = new HashMap<>();
         assertNull(properties.put("dataSource", ds));
         assertNull(properties.put("scriptProvider", scriptProvider));
-        assertEquals("Should not contain EPSG tables before we created them.", 0, countCRSTables(ds));
+        assertEquals(0, countCRSTables(ds), "Should not contain EPSG tables before we created them.");
         loggings.assertNoUnexpectedLog();       // Should not yet have logged anything at this point.
 
         try (EPSGFactory factory = new EPSGFactory(properties)) {
@@ -229,8 +229,8 @@ public final class EPSGInstallerTest extends TestCase {
              * with both "DEPRECATED" and "SHOW_CRS" conditions in their "WHERE" clause.
              */
             Set<String> codes = factory.getAuthorityCodes(GeographicCRS.class);
-            assertTrue("4979", codes.contains("4979"));     // A non-deprecated code.
-            assertTrue("4329", codes.contains("4329"));     // A deprecated code.
+            assertTrue(codes.contains("4979"));     // A non-deprecated code.
+            assertTrue(codes.contains("4329"));     // A deprecated code.
             /*
              * Following forces the authority factory to iterate over all codes.
              * Since the iterator returns only non-deprecated codes, EPSG:4329
@@ -238,10 +238,10 @@ public final class EPSGInstallerTest extends TestCase {
              * of type BOOLEAN have been properly handled.
              */
             codes = new HashSet<>(codes);
-            assertTrue ("4979", codes.contains("4979"));
-            assertFalse("4329", codes.contains("4329"));
+            assertTrue (codes.contains("4979"));
+            assertFalse(codes.contains("4329"));
         }
-        assertEquals("Should contain EPSG tables after we created them.", 1, countCRSTables(ds));
+        assertEquals(1, countCRSTables(ds), "Should contain EPSG tables after we created them.");
     }
 
     /**
@@ -254,7 +254,7 @@ public final class EPSGInstallerTest extends TestCase {
             try (ResultSet r = c.getMetaData().getTables(null, null, "Coordinate Reference System", null)) {
                 while (r.next()) {
                     final String schema = r.getString(Reflection.TABLE_SCHEM);
-                    assertTrue(schema, "EPSG".equalsIgnoreCase(schema));
+                    assertTrue("EPSG".equalsIgnoreCase(schema), schema);
                     count++;
                 }
             }
@@ -276,7 +276,7 @@ public final class EPSGInstallerTest extends TestCase {
                     switch (r.getInt(1)) {
                         case 5219:
                         case 5511: {
-                            assertEquals(-3.689471323E-24, r.getDouble(2), STRICT);
+                            assertEquals(-3.689471323E-24, r.getDouble(2));
                             break;
                         }
                     }

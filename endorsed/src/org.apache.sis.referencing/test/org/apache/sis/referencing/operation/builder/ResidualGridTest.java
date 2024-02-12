@@ -23,7 +23,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
@@ -62,9 +62,9 @@ public final class ResidualGridTest extends TestCase {
      */
     @Test
     public void verifyGlobalProperties() {
-        assertEquals("translationDimensions", 2,  grid.getTranslationDimensions());
-        assertTrue("coordinateToGrid.isIdentity", grid.getCoordinateToGrid().isIdentity());
-        assertTrue("gridToTarget.isIdentity",     grid.gridToTarget.isIdentity());
+        assertEquals(2, grid.getTranslationDimensions());
+        assertTrue(grid.getCoordinateToGrid().isIdentity());
+        assertTrue(grid.gridToTarget.isIdentity());
     }
 
     /**
@@ -73,16 +73,16 @@ public final class ResidualGridTest extends TestCase {
      */
     @Test
     public void testGetCellValue() {
-        assertEquals(0, grid.getCellValue(0, 0, 0), STRICT);
-        assertEquals(2, grid.getCellValue(1, 0, 0), STRICT);
-        assertEquals(1, grid.getCellValue(0, 1, 0), STRICT);
-        assertEquals(2, grid.getCellValue(1, 1, 0), STRICT);
-        assertEquals(2, grid.getCellValue(0, 2, 0), STRICT);
-        assertEquals(1, grid.getCellValue(1, 2, 0), STRICT);
-        assertEquals(1, grid.getCellValue(0, 0, 3), STRICT);
-        assertEquals(4, grid.getCellValue(1, 0, 3), STRICT);
-        assertEquals(3, grid.getCellValue(0, 2, 3), STRICT);
-        assertEquals(2, grid.getCellValue(1, 2, 3), STRICT);
+        assertEquals(0, grid.getCellValue(0, 0, 0));
+        assertEquals(2, grid.getCellValue(1, 0, 0));
+        assertEquals(1, grid.getCellValue(0, 1, 0));
+        assertEquals(2, grid.getCellValue(1, 1, 0));
+        assertEquals(2, grid.getCellValue(0, 2, 0));
+        assertEquals(1, grid.getCellValue(1, 2, 0));
+        assertEquals(1, grid.getCellValue(0, 0, 3));
+        assertEquals(4, grid.getCellValue(1, 0, 3));
+        assertEquals(3, grid.getCellValue(0, 2, 3));
+        assertEquals(2, grid.getCellValue(1, 2, 3));
     }
 
     /**
@@ -94,11 +94,11 @@ public final class ResidualGridTest extends TestCase {
     @Test
     @DependsOnMethod("testGetCellValue")
     public void testInterpolateAtExactLocation() throws TransformException {
-        assertArrayEquals(new double[] {0, 2}, grid.interpolateAt(0, 0), STRICT);
-        assertArrayEquals(new double[] {1, 2}, grid.interpolateAt(1, 0), STRICT);
-        assertArrayEquals(new double[] {2, 1}, grid.interpolateAt(2, 0), STRICT);
-        assertArrayEquals(new double[] {1, 4}, grid.interpolateAt(0, 3), STRICT);
-        assertArrayEquals(new double[] {3, 2}, grid.interpolateAt(2, 3), STRICT);
+        assertArrayEquals(new double[] {0, 2}, grid.interpolateAt(0, 0));
+        assertArrayEquals(new double[] {1, 2}, grid.interpolateAt(1, 0));
+        assertArrayEquals(new double[] {2, 1}, grid.interpolateAt(2, 0));
+        assertArrayEquals(new double[] {1, 4}, grid.interpolateAt(0, 3));
+        assertArrayEquals(new double[] {3, 2}, grid.interpolateAt(2, 3));
     }
 
     /**
@@ -110,12 +110,12 @@ public final class ResidualGridTest extends TestCase {
     @Test
     @DependsOnMethod("testInterpolateAtExactLocation")
     public void testInterpolateAtIntersection() throws TransformException {
-        assertArrayEquals(new double[] {1,    2.25}, grid.interpolateAt(0.5, 0.5), STRICT);
-        assertArrayEquals(new double[] {1.5,  1.5 }, grid.interpolateAt(1.5, 0.5), STRICT);
-        assertArrayEquals(new double[] {1.25, 3   }, grid.interpolateAt(0.5, 1.5), STRICT);
-        assertArrayEquals(new double[] {2,    2   }, grid.interpolateAt(1.5, 1.5), STRICT);
-        assertArrayEquals(new double[] {1.5,  3.5 }, grid.interpolateAt(0.5, 2.5), STRICT);
-        assertArrayEquals(new double[] {2.75, 2.5 }, grid.interpolateAt(1.5, 2.5), STRICT);
+        assertArrayEquals(new double[] {1,    2.25}, grid.interpolateAt(0.5, 0.5));
+        assertArrayEquals(new double[] {1.5,  1.5 }, grid.interpolateAt(1.5, 0.5));
+        assertArrayEquals(new double[] {1.25, 3   }, grid.interpolateAt(0.5, 1.5));
+        assertArrayEquals(new double[] {2,    2   }, grid.interpolateAt(1.5, 1.5));
+        assertArrayEquals(new double[] {1.5,  3.5 }, grid.interpolateAt(0.5, 2.5));
+        assertArrayEquals(new double[] {2.75, 2.5 }, grid.interpolateAt(1.5, 2.5));
     }
 
     /**
@@ -126,10 +126,10 @@ public final class ResidualGridTest extends TestCase {
     @Test
     @DependsOnMethod("testInterpolateAtIntersection")
     public void testInterpolateAt() throws TransformException {
-        assertArrayEquals(new double[] {0.25,  2   }, grid.interpolateAt(0.25, 0   ), STRICT);
-        assertArrayEquals(new double[] {1.75,  1.25}, grid.interpolateAt(1.75, 0   ), STRICT);
-        assertArrayEquals(new double[] {1.25,  2   }, grid.interpolateAt(1,    0.25), STRICT);
-        assertArrayEquals(new double[] {1.625, 1.25}, grid.interpolateAt(1.75, 0.25), STRICT);
+        assertArrayEquals(new double[] {0.25,  2   }, grid.interpolateAt(0.25, 0   ));
+        assertArrayEquals(new double[] {1.75,  1.25}, grid.interpolateAt(1.75, 0   ));
+        assertArrayEquals(new double[] {1.25,  2   }, grid.interpolateAt(1,    0.25));
+        assertArrayEquals(new double[] {1.625, 1.25}, grid.interpolateAt(1.75, 0.25));
     }
 
     /**

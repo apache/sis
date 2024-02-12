@@ -23,7 +23,7 @@ import org.apache.sis.referencing.datum.DefaultEllipsoid;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
@@ -83,9 +83,9 @@ public final class SecondDefiningParameterTest extends TestCase {
     @Test
     public void testUnmarshalling() throws JAXBException {
         final SecondDefiningParameter sdp = unmarshal(SecondDefiningParameter.class, ELLIPSOID);
-        assertNull("isSphere", sdp.isSphere);
-        assertEquals("measure", 6356583.8, sdp.measure.value, STRICT);
-        assertEquals("measure", Units.METRE,  sdp.measure.unit);
+        assertNull(sdp.isSphere);
+        assertEquals(6356583.8, sdp.measure.value);
+        assertEquals(Units.METRE, sdp.measure.unit);
     }
 
     /**
@@ -110,7 +110,7 @@ public final class SecondDefiningParameterTest extends TestCase {
     @Test
     public void testUnmarshallingSphere() throws JAXBException {
         final SecondDefiningParameter sdp = unmarshal(SecondDefiningParameter.class, SPHERE);
-        assertEquals("isSphere", Boolean.TRUE, sdp.isSphere);
-        assertNull("measure", sdp.measure);
+        assertEquals(Boolean.TRUE, sdp.isSphere);
+        assertNull(sdp.measure);
     }
 }

@@ -34,7 +34,8 @@ import org.apache.sis.referencing.crs.AbstractCRS;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
@@ -114,8 +115,8 @@ public final class AuthorityFactoryProxyTest extends TestCase {
         final CoordinateReferenceSystem expected = factory.createCoordinateReferenceSystem("83");
         AuthorityFactoryProxy<?> proxy;
         /*
-         * Try the proxy using the 'createGeographicCRS', 'createCoordinateReferenceSystem'
-         * and 'createObject' methods. The latter uses a generic implementation, while the
+         * Try the proxy using the `createGeographicCRS`, `createCoordinateReferenceSystem`
+         * and `createObject` methods. The latter uses a generic implementation, while the
          * first two should use specialized implementations.
          */
         proxy = AuthorityFactoryProxy.getInstance(GeographicCRS.class);
@@ -133,20 +134,15 @@ public final class AuthorityFactoryProxyTest extends TestCase {
         assertSame(expected, proxy.createFromAPI(factory, "83"));
         assertSame(expected, proxy.createFromAPI(factory, "CRS:83"));
         /*
-         * Try using the 'createProjectedCRS' method, which should not
+         * Try using the `createProjectedCRS` method, which should not
          * be supported for the CRS factory (at least not for code "83").
          */
         proxy = AuthorityFactoryProxy.getInstance(ProjectedCRS.class);
         assertSame(AuthorityFactoryProxy.PROJECTED_CRS, proxy);
-        try {
-            assertSame(expected, proxy.createFromAPI(factory, "83"));
-            fail("Should not have created a CRS of the wrong type.");
-        } catch (FactoryException e) {
-            // This is the expected exception.
-            final String message = e.getMessage();
-            assertTrue(message.contains("83"));
-            assertTrue(message.contains("GeographicCRS"));
-            assertTrue(message.contains("ProjectedCRS"));
-        }
+
+        final var p = proxy;    // Because lambda expressions require final references.
+        var e = assertThrows(FactoryException.class, () -> p.createFromAPI(factory, "83"),
+                             "Should not have created a CRS of the wrong type.");
+        assertMessageContains(e, "83", "GeographicCRS", "ProjectedCRS");
     }
 }

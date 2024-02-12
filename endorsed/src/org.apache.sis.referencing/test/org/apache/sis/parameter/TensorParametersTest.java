@@ -28,7 +28,7 @@ import static org.apache.sis.util.internal.Constants.NUM_COL;
 // Test dependencies
 import org.junit.AfterClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -146,8 +146,8 @@ public class TensorParametersTest extends TestCase {
     private static void verifyDescriptor(final String name, final Number defaultValue,
             final ParameterDescriptor<?> actual)
     {
-        assertEquals("name", name, actual.getName().getCode());
-        assertEquals("defaultValue", defaultValue, actual.getDefaultValue());
+        assertEquals(name, actual.getName().getCode());
+        assertEquals(defaultValue, actual.getDefaultValue());
     }
 
     /**
@@ -161,9 +161,9 @@ public class TensorParametersTest extends TestCase {
     private void verifyDescriptor(final Number defaultValue, final ParameterDescriptor<?> actual,
             final int row, final int column)
     {
-        assertEquals("name", names[row][column], actual.getName().getCode());
+        assertEquals(names[row][column], actual.getName().getCode());
         assertAliasTipEquals((aliases != null) ? aliases[row][column] : null, actual);
-        assertEquals("defaultValue", defaultValue, actual.getDefaultValue());
+        assertEquals(defaultValue, actual.getDefaultValue());
         if (identifiers != null) {
             final short expected = identifiers[row][column];
             if (expected != 0) {
@@ -255,7 +255,7 @@ public class TensorParametersTest extends TestCase {
         verifyDescriptor(NUM_ROW, N3, descriptors[0]);
         verifyDescriptor(NUM_COL, N3, descriptors[1]);
         verifyDescriptor(N1, descriptors[2], 0, 0);
-        assertEquals("size", 3, descriptors.length);
+        assertEquals(3, descriptors.length);
 
         descriptors = param.getAllDescriptors(2, 3);
         verifyDescriptor(NUM_ROW, N3, descriptors[0]);
@@ -266,7 +266,7 @@ public class TensorParametersTest extends TestCase {
         verifyDescriptor(N0, descriptors[5], 1, 0);
         verifyDescriptor(N1, descriptors[6], 1, 1);
         verifyDescriptor(N0, descriptors[7], 1, 2);
-        assertEquals("size", 8, descriptors.length);
+        assertEquals(8, descriptors.length);
 
         descriptors = param.getAllDescriptors(3, 3);
         verifyDescriptor(NUM_ROW, N3, descriptors[0]);
@@ -280,7 +280,7 @@ public class TensorParametersTest extends TestCase {
         verifyDescriptor(N0, descriptors[ 8], 2, 0);
         verifyDescriptor(N0, descriptors[ 9], 2, 1);
         verifyDescriptor(N1, descriptors[10], 2, 2);
-        assertEquals("size", 11, descriptors.length);
+        assertEquals(11, descriptors.length);
 
         descriptors = param.getAllDescriptors(4, 4);
         verifyDescriptor(NUM_ROW, N3, descriptors[0]);
@@ -301,7 +301,7 @@ public class TensorParametersTest extends TestCase {
         verifyDescriptor(N0, descriptors[15], 3, 1);
         verifyDescriptor(N0, descriptors[16], 3, 2);
         verifyDescriptor(N1, descriptors[17], 3, 3);
-        assertEquals("size", 18, descriptors.length);
+        assertEquals(18, descriptors.length);
     }
 
     /**
@@ -324,10 +324,10 @@ public class TensorParametersTest extends TestCase {
                 final ParameterValueGroup group = param.createValueGroup(
                         Map.of(ParameterDescriptor.NAME_KEY, "Test"), matrix);
                 validate(group);
-                assertEquals(NUM_ROW,    numRow, group.parameter(NUM_ROW).intValue());
-                assertEquals(NUM_COL,    numCol, group.parameter(NUM_COL).intValue());
-                assertEquals("elements", matrix, param.toMatrix(group));
-                assertEquals("elements", matrix, param.toMatrix(new ParameterValueGroupWrapper(group)));
+                assertEquals(numRow, group.parameter(NUM_ROW).intValue());
+                assertEquals(numCol, group.parameter(NUM_COL).intValue());
+                assertEquals(matrix, param.toMatrix(group));
+                assertEquals(matrix, param.toMatrix(new ParameterValueGroupWrapper(group)));
             }
         }
     }

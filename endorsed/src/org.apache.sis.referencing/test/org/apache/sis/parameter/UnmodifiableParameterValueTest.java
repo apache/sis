@@ -22,7 +22,8 @@ import org.apache.sis.util.ComparisonMode;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -48,9 +49,8 @@ public final class UnmodifiableParameterValueTest extends TestCase {
      */
     private static <T> DefaultParameterValue<T> assertEquivalent(final ParameterValue<T> modifiable) {
         final DefaultParameterValue<T> unmodifiable = DefaultParameterValue.unmodifiable(modifiable);
-        assertNotSame("Expected a new instance.", modifiable, unmodifiable);
-        assertTrue("New instance shall be equal to the original one.",
-                unmodifiable.equals(modifiable, ComparisonMode.BY_CONTRACT));
+        assertNotSame(modifiable, unmodifiable);
+        assertTrue(unmodifiable.equals(modifiable, ComparisonMode.BY_CONTRACT));
         return unmodifiable;
     }
 
@@ -67,17 +67,15 @@ public final class UnmodifiableParameterValueTest extends TestCase {
          * then verify that we cannot modify its value.
          */
         final DefaultParameterValue<Double> unmodifiable = assertEquivalent(modifiable);
-        assertSame("Double instances do not need to be cloned.", modifiable.getValue(), unmodifiable.getValue());
+        assertSame(modifiable.getValue(), unmodifiable.getValue(), "Instances of Double do not need to be cloned.");
         modifiable.setValue(1.0);
-        try {
-            unmodifiable.setValue(1.0);
-            fail("UnmodifiableParameterValue shall not allow modification.");
-        } catch (UnsupportedOperationException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("DefaultParameterValue"));
-        }
-        assertEquals(1.0,      modifiable.doubleValue(), STRICT);
-        assertEquals(0.9996, unmodifiable.doubleValue(), STRICT);
+
+        var e = assertThrows(UnsupportedOperationException.class, () -> unmodifiable.setValue(1.0),
+                             "UnmodifiableParameterValue shall not allow modification.");
+
+        assertMessageContains(e, "DefaultParameterValue");
+        assertEquals(1.0,      modifiable.doubleValue());
+        assertEquals(0.9996, unmodifiable.doubleValue());
         /*
          * Verify that invoking again DefaultParameterValue.unmodifiable(…) return the same instance.
          * Opportunistically verify that we detect null value and instances already unmodifiable.
@@ -105,8 +103,8 @@ public final class UnmodifiableParameterValueTest extends TestCase {
         final DefaultParameterValue<Date> unmodifiable = assertEquivalent(modifiable);
         final Date t1 =   modifiable.getValue();
         final Date t2 = unmodifiable.getValue();
-        assertNotSame("Date should be cloned.", t1, t2);
-        assertEquals(t1, t2);
+        assertNotSame(t1, t2);
+        assertEquals (t1, t2);
         /*
          * Verify that cloning the parameter also clone its value.
          */

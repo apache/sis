@@ -29,7 +29,7 @@ import static org.apache.sis.referencing.util.ReferencingUtilities.*;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.datum.HardCodedDatum;
@@ -79,8 +79,8 @@ public final class ReferencingUtilitiesTest extends TestCase {
             final CoordinateReferenceSystem crs)
     {
         final GeographicCRS normalizedCRS = toNormalizedGeographicCRS(crs, false, false);
-        assertTrue(message, Utilities.equalsIgnoreMetadata(HardCodedCRS.WGS84, normalizedCRS));
-        assertEquals("New CRS instance expected:", createExpected, normalizedCRS != HardCodedCRS.WGS84);
+        assertTrue(Utilities.equalsIgnoreMetadata(HardCodedCRS.WGS84, normalizedCRS), message);
+        assertEquals(createExpected, normalizedCRS != HardCodedCRS.WGS84);
     }
 
     /**

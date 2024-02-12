@@ -33,7 +33,7 @@ import org.apache.sis.util.ArraysExt;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.referencing.cs.HardCodedCS;
@@ -130,7 +130,7 @@ public final class CoordinateSystemTransformTest extends TransformTestCase {
      */
     private static void assertMethodEquals(final String expected) {
         final OperationMethod method = lastMethod.get();
-        assertNotNull("lastMethod", method);
+        assertNotNull(method);
         assertEquals(expected, method.getName().getCode());
     }
 

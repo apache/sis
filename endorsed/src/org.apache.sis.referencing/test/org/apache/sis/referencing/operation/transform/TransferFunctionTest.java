@@ -25,8 +25,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -54,18 +53,18 @@ public final class TransferFunctionTest extends TestCase {
     @Test
     public void testLinear() {
         final TransferFunction f = new TransferFunction();
-        assertEquals("type", TransferFunctionType.LINEAR, f.getType());
-        assertEquals("base",   1, f.getBase(),   STRICT);
-        assertEquals("scale",  1, f.getScale(),  STRICT);
-        assertEquals("offset", 0, f.getOffset(), STRICT);
-        assertEquals("toString", "y = x", f.toString());
-        assertTrue  ("isIdentity", f.isIdentity());
+        assertEquals(TransferFunctionType.LINEAR, f.getType());
+        assertEquals(1, f.getBase());
+        assertEquals(1, f.getScale());
+        assertEquals(0, f.getOffset());
+        assertEquals("y = x", f.toString());
+        assertTrue(f.isIdentity());
 
         f.setScale(0.15);
         f.setOffset(-2);
-        assertEquals("toString", "y = 0.15⋅x − 2", f.toString());
+        assertEquals("y = 0.15⋅x − 2", f.toString());
         final MathTransform1D transform = f.getTransform();
-        assertInstanceOf("transform", LinearTransform.class, transform);
+        assertInstanceOf(LinearTransform.class, transform);
         assertMatrixEquals("transform.matrix", new Matrix2(0.15, -2, 0, 1),
                 ((LinearTransform) transform).getMatrix(), STRICT);
         /*
@@ -73,11 +72,11 @@ public final class TransferFunctionTest extends TestCase {
          */
         final TransferFunction b = new TransferFunction();
         b.setTransform(transform);
-        assertEquals("type", TransferFunctionType.LINEAR, b.getType());
-        assertEquals("base",    1,    b.getBase(),   STRICT);
-        assertEquals("scale",   0.15, b.getScale(),  STRICT);
-        assertEquals("offset", -2,    b.getOffset(), STRICT);
-        assertFalse ("isIdentity",    b.isIdentity());
+        assertEquals(TransferFunctionType.LINEAR, b.getType());
+        assertEquals( 1,    b.getBase());
+        assertEquals( 0.15, b.getScale());
+        assertEquals(-2,    b.getOffset());
+        assertFalse(b.isIdentity());
     }
 
     /**
@@ -89,20 +88,20 @@ public final class TransferFunctionTest extends TestCase {
         final TransferFunction f = new TransferFunction();
         f.setType(TransferFunctionType.LOGARITHMIC);
         f.setOffset(-2);
-        assertEquals("base", 10, f.getBase(), STRICT);
-        assertEquals("toString", "y = ㏒⒳ − 2", f.toString());
+        assertEquals(10, f.getBase());
+        assertEquals("y = ㏒⒳ − 2", f.toString());
         final MathTransform1D transform = f.getTransform();
-        assertInstanceOf("transform", LogarithmicTransform1D.class, transform);
+        assertInstanceOf(LogarithmicTransform1D.class, transform);
         /*
          * Get back the coefficients.
          */
         final TransferFunction b = new TransferFunction();
         b.setTransform(transform);
-        assertEquals("type", TransferFunctionType.LOGARITHMIC, b.getType());
-        assertEquals("base",   10, b.getBase(),   STRICT);
-        assertEquals("scale",   1, b.getScale(),  STRICT);
-        assertEquals("offset", -2, b.getOffset(), STRICT);
-        assertFalse ("isIdentity", b.isIdentity());
+        assertEquals(TransferFunctionType.LOGARITHMIC, b.getType());
+        assertEquals(10, b.getBase());
+        assertEquals( 1, b.getScale());
+        assertEquals(-2, b.getOffset());
+        assertFalse(b.isIdentity());
     }
 
     /**
@@ -114,20 +113,20 @@ public final class TransferFunctionTest extends TestCase {
         final TransferFunction f = new TransferFunction();
         f.setType(TransferFunctionType.EXPONENTIAL);
         f.setScale(0.15);
-        assertEquals("base", 10, f.getBase(), STRICT);
-        assertEquals("toString", "y = 0.15⋅10ˣ", f.toString());
+        assertEquals(10, f.getBase());
+        assertEquals("y = 0.15⋅10ˣ", f.toString());
         final MathTransform1D transform = f.getTransform();
-        assertInstanceOf("transform", ExponentialTransform1D.class, transform);
+        assertInstanceOf(ExponentialTransform1D.class, transform);
         /*
          * Get back the coefficients.
          */
         final TransferFunction b = new TransferFunction();
         b.setTransform(transform);
-        assertEquals("type", TransferFunctionType.EXPONENTIAL, b.getType());
-        assertEquals("base",   10,    b.getBase(),   STRICT);
-        assertEquals("scale",   0.15, b.getScale(),  STRICT);
-        assertEquals("offset",  0,    b.getOffset(), STRICT);
-        assertFalse ("isIdentity",    b.isIdentity());
+        assertEquals(TransferFunctionType.EXPONENTIAL, b.getType());
+        assertEquals(10,   b.getBase());
+        assertEquals(0.15, b.getScale());
+        assertEquals(0,    b.getOffset());
+        assertFalse(b.isIdentity());
     }
 
     /**
@@ -140,19 +139,19 @@ public final class TransferFunctionTest extends TestCase {
         f.setType(TransferFunctionType.LOGARITHMIC);
         f.setScale(0.15);
         f.setOffset(-2);
-        assertEquals("toString", "y = 0.15⋅㏒⒳ − 2", f.toString());
+        assertEquals("y = 0.15⋅㏒⒳ − 2", f.toString());
         final MathTransform1D transform = f.getTransform();
-        assertInstanceOf("transform", ConcatenatedTransformDirect1D.class, transform);
+        assertInstanceOf(ConcatenatedTransformDirect1D.class, transform);
         /*
          * Get back the coefficients.
          */
         final TransferFunction b = new TransferFunction();
         b.setTransform(transform);
-        assertEquals("type", TransferFunctionType.LOGARITHMIC, b.getType());
-        assertEquals("base",   10,    b.getBase(),   STRICT);
-        assertEquals("scale",   0.15, b.getScale(),  1E-16);
-        assertEquals("offset", -2,    b.getOffset(), 1E-16);
-        assertFalse ("isIdentity",    b.isIdentity());
+        assertEquals(TransferFunctionType.LOGARITHMIC, b.getType());
+        assertEquals(10,   b.getBase());
+        assertEquals(0.15, b.getScale(),  1E-16);
+        assertEquals(-2,   b.getOffset(), 1E-16);
+        assertFalse(b.isIdentity());
     }
 
     /**
@@ -167,7 +166,7 @@ public final class TransferFunctionTest extends TestCase {
         f.setScale(0.15);
         f.setOffset(-2);
         MathTransform transform = f.createTransform(factory);
-        assertInstanceOf("transform", LinearTransform.class, transform);
+        assertInstanceOf(LinearTransform.class, transform);
         assertMatrixEquals("transform.matrix", new Matrix2(0.15, -2, 0, 1),
                 ((LinearTransform) transform).getMatrix(), STRICT);
         /*
@@ -177,7 +176,7 @@ public final class TransferFunctionTest extends TestCase {
         f.setScale(1);
         f.setOffset(-2);
         transform = f.getTransform();
-        assertInstanceOf("transform", LogarithmicTransform1D.class, transform);
+        assertInstanceOf(LogarithmicTransform1D.class, transform);
         /*
          * Exponential case.
          */
@@ -185,6 +184,6 @@ public final class TransferFunctionTest extends TestCase {
         f.setScale(0.15);
         f.setOffset(0);
         transform = f.getTransform();
-        assertInstanceOf("transform", ExponentialTransform1D.class, transform);
+        assertInstanceOf(ExponentialTransform1D.class, transform);
     }
 }

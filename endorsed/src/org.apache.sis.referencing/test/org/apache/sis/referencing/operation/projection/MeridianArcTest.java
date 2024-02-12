@@ -26,7 +26,7 @@ import org.apache.sis.referencing.internal.Resources;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -171,8 +171,8 @@ public final class MeridianArcTest extends MapProjectionTestCase {
             final double reference = reference(projection, φ);
             final double accurate  = referenceMoreAccurate(projection, φ);
             final double actual    = projection.distance(φ, sin(φ), cos(φ));
-            assertEquals("Accurate formula disagrees with reference.", reference, accurate, 2E-10);
-            assertEquals("Implementation disagrees with our formula.", accurate,  actual,   1E-13);
+            assertEquals(reference, accurate, 2E-10, "Accurate formula disagrees with reference.");
+            assertEquals(accurate,  actual,   1E-13, "Implementation disagrees with our formula.");
         }
     }
 
@@ -183,12 +183,12 @@ public final class MeridianArcTest extends MapProjectionTestCase {
     @Test
     public void compareWithSphere() {
         final MeridianArcBased projection = create(false);
-        assertEquals("Expected spherical projection.", 0, projection.eccentricity, STRICT);
+        assertEquals(0, projection.eccentricity, "Expected spherical projection.");
         final Random random = TestUtilities.createRandomNumberGenerator();
         for (int i=0; i<20; i++) {
             final double φ = random.nextDouble() * PI - PI/2;
-            assertEquals("When excentricity=0, distance(φ, sinφ, cosφ) simplify to φ.",
-                    φ, projection.distance(φ, sin(φ), cos(φ)), 1E-15);
+            assertEquals(φ, projection.distance(φ, sin(φ), cos(φ)), 1E-15,
+                    "When excentricity=0, distance(φ, sinφ, cosφ) simplify to φ.");
         }
     }
 
@@ -207,7 +207,7 @@ public final class MeridianArcTest extends MapProjectionTestCase {
             final double m = random.nextDouble() * (PI * 0.998) - (PI/2) * 0.998;
             final double reference = inverse(projection, m);
             final double actual    = projection.latitude(m);
-            assertEquals("Implementation disagrees with reference.", reference, actual, 1E-10);
+            assertEquals(reference, actual, 1E-10, "Implementation disagrees with reference.");
         }
     }
 

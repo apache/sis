@@ -27,11 +27,12 @@ import org.apache.sis.io.wkt.Convention;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
@@ -96,14 +97,10 @@ public final class DefaultParameterDescriptorGroupTest extends TestCase {
         final DefaultParameterDescriptor<Integer> p1, p2;
         p1 = new DefaultParameterDescriptor<>(name(properties,   "Name",  null), 1, 1, type, null, null, null);
         p2 = new DefaultParameterDescriptor<>(name(properties, "  NAME ", null), 1, 1, type, null, null, null);
-        try {
-            new DefaultParameterDescriptorGroup(Map.of(NAME_KEY, "Test group"), 0, 1, p1, p2);
-            fail("Constructor should have detected the duplicated names.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("Name"));
-            assertTrue(message, message.contains("NAME"));
-        }
+
+        var e = assertThrows(IllegalArgumentException.class,
+                () -> new DefaultParameterDescriptorGroup(Map.of(NAME_KEY, "Test group"), 0, 1, p1, p2));
+        assertMessageContains(e, "Name", "NAME");
     }
 
     /**
@@ -120,7 +117,7 @@ public final class DefaultParameterDescriptorGroupTest extends TestCase {
                 error = e;
             }
             if (descriptor.getMaximumOccurs() > 1) {
-                assertNotNull("Validation methods should have detected that the descriptor is invalid.", error);
+                assertNotNull(error, "Validation methods should have detected that the descriptor is invalid.");
             } else if (error != null) {
                 throw error;
             }
@@ -134,23 +131,18 @@ public final class DefaultParameterDescriptorGroupTest extends TestCase {
     public void testDescriptor() {
         final DefaultParameterDescriptorGroup group = M1_M1_O1_O2;
         final List<GeneralParameterDescriptor> descriptors = group.descriptors();
-        assertEquals("name", "Test group", group.getName().getCode());
-        assertEquals("size", 4, descriptors.size());
-        assertSame("descriptor(“Mandatory 1”)",  descriptors.get(0), group.descriptor("Mandatory 1"));
-        assertSame("descriptor(“Optional 3”)",   descriptors.get(2), group.descriptor("Optional 3"));
-        assertSame("descriptor(“Optional 4”)",   descriptors.get(3), group.descriptor("Optional 4"));
-        assertSame("descriptor(“Mandatory 2”)",  descriptors.get(1), group.descriptor("Mandatory 2"));
-        assertSame("descriptor(“Mandatory 2”)",  descriptors.get(1), group.descriptor("Alias 2"));
-        assertSame("descriptor(“Optional 3”)",   descriptors.get(2), group.descriptor("Alias 3"));
-        try {
-            group.descriptor("Alias 1");
-            fail("“Alias 1” is not a parameter for this group.");
-        } catch (ParameterNotFoundException e) {
-            final String message = e.getMessage();
-            assertEquals(message, "Alias 1", e.getParameterName());
-            assertTrue  (message, message.contains("Alias 1"));
-            assertTrue  (message, message.contains("Test group"));
-        }
+        assertEquals("Test group", group.getName().getCode());
+        assertEquals(4, descriptors.size());
+        assertSame(descriptors.get(0), group.descriptor("Mandatory 1"));
+        assertSame(descriptors.get(2), group.descriptor("Optional 3"));
+        assertSame(descriptors.get(3), group.descriptor("Optional 4"));
+        assertSame(descriptors.get(1), group.descriptor("Mandatory 2"));
+        assertSame(descriptors.get(1), group.descriptor("Alias 2"));
+        assertSame(descriptors.get(2), group.descriptor("Alias 3"));
+
+        var e = assertThrows(ParameterNotFoundException.class, () -> group.descriptor("Alias 1"));
+        assertEquals("Alias 1", e.getParameterName());
+        assertMessageContains(e, "Alias 1", "Test group");
     }
 
     /**
@@ -158,16 +150,10 @@ public final class DefaultParameterDescriptorGroupTest extends TestCase {
      */
     @Test
     public void testAmbiguityDetection() {
-        try {
-            M1_M1_O1_O2.descriptor("Ambiguity");
-            fail("“Ambiguity” shall not be accepted since 2 parameters have this alias.");
-        } catch (ParameterNotFoundException e) {
-            final String message = e.getMessage();
-            assertEquals(message, "Ambiguity", e.getParameterName());
-            assertTrue  (message, message.contains("Ambiguity"));
-            assertTrue  (message, message.contains("Mandatory 1"));
-            assertTrue  (message, message.contains("Optional 4"));
-        }
+        var e = assertThrows(ParameterNotFoundException.class, () -> M1_M1_O1_O2.descriptor("Ambiguity"),
+                             "“Ambiguity” shall not be accepted because 2 parameters have this alias.");
+        assertEquals("Ambiguity", e.getParameterName());
+        assertMessageContains(e, "Ambiguity", "Mandatory 1", "Optional 4");
     }
 
     /**

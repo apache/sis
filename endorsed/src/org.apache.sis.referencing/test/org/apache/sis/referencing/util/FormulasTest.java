@@ -25,7 +25,7 @@ import org.apache.sis.referencing.datum.DefaultEllipsoid;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 
@@ -99,10 +99,9 @@ public final class FormulasTest extends TestCase {
      */
     @Test
     public void testGetSemiMinor() {
-        assertEquals("WGS 84",             6356752.314245179,  Formulas.getSemiMinor(6378137, 298.257223563), 1E-9);
-        assertEquals("International 1924", 6356911.9461279465, Formulas.getSemiMinor(6378388, 297), 1E-9);
-        assertEquals("Clarke 1858",        20855233, // Unit in feet. Is the definitive parameter for this ellipsoid.
-                Formulas.getSemiMinor(20926348, 294.26067636926103), 1E-8);
+        assertEquals(6356752.314245179,  Formulas.getSemiMinor(6378137, 298.257223563), 1E-9, "WGS 84");
+        assertEquals(6356911.9461279465, Formulas.getSemiMinor(6378388, 297), 1E-9, "International 1924");
+        assertEquals(20855233, Formulas.getSemiMinor(20926348, 294.26067636926103), 1E-8, "Clarke 1858");
     }
 
     /**
@@ -110,9 +109,9 @@ public final class FormulasTest extends TestCase {
      */
     @Test
     public void testGetInverseFlattening() {
-        assertEquals("WGS 84", 298.2572235629972, Formulas.getInverseFlattening(6378137, 6356752.314245179), 1E-11);
-        assertEquals("International 1924", 297, Formulas.getInverseFlattening(6378388, 6356911.9461279465), 1E-11);
-        assertEquals("Clarke 1858", 294.26067636926103, Formulas.getInverseFlattening(20926348, 20855233), 1E-11);
+        assertEquals(298.2572235629972, Formulas.getInverseFlattening(6378137, 6356752.314245179), 1E-11, "WGS 84");
+        assertEquals(297, Formulas.getInverseFlattening(6378388, 6356911.9461279465), 1E-11, "International 1924");
+        assertEquals(294.26067636926103, Formulas.getInverseFlattening(20926348, 20855233), 1E-11, "Clarke 1858");
     }
 
     /**

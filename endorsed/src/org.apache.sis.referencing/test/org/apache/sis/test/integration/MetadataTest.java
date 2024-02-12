@@ -68,7 +68,7 @@ import org.apache.sis.util.internal.Constants;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
@@ -413,7 +413,7 @@ public final class MetadataTest extends TestCase {
      */
     private static void replace(final StringBuffer buffer, final String toSearch, final String replaceBy) {
         final int i = buffer.indexOf(toSearch);
-        assertTrue("String to replace not found.", i >= 0);
+        assertTrue(i >= 0, "String to replace not found.");
         buffer.replace(i, i + toSearch.length(), replaceBy);
     }
 

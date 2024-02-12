@@ -24,8 +24,7 @@ import org.apache.sis.util.internal.DoubleDouble;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 
@@ -56,10 +55,10 @@ public final class ScaleTransformTest extends MathTransformTestCase {
     private void create(final int sourceDimensions, final int targetDimensions, final MatrixSIS matrix) {
         final Number[] elements = ScaleTransform.wrap(matrix.getElements());
         final ScaleTransform tr = new ScaleTransform(matrix.getNumRow(), matrix.getNumCol(), elements);
-        assertEquals("sourceDimensions", sourceDimensions, tr.getSourceDimensions());
-        assertEquals("targetDimensions", targetDimensions, tr.getTargetDimensions());
+        assertEquals(sourceDimensions, tr.getSourceDimensions());
+        assertEquals(targetDimensions, tr.getTargetDimensions());
         Assert.assertMatrixEquals("matrix", matrix, tr.getMatrix(), 0.0);
-        assertArrayEquals("elements", elements, TranslationTransformTest.getElementAsNumbers(tr));
+        assertArrayEquals(elements, TranslationTransformTest.getElementAsNumbers(tr));
         transform = tr;
         validate();
     }
@@ -117,7 +116,7 @@ public final class ScaleTransformTest extends MathTransformTestCase {
                 0, 0, 0,
                 0, 0, 1}));
 
-        assertInstanceOf("inverse", ScaleTransform.class, transform.inverse());
+        assertInstanceOf(ScaleTransform.class, transform.inverse());
         verifyTransform(new double[] {1,1,    6,  0,     2, Double.NaN},
                         new double[] {2,3,0,  12, 0, 0,  4, Double.NaN, 0});
     }
@@ -139,12 +138,12 @@ public final class ScaleTransformTest extends MathTransformTestCase {
         };
         final MatrixSIS matrix = Matrices.create(4, 4, elements);
         final ScaleTransform tr = new ScaleTransform(4, 4, elements);
-        assertEquals("sourceDimensions", 3, tr.getSourceDimensions());
-        assertEquals("targetDimensions", 3, tr.getTargetDimensions());
+        assertEquals(3, tr.getSourceDimensions());
+        assertEquals(3, tr.getTargetDimensions());
         Assert.assertMatrixEquals("matrix", matrix, tr.getMatrix(), 0.0);
 
         TranslationTransformTest.replaceZeroByNull(elements, O);
-        assertArrayEquals("elements", elements, tr.getElementAsNumbers(false));
+        assertArrayEquals(elements, tr.getElementAsNumbers(false));
         transform = tr;
         validate();
     }

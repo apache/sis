@@ -22,7 +22,8 @@ import org.opengis.parameter.ParameterValueGroup;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
@@ -50,21 +51,18 @@ public final class UnmodifiableParameterValueGroupTest extends TestCase {
         group.parameter("Optional 3") .setValue(8);
         group = UnmodifiableParameterValueGroup.create(group);
 
-        assertEquals("values.size()",             3,  group.values().size());
-        assertEquals("values[0].name", "Mandatory 1", group.values().get(0).getDescriptor().getName().toString());
-        assertEquals("values[1].name", "Mandatory 2", group.values().get(1).getDescriptor().getName().toString());
-        assertEquals("values[2].name", "Optional 3",  group.values().get(2).getDescriptor().getName().toString());
-        assertEquals("values[0].value",           5,  group.parameter("Mandatory 1").getValue());
-        assertEquals("values[1].value",          10,  group.parameter("Mandatory 2").getValue());
-        assertEquals("values[2].value",           8,  group.parameter("Optional 3") .getValue());
+        assertEquals(           3,  group.values().size());
+        assertEquals("Mandatory 1", group.values().get(0).getDescriptor().getName().toString());
+        assertEquals("Mandatory 2", group.values().get(1).getDescriptor().getName().toString());
+        assertEquals("Optional 3",  group.values().get(2).getDescriptor().getName().toString());
+        assertEquals(           5,  group.parameter("Mandatory 1").getValue());
+        assertEquals(          10,  group.parameter("Mandatory 2").getValue());
+        assertEquals(           8,  group.parameter("Optional 3") .getValue());
 
-        try {
-            group.groups("dummy");
-            fail("Shall not return non-existent groups.");
-        } catch (ParameterNotFoundException e) {
-            assertTrue(e.getMessage().contains("Test group"));
-            assertTrue(e.getMessage().contains("dummy"));
-        }
+        var g = group;      // Because lambda expressions want final variable.
+        var e = assertThrows(ParameterNotFoundException.class, () -> g.groups("dummy"),
+                             "Shall not return non-existent groups.");
+        assertMessageContains(e, "Test group", "dummy");
     }
 
     /**
@@ -76,19 +74,14 @@ public final class UnmodifiableParameterValueGroupTest extends TestCase {
         group.parameter("Mandatory 1").setValue(5);
         group.parameter("Optional 3") .setValue(8);
         group = UnmodifiableParameterValueGroup.create(group);
-
         ParameterValue<?> param = group.parameter("Mandatory 1");
-        try {
-            param.setValue(5);
-            fail("Shall not allow modification.");
-        } catch (UnsupportedOperationException e) {
-            assertTrue(e.getMessage().contains("ParameterValue"));
-        }
-        try {
-            group.addGroup("dummy");
-            fail("Shall not allow modification.");
-        } catch (UnsupportedOperationException e) {
-            assertTrue(e.getMessage().contains("ParameterValueGroup"));
-        }
+
+        UnsupportedOperationException e;
+        e = assertThrows(UnsupportedOperationException.class, () -> param.setValue(5));
+        assertMessageContains(e, "ParameterValue");
+
+        var g = group;      // Because lambda expressions want final variable.
+        e = assertThrows(UnsupportedOperationException.class, () -> g.addGroup("dummy"));
+        assertMessageContains(e, "ParameterValueGroup");
     }
 }

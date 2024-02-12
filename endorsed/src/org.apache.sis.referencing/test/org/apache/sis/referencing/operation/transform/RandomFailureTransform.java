@@ -23,7 +23,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.TransformException;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -107,7 +107,7 @@ final class RandomFailureTransform extends PseudoTransform {
         final Matrix derivative = super.transform(srcPts, srcOff, dstPts, dstOff, derivate);
         final int index = ordinal++;
         if (random.nextInt(denominator) == 0) {
-            assertTrue("Clash in coordinate ordinal.", failures.add(index));
+            assertTrue(failures.add(index), "Clash in coordinate ordinal.");
             throw new TransformException("Random exception for testing purpose.");
         }
         return derivative;

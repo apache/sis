@@ -20,7 +20,7 @@ import org.apache.sis.io.wkt.Formatter;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
@@ -72,13 +72,13 @@ public final class ArrayEnvelopeTest extends TestCase {
         envelope.coordinates[2] = -1728;
         assertTrue(Double.isNaN(envelope.getMinimum(0)));
         assertTrue(Double.isNaN(envelope.getMaximum(0)));
-        assertEquals(0, envelope.getMinimum(1), STRICT);
-        assertEquals(0, envelope.getMaximum(1), STRICT);
+        assertEquals(0, envelope.getMinimum(1));
+        assertEquals(0, envelope.getMaximum(1));
 
         // Make the range valid and test again.
         envelope.coordinates[0] = -1800;
-        assertEquals(-1800, envelope.getMinimum(0), STRICT);
-        assertEquals(-1728, envelope.getMaximum(0), STRICT);
+        assertEquals(-1800, envelope.getMinimum(0));
+        assertEquals(-1728, envelope.getMaximum(0));
     }
 
     /**
@@ -93,7 +93,6 @@ public final class ArrayEnvelopeTest extends TestCase {
         envelope.crs = WGS84;
         assertWktEquals("BOX[ 4.00000000 -10.00000000,\n" +
                         "    50.00000000   2.00000000]", envelope);
-
     }
 
     /**
@@ -108,7 +107,7 @@ public final class ArrayEnvelopeTest extends TestCase {
         assertArrayEquals(new double[] {
             -5610.14928, -3642.5148, 1957.4432, -170.0175, -77.9698, Double.NEGATIVE_INFINITY,
             -5610.14920, -3642.5140, 1957.4440, -170.0170, -77.9690, Double.NEGATIVE_INFINITY
-        }, envelope.coordinates, STRICT);
+        }, envelope.coordinates);
     }
 
     /**

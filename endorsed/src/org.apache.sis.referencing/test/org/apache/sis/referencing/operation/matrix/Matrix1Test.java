@@ -20,7 +20,7 @@ import static org.apache.sis.referencing.operation.matrix.Matrix1.SIZE;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 
 
@@ -64,6 +64,6 @@ public final class Matrix1Test extends MatrixTestCase {
         final Matrix1 matrix = new Matrix1(
                 elements[0]);
         validateImplementation(matrix);
-        assertArrayEquals(elements, matrix.getElements(), STRICT);
+        assertArrayEquals(elements, matrix.getElements());
     }
 }

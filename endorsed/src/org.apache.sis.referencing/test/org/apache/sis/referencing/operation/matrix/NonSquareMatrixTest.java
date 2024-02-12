@@ -22,7 +22,7 @@ import static java.lang.Double.NaN;
 // Test dependencies
 import org.junit.AfterClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
 

@@ -28,7 +28,7 @@ import org.apache.sis.referencing.factory.sql.EPSGFactory;
 
 // Test dependencies
 import static org.junit.Assume.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Assert.assertBetween;
 
 
@@ -107,16 +107,17 @@ public final class TestFactorySource {
      */
     public static synchronized EPSGFactory getSharedFactory() throws FactoryException {
         assumeFalse("No connection to EPSG dataset.", isUnavailable);
-        final CRSAuthorityFactory factory = CRS.getAuthorityFactory(Constants.EPSG);
-        assumeTrue("No connection to EPSG dataset.", factory instanceof EPSGFactory);
+        final CRSAuthorityFactory crsFactory = CRS.getAuthorityFactory(Constants.EPSG);
+        assumeTrue("No connection to EPSG dataset.", crsFactory instanceof EPSGFactory);
         try {
-            assertNotNull(factory.createGeographicCRS("4326"));
+            assertNotNull(crsFactory.createGeographicCRS("4326"));
         } catch (UnavailableFactoryException e) {
             isUnavailable = true;
             GeodeticAuthorityFactory.LOGGER.warning(e.toString());
             assumeNoException("No connection to EPSG dataset.", e);
+//          abort("No connection to EPSG dataset.");
         }
-        return (EPSGFactory) factory;
+        return (EPSGFactory) crsFactory;
     }
 
     /**
@@ -136,8 +137,8 @@ public final class TestFactorySource {
                 assertNull(properties.put("crsFactory", f));
                 try {
                     af = new EPSGFactory(properties);
-                    assertEquals("Expected no Data Access Object (DAO) before the first test is run.",
-                                 0, ((ConcurrentAuthorityFactory) af).countAvailableDataAccess());
+                    assertEquals(0, ((ConcurrentAuthorityFactory) af).countAvailableDataAccess(),
+                                 "Expected no Data Access Object (DAO) before the first test is run.");
                     /*
                      * Above method call may fail if no data source has been specified.
                      * Following method call may fail if a data source has been specified,

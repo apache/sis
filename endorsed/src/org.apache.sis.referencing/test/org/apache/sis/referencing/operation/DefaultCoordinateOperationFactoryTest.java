@@ -40,10 +40,10 @@ import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
 
 
@@ -64,16 +64,6 @@ import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierE
     CoordinateOperationFinderTest.class
 })
 public final class DefaultCoordinateOperationFactoryTest extends MathTransformTestCase {
-    /**
-     * Tolerance threshold for strict comparisons of floating point numbers.
-     * This constant can be used like below, where {@code expected} and {@code actual} are {@code double} values:
-     *
-     * {@snippet lang="java" :
-     *     assertEquals(expected, actual, STRICT);
-     *     }
-     */
-    private static final double STRICT = 0;
-
     /**
      * The transformation factory to use for testing.
      */
@@ -170,9 +160,9 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
         final CoordinateReferenceSystem sourceCRS = parse("$NTF");
         final CoordinateReferenceSystem targetCRS = parse("$Mercator");
         final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
-        assertSame      ("sourceCRS", sourceCRS, operation.getSourceCRS());
-        assertSame      ("targetCRS", targetCRS, operation.getTargetCRS());
-        assertInstanceOf("operation", ConcatenatedOperation.class, operation);
+        assertSame      (sourceCRS, operation.getSourceCRS());
+        assertSame      (targetCRS, operation.getTargetCRS());
+        assertInstanceOf(ConcatenatedOperation.class, operation);
         /*
          * The accuracy of the coordinate operation depends on whether a path has been found with the help
          * of the EPSG database (in which case the reported accuracy is 2 metres) or if we had to find an
@@ -182,8 +172,8 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
          * geocentric coordinates.
          */
         final boolean isUsingEpsgFactory = verifyParametersNTF(((ConcatenatedOperation) operation).getOperations(), 1);
-        assertEquals("linearAccuracy", isUsingEpsgFactory ? 2 : PositionalAccuracyConstant.UNKNOWN_ACCURACY,
-                                       CRS.getLinearAccuracy(operation), STRICT);
+        assertEquals(isUsingEpsgFactory ? 2 : PositionalAccuracyConstant.UNKNOWN_ACCURACY,
+                     CRS.getLinearAccuracy(operation));
 
         tolerance = isUsingEpsgFactory ? Formulas.LINEAR_TOLERANCE : 600;
         transform = operation.getMathTransform();
@@ -232,16 +222,16 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
 
         final CoordinateReferenceSystem targetCRS = parse("$Mercator");
         final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
-        assertSame      ("sourceCRS", sourceCRS, operation.getSourceCRS());
-        assertSame      ("targetCRS", targetCRS, operation.getTargetCRS());
-        assertInstanceOf("operation", ConcatenatedOperation.class, operation);
+        assertSame      (sourceCRS, operation.getSourceCRS());
+        assertSame      (targetCRS, operation.getTargetCRS());
+        assertInstanceOf(ConcatenatedOperation.class, operation);
         /*
          * The accuracy of the coordinate operation depends on whether a path has been found with the help
          * of the EPSG database. See testProjectionAndLongitudeRotation() for more information.
          */
         final boolean isUsingEpsgFactory = verifyParametersNTF(((ConcatenatedOperation) operation).getOperations(), 2);
-        assertEquals("linearAccuracy", isUsingEpsgFactory ? 2 : PositionalAccuracyConstant.UNKNOWN_ACCURACY,
-                                       CRS.getLinearAccuracy(operation), STRICT);
+        assertEquals(isUsingEpsgFactory ? 2 : PositionalAccuracyConstant.UNKNOWN_ACCURACY,
+                     CRS.getLinearAccuracy(operation));
 
         tolerance = isUsingEpsgFactory ? Formulas.LINEAR_TOLERANCE : 600;
         transform = operation.getMathTransform();
@@ -278,10 +268,10 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
             assertEpsgNameAndIdentifierEqual("NTF to WGS 84 (1)",      1193, step2);
             final ParameterValueGroup p1 = step1.getParameterValues();
             final ParameterValueGroup p2 = step2.getParameterValues();
-            assertEquals("Longitude offset", 2.5969213, p1.parameter("Longitude offset")  .doubleValue(), STRICT);
-            assertEquals("X-axis translation",    -168, p2.parameter("X-axis translation").doubleValue(), STRICT);
-            assertEquals("Y-axis translation",     -60, p2.parameter("Y-axis translation").doubleValue(), STRICT);
-            assertEquals("Z-axis translation",     320, p2.parameter("Z-axis translation").doubleValue(), STRICT);
+            assertEquals(2.5969213, p1.parameter("Longitude offset")  .doubleValue());
+            assertEquals(-168,      p2.parameter("X-axis translation").doubleValue());
+            assertEquals( -60,      p2.parameter("Y-axis translation").doubleValue());
+            assertEquals( 320,      p2.parameter("Z-axis translation").doubleValue());
             return true;
         } else {
             assertSame(CoordinateOperationFinder.ELLIPSOID_CHANGE, steps.get(datumShiftIndex).getName());
@@ -315,19 +305,19 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
                 "  Id[“EPSG”, 3857]]");
 
         final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
-        assertSame      ("sourceCRS", sourceCRS, operation.getSourceCRS());
-        assertSame      ("targetCRS", targetCRS, operation.getTargetCRS());
-        assertInstanceOf("operation", ConcatenatedOperation.class, operation);
+        assertSame      (sourceCRS, operation.getSourceCRS());
+        assertSame      (targetCRS, operation.getTargetCRS());
+        assertInstanceOf(ConcatenatedOperation.class, operation);
 
         transform = operation.getMathTransform();
         tolerance = 1;
 
-        assertFalse("Mercator to Google should not be an identity transform.", transform.isIdentity());
+        assertFalse(transform.isIdentity(), "Mercator to Google should not be an identity transform.");
         final DirectPosition2D sourcePt = new DirectPosition2D(334000, 4840000);        // Approximately 40°N 3°W
         final DirectPosition2D targetPt = new DirectPosition2D();
         assertSame(targetPt, transform.transform(sourcePt, targetPt));
-        assertEquals("Easting should be unchanged", sourcePt.getX(),  targetPt.getX(), STRICT);
-        assertEquals("Expected 27 km shift", 27476, targetPt.getY() - sourcePt.getY(), tolerance);
+        assertEquals(sourcePt.getX(), targetPt.getX(), "Easting should be unchanged");
+        assertEquals(27476, targetPt.getY() - sourcePt.getY(), tolerance, "Expected 27 km shift");
     }
 
     /**
@@ -363,12 +353,7 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
      */
     @Test
     public void testUnknownMethod() throws FactoryException {
-        try {
-            factory.getOperationMethod("I do not exist");
-            fail("Expected NoSuchIdentifierException");
-        } catch (NoSuchIdentifierException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("I do not exist"));
-        }
+        var e = assertThrows(NoSuchIdentifierException.class, () -> factory.getOperationMethod("I do not exist"));
+        assertMessageContains(e, "I do not exist");
     }
 }

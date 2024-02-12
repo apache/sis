@@ -44,10 +44,11 @@ import org.apache.sis.measure.Units;
 // Test dependencies
 import org.junit.Ignore;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.referencing.ObjectFactoryTest;
 import org.apache.sis.test.DependsOn;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 
 
 /**
@@ -94,8 +95,8 @@ public final class GeodeticObjectFactoryTest extends ObjectFactoryTest {
                 "  PRIMEM[“Greenwich”, 0.0],\n" +
                 "  UNIT[“degree”, 0.017453292519943295]]");
 
-        assertEquals("name",  "WGS 84", crs.getName().getCode());
-        assertEquals("datum", "World Geodetic System 1984", crs.getDatum().getName().getCode());
+        assertEquals("WGS 84", crs.getName().getCode());
+        assertEquals("World Geodetic System 1984", crs.getDatum().getName().getCode());
     }
 
     /**
@@ -106,8 +107,8 @@ public final class GeodeticObjectFactoryTest extends ObjectFactoryTest {
      */
     @Test
     public void testInvalidParameterInWKT() throws FactoryException {
-        try {
-            crsFactory.createFromWKT(
+        var e = assertThrows(InvalidGeodeticParameterException.class,
+                () -> crsFactory.createFromWKT(
                 "PROJCRS[“Custom”,\n" +
                 "  BASEGEODCRS[“North American 1983”,\n" +
                 "    DATUM[“North American 1983”,\n" +
@@ -119,12 +120,9 @@ public final class GeodeticObjectFactoryTest extends ObjectFactoryTest {
                 "    PARAMETER[“Central parallel”, 41.75]],\n" +       // Wrong parameter.
                 "  CS[Cartesian, 2],\n" +
                 "    AXIS[“(Y)”, north],\n" +
-                "    AXIS[“(X)”, east]]");
-            fail("Should not have parsed a WKT with wrong projection parameter.");
-        } catch (InvalidGeodeticParameterException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("Central parallel"));
-        }
+                "    AXIS[“(X)”, east]]"),
+                "Should not have parsed a WKT with wrong projection parameter.");
+        assertMessageContains(e, "Central parallel");
     }
 
     /**

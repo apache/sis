@@ -28,8 +28,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix4;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -91,7 +90,7 @@ public final class ConcatenatedTransformTest extends MathTransformTestCase {
 
         // Optimized case.
         transform = MathTransforms.concatenate(first, second);
-        assertInstanceOf("Expected optimized concatenation through matrix multiplication.", AffineTransform2D.class, transform);
+        assertInstanceOf(AffineTransform2D.class, transform, "Expected optimized concatenation through matrix multiplication.");
         validate();
         verifyTransform(source, target);
     }
@@ -118,7 +117,7 @@ public final class ConcatenatedTransformTest extends MathTransformTestCase {
 
         // Optimized case.
         transform = ConcatenatedTransform.create(first, second, null);
-        assertInstanceOf("Expected optimized concatenation through matrix multiplication.", ProjectiveTransform.class, transform);
+        assertInstanceOf(ProjectiveTransform.class, transform, "Expected optimized concatenation through matrix multiplication.");
         validate();
         verifyTransform(source, target);
     }
@@ -136,9 +135,9 @@ public final class ConcatenatedTransformTest extends MathTransformTestCase {
         final MathTransform passth = MathTransforms.passThrough(0, kernel, 1);
         final Matrix4 matrix = new Matrix4();
         transform = ConcatenatedTransform.create(MathTransforms.linear(matrix), passth, null);
-        assertSame("Identity transform should be ignored.", passth, transform);
-        assertEquals("Source dimensions", 3, transform.getSourceDimensions());
-        assertEquals("Target dimensions", 4, transform.getTargetDimensions());
+        assertSame(passth, transform, "Identity transform should be ignored.");
+        assertEquals(3, transform.getSourceDimensions());
+        assertEquals(4, transform.getTargetDimensions());
         /*
          * Put scale or offset factors only in the dimension to be processed by the sub-transform.
          * The matrix should be concatenated to the sub-transform rather than to the passthrough
@@ -147,22 +146,22 @@ public final class ConcatenatedTransformTest extends MathTransformTestCase {
         matrix.m00 = 3;
         matrix.m13 = 2;
         transform = ConcatenatedTransform.create(MathTransforms.linear(matrix), passth, null);
-        assertInstanceOf("Expected a new passthrough transform.", PassThroughTransform.class, transform);
-        final MathTransform subTransform = ((PassThroughTransform) transform).subTransform;
-        assertInstanceOf("Expected a new concatenated transform.", ConcatenatedTransform.class, subTransform);
-        assertSame(kernel, ((ConcatenatedTransform) subTransform).transform2);
-        assertEquals("Source dimensions", 3, transform.getSourceDimensions());
-        assertEquals("Target dimensions", 4, transform.getTargetDimensions());
+        MathTransform subTransform;
+        subTransform = assertInstanceOf(PassThroughTransform.class, transform).subTransform;
+        subTransform = assertInstanceOf(ConcatenatedTransform.class, subTransform).transform2;
+        assertSame(kernel, subTransform);
+        assertEquals(3, transform.getSourceDimensions());
+        assertEquals(4, transform.getTargetDimensions());
         /*
          * Put scale or offset factors is a passthrough dimension. Now, the affine transform
          * cannot anymore be concatenated with the sub-transform.
          */
         matrix.m22 = 4;
         transform = ConcatenatedTransform.create(MathTransforms.linear(matrix), passth, null);
-        assertInstanceOf("Expected a new concatenated transform.", ConcatenatedTransform.class, transform);
+        assertInstanceOf(ConcatenatedTransform.class, transform, "Expected a new concatenated transform.");
         assertSame(passth, ((ConcatenatedTransform) transform).transform2);
-        assertEquals("Source dimensions", 3, transform.getSourceDimensions());
-        assertEquals("Target dimensions", 4, transform.getTargetDimensions());
+        assertEquals(3, transform.getSourceDimensions());
+        assertEquals(4, transform.getTargetDimensions());
     }
 
     /**

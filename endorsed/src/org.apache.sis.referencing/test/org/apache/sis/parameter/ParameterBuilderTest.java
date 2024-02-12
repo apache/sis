@@ -23,7 +23,7 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -53,25 +53,25 @@ public final class ParameterBuilderTest extends TestCase {
     public void testCreate() {
         final ParameterBuilder builder = new ParameterBuilder();
         ParameterDescriptor<Double> p = builder.addName("Test 1").create(0, Units.METRE);
-        assertEquals("name", "Test 1",    p.getName().getCode());
-        assertEquals("defaultValue", 0.0, p.getDefaultValue(), 0);
-        assertNull  ("minimumValue",      p.getMinimumValue());
-        assertNull  ("maximumValue",      p.getMaximumValue());
-        assertEquals("unit", Units.METRE, p.getUnit());
+        assertEquals("Test 1", p.getName().getCode());
+        assertEquals(0.0, p.getDefaultValue());
+        assertNull  (     p.getMinimumValue());
+        assertNull  (     p.getMaximumValue());
+        assertEquals(Units.METRE, p.getUnit());
 
         p = builder.addName("Test 2").create(Double.NaN, Units.METRE);
-        assertEquals("name", "Test 2",    p.getName().getCode());
-        assertNull  ("defaultValue",      p.getDefaultValue());
-        assertNull  ("minimumValue",      p.getMinimumValue());
-        assertNull  ("maximumValue",      p.getMaximumValue());
-        assertEquals("unit", Units.METRE, p.getUnit());
+        assertEquals("Test 2", p.getName().getCode());
+        assertNull  (p.getDefaultValue());
+        assertNull  (p.getMinimumValue());
+        assertNull  (p.getMaximumValue());
+        assertEquals(Units.METRE, p.getUnit());
 
         p = builder.addName("Test 3").createBounded(1, 4, 3, Units.METRE);
-        assertEquals("name", "Test 3",    p.getName().getCode());
-        assertEquals("defaultValue", 3.0, p.getDefaultValue(), 0);
-        assertEquals("minimumValue", 1.0, p.getMinimumValue());
-        assertEquals("maximumValue", 4.0, p.getMaximumValue());
-        assertEquals("unit", Units.METRE, p.getUnit());
+        assertEquals("Test 3",    p.getName().getCode());
+        assertEquals(3.0, p.getDefaultValue());
+        assertEquals(1.0, p.getMinimumValue());
+        assertEquals(4.0, p.getMaximumValue());
+        assertEquals(Units.METRE, p.getUnit());
     }
 
     /**

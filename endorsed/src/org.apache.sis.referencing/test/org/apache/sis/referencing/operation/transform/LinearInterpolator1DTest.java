@@ -23,8 +23,8 @@ import org.opengis.referencing.operation.TransformException;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.DependsOnMethod;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -59,7 +59,7 @@ public final class LinearInterpolator1DTest extends TransformTestCase {
         preimage = new double[] { 0,  1,  2,  3};
         values   = new double[] {10, 12, 16, 22};
         verifyConsistency(-2, 5, -5196528645359952958L);
-        assertInstanceOf("Expected y=f(i)", LinearInterpolator1D.class, transform);
+        assertInstanceOf(LinearInterpolator1D.class, transform, "Expected y=f(i)");
     }
 
     /**
@@ -72,9 +72,9 @@ public final class LinearInterpolator1DTest extends TransformTestCase {
         preimage = new double[] {0,   1,  2, 3};
         values   = new double[] {35, 27, 22, 5};
         verifyConsistency(-2, 5, 6445394511592290678L);
-        assertInstanceOf("Expected y = -f(-i)", ConcatenatedTransformDirect1D.class, transform);
-        assertInstanceOf("Expected y = -f(-i)", LinearInterpolator1D.class, ((ConcatenatedTransform) transform).transform1);
-        assertSame      ("Expected y = -f(-i)", LinearTransform1D.NEGATE,   ((ConcatenatedTransform) transform).transform2);
+        var c = assertInstanceOf(ConcatenatedTransformDirect1D.class, transform, "Expected i = -f(-x)");
+        assertInstanceOf(LinearInterpolator1D.class, c.transform1);
+        assertSame(LinearTransform1D.NEGATE, c.transform2);
     }
 
     /**
@@ -99,7 +99,7 @@ public final class LinearInterpolator1DTest extends TransformTestCase {
         preimage = new double[] {35, 27, 22, 5};
         values   = new double[] {0,   1,  2, 3};
         verifyConsistency(0, 40, 4109281798631024654L);
-        assertInstanceOf("Expected i = -f(-x)", ConcatenatedTransformDirect1D.class, transform);
+        assertInstanceOf(ConcatenatedTransformDirect1D.class, transform, "Expected i = -f(-x)");
     }
 
     /**
@@ -112,8 +112,8 @@ public final class LinearInterpolator1DTest extends TransformTestCase {
         preimage = new double[] { -207, -96, -5,   2};
         values   = new double[] {  -50, -20,  7, 105};
         verifyConsistency(-210, 5, 1941178068603334535L);
-        assertInstanceOf("Expected y = f(x)", ConcatenatedTransformDirect1D.class, transform);
-        assertInstanceOf("Expected y = f(x)", LinearInterpolator1D.class, ((ConcatenatedTransform) transform).transform2);
+        var c = assertInstanceOf(ConcatenatedTransformDirect1D.class, transform, "Expected y = f(x)");
+        assertInstanceOf(LinearInterpolator1D.class, c.transform2);
     }
 
     /**
@@ -126,7 +126,7 @@ public final class LinearInterpolator1DTest extends TransformTestCase {
         preimage = new double[] {  2,  -5, -96, -207};
         values   = new double[] {-50, -20,  7,   105};
         verifyConsistency(-210, 5, 7360962930883142147L);
-        assertInstanceOf("Expected y = -f(-x)", ConcatenatedTransformDirect1D.class, transform);
+        assertInstanceOf(ConcatenatedTransformDirect1D.class, transform, "Expected y = -f(-x)");
     }
 
     /**
@@ -139,7 +139,7 @@ public final class LinearInterpolator1DTest extends TransformTestCase {
         preimage = new double[] {  2, -5, -96, -207};
         values   = new double[] {105,  7, -19,  -43};
         verifyConsistency(-210, 5, -2463171263749789198L);
-        assertInstanceOf("Expected y = -f(-x)", ConcatenatedTransformDirect1D.class, transform);
+        assertInstanceOf(ConcatenatedTransformDirect1D.class, transform, "Expected y = -f(-x)");
     }
 
     /**
@@ -188,34 +188,25 @@ public final class LinearInterpolator1DTest extends TransformTestCase {
     public void testArgumentChecks() {
         preimage = new double[] { -43,   7, -19, 105};                         // Non-monotonic sequence.
         values   = new double[] {1017, 525,  24,  12};
-        try {
-            LinearInterpolator1D.create(preimage, values);
-            fail("Should not have accepted the x inputs.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("preimage"));
-        }
+        Exception e;
+        e = assertThrows(IllegalArgumentException.class,
+                () -> LinearInterpolator1D.create(preimage, values),
+                "Should not have accepted the x inputs.");
+        assertMessageContains(e, "preimage");
 
         preimage = new double[] {1017, 525,  24,  12};
         values   = new double[] {-43,    7, -19, 105};
         MathTransform1D mt = LinearInterpolator1D.create(preimage, values);
-        try {
-            mt.inverse();
-            fail("Should not have accepted the inverse that transform.");
-        } catch (NoninvertibleTransformException e) {
-            final String message = e.getMessage();
-            assertFalse(message, message.isEmpty());
-        }
+        e = assertThrows(NoninvertibleTransformException.class, () -> mt.inverse(),
+                         "Should not have accepted the inverse that transform.");
+        assertMessageContains(e);
 
         preimage = new double[] {1017, 525,  24,  12, 45};                     // Mismatched array length.
         values   = new double[] {-43,    7, -19, 105};
-        try {
-            LinearInterpolator1D.create(preimage, values);
-            fail("Should not have accepted the x inputs.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertFalse(message, message.isEmpty());
-        }
+        e = assertThrows(IllegalArgumentException.class,
+                () -> LinearInterpolator1D.create(preimage, values),
+                "Should not have accepted the x inputs.");
+        assertMessageContains(e);
     }
 
     /**

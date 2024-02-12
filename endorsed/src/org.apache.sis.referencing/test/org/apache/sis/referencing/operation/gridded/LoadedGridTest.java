@@ -27,7 +27,7 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
@@ -126,8 +126,8 @@ public class LoadedGridTest extends TestCase {
              * Compute the actual point and compare.
              */
             grid.interpolateInCell(x, y, vector);
-            assertEquals("x", point.x, (float) (vector[0] + x), TOLERANCE);
-            assertEquals("y", point.y, (float) (vector[1] + y), TOLERANCE);
+            assertEquals(point.x, (float) (vector[0] + x), TOLERANCE);
+            assertEquals(point.y, (float) (vector[1] + y), TOLERANCE);
         }
     }
 
@@ -157,8 +157,8 @@ public class LoadedGridTest extends TestCase {
              * Compute the actual point and compare.
              */
             grid.interpolateInCell(x, y, vector);
-            assertEquals("x", point.x, (float) (vector[0] + x), TOLERANCE);
-            assertEquals("y", point.y, (float) (vector[1] + y), TOLERANCE);
+            assertEquals(point.x, (float) (vector[0] + x), TOLERANCE);
+            assertEquals(point.y, (float) (vector[1] + y), TOLERANCE);
         }
     }
 
@@ -189,12 +189,12 @@ public class LoadedGridTest extends TestCase {
              * Compute the actual point, compare, then check derivative.
              */
             grid.interpolateInCell(x, y, vector);
-            assertEquals("x", point.x, (float) (vector[0] + x),   TOLERANCE);
-            assertEquals("y", point.y, (float) (vector[1] + y),   TOLERANCE);
-            assertEquals("m00", reference.getScaleX(), vector[2], TOLERANCE);
-            assertEquals("m01", reference.getShearX(), vector[3], TOLERANCE);
-            assertEquals("m10", reference.getShearY(), vector[4], TOLERANCE);
-            assertEquals("m11", reference.getScaleY(), vector[5], TOLERANCE);
+            assertEquals(point.x, (float) (vector[0] + x), TOLERANCE);
+            assertEquals(point.y, (float) (vector[1] + y), TOLERANCE);
+            assertEquals(reference.getScaleX(), vector[2], TOLERANCE);
+            assertEquals(reference.getShearX(), vector[3], TOLERANCE);
+            assertEquals(reference.getShearY(), vector[4], TOLERANCE);
+            assertEquals(reference.getScaleY(), vector[5], TOLERANCE);
             assertSameDerivative(x, y, vector);
         }
     }
@@ -221,8 +221,8 @@ public class LoadedGridTest extends TestCase {
             grid.interpolateInCell(x, y, vector);
             if (x >= 0 && x < WIDTH && y >= 0 && y < HEIGHT) {
                 assertSame(point, reference.transform(point, point));
-                assertEquals("x", point.x, (float) (vector[0] + x), TOLERANCE);
-                assertEquals("y", point.y, (float) (vector[1] + y), TOLERANCE);
+                assertEquals(point.x, (float) (vector[0] + x), TOLERANCE);
+                assertEquals(point.y, (float) (vector[1] + y), TOLERANCE);
             }
             assertSameDerivative(x, y, vector);
         }
@@ -234,11 +234,11 @@ public class LoadedGridTest extends TestCase {
      */
     private void assertSameDerivative(final int x, final int y, final double[] vector) {
         Matrix m = grid.derivativeInCell(x, y);
-        assertEquals("numRow", 2, m.getNumRow());
-        assertEquals("numCol", 2, m.getNumCol());
-        assertEquals("m00", m.getElement(0,0), vector[2], STRICT);
-        assertEquals("m01", m.getElement(0,1), vector[3], STRICT);
-        assertEquals("m10", m.getElement(1,0), vector[4], STRICT);
-        assertEquals("m11", m.getElement(1,1), vector[5], STRICT);
+        assertEquals(2, m.getNumRow(), "numRow");
+        assertEquals(2, m.getNumCol(), "numCol");
+        assertEquals(m.getElement(0,0), vector[2], "m00");
+        assertEquals(m.getElement(0,1), vector[3], "m01");
+        assertEquals(m.getElement(1,0), vector[4], "m10");
+        assertEquals(m.getElement(1,1), vector[5], "m11");
     }
 }

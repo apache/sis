@@ -25,7 +25,7 @@ import org.apache.sis.geometry.Envelope2D;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.referencing.operation.HardCodedConversions;
@@ -72,6 +72,6 @@ public final class LinearizerTest extends TestCase {
                             0, 110662, -62,
                             0, 0, 1), linear.getMatrix(), 0.5);
 
-        assertSame("Should have extracted the existing instance instead of computing a new one.", points.create(null), linear);
+        assertSame(points.create(null), linear, "Should have extracted the existing instance instead of computing a new one.");
     }
 }

@@ -18,7 +18,7 @@ package org.apache.sis.geometry;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -51,17 +51,17 @@ public final class CurveExtremumTest extends TestCase {
         x1 =  0; y1 =  0; dy1 =   7;
         x2 = -4; y2 =  0; dy2 = -12;
         extremum.resolve(x1, y1, dy1, x2, y2, dy2);
-        assertEquals("X1",   3.31741507, extremum.ex1, EPS);
-        assertEquals("Y1",  17.31547745, extremum.ey1, EPS);
-        assertEquals("X2",  -2.25074840, extremum.ex2, EPS);
-        assertEquals("Y2",  -9.65918115, extremum.ey2, EPS);
+        assertEquals( 3.31741507, extremum.ex1, EPS, "X1");
+        assertEquals(17.31547745, extremum.ey1, EPS, "Y1");
+        assertEquals(-2.25074840, extremum.ex2, EPS, "X2");
+        assertEquals(-9.65918115, extremum.ey2, EPS, "Y2");
 
         x1 = 0; y1 =  0; dy1 = 5;
         x2 = 5; y2 = 20; dy2 = 1;
         extremum.resolve(x1, y1, dy1, x2, y2, dy2);
-        assertEquals("X1",   5.47313697, extremum.ex1, EPS);
-        assertEquals("Y1",  20.24080512, extremum.ey1, EPS);
-        assertEquals("X2",  -3.80647030, extremum.ex2, EPS);
-        assertEquals("Y2", -11.72228660, extremum.ey2, EPS);
+        assertEquals(  5.47313697, extremum.ex1, EPS, "X1");
+        assertEquals( 20.24080512, extremum.ey1, EPS, "Y1");
+        assertEquals( -3.80647030, extremum.ex2, EPS, "X2");
+        assertEquals(-11.72228660, extremum.ey2, EPS, "Y2");
     }
 }
