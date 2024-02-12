@@ -28,7 +28,7 @@ import org.apache.sis.referencing.factory.sql.EPSGFactory;
 import org.junit.BeforeClass;
 import org.junit.AfterClass;
 import org.junit.Test;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.Assume.assumeTrue;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 

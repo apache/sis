@@ -51,6 +51,8 @@ public final class Assumptions {
      * @return the path to the given file.
      */
     public static URI assumeDataExists(final DataDirectory type, final String file) {
+        try {       // Temporary hack during the transition from JUnit 4 to JUnit 5.
+
         assumeTrue(System.getenv(DataDirectory.ENV) != null, "$SIS_DATA environment variable not set.");
         Path path = type.getDirectory();
         assumeTrue(path != null, () -> "$SIS_DATA/" + type + " directory not found.");
@@ -58,5 +60,10 @@ public final class Assumptions {
         assumeTrue(Files.exists(path), "Specified file or directory not found.");
         assumeTrue(Files.isReadable(path), "Specified directory not readable.");
         return path.toUri();
+
+        } catch (org.opentest4j.TestAbortedException e) {
+            org.junit.Assume.assumeTrue(e.getMessage(), false);
+            return null;
+        }
     }
 }

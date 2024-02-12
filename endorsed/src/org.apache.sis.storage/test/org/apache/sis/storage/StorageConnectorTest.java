@@ -37,7 +37,6 @@ import org.apache.sis.storage.internal.InputStreamAdapter;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -255,7 +254,7 @@ public final class StorageConnectorTest extends TestCase {
          * (which is the case when the resource is an ordinary file, not an entry inside a JAR file),
          * otherwise the call to connector.getStorageAs(…) throws a DataStoreException.
          */
-        assumeTrue(in.markSupported(), "Cannot use a JAR file entry for this test.");
+        assertTrue(in.markSupported(), "Cannot use a JAR file entry for this test.");
         assertSame(in, connector.getStorageAs(InputStream.class));
         final byte[] actual = new byte[sample.length];
         assertEquals(actual.length, in.read(actual), "Should read all requested bytes.");

@@ -21,7 +21,6 @@ import java.time.Instant;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -90,7 +89,7 @@ public final class RangeTest extends TestCase {
     @Test(expected = IllegalArgumentException.class)
     @SuppressWarnings({"unchecked", "rawtypes", "ResultOfObjectAllocationIgnored"})
     public void testConstructorErrors00() {
-        assumeTrue(Range.class.desiredAssertionStatus());
+        assertTrue(Range.class.desiredAssertionStatus());
         new Range(Double.class, "error", true, "blast", true);
     }
 
@@ -105,7 +104,7 @@ public final class RangeTest extends TestCase {
     @Test(expected = IllegalArgumentException.class)
     @SuppressWarnings({"unchecked", "rawtypes", "ResultOfObjectAllocationIgnored"})
     public void testConstructorErrors01() {
-        assumeTrue(Range.class.desiredAssertionStatus());
+        assertTrue(Range.class.desiredAssertionStatus());
         new Range(String.class, 123.233, true, 8740.09, true);
     }
 

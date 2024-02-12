@@ -26,7 +26,7 @@ import java.nio.file.Path;
 import org.apache.sis.system.DataDirectory;
 
 // Test dependencies
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.Assume.assumeTrue;
 
 
 /**
@@ -145,7 +145,8 @@ public enum OptionalTestData {
      */
     private InputStream open() throws IOException {
         final Optional<Path> path = path();
-        assumeTrue(path.isPresent(), () -> "File “$SIS_DATA/Tests/" + filename + "” has not been found.");
+        assumeTrue("File “$SIS_DATA/Tests/" + filename + "” has not been found.", path.isPresent());
+//      assumeTrue(path.isPresent(), () -> "File “$SIS_DATA/Tests/" + filename + "” has not been found.");
         return Files.newInputStream(path.get());
     }
 
