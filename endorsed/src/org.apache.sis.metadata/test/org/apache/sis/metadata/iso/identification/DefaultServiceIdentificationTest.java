@@ -29,7 +29,7 @@ import org.apache.sis.metadata.xml.TestUsingFile;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
@@ -93,27 +93,27 @@ public final class DefaultServiceIdentificationTest extends TestUsingFile {
      * instance created by {@link #create()} method.
      */
     private static void verify(final ServiceIdentification id) {
-        assertEquals("serviceTypeVersion", "1.0",                                  getSingleton(id.getServiceTypeVersions()));
-        assertEquals("serviceType",        "Web Map Server",                       String.valueOf(id.getServiceType()));
-        assertEquals("abstract",           "A dummy service for testing purpose.", String.valueOf(id.getAbstract()));
-        assertEquals("citation",           NilReason.MISSING,                      NilReason.forObject(id.getCitation()));
-        assertEquals("couplingType",       CouplingType.LOOSE,                     id.getCouplingType());
+        assertEquals("1.0",                                  getSingleton(id.getServiceTypeVersions()));
+        assertEquals("Web Map Server",                       String.valueOf(id.getServiceType()));
+        assertEquals("A dummy service for testing purpose.", String.valueOf(id.getAbstract()));
+        assertEquals(NilReason.MISSING,                      NilReason.forObject(id.getCitation()));
+        assertEquals(CouplingType.LOOSE,                     id.getCouplingType());
 
         final CoupledResource resource = getSingleton(id.getCoupledResources());
 //      assertEquals("scopedName",        "mySpace:ABC-123",   …)  skipped because not present in new ISO 19115-3:2016.
 //      assertEquals("resourceReference", "WMS specification", …)  skipped because not present in legacy ISO 19139:2007.
 
         final OperationMetadata op = resource.getOperation();
-        assertNotNull("operation", op);
-        assertEquals("operationName", "Get Map", op.getOperationName());
-        assertEquals("distributedComputingPlatform", DistributedComputingPlatform.WEB_SERVICES, getSingleton(op.getDistributedComputingPlatforms()));
-        assertEquals("connectPoints", NilReason.MISSING, NilReason.forObject(getSingleton(op.getConnectPoints())));
+        assertNotNull(op);
+        assertEquals("Get Map", op.getOperationName());
+        assertEquals(DistributedComputingPlatform.WEB_SERVICES, getSingleton(op.getDistributedComputingPlatforms()));
+        assertEquals(NilReason.MISSING, NilReason.forObject(getSingleton(op.getConnectPoints())));
 
         final ParameterDescriptor<?> param = getSingleton(op.getParameters());
-        assertEquals("name", "My service parameter", String.valueOf(param.getName()));
-        assertEquals("minimumOccurs", 0, param.getMinimumOccurs());
-        assertEquals("maximumOccurs", 1, param.getMaximumOccurs());
-        assertEquals("direction", ParameterDirection.IN, param.getDirection());
+        assertEquals("My service parameter", String.valueOf(param.getName()));
+        assertEquals(0, param.getMinimumOccurs());
+        assertEquals(1, param.getMaximumOccurs());
+        assertEquals(ParameterDirection.IN, param.getDirection());
     }
 
     /**
@@ -139,7 +139,7 @@ public final class DefaultServiceIdentificationTest extends TestUsingFile {
         final ServiceIdentification id = unmarshalFile(ServiceIdentification.class, openTestFile(Format.XML2007));
         verify(id);
         final CoupledResource resource = getSingleton(id.getCoupledResources());
-        assertEquals("scopedName", "mySpace:ABC-123", String.valueOf(resource.getScopedName()));
+        assertEquals("mySpace:ABC-123", String.valueOf(resource.getScopedName()));
     }
 
     /**

@@ -27,7 +27,6 @@ import org.apache.sis.metadata.xml.TestUsingFile;
 // Test dependencies
 import org.junit.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.xml.bind.lan.FreeTextMarshallingTest;
 import org.apache.sis.test.DependsOn;
 import static org.apache.sis.test.TestUtilities.getSingleton;
@@ -101,7 +100,7 @@ public final class AbstractPositionalAccuracyTest extends TestUsingFile {
          * needs to contain a "result" element in order to pass XML validation test.
          */
         final Result result = getSingleton(metadata.getResults());
-        assertInstanceOf("Wrong value for <gmd:result>", DefaultConformanceResult.class, result);
+        assertInstanceOf(DefaultConformanceResult.class, result, "Wrong value for <gmd:result>");
         assertEquals(Boolean.TRUE, ((ConformanceResult) result).pass(), "result.pass");
         /*
          * Marshalling: ensure that we didn't lost any information.

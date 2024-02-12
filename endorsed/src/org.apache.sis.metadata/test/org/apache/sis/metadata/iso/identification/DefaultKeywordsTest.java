@@ -20,7 +20,7 @@ import org.apache.sis.util.SimpleInternationalString;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -41,7 +41,7 @@ public final class DefaultKeywordsTest extends TestCase {
      */
     @Test
     public void testConstructor() {
-        final DefaultKeywords keywords = new DefaultKeywords("Keyword 1", "Keyword 2", "Keyword 3");
+        final var keywords = new DefaultKeywords("Keyword 1", "Keyword 2", "Keyword 3");
         assertArrayEquals(new Object[] {
             new SimpleInternationalString("Keyword 1"),
             new SimpleInternationalString("Keyword 2"),

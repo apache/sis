@@ -23,7 +23,7 @@ import org.apache.sis.util.SimpleInternationalString;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -87,8 +87,8 @@ public final class DefaultScopedNameTest extends TestCase {
      * Verifies that the following names are equal and have the same hash code.
      */
     private static void assertNameEqual(final GenericName n1, final GenericName n2) {
-        assertEquals("equals(Object)", n1, n2);
-        assertEquals("equals(Object)", n2, n1);
-        assertEquals("hashCode()", n1.hashCode(), n2.hashCode());
+        assertEquals(n1, n2);
+        assertEquals(n2, n1);
+        assertEquals(n1.hashCode(), n2.hashCode());
     }
 }

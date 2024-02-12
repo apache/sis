@@ -25,7 +25,7 @@ import org.apache.sis.xml.bind.Context;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
 
@@ -95,14 +95,14 @@ public final class DefaultContactTest extends TestCase implements Filter {
         final DefaultTelephone[] tels = new DefaultTelephone[] {tel1, tel2, tel3, tel4};
         final DefaultContact  contact = new DefaultContact();
         contact.setPhones(List.of(tel1, tel2, tel3, tel4));
-        assertArrayEquals("getPhones", tels, contact.getPhones().toArray());
+        assertArrayEquals(tels, contact.getPhones().toArray());
         /*
-         * Test the deprecated 'getPhone()' method. Invoking that method shall emit
+         * Test the deprecated `getPhone()` method. Invoking that method shall emit
          * a warning, since the ISO 19115:2003 methods cannot represent SMS numbers.
          */
-        assertSame("getPhone", tel2, contact.getPhone()); // Shall ignore the TelephoneType.SMS.
-        assertEquals("warningOccured", "IgnoredPropertyAssociatedTo_1", resourceKey);
-        assertArrayEquals("warningOccured", new String[] {"TelephoneType[SMS]"}, parameters);
+        assertSame(tel2, contact.getPhone());       // Shall ignore the TelephoneType.SMS.
+        assertEquals("IgnoredPropertyAssociatedTo_1", resourceKey);
+        assertArrayEquals(new String[] {"TelephoneType[SMS]"}, parameters);
         verifyLegacyLists(tels);
     }
 
@@ -120,8 +120,8 @@ public final class DefaultContactTest extends TestCase implements Filter {
         final String[] voices = {"00.02", "00.04"};
         final String[] facsimiles = {"00.03"};
         for (final Telephone tel : tels) {
-            assertArrayEquals("getVoices",     voices,     tel.getVoices()    .toArray());
-            assertArrayEquals("getFacsimiles", facsimiles, tel.getFacsimiles().toArray());
+            assertArrayEquals(voices,     tel.getVoices()    .toArray());
+            assertArrayEquals(facsimiles, tel.getFacsimiles().toArray());
         }
     }
 
@@ -175,7 +175,7 @@ public final class DefaultContactTest extends TestCase implements Filter {
         final DefaultContact contact = new DefaultContact();
         contact.setPhone(view);
         verifyLegacyLists(view);
-        assertArrayEquals("getPhones", new DefaultTelephone[] {
+        assertArrayEquals(new DefaultTelephone[] {
                 new DefaultTelephone("00.02", TelephoneType.VOICE),
                 new DefaultTelephone("00.04", TelephoneType.VOICE),
                 new DefaultTelephone("00.03", TelephoneType.FACSIMILE)

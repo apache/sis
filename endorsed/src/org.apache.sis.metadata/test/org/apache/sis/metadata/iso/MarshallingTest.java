@@ -67,7 +67,7 @@ import org.apache.sis.metadata.xml.TestUsingFile;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -644,7 +644,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
     @Override
     public boolean isLoggable(final LogRecord warning) {
         if (warning.getThrown() instanceof MissingResourceException) {
-            assertNull("Expected a warning message without parameters.", warning.getParameters());
+            assertNull(warning.getParameters(), "Expected a warning message without parameters.");
             return false;
         }
         final String message = warning.getMessage();

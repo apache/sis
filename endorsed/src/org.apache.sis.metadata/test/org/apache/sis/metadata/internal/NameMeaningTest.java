@@ -27,7 +27,7 @@ import org.opengis.parameter.ParameterDescriptor;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
@@ -77,6 +77,6 @@ public final class NameMeaningTest extends TestCase {
         assertEquals("urn:ogc:def:crs:EPSG::4326",    NameMeaning.toURN(GeodeticCRS.class,   "EPSG", null, "4326"));
         assertEquals("urn:ogc:def:crs:OGC:1.3:CRS84", NameMeaning.toURN(GeographicCRS.class, "CRS",  null,   "84"));
         assertEquals("urn:ogc:def:datum:EPSG::6326",  NameMeaning.toURN(GeodeticDatum.class, "EPSG", null, "6326"));
-        assertNull  ("Authority is not optional.",    NameMeaning.toURN(GeographicCRS.class, null,   null, "4326"));
+        assertNull  (NameMeaning.toURN(GeographicCRS.class, null,   null, "4326"), "Authority is not optional.");
     }
 }

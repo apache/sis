@@ -25,7 +25,7 @@ import static org.apache.sis.metadata.internal.ImplementationHelper.ISO_NAMESPAC
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
@@ -66,8 +66,8 @@ public final class DefaultLegalConstraintsTest extends TestCase {
         /*
          * Verify metadata property.
          */
-        assertEquals("accessConstraints", Restriction.INTELLECTUAL_PROPERTY_RIGHTS, getSingleton(c.getAccessConstraints()));
-        assertTrue("useConstraints", c.getUseConstraints().isEmpty());
+        assertEquals(Restriction.INTELLECTUAL_PROPERTY_RIGHTS, getSingleton(c.getAccessConstraints()));
+        assertTrue(c.getUseConstraints().isEmpty());
     }
 
     /**

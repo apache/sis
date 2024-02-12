@@ -47,7 +47,7 @@ import org.apache.sis.metadata.xml.TestUsingFile;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.TestUtilities.getSingleton;
@@ -112,28 +112,28 @@ public final class DefaultCitationTest extends TestUsingFile {
         final DefaultCitation citation = new DefaultCitation();
         final Collection<Identifier> identifiers = citation.getIdentifiers();
         final IdentifierMap identifierMap = citation.getIdentifierMap();
-        assertTrue("Expected an initially empty set of identifiers.", identifiers.isEmpty());
+        assertTrue(identifiers.isEmpty(), "Expected an initially empty set of identifiers.");
         /*
          * Set the ISBN code, and ensure that the ISBN is reflected in the identifier map.
          */
         citation.setISBN("MyISBN");
         assertEquals("MyISBN", citation.getISBN());
-        assertEquals("ISBN code shall be included in the set of identifiers.", 1, identifiers.size());
+        assertEquals(1, identifiers.size(), "ISBN code shall be included in the set of identifiers.");
         assertEquals("{ISBN=“MyISBN”}", identifierMap.toString());
         /*
          * Set the identifiers with a list containing ISBN and ISSN codes.
          * The ISBN code shall be ignored because and ISBN property was already set.
          * The ISSN code shall be retained because it is a new code.
          */
-        assertNull("ISSN shall be initially null.", citation.getISSN());
+        assertNull(citation.getISSN(), "ISSN shall be initially null.");
         citation.setIdentifiers(List.of(
                 new DefaultIdentifier(Citations.NETCDF, "MyNetCDF"),
                 new DefaultIdentifier(Citations.EPSG,   "MyEPSG"),
                 new DefaultIdentifier(Citations.ISBN,   "NewISBN"),
                 new DefaultIdentifier(Citations.ISSN,   "MyISSN")));
 
-        assertEquals("The ISBN value shall have been overwritten.",       "NewISBN", citation.getISBN());
-        assertEquals("The ISSN value shall have been added, because new.", "MyISSN", citation.getISSN());
+        assertEquals("NewISBN", citation.getISBN(), "The ISBN value shall have been overwritten.");
+        assertEquals("MyISSN",  citation.getISSN(), "The ISSN value shall have been added, because new.");
         assertEquals("{NetCDF=“MyNetCDF”, EPSG=“MyEPSG”, ISBN=“NewISBN”, ISSN=“MyISSN”}", identifierMap.toString());
     }
 
@@ -145,17 +145,15 @@ public final class DefaultCitationTest extends TestUsingFile {
         final DefaultCitation original = create();
         final DefaultCitation clone = create();
         clone.transitionTo(DefaultCitation.State.FINAL);
-        assertEquals("original.state", DefaultCitation.State.EDITABLE, original.state());
-        assertEquals("clone.state",    DefaultCitation.State.FINAL,    clone.state());
+        assertEquals(DefaultCitation.State.EDITABLE, original.state());
+        assertEquals(DefaultCitation.State.FINAL,    clone.state());
         assertEquals(original, clone);
         SimpleInternationalString title = new SimpleInternationalString("Undercurrent");
         original.setTitle(title);
-        try {
-            clone.setTitle(title);
-            fail("Frozen metadata shall not be modifiable.");
-        } catch (UnmodifiableMetadataException e) {
-            // This is the expected exception.
-        }
+
+        var e = assertThrows(UnmodifiableMetadataException.class, () -> clone.setTitle(title),
+                             "Frozen metadata shall not be modifiable.");
+        assertNotNull(e);
     }
 
     /**
@@ -172,10 +170,10 @@ public final class DefaultCitationTest extends TestUsingFile {
      */
     private static void assertCopy(final DefaultCitation original, final DefaultCitation clone) {
         assertNotSame(original, clone);
-        assertSame ("ISBN",  original.getISBN(),  clone.getISBN());
-        assertSame ("title", original.getTitle(), clone.getTitle());
-        assertSame ("alternateTitle", getSingleton(original.getAlternateTitles()),
-                                     getSingleton(clone.getAlternateTitles()));
+        assertSame(original.getISBN(),  clone.getISBN());
+        assertSame(original.getTitle(), clone.getTitle());
+        assertSame(getSingleton(original.getAlternateTitles()),
+                   getSingleton(clone.getAlternateTitles()));
 
         assertCopy(original.getIdentifiers(),             clone.getIdentifiers());
         assertCopy(original.getCitedResponsibleParties(), clone.getCitedResponsibleParties());
@@ -187,32 +185,29 @@ public final class DefaultCitationTest extends TestUsingFile {
          */
         final Identifier ide = getSingleton(original.getIdentifiers());
         final Identifier ida = getSingleton(   clone.getIdentifiers());
-        assertNotSame("identifier", ide, ida);
-        assertSame("code",      ide.getCode(),      ida.getCode());
-        assertSame("authority", ide.getAuthority(), ida.getAuthority());
+        assertNotSame(ide, ida);
+        assertSame(ide.getCode(),      ida.getCode());
+        assertSame(ide.getAuthority(), ida.getAuthority());
         /*
          * Verify the author metadata.
          */
         final Responsibility re = CollectionsExt.first(original.getCitedResponsibleParties());
         final Responsibility ra = CollectionsExt.first(clone   .getCitedResponsibleParties());
-        assertNotSame("citedResponsibleParty", re, ra);
-        assertSame("role", re.getRole(), ra.getRole());
-        assertSame("name", getSingleton(re.getParties()).getName(),
-                           getSingleton(ra.getParties()).getName());
+        assertNotSame(re, ra);
+        assertSame(re.getRole(), ra.getRole());
+        assertSame(getSingleton(re.getParties()).getName(),
+                   getSingleton(ra.getParties()).getName());
     }
 
     /**
      * Verifies that {@code actual} is an unmodifiable copy of {@code expected}.
      */
     private static <T> void assertCopy(final Collection<T> expected, final Collection<T> actual) {
-        assertNotSame("ModifiableMetadata.transitionTo(FINAL) shall have copied the collection.", expected, actual);
-        assertEquals("The copied collection shall have the same content as the original.", expected, actual);
-        try {
-            actual.add(null);
-            fail("The copied collection shall be unmodifiable.");
-        } catch (UnsupportedOperationException e) {
-            // This is the expected exception.
-        }
+        assertNotSame(expected, actual, "ModifiableMetadata.transitionTo(FINAL) shall have copied the collection.");
+        assertEquals(expected, actual, "The copied collection shall have the same content as the original.");
+        var e = assertThrows(UnsupportedOperationException.class, () -> actual.add(null),
+                             "The copied collection shall be unmodifiable.");
+        assertNotNull(e);
     }
 
     /**
@@ -307,22 +302,22 @@ public final class DefaultCitationTest extends TestUsingFile {
         assertTitleEquals("title", "Fight against poverty", c);
 
         final CitationDate date = getSingleton(c.getDates());
-        assertEquals("date", date.getDate(), TestUtilities.date("2015-10-17 00:00:00"));
-        assertEquals("dateType", DateType.ADOPTED, date.getDateType());
-        assertEquals("presentationForm", PresentationForm.PHYSICAL_OBJECT, getSingleton(c.getPresentationForms()));
+        assertEquals(date.getDate(), TestUtilities.date("2015-10-17 00:00:00"));
+        assertEquals(DateType.ADOPTED, date.getDateType());
+        assertEquals(PresentationForm.PHYSICAL_OBJECT, getSingleton(c.getPresentationForms()));
 
         final Iterator<? extends Responsibility> it = c.getCitedResponsibleParties().iterator();
         final Contact contact = assertResponsibilityEquals(Role.ORIGINATOR, "Maid Marian", it.next());
-        assertEquals("Contact instruction", "Send carrier pigeon.", String.valueOf(contact.getContactInstructions()));
+        assertEquals("Send carrier pigeon.", String.valueOf(contact.getContactInstructions()));
 
         final OnlineResource resource = TestUtilities.getSingleton(contact.getOnlineResources());
-        assertEquals("Resource name", "IP over Avian Carriers", String.valueOf(resource.getName()));
-        assertEquals("Resource description", "High delay, low throughput, and low altitude service.", String.valueOf(resource.getDescription()));
-        assertEquals("Resource linkage", "https://tools.ietf.org/html/rfc1149", String.valueOf(resource.getLinkage()));
-        assertEquals("Resource function", OnLineFunction.OFFLINE_ACCESS, resource.getFunction());
+        assertEquals("IP over Avian Carriers", String.valueOf(resource.getName()));
+        assertEquals("High delay, low throughput, and low altitude service.", String.valueOf(resource.getDescription()));
+        assertEquals("https://tools.ietf.org/html/rfc1149", String.valueOf(resource.getLinkage()));
+        assertEquals(OnLineFunction.OFFLINE_ACCESS, resource.getFunction());
 
         // Thanks to xlink:href, the Contact shall be the same instance as above.
-        assertSame("contact", contact, assertResponsibilityEquals(Role.FUNDER, "Robin Hood", it.next()));
+        assertSame(contact, assertResponsibilityEquals(Role.FUNDER, "Robin Hood", it.next()));
         assertFalse(it.hasNext());
     }
 
@@ -330,9 +325,9 @@ public final class DefaultCitationTest extends TestUsingFile {
      * Asserts that the given responsibility has the expected properties, then returns its contact info.
      */
     private static Contact assertResponsibilityEquals(final Role role, final String name, final Responsibility actual) {
-        assertEquals("role", role, actual.getRole());
+        assertEquals(role, actual.getRole());
         final Party p = getSingleton(actual.getParties());
-        assertEquals("name", name, String.valueOf(p.getName()));
+        assertEquals(name, String.valueOf(p.getName()));
         return getSingleton(p.getContactInfo());
     }
 }

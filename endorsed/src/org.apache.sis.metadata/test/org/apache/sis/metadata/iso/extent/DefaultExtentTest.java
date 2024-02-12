@@ -29,7 +29,7 @@ import org.apache.sis.metadata.xml.TestUsingFile;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.test.TestUtilities.date;
@@ -84,11 +84,10 @@ public final class DefaultExtentTest extends TestUsingFile {
         final DefaultExtent e2 = new DefaultExtent("Somewhere", clip, null, null);
         e1.getGeographicElements().add(bounds2);
         e1.intersect(e2);
-        assertEquals("description", "Somewhere", e1.getDescription().toString());
-        assertFalse("isNil(description)", e1.getDescription() instanceof NilObject);
-        assertArrayEquals("geographicElements", new DefaultGeographicBoundingBox[] {
-            expected1, expected2
-        }, e1.getGeographicElements().toArray());
+        assertEquals("Somewhere", e1.getDescription().toString());
+        assertFalse(e1.getDescription() instanceof NilObject);
+        assertArrayEquals(new DefaultGeographicBoundingBox[] {expected1, expected2},
+                          e1.getGeographicElements().toArray());
         /*
          * Change the description and test again. That description should be considered missing
          * because we have a mismatch. Also change abounding box in such a way that there is no
@@ -98,10 +97,9 @@ public final class DefaultExtentTest extends TestUsingFile {
         e1.setGeographicElements(List.of(bounds1, bounds2));
         e2.setDescription(new SimpleInternationalString("Somewhere else"));
         e1.intersect(e2);
-        assertTrue("isNil(description)", e1.getDescription() instanceof NilObject);
-        assertArrayEquals("geographicElements", new DefaultGeographicBoundingBox[] {
-            expected1
-        }, e1.getGeographicElements().toArray());
+        assertTrue(e1.getDescription() instanceof NilObject);
+        assertArrayEquals(new DefaultGeographicBoundingBox[] {expected1},
+                          e1.getGeographicElements().toArray());
     }
 
     /**

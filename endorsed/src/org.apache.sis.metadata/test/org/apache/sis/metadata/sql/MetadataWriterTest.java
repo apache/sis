@@ -28,7 +28,7 @@ import org.apache.sis.metadata.iso.citation.DefaultTelephone;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
@@ -120,11 +120,11 @@ public final class MetadataWriterTest extends TestCase {
      * @throws MetadataStoreException if an error occurred while reading the database.
      */
     private void search() throws MetadataStoreException {
-        assertNull  ("ISO 19111", source.search(HardCodedCitations.ISO_19111));
+        assertNull  (             source.search(HardCodedCitations.ISO_19111));
         assertEquals("ISO 19115", source.search(HardCodedCitations.ISO_19115));
         assertEquals("EPSG",      source.search(HardCodedCitations.EPSG));
         assertEquals("SIS",       source.search(HardCodedCitations.SIS));
-        assertNull  ("ISO 19111", source.search(HardCodedCitations.ISO_19111));
+        assertNull  (             source.search(HardCodedCitations.ISO_19111));
         assertEquals("EPSG",      source.search(TestUtilities.getSingleton(
                 HardCodedCitations.EPSG.getCitedResponsibleParties())));
     }

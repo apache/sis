@@ -27,7 +27,7 @@ import static org.apache.sis.util.internal.CollectionsExt.first;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.citation.Party;
@@ -81,7 +81,7 @@ public final class MetadataFallbackVerifier {
             final String name = ((CitationConstant) c).title;
             final boolean exclude = EXCLUDES.contains(name);
             final Citation fromFB = MetadataFallback.createCitation(name);
-            assertEquals(name, exclude, fromFB == null);        // Verify that missing fallbacks are known ones.
+            assertEquals(exclude, fromFB == null, name);        // Verify that missing fallbacks are known ones.
             if (!exclude) {
                 compare(name, source.lookup(Citation.class, name), fromFB);
             }
@@ -104,11 +104,11 @@ public final class MetadataFallbackVerifier {
         final InternationalString expectedAltTitle = first(fromDB.getAlternateTitles());
         final InternationalString actualAltTitle   = first(fromFB.getAlternateTitles());
         if (fromFB.getTitle().equals(expectedAltTitle)) {
-            assertNull(name, actualAltTitle);
+            assertNull(actualAltTitle, name);
         } else {
-            assertEquals(name, fromDB.getTitle(), fromFB.getTitle());
+            assertEquals(fromDB.getTitle(), fromFB.getTitle(), name);
             if (actualAltTitle != null) {
-                assertEquals(name, expectedAltTitle, actualAltTitle);
+                assertEquals(expectedAltTitle, actualAltTitle, name);
             }
         }
         /*
@@ -118,11 +118,11 @@ public final class MetadataFallbackVerifier {
         final Identifier expectedID = first(fromDB.getIdentifiers());
         final Identifier actualID   = first(fromFB.getIdentifiers());
         if (expectedID == null) {
-            assertNull(name, actualID);
+            assertNull(actualID, name);
         } else if (actualID != null) {
-            assertEquals(name, expectedID.getCode(),      actualID.getCode());
-            assertEquals(name, expectedID.getCodeSpace(), actualID.getCodeSpace());
-            assertEquals(name, expectedID.getVersion(),   actualID.getVersion());
+            assertEquals(expectedID.getCode(),      actualID.getCode(),      name);
+            assertEquals(expectedID.getCodeSpace(), actualID.getCodeSpace(), name);
+            assertEquals(expectedID.getVersion(),   actualID.getVersion(),   name);
         }
         /*
          * The fallback may not declare all responsible parties.
@@ -131,14 +131,14 @@ public final class MetadataFallbackVerifier {
         final Responsibility expectedResp = first(fromDB.getCitedResponsibleParties());
         final Responsibility actualResp   = first(fromFB.getCitedResponsibleParties());
         if (expectedResp == null) {
-            assertNull(name, actualResp);
+            assertNull(actualResp, name);
         } else if (actualResp != null) {
-            assertEquals(name, expectedResp.getRole(), actualResp.getRole());
+            assertEquals(expectedResp.getRole(), actualResp.getRole(), name);
             final Party expectedParty = first(expectedResp.getParties());
             final Party actualParty = first(actualResp.getParties());
-            assertEquals(name, expectedParty.getName(), actualParty.getName());
+            assertEquals(expectedParty.getName(), actualParty.getName(), name);
         }
-        assertEquals(name, first(fromDB.getPresentationForms()),
-                           first(fromFB.getPresentationForms()));
+        assertEquals(first(fromDB.getPresentationForms()),
+                     first(fromFB.getPresentationForms()), name);
     }
 }

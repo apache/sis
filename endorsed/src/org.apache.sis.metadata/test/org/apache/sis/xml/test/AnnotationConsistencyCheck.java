@@ -30,7 +30,6 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementRef;
 import jakarta.xml.bind.annotation.XmlElementRefs;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import junit.framework.AssertionFailedError;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Obligation;
 import org.opengis.annotation.Specification;
@@ -42,6 +41,7 @@ import org.apache.sis.xml.bind.cat.CodeListUID;
 
 // Test dependencies
 import org.junit.Test;
+import org.opentest4j.AssertionFailedError;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
@@ -953,7 +953,7 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
     }
 
     /**
-     * Unconditionally fails the test. This method is equivalent to JUnit {@link org.junit.Assert#fail(String)}
+     * Unconditionally fails the test. This method is equivalent to the JUnit {@code fail(String)} method
      * except that the error message contains the {@link #testingClass} and {@link #testingMethod}.
      *
      * @param  message  the failure message.
@@ -966,9 +966,9 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
     }
 
     /**
-     * Fails the test if the given condition is false. This method is equivalent to JUnit
-     * {@link org.junit.Assert#assertTrue(String, boolean)} except that the error message
-     * contains the {@link #testingClass} and {@link #testingMethod}.
+     * Fails the test if the given condition is false. This method is equivalent to the JUnit
+     * {@link assertTrue(boolean, String)} method except that the error message contains the
+     * {@link #testingClass} and {@link #testingMethod}.
      *
      * @param  message    the message in case of failure.
      * @param  condition  the condition that must be {@code true}.
@@ -978,9 +978,9 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
     }
 
     /**
-     * Fails the test if the given condition is true. This method is equivalent to JUnit
-     * {@link org.junit.Assert#assertFalse(String, boolean)} except that the error message
-     * contains the {@link #testingClass} and {@link #testingMethod}.
+     * Fails the test if the given condition is true. This method is equivalent to the JUnit
+     * {@code assertFalse(boolean, String)} method except that the error message contains the
+     * {@link #testingClass} and {@link #testingMethod}.
      *
      * @param  message    the message in case of failure.
      * @param  condition  the condition that must be {@code false}.
@@ -990,9 +990,9 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
     }
 
     /**
-     * Fails the test if the given object is null. This method is equivalent to JUnit
-     * {@link org.junit.Assert#assertNotNull(String, Object)} except that the error
-     * message contains the {@link #testingClass} and {@link #testingMethod}.
+     * Fails the test if the given object is null. This method is equivalent to the JUnit
+     * {@code assertNotNull(Object, String)} method except that the error message contains
+     * the {@link #testingClass} and {@link #testingMethod}.
      *
      * @param  message  the message in case of failure.
      * @param  obj      the object that must be non-null.
@@ -1002,9 +1002,9 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
     }
 
     /**
-     * Fails the test if the given objects are the same. This method is equivalent to JUnit
-     * {@link org.junit.Assert#assertNotSame(String, Object, Object)} except that the error
-     * message contains the {@link #testingClass} and {@link #testingMethod}.
+     * Fails the test if the given objects are the same. This method is equivalent to the JUnit
+     * {@code assertNotSame(Object, Object, String)} except that the error message contains the
+     * {@link #testingClass} and {@link #testingMethod}.
      *
      * @param  message  the message in case of failure.
      * @param  o1       the first object (may be null).
@@ -1016,8 +1016,8 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
 
     /**
      * Fails the test if the given objects are not the same. This method is equivalent to JUnit
-     * {@link org.junit.Assert#assertSame(String, Object, Object)} except that the error message
-     * contains the {@link #testingClass} and {@link #testingMethod}.
+     * {@code assertSame(Object, Object, String)} method except that the error message contains
+     * the {@link #testingClass} and {@link #testingMethod}.
      *
      * @param  message   the message in case of failure.
      * @param  expected  the first object (may be null).
@@ -1029,7 +1029,7 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
 
     /**
      * Fails the test if the given objects are not equal. This method is equivalent to JUnit
-     * {@link org.junit.Assert#assertEquals(String, Object, Object)} except that the error
+     * {@code assertEquals(String, Object, Object)} except that the error
      * message contains the {@link #testingClass} and {@link #testingMethod}.
      *
      * @param  message   the message in case of failure.

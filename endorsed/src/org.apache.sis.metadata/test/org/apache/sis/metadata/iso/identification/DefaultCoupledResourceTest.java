@@ -26,7 +26,7 @@ import org.apache.sis.util.iso.DefaultNameFactory;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.bind.metadata.replace.ServiceParameterTest;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -53,12 +53,11 @@ public final class DefaultCoupledResourceTest extends TestCase {
      * Creates the resource to use for testing purpose.
      */
     static DefaultCoupledResource create(final NameFactory factory) {
-        final DefaultOperationMetadata operation = new DefaultOperationMetadata("Get Map",
-                DistributedComputingPlatform.WEB_SERVICES, null);
+        final var operation = new DefaultOperationMetadata("Get Map", DistributedComputingPlatform.WEB_SERVICES, null);
         operation.setParameters(Set.of((ParameterDescriptor<?>) ServiceParameterTest.create()));
         operation.setConnectPoints(Set.of(NilReason.MISSING.createNilObject(OnlineResource.class)));
 
-        final DefaultCoupledResource resource = new DefaultCoupledResource();
+        final var resource = new DefaultCoupledResource();
         resource.setScopedName((ScopedName) factory.createGenericName(null, "mySpace", "ABC-123"));
         resource.setOperation(operation);
         return resource;
@@ -75,16 +74,16 @@ public final class DefaultCoupledResourceTest extends TestCase {
          * Test OperationName replacement when the name matches.
          */
         resource.setOperation(new OperationName(operation.getOperationName()));
-        assertNotSame("Before resolve", operation, resource.getOperation());
+        assertNotSame(operation, resource.getOperation(), "Before resolve");
         OperationName.resolve(Set.of(operation), Set.of(resource));
-        assertSame("After resolve", operation, resource.getOperation());
+        assertSame(operation, resource.getOperation(), "After resolve");
         /*
          * If the name doesn't match, no replacement shall be done.
          */
-        final OperationName other = new OperationName("Other");
+        final var other = new OperationName("Other");
         resource.setOperation(other);
-        assertSame("Before resolve", other, resource.getOperation());
+        assertSame(other, resource.getOperation(), "Before resolve");
         OperationName.resolve(Set.of(operation), Set.of(resource));
-        assertSame("After resolve", other, resource.getOperation());
+        assertSame(other, resource.getOperation(), "After resolve");
     }
 }

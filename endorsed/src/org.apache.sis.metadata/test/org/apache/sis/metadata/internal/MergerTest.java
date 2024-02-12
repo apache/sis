@@ -36,7 +36,7 @@ import org.apache.sis.metadata.iso.content.DefaultImageDescription;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 
@@ -120,11 +120,11 @@ public final class MergerTest extends TestCase {
         final CoverageDescription          coverage = (CoverageDescription)         it.next();
         assertFalse(it.hasNext());
 
-        assertEquals("imagingCondition",     ImagingCondition.CLOUD, image   .getImagingCondition());
-        assertEquals("cloudCoverPercentage", Double.valueOf(0.8),    image   .getCloudCoverPercentage());
-        assertEquals("processingLevelCode",  "Level 2",              image   .getProcessingLevelCode().getCode());
-        assertEquals("processingLevelCode",  "Level 1",              coverage.getProcessingLevelCode().getCode());
-        assertEquals("includedWithDataset",  Boolean.TRUE,           features.isIncludedWithDataset());
+        assertEquals(ImagingCondition.CLOUD, image   .getImagingCondition());
+        assertEquals(Double.valueOf(0.8),    image   .getCloudCoverPercentage());
+        assertEquals("Level 2",              image   .getProcessingLevelCode().getCode());
+        assertEquals("Level 1",              coverage.getProcessingLevelCode().getCode());
+        assertEquals(Boolean.TRUE,           features.isIncludedWithDataset());
 
         final Iterator<? extends Citation> ci = features.getFeatureCatalogueCitations().iterator();
         assertEquals("GPX file",  ci.next().getTitle().toString());

@@ -24,7 +24,7 @@ import org.apache.sis.xml.bind.Context;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestCase;
 
@@ -64,21 +64,21 @@ public final class DefaultGeorectifiedTest extends TestCase {
     public void testCheckPointAvailable() {
         final DefaultGeorectified metadata = new DefaultGeorectified();
         final InternationalString description = new SimpleInternationalString("A check point description.");
-        assertFalse("checkPointAvailability", metadata.isCheckPointAvailable());
+        assertFalse(metadata.isCheckPointAvailable());
 
         // Setting the description shall set automatically the availability.
         metadata.setCheckPointDescription(description);
-        assertTrue("checkPointAvailability", metadata.isCheckPointAvailable());
+        assertTrue(metadata.isCheckPointAvailable());
         loggings.assertNoUnexpectedLog();
 
         // Setting the availability flag shall hide the description and logs a message.
         metadata.setCheckPointAvailable(false);
-        assertNull("checkPointDescription", metadata.getCheckPointDescription());
+        assertNull(metadata.getCheckPointDescription());
         loggings.assertNextLogContains("checkPointDescription", "checkPointAvailability");
         loggings.assertNoUnexpectedLog();
 
         // Setting the availability flag shall bring back the description.
         metadata.setCheckPointAvailable(true);
-        assertSame("checkPointDescription", description, metadata.getCheckPointDescription());
+        assertSame(description, metadata.getCheckPointDescription());
     }
 }

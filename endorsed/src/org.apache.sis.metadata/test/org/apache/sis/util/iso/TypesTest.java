@@ -36,8 +36,7 @@ import org.apache.sis.util.DefaultInternationalString;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -79,18 +78,18 @@ public final class TypesTest extends TestCase {
         assertNull(Types.toInternationalString(properties, "dummy"));
 
         InternationalString i18n = Types.toInternationalString(properties, "remarks");
-        assertInstanceOf("Single locale", SimpleInternationalString.class, i18n);
+        assertInstanceOf(SimpleInternationalString.class, i18n);
         assertEquals("Some remarks", i18n.toString());
 
         assertNull(properties.put("remarks_fr", "Une remarque"));
         i18n = Types.toInternationalString(properties, "remarks");
-        assertInstanceOf("Two locales", DefaultInternationalString.class, i18n);
+        assertInstanceOf(DefaultInternationalString.class, i18n);
         assertEquals("Some remarks", i18n.toString(Locale.ROOT));
         assertEquals("Une remarque", i18n.toString(Locale.FRENCH));
 
         assertNotNull(properties.remove("remarks"));
         i18n = Types.toInternationalString(properties, "remarks");
-        assertInstanceOf("Single locale", SimpleInternationalString.class, i18n);
+        assertInstanceOf(SimpleInternationalString.class, i18n);
         assertEquals("Une remarque", i18n.toString());
     }
 
@@ -240,7 +239,7 @@ public final class TypesTest extends TestCase {
     @Test
     public void testGetCodeTitle() {
         final InternationalString title = Types.getCodeTitle(OnLineFunction.DOWNLOAD);
-        assertSame("forCodeTitle", OnLineFunction.DOWNLOAD, Types.forCodeTitle(title));
+        assertSame(OnLineFunction.DOWNLOAD, Types.forCodeTitle(title));
         assertEquals("Download",       title.toString(Locale.ROOT));
         assertEquals("Download",       title.toString(Locale.ENGLISH));
         assertEquals("Téléchargement", title.toString(Locale.FRENCH));

@@ -21,7 +21,7 @@ import static org.apache.sis.util.iso.DefaultNameSpace.DEFAULT_SEPARATOR_STRING;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -65,7 +65,7 @@ public final class DefaultLocalNameTest extends TestCase {
         final DefaultNameSpace ns = DefaultNameSpace.forName(new DefaultLocalName(null, EPSG),
                 DEFAULT_SEPARATOR_STRING, DEFAULT_SEPARATOR_STRING);
         assertEquals(EPSG, ns.name().toString());
-        validate(ns); // GeoAPI tests.
+        validate(ns);       // GeoAPI tests.
 
         final String WGS84 = "4326";
         final DefaultLocalName name = new DefaultLocalName(ns, WGS84);
@@ -73,6 +73,6 @@ public final class DefaultLocalNameTest extends TestCase {
         assertSame(WGS84, name.toString());
         assertEquals(EPSG + ':' + WGS84, name.toFullyQualifiedName().toString());
         assertNotSame(name, assertSerializedEquals(name));
-        validate(name); // GeoAPI tests.
+        validate(name);     // GeoAPI tests.
     }
 }

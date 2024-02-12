@@ -22,7 +22,7 @@ import org.apache.sis.xml.bind.Context;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestCase;
 
@@ -63,23 +63,23 @@ public final class DefaultScopeDescriptionTest extends TestCase {
      */
     @Test
     public void testSetExclusiveProperties() {
-        final DefaultScopeDescription metadata = new DefaultScopeDescription();
+        final var metadata = new DefaultScopeDescription();
         metadata.setDataset("A dataset");
-        assertEquals("dataset", "A dataset", metadata.getDataset());
+        assertEquals("A dataset", metadata.getDataset());
         loggings.assertNoUnexpectedLog();
 
         metadata.setOther(new SimpleInternationalString("Other value"));
-        assertEquals("other", "Other value", String.valueOf(metadata.getOther()));
-        assertNull("dataset", metadata.getDataset());
+        assertEquals("Other value", String.valueOf(metadata.getOther()));
+        assertNull(metadata.getDataset());
         loggings.assertNextLogContains("dataset", "other");
         loggings.assertNoUnexpectedLog();
 
         metadata.setDataset(null);                  // Expected to be a no-op.
-        assertEquals("other", "Other value", String.valueOf(metadata.getOther()));
-        assertNull("dataset", metadata.getDataset());
+        assertEquals("Other value", String.valueOf(metadata.getOther()));
+        assertNull(metadata.getDataset());
 
         metadata.setOther(null);
-        assertNull("other",   metadata.getOther());
-        assertNull("dataset", metadata.getDataset());
+        assertNull(metadata.getOther());
+        assertNull(metadata.getDataset());
     }
 }

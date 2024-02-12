@@ -27,7 +27,7 @@ import static org.apache.sis.xml.bind.gml.MeasureTest.UOM_URL;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
@@ -70,9 +70,9 @@ public final class DefaultResolutionTest extends TestCase {
      */
     @Test
     public void testConstructor() {
-        final DefaultRepresentativeFraction scale = new DefaultRepresentativeFraction();
+        final var scale = new DefaultRepresentativeFraction();
         scale.setDenominator(100);
-        final DefaultResolution metadata = new DefaultResolution(scale);
+        final var metadata = new DefaultResolution(scale);
         assertSame(scale, metadata.getEquivalentScale());
     }
 
@@ -82,28 +82,28 @@ public final class DefaultResolutionTest extends TestCase {
      */
     @Test
     public void testSetExclusiveProperties() {
-        final DefaultResolution metadata = new DefaultResolution();
-        final DefaultRepresentativeFraction scale = new DefaultRepresentativeFraction();
+        final var metadata = new DefaultResolution();
+        final var scale = new DefaultRepresentativeFraction();
         scale.setDenominator(100);
 
         metadata.setDistance(2.0);
-        assertEquals("distance", Double.valueOf(2.0), metadata.getDistance());
-        assertNull("equivalentScale", metadata.getEquivalentScale());
+        assertEquals(Double.valueOf(2.0), metadata.getDistance());
+        assertNull(metadata.getEquivalentScale());
         loggings.assertNoUnexpectedLog();
 
         metadata.setEquivalentScale(scale);
-        assertSame("equivalentScale", scale, metadata.getEquivalentScale());
-        assertNull("distance", metadata.getDistance());
+        assertSame(scale, metadata.getEquivalentScale());
+        assertNull(metadata.getDistance());
         loggings.assertNextLogContains("distance", "equivalentScale");
         loggings.assertNoUnexpectedLog();
 
         metadata.setDistance(null); // Expected to be a no-op.
-        assertSame("equivalentScale", scale, metadata.getEquivalentScale());
-        assertNull("distance", metadata.getDistance());
+        assertSame(scale, metadata.getEquivalentScale());
+        assertNull(metadata.getDistance());
 
         metadata.setEquivalentScale(null);
-        assertNull("equivalentScale", metadata.getEquivalentScale());
-        assertNull("distance", metadata.getDistance());
+        assertNull(metadata.getEquivalentScale());
+        assertNull(metadata.getDistance());
     }
 
     /**
@@ -122,7 +122,7 @@ public final class DefaultResolutionTest extends TestCase {
      */
     @Test
     public void testXML() throws JAXBException {
-        final DefaultResolution resolution = new DefaultResolution();
+        final var resolution = new DefaultResolution();
         resolution.setDistance(1000.0);
         final String xml = marshal(resolution);
         assertXmlEquals(
@@ -153,7 +153,7 @@ public final class DefaultResolutionTest extends TestCase {
      */
     @Test
     public void testLegacyXML() throws JAXBException {
-        final DefaultResolution resolution = new DefaultResolution();
+        final var resolution = new DefaultResolution();
         resolution.setDistance(1000.0);
         final String xml = marshal(resolution, VERSION_2007);
         assertXmlEquals(

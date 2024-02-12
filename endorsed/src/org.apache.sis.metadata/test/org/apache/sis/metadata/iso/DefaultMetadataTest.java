@@ -34,7 +34,7 @@ import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.test.TestUtilities.date;
@@ -92,10 +92,10 @@ public final class DefaultMetadataTest extends TestCase {
     @SuppressWarnings("deprecation")
     public void testFileIdentifier() {
         final DefaultMetadata metadata = new DefaultMetadata();
-        assertNull("fileIdentifier", metadata.getFileIdentifier());
+        assertNull(metadata.getFileIdentifier());
         metadata.setFileIdentifier("Apache SIS/Metadata test");
-        assertEquals("metadataIdentifier", "Apache SIS/Metadata test", metadata.getMetadataIdentifier().getCode());
-        assertEquals("fileIdentifier",     "Apache SIS/Metadata test", metadata.getFileIdentifier());
+        assertEquals("Apache SIS/Metadata test", metadata.getMetadataIdentifier().getCode());
+        assertEquals("Apache SIS/Metadata test", metadata.getFileIdentifier());
     }
 
     /**
@@ -107,7 +107,7 @@ public final class DefaultMetadataTest extends TestCase {
     @SuppressWarnings("deprecation")
     public void testLocales() {
         final DefaultMetadata metadata = new DefaultMetadata();
-        assertNull("language", metadata.getLanguage());
+        assertNull(metadata.getLanguage());
         /*
          * Set the default language, which shall be the first entry in the collection.
          * The "other locales" property shall be unmodified by the "language" one.
@@ -142,9 +142,9 @@ public final class DefaultMetadataTest extends TestCase {
      */
     @SuppressWarnings("deprecation")
     private static void assertLanguagesEquals(final DefaultMetadata metadata, final Locale... expected) {
-        assertArrayEquals("languages", expected,    metadata.getLocalesAndCharsets().keySet().toArray());
-        assertEquals     ("language",  expected[0], metadata.getLanguage());
-        assertArrayEquals("locales",   Arrays.copyOfRange(expected, 1, expected.length), metadata.getLocales().toArray());
+        assertArrayEquals(expected,    metadata.getLocalesAndCharsets().keySet().toArray());
+        assertEquals     (expected[0], metadata.getLanguage());
+        assertArrayEquals(Arrays.copyOfRange(expected, 1, expected.length), metadata.getLocales().toArray());
     }
 
     /**
@@ -155,14 +155,14 @@ public final class DefaultMetadataTest extends TestCase {
     @SuppressWarnings("deprecation")
     public void testParentIdentifier() {
         final DefaultMetadata metadata = new DefaultMetadata();
-        assertNull("parentIdentifier", metadata.getParentIdentifier());
+        assertNull(metadata.getParentIdentifier());
         metadata.setParentIdentifier("ParentID");
-        assertEquals("parentIdentifier", "ParentID", metadata.getParentIdentifier());
+        assertEquals("ParentID", metadata.getParentIdentifier());
 
         DefaultCitation c = (DefaultCitation) metadata.getParentMetadata();
         assertTitleEquals("parentMetadata", "ParentID", c);
         c.setTitle(new SimpleInternationalString("New parent"));
-        assertEquals("parentIdentifier", "New parent", metadata.getParentIdentifier());
+        assertEquals("New parent", metadata.getParentIdentifier());
     }
 
     /**
@@ -176,26 +176,26 @@ public final class DefaultMetadataTest extends TestCase {
         final String[]    names  = new String[] {"Bridges", "Golden Gate Bridge"};
         final ScopeCode[] levels = new ScopeCode[] {ScopeCode.FEATURE_TYPE, ScopeCode.FEATURE};
         final DefaultMetadata metadata = new DefaultMetadata();
-        assertTrue("hierarchyLevelNames", metadata.getHierarchyLevelNames().isEmpty());
-        assertTrue("hierarchyLevels",     metadata.getHierarchyLevels().isEmpty());
+        assertTrue(metadata.getHierarchyLevelNames().isEmpty());
+        assertTrue(metadata.getHierarchyLevels().isEmpty());
         /*
          * Tests the setter and verify immediately with the getter methods.
          */
         metadata.setHierarchyLevelNames(Arrays.asList(names));
         metadata.setHierarchyLevels(Arrays.asList(levels));
-        assertArrayEquals("hierarchyLevelNames", names,  metadata.getHierarchyLevelNames().toArray());
-        assertArrayEquals("hierarchyLevels",     levels, metadata.getHierarchyLevels().toArray());
+        assertArrayEquals(names,  metadata.getHierarchyLevelNames().toArray());
+        assertArrayEquals(levels, metadata.getHierarchyLevels().toArray());
         /*
          * The above deprecated methods shall have created MetadataScope object. Verify that.
          */
         final Collection<MetadataScope> scopes = metadata.getMetadataScopes();
         final Iterator<MetadataScope> it = scopes.iterator();
         MetadataScope scope = it.next();
-        assertEquals("metadataScopes[0].name", "Bridges", scope.getName().toString());
-        assertEquals("metadataScopes[0].resourceScope", ScopeCode.FEATURE_TYPE, scope.getResourceScope());
+        assertEquals("Bridges", scope.getName().toString());
+        assertEquals(ScopeCode.FEATURE_TYPE, scope.getResourceScope());
         scope = it.next();
-        assertEquals("metadataScopes[1].name", "Golden Gate Bridge", scope.getName().toString());
-        assertEquals("metadataScopes[1].resourceScope", ScopeCode.FEATURE, scope.getResourceScope());
+        assertEquals("Golden Gate Bridge", scope.getName().toString());
+        assertEquals(ScopeCode.FEATURE, scope.getResourceScope());
         /*
          * Changes in the MetadataScope object shall be reflected immediately on the scope collection.
          * Verify that.
@@ -206,19 +206,19 @@ public final class DefaultMetadataTest extends TestCase {
                 levels[1] = ScopeCode.ATTRIBUTE_TYPE,
                 names [1] = "Clearance");
         assertTrue(scopes.add(c));
-        assertArrayEquals("hierarchyLevelNames", names,  metadata.getHierarchyLevelNames().toArray());
-        assertArrayEquals("hierarchyLevels",     levels, metadata.getHierarchyLevels().toArray());
+        assertArrayEquals(names,  metadata.getHierarchyLevelNames().toArray());
+        assertArrayEquals(levels, metadata.getHierarchyLevels().toArray());
         /*
          * Test the customized equals(Object) and hashCode() implementations.
-         * Note: the 'assertNotSame' check is not a contract requirement. It is just that if
-         * 'n1' and 'n2' are the same, then the test become pointless and should be removed.
+         * Note: the `assertNotSame` check is not a contract requirement. It is just that if
+         * `n1` and `n2` are the same, then the test become pointless and should be removed.
          */
         Collection<String> n1 = metadata.getHierarchyLevelNames();
         Collection<String> n2 = metadata.getHierarchyLevelNames();
-        assertNotSame("Remove this test.", n1, n2); // See above comment.
-        assertTrue("equals", n1.equals(n2));
-        assertTrue("equals", n2.equals(n1));
-        assertEquals("hashCode", n1.hashCode(), n2.hashCode());
+        assertNotSame(n1, n2, "Remove this test.");                 // See above comment.
+        assertTrue(n1.equals(n2));
+        assertTrue(n2.equals(n1));
+        assertEquals(n1.hashCode(), n2.hashCode());
     }
 
     /**
@@ -228,7 +228,7 @@ public final class DefaultMetadataTest extends TestCase {
     @SuppressWarnings("deprecation")
     public void testDateStamp() {
         final DefaultMetadata metadata = new DefaultMetadata();
-        assertNull("dateStamp", metadata.getDateStamp());
+        assertNull(metadata.getDateStamp());
         /*
          * Verifies that the deprecated method get its value from the CitationDate objects.
          */
@@ -238,15 +238,15 @@ public final class DefaultMetadataTest extends TestCase {
                 new DefaultCitationDate(creation, DateType.CREATION)
         };
         metadata.setDateInfo(Arrays.asList(dates));
-        assertEquals("dateStamp", creation, metadata.getDateStamp());
+        assertEquals(creation, metadata.getDateStamp());
         /*
          * Invoking the deprecated setters shall modify the CitationDate object
          * associated to DateType.CREATION.
          */
         creation = date("2014-10-06 00:00:00");
         metadata.setDateStamp(creation);
-        assertEquals("citationDates[1].date", creation, dates[1].getDate());
-        assertArrayEquals("dates", dates, metadata.getDateInfo().toArray());
+        assertEquals(creation, dates[1].getDate());
+        assertArrayEquals(dates, metadata.getDateInfo().toArray());
     }
 
     /**
@@ -258,15 +258,15 @@ public final class DefaultMetadataTest extends TestCase {
     @SuppressWarnings("deprecation")
     public void testMetadataStandard() {
         final DefaultMetadata metadata = new DefaultMetadata();
-        assertNull("metadataStandardName",    metadata.getMetadataStandardName());
-        assertNull("metadataStandardVersion", metadata.getMetadataStandardVersion());
+        assertNull(metadata.getMetadataStandardName());
+        assertNull(metadata.getMetadataStandardVersion());
 
         String name = "ISO 19115-2 Geographic Information - Metadata Part 2 Extensions for imagery and gridded data";
         String version = "ISO 19115-2:2019";
         metadata.setMetadataStandardName(name);
         metadata.setMetadataStandardVersion(version);
-        assertEquals("metadataStandardName",    name,    metadata.getMetadataStandardName());
-        assertEquals("metadataStandardVersion", version, metadata.getMetadataStandardVersion());
+        assertEquals(name,    metadata.getMetadataStandardName());
+        assertEquals(version, metadata.getMetadataStandardVersion());
         final Citation standard = getSingleton(metadata.getMetadataStandards());
         assertTitleEquals("standard", name, standard);
         assertEquals(version, standard.getEdition().toString());

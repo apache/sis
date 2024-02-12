@@ -25,7 +25,7 @@ import org.apache.sis.xml.Namespaces;
 
 // Test dependencies
 import org.junit.Test;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
@@ -80,7 +80,7 @@ public final class EnumMarshallingTest extends TestCase {
          * Unmarshal the above XML and verify that we find all the topic categories.
          */
         final Collection<TopicCategory> unmarshalled = unmarshal(DefaultDataIdentification.class, expected).getTopicCategories();
-        assertInstanceOf("topicCategory", EnumSet.class, unmarshalled);
+        assertInstanceOf(EnumSet.class, unmarshalled);
         assertSetEquals(topics, unmarshalled);
     }
 }

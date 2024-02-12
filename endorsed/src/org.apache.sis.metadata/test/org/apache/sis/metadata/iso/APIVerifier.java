@@ -34,7 +34,7 @@ import org.apache.sis.util.Classes;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -75,7 +75,7 @@ public final class APIVerifier extends TestCase {
     public void verifyISO1915() throws IOException, ClassNotFoundException, NoSuchMethodException {
         final Properties changes = new Properties();
         try (InputStream in = APIVerifier.class.getResourceAsStream("api-changes.properties")) {
-            assertNotNull("Missing test resource file.", in);
+            assertNotNull(in, "Missing test resource file.");
             changes.load(in);
         }
         try {
@@ -105,17 +105,17 @@ public final class APIVerifier extends TestCase {
                     }
                     case '-': {
                         method = implementation.getMethod(change.substring(1));
-                        assertTrue("Expected @Deprecated annotation", method.isAnnotationPresent(Deprecated.class));
-                        assertFalse("Expected no @UML annotation", method.isAnnotationPresent(UML.class));
+                        assertTrue(method.isAnnotationPresent(Deprecated.class), "Expected @Deprecated annotation");
+                        assertFalse(method.isAnnotationPresent(UML.class), "Expected no @UML annotation");
                         break;
                     }
                     case '+': {
                         final int s = change.indexOf(':');
-                        assertTrue(change, s >= 0);
+                        assertTrue(s >= 0, change);
                         method = implementation.getMethod(change.substring(1, s));
-                        assertFalse("Expected no @Deprecated annotation", method.isAnnotationPresent(Deprecated.class));
+                        assertFalse(method.isAnnotationPresent(Deprecated.class), "Expected no @Deprecated annotation");
                         final UML uml = method.getAnnotation(UML.class);
-                        assertNotNull("Expected @UML annotation.", uml);
+                        assertNotNull(uml, "Expected @UML annotation.");
                         assertEquals(change.substring(s+1), uml.identifier());
                         break;
                     }
@@ -134,8 +134,8 @@ public final class APIVerifier extends TestCase {
             for (int i=0; i<methods.length; i++) {
                 method = methods[i];
                 if (!classChanges.remove(method) && Classes.isPossibleGetter(method)) {
-                    assertFalse("Expected no @Deprecated annotation", method.isAnnotationPresent(Deprecated.class));
-                    assertFalse("Expected no @UML annotation", method.isAnnotationPresent(UML.class));
+                    assertFalse(method.isAnnotationPresent(Deprecated.class), "Expected no @Deprecated annotation");
+                    assertFalse(method.isAnnotationPresent(UML.class), "Expected no @UML annotation");
                 }
             }
             // May still be non-empty if some methods were defined in parent classes.

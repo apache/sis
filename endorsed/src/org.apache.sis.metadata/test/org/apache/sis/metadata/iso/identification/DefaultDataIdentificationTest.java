@@ -33,7 +33,7 @@ import org.apache.sis.metadata.iso.extent.Extents;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
@@ -73,7 +73,7 @@ public final class DefaultDataIdentificationTest extends TestCase {
          *   └─Identifier
          *       └─Code……………………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc
          */
-        final DefaultCitation citation = new DefaultCitation("Sea Surface Temperature Analysis Model");
+        final var citation = new DefaultCitation("Sea Surface Temperature Analysis Model");
         citation.setDates(Set.of(new DefaultCitationDate(TestUtilities.date("2005-09-22 00:00:00"), DateType.CREATION)));
         citation.setIdentifiers(Set.of(new DefaultIdentifier("SST_Global.nc")));
         /*
@@ -83,8 +83,7 @@ public final class DefaultDataIdentificationTest extends TestCase {
          *   └─Thesaurus name
          *       └─Title…………………………………………………………………… GCMD Science Keywords
          */
-        final DefaultKeywords keywords = new DefaultKeywords(
-                "EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature");
+        final var keywords = new DefaultKeywords("EARTH SCIENCE > Oceans > Ocean Temperature > Sea Surface Temperature");
         keywords.setType(KeywordType.THEME);
         keywords.setThesaurusName(new DefaultCitation("GCMD Science Keywords"));
         /*
@@ -111,7 +110,7 @@ public final class DefaultDataIdentificationTest extends TestCase {
          *          ├─North bound latitude…………………………… 90°N
          *          └─Extent type code……………………………………… true
          */
-        final DefaultDataIdentification info = new DefaultDataIdentification(citation,
+        final var info = new DefaultDataIdentification(citation,
                 "Global 5.0 x 2.5 degree model data", null, null);
         info.setSpatialRepresentationTypes(Set.of(SpatialRepresentationType.GRID));
         info.setDescriptiveKeywords(Set.of(keywords));
@@ -170,13 +169,13 @@ public final class DefaultDataIdentificationTest extends TestCase {
     public void testValueMap() {
         final DefaultDataIdentification info = create();
         final Map<String,Object> map = info.asMap();
-        assertEquals("abstract", "Global 5.0 x 2.5 degree model data", map.get("abstract").toString());
+        assertEquals("Global 5.0 x 2.5 degree model data", map.get("abstract").toString());
         assertTitleEquals("title", "Sea Surface Temperature Analysis Model", (Citation) map.get("citation"));
-        assertEquals("spatialRepresentationType", Set.of(SpatialRepresentationType.GRID), map.get("spatialRepresentationType"));
+        assertEquals(Set.of(SpatialRepresentationType.GRID), map.get("spatialRepresentationType"));
 
         final Locale[] locales = {Locale.US, Locale.FRENCH};
-        assertArrayEquals("language",     locales, ((Collection<?>) map.get("language")).toArray());
-        assertArrayEquals("languages",    locales, ((Collection<?>) map.get("languages")).toArray());
-        assertArrayEquals("getLanguages", locales, ((Collection<?>) map.get("getLanguages")).toArray());
+        assertArrayEquals(locales, ((Collection<?>) map.get("language")).toArray());
+        assertArrayEquals(locales, ((Collection<?>) map.get("languages")).toArray());
+        assertArrayEquals(locales, ((Collection<?>) map.get("getLanguages")).toArray());
     }
 }

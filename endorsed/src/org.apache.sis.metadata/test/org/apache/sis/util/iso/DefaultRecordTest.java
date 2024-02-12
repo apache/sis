@@ -25,10 +25,11 @@ import org.opengis.util.RecordType;
 import org.junit.Test;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -50,8 +51,8 @@ public final class DefaultRecordTest extends TestCase {
      */
     @BeforeClass
     public static void createRecordType() {
-        final DefaultRecordSchema schema = new SerializableRecordSchema("MySchema");
-        final Map<CharSequence,Class<?>> members = new LinkedHashMap<>(8);
+        final var schema = new SerializableRecordSchema("MySchema");
+        final var members = new LinkedHashMap<CharSequence,Class<?>>(8);
         assertNull(members.put("city",       String.class));
         assertNull(members.put("latitude",   Double.class));
         assertNull(members.put("longitude",  Double.class));
@@ -81,7 +82,7 @@ public final class DefaultRecordTest extends TestCase {
      */
     private static void setAllAndCompare(final DefaultRecord record, final Object... values) {
         record.setAll(values);
-        assertArrayEquals("attributes.values", values, record.getFields().values().toArray());
+        assertArrayEquals(values, record.getFields().values().toArray());
     }
 
     /**
@@ -89,21 +90,19 @@ public final class DefaultRecordTest extends TestCase {
      */
     @Test
     public void testSetAll() {
-        final DefaultRecord record = new DefaultRecord(recordType);
-        try {
-            record.setAll("Machu Picchu", -13.1639, -72.5468);
-            fail("Shall not accept array of illegal length.");
-        } catch (IllegalArgumentException e) {
-            assertNotNull(e.getMessage());
-        }
-        try {
-            record.setAll("Machu Picchu", -13.1639, -72.5468, "Unknown");
-            fail("Shall not accept 'population' value of class String.");
-        } catch (ClassCastException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("population"));
-            assertTrue(message, message.contains("String"));
-        }
+        final var record = new DefaultRecord(recordType);
+        RuntimeException e;
+
+        e = assertThrows(IllegalArgumentException.class,
+                () -> record.setAll("Machu Picchu", -13.1639, -72.5468),
+                "Shall not accept array of illegal length.");
+        assertMessageContains(e);
+
+        e = assertThrows(ClassCastException.class,
+                () -> record.setAll("Machu Picchu", -13.1639, -72.5468, "Unknown"),
+                "Shall not accept 'population' value of class String.");
+        assertMessageContains(e, "population", "String");
+
         setAllAndCompare(record, "Machu Picchu", -13.1639, -72.5468, null);
     }
 
@@ -112,8 +111,8 @@ public final class DefaultRecordTest extends TestCase {
      */
     @Test
     public void testAttributes() {
-        final DefaultRecord record = new DefaultRecord(recordType);
-        assertSame("recordType", recordType, record.getRecordType());
+        final var record = new DefaultRecord(recordType);
+        assertSame(recordType, record.getRecordType());
         int index = 0;
         for (final Map.Entry<MemberName,Object> entry : record.getFields().entrySet()) {
             final String name;
@@ -125,10 +124,10 @@ public final class DefaultRecordTest extends TestCase {
                 case 3: name = "population"; value = null;           break;
                 default: throw new AssertionError(index);
             }
-            assertEquals(name, entry.getKey().toString());
-            assertNull  (name, entry.getValue());
-            assertNull  (name, entry.setValue(value));
-            assertEquals(name, value, entry.getValue());
+            assertEquals(entry.getKey().toString(), name);
+            assertNull  (entry.getValue(), name);
+            assertNull  (entry.setValue(value), name);
+            assertEquals(value, entry.getValue(), name);
             index++;
         }
         assertEquals(4, index);
@@ -170,7 +169,7 @@ public final class DefaultRecordTest extends TestCase {
     @Test
     @DependsOnMethod("testSetAll")
     public void testSerialization() {
-        final DefaultRecord record = new DefaultRecord(recordType);
+        final var record = new DefaultRecord(recordType);
         record.setAll("Machu Picchu", -13.1639, -72.5468, null);
         assertNotSame(record, assertSerializedEquals(record));
     }
@@ -182,7 +181,7 @@ public final class DefaultRecordTest extends TestCase {
     @Test
     @DependsOnMethod({"testSetAll", "testToString", "testSerialization"})
     public void testPrimitiveType() {
-        final Map<CharSequence,Class<?>> members = new LinkedHashMap<>(8);
+        final var members = new LinkedHashMap<CharSequence,Class<?>>(8);
         assertNull(members.put("latitude",  Double.class));
         assertNull(members.put("longitude", Double.class));
         final DefaultRecord record = new DefaultRecord(
@@ -192,9 +191,8 @@ public final class DefaultRecordTest extends TestCase {
          * initial values should be zero instead of null. We use this trick as a way to
          * detect that we really got an array of primitive type.
          */
-        assertEquals("baseValueClass", Double.TYPE, record.definition.baseValueClass());
-        assertArrayEquals("attributes.values", new Double[] {0.0, 0.0},
-                record.getFields().values().toArray());
+        assertEquals(Double.TYPE, record.definition.baseValueClass());
+        assertArrayEquals(new Double[] {0.0, 0.0}, record.getFields().values().toArray());
         /*
          * Combines tests similar to 3 other test methods in this class.
          */

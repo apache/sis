@@ -21,7 +21,7 @@ import java.sql.SQLException;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestStep;
 import org.apache.sis.metadata.sql.TestDatabase;
@@ -63,12 +63,12 @@ public final class ScriptRunnerTest extends TestCase {
      */
     @TestStep
     public static void testSupportedFlags(final ScriptRunner sr) {
-        assertFalse("isCatalogSupported",       sr.isCatalogSupported);
-        assertTrue ("isSchemaSupported",        sr.isSchemaSupported);
-        assertFalse("isGrantOnSchemaSupported", sr.isGrantOnSchemaSupported);
-        assertFalse("isGrantOnTableSupported",  sr.isGrantOnTableSupported);
-        assertFalse("isEnumTypeSupported",      sr.isEnumTypeSupported);
-        assertFalse("isCommentSupported",       sr.isCommentSupported);
+        assertFalse(sr.isCatalogSupported);
+        assertTrue (sr.isSchemaSupported);
+        assertFalse(sr.isGrantOnSchemaSupported);
+        assertFalse(sr.isGrantOnTableSupported);
+        assertFalse(sr.isEnumTypeSupported);
+        assertFalse(sr.isCommentSupported);
     }
 
     /**

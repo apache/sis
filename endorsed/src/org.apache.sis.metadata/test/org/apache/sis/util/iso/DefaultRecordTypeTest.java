@@ -24,10 +24,11 @@ import org.apache.sis.metadata.simple.SimpleAttributeType;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -84,17 +85,17 @@ public final class DefaultRecordTypeTest extends TestCase {
     public void testConstructor() {
         init();
         final DefaultRecordType type = create();
-        assertEquals("size", 1, type.size());
-        assertEquals("baseValueClass", Integer.TYPE, type.baseValueClass());
+        assertEquals(1, type.size());
+        assertEquals(Integer.TYPE, type.baseValueClass());
 
         // Public properties
-        assertSame("container",  container,      type.getContainer());
-        assertSame("typeName",   recordTypeName, type.getTypeName());
-        assertSame("fields",     fieldName,      getSingleton(type.getMembers()));
-        assertSame("fieldTypes", fieldName,      getSingleton(type.getFieldTypes().keySet()));
-        assertSame("fieldTypes", fieldTypeName,  getSingleton(type.getFieldTypes().values()).getTypeName());
-        assertSame("locate",     fieldTypeName,  type.locate(fieldName));
-        assertNull("locate",                     type.locate(new DefaultMemberName(null, "otherMember", fieldTypeName)));
+        assertSame(container,      type.getContainer());
+        assertSame(recordTypeName, type.getTypeName());
+        assertSame(fieldName,      getSingleton(type.getMembers()));
+        assertSame(fieldName,      getSingleton(type.getFieldTypes().keySet()));
+        assertSame(fieldTypeName,  getSingleton(type.getFieldTypes().values()).getTypeName());
+        assertSame(fieldTypeName,  type.locate(fieldName));
+        assertNull(                type.locate(new DefaultMemberName(null, "otherMember", fieldTypeName)));
     }
 
     /**
@@ -113,41 +114,26 @@ public final class DefaultRecordTypeTest extends TestCase {
          * Constructor shall require "MyNameSpace:MyRecordType".
          */
         recordTypeName = new DefaultTypeName(wrongNamespace, "MyRecordType");
-        try {
-            create();
-            fail("Should have detected namespace mismatch.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("MyNameSpace"));                 // Expected name.
-            assertTrue(message, message.contains("WrongNameSpace:MyRecordType")); // Actual namespace.
-        }
+        var e = assertThrows(IllegalArgumentException.class, () -> create(),
+                             "Should have detected namespace mismatch.");
+        assertMessageContains(e, "MyNameSpace", "WrongNameSpace:MyRecordType");
         /*
          * MemberName namespace validation.
          * Constructor shall require "MyNameSpace:MyRecordType:aMember".
          */
         recordTypeName = correctRecordName;
         fieldName = new DefaultMemberName(wrongNamespace, "aMember", fieldTypeName);
-        try {
-            create();
-            fail("Should have detected namespace mismatch.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("MyNameSpace:MyRecordType"));  // Expected name.
-            assertTrue(message, message.contains("WrongNameSpace:aMember"));    // Actual namespace.
-        }
+        e = assertThrows(IllegalArgumentException.class, () -> create(),
+                         "Should have detected namespace mismatch.");
+        assertMessageContains(e, "MyNameSpace:MyRecordType", "WrongNameSpace:aMember");
         /*
          * MemberName type validation.
          */
-        final DefaultTypeName otherType = new DefaultTypeName(fieldTypeName.scope(), "Real");
+        final var otherType = new DefaultTypeName(fieldTypeName.scope(), "Real");
         fieldName = new DefaultMemberName(correctMemberNamespace, "aMember", otherType);
-        try {
-            create();
-            fail("Should have detected type mismatch.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("aMember"));
-            assertTrue(message, message.contains("gco:Integer"));
-        }
+        e = assertThrows(IllegalArgumentException.class, () -> create(),
+                         "Should have detected type mismatch.");
+        assertMessageContains(e, "aMember", "gco:Integer");
     }
 
     /**
