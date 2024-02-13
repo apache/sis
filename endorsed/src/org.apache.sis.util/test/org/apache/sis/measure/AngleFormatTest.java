@@ -223,7 +223,7 @@ public final class AngleFormatTest extends TestCase {
         assertEquals(pattern,   f.toPattern());
         assertEquals( e1,       f.format(48.5));
         assertEquals( e2,       f.format(-12.53125));
-        assertEquals( 48.5,     f.parse(e1).degrees(), 0.0);
+        assertEquals( 48.5,     f.parse(e1).degrees());
         assertEquals(-12.53125, f.parse(e2).degrees(), eps);
     }
 

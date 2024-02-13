@@ -250,7 +250,7 @@ public final class VectorTest extends TestCase {
         assertEquals(Float  .valueOf(200), v3.get(20));
         assertEquals(Integer.valueOf(500), v3.get(50));
         for (int i=0; i<60; i++) {
-            assertEquals(i*10, v3.floatValue(i), 0f);
+            assertEquals(i*10, v3.floatValue(i));
         }
         assertSame(v1, v3.subList( 0, 40), "Should be able to restitute the original vector.");
         assertSame(v2, v3.subList(40, 60), "Should be able to restitute the original vector.");

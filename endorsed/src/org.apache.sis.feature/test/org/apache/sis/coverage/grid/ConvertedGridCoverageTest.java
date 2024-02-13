@@ -31,8 +31,7 @@ import static org.apache.sis.image.PlanarImage.SAMPLE_DIMENSIONS_KEY;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.test.TestUtilities.getSingleton;
@@ -85,10 +84,8 @@ public final class ConvertedGridCoverageTest extends TestCase {
     private static RenderedImage render(final GridCoverage coverage) {
         final RenderedImage image = coverage.render(null);
         final Object bands = image.getProperty(SAMPLE_DIMENSIONS_KEY);
-        assertInstanceOf(SAMPLE_DIMENSIONS_KEY, SampleDimension[].class, bands);
-        assertArrayEquals(SAMPLE_DIMENSIONS_KEY,
-                coverage.getSampleDimensions().toArray(SampleDimension[]::new),
-                (SampleDimension[]) bands);
+        final var sd = assertInstanceOf(SampleDimension[].class, bands);
+        assertArrayEquals(coverage.getSampleDimensions().toArray(SampleDimension[]::new), sd);
         return image;
     }
 
@@ -120,16 +117,16 @@ public final class ConvertedGridCoverageTest extends TestCase {
         final GridCoverageProcessor processor = new GridCoverageProcessor();
         final GridCoverage source = coverage();
         final GridCoverage target = processor.convert(source, new MathTransform1D[] {
-            (MathTransform1D) MathTransforms.linear(10, 100)
+                (MathTransform1D) MathTransforms.linear(10, 100)
         }, null);
         assertSame(target, target.forConvertedValues(true));
         assertSame(source, target.forConvertedValues(false));
         assertValuesEqual(render(target), 0, new double[][] {
-            {90, 130}      // {-1, 3} × 10 + 100
+                {90, 130}      // {-1, 3} × 10 + 100
         });
         final SampleDimension band = getSingleton(target.getSampleDimensions());
         final NumberRange<?> range = band.getSampleRange().get();
-        assertEquals(100, range.getMinDouble(), STRICT);
-        assertEquals(200, range.getMaxDouble(), STRICT);
+        assertEquals(100, range.getMinDouble());
+        assertEquals(200, range.getMaxDouble());
     }
 }

@@ -38,8 +38,7 @@ import org.locationtech.jts.geom.Point;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -82,8 +81,8 @@ public final class ShapeConverterTest extends TestCase {
      * @param expected  expected coordinates of the actual geometry.
      */
     private static void assertCoordinatesEqual(final Geometry geometry, final Class<?> type, final Coordinate... expected) {
-        assertInstanceOf("Geometry class", type, geometry);
-        assertArrayEquals("Coordinates", expected, geometry.getCoordinates());
+        assertInstanceOf(type, geometry, "Geometry class");
+        assertArrayEquals(expected, geometry.getCoordinates(), "Coordinates");
     }
 
     /**
@@ -133,7 +132,7 @@ public final class ShapeConverterTest extends TestCase {
         shape.subtract(new Area(hole));
 
         final Geometry geometry = ShapeConverter.create(factory, shape, 0.0001);
-        assertInstanceOf("Geometry class", Polygon.class, geometry);
+        assertInstanceOf(Polygon.class, geometry);
         final Polygon polygon = (Polygon) geometry;
         assertEquals(1, polygon.getNumInteriorRing());
 
@@ -171,10 +170,10 @@ public final class ShapeConverterTest extends TestCase {
             handler.dispose();
         }
         final Geometry geometry = ShapeConverter.create(factory, shape, 0.1);
-        assertInstanceOf("Geometry class", MultiPolygon.class, geometry);
+        assertInstanceOf(MultiPolygon.class, geometry);
         final MultiPolygon mp = (MultiPolygon) geometry;
         /*
-         * The "Labi" text contaons 4 characters but 'i' is split in two ploygons,
+         * The "Labi" text contaons 4 characters but `i` is split in two ploygons,
          * for a total of 5 polygons. Two letters ("a" and "b") are polyogns whith
          * hole inside them.
          */
@@ -182,18 +181,18 @@ public final class ShapeConverterTest extends TestCase {
         for (int i=0; i<5; i++) {
             final String message = "Glyph #" + i;
             final Geometry glyph = mp.getGeometryN(i);
-            assertInstanceOf(message, Polygon.class, glyph);
-            assertEquals(message, (i == 1 || i == 2) ? 1 : 0,       // 'a' and 'b' should contain a hole.
-                    ((Polygon) glyph).getNumInteriorRing());
+            assertInstanceOf(Polygon.class, glyph, message);
+            assertEquals((i == 1 || i == 2) ? 1 : 0,       // `a` and `b` should contain a hole.
+                    ((Polygon) glyph).getNumInteriorRing(), message);
         }
         /*
          * Compare the bounding boxes.
          */
         final Rectangle2D bounds2D = shape.getBounds2D();
         final Envelope env = geometry.getEnvelopeInternal();
-        assertEquals(bounds2D.getMinX(), env.getMinX(), STRICT);
-        assertEquals(bounds2D.getMaxX(), env.getMaxX(), STRICT);
-        assertEquals(bounds2D.getMinY(), env.getMinY(), STRICT);
-        assertEquals(bounds2D.getMaxY(), env.getMaxY(), STRICT);
+        assertEquals(bounds2D.getMinX(), env.getMinX());
+        assertEquals(bounds2D.getMaxX(), env.getMaxX());
+        assertEquals(bounds2D.getMinY(), env.getMinY());
+        assertEquals(bounds2D.getMaxY(), env.getMaxY());
     }
 }

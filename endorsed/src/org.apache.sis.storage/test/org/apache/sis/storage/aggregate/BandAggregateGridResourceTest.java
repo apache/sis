@@ -37,7 +37,7 @@ import org.apache.sis.storage.base.MemoryGridResource;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 
@@ -213,11 +213,11 @@ public final class BandAggregateGridResourceTest extends TestCase {
     private static void assertAllPixelsEqual(final GridCoverage coverage, final int... pixel) {
         final int numBands = pixel.length;
         final RenderedImage rendering = coverage.render(null);
-        assertEquals("minX",     0,        rendering.getMinX());
-        assertEquals("minY",     0,        rendering.getMinY());
-        assertEquals("width",    WIDTH,    rendering.getWidth());
-        assertEquals("height",   HEIGHT,   rendering.getHeight());
-        assertEquals("numBands", numBands, rendering.getSampleModel().getNumBands());
+        assertEquals(0,        rendering.getMinX());
+        assertEquals(0,        rendering.getMinY());
+        assertEquals(WIDTH,    rendering.getWidth());
+        assertEquals(HEIGHT,   rendering.getHeight());
+        assertEquals(numBands, rendering.getSampleModel().getNumBands());
         final int[] expected = new int[WIDTH * HEIGHT * numBands];
         for (int i=0; i < expected.length; i += numBands) {
             System.arraycopy(pixel, 0, expected, i, numBands);

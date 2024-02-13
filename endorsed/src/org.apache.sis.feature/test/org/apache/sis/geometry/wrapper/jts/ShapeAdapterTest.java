@@ -28,7 +28,7 @@ import org.apache.sis.geometry.wrapper.j2d.DecimatedShape;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -79,9 +79,9 @@ public final class ShapeAdapterTest extends TestCase {
      */
     private void assertSegmentEquals(final int type, final double x, final double y) {
         assertFalse(iterator.isDone());
-        assertEquals("type", type, iterator.currentSegment(buffer));
-        assertEquals("x", x, buffer[0], STRICT);
-        assertEquals("y", y, buffer[1], STRICT);
+        assertEquals(type, iterator.currentSegment(buffer));
+        assertEquals(x, buffer[0]);
+        assertEquals(y, buffer[1]);
         iterator.next();
     }
 
@@ -91,7 +91,7 @@ public final class ShapeAdapterTest extends TestCase {
      */
     private void assertSegmentClose() {
         assertFalse(iterator.isDone());
-        assertEquals("type", PathIterator.SEG_CLOSE, iterator.currentSegment(buffer));
+        assertEquals(PathIterator.SEG_CLOSE, iterator.currentSegment(buffer));
         iterator.next();
     }
 

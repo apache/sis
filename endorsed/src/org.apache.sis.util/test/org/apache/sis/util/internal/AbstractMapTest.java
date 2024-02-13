@@ -27,7 +27,7 @@ import java.util.NoSuchElementException;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
@@ -75,40 +75,40 @@ public final class AbstractMapTest extends TestCase {
     @Test
     public void testReadOnly() {
         final Count map = new Count();
-        assertEquals("size", 3,       map.size());
-        assertFalse ("isEmpty",       map.isEmpty());
-        assertTrue  ("containsKey",   map.containsKey(3));
-        assertTrue  ("containsValue", map.containsValue("three"));
-        assertFalse ("containsValue", map.containsValue("six"));
+        assertEquals(3,       map.size());
+        assertFalse (map.isEmpty());
+        assertTrue  (map.containsKey(3));
+        assertTrue  (map.containsValue("three"));
+        assertFalse (map.containsValue("six"));
 
         final Collection<Integer> keys = map.keySet();
-        assertTrue("contains", keys.contains(3));
-        assertArrayEquals("keySet", new Integer[] {1, 2, 3}, keys.toArray());
+        assertTrue(keys.contains(3));
+        assertArrayEquals(new Integer[] {1, 2, 3}, keys.toArray());
 
         final Collection<String> values = map.values();
-        assertTrue ("contains", values.contains("three"));
-        assertFalse("contains", values.contains("six"));
-        assertArrayEquals("values", new String[] {"one", "two", "three"}, values.toArray());
+        assertTrue (values.contains("three"));
+        assertFalse(values.contains("six"));
+        assertArrayEquals(new String[] {"one", "two", "three"}, values.toArray());
 
         final Collection<Map.Entry<Integer,String>> entries = map.entrySet();
-        assertTrue ("contains", entries.contains(new SimpleEntry<>(2, "two")));
-        assertFalse("contains", entries.contains(new SimpleEntry<>(2, "deux")));
-        assertArrayEquals("entrySet", new SimpleEntry<?,?>[] {
+        assertTrue (entries.contains(new SimpleEntry<>(2, "two")));
+        assertFalse(entries.contains(new SimpleEntry<>(2, "deux")));
+        assertArrayEquals(new SimpleEntry<?,?>[] {
                     new SimpleEntry<>(1, "one"),
                     new SimpleEntry<>(2, "two"),
                     new SimpleEntry<>(3, "three")
                 }, entries.toArray());
 
         map.clear();
-        assertFalse ("containsValue", map.containsValue("three"));
-        assertTrue  ("isEmpty", map    .isEmpty());
-        assertTrue  ("isEmpty", keys   .isEmpty());
-        assertTrue  ("isEmpty", values .isEmpty());
-        assertTrue  ("isEmpty", entries.isEmpty());
-        assertEquals("size", 0, map    .size());
-        assertEquals("size", 0, keys   .size());
-        assertEquals("size", 0, values .size());
-        assertEquals("size", 0, entries.size());
+        assertFalse (map.containsValue("three"));
+        assertTrue  (map    .isEmpty());
+        assertTrue  (keys   .isEmpty());
+        assertTrue  (values .isEmpty());
+        assertTrue  (entries.isEmpty());
+        assertEquals(0, map    .size());
+        assertEquals(0, keys   .size());
+        assertEquals(0, values .size());
+        assertEquals(0, entries.size());
     }
 
     /**
@@ -119,10 +119,10 @@ public final class AbstractMapTest extends TestCase {
     @DependsOnMethod("testReadOnly")
     public void testAddKey() {
         final Count map = new Count();
-        assertEquals("size", 3, map.size());
+        assertEquals(3, map.size());
         assertTrue(map.keySet().add(4));
-        assertEquals("size", 4, map.size());
-        assertArrayEquals("entrySet", new SimpleEntry<?,?>[] {
+        assertEquals(4, map.size());
+        assertArrayEquals(new SimpleEntry<?,?>[] {
                     new SimpleEntry<>(1, "one"),
                     new SimpleEntry<>(2, "two"),
                     new SimpleEntry<>(3, "three"),
@@ -138,10 +138,10 @@ public final class AbstractMapTest extends TestCase {
     @DependsOnMethod("testReadOnly")
     public void testAddValue() {
         final Count map = new Count();
-        assertEquals("size", 3, map.size());
+        assertEquals(3, map.size());
         assertTrue(map.values().add("quatre"));
-        assertEquals("size", 4, map.size());
-        assertArrayEquals("entrySet", new SimpleEntry<?,?>[] {
+        assertEquals(4, map.size());
+        assertArrayEquals(new SimpleEntry<?,?>[] {
                     new SimpleEntry<>(1, "one"),
                     new SimpleEntry<>(2, "two"),
                     new SimpleEntry<>(3, "three"),
@@ -157,15 +157,15 @@ public final class AbstractMapTest extends TestCase {
     public void testEquals() {
         final Count map = new Count();
         final Map<Integer,String> copy = new HashMap<>(map);
-        assertTrue  ("equals",   copy.equals(map));
-        assertTrue  ("equals",   map.equals(copy));
-        assertEquals("hashCode", copy.hashCode(), map.hashCode());
+        assertTrue  (copy.equals(map));
+        assertTrue  (map.equals(copy));
+        assertEquals(copy.hashCode(), map.hashCode());
 
         // Make a change and test again.
-        assertEquals("put", "two", map.put(2, "deux"));
-        assertFalse("equals",   copy.equals(map));
-        assertFalse("equals",   map.equals(copy));
-        assertFalse("hashCode", copy.hashCode() == map.hashCode());
+        assertEquals("two", map.put(2, "deux"));
+        assertFalse(copy.equals(map));
+        assertFalse(map.equals(copy));
+        assertFalse(copy.hashCode() == map.hashCode());
     }
 
     /**
@@ -174,28 +174,21 @@ public final class AbstractMapTest extends TestCase {
     @Test
     public void testIterationException() {
         final Iterator<Integer> it = new Count().keySet().iterator();
-        try {
-            it.remove();
-            fail("Should not be allowed to invoke Iterator.remove() before next().");
-        } catch (IllegalStateException e) {
-            // This is the expected exception.
-        }
+        RuntimeException e;
+
+        e = assertThrows(IllegalStateException.class, () -> it.remove(),
+                         "Should not be allowed to invoke Iterator.remove() before next().");
+        assertNotNull(e);
+
         // Iterating without invoking Iterator.hasNext() should work anyway.
         for (int i=1; i<=3; i++) {
             assertEquals(Integer.valueOf(i), it.next());
-            try {
-                it.remove();
-                fail();
-            } catch (UnsupportedOperationException e) {
-                // This is the expected exception.
-            }
+            e = assertThrows(UnsupportedOperationException.class, () -> it.remove());
+            assertNotNull(e);
         }
-        try {
-            it.next();
-            fail("Expected end of iteration.");
-        } catch (NoSuchElementException e) {
-            // This is the expected exception.
-        }
-        assertFalse("Expected end of iteration.", it.hasNext());
+        e = assertThrows(NoSuchElementException.class, () -> it.next(), "Expected end of iteration.");
+        assertNotNull(e);
+
+        assertFalse(it.hasNext());
     }
 }

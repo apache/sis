@@ -24,7 +24,6 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.feature.Feature;
 import org.opengis.feature.InvalidPropertyValueException;
 
 
@@ -55,7 +54,7 @@ public final class FeaturesTest extends TestCase {
     }
 
     /**
-     * Tests {@link Features#cast(Attribute, Class)}.
+     * Tests {@code cast(Attribute, Class)}.
      */
     @Test
     public void testCastAttributeInstance() {
@@ -67,11 +66,11 @@ public final class FeaturesTest extends TestCase {
     }
 
     /**
-     * Tests {@link Features#validate(Feature)}.
+     * Tests {@code validate(Feature)}.
      */
     @Test
     public void testValidate() {
-        final Feature feature = DefaultFeatureTypeTest.city().newInstance();
+        final var feature = DefaultFeatureTypeTest.city().newInstance();
         /*
          * Feature is invalid because of missing property “population”.
          * Validation should raise an exception.

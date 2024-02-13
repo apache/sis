@@ -41,7 +41,7 @@ public final class WraparoundApplicatorTest extends TestCase {
     @Test
     public void testRange() {
         assertTrue  (Double.isNaN(WraparoundApplicator.range(HardCodedCS.GEODETIC_φλ, 0)));
-        assertEquals(360, WraparoundApplicator.range(HardCodedCS.GEODETIC_φλ, 1), STRICT);
-        assertEquals(400, WraparoundApplicator.range(HardCodedCS.ELLIPSOIDAL_gon, 0), STRICT);
+        assertEquals(360, WraparoundApplicator.range(HardCodedCS.GEODETIC_φλ, 1));
+        assertEquals(400, WraparoundApplicator.range(HardCodedCS.ELLIPSOIDAL_gon, 0));
     }
 }

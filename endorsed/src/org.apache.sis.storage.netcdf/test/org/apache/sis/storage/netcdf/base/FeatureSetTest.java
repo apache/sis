@@ -38,9 +38,8 @@ import org.apache.sis.storage.DataStoreException;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.dataset.TestData;
-import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.test.DependsOn;
 
 
@@ -181,12 +180,12 @@ public class FeatureSetTest extends TestCase {
         /*
          * Verify property values and characteristics.
          */
-        assertEquals("identifier", identifier, instance.getPropertyValue("features"));
+        assertEquals(identifier, instance.getPropertyValue("features"));
         final Attribute<?> trajectory = (Attribute<?>) instance.getProperty("trajectory");
         asserLineStringEquals((Shape) trajectory.getValue(), longitudes, latitudes);
-        assertArrayEquals("stations", stations, ((Collection<?>) instance.getPropertyValue("stations")).toArray());
-        assertArrayEquals("times", instants, trajectory.characteristics().get("datetimes").getValues().toArray());
-        assertInstanceOf("CRS", GeographicCRS.class, AttributeConvention.getCRSCharacteristic(trajectory));
+        assertArrayEquals(stations, ((Collection<?>) instance.getPropertyValue("stations")).toArray());
+        assertArrayEquals(instants, trajectory.characteristics().get("datetimes").getValues().toArray());
+        assertInstanceOf(GeographicCRS.class, AttributeConvention.getCRSCharacteristic(trajectory));
     }
 
     /**
@@ -203,8 +202,8 @@ public class FeatureSetTest extends TestCase {
         for (int i=0; i < x.length; i++) {
             assertFalse(it.isDone());
             assertEquals(i == 0 ? PathIterator.SEG_MOVETO : PathIterator.SEG_LINETO, it.currentSegment(point));
-            assertEquals("x", x[i], point[0], STRICT);
-            assertEquals("y", y[i], point[1], STRICT);
+            assertEquals(x[i], point[0], "x");
+            assertEquals(y[i], point[1], "y");
             it.next();
         }
         assertTrue(it.isDone());

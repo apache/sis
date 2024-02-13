@@ -23,7 +23,7 @@ import org.apache.sis.storage.ProbeResult;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
@@ -54,8 +54,8 @@ public final class StoreProviderTest extends TestCase {
             if (length < min) min = length;
             if (length > max) max = length;
         }
-        assertEquals("MIN_LENGTH", min, StoreProvider.Peek.MIN_LENGTH);
-        assertEquals("MAX_LENGTH", max, StoreProvider.Peek.INSTANCE.maxLength);
+        assertEquals(min, StoreProvider.Peek.MIN_LENGTH);
+        assertEquals(max, StoreProvider.Peek.INSTANCE.maxLength);
     }
 
     /**
@@ -85,10 +85,10 @@ public final class StoreProviderTest extends TestCase {
         final StorageConnector c = new StorageConnector(new StringReader(wkt));
         final ProbeResult r = p.probeContent(c);
         c.closeAllExcept(null);
-        assertEquals("isSupported", isSupported, r.isSupported());
+        assertEquals(isSupported, r.isSupported());
         if (isSupported) {
-            assertNull  ("mimeType", r.getMimeType());
-            assertEquals("version", version, r.getVersion().getMajor());
+            assertNull(r.getMimeType());
+            assertEquals(version, r.getVersion().getMajor());
         }
     }
 }

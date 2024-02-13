@@ -78,8 +78,8 @@ public final class DefaultAssociationRoleTest extends TestCase {
      */
     static DefaultFeatureType twinTownCity(final boolean cyclic) {
         final DefaultAssociationRole twinTown = twinTown(cyclic);
-        final FeatureType parent = cyclic ? DefaultFeatureTypeTest.city() : twinTown.getValueType();
-        return createType("Twin town", parent, twinTown);
+        final var parentType = cyclic ? DefaultFeatureTypeTest.city() : twinTown.getValueType();
+        return createType("Twin town", parentType, twinTown);
     }
 
     /**
@@ -130,7 +130,7 @@ public final class DefaultAssociationRoleTest extends TestCase {
     @Test
     public void testBidirectionalAssociation() {
         final DefaultFeatureType twinTown = twinTownCity(true);
-        final FeatureAssociationRole association = (FeatureAssociationRole) twinTown.getProperty("twin town");
+        final var association = assertInstanceOf(FeatureAssociationRole.class, twinTown.getProperty("twin town"));
         assertSame(twinTown, association.getValueType());
         /*
          * Creates a FeatureType copy containing the same properties. Used for verifying

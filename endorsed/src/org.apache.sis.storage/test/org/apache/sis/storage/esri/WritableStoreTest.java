@@ -36,7 +36,7 @@ import org.apache.sis.util.CharSequences;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 
@@ -155,7 +155,7 @@ public final class WritableStoreTest extends TestCase {
             } finally {
                 deleted = Files.deleteIfExists(filePRJ);
             }
-            assertTrue("Missing PRJ file.", deleted);
+            assertTrue(deleted, "Missing PRJ file.");
         } finally {
             Files.delete(file);
         }

@@ -107,7 +107,7 @@ public abstract class FeatureTestCase extends TestCase {
              *   - Attribute value shall be the same as the one we got at the beginning of this method.
              *   - Attribute values (as a collection) is either empty or contains the same value.
              */
-            final var property = (Attribute<?>) feature.getProperty(name);
+            final var property = assertInstanceOf(Attribute.class, feature.getProperty(name));
             assertSame(feature.getType().getProperty(name), property.getType(), name);
             assertSame(value, property.getValue(), name);
             final Collection<?> values = property.getValues();
@@ -297,16 +297,16 @@ public abstract class FeatureTestCase extends TestCase {
     @DependsOnMethod({"testSimpleValues", "testSimpleProperties"})
     public void testCustomAttribute() {
         feature = createFeature(DefaultFeatureTypeTest.city());
-        final AbstractAttribute<String> wrong = SingletonAttributeTest.parliament();
-        final CustomAttribute<String> city = new CustomAttribute<>(Features.cast(
-                (AttributeType<?>) feature.getType().getProperty("city"), String.class));
+        final var wrong  = SingletonAttributeTest.parliament();
+        final var city   = assertInstanceOf(AttributeType.class, feature.getType().getProperty("city"));
+        final var casted = new CustomAttribute<>(Features.cast(city, String.class));
 
-        feature.setProperty(city);
+        feature.setProperty(casted);
         setAttributeValue("city", "Utopia", "Atlantide");
 
         var exception = assertThrows(IllegalArgumentException.class, () -> feature.setProperty(wrong));
         assertMessageContains(exception, "parliament", "City");
-        if (assertSameProperty("city", city, true)) {
+        if (assertSameProperty("city", casted, true)) {
             /*
              * The quality report is expected to contains a custom element.
              */

@@ -23,7 +23,8 @@ import static org.apache.sis.util.Numbers.*;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.TestCase;
 
 
@@ -93,12 +94,8 @@ public final class NumbersTest extends TestCase {
     @Test
     public void testRound() {
         assertEquals(123456, Numbers.round(123456.2f));
-        try {
-            Numbers.round(Long.MAX_VALUE * 3d);
-            fail("Expected ArithmeticException");
-        } catch (ArithmeticException e) {
-            assertNotNull(e.getMessage());
-        }
+        var e = assertThrows(ArithmeticException.class, () -> Numbers.round(Long.MAX_VALUE * 3d));
+        assertMessageContains(e);
     }
 
     /**
@@ -253,12 +250,8 @@ public final class NumbersTest extends TestCase {
         assertEquals(Long   .valueOf((long)   10), wrap(value, Long   .class));
         assertEquals(Float  .valueOf((float)  10), wrap(value, Float  .class));
         assertEquals(Double .valueOf((double) 10), wrap(value, Double .class));
-        try {
-            final Integer n = wrap(4.5, Integer.class);
-            fail("Expected an exception but got " + n);
-        } catch (IllegalArgumentException e) {
-            // This is the expected exception.
-            assertTrue(e.getMessage().contains("Integer"));
-        }
+
+        var e = assertThrows(IllegalArgumentException.class, () -> wrap(4.5, Integer.class));
+        assertMessageContains(e, "Integer");
     }
 }

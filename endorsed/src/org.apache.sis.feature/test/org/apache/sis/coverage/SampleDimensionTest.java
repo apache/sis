@@ -28,8 +28,7 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -68,13 +67,13 @@ public final class SampleDimensionTest extends TestCase {
                 .addQualitative("Missing", 255)
                 .setName("Some data").build();
 
-        assertEquals("name", "Some data",  String.valueOf(dimension.getName()));
-        assertTrue  ("nodataValues",       dimension.getNoDataValues().isEmpty());
-        assertFalse ("background",         dimension.getBackground().isPresent());
-        assertFalse ("transferFunction",   dimension.getTransferFunction().isPresent());
-        assertFalse ("units",              dimension.getUnits().isPresent());
-        assertSame  ("forConvertedValues", dimension, dimension.forConvertedValues(false));
-        assertSame  ("forConvertedValues", dimension, dimension.forConvertedValues(true));
+        assertEquals("Some data",  String.valueOf(dimension.getName()));
+        assertTrue  (dimension.getNoDataValues().isEmpty());
+        assertFalse (dimension.getBackground().isPresent());
+        assertFalse (dimension.getTransferFunction().isPresent());
+        assertFalse (dimension.getUnits().isPresent());
+        assertSame  (dimension, dimension.forConvertedValues(false));
+        assertSame  (dimension, dimension.forConvertedValues(true));
     }
 
     /**
@@ -104,12 +103,12 @@ public final class SampleDimensionTest extends TestCase {
                                                 NumberRange.create(-2, true,  35, true))
                 .build();
 
-        assertArrayEquals("nodataValues", new Integer[] {1, 3, 255}, dimension.getNoDataValues().toArray());
+        assertArrayEquals(new Integer[] {1, 3, 255}, dimension.getNoDataValues().toArray());
         final Object[] padValues = dimension.forConvertedValues(true).getNoDataValues().toArray();
         for (int i=0; i<padValues.length; i++) {
             padValues[i] = MathFunctions.toNanOrdinal(((Float) padValues[i]));
         }
-        assertArrayEquals("nodataValues", new Integer[] {1, 2, 4}, padValues);
+        assertArrayEquals(new Integer[] {1, 2, 4}, padValues);
     }
 
     /**
@@ -141,26 +140,26 @@ public final class SampleDimensionTest extends TestCase {
                 .addQuantitative("Temperature", lower, upper, scale, offset, Units.CELSIUS)
                 .build();
 
-        assertEquals("name", "Temperature", String.valueOf(dimension.getName()));
-        assertEquals("background", 0, dimension.getBackground().get());
+        assertEquals("Temperature", String.valueOf(dimension.getName()));
+        assertEquals(0, dimension.getBackground().get());
 
         final Set<Number> nodataValues = dimension.getNoDataValues();
-        assertArrayEquals("nodataValues", new Integer[] {0, 1, 255}, nodataValues.toArray());
+        assertArrayEquals(new Integer[] {0, 1, 255}, nodataValues.toArray());
 
         NumberRange<?> range = dimension.getSampleRange().get();
-        assertEquals("minimum",   0, range.getMinDouble(), STRICT);
-        assertEquals("maximum", 255, range.getMaxDouble(), STRICT);
+        assertEquals(  0, range.getMinDouble());
+        assertEquals(255, range.getMaxDouble());
 
         range = dimension.getMeasurementRange().get();
-        assertEquals("minimum", lower*scale+offset, range.getMinDouble(true),  CategoryTest.EPS);
-        assertEquals("maximum", upper*scale+offset, range.getMaxDouble(false), CategoryTest.EPS);
-        assertEquals("units",   Units.CELSIUS,      dimension.getUnits().get());
+        assertEquals(lower*scale+offset, range.getMinDouble(true),  CategoryTest.EPS);
+        assertEquals(upper*scale+offset, range.getMaxDouble(false), CategoryTest.EPS);
+        assertEquals(Units.CELSIUS,      dimension.getUnits().get());
 
         final TransferFunction tr = dimension.getTransferFunctionFormula().get();
-        assertFalse ("identity",  dimension.getTransferFunction().get().isIdentity());
-        assertFalse ("identity",  tr.getTransform().isIdentity());
-        assertEquals("scale",     scale,  tr.getScale(),  STRICT);
-        assertEquals("offset",    offset, tr.getOffset(), STRICT);
+        assertFalse (dimension.getTransferFunction().get().isIdentity());
+        assertFalse (tr.getTransform().isIdentity());
+        assertEquals(scale,  tr.getScale());
+        assertEquals(offset, tr.getOffset());
         /*
          * Verifies SampleDimension properties after we converted integers to real values.
          */
@@ -170,13 +169,13 @@ public final class SampleDimensionTest extends TestCase {
         assertSame   (dimension,  converted.forConvertedValues(false));
         assertSame   (converted,  converted.forConvertedValues(true));
         assertSame   (range,      converted.getSampleRange().get());
-        assertTrue   ("identity", converted.getTransferFunction().get().isIdentity());
-        assertTrue   ("background", Double.isNaN(converted.getBackground().get().doubleValue()));
+        assertTrue   (converted.getTransferFunction().get().isIdentity());
+        assertTrue   (Double.isNaN(converted.getBackground().get().doubleValue()));
         final Iterator<Number> it = converted.getNoDataValues().iterator();
-        assertEquals("nodataValues",   0, MathFunctions.toNanOrdinal(it.next().floatValue()));
-        assertEquals("nodataValues",   1, MathFunctions.toNanOrdinal(it.next().floatValue()));
-        assertEquals("nodataValues", 255, MathFunctions.toNanOrdinal(it.next().floatValue()));
-        assertFalse ("nodataValues", it.hasNext());
+        assertEquals(  0, MathFunctions.toNanOrdinal(it.next().floatValue()));
+        assertEquals(  1, MathFunctions.toNanOrdinal(it.next().floatValue()));
+        assertEquals(255, MathFunctions.toNanOrdinal(it.next().floatValue()));
+        assertFalse (it.hasNext());
     }
 
     /**
@@ -189,25 +188,25 @@ public final class SampleDimensionTest extends TestCase {
                 .addQuantitative("Temperature", -2f, 30f, Units.CELSIUS)
                 .build();
 
-        assertEquals("name", "Temperature", String.valueOf(dimension.getName()));
-        assertEquals("background", Float.NaN, dimension.getBackground().get());
+        assertEquals("Temperature", String.valueOf(dimension.getName()));
+        assertEquals(Float.NaN, dimension.getBackground().get());
         assertArrayEquals(new Number[] {Float.NaN}, dimension.getNoDataValues().toArray());
 
         NumberRange<?> range = dimension.getSampleRange().get();
-        assertEquals("minimum", -2f, range.getMinValue());
-        assertEquals("maximum", 30f, range.getMaxValue());
+        assertEquals(-2f, range.getMinValue());
+        assertEquals(30f, range.getMaxValue());
 
         range = dimension.getMeasurementRange().get();
-        assertEquals("minimum", -2d, range.getMinDouble(true), STRICT);
-        assertEquals("maximum", 30d, range.getMaxDouble(true), STRICT);
-        assertEquals("units",   Units.CELSIUS, dimension.getUnits().get());
+        assertEquals(-2d, range.getMinDouble(true));
+        assertEquals(30d, range.getMaxDouble(true));
+        assertEquals(Units.CELSIUS, dimension.getUnits().get());
 
         final MathTransform1D tr = dimension.getTransferFunction().get();
-        assertInstanceOf("transferFunction", LinearTransform.class, tr);
-        assertTrue("identity", tr.isIdentity());
+        assertInstanceOf(LinearTransform.class, tr);
+        assertTrue(tr.isIdentity());
 
-        assertSame("forConvertedValues", dimension, dimension.forConvertedValues(true));
-        assertSame("forConvertedValues", dimension, dimension.forConvertedValues(false));
+        assertSame(dimension, dimension.forConvertedValues(true));
+        assertSame(dimension, dimension.forConvertedValues(false));
     }
 
     /**

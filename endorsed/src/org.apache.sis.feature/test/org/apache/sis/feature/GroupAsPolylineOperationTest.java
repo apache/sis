@@ -54,16 +54,16 @@ public final class GroupAsPolylineOperationTest extends TestCase {
         builder.addAttribute(Point.class).setMaximumOccurs(10).setName("points");
         final var feature = builder.build().newInstance();
         feature.setPropertyValue("points", Arrays.asList(
-            new Point(-6, 4),
-            new Point(12, 7),
-            new Point( 8, 6)));
+                new Point(-6, 4),
+                new Point(12, 7),
+                new Point( 8, 6)));
 
         final var group = FeatureOperations.groupAsPolyline(Map.of("name", "polyline"),
                           GeometryLibrary.ESRI, feature.getType().getProperty("points"));
 
         final var result = group.apply(feature, null);
-        final var value  = ((Attribute<?>) result).getValue();
-        final var poly   = (Polyline) value;
+        final var value  = assertInstanceOf(Attribute.class, result).getValue();
+        final var poly   = assertInstanceOf(Polyline.class, value);
         assertEquals(-6, poly.getPoint(0).getX());
         assertEquals( 7, poly.getPoint(1).getY());
         assertEquals( 8, poly.getPoint(2).getX());

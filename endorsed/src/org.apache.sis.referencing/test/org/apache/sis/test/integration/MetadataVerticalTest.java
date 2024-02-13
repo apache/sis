@@ -180,8 +180,8 @@ public class MetadataVerticalTest extends TestCase {
          * </gmd:verticalElement>
          */
         final VerticalExtent ve = getSingleton(extent.getVerticalElements());
-        assertEquals(  0.1, ve.getMinimumValue(), STRICT);
-        assertEquals(10000, ve.getMaximumValue(), STRICT);
+        assertEquals(  0.1, ve.getMinimumValue());
+        assertEquals(10000, ve.getMaximumValue());
         final VerticalCRS crs = ve.getVerticalCRS();
         verifyIdentifiers("test1", crs);
         assertEquals("World", crs.getScope().toString());

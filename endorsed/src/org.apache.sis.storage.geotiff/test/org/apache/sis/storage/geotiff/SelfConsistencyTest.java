@@ -29,8 +29,9 @@ import org.apache.sis.storage.StorageConnector;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import static org.junit.Assume.assumeNotNull;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.OptionalTestData;
 import org.apache.sis.storage.test.CoverageReadConsistency;
 
@@ -106,13 +107,8 @@ public final class SelfConsistencyTest extends CoverageReadConsistency {
             foundResource = store.findResource(name.tip().toString());
             assertSame(dataset, foundResource);
         }
-        try {
-            final GridCoverageResource r = store.findResource("a_wrong_namespace:1");
-            fail("No dataset should be returned when user specify the wrong namespace. However, the datastore returned " + r);
-        } catch (IllegalNameException e) {
-            // Expected behaviour.
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("a_wrong_namespace:1"));
-        }
+        var e = assertThrows(IllegalNameException.class, () -> store.findResource("a_wrong_namespace:1"),
+                "No dataset should be returned when user specifies the wrong namespace.");
+        assertMessageContains(e, "a_wrong_namespace:1");
     }
 }

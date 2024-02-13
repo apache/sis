@@ -21,7 +21,7 @@ import java.util.Collections;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
@@ -83,17 +83,17 @@ public final class FrequencySortedSetTest extends TestCase {
         assertArrayEquals(new Integer[] {5, 4, 6, 3, 2}, set.toArray());
         assertArrayEquals(new int[] {1, 1, 1, 2, 4}, set.frequencies());
 
-        assertArrayEquals("Expected all elements occurring less often than 2.",
-                          new Integer[] {5, 4, 6, 3}, set.headSet(2).toArray());
+        assertArrayEquals(new Integer[] {5, 4, 6, 3}, set.headSet(2).toArray(),
+                          "Expected all elements occurring less often than 2.");
 
-        assertArrayEquals("Expected all elements occurring less often than 3.",
-                          new Integer[] {5, 4, 6}, set.headSet(3).toArray());
+        assertArrayEquals(new Integer[] {5, 4, 6}, set.headSet(3).toArray(),
+                          "Expected all elements occurring less often than 3.");
 
-        assertArrayEquals("Expected all elements occurring at least as often than 3.",
-                          new Integer[] {3, 2}, set.tailSet(3).toArray());
+        assertArrayEquals(new Integer[] {3, 2}, set.tailSet(3).toArray(),
+                          "Expected all elements occurring at least as often than 3.");
 
-        assertArrayEquals("Expected all elements occurring at least as often than 3 but less than 2.",
-                          new Integer[] {3}, set.subSet(3, 2).toArray());
+        assertArrayEquals(new Integer[] {3}, set.subSet(3, 2).toArray(),
+                          "Expected all elements occurring at least as often than 3 but less than 2.");
 
         assertTrue(set.subSet(2, 3).isEmpty());
     }

@@ -21,7 +21,7 @@ import org.apache.sis.setup.GeometryLibrary;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -43,7 +43,7 @@ public final class StandardGeometriesTest extends GeometriesTestCase {
     @Test
     @Override
     public void testFactory() {
-        assertTrue(Geometries.factory(GeometryLibrary.GEOAPI) instanceof StandardGeometries<?>);
+        assertInstanceOf(StandardGeometries.class, Geometries.factory(GeometryLibrary.GEOAPI));
     }
 
     /**
@@ -53,6 +53,6 @@ public final class StandardGeometriesTest extends GeometriesTestCase {
     @Override
     public void testCreatePolyline() {
         super.testCreatePolyline();
-        assertTrue(geometry instanceof Geometry);
+        assertInstanceOf(Geometry.class, geometry);
     }
 }

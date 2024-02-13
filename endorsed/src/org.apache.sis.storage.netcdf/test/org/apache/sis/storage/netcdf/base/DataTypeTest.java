@@ -20,7 +20,7 @@ import org.apache.sis.util.Numbers;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -59,8 +59,8 @@ public final class DataTypeTest extends TestCase {
      * Verifies the ordinal value of the given data type.
      */
     private static void verifyOrdinal(final int codeNetCDF, final DataType type) {
-        assertEquals(type.name(), codeNetCDF, type.ordinal());
-        assertSame("DataType.valueOf(int)", type, DataType.valueOf(codeNetCDF));
+        assertEquals(codeNetCDF, type.ordinal(), type.name());
+        assertSame(type, DataType.valueOf(codeNetCDF), "DataType.valueOf(int)");
     }
 
     /**
@@ -82,10 +82,10 @@ public final class DataTypeTest extends TestCase {
      * Verifies the relationship between signed and unsigned data types.
      */
     private static void verifyUnsigned(final DataType signed, final DataType unsigned) {
-        assertSame(  "signed",   signed,   signed.unsigned(false));
-        assertSame(  "signed",   signed, unsigned.unsigned(false));
-        assertSame("unsigned", unsigned, unsigned.unsigned(true));
-        assertSame("unsigned", unsigned,   signed.unsigned(true));
+        assertSame(  signed,   signed.unsigned(false));
+        assertSame(  signed, unsigned.unsigned(false));
+        assertSame(unsigned, unsigned.unsigned(true));
+        assertSame(unsigned,   signed.unsigned(true));
     }
 
     /**
@@ -117,12 +117,12 @@ public final class DataTypeTest extends TestCase {
             final int code = Numbers.getEnumConstant(type.getClass(false));
             if (type.isInteger) {
                 if (!type.isUnsigned) {
-                    assertEquals(name, type.number, code);
+                    assertEquals(type.number, code, name);
                 } else if (type != DataType.UINT64) {
-                    assertTrue(name, code > type.number);
+                    assertTrue(code > type.number, name);
                 }
             } else {
-                assertEquals(name, (type == DataType.CHAR) ? Numbers.CHARACTER : type.number, code);
+                assertEquals((type == DataType.CHAR) ? Numbers.CHARACTER : type.number, code, name);
             }
         }
     }

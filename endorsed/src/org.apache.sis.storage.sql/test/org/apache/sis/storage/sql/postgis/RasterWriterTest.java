@@ -23,7 +23,7 @@ import org.apache.sis.io.stream.ChannelDataOutput;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -65,6 +65,6 @@ public final class RasterWriterTest extends TestCase {
         writer.setGridToCRS(TestRaster.getGridGeometry());
         writer.write(raster, output);
         output.flush();
-        assertArrayEquals("bytes", test.getEncoded(), buffer.toByteArray());
+        assertArrayEquals(test.getEncoded(), buffer.toByteArray());
     }
 }

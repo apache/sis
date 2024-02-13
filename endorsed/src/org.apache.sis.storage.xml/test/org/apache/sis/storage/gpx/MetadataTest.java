@@ -22,7 +22,7 @@ import java.net.URISyntaxException;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -52,11 +52,11 @@ public final class MetadataTest extends TestCase {
     public void testEqualsAndHashCode() throws URISyntaxException {
         final Metadata md1 = create();
         final Metadata md2 = create();
-        assertEquals("equals", md1, md2);
-        assertEquals("hashCode", md1.hashCode(), md2.hashCode());
+        assertEquals(md1, md2);
+        assertEquals(md1.hashCode(), md2.hashCode());
         md2.author.name = "someone else";
-        assertNotEquals("equals", md1, md2);
-        assertNotEquals("hashCode", md1.hashCode(), md2.hashCode());
+        assertNotEquals(md1, md2);
+        assertNotEquals(md1.hashCode(), md2.hashCode());
     }
 
     /**
@@ -69,8 +69,8 @@ public final class MetadataTest extends TestCase {
     public void testCopyConstructor() throws URISyntaxException {
         final Metadata md1 = create();
         final Metadata md2 = new Metadata(md1, null);
-        assertEquals("equals", md1, md2);
-        assertEquals("hashCode", md1.hashCode(), md2.hashCode());
+        assertEquals(md1, md2);
+        assertEquals(md1.hashCode(), md2.hashCode());
     }
 
     /**

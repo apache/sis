@@ -29,8 +29,7 @@ import org.apache.sis.xml.bind.fra.DirectReferenceSystem;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -60,20 +59,20 @@ public final class FrenchProfileTest extends TestCase {
 
         std = new DefaultConstraints("Some constraints.");
         fra = (Constraints) FrenchProfile.toAFNOR(std);
-        assertNotSame("Expected a copy.", std, fra);
-        assertSame   ("Already an AFNOR instance.", fra, FrenchProfile.toAFNOR(fra));
+        assertNotSame(std, fra);
+        assertSame   (fra, FrenchProfile.toAFNOR(fra));
         assertEquals ("Some constraints.", getSingleton(fra.getUseLimitations()).toString());
 
         std = new DefaultLegalConstraints("Some legal constraints.");
         fra = (LegalConstraints) FrenchProfile.toAFNOR(std);
-        assertNotSame("Expected a copy.", std, fra);
-        assertSame   ("Already an AFNOR instance.", fra, FrenchProfile.toAFNOR(fra));
+        assertNotSame(std, fra);
+        assertSame   (fra, FrenchProfile.toAFNOR(fra));
         assertEquals ("Some legal constraints.", getSingleton(fra.getUseLimitations()).toString());
 
         std = new DefaultSecurityConstraints("Some security constraints.");
         fra = (SecurityConstraints) FrenchProfile.toAFNOR(std);
-        assertNotSame("Expected a copy.", std, fra);
-        assertSame   ("Already an AFNOR instance.", fra, FrenchProfile.toAFNOR(fra));
+        assertNotSame(std, fra);
+        assertSame   (fra, FrenchProfile.toAFNOR(fra));
         assertEquals ("Some security constraints.", getSingleton(fra.getUseLimitations()).toString());
     }
 
@@ -86,11 +85,11 @@ public final class FrenchProfileTest extends TestCase {
 
         std = new ReferenceSystemMetadata(new DefaultIdentifier("EPSG", "4326", null));
         fra = FrenchProfile.toAFNOR(std, false);
-        assertInstanceOf("Expected AFNOR instance.", DirectReferenceSystem.class, fra);
-        assertSame("Already an AFNOR instance.", fra, FrenchProfile.toAFNOR(fra));
+        assertInstanceOf(DirectReferenceSystem.class, fra);
+        assertSame(fra, FrenchProfile.toAFNOR(fra));
 
         fra = FrenchProfile.toAFNOR(std, true);
-        assertInstanceOf("Expected AFNOR instance.", IndirectReferenceSystem.class, fra);
-        assertSame("Already an AFNOR instance.", fra, FrenchProfile.toAFNOR(fra));
+        assertInstanceOf(IndirectReferenceSystem.class, fra);
+        assertSame(fra, FrenchProfile.toAFNOR(fra));
     }
 }

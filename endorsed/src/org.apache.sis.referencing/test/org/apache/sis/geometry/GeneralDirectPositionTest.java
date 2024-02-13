@@ -49,8 +49,8 @@ public final class GeneralDirectPositionTest extends TestCase {
         final GeneralDirectPosition position = new GeneralDirectPosition(WGS84);
         position.setCoordinate(300, -100);
         assertTrue(position.normalize());
-        assertEquals(-90.0, position.getOrdinate(1), 0.0);
-        assertEquals(-60.0, position.getOrdinate(0), 0.0);
+        assertEquals(-90.0, position.getOrdinate(1));
+        assertEquals(-60.0, position.getOrdinate(0));
     }
 
     /**

@@ -27,13 +27,11 @@ import org.apache.sis.filter.DefaultFilterFactory;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.filter.Literal;
 import org.opengis.filter.Expression;
 import org.opengis.filter.FilterFactory;
 import org.opengis.feature.Feature;
@@ -66,30 +64,29 @@ public final class SQLMMTest extends TestCase {
     public void verifyParameterCount() {
         for (final SQLMM value : SQLMM.values()) {
             final String name = value.name();
-            assertTrue(name, value.minParamCount   >= 0);
-            assertTrue(name, value.minParamCount   <= value.maxParamCount);
-            assertTrue(name, value.geometryCount() <= value.maxParamCount);
+            assertTrue(value.minParamCount   >= 0, name);
+            assertTrue(value.minParamCount   <= value.maxParamCount, name);
+            assertTrue(value.geometryCount() <= value.maxParamCount, name);
         }
     }
 
     /**
-     * Tests {@link FilterFactory#function(String, Expression, Expression)}
-     * for function {@code ST_GeomFromText}.
+     * Tests {@code function(String, Expression, Expression)} for function {@code ST_GeomFromText}.
      */
     @Test
     public void testST_GeomFromText() {
         final String wkt = "POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))";
-        final Expression<Feature,?> exp = factory.function("ST_GeomFromText", factory.literal(wkt), factory.literal(4326));
-        final Object value = exp.apply(null);
-        assertInstanceOf("Expected JTS implementation.", Polygon.class, value);
+        final var expression = factory.function("ST_GeomFromText", factory.literal(wkt), factory.literal(4326));
+        final Object value = expression.apply(null);
+        assertInstanceOf(Polygon.class, value);
         final Polygon polygon = (Polygon) value;
         assertEquals(wkt, polygon.toText());
         assertEquals(CommonCRS.WGS84.geographic(), polygon.getUserData());
     }
 
     /**
-     * Tests {@link FilterFactory#function(String, Expression...)} where the last argument
-     * is an optional CRS. The {@code ST_Point} function is used for this test.
+     * Tests {@code function(String, Expression...)} where the last argument is an optional CRS.
+     * The {@code ST_Point} function is used for this test.
      *
      * @throws FactoryException if an error occurred while fetching the CRS from a JTS geometry.
      */
@@ -126,15 +123,14 @@ public final class SQLMMTest extends TestCase {
                                               Expression<Feature, ?>[]> argumentBundler)
             throws FactoryException
     {
-        final Literal<Feature, Double> x = factory.literal(1.0);
-        final Literal<Feature, Double> y = factory.literal(2.0);
-        Expression<Feature, ?> fn = factory.function("ST_Point", argumentBundler.apply(x, y));
-        Object rawPoint = fn.apply(null);
-        assertInstanceOf("ST_Point should create a Point geometry", Point.class, rawPoint);
-        Point point = (Point) rawPoint;
+        final var x = factory.literal(1.0);
+        final var y = factory.literal(2.0);
+        var expression = factory.function("ST_Point", argumentBundler.apply(x, y));
+        Object rawPoint = expression.apply(null);
+        Point point = assertInstanceOf(Point.class, rawPoint);
         CoordinateReferenceSystem pointCRS = JTS.getCoordinateReferenceSystem(point);
-        assertEquals("Point CRS", expectedCRS, pointCRS);
-        assertEquals(point.getX(), x.getValue(), STRICT);
-        assertEquals(point.getY(), y.getValue(), STRICT);
+        assertEquals(expectedCRS, pointCRS);
+        assertEquals(point.getX(), x.getValue());
+        assertEquals(point.getY(), y.getValue());
     }
 }

@@ -19,11 +19,10 @@ package org.apache.sis.storage.xml;
 import java.io.StringReader;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.ProbeResult;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
@@ -48,11 +47,11 @@ public final class StoreProviderTest extends TestCase {
      */
     @Test
     public void testProbeContentFromReader() throws DataStoreException {
-        final StoreProvider    p = new StoreProvider();
-        final StorageConnector c = new StorageConnector(new StringReader(StoreTest.XML));
-        final ProbeResult      r = p.probeContent(c);
+        final var p = new StoreProvider();
+        final var c = new StorageConnector(new StringReader(StoreTest.XML));
+        final var r = p.probeContent(c);
         c.closeAllExcept(null);
-        assertTrue  ("isSupported", r.isSupported());
-        assertEquals("mimeType", "application/vnd.iso.19139+xml", r.getMimeType());
+        assertTrue(r.isSupported());
+        assertEquals("application/vnd.iso.19139+xml", r.getMimeType());
     }
 }

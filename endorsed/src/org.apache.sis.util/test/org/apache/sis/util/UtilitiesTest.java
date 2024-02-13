@@ -22,7 +22,7 @@ import java.util.LinkedHashSet;
 
 // Test dependencies
 import org.junit.*;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -109,7 +109,7 @@ public final class UtilitiesTest extends TestCase {
 
         /** Compares this object with the given one. */
         @Override public boolean equals(final Object other, final ComparisonMode mode) {
-            assertEquals(label, expected, mode);
+            assertEquals(expected, mode, label);
             comparisonCount++;
             return equals(other);
         }

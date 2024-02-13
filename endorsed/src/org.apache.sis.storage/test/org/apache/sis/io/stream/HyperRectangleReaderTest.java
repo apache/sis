@@ -27,7 +27,7 @@ import org.apache.sis.storage.DataStoreException;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -162,12 +162,12 @@ public final class HyperRectangleReaderTest extends TestCase {
             for (long i2=lower[2]; i2<upper[2]; i2 += s2) {
                 for (long i1=lower[1]; i1<upper[1]; i1 += s1) {
                     for (long i0=lower[0]; i0<upper[0]; i0 += s0) {
-                        assertEquals("Sample value", sampleValue(i0, i1, i2, i3), data[p++]);
+                        assertEquals(sampleValue(i0, i1, i2, i3), data[p++], "Sample value");
                     }
                 }
             }
         }
-        assertEquals("Array length", p, data.length);
+        assertEquals(p, data.length, "Array length");
     }
 
     /**

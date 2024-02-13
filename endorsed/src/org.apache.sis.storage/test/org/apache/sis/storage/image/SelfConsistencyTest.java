@@ -24,7 +24,7 @@ import org.apache.sis.storage.StorageConnector;
 // Test dependencies
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.storage.test.CoverageReadConsistency;
 
 
@@ -52,7 +52,7 @@ public final class SelfConsistencyTest extends CoverageReadConsistency {
     @BeforeClass
     public static void openFile() throws IOException, DataStoreException {
         final URL url = WorldFileStoreTest.class.getResource("gradient.png");
-        assertNotNull("Test file not found.", url);
+        assertNotNull(url, "Test file not found.");
         store = new WorldFileStore(null, new StorageConnector(url));
     }
 

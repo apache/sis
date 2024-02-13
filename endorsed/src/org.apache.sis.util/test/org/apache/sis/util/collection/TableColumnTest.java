@@ -22,7 +22,7 @@ import static org.apache.sis.util.collection.TableColumn.*;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.util.test.SerializableTableColumn;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -49,13 +49,13 @@ public final class TableColumnTest extends TestCase {
         assertEquals("Name", i18n.toString(Locale.ROOT));
         assertEquals("Name", i18n.toString(Locale.ENGLISH));
         assertEquals("Nom",  i18n.toString(Locale.FRENCH));
-        assertSame("Test caching", i18n, NAME.getHeader());
+        assertSame(i18n, NAME.getHeader(), "Caching");
 
         i18n = TYPE.getHeader();
         assertEquals("Type", i18n.toString(Locale.ROOT));
         assertEquals("Type", i18n.toString(Locale.ENGLISH));
         assertEquals("Type", i18n.toString(Locale.FRENCH));
-        assertSame("Test caching", i18n, TYPE.getHeader());
+        assertSame(i18n, TYPE.getHeader(), "Caching");
     }
 
     /**

@@ -40,11 +40,6 @@ import org.apache.sis.test.DependsOn;
 @DependsOn(NormalizedProjectionTest.class)
 public final class MeridianArcTest extends MapProjectionTestCase {
     /**
-     * Threshold for comparison of floating point values.
-     */
-    private static final double STRICT = 0;
-
-    /**
      * Creates a new test case.
      */
     public MeridianArcTest() {

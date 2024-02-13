@@ -71,11 +71,6 @@ public abstract class TestCase {
 
     /**
      * Tolerance threshold for strict comparisons of floating point numbers.
-     * This constant can be used like below, where {@code expected} and {@code actual} are {@code double} values:
-     *
-     * {@snippet lang="java" :
-     *     assertEquals(expected, actual, STRICT);
-     *     }
      */
     protected static final double STRICT = 0;
 

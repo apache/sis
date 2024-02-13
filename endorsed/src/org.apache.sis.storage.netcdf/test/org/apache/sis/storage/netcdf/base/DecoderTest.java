@@ -23,7 +23,7 @@ import static org.apache.sis.storage.netcdf.AttributeNames.*;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.TestUtilities.date;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -127,7 +127,7 @@ public class DecoderTest extends TestCase {
          * because the decoder methods are supposed to check only for the "_Title" and "_Id" attributes as a
          * last resort fallback when MetadataReader failed to find the title and identifier by itself.
          */
-        assertNull("title", decoder.getTitle());
-        assertNull("id",    decoder.getId());
+        assertNull(decoder.getTitle());
+        assertNull(decoder.getId());
     }
 }

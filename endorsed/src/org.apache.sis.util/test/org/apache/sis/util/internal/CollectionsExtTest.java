@@ -33,10 +33,10 @@ import org.apache.sis.util.collection.CodeListSet;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMapEquals;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 
 
 /**
@@ -73,13 +73,9 @@ public final class CollectionsExtTest extends TestCase {
          * could be accepted if all elements are String instances, however the current method contract is
          * to not accept them, so we will ensure that.
          */
-        try {
-            CollectionsExt.nonNullArraySet(name, new Object[] {"A"}, emptyArray);
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains(name));
-            assertTrue(message, message.contains("Object[]"));
-        }
+        var e = assertThrows(IllegalArgumentException.class,
+                () -> CollectionsExt.nonNullArraySet(name, new Object[] {"A"}, emptyArray));
+        assertMessageContains(e, name, "Object[]");
     }
 
     /**
@@ -88,16 +84,16 @@ public final class CollectionsExtTest extends TestCase {
     @Test
     public void testCreateSetForType() {
         Set<?> set = CollectionsExt.createSetForType(java.lang.annotation.ElementType.class, 0);
-        assertTrue("isEmpty", set.isEmpty());
-        assertInstanceOf("Set<ElementType>", EnumSet.class, set);
+        assertTrue(set.isEmpty());
+        assertInstanceOf(EnumSet.class, set);
 
         set = CollectionsExt.createSetForType(org.opengis.referencing.cs.AxisDirection.class, 0);
-        assertTrue("isEmpty", set.isEmpty());
-        assertInstanceOf("Set<AxisDirection>", CodeListSet.class, set);
+        assertTrue(set.isEmpty());
+        assertInstanceOf(CodeListSet.class, set);
 
         set = CollectionsExt.createSetForType(String.class, 0);
-        assertTrue("isEmpty", set.isEmpty());
-        assertInstanceOf("Set<String>", HashSet.class, set);
+        assertTrue(set.isEmpty());
+        assertInstanceOf(HashSet.class, set);
     }
 
     /**

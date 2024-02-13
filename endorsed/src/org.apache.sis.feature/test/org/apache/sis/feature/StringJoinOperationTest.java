@@ -128,7 +128,7 @@ public final class StringJoinOperationTest extends TestCase {
     @Test
     @DependsOnMethod({"testGetValue", "testSetValue"})
     public void testEscapeCharacter() {
-        final DenseFeature feature = new DenseFeature(person());
+        final var feature = new DenseFeature(person());
         feature.setPropertyValue("name", "marc/emile\\julie");
         feature.setPropertyValue("age", 30);
         assertEquals("<<:marc\\/emile\\\\julie/30:>>", feature.getPropertyValue("concat"));
@@ -143,7 +143,7 @@ public final class StringJoinOperationTest extends TestCase {
      */
     @Test
     public void testIllegalArgument() {
-        final DenseFeature feature = new DenseFeature(person());
+        final var feature = new DenseFeature(person());
         InvalidPropertyValueException e;
 
         e = assertThrows(InvalidPropertyValueException.class,

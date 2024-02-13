@@ -34,7 +34,7 @@ import org.apache.sis.setup.GeometryLibrary;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.test.TestUtilities.getSingleton;
@@ -110,11 +110,11 @@ public final class StoreTest extends TestCase {
         }
         final Extent extent = getSingleton(getSingleton(metadata.getIdentificationInfo()).getExtents());
         final GeographicBoundingBox bbox = (GeographicBoundingBox) getSingleton(extent.getGeographicElements());
-        assertEquals("westBoundLongitude", 50.23, bbox.getWestBoundLongitude(), STRICT);
-        assertEquals("eastBoundLongitude", 50.31, bbox.getEastBoundLongitude(), STRICT);
-        assertEquals("southBoundLatitude",  9.23, bbox.getSouthBoundLatitude(), STRICT);
-        assertEquals("northBoundLatitude",  9.27, bbox.getNorthBoundLatitude(), STRICT);
-        assertTrue("Should not have a vertical extent.", extent.getVerticalElements().isEmpty());
+        assertEquals(50.23, bbox.getWestBoundLongitude());
+        assertEquals(50.31, bbox.getEastBoundLongitude());
+        assertEquals( 9.23, bbox.getSouthBoundLatitude());
+        assertEquals( 9.27, bbox.getNorthBoundLatitude());
+        assertTrue(extent.getVerticalElements().isEmpty());
     }
 
     /**
@@ -126,7 +126,7 @@ public final class StoreTest extends TestCase {
     public void testStaticFeatures() throws DataStoreException {
         try (Store store = open(true)) {
             verifyFeatureType(store.featureType, double[].class, 1);
-            assertEquals("foliation", Foliation.TIME, store.foliation);
+            assertEquals(Foliation.TIME, store.foliation);
             final Iterator<Feature> it = store.features(false).iterator();
             assertPropertyEquals(it.next(), "a", "12:33:51", "12:36:11", new double[] {11, 2, 12, 3},        "walking", 1);
             assertPropertyEquals(it.next(), "b", "12:33:51", "12:36:51", new double[] {10, 2, 11, 3},        "walking", 2);
@@ -155,7 +155,7 @@ public final class StoreTest extends TestCase {
         isMovingFeature = true;
         try (Store store = open(false)) {
             verifyFeatureType(store.featureType, Polyline.class, Integer.MAX_VALUE);
-            assertEquals("foliation", Foliation.TIME, store.foliation);
+            assertEquals(Foliation.TIME, store.foliation);
             final Iterator<Feature> it = store.features(false).iterator();
             assertPropertyEquals(it.next(), "a", "12:33:51", "12:36:51", new double[] {11, 2, 12, 3, 10, 3}, List.of("walking"), List.of(1, 2));
             assertPropertyEquals(it.next(), "b", "12:33:51", "12:36:51", new double[] {10, 2, 11, 3},        List.of("walking"), List.of(2));
@@ -184,10 +184,10 @@ public final class StoreTest extends TestCase {
     private static void assertPropertyTypeEquals(final AttributeType<?> p,
             final String name, final Class<?> valueClass, final int minOccurs, final int maxOccurs)
     {
-        assertEquals("name",       name,       p.getName().toString());
-        assertEquals("valueClass", valueClass, p.getValueClass());
-        assertEquals("minOccurs",  minOccurs,  p.getMinimumOccurs());
-        assertEquals("maxOccurs",  maxOccurs,  p.getMaximumOccurs());
+        assertEquals(name,       p.getName().toString());
+        assertEquals(valueClass, p.getValueClass());
+        assertEquals(minOccurs,  p.getMinimumOccurs());
+        assertEquals(maxOccurs,  p.getMaximumOccurs());
     }
 
     /**
@@ -197,15 +197,15 @@ public final class StoreTest extends TestCase {
             final String startTime, final String endTime, final double[] trajectory,
             final Object state, final Object typeCode)
     {
-        assertEquals("mfidref",   mfidref,            f.getPropertyValue("mfidref"));
-        assertEquals("startTime", instant(startTime), f.getPropertyValue("startTime"));
-        assertEquals("endTime",   instant(endTime),   f.getPropertyValue("endTime"));
-        assertEquals("state",     state,              f.getPropertyValue("state"));
-        assertEquals("typeCode",  typeCode,           f.getPropertyValue("\"type\" code"));
+        assertEquals(mfidref,            f.getPropertyValue("mfidref"));
+        assertEquals(instant(startTime), f.getPropertyValue("startTime"));
+        assertEquals(instant(endTime),   f.getPropertyValue("endTime"));
+        assertEquals(state,              f.getPropertyValue("state"));
+        assertEquals(typeCode,           f.getPropertyValue("\"type\" code"));
         if (isMovingFeature) {
             assertPolylineEquals(trajectory, (Polyline) f.getPropertyValue("trajectory"));
         } else {
-            assertArrayEquals("trajectory", trajectory, (double[]) f.getPropertyValue("trajectory"), STRICT);
+            assertArrayEquals(trajectory, (double[]) f.getPropertyValue("trajectory"));
         }
     }
 
@@ -213,11 +213,11 @@ public final class StoreTest extends TestCase {
      * Asserts that the given polyline contains the expected coordinate values.
      */
     private static void assertPolylineEquals(final double[] trajectory, final Polyline polyline) {
-        assertEquals("pointCount", trajectory.length / 2, polyline.getPointCount());
+        assertEquals(trajectory.length / 2, polyline.getPointCount());
         for (int i=0; i < trajectory.length;) {
             final Point2D xy = polyline.getXY(i / 2);
-            assertEquals("x", trajectory[i++], xy.x, STRICT);
-            assertEquals("y", trajectory[i++], xy.y, STRICT);
+            assertEquals(trajectory[i++], xy.x, "x");
+            assertEquals(trajectory[i++], xy.y, "y");
         }
     }
 }

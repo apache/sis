@@ -58,7 +58,7 @@ public final class RepeatedVectorTest extends TestCase {
 
         Vector sub = vec.subSampling(0, 4, 3);
         assertFalse(sub instanceof RepeatedVector, "Expected the backing array.");
-        assertArrayEquals(new float[] {10, 12, 15}, sub.floatValues(), (float) STRICT);
+        assertArrayEquals(new float[] {10, 12, 15}, sub.floatValues());
     }
 
     /**
@@ -85,7 +85,7 @@ public final class RepeatedVectorTest extends TestCase {
 
         Vector sub = vec.subList(0, 4);
         assertFalse(sub instanceof RepeatedVector, "Expected the backing array.");
-        assertArrayEquals(new float[] {10, 12, 15, 18}, sub.floatValues(), (float) STRICT);
+        assertArrayEquals(new float[] {10, 12, 15, 18}, sub.floatValues());
     }
 
     /**
@@ -121,7 +121,7 @@ public final class RepeatedVectorTest extends TestCase {
 
         Vector sub = vec.subSampling(0, 3, 4);
         assertFalse(sub instanceof RepeatedVector, "Expected the backing array.");
-        assertArrayEquals(new float[] {10, 12, 15, 18}, sub.floatValues(), (float) STRICT);
+        assertArrayEquals(new float[] {10, 12, 15, 18}, sub.floatValues());
     }
 
     /**
@@ -166,11 +166,11 @@ public final class RepeatedVectorTest extends TestCase {
 
         Vector sub = vec.subSampling(0, 1, 6);
         assertFalse(sub instanceof RepeatedVector, "Expected the backing array.");
-        assertArrayEquals(new float[] {10, 10, 10, 12, 15, 18}, sub.floatValues(), (float) STRICT);
+        assertArrayEquals(new float[] {10, 10, 10, 12, 15, 18}, sub.floatValues());
 
         sub = vec.subSampling(0, 1, 12);
         assertArrayEquals(new float[] {10, 10, 10, 12, 15, 18,
-                                       10, ip, 10, 12, 15, 18}, sub.floatValues(), (float) STRICT);
+                                       10, ip, 10, 12, 15, 18}, sub.floatValues());
     }
 
     /**
@@ -186,7 +186,7 @@ public final class RepeatedVectorTest extends TestCase {
             2, -4, 7, 3,
             2, -4, 7, 3,
             2, -4, 7, 3
-        }, vec.floatValues(), (float) STRICT);
+        }, vec.floatValues());
         assertSame(vec, vec.repeat(false, 1));
 
         vec = vec.repeat(false, 2);
@@ -197,7 +197,7 @@ public final class RepeatedVectorTest extends TestCase {
             2, -4, 7, 3,
             2, -4, 7, 3,
             2, -4, 7, 3
-        }, vec.floatValues(), (float) STRICT);
+        }, vec.floatValues());
     }
 
     /**
@@ -214,7 +214,7 @@ public final class RepeatedVectorTest extends TestCase {
             -4, -4, -4,
              7,  7,  7,
              3,  3,  3
-        }, vec.floatValues(), (float) STRICT);
+        }, vec.floatValues());
         assertSame(vec, vec.repeat(false, 1));
 
         vec = vec.repeat(true, 2);
@@ -223,6 +223,6 @@ public final class RepeatedVectorTest extends TestCase {
             -4, -4, -4, -4, -4, -4,
              7,  7,  7,  7,  7,  7,
              3,  3,  3,  3,  3,  3
-        }, vec.floatValues(), (float) STRICT);
+        }, vec.floatValues());
     }
 }

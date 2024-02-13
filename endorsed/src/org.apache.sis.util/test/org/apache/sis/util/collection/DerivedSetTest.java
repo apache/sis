@@ -25,7 +25,7 @@ import org.apache.sis.util.ObjectConverter;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -60,18 +60,18 @@ public final class DerivedSetTest extends TestCase implements ObjectConverter<In
         assertEquals(target.size(), tested.size());
         assertEquals(target, tested);
 
-        assertFalse("contains(2)",       tested.contains(2 ));              // Original value
-        assertTrue ("contains(20)",      tested.contains(20));              // Derived value
-        assertTrue ("before remove(70)", source.contains(7 ));
-        assertTrue (       "remove(70)", tested.remove  (70));
-        assertFalse( "after remove(70)", source.contains(7 ));
-        assertTrue (       "remove(70)", target.remove  (70));              // For comparison purpose.
+        assertFalse(tested.contains(2 ));           // Original value.
+        assertTrue (tested.contains(20));           // Derived value.
+        assertTrue (source.contains(7 ));           // Test before change.
+        assertTrue (tested.remove  (70));
+        assertFalse(source.contains(7 ));           // Test after change.
+        assertTrue (target.remove  (70));           // For comparison purpose.
         assertEquals(target, tested);
 
-        assertFalse("before add(30)", source.contains(3 ));
-        assertTrue (       "add(30)", tested.add     (30));
-        assertTrue ( "after add(30)", source.contains(3 ));
-        assertTrue (       "add(30)", target.add     (30));                 // For comparison purpose.
+        assertFalse(source.contains(3 ));
+        assertTrue (tested.add     (30));
+        assertTrue (source.contains(3 ));
+        assertTrue (target.add     (30));           // For comparison purpose.
         assertEquals(target, tested);
     }
 

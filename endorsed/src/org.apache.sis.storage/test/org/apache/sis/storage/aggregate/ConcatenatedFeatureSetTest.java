@@ -28,7 +28,7 @@ import org.apache.sis.storage.base.MemoryFeatureSet;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertContentInfoEquals;
@@ -69,11 +69,11 @@ public final class ConcatenatedFeatureSetTest extends TestCase {
                 new MemoryFeatureSet(null, ft, List.of(ft.newInstance(), ft.newInstance())),
                 new MemoryFeatureSet(null, ft, List.of(ft.newInstance())));
 
-        assertSame("getType()", ft, cfs.getType());
-        assertEquals("features.count()", 3, cfs.features(false).count());
+        assertSame(ft, cfs.getType());
+        assertEquals(3, cfs.features(false).count());
 
         final Metadata md = cfs.getMetadata();
-        assertNotNull("getMetadata()", md);
+        assertNotNull(md);
         assertContentInfoEquals("City", 3, (FeatureCatalogueDescription) getSingleton(md.getContentInfo()));
         final Lineage lineage = getSingleton(md.getResourceLineages());
         assertFeatureSourceEquals("City", new String[] {"City"}, getSingleton(lineage.getSources()));
@@ -133,19 +133,19 @@ public final class ConcatenatedFeatureSetTest extends TestCase {
         final int sum = set.features(true)
                 .mapToInt(f -> (int) f.getPropertyValue("value"))
                 .sum();
-        assertEquals("Sum of feature `value` property", 12, sum);
+        assertEquals(12, sum, "Sum of feature `value` property");
 
         final Object[] t1labels = set.features(false)
                 .filter(f -> t1.equals(f.getType()))
                 .map(f -> f.getPropertyValue("label"))
                 .toArray();
-        assertArrayEquals("First type labels", new String[] {"first-first", "first-second"}, t1labels);
+        assertArrayEquals(new String[] {"first-first", "first-second"}, t1labels, "First type labels");
 
         final Object[] t2labels = set.features(false)
                 .filter(f -> t2.equals(f.getType()))
                 .map(f -> f.getPropertyValue("label"))
                 .toArray();
-        assertArrayEquals("First type labels", new String[] {"second-first", "second-second"}, t2labels);
+        assertArrayEquals(new String[] {"second-first", "second-second"}, t2labels, "First type labels");
     }
 
     /**
@@ -162,14 +162,9 @@ public final class ConcatenatedFeatureSetTest extends TestCase {
         final FeatureType secondType = builder.clear().setName("second").build();
         final FeatureSet fs1 = new MemoryFeatureSet(null, firstType,  List.of());
         final FeatureSet fs2 = new MemoryFeatureSet(null, secondType, List.of());
-        try {
-            FeatureSet concatenation = ConcatenatedFeatureSet.create(fs1, fs2);
-            fail("Concatenation succeeded despite the lack of common type. Result is:\n" + concatenation);
-        } catch (DataStoreContentException e) {
-            // Expected behavior.
-        } catch (DataStoreException e) {
-            fail("Concatenation failed with an error reserved for other kind of error.");
-        }
+        var e = assertThrows(DataStoreContentException.class, () -> ConcatenatedFeatureSet.create(fs1, fs2),
+                             "Concatenation succeeded despite the lack of common type.");
+        assertNotNull(e);
     }
 
     /**
@@ -179,16 +174,13 @@ public final class ConcatenatedFeatureSetTest extends TestCase {
      */
     @Test
     public void lackOfInput() throws DataStoreException {
-        try {
-            final FeatureSet set = ConcatenatedFeatureSet.create();
-            fail("An empty concatenation has been created:\n" + set);
-        } catch (IllegalArgumentException e) {
-            // This is the expected exception.
-        }
+        var e = assertThrows(IllegalArgumentException.class, () -> ConcatenatedFeatureSet.create(),
+                             "An empty concatenation has been created.");
+        assertNotNull(e);
         final FeatureTypeBuilder builder = new FeatureTypeBuilder().setName("mock");
         final FeatureType mockType = builder.build();
         final FeatureSet fs1 = new MemoryFeatureSet(null, mockType, List.of());
         final FeatureSet set = ConcatenatedFeatureSet.create(fs1);
-        assertSame("A concatenation has been created from a single type.", fs1, set);
+        assertSame(fs1, set, "A concatenation has been created from a single type.");
     }
 }

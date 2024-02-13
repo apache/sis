@@ -34,7 +34,7 @@ import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -152,8 +152,8 @@ public final class JTSTest extends TestCase {
             wrapper.setCoordinateReferenceSystem(crs);
             final GeneralEnvelope envelope = wrapper.getEnvelope();
             assertEquals(crs, envelope.getCoordinateReferenceSystem());
-            assertArrayEquals(new double[] {5, 6}, envelope.getLowerCorner().getCoordinate(), STRICT);
-            assertArrayEquals(new double[] {5, 6}, envelope.getUpperCorner().getCoordinate(), STRICT);
+            assertArrayEquals(new double[] {5, 6}, envelope.getLowerCorner().getCoordinate());
+            assertArrayEquals(new double[] {5, 6}, envelope.getUpperCorner().getCoordinate());
         }
 
         {   /*
@@ -168,8 +168,8 @@ public final class JTSTest extends TestCase {
             wrapper.setCoordinateReferenceSystem(crs);
             final GeneralEnvelope envelope = wrapper.getEnvelope();
             assertEquals(crs, envelope.getCoordinateReferenceSystem());
-            assertArrayEquals(new double[] {5, 6, Double.NaN}, envelope.getLowerCorner().getCoordinate(), STRICT);
-            assertArrayEquals(new double[] {5, 6, Double.NaN}, envelope.getUpperCorner().getCoordinate(), STRICT);
+            assertArrayEquals(new double[] {5, 6, Double.NaN}, envelope.getLowerCorner().getCoordinate());
+            assertArrayEquals(new double[] {5, 6, Double.NaN}, envelope.getUpperCorner().getCoordinate());
         }
     }
 
@@ -197,19 +197,17 @@ public final class JTSTest extends TestCase {
          * Test axes inversion transform.
          */
         in.setUserData(CommonCRS.WGS84.normalizedGeographic());
-        Geometry out = JTS.transform(in, CommonCRS.WGS84.geographic());
-        assertTrue(out instanceof Point);
-        assertEquals(6, ((Point) out).getX(), STRICT);
-        assertEquals(5, ((Point) out).getY(), STRICT);
-        assertEquals(CommonCRS.WGS84.geographic(), out.getUserData());
+        Point p = assertInstanceOf(Point.class, JTS.transform(in, CommonCRS.WGS84.geographic()));
+        assertEquals(6, p.getX());
+        assertEquals(5, p.getY());
+        assertEquals(CommonCRS.WGS84.geographic(), p.getUserData());
         /*
          * Test affine transform. User data must be preserved.
          */
         final AffineTransform2D trs = new AffineTransform2D(1, 0, 0, 1, 10, 20);
-        out = JTS.transform(in, trs);
-        assertTrue(out instanceof Point);
-        assertEquals(15, ((Point) out).getX(), STRICT);
-        assertEquals(26, ((Point) out).getY(), STRICT);
+        p = assertInstanceOf(Point.class, JTS.transform(in, trs));
+        assertEquals(15, p.getX());
+        assertEquals(26, p.getY());
     }
 
     /**
@@ -226,11 +224,11 @@ public final class JTSTest extends TestCase {
         assertSame(in, JTS.transform(in, CommonCRS.WGS84.geographic()));
 
         in.setUserData(CommonCRS.WGS84.geographic3D());
-        final Point out = (Point) JTS.transform(in, CommonCRS.WGS84.geographic());
-        assertEquals(5, out.getX(), STRICT);
-        assertEquals(6, out.getY(), STRICT);
-        assertEquals(CommonCRS.WGS84.geographic(), out.getUserData());
-        assertEquals(Factory.BIDIMENSIONAL, out.getCoordinateSequence().getDimension());
+        final Point p = assertInstanceOf(Point.class, JTS.transform(in, CommonCRS.WGS84.geographic()));
+        assertEquals(5, p.getX());
+        assertEquals(6, p.getY());
+        assertEquals(CommonCRS.WGS84.geographic(), p.getUserData());
+        assertEquals(Factory.BIDIMENSIONAL, p.getCoordinateSequence().getDimension());
     }
 
     /**
@@ -244,8 +242,8 @@ public final class JTSTest extends TestCase {
         final GeometryFactory factory = Factory.INSTANCE.factory(false);
         final Point in = factory.createPoint();
         in.setUserData(CommonCRS.WGS84.geographic());
-        final Geometry out = JTS.transform(in, CommonCRS.WGS84.normalizedGeographic());
-        assertEquals(CommonCRS.WGS84.normalizedGeographic(), out.getUserData());
-        assertTrue(out.isEmpty());
+        final Geometry r = JTS.transform(in, CommonCRS.WGS84.normalizedGeographic());
+        assertEquals(CommonCRS.WGS84.normalizedGeographic(), r.getUserData());
+        assertTrue(r.isEmpty());
     }
 }

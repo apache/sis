@@ -21,7 +21,8 @@ import java.awt.image.RasterFormatException;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.TestCase;
 
 
@@ -114,13 +115,10 @@ public final class DataTypeTest extends TestCase {
         assertEquals(DataType.INT,    DataType.forNumberOfBits(Integer.SIZE, false, true));
         assertEquals(DataType.FLOAT,  DataType.forNumberOfBits(Float.SIZE,   true,  true));
         assertEquals(DataType.DOUBLE, DataType.forNumberOfBits(Double.SIZE,  true,  true));
-        try {
-            DataType.forNumberOfBits(Byte.SIZE, false, true);
-            fail("Signed bytes should be invalid.");
-        } catch (RasterFormatException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("signed"));
-            assertTrue(message, message.contains("true"));
-        }
+
+        var e = assertThrows(RasterFormatException.class,
+                () -> DataType.forNumberOfBits(Byte.SIZE, false, true),
+                "Signed bytes should be invalid.");
+        assertMessageContains(e, "signed", "true");
     }
 }

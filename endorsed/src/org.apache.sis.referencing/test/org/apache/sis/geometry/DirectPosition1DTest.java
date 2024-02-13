@@ -89,7 +89,7 @@ public final class DirectPosition1DTest extends TestCase {
         final DirectPosition1D p1 = new DirectPosition1D(20);
         final DirectPosition1D p2 = p1.clone();
         assertEquals(p1, p2);
-        assertEquals(20.0, p2.coordinate, 0.0);
+        assertEquals(20.0, p2.coordinate);
         validate(p2);
     }
 

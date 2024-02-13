@@ -18,8 +18,7 @@ package org.apache.sis.referencing.gazetteer;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -45,8 +44,8 @@ public final class GazetteerFactoryTest extends TestCase {
         final GazetteerFactory factory = new GazetteerFactory();
         final ReferencingByIdentifiers r1 = factory.forName("MGRS");
         final ReferencingByIdentifiers r2 = factory.forName("Geohash");
-        assertInstanceOf("MGRS", MilitaryGridReferenceSystem.class, r1);
-        assertInstanceOf("Geohash", GeohashReferenceSystem.class, r2);
+        assertInstanceOf(MilitaryGridReferenceSystem.class, r1);
+        assertInstanceOf(GeohashReferenceSystem.class, r2);
         assertSame(r1, factory.forName("MGRS"));
         assertSame(r2, factory.forName("Geohash"));
         try {

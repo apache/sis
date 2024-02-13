@@ -22,7 +22,7 @@ import org.apache.sis.util.Localized;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -55,18 +55,18 @@ public final class RangeArgumentTest extends TestCase implements Localized {
     @Test
     public void testRangeArgumentForBandedModel() {
         final RangeArgument r = RangeArgument.validate(7, new int[] {4, 6, 2}, this);
-        assertEquals("numBands",    3, r.getNumBands());
-        assertEquals("first",       4, r.getFirstSpecified());
-        assertEquals("source",      2, r.getSourceIndex(0));           // Expect sorted source indices: {2, 4, 6}.
-        assertEquals("source",      4, r.getSourceIndex(1));
-        assertEquals("source",      6, r.getSourceIndex(2));
-        assertEquals("target",      2, r.getTargetIndex(0));           // Expect original positions of sorted indices: {2, 0, 1}.
-        assertEquals("target",      0, r.getTargetIndex(1));
-        assertEquals("target",      1, r.getTargetIndex(2));
-        assertEquals("subsampled",  2, r.getSubsampledIndex(0));       // Expect equivalent to getSourceIndex(i).
-        assertEquals("subsampled",  4, r.getSubsampledIndex(1));
-        assertEquals("subsampled",  6, r.getSubsampledIndex(2));
-        assertEquals("pixelStride", 1, r.getPixelStride());
+        assertEquals(3, r.getNumBands());
+        assertEquals(4, r.getFirstSpecified());
+        assertEquals(2, r.getSourceIndex(0));           // Expect sorted source indices: {2, 4, 6}.
+        assertEquals(4, r.getSourceIndex(1));
+        assertEquals(6, r.getSourceIndex(2));
+        assertEquals(2, r.getTargetIndex(0));           // Expect original positions of sorted indices: {2, 0, 1}.
+        assertEquals(0, r.getTargetIndex(1));
+        assertEquals(1, r.getTargetIndex(2));
+        assertEquals(2, r.getSubsampledIndex(0));       // Expect equivalent to getSourceIndex(i).
+        assertEquals(4, r.getSubsampledIndex(1));
+        assertEquals(6, r.getSubsampledIndex(2));
+        assertEquals(1, r.getPixelStride());
     }
 
     /**
@@ -78,17 +78,17 @@ public final class RangeArgumentTest extends TestCase implements Localized {
         final RangeArgument r = RangeArgument.validate(7, new int[] {4, 6, 2}, this);
         assertEquals(3, r.insertBandDimension(new GridExtent(360, 180), 2).getDimension());
         assertArrayEquals(new int[] {3, 1, 2}, r.insertSubsampling(new int[] {3, 1}, 2));
-        assertEquals("numBands",    3, r.getNumBands());
-        assertEquals("first",       4, r.getFirstSpecified());
-        assertEquals("source",      2, r.getSourceIndex(0));           // Expect sorted source indices: {2, 4, 6}.
-        assertEquals("source",      4, r.getSourceIndex(1));
-        assertEquals("source",      6, r.getSourceIndex(2));
-        assertEquals("target",      2, r.getTargetIndex(0));           // Expect original positions of sorted indices: {2, 0, 1}.
-        assertEquals("target",      0, r.getTargetIndex(1));
-        assertEquals("target",      1, r.getTargetIndex(2));
-        assertEquals("subsampled",  0, r.getSubsampledIndex(0));       // Expect source indices divided by 2 minus 1.
-        assertEquals("subsampled",  1, r.getSubsampledIndex(1));
-        assertEquals("subsampled",  2, r.getSubsampledIndex(2));
-        assertEquals("pixelStride", 3, r.getPixelStride());
+        assertEquals(3, r.getNumBands());
+        assertEquals(4, r.getFirstSpecified());
+        assertEquals(2, r.getSourceIndex(0));           // Expect sorted source indices: {2, 4, 6}.
+        assertEquals(4, r.getSourceIndex(1));
+        assertEquals(6, r.getSourceIndex(2));
+        assertEquals(2, r.getTargetIndex(0));           // Expect original positions of sorted indices: {2, 0, 1}.
+        assertEquals(0, r.getTargetIndex(1));
+        assertEquals(1, r.getTargetIndex(2));
+        assertEquals(0, r.getSubsampledIndex(0));       // Expect source indices divided by 2 minus 1.
+        assertEquals(1, r.getSubsampledIndex(1));
+        assertEquals(2, r.getSubsampledIndex(2));
+        assertEquals(3, r.getPixelStride());
     }
 }

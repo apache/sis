@@ -52,9 +52,9 @@ public final class ReferencingUtilitiesTest extends TestCase {
      */
     @Test
     public void testGetGreenwichLongitude() {
-        assertEquals(0,          getGreenwichLongitude(HardCodedDatum.GREENWICH, Units.DEGREE), STRICT);
-        assertEquals(0,          getGreenwichLongitude(HardCodedDatum.GREENWICH, Units.GRAD),   STRICT);
-        assertEquals(2.5969213,  getGreenwichLongitude(HardCodedDatum.PARIS,     Units.GRAD),   STRICT);
+        assertEquals(0,          getGreenwichLongitude(HardCodedDatum.GREENWICH, Units.DEGREE));
+        assertEquals(0,          getGreenwichLongitude(HardCodedDatum.GREENWICH, Units.GRAD));
+        assertEquals(2.5969213,  getGreenwichLongitude(HardCodedDatum.PARIS,     Units.GRAD));
         assertEquals(2.33722917, getGreenwichLongitude(HardCodedDatum.PARIS,     Units.DEGREE), 1E-12);
         assertEquals(2.33720833, getGreenwichLongitude(HardCodedDatum.PARIS_RGS, Units.DEGREE), 1E-8);
         assertEquals(2.596898,   getGreenwichLongitude(HardCodedDatum.PARIS_RGS, Units.GRAD),   1E-6);

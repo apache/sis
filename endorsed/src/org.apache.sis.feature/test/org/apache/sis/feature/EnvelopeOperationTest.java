@@ -164,7 +164,7 @@ public final class EnvelopeOperationTest extends TestCase {
         if (asCharacteristic) {
             @SuppressWarnings("unchecked")
             final var property = (Attribute<GeometryWrapper>) feature.getProperty(propertyName);
-            final Attribute<CoordinateReferenceSystem> crsCharacteristic = Features.cast(
+            final var crsCharacteristic = Features.cast(
                     property.getType().characteristics().get(AttributeConvention.CRS),
                     CoordinateReferenceSystem.class).newInstance();
             crsCharacteristic.setValue(crs);

@@ -51,7 +51,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -223,7 +223,7 @@ public final class StepsViewer extends JComponent implements BiConsumer<String,I
      * @param  levels  levels of isolones to generate.
      */
     public static void showStepByStep(final RenderedImage data, final double... levels) {
-        assertEquals("Unsupported number of bands.", 1, data.getSampleModel().getNumBands());
+        assertEquals(1, data.getSampleModel().getNumBands(), "Unsupported number of bands.");
         final JFrame frame = new JFrame("Step-by-step isoline viewer");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLayout(new BorderLayout());

@@ -30,7 +30,7 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -61,7 +61,7 @@ public final class ColorModelBuilderTest extends TestCase {
          * No conversion of sample values should be necessary because the
          * above-given ranges already fit in a 4-bits IndexColormodel.
          */
-        assertTrue("isIdentity", colorizer.getSampleToIndexValues().isIdentity());
+        assertTrue(colorizer.getSampleToIndexValues().isIdentity());
         final IndexColorModel cm = (IndexColorModel) colorizer.createColorModel(DataBuffer.TYPE_BYTE, 1, 0);
         final int[] expected = {
             0xFF808080,     // Color.GRAY
@@ -81,8 +81,8 @@ public final class ColorModelBuilderTest extends TestCase {
             0xFFFF2727,
             0xFFFF0000      // Color.RED
         };
-        assertEquals("mapSize", expected.length, cm.getMapSize());
-        assertEquals("transparentPixel", 1, cm.getTransparentPixel());
+        assertEquals(expected.length, cm.getMapSize());
+        assertEquals(1, cm.getTransparentPixel());
         for (int i=0; i<expected.length; i++) {
             assertEquals(expected[i], cm.getRGB(i));
         }
@@ -103,15 +103,15 @@ public final class ColorModelBuilderTest extends TestCase {
                 .setName("Temperature").build();
 
         final ColorModelBuilder colorizer = new ColorModelBuilder(ColorModelBuilder.GRAYSCALE, null, true);
-        assertTrue("initialize", colorizer.initialize(null, sd));
+        assertTrue(colorizer.initialize(null, sd));
         final var cm = (IndexColorModel) colorizer.createColorModel(ColorModelBuilder.TYPE_COMPACT, 1, 0);      // Must be first.
         /*
          * Test conversion of a few sample values to packed values.
          */
         final MathTransform1D tr = colorizer.getSampleToIndexValues();
-        assertFalse("isIdentity", tr.isIdentity());
-        assertEquals(  0, tr.transform(Float.NaN), STRICT);
-        assertEquals(  1, tr.transform(MathFunctions.toNanFloat(3)), STRICT);
+        assertFalse(tr.isIdentity());
+        assertEquals(  0, tr.transform(Float.NaN));
+        assertEquals(  1, tr.transform(MathFunctions.toNanFloat(3)));
         assertEquals(  2, tr.transform(-5), 1E-14);
         assertEquals(255, tr.transform(40), 1E-14);
         /*
@@ -119,8 +119,8 @@ public final class ColorModelBuilderTest extends TestCase {
          * The color map is a simple grayscale, except the two first colors which
          * are transparent.
          */
-        assertEquals("mapSize", 256, cm.getMapSize());
-        assertEquals("transparentPixel", 0, cm.getTransparentPixel());
+        assertEquals(256, cm.getMapSize());
+        assertEquals(0, cm.getTransparentPixel());
         final int[] expected = {
               0, 0x00000000,
               1, 0x00000000,

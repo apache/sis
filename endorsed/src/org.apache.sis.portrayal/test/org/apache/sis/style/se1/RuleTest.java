@@ -126,11 +126,11 @@ public final class RuleTest extends StyleTestCase {
         final var cdt = factory.createRule();
 
         // Check defaults
-        assertEquals(0.0, cdt.getMinScaleDenominator(), 0.0);
+        assertEquals(0.0, cdt.getMinScaleDenominator());
 
         // Check get/set
         cdt.setMinScaleDenominator(10.0);
-        assertEquals(10.0, cdt.getMinScaleDenominator(), 0.0);
+        assertEquals(10.0, cdt.getMinScaleDenominator());
     }
 
     /**
@@ -141,11 +141,11 @@ public final class RuleTest extends StyleTestCase {
         final var cdt = factory.createRule();
 
         // Check defaults
-        assertEquals(Double.POSITIVE_INFINITY, cdt.getMaxScaleDenominator(), 0.0);
+        assertEquals(Double.POSITIVE_INFINITY, cdt.getMaxScaleDenominator());
 
         // Check get/set
         cdt.setMaxScaleDenominator(10.0);
-        assertEquals(10.0, cdt.getMaxScaleDenominator(), 0.0);
+        assertEquals(10.0, cdt.getMaxScaleDenominator());
     }
 
     /**

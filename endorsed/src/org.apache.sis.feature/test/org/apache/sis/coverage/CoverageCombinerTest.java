@@ -27,7 +27,7 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -70,6 +70,6 @@ public final class CoverageCombinerTest extends TestCase {
 
         float[] data = null;
         data = r.render(null).getData().getSamples(0, 0, s.width, s.height, 0, data);
-        assertArrayEquals(new float[] {4, 5, 2, 9}, data, 0);
+        assertArrayEquals(new float[] {4, 5, 2, 9}, data);
     }
 }

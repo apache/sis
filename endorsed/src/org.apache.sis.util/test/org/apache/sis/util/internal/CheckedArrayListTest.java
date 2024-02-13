@@ -23,7 +23,8 @@ import java.util.Collections;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
@@ -45,7 +46,7 @@ public final class CheckedArrayListTest extends TestCase {
      */
     @Test
     public void testAdd() {
-        final CheckedArrayList<String> list = new CheckedArrayList<>(String.class);
+        final var list = new CheckedArrayList<>(String.class);
         assertTrue(list.add("One"));
         assertTrue(list.add("Two"));
         assertTrue(list.add("Three"));
@@ -57,7 +58,7 @@ public final class CheckedArrayListTest extends TestCase {
      */
     @Test
     public void testAddAll() {
-        final CheckedArrayList<String> list = new CheckedArrayList<>(String.class);
+        final var list = new CheckedArrayList<>(String.class);
         assertTrue(list.add("One"));
         assertTrue(Collections.addAll(list, "Two", "Three"));
         assertEquals(List.of("One", "Two", "Three"), list);
@@ -68,13 +69,9 @@ public final class CheckedArrayListTest extends TestCase {
      */
     @Test
     public void testAddNull() {
-        final CheckedArrayList<String> list = new CheckedArrayList<>(String.class);
-        try {
-            list.add(null);
-        } catch (NullPointerException e) {
-            final String message = e.getMessage();
-            assertTrue(message.contains("CheckedArrayList<String>"));
-        }
+        final var list = new CheckedArrayList<>(String.class);
+        var e = assertThrows(NullPointerException.class, () -> list.add(null));
+        assertMessageContains(e, "CheckedArrayList<String>");
     }
 
     /**
@@ -82,14 +79,10 @@ public final class CheckedArrayListTest extends TestCase {
      */
     @Test
     public void testAddAllNull() {
-        final CheckedArrayList<String> list = new CheckedArrayList<>(String.class);
-        final Collection<String> toAdd = Arrays.asList("One", null, "Three");
-        try {
-            list.addAll(toAdd);
-        } catch (NullPointerException e) {
-            final String message = e.getMessage();
-            assertTrue(message.contains("CheckedArrayList<String>"));
-        }
+        final var list = new CheckedArrayList<>(String.class);
+        final var toAdd = Arrays.asList("One", null, "Three");
+        var e = assertThrows(NullPointerException.class, () -> list.addAll(toAdd));
+        assertMessageContains(e, "CheckedArrayList<String>");
     }
 
     /**
@@ -97,11 +90,11 @@ public final class CheckedArrayListTest extends TestCase {
      */
     @Test
     public void testAddWrongType() {
-        final CheckedArrayList<String> list = new CheckedArrayList<>(String.class);
+        final var list = new CheckedArrayList<>(String.class);
         final String message = testAddWrongType(list);
-        assertTrue("element", message.contains("element"));
-        assertTrue("Integer", message.contains("Integer"));
-        assertTrue("String",  message.contains("String"));
+        assertTrue(message.contains("element"));
+        assertTrue(message.contains("Integer"));
+        assertTrue(message.contains("String"));
     }
 
     /**
@@ -110,13 +103,9 @@ public final class CheckedArrayListTest extends TestCase {
      */
     @SuppressWarnings({"unchecked","rawtypes"})
     private static String testAddWrongType(final List list) {
-        try {
-            list.add(Integer.valueOf(4));
-            fail("Shall not be allowed to add an integer to the list.");
-            return null;
-        } catch (ClassCastException e) {
-            return e.getMessage();
-        }
+        var e = assertThrows(ClassCastException.class, () -> list.add(Integer.valueOf(4)),
+                             "Shall not be allowed to add an integer to the list.");
+        return e.getMessage();
     }
 
     /**
@@ -125,7 +114,7 @@ public final class CheckedArrayListTest extends TestCase {
     @Test
     @DependsOnMethod("testAddWrongType")
     public void testAddWrongTypeToSublist() {
-        final CheckedArrayList<String> list = new CheckedArrayList<>(String.class);
+        final var list = new CheckedArrayList<>(String.class);
         assertTrue(list.add("One"));
         assertTrue(list.add("Two"));
         assertTrue(list.add("Three"));
@@ -140,26 +129,21 @@ public final class CheckedArrayListTest extends TestCase {
     @DependsOnMethod("testAddAll")
     public void testCastOrCopy() {
         assertNull(CheckedArrayList.castOrCopy(null, String.class));
-        final List<String> fruits = List.of("Apple", "Orange", "Raisin");
-        final CheckedArrayList<String> asStrings = CheckedArrayList.castOrCopy(fruits, String.class);
-        assertEquals ("Should have the given element type.", String.class, asStrings.getElementType());
-        assertNotSame("Should have created a new instance.", fruits, asStrings);
-        assertEquals ("Should contain the same data.",       fruits, asStrings);
-        assertSame   ("Should cast existing instance.", asStrings, CheckedArrayList.castOrCopy(asStrings, String.class));
+        final var fruits = List.of("Apple", "Orange", "Raisin");
+        final var asStrings = CheckedArrayList.castOrCopy(fruits, String.class);
+        assertEquals (String.class, asStrings.getElementType());        // Should have the given element type.
+        assertNotSame(fruits, asStrings);                               // Should have created a new instance.
+        assertEquals (fruits, asStrings);                               // Should contain the same data.
+        assertSame   (asStrings, CheckedArrayList.castOrCopy(asStrings, String.class));
 
-        final CheckedArrayList<CharSequence> asChars = CheckedArrayList.castOrCopy(asStrings, CharSequence.class);
-        assertEquals ("Should have the given element type.", CharSequence.class, asChars.getElementType());
-        assertNotSame("Should have created a new instance.", asStrings, asChars);
-        assertEquals ("Should contain the same data.",       asStrings, asChars);
-        assertEquals ("Should contain the same data.",       fruits,    asChars);
+        final var asChars = CheckedArrayList.castOrCopy(asStrings, CharSequence.class);
+        assertEquals (CharSequence.class, asChars.getElementType());    // Should have the given element type.
+        assertNotSame(asStrings, asChars);                              // Should have created a new instance.
+        assertEquals (asStrings, asChars);                              // Should contain the same data.
+        assertEquals (fruits,    asChars);                              // Should contain the same data.
 
-        try {
-            CheckedArrayList.castOrCopy(asChars, Integer.class);
-            fail("Should not be allowed to cast String to Integer.");
-        } catch (ClassCastException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("String"));
-            assertTrue(message, message.contains("Integer"));
-        }
+        var e = assertThrows(ClassCastException.class, () -> CheckedArrayList.castOrCopy(asChars, Integer.class),
+                             "Should not be allowed to cast String to Integer.");
+        assertMessageContains(e, "String", "Integer");
     }
 }

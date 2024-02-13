@@ -201,8 +201,8 @@ public final class DefaultCompoundCRSTest extends TestCase {
         final DefaultGeographicCRS crs3 = HardCodedCRS.WGS84_3D;
         final DefaultCompoundCRS   crs4 = new DefaultCompoundCRS(Map.of(NAME_KEY, "4D"), crs3, TIME);
         CoordinateSystemAxis axis = crs4.getCoordinateSystem().getAxis(0);
-        assertEquals(-180.0, axis.getMinimumValue(), STRICT);
-        assertEquals(+180.0, axis.getMaximumValue(), STRICT);
+        assertEquals(-180.0, axis.getMinimumValue());
+        assertEquals(+180.0, axis.getMaximumValue());
 
         assertSame(crs4, crs4.forConvention(AxesConvention.RIGHT_HANDED), "Expected a no-op.");
         final DefaultCompoundCRS shifted = crs4.forConvention(AxesConvention.POSITIVE_RANGE);
@@ -210,8 +210,8 @@ public final class DefaultCompoundCRSTest extends TestCase {
         Validators.validate(shifted);
 
         axis = shifted.getCoordinateSystem().getAxis(0);
-        assertEquals(  0.0, axis.getMinimumValue(), STRICT);
-        assertEquals(360.0, axis.getMaximumValue(), STRICT);
+        assertEquals(  0.0, axis.getMinimumValue());
+        assertEquals(360.0, axis.getMaximumValue());
         assertSame(shifted, shifted.forConvention(AxesConvention.POSITIVE_RANGE), "Expected a no-op.");
         assertSame(shifted, crs4   .forConvention(AxesConvention.POSITIVE_RANGE), "Expected cached instance.");
     }

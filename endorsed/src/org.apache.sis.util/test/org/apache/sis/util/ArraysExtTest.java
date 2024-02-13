@@ -253,7 +253,7 @@ public final class ArraysExtTest extends TestCase {
     public void testSwapDouble() {
         final double[] array = new double[] {4, 8, 12, 15, 18};
         ArraysExt.swap(array, 1, 3);
-        assertArrayEquals(new double[] {4, 15, 12, 8, 18}, array, 0.0);
+        assertArrayEquals(new double[] {4, 15, 12, 8, 18}, array);
     }
 
     /**

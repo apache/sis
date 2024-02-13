@@ -29,7 +29,6 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
-import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.operation.provider.Mercator1SP;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
@@ -278,12 +277,11 @@ public final class SingleOperationMarshallingTest extends TestCase {
         assertEquals("Geodetic survey.", targetCRS.getScope().toString(), "targetCRS.scope");
         assertEquals("4275", getSingleton(targetCRS.getIdentifiers()).getCode(), "targetCRS.identifier");
 
-        final MathTransform tr = c.getMathTransform();
-        assertInstanceOf(LinearTransform.class, tr, "mathTransform");
+        final var tr = assertInstanceOf(LinearTransform.class, c.getMathTransform());
         assertMatrixEquals("mathTransform.matrix",
                 new Matrix3(1, 0, 0,
                             0, 1, 2.33722917,
-                            0, 0, 1), ((LinearTransform) tr).getMatrix(), STRICT);
+                            0, 0, 1), tr.getMatrix(), STRICT);
         /*
          * Validate object, then discard warnings caused by duplicated identifiers.
          * Those duplications are intentional, see comment in `Transformation.xml`.

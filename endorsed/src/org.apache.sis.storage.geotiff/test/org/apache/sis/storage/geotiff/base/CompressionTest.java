@@ -18,7 +18,7 @@ package org.apache.sis.storage.geotiff.base;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -40,7 +40,7 @@ public final class CompressionTest extends TestCase {
     @Test
     public void testValueOf() {
         for (final Compression c : Compression.values()) {
-            assertSame(c.name(), c, Compression.valueOf(c.code));
+            assertSame(c, Compression.valueOf(c.code), c.name());
         }
     }
 }

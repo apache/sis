@@ -49,8 +49,7 @@ import org.apache.sis.util.Version;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.storage.sql.SQLStoreTest;
 import org.apache.sis.storage.sql.feature.GeometryGetterTest;
 import org.apache.sis.test.DependsOn;
@@ -147,12 +146,12 @@ public final class PostgresTest extends TestCase {
      * @throws Exception if an error occurred while testing the database.
      */
     private static void testInfoStatements(final ExtendedInfo info) throws Exception {
-        assertEquals("findSRID", 4326, info.findSRID(HardCodedCRS.WGS84));
+        assertEquals(4326, info.findSRID(HardCodedCRS.WGS84));
         final CoordinateReferenceSystem expected = GeometryGetterTest.getExpectedCRS(3395);
         final CoordinateReferenceSystem actual   = info.fetchCRS(3395);
-        assertInstanceOf("findSRID", ProjectedCRS.class, actual);
+        assertInstanceOf(ProjectedCRS.class, actual);
         if (expected != null) {
-            assertSame("fetchCRS", expected, actual);
+            assertSame(expected, actual);
         }
     }
 
@@ -204,8 +203,8 @@ public final class PostgresTest extends TestCase {
             }
             case "point-prj": {
                 final Point p = (Point) geometry;
-                assertEquals(2, p.getX(), STRICT);
-                assertEquals(3, p.getY(), STRICT);
+                assertEquals(2, p.getX());
+                assertEquals(3, p.getY());
                 geomSRID = 3395;
                 break;
             }

@@ -20,15 +20,13 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
-import org.opengis.filter.Literal;
 import org.opengis.filter.FilterFactory;
-import org.opengis.filter.ValueReference;
 
 
 /**
@@ -54,7 +52,7 @@ public final class LeafExpressionTest extends TestCase {
      */
     @Test
     public void testReferenceSerialization() {
-        final ValueReference<Feature, String> filter = factory.property("some_property", String.class);
+        var filter = factory.property("some_property", String.class);
         assertEquals("some_property", filter.getXPath());
         assertSerializedEquals(filter);
     }
@@ -64,23 +62,23 @@ public final class LeafExpressionTest extends TestCase {
      */
     @Test
     public void testLiteralSerialization() {
-        final Literal<?,?> f1 = factory.literal(true);
-        final Literal<?,?> f2 = factory.literal("a text string");
-        final Literal<?,?> f3 = factory.literal('x');
-        final Literal<?,?> f4 = factory.literal(122);
-        final Literal<?,?> f5 = factory.literal(45.56);
+        final var e1 = factory.literal(true);
+        final var e2 = factory.literal("a text string");
+        final var e3 = factory.literal('x');
+        final var e4 = factory.literal(122);
+        final var e5 = factory.literal(45.56);
 
-        assertEquals(Boolean.TRUE,    f1.getValue());
-        assertEquals("a text string", f2.getValue());
-        assertEquals('x',             f3.getValue());
-        assertEquals(122,             f4.getValue());
-        assertEquals(45.56,           f5.getValue());
+        assertEquals(Boolean.TRUE,    e1.getValue());
+        assertEquals("a text string", e2.getValue());
+        assertEquals('x',             e3.getValue());
+        assertEquals(122,             e4.getValue());
+        assertEquals(45.56,           e5.getValue());
 
-        assertSerializedEquals(f1);
-        assertSerializedEquals(f2);
-        assertSerializedEquals(f3);
-        assertSerializedEquals(f4);
-        assertSerializedEquals(f5);
+        assertSerializedEquals(e1);
+        assertSerializedEquals(e2);
+        assertSerializedEquals(e3);
+        assertSerializedEquals(e4);
+        assertSerializedEquals(e5);
     }
 
     /**
@@ -88,26 +86,26 @@ public final class LeafExpressionTest extends TestCase {
      */
     @Test
     public void testReferenceEvaluation() {
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
-        ftb.addAttribute(String.class).setName("some_property");
-        final Feature f = ftb.setName("Test").build().newInstance();
+        final var builder = new FeatureTypeBuilder();
+        builder.addAttribute(String.class).setName("some_property");
+        final var instance = builder.setName("Test").build().newInstance();
 
-        ValueReference<Feature,?> ref = factory.property("some_property");
-        assertEquals(Feature.class, ref.getResourceClass());
-        assertNull(ref.apply(f));
-        assertNull(ref.apply(null));
+        var reference = factory.property("some_property");
+        assertEquals(Feature.class, reference.getResourceClass());
+        assertNull(reference.apply(instance));
+        assertNull(reference.apply(null));
 
-        f.setPropertyValue("some_property", "road");
-        assertEquals("road", ref.apply(f));
+        instance.setPropertyValue("some_property", "road");
+        assertEquals("road", reference.apply(instance));
 
-        ref = factory.property("some_property", String.class);
-        assertEquals("road", ref.apply(f));
+        reference = factory.property("some_property", String.class);
+        assertEquals("road", reference.apply(instance));
 
-        f.setPropertyValue("some_property", "45.1");
-        assertEquals("45.1", ref.apply(f));
+        instance.setPropertyValue("some_property", "45.1");
+        assertEquals("45.1", reference.apply(instance));
 
-        ref = factory.property("some_property", Double.class);
-        assertEquals(45.1, ref.apply(f));
+        reference = factory.property("some_property", Double.class);
+        assertEquals(45.1, reference.apply(instance));
     }
 
     /**
@@ -115,7 +113,7 @@ public final class LeafExpressionTest extends TestCase {
      */
     @Test
     public void testLiteralEvaluation() {
-        final Literal<Feature,?> literal = factory.literal(12.45);
+        final var literal = factory.literal(12.45);
         assertEquals(12.45, literal.apply(null));
     }
 }

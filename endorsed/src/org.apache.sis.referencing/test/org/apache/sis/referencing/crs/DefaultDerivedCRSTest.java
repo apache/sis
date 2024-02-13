@@ -252,9 +252,9 @@ public final class DefaultDerivedCRSTest extends TestCase {
         final Conversion conversion = crs.getConversionFromBase();
         final ParameterValueGroup pg = conversion.getParameterValues();
         assertEpsgNameAndIdentifierEqual("Geographic/topocentric conversions", 9837, conversion.getMethod());
-        assertEquals(55, pg.parameter("Latitude of topocentric origin" ).doubleValue(Units.DEGREE), STRICT);
-        assertEquals( 5, pg.parameter("Longitude of topocentric origin").doubleValue(Units.DEGREE), STRICT);
-        assertEquals( 0, pg.parameter("Ellipsoidal height of topocentric origin").doubleValue(Units.METRE),  STRICT);
+        assertEquals(55, pg.parameter("Latitude of topocentric origin" ).doubleValue(Units.DEGREE));
+        assertEquals( 5, pg.parameter("Longitude of topocentric origin").doubleValue(Units.DEGREE));
+        assertEquals( 0, pg.parameter("Ellipsoidal height of topocentric origin").doubleValue(Units.METRE));
         /*
          * Test marshalling and compare with the original file.
          */

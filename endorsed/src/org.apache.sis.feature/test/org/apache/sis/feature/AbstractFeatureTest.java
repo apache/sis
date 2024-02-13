@@ -120,15 +120,15 @@ public final class AbstractFeatureTest extends FeatureTestCase {
          */
         @Override
         public void setPropertyValue(final String name, Object value) {
-            final PropertyType type = getType().getProperty(name);
-            final boolean isMultiValued = isMultiValued(type);
+            final var property = getType().getProperty(name);
+            final boolean isMultiValued = isMultiValued(property);
             if (isMultiValued && !(value instanceof Collection<?>)) {
                 value = new ArrayList<>(PropertyView.singletonOrEmpty(value));
             }
             if (value != null) {
                 final Class<?> base;
-                if (type instanceof AttributeType<?>) {
-                    base = ((AttributeType<?>) type).getValueClass();
+                if (property instanceof AttributeType<?>) {
+                    base = ((AttributeType<?>) property).getValueClass();
                 } else {
                     base = FeatureType.class;
                 }
@@ -163,7 +163,7 @@ public final class AbstractFeatureTest extends FeatureTestCase {
      */
     @Override
     boolean assertSameProperty(final String name, final Property expected, final boolean modified) {
-        final Property actual = feature.getProperty(name);
+        final var actual = feature.getProperty(name);
         if ((expected instanceof PropertyView) == (actual instanceof PropertyView)) {
             assertEquals(expected, actual, name);
         }

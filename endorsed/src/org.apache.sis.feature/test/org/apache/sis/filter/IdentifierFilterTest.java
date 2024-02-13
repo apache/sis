@@ -21,7 +21,7 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -69,16 +69,16 @@ public final class IdentifierFilterTest extends TestCase {
      */
     @Test
     public void testEvaluate() {
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
-        ftb.addAttribute(String.class).setName("att").addRole(AttributeRole.IDENTIFIER_COMPONENT);
-        final Feature f1 = ftb.setName("Test 1").build().newInstance();
+        final var builder = new FeatureTypeBuilder();
+        builder.addAttribute(String.class).setName("att").addRole(AttributeRole.IDENTIFIER_COMPONENT);
+        final Feature f1 = builder.setName("Test 1").build().newInstance();
         f1.setPropertyValue("att", "123");
 
-        ftb.clear().addAttribute(Integer.class).setName("att").addRole(AttributeRole.IDENTIFIER_COMPONENT);
-        final Feature f2 = ftb.setName("Test 2").build().newInstance();
+        builder.clear().addAttribute(Integer.class).setName("att").addRole(AttributeRole.IDENTIFIER_COMPONENT);
+        final Feature f2 = builder.setName("Test 2").build().newInstance();
         f2.setPropertyValue("att", 123);
 
-        final Feature f3 = ftb.clear().setName("Test 3").build().newInstance();
+        final Feature f3 = builder.clear().setName("Test 3").build().newInstance();
 
         final Filter<Feature> id = factory.resourceId("123");
         assertEquals(Feature.class, id.getResourceClass());
@@ -92,9 +92,9 @@ public final class IdentifierFilterTest extends TestCase {
      */
     @Test
     public void testEvaluateCombined() {
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
-        ftb.addAttribute(String.class).setName("att").addRole(AttributeRole.IDENTIFIER_COMPONENT);
-        final FeatureType type = ftb.setName("Test").build();
+        final var builder = new FeatureTypeBuilder();
+        builder.addAttribute(String.class).setName("att").addRole(AttributeRole.IDENTIFIER_COMPONENT);
+        final FeatureType type = builder.setName("Test").build();
 
         final Feature f1 = type.newInstance(); f1.setPropertyValue("att", "123");
         final Feature f2 = type.newInstance(); f2.setPropertyValue("att", "abc");

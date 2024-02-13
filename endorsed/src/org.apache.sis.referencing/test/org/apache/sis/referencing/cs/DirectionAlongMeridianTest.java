@@ -52,7 +52,7 @@ public final class DirectionAlongMeridianTest extends TestCase {
         dir  = DirectionAlongMeridian.parse(name);
         assertNotNull(dir);
         assertEquals(AxisDirection.SOUTH, dir.baseDirection);
-        assertEquals(180, dir.meridian, 0);
+        assertEquals(180, dir.meridian);
         assertEquals(name, dir.toString());
         assertEquals(dir, DirectionAlongMeridian.parse("South along 180 deg"));
 
@@ -60,7 +60,7 @@ public final class DirectionAlongMeridianTest extends TestCase {
         dir  = DirectionAlongMeridian.parse(name);
         assertNotNull(dir);
         assertEquals(AxisDirection.SOUTH, dir.baseDirection);
-        assertEquals(90, dir.meridian, 0);
+        assertEquals(90, dir.meridian);
         assertEquals(name, dir.toString());
         assertEquals(dir, DirectionAlongMeridian.parse("South along 90 deg East"));
 
@@ -68,7 +68,7 @@ public final class DirectionAlongMeridianTest extends TestCase {
         dir  = DirectionAlongMeridian.parse(name);
         assertNotNull(dir);
         assertEquals(AxisDirection.SOUTH, dir.baseDirection);
-        assertEquals(-90, dir.meridian, 0);
+        assertEquals(-90, dir.meridian);
         assertEquals(name, dir.toString());
         assertEquals(dir, DirectionAlongMeridian.parse("South along 90 deg West"));
 
@@ -76,7 +76,7 @@ public final class DirectionAlongMeridianTest extends TestCase {
         dir  = DirectionAlongMeridian.parse(name);
         assertNotNull(dir);
         assertEquals(AxisDirection.NORTH, dir.baseDirection);
-        assertEquals(45, dir.meridian, 0);
+        assertEquals(45, dir.meridian);
         assertEquals(name, dir.toString());
         assertEquals(dir, DirectionAlongMeridian.parse("North along 45 deg East"));
     }

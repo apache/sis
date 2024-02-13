@@ -62,8 +62,8 @@ public final class DefaultGeographicCRSTest extends TestCase {
     public void testShiftLongitudeRange() {
         final DefaultGeographicCRS crs = HardCodedCRS.WGS84_3D;
         CoordinateSystemAxis axis = crs.getCoordinateSystem().getAxis(0);
-        assertEquals(-180.0, axis.getMinimumValue(), STRICT);
-        assertEquals(+180.0, axis.getMaximumValue(), STRICT);
+        assertEquals(-180.0, axis.getMinimumValue());
+        assertEquals(+180.0, axis.getMaximumValue());
 
         assertSame(crs, crs.forConvention(AxesConvention.RIGHT_HANDED), "Expected a no-op.");
         final DefaultGeographicCRS shifted =  crs.forConvention(AxesConvention.POSITIVE_RANGE);
@@ -71,8 +71,8 @@ public final class DefaultGeographicCRSTest extends TestCase {
         Validators.validate(shifted);
 
         axis = shifted.getCoordinateSystem().getAxis(0);
-        assertEquals(  0.0, axis.getMinimumValue(), STRICT);
-        assertEquals(360.0, axis.getMaximumValue(), STRICT);
+        assertEquals(  0.0, axis.getMinimumValue());
+        assertEquals(360.0, axis.getMaximumValue());
         assertSame(shifted, shifted.forConvention(AxesConvention.POSITIVE_RANGE), "Expected a no-op.");
         assertSame(shifted,     crs.forConvention(AxesConvention.POSITIVE_RANGE), "Expected cached instance.");
     }

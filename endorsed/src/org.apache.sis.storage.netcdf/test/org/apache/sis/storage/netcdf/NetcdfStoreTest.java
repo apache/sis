@@ -23,7 +23,7 @@ import org.apache.sis.util.Version;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 
@@ -67,7 +67,7 @@ public final class NetcdfStoreTest extends TestCase {
         final Metadata metadata;
         try (NetcdfStore store = create(TestData.NETCDF_2D_GEOGRAPHIC)) {
             metadata = store.getMetadata();
-            assertSame("Should be cached.", metadata, store.getMetadata());
+            assertSame(metadata, store.getMetadata(), "Should be cached.");
         }
         MetadataReaderTest.compareToExpected(metadata).assertMetadataEquals();
     }
@@ -83,7 +83,7 @@ public final class NetcdfStoreTest extends TestCase {
         try (NetcdfStore store = create(TestData.NETCDF_2D_GEOGRAPHIC)) {
             version = store.getConventionVersion();
         }
-        assertEquals("major", 1, version.getMajor());
-        assertEquals("minor", 4, version.getMinor());
+        assertEquals(1, version.getMajor());
+        assertEquals(4, version.getMinor());
     }
 }

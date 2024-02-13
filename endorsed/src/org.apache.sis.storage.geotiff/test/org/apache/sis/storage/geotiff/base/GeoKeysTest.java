@@ -29,7 +29,7 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
@@ -77,11 +77,11 @@ public final class GeoKeysTest extends TestCase {
              * If there are no GeoTIFF identifiers, we should have no GeoTIFF name neither.
              * However, we may have more than one name, since GeoTIFF defines also aliases.
              */
-            assertEquals(method.getName().getCode(), identifier == null, names.isEmpty());
+            assertEquals(identifier == null, names.isEmpty(), method.getName().getCode());
             if (identifier != null) {
                 final int code = Short.parseShort(identifier.getCode());
                 for (final String name : names) {
-                    assertEquals(name, code, GeoIdentifiers.code(name));
+                    assertEquals(code, GeoIdentifiers.code(name), name);
                 }
             }
         }
@@ -104,11 +104,11 @@ public final class GeoKeysTest extends TestCase {
                 /*
                  * If there are no GeoTIFF identifiers, we should have no GeoTIFF name neither.
                  */
-                assertEquals(param.getName().getCode(), identifier == null, names.isEmpty());
+                assertEquals(identifier == null, names.isEmpty(), param.getName().getCode());
                 if (identifier != null) {
                     final int code = Short.parseShort(identifier.getCode());
                     for (final String name : names) {
-                        assertEquals(name, code(name), code);
+                        assertEquals(code(name), code, name);
                     }
                 }
             }

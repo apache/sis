@@ -34,7 +34,7 @@ import org.apache.sis.util.ArraysExt;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 
@@ -499,13 +499,13 @@ public final class BandAggregateImageTest extends TestCase {
         assertEquals(ImageUtilities.getNumBands(result), sharingPerBand.length);
         final var arrays = new HashSet<Object>();
         for (final RenderedImage source : result.getSources()) {
-            forAllDataArrays(source, (data, band) -> assertTrue("Found two references to the same array.", arrays.add(data)));
+            forAllDataArrays(source, (data, band) -> assertTrue(arrays.add(data), "Found two references to the same array."));
         }
         forAllDataArrays(result, (data, band) -> {
             final boolean sharing = sharingPerBand[band];
-            assertEquals(sharing ? "Expected the target image to reference an existing array."
-                                 : "Expected only copies, no references to existing arrays.",
-                         sharing, arrays.remove(data));
+            assertEquals(sharing, arrays.remove(data),
+                    sharing ? "Expected the target image to reference an existing array."
+                            : "Expected only copies, no references to existing arrays.");
         });
         boolean sharing = true;
         for (int i=0; i < sharingPerBand.length; i++) {

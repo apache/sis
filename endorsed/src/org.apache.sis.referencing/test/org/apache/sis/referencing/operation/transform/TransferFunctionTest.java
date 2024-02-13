@@ -64,13 +64,12 @@ public final class TransferFunctionTest extends TestCase {
         f.setOffset(-2);
         assertEquals("y = 0.15⋅x − 2", f.toString());
         final MathTransform1D transform = f.getTransform();
-        assertInstanceOf(LinearTransform.class, transform);
         assertMatrixEquals("transform.matrix", new Matrix2(0.15, -2, 0, 1),
-                ((LinearTransform) transform).getMatrix(), STRICT);
+                assertInstanceOf(LinearTransform.class, transform).getMatrix(), STRICT);
         /*
          * Get back the coefficients.
          */
-        final TransferFunction b = new TransferFunction();
+        final var b = new TransferFunction();
         b.setTransform(transform);
         assertEquals(TransferFunctionType.LINEAR, b.getType());
         assertEquals( 1,    b.getBase());
@@ -166,9 +165,8 @@ public final class TransferFunctionTest extends TestCase {
         f.setScale(0.15);
         f.setOffset(-2);
         MathTransform transform = f.createTransform(factory);
-        assertInstanceOf(LinearTransform.class, transform);
         assertMatrixEquals("transform.matrix", new Matrix2(0.15, -2, 0, 1),
-                ((LinearTransform) transform).getMatrix(), STRICT);
+                assertInstanceOf(LinearTransform.class, transform).getMatrix(), STRICT);
         /*
          * Logarithmic case.
          */

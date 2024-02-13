@@ -85,8 +85,8 @@ public final class ConformalProjectionTest extends TransformTestCase {
          * conversion of 90° to radians give exactly Math.PI/2.
          */
         final DoubleDouble dd = DoubleDouble.DEGREES_TO_RADIANS.multiply(90);
-        assertEquals(PI/2, dd.value, 0.0);
-        assertEquals(PI/2, toRadians(90), 0.0);
+        assertEquals(PI/2, dd.value);
+        assertEquals(PI/2, toRadians(90));
     }
 
     /**

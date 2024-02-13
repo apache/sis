@@ -32,8 +32,7 @@ import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.internal.CollectionsExt;
 
 // Test dependencies
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
@@ -180,13 +179,13 @@ public class FeatureComparator {
     private void compareType(final IdentifiedType expected, final IdentifiedType actual) {
         boolean recognized = false;
         if (expected instanceof FeatureType) {
-            assertInstanceOf(path(), FeatureType.class, actual);
-            compareFeatureType((FeatureType) expected, (FeatureType) actual);
+            var c = assertInstanceOf(FeatureType.class, actual, this::path);
+            compareFeatureType((FeatureType) expected, c);
             recognized = true;
         }
         if (expected instanceof PropertyType) {
-            assertInstanceOf(path(), PropertyType.class, actual);
-            comparePropertyType((PropertyType) expected, (PropertyType) actual);
+            var c = assertInstanceOf(PropertyType.class, actual, this::path);
+            comparePropertyType((PropertyType) expected, c);
             recognized = true;
         }
         if (!recognized) {
@@ -204,9 +203,8 @@ public class FeatureComparator {
     private void compareFeatureType(final FeatureType expected, final FeatureType actual) {
         compareIdentifiedType(expected, actual);
 
-        // TODO: put messages in lambda functionw with JUnit 5.
-        assertEquals(path() + "Abstract state differ", expected.isAbstract(), actual.isAbstract());
-        assertEquals(path() + "Super types differ", expected.getSuperTypes(), actual.getSuperTypes());
+        assertEquals(expected.isAbstract(),    actual.isAbstract(),    () -> path() + "Abstract state differ.");
+        assertEquals(expected.getSuperTypes(), actual.getSuperTypes(), () -> path() + "Super types differ.");
         /*
          * Compare all properties that are not ignored.
          * Properties are removed from the `actualProperties` list as we found them.
@@ -252,7 +250,7 @@ public class FeatureComparator {
             final String tip = push(p.getName().toString());
             final Collection<?> expectedValues = asCollection(expected.getPropertyValue(tip));
             final Collection<?> actualValues   = asCollection(actual.getPropertyValue(tip));
-            assertEquals(path() + "Number of values differ", expectedValues.size(), actualValues.size());
+            assertEquals(expectedValues.size(), actualValues.size(), () -> path() + "Number of values differ.");
             final Iterator<?> expectedIter = expectedValues.iterator();
             final Iterator<?> actualIter = actualValues.iterator();
             while (expectedIter.hasNext()) {
@@ -277,16 +275,16 @@ public class FeatureComparator {
      */
     private void comparePropertyType(final PropertyType expected, final PropertyType actual) {
         if (expected instanceof AttributeType) {
-            assertInstanceOf(path(), AttributeType.class, actual);
-            compareAttribute((AttributeType) expected, (AttributeType) actual);
+            var c = assertInstanceOf(AttributeType.class, actual, this::path);
+            compareAttribute((AttributeType) expected, c);
         }
         if (expected instanceof FeatureAssociationRole) {
-            assertInstanceOf(path(), FeatureAssociationRole.class, actual);
-            compareFeatureAssociationRole((FeatureAssociationRole) expected, (FeatureAssociationRole) actual);
+            var c = assertInstanceOf(FeatureAssociationRole.class, actual, this::path);
+            compareFeatureAssociationRole((FeatureAssociationRole) expected, c);
         }
         if (expected instanceof Operation) {
-            assertInstanceOf(path(), Operation.class, actual);
-            compareOperation((Operation) expected, (Operation) actual);
+            var c = assertInstanceOf(Operation.class, actual, this::path);
+            compareOperation((Operation) expected, c);
         }
     }
 
@@ -299,8 +297,8 @@ public class FeatureComparator {
      */
     private void compareAttribute(final AttributeType<?> expected, final AttributeType<?> actual) {
         compareIdentifiedType(expected, actual);
-        assertEquals(path() + "Value classe differ",  expected.getValueClass(),   expected.getValueClass());
-        assertEquals(path() + "Default value differ", expected.getDefaultValue(), expected.getDefaultValue());
+        assertEquals(expected.getValueClass(),   expected.getValueClass(),   () -> path() + "Value classe differ.");
+        assertEquals(expected.getDefaultValue(), expected.getDefaultValue(), () -> path() + "Default value differ.");
 
         final Map<String, AttributeType<?>> expectedChrs = expected.characteristics();
         final Map<String, AttributeType<?>> actualChrs = actual.characteristics();
@@ -313,7 +311,7 @@ public class FeatureComparator {
                 final AttributeType<?> expectedChr = entry.getValue();
                 final AttributeType<?> actualChr = actualChrs.get(p);
                 final String tip = push("characteristic(" + p + ')');
-                assertNotNull(path(), actualChr);
+                assertNotNull(actualChr, this::path);
                 assertTrue(actualChrNames.remove(p));
                 comparePropertyType(expectedChr, actualChr);
                 pull(tip);
@@ -342,8 +340,8 @@ public class FeatureComparator {
      */
     private void compareFeatureAssociationRole(final FeatureAssociationRole expected, final FeatureAssociationRole actual) {
         compareIdentifiedType(expected, actual);
-        assertEquals(path() + "Minimum occurences differ", expected.getMinimumOccurs(), actual.getMinimumOccurs());
-        assertEquals(path() + "Maximum occurences differ", expected.getMaximumOccurs(), actual.getMaximumOccurs());
+        assertEquals(expected.getMinimumOccurs(), actual.getMinimumOccurs(), () -> path() + "Minimum occurences differ.");
+        assertEquals(expected.getMaximumOccurs(), actual.getMaximumOccurs(), () -> path() + "Maximum occurences differ.");
         final String tip = push("association-valuetype");
         compareFeatureType(expected.getValueType(), actual.getValueType());
         pull(tip);
@@ -372,20 +370,20 @@ public class FeatureComparator {
      * @throws AssertionError if the actual type is not equal to the expected type.
      */
     private void compareIdentifiedType(final IdentifiedType expected, final IdentifiedType actual) {
-        assertEquals(path() + "Name differ", expected.getName(), actual.getName());
+        assertEquals(expected.getName(), actual.getName(), () -> path() + "Name differ.");
         if (!ignoreDefinition) {
-            assertEquals(path() + "Definition differ", expected.getDefinition(), actual.getDefinition());
+            assertEquals(expected.getDefinition(), actual.getDefinition(), () -> path() + "Definition differ.");
         }
         if (!ignoreDesignation) {
-            assertEquals(path() + "Designation differ", expected.getDesignation(), actual.getDesignation());
+            assertEquals(expected.getDesignation(), actual.getDesignation(), () -> path() + "Designation differ.");
         }
         if (!ignoreDescription) {
-            assertEquals(path() + "Description differ", expected.getDescription(), actual.getDescription());
+            assertEquals(expected.getDescription(), actual.getDescription(), () -> path() + "Description differ.");
         }
         if (expected instanceof Deprecable && actual instanceof Deprecable) {
-            assertEquals(path() + "Deprecated state differ",
-                    ((Deprecable) expected).isDeprecated(),
-                    ((Deprecable) actual).isDeprecated());
+            assertEquals(((Deprecable) expected).isDeprecated(),
+                         ((Deprecable) actual).isDeprecated(),
+                         () -> path() + "Deprecated state differ.");
         }
     }
 

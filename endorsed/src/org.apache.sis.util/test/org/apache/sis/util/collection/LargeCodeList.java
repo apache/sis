@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import org.opengis.util.CodeList;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**

@@ -20,12 +20,10 @@ import java.util.Set;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSetEquals;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.feature.AttributeType;
 
 
 /**
@@ -56,40 +54,36 @@ public final class CharacteristicTypeBuilderTest extends TestCase {
         assertSame(builder, builder.setDescription ("test description"));
         assertSame(builder, builder.setDefaultValue(2));
         assertSame(builder, builder.setValueClass(Integer.class));
-        assertEquals("valueClass", Integer.class, builder.getValueClass());
+        assertEquals(Integer.class, builder.getValueClass());
         assertSetEquals(Set.of(builder), owner.characteristics());
         /*
          * Pretend that we changed our mind and now want a Float type instead of Integer.
          * In current implementation this requires the creation of a new builder instance,
          * but there is no guarantee that it will always be the case in future versions.
          */
-        final CharacteristicTypeBuilder<Float> newb = builder.setValueClass(Float.class);
-        assertEquals("name",          "stddev",           newb.getName().toString());
-        assertEquals("definition",    "test definition",  newb.getDefinition());
-        assertEquals("description",   "test description", newb.getDescription());
-        assertEquals("designation",   "test designation", newb.getDesignation());
-        assertEquals("valueClass",    Float.class,        newb.getValueClass());
-        assertEquals("defaultValue",  Float.valueOf(2),   newb.getDefaultValue());
-        assertSetEquals(Set.of(newb), owner.characteristics());
+        final CharacteristicTypeBuilder<Float> b2 = builder.setValueClass(Float.class);
+        assertEquals("stddev",           b2.getName().toString());
+        assertEquals("test definition",  b2.getDefinition());
+        assertEquals("test description", b2.getDescription());
+        assertEquals("test designation", b2.getDesignation());
+        assertEquals(Float.class,        b2.getValueClass());
+        assertEquals(Float.valueOf(2),   b2.getDefaultValue());
+        assertSetEquals(Set.of(b2), owner.characteristics());
         /*
          * In order to avoid accidental misuse, the old builder should not be usable anymore.
          */
-        try {
-            builder.setName("new name");
-            fail("Should not allow modification of disposed instance.");
-        } catch (IllegalStateException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("CharacteristicTypeBuilder"));
-        }
+        var e = assertThrows(IllegalStateException.class, () -> builder.setName("new name"),
+                             "Should not allow modification of disposed instance.");
+        assertMessageContains(e, "CharacteristicTypeBuilder");
         /*
          * Verify the characteristic created by the builder.
          */
-        final AttributeType<?> att = newb.build();
-        assertEquals("name",          "stddev",           att.getName().toString());
-        assertEquals("definition",    "test definition",  att.getDefinition().toString());
-        assertEquals("description",   "test description", att.getDescription().toString());
-        assertEquals("designation",   "test designation", att.getDesignation().toString());
-        assertEquals("valueClass",    Float.class,        att.getValueClass());
-        assertEquals("defaultValue",  Float.valueOf(2),   att.getDefaultValue());
+        final var attribute = b2.build();
+        assertEquals("stddev",           attribute.getName().toString());
+        assertEquals("test definition",  attribute.getDefinition().toString());
+        assertEquals("test description", attribute.getDescription().toString());
+        assertEquals("test designation", attribute.getDesignation().toString());
+        assertEquals(Float.class,        attribute.getValueClass());
+        assertEquals(Float.valueOf(2),   attribute.getDefaultValue());
     }
 }

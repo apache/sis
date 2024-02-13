@@ -33,8 +33,7 @@ import org.apache.sis.math.StatisticsFormat;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.referencing.operation.HardCodedConversions;
@@ -166,10 +165,10 @@ public final class ResamplingGridTest extends TestCase {
         final MathTransform projection = HardCodedConversions.mercator().getConversionFromBase().getMathTransform();
         final Rectangle domain = new Rectangle(-20, -40, 40, 80);
         final MathTransform2D tr = compare("Mercator", projection, domain);
-        assertInstanceOf("Expected a non-linear transform.", ResamplingGrid.class, tr);
+        assertInstanceOf(ResamplingGrid.class, tr);
         final ResamplingGrid grid = (ResamplingGrid) tr;
-        assertEquals("The x dimension should be affine.",   1, grid.numXTiles);
-        assertEquals("The y dimension cannot be affine.", 16, grid.numYTiles);     // Empirical value.
+        assertEquals( 1, grid.numXTiles, "The x dimension should be affine.");
+        assertEquals(16, grid.numYTiles, "The y dimension cannot be affine.");     // Empirical value.
     }
 
     /**
@@ -183,7 +182,7 @@ public final class ResamplingGridTest extends TestCase {
         final MathTransform projection = HardCodedConversions.mercator().getConversionFromBase().getMathTransform();
         final Rectangle2D domain = new Rectangle2D.Double(-20, 20, 0.25, 0.25);
         final MathTransform2D tr = compare("Mercator (small area)", projection, domain);
-        assertInstanceOf("Expected a linear transform.", AffineTransform2D.class, tr);
+        assertInstanceOf(AffineTransform2D.class, tr);
     }
 
     /**
@@ -204,10 +203,10 @@ public final class ResamplingGridTest extends TestCase {
         final MathTransform projection = lambertProjection();
         final Rectangle domain = new Rectangle(-20, 30, 40, 20);
         final MathTransform2D tr = compare("Lambert", projection, domain);
-        assertInstanceOf("Expected a non-linear transform.", ResamplingGrid.class, tr);
+        assertInstanceOf(ResamplingGrid.class, tr);
         final ResamplingGrid grid = (ResamplingGrid) tr;
-        assertEquals("The x dimension cannot be affine.", 32, grid.numXTiles);     // Empirical value.
-        assertEquals("The y dimension cannot be affine.", 16, grid.numYTiles);     // Empirical value.
+        assertEquals(32, grid.numXTiles, "The x dimension cannot be affine.");     // Empirical value.
+        assertEquals(16, grid.numYTiles, "The y dimension cannot be affine.");     // Empirical value.
     }
 
     /**
@@ -221,6 +220,6 @@ public final class ResamplingGridTest extends TestCase {
         final MathTransform projection = lambertProjection();
         final Rectangle2D domain = new Rectangle2D.Double(-20, 50, 0.025, 0.025);
         final MathTransform2D tr = compare("Lambert (small area)", projection, domain);
-        assertInstanceOf("Expected a linear transform.", AffineTransform2D.class, tr);
+        assertInstanceOf(AffineTransform2D.class, tr);
     }
 }

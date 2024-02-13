@@ -45,8 +45,8 @@ public final class UnitConversionTest extends TestCase {
     public void testLinear() {
         final MathTransform tr = MathTransforms.convert(Units.KILOMETRE.getConverterTo(Units.METRE));
         final var linear = (LinearTransform1D) tr;
-        assertEquals(1000, linear.scale,  STRICT);
-        assertEquals(   0, linear.offset, STRICT);
+        assertEquals(1000, linear.scale);
+        assertEquals(   0, linear.offset);
     }
 
     /**
@@ -58,7 +58,7 @@ public final class UnitConversionTest extends TestCase {
     public void testLogarithmic() throws TransformException {
         final MathTransform tr = MathTransforms.convert(Units.UNITY.getConverterTo(Units.DECIBEL));
         final var wrapper = (UnitConversion) tr;
-        assertEquals(20, wrapper.transform(10), STRICT);
-        assertEquals(10, wrapper.inverse().transform(20), STRICT);
+        assertEquals(20, wrapper.transform(10));
+        assertEquals(10, wrapper.inverse().transform(20));
     }
 }

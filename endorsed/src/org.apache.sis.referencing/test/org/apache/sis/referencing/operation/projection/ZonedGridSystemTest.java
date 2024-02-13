@@ -76,10 +76,10 @@ public final class ZonedGridSystemTest extends MapProjectionTestCase {
          * Verify parameters.
          */
         final ParameterValueGroup values = ((Parameterized) transform).getParameterValues();
-        assertEquals(0.9996, values.parameter(Constants.SCALE_FACTOR) .doubleValue(Units.UNITY ), 0);
-        assertEquals(500000, values.parameter(Constants.FALSE_EASTING).doubleValue(Units.METRE ), 0);
-        assertEquals(  -180, values.parameter("Initial longitude")    .doubleValue(Units.DEGREE), 0);
-        assertEquals(     6, values.parameter("Zone width")           .doubleValue(Units.DEGREE), 0);
+        assertEquals(0.9996, values.parameter(Constants.SCALE_FACTOR) .doubleValue(Units.UNITY ));
+        assertEquals(500000, values.parameter(Constants.FALSE_EASTING).doubleValue(Units.METRE ));
+        assertEquals(  -180, values.parameter("Initial longitude")    .doubleValue(Units.DEGREE));
+        assertEquals(     6, values.parameter("Zone width")           .doubleValue(Units.DEGREE));
         /*
          * Tests projection of CN Tower coordinate, which is in UTM zone 17.
          */

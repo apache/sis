@@ -30,8 +30,7 @@ import org.apache.sis.util.Version;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.storage.netcdf.classic.ChannelDecoderTest;
 import org.apache.sis.test.DependsOn;
 
@@ -65,9 +64,9 @@ public final class NetcdfStoreProviderTest extends TestCase {
         final StorageConnector c = new StorageConnector(TestData.NETCDF_2D_GEOGRAPHIC.location());
         final NetcdfStoreProvider provider = new NetcdfStoreProvider();
         final ProbeResult probe = provider.probeContent(c);
-        assertTrue  ("isSupported", probe.isSupported());
-        assertEquals("getMimeType", NetcdfStoreProvider.MIME_TYPE, probe.getMimeType());
-        assertEquals("getVersion",  new Version("1"), probe.getVersion());
+        assertTrue  (probe.isSupported());
+        assertEquals(NetcdfStoreProvider.MIME_TYPE, probe.getMimeType());
+        assertEquals(new Version("1"), probe.getVersion());
         c.closeAllExcept(null);
     }
 
@@ -83,9 +82,9 @@ public final class NetcdfStoreProviderTest extends TestCase {
             final StorageConnector c = new StorageConnector(file);
             final NetcdfStoreProvider provider = new NetcdfStoreProvider();
             final ProbeResult probe = provider.probeContent(c);
-            assertTrue  ("isSupported", probe.isSupported());
-            assertEquals("getMimeType", NetcdfStoreProvider.MIME_TYPE, probe.getMimeType());
-            assertNull  ("getVersion",  probe.getVersion());
+            assertTrue  (probe.isSupported());
+            assertEquals(NetcdfStoreProvider.MIME_TYPE, probe.getMimeType());
+            assertNull  (probe.getVersion());
         }
     }
 
@@ -100,7 +99,7 @@ public final class NetcdfStoreProviderTest extends TestCase {
     public void testDecoderFromStream() throws IOException, DataStoreException {
         final StorageConnector c = new StorageConnector(TestData.NETCDF_2D_GEOGRAPHIC.open());
         final Decoder decoder = NetcdfStoreProvider.decoder(createListeners(), c);
-        assertInstanceOf("decoder", ChannelDecoder.class, decoder);
+        assertInstanceOf(ChannelDecoder.class, decoder);
         decoder.close(new DataStoreMock("lock"));
     }
 
@@ -115,7 +114,7 @@ public final class NetcdfStoreProviderTest extends TestCase {
     public void testDecoderFromUCAR() throws IOException, DataStoreException {
         final StorageConnector c = new StorageConnector(createUCAR(TestData.NETCDF_2D_GEOGRAPHIC));
         final Decoder decoder = NetcdfStoreProvider.decoder(createListeners(), c);
-        assertInstanceOf("decoder", DecoderWrapper.class, decoder);
+        assertInstanceOf(DecoderWrapper.class, decoder);
         decoder.close(new DataStoreMock("lock"));
     }
 }

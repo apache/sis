@@ -160,7 +160,7 @@ public class ProjectiveTransformTest extends AffineTransformTest {
         matrix = new Matrix2(0, 10, 0, 1);
         transform = mtFactory.createAffineTransform(matrix);
         Assert.assertMatrixEquals("Transform shall use the given matrix unmodified.",
-                matrix, ((LinearTransform) transform).getMatrix(), STRICT);
+                matrix, assertInstanceOf(LinearTransform.class, transform).getMatrix(), STRICT);
         verifyConsistency(1, 2, 3,   -3, -2, -1);
     }
 

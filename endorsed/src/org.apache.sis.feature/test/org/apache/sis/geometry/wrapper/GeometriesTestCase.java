@@ -29,7 +29,7 @@ import org.apache.sis.math.Vector;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -79,7 +79,7 @@ public abstract class GeometriesTestCase extends TestCase {
      */
     private void createWrapper() {
         wrapper = factory.castOrWrap(geometry);
-        assertNotNull("castOrWrap", wrapper);
+        assertNotNull(wrapper);
     }
 
     /**
@@ -88,9 +88,9 @@ public abstract class GeometriesTestCase extends TestCase {
     @Test
     public void testGetPointCoordinates() {
         geometry = factory.createPoint(4, 5);
-        assertNotNull("createPoint", geometry);
+        assertNotNull(geometry);
         createWrapper();
-        assertArrayEquals("getPointCoordinates", new double[] {4, 5}, wrapper.getPointCoordinates(), STRICT);
+        assertArrayEquals(new double[] {4, 5}, wrapper.getPointCoordinates());
     }
 
     /**
@@ -112,10 +112,10 @@ public abstract class GeometriesTestCase extends TestCase {
 
         createWrapper();
         final GeneralEnvelope env = wrapper.getEnvelope();
-        assertEquals("xmin", -3, env.getLower(0), STRICT);
-        assertEquals("ymin", -6, env.getLower(1), STRICT);
-        assertEquals("xmax",  9, env.getUpper(0), STRICT);
-        assertEquals("ymax",  9, env.getUpper(1), STRICT);
+        assertEquals(-3, env.getLower(0), "xmin");
+        assertEquals(-6, env.getLower(1), "ymin");
+        assertEquals( 9, env.getUpper(0), "xmax");
+        assertEquals( 9, env.getUpper(1), "ymax");
     }
 
     /**
@@ -146,10 +146,10 @@ public abstract class GeometriesTestCase extends TestCase {
 
         createWrapper();
         final GeneralEnvelope env = wrapper.getEnvelope();
-        assertEquals("xmin", -3, env.getLower(0), STRICT);
-        assertEquals("ymin", -6, env.getLower(1), STRICT);
-        assertEquals("xmax", 15, env.getUpper(0), STRICT);
-        assertEquals("ymax", 12, env.getUpper(1), STRICT);
+        assertEquals(-3, env.getLower(0), "xmin");
+        assertEquals(-6, env.getLower(1), "ymin");
+        assertEquals(15, env.getUpper(0), "xmax");
+        assertEquals(12, env.getUpper(1), "ymax");
     }
 
     /**

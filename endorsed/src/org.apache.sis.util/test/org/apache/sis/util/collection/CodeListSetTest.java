@@ -28,7 +28,7 @@ import static org.opengis.referencing.cs.AxisDirection.*;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 
@@ -63,7 +63,7 @@ public final class CodeListSetTest extends TestCase {
             case 1: assertTrue(c.add(NORTH));
             case 0: break;
         }
-        assertEquals("SortedSet.size()", n, c.size());
+        assertEquals(n, c.size());
         return c;
     }
 
@@ -107,18 +107,17 @@ public final class CodeListSetTest extends TestCase {
     @Test
     public void testContains() {
         final CodeListSet<AxisDirection> c = create(4);
-        assertTrue ("NORTH",  c.contains(NORTH));
-        assertFalse("SOUTH",  c.contains(SOUTH));
-        assertTrue ("FUTURE", c.contains(FUTURE));
-        assertFalse("PAST",   c.contains(PAST));
-        assertTrue ("EAST",   c.contains(EAST));
-        assertFalse("WEST",   c.contains(WEST));
-        assertTrue ("UP",     c.contains(UP));
-        assertFalse("DOWN",   c.contains(DOWN));
+        assertTrue (c.contains(NORTH));
+        assertFalse(c.contains(SOUTH));
+        assertTrue (c.contains(FUTURE));
+        assertFalse(c.contains(PAST));
+        assertTrue (c.contains(EAST));
+        assertFalse(c.contains(WEST));
+        assertTrue (c.contains(UP));
+        assertFalse(c.contains(DOWN));
 
-        assertFalse("Should be null-safe.", c.contains(null));
-        assertFalse("Code list of other kind should not be included.",
-                c.contains(OnLineFunction.INFORMATION));
+        assertFalse(c.contains(null), "Should be null-safe.");
+        assertFalse(c.contains(OnLineFunction.INFORMATION), "Code list of other kind should not be included.");
     }
 
     /**
@@ -128,22 +127,21 @@ public final class CodeListSetTest extends TestCase {
     @DependsOnMethod("testContains")
     public void testRemove() {
         final CodeListSet<AxisDirection> c = create(4);
-        assertFalse("Should be null-safe.", c.remove(null));
-        assertFalse("Code list of other kind should not be included.",
-                c.remove(OnLineFunction.INFORMATION));
+        assertFalse(c.remove(null), "Should be null-safe.");
+        assertFalse(c.remove(OnLineFunction.INFORMATION), "Code list of other kind should not be included.");
 
-        assertTrue ("NORTH",  c.remove  (NORTH));
-        assertFalse("SOUTH",  c.remove  (SOUTH));
-        assertFalse("NORTH",  c.contains(NORTH));
+        assertTrue (c.remove  (NORTH));
+        assertFalse(c.remove  (SOUTH));
+        assertFalse(c.contains(NORTH));
         assertEquals(3, c.size());
 
-        assertTrue ("FUTURE", c.remove  (FUTURE));
-        assertFalse("FUTURE", c.contains(FUTURE));
-        assertFalse("PAST",   c.remove  (PAST));
+        assertTrue (c.remove  (FUTURE));
+        assertFalse(c.contains(FUTURE));
+        assertFalse(c.remove  (PAST));
         assertEquals(2, c.size());
 
-        assertTrue ("EAST",   c.remove  (EAST));
-        assertTrue ("UP",     c.remove  (UP));
+        assertTrue (c.remove  (EAST));
+        assertTrue (c.remove  (UP));
         assertTrue (c.isEmpty());
     }
 
@@ -172,12 +170,12 @@ public final class CodeListSetTest extends TestCase {
     public void testRemoveAll() {
         final CodeListSet<AxisDirection> c = create(4);
         final CodeListSet<AxisDirection> o = create(2);
-        assertTrue(o.add(NORTH_EAST)); // Extra value shall be ignored.
+        assertTrue(o.add(NORTH_EAST));      // Extra value shall be ignored.
 
         assertFalse(c.removeAll(createOtherKind()));
         assertTrue(c.removeAll(o));
         assertArrayEquals(new Object[] {UP, FUTURE}, c.toArray());
-        assertFalse("Invoking a second time should not make any difference.", c.removeAll(o));
+        assertFalse(c.removeAll(o));        // Invoking a second time should not make any difference.
         assertEquals(2, c.size());
     }
 
@@ -189,11 +187,11 @@ public final class CodeListSetTest extends TestCase {
     public void testRetainAll() {
         final CodeListSet<AxisDirection> c = create(4);
         final CodeListSet<AxisDirection> o = create(2);
-        assertTrue(o.add(NORTH_EAST)); // Extra value shall be ignored.
+        assertTrue(o.add(NORTH_EAST));      // Extra value shall be ignored.
 
         assertTrue(c.retainAll(o));
         assertArrayEquals(new Object[] {NORTH, EAST}, c.toArray());
-        assertFalse("Invoking a second time should not make any difference.", c.retainAll(o));
+        assertFalse(c.retainAll(o));        // Invoking a second time should not make any difference.
         assertEquals(2, c.size());
         assertTrue(c.retainAll(createOtherKind()));
         assertTrue(c.isEmpty());
@@ -211,7 +209,7 @@ public final class CodeListSetTest extends TestCase {
 
         assertTrue(c.addAll(o));
         assertArrayEquals(new Object[] {NORTH, NORTH_EAST, EAST, UP}, c.toArray());
-        assertFalse("Invoking a second time should not make any difference.", c.addAll(o));
+        assertFalse(c.addAll(o));       // Invoking a second time should not make any difference.
     }
 
     /**
@@ -221,7 +219,7 @@ public final class CodeListSetTest extends TestCase {
     @DependsOnMethod("testContains")
     public void testFill() {
         final CodeListSet<AxisDirection> c = new CodeListSet<>(AxisDirection.class, true);
-        assertTrue("Expect at least 32 elements as of GeoAPI 3.0.0.", c.size() >= 32);
+        assertTrue(c.size() >= 32, "Expect at least 32 elements as of GeoAPI 3.0.");
         assertTrue(c.toString().startsWith("[AxisDirection[OTHER], AxisDirection[NORTH], "));
         /*
          * Testing the full array would be too long and may change in future GeoAPI version
@@ -237,7 +235,7 @@ public final class CodeListSetTest extends TestCase {
     @Test
     public void testLargeCodeList() {
         final Set<LargeCodeList> main = new HashSet<>(Arrays.asList(LargeCodeList.values()));
-        assertTrue("This test requires more than 64 elements.", main.size() > Long.SIZE);
+        assertTrue(main.size() > Long.SIZE, "This test requires more than 64 elements.");
         final CodeListSet<LargeCodeList> c = new CodeListSet<>(LargeCodeList.class);
         /*
          * Copy all content from the `main` to the CodeListSet. This will indirectly
@@ -246,13 +244,13 @@ public final class CodeListSetTest extends TestCase {
         assertTrue(c.addAll(main));
         assertEquals(main.size(), c.size());
         assertEquals(main, c);
-        assertFalse("Invoking a second time should not make any difference.", c.addAll(main));
+        assertFalse(c.addAll(main));        // Invoking a second time should not make any difference.
         /*
          * Keep a copy of the set before we modify it.
          */
         final CodeListSet<LargeCodeList> clone = c.clone();
-        assertNotSame("Clone shall be a new instance.", c, clone);
-        assertEquals("Clone shall be equal to the original.", main, clone);
+        assertNotSame(c, clone);
+        assertEquals(main, clone);
         assertEquals(clone, new CodeListSet<>(LargeCodeList.class, true));
         /*
          * Tests contains(Object) and remove(Object). We also remove elements
@@ -263,10 +261,10 @@ public final class CodeListSetTest extends TestCase {
         do {
             for (final Iterator<LargeCodeList> it=main.iterator(); it.hasNext();) {
                 final LargeCodeList code = it.next();
-                assertTrue(code.name(), c.contains(code));
+                assertTrue(c.contains(code), code.name());
                 if (random.nextBoolean()) {
-                    assertTrue (code.name(), c.remove(code));
-                    assertFalse(code.name(), c.contains(code));
+                    assertTrue (c.remove(code), code.name());
+                    assertFalse(c.contains(code), code.name());
                     it.remove();
                     lastRemoved = code;
                     if (main.size() == 1) {
@@ -282,17 +280,17 @@ public final class CodeListSetTest extends TestCase {
         /*
          * Test containsAll(Collection) and removeAll(Collection).
          */
-        assertTrue ("The original set shall contain the decimated set.",   clone.containsAll(c));
-        assertFalse("The decimated set cannot contain the original set.", c.containsAll(clone));
-        assertTrue ("Original set minus one element.",                     clone.remove(lastRemoved));
-        assertTrue ("Add an element to be ignored by removeAll(…).",       c.add(lastRemoved));
-        assertTrue ("Remove all elements found in the decimated set.",     clone.removeAll(c));
-        assertTrue ("Expect no common elements.", Collections.disjoint(main, clone));
-        assertFalse("Invoking a second time should not make any difference.", clone.removeAll(c));
+        assertTrue (clone.containsAll(c));                  // The original set shall contain the decimated set.
+        assertFalse(c.containsAll(clone));                  // The decimated set cannot contain the original set.
+        assertTrue (clone.remove(lastRemoved));             // Original set minus one element.
+        assertTrue (c.add(lastRemoved));                    // Add an element to be ignored by removeAll(…).
+        assertTrue (clone.removeAll(c));                    // Remove all elements found in the decimated set.
+        assertTrue (Collections.disjoint(main, clone));     // Expect no common elements.
+        assertFalse(clone.removeAll(c));                    // Invoking a second time should not make any difference.
         /*
          * Test retainAll(Collection).
          */
-        assertTrue("Add the element to be retained.", clone.add(lastRemoved));
+        assertTrue(clone.add(lastRemoved));                 // Add the element to be retained.
         assertTrue(c.retainAll(clone));
         assertEquals(Set.of(lastRemoved), c);
     }

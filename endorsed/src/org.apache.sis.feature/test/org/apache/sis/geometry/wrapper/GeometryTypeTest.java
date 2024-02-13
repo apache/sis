@@ -21,7 +21,7 @@ import org.opengis.util.TypeName;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -67,7 +67,7 @@ public final class GeometryTypeTest extends TestCase {
     @Test
     public void testBinaryType() {
         for (final GeometryType type : GeometryType.values()) {
-            assertSame(type.name(), type, GeometryType.forBinaryType(type.binaryType()));
+            assertSame(type, GeometryType.forBinaryType(type.binaryType()), type.name());
         }
     }
 

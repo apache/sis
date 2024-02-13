@@ -23,7 +23,7 @@ import org.apache.sis.storage.DataStoreMock;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
@@ -60,7 +60,7 @@ public final class StoreListenersTest extends TestCase implements StoreListener<
      */
     @Override
     public void eventOccured(final WarningEvent warning) {
-        assertSame("source", store, warning.getSource());
+        assertSame(store, warning.getSource());
         this.warning = warning.getDescription();
     }
 
@@ -71,14 +71,14 @@ public final class StoreListenersTest extends TestCase implements StoreListener<
     @Test
     public void testAddAndRemoveStoreListener() {
         final StoreListeners listeners = store.listeners();
-        assertFalse("hasListeners()", listeners.hasListeners(WarningEvent.class));
-        assertFalse("hasListener(…)", listeners.hasListener (WarningEvent.class, this));
+        assertFalse(listeners.hasListeners(WarningEvent.class));
+        assertFalse(listeners.hasListener (WarningEvent.class, this));
         listeners.addListener(WarningEvent.class, this);
-        assertTrue("hasListeners()", listeners.hasListeners(WarningEvent.class));
-        assertTrue("hasListener(…)", listeners.hasListener (WarningEvent.class, this));
+        assertTrue(listeners.hasListeners(WarningEvent.class));
+        assertTrue(listeners.hasListener (WarningEvent.class, this));
         listeners.removeListener(WarningEvent.class, this);
-        assertFalse("hasListeners()", listeners.hasListeners(WarningEvent.class));
-        assertFalse("hasListener(…)", listeners.hasListener (WarningEvent.class, this));
+        assertFalse(listeners.hasListeners(WarningEvent.class));
+        assertFalse(listeners.hasListener (WarningEvent.class, this));
         listeners.removeListener(WarningEvent.class, this);         // Should be no-op.
     }
 
@@ -125,7 +125,7 @@ public final class StoreListenersTest extends TestCase implements StoreListener<
     public void testWarningWithAutoSource() {
         store.addListener(WarningEvent.class, this);
         store.simulateWarning("The message");
-        assertNotNull("Listener has not been notified.", warning);
+        assertNotNull(warning, "Listener has not been notified.");
         assertEquals(DataStoreMock.class.getName(), warning.getSourceClassName());
         assertEquals("simulateWarning", warning.getSourceMethodName());
         assertEquals("The message", warning.getMessage());

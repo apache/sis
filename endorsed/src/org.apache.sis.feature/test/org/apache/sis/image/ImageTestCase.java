@@ -29,7 +29,7 @@ import static java.lang.StrictMath.round;
 
 // Test dependencies
 import org.junit.AfterClass;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestConfiguration;
 
@@ -85,8 +85,9 @@ public abstract class ImageTestCase extends TestCase {
      * @param title the window title.
      */
     protected final synchronized void showCurrentImage(final String title) {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final RenderedImage image = this.image;
-        assertNotNull("An image must be set.", image);
+        assertNotNull(image, "An image must be set.");
         if (viewEnabled) {
             viewUsed = true;
             TestViewer.show(title, image);
@@ -114,7 +115,7 @@ public abstract class ImageTestCase extends TestCase {
      * shown by {@link #showCurrentImage(String)}.
      */
     static void savePNG(final RenderedImage image, final File file) throws IOException {
-        assertNotNull("An image must be set.", image);
+        assertNotNull(image, "An image must be set.");
         if (!ImageIO.write(image, "png", file)) {
             savePNG(image.getData(), file);
         }

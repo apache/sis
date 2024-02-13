@@ -18,7 +18,7 @@ package org.apache.sis.system;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -39,9 +39,9 @@ public final class LoggersTest extends TestCase {
      */
     @Test
     public void verifyLoggerNames() {
-        assertTrue(Loggers.ISO_19115,            Loggers.ISO_19115           .startsWith(Modules.METADATA    + '.'));
-        assertTrue(Loggers.CRS_FACTORY,          Loggers.CRS_FACTORY         .startsWith(Modules.REFERENCING + '.'));
-        assertTrue(Loggers.COORDINATE_OPERATION, Loggers.COORDINATE_OPERATION.startsWith(Modules.REFERENCING + '.'));
-        assertTrue(Loggers.LOCALIZATION,         Loggers.LOCALIZATION        .startsWith(Modules.UTILITIES   + '.'));
+        assertTrue(Loggers.ISO_19115           .startsWith(Modules.METADATA    + '.'));
+        assertTrue(Loggers.CRS_FACTORY         .startsWith(Modules.REFERENCING + '.'));
+        assertTrue(Loggers.COORDINATE_OPERATION.startsWith(Modules.REFERENCING + '.'));
+        assertTrue(Loggers.LOCALIZATION        .startsWith(Modules.UTILITIES   + '.'));
     }
 }

@@ -32,7 +32,7 @@ import org.apache.sis.image.PlanarImage;
 import org.apache.sis.util.internal.Strings;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -119,7 +119,7 @@ final class SubsampledImage extends PlanarImage {
                     pixelStride*subX, scanlineStride*subY, bandOffsets);
         } else if (sourceModel instanceof MultiPixelPackedSampleModel) {
             final MultiPixelPackedSampleModel sm = (MultiPixelPackedSampleModel) sourceModel;
-            assertEquals("Subsampling on the X axis is not supported.", 1, subX);
+            assertEquals(1, subX, "Subsampling on the X axis is not supported.");
             model = new MultiPixelPackedSampleModel(sm.getDataType(),
                     divExclusive(sm.getWidth(),  subX),
                     divExclusive(sm.getHeight(), subY),
@@ -206,7 +206,7 @@ final class SubsampledImage extends PlanarImage {
             if (warning != null && (source instanceof PlanarImage)) {
                 // Source warning may be "source.height", which we replace by "height".
                 final String s = Strings.orEmpty(((PlanarImage) source).verify());
-                assertEquals(s, s.substring(s.lastIndexOf('.') + 1), warning);
+                assertEquals(s.substring(s.lastIndexOf('.') + 1), warning, s);
             }
             return image;
         }

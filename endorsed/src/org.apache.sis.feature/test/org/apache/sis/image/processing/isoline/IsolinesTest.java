@@ -27,7 +27,7 @@ import org.apache.sis.coverage.grid.j2d.RasterFactory;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -214,14 +214,14 @@ public final class IsolinesTest extends TestCase {
 
         assertFalse(it.isDone());
         assertEquals(PathIterator.SEG_LINETO, it.currentSegment(buffer));
-        assertEquals("x2", 0.5, buffer[0], TOLERANCE);
-        assertEquals("y2", 1,   buffer[1], TOLERANCE);
+        assertEquals(0.5, buffer[0], TOLERANCE, "x2");
+        assertEquals(1,   buffer[1], TOLERANCE, "y2");
 
         it.next();
         assertFalse(it.isDone());
         assertEquals(PathIterator.SEG_LINETO, it.currentSegment(buffer));
-        assertEquals("x3", 1,   buffer[0], TOLERANCE);
-        assertEquals("y3", 1.5, buffer[1], TOLERANCE);
+        assertEquals(1,   buffer[0], TOLERANCE, "x3");
+        assertEquals(1.5, buffer[1], TOLERANCE, "y3");
 
         it.next();
         assertFalse(it.isDone());
@@ -252,7 +252,7 @@ public final class IsolinesTest extends TestCase {
         raster.setPixel(0, 1, new int[] {10, 0,  1});
         raster.setPixel(1, 1, new int[] {20, 0,  5});
         final Isolines[] isolines = Isolines.generate(image, new double[][] {{threshold}}, null);
-        assertEquals("Number of bands", 3, isolines.length);
+        assertEquals(3, isolines.length, "Number of bands");
         for (int b=0; b<3; b++) {
             final Map<Double, Shape> polylines = isolines[b].polylines();
             assertEquals(1, polylines.size());
@@ -280,7 +280,7 @@ public final class IsolinesTest extends TestCase {
         raster.setSample(1, 1, 1, 6);
         threshold = 3;
         final Isolines[] isolines = Isolines.generate(image, new double[][] {{threshold}}, null);
-        assertEquals("Number of bands", 3, isolines.length);
+        assertEquals(3, isolines.length, "Number of bands");
         assertTrue(isolines[0].polylines().isEmpty());
         assertTrue(isolines[2].polylines().isEmpty());
         isoline =  isolines[1].polylines().get(threshold);
@@ -327,7 +327,7 @@ public final class IsolinesTest extends TestCase {
             raster.setSample(i % size, i / size, 0, values[i]);
         }
         final Isolines[] isolines = Isolines.generate(image, new double[][] {{threshold}}, null);
-        assertEquals("Number of bands", 1, isolines.length);
+        assertEquals(1, isolines.length, "Number of bands");
         final Map<Double, Shape> polylines = isolines[0].polylines();
         assertTrue(polylines.size() <= 1);
         isoline = polylines.get(threshold);
@@ -337,7 +337,7 @@ public final class IsolinesTest extends TestCase {
      * Asserts that {@link #isoline} is a segment having the given coordinates.
      */
     private void assertSegmentEquals(final double x0, final double y0, final double x1, final double y1) {
-        assertNotNull("isoline", isoline);
+        assertNotNull(isoline);
         final double[] buffer = new double[2];
         final PathIterator it = isoline.getPathIterator(null);
         assertSegmentEquals(it, buffer, x0, y0, x1, y1);
@@ -353,13 +353,13 @@ public final class IsolinesTest extends TestCase {
     {
         assertFalse(it.isDone());
         assertEquals(PathIterator.SEG_MOVETO, it.currentSegment(buffer));
-        assertEquals("x0", x0, buffer[0], TOLERANCE);
-        assertEquals("y0", y0, buffer[1], TOLERANCE);
+        assertEquals(x0, buffer[0], TOLERANCE);
+        assertEquals(y0, buffer[1], TOLERANCE);
         it.next();
         assertFalse(it.isDone());
         assertEquals(PathIterator.SEG_LINETO, it.currentSegment(buffer));
-        assertEquals("x1", x1, buffer[0], TOLERANCE);
-        assertEquals("y1", y1, buffer[1], TOLERANCE);
+        assertEquals(x1, buffer[0], TOLERANCE);
+        assertEquals(y1, buffer[1], TOLERANCE);
         it.next();
     }
 
@@ -369,7 +369,7 @@ public final class IsolinesTest extends TestCase {
     private void assertSegmentsEqual(final double x0, final double y0, final double x1, final double y1,
                                      final double x2, final double y2, final double x3, final double y3)
     {
-        assertNotNull("isoline", isoline);
+        assertNotNull(isoline);
         final double[] buffer = new double[2];
         final PathIterator it = isoline.getPathIterator(null);
         assertSegmentEquals(it, buffer, x0, y0, x1, y1);

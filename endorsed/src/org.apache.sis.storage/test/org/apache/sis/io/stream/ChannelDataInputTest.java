@@ -25,7 +25,7 @@ import java.nio.charset.StandardCharsets;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -78,62 +78,62 @@ public final class ChannelDataInputTest extends ChannelDataTestCase {
         final DataInput r = referenceStream;
         switch (operation) {
             default: throw new AssertionError(operation);
-            case  0: assertEquals("readByte()",          r.readByte(),              t.readByte());          break;
-            case  1: assertEquals("readShort()",         r.readShort(),             t.readShort());         break;
-            case  2: assertEquals("readUnsignedShort()", r.readUnsignedShort(),     t.readUnsignedShort()); break;
-            case  3: assertEquals("readChar()",          r.readChar(),              t.readChar());          break;
-            case  4: assertEquals("readInt()",           r.readInt(),               t.readInt());           break;
-            case  5: assertEquals("readUnsignedInt()",   r.readInt() & 0xFFFFFFFFL, t.readUnsignedInt());   break;
-            case  6: assertEquals("readLong()",          r.readLong(),              t.readLong());          break;
-            case  7: assertEquals("readFloat()",         r.readFloat(),             t.readFloat(),  0f);    break;
-            case  8: assertEquals("readDouble()",        r.readDouble(),            t.readDouble(), 0d);    break;
+            case  0: assertEquals(r.readByte(),              t.readByte(),          "readByte()");          break;
+            case  1: assertEquals(r.readShort(),             t.readShort(),         "readShort()");         break;
+            case  2: assertEquals(r.readUnsignedShort(),     t.readUnsignedShort(), "readUnsignedShort()"); break;
+            case  3: assertEquals(r.readChar(),              t.readChar(),          "readChar()");          break;
+            case  4: assertEquals(r.readInt(),               t.readInt(),           "readInt()");           break;
+            case  5: assertEquals(r.readInt() & 0xFFFFFFFFL, t.readUnsignedInt(),   "readUnsignedInt()");   break;
+            case  6: assertEquals(r.readLong(),              t.readLong(),          "readLong()");          break;
+            case  7: assertEquals(r.readFloat(),             t.readFloat(),         "readFloat()");         break;
+            case  8: assertEquals(r.readDouble(),            t.readDouble(),        "readDouble()");        break;
             case  9: {
                 final int n = random.nextInt(ARRAY_MAX_LENGTH);
                 final byte[] tmp = new byte[n];
                 r.readFully(tmp);
-                assertArrayEquals("readBytes(int)", tmp, t.readBytes(n));
+                assertArrayEquals(tmp, t.readBytes(n), "readBytes(int)");
                 break;
             }
             case 10: {
                 final int n = random.nextInt(ARRAY_MAX_LENGTH / Character.BYTES);
                 final char[] tmp = new char[n];
                 for (int i=0; i<n; i++) tmp[i] = r.readChar();
-                assertArrayEquals("readChars(int)", tmp, t.readChars(n));
+                assertArrayEquals(tmp, t.readChars(n), "readChars(int)");
                 break;
             }
             case 11: {
                 final int n = random.nextInt(ARRAY_MAX_LENGTH / Short.BYTES);
                 final short[] tmp = new short[n];
                 for (int i=0; i<n; i++) tmp[i] = r.readShort();
-                assertArrayEquals("readShorts(int)", tmp, t.readShorts(n));
+                assertArrayEquals(tmp, t.readShorts(n), "readShorts(int)");
                 break;
             }
             case 12: {
                 final int n = random.nextInt(ARRAY_MAX_LENGTH / Integer.BYTES);
                 final int[] tmp = new int[n];
                 for (int i=0; i<n; i++) tmp[i] = r.readInt();
-                assertArrayEquals("readInts(int)", tmp, t.readInts(n));
+                assertArrayEquals(tmp, t.readInts(n), "readInts(int)");
                 break;
             }
             case 13: {
                 final int n = random.nextInt(ARRAY_MAX_LENGTH / Long.BYTES);
                 final long[] tmp = new long[n];
                 for (int i=0; i<n; i++) tmp[i] = r.readLong();
-                assertArrayEquals("readLongs(int)", tmp, t.readLongs(n));
+                assertArrayEquals(tmp, t.readLongs(n), "readLongs(int)");
                 break;
             }
             case 14: {
                 final int n = random.nextInt(ARRAY_MAX_LENGTH / Float.BYTES);
                 final float[] tmp = new float[n];
                 for (int i=0; i<n; i++) tmp[i] = r.readFloat();
-                assertArrayEquals("readFloats(int)", tmp, t.readFloats(n), 0);
+                assertArrayEquals(tmp, t.readFloats(n), "readFloats(int)");
                 break;
             }
             case 15: {
                 final int n = random.nextInt(ARRAY_MAX_LENGTH / Double.BYTES);
                 final double[] tmp = new double[n];
                 for (int i=0; i<n; i++) tmp[i] = r.readDouble();
-                assertArrayEquals("readDoubles(int)", tmp, t.readDoubles(n), 0);
+                assertArrayEquals(tmp, t.readDoubles(n), "readDoubles(int)");
                 break;
             }
         }
@@ -174,7 +174,7 @@ public final class ChannelDataInputTest extends ChannelDataTestCase {
         int position = 0;
         while (position < length) {
             input.seek(position);
-            assertEquals("getStreamPosition()", position, input.getStreamPosition());
+            assertEquals(position, input.getStreamPosition(), "getStreamPosition()");
             assertEquals(buffer.getLong(position), input.readLong());
             position += random.nextInt(128);
         }
@@ -203,14 +203,14 @@ public final class ChannelDataInputTest extends ChannelDataTestCase {
             final int p = buffer.position();
             final int m = buffer.limit();
             final int n = input.prefetch();
-            assertEquals("Position shall be unchanged.", p, buffer.position());
+            assertEquals(p, buffer.position(), "Position shall be unchanged.");
             final int limit = buffer.limit();
             if (n >= 0) {
                 // Usual case.
-                assertTrue("Limit shall be increased.", limit > m);
+                assertTrue(limit > m, "Limit shall be increased.");
             } else {
                 // Buffer is full or channel reached the end of stream.
-                assertEquals("Limit shall be unchanged", m, limit);
+                assertEquals(m, limit, "Limit shall be unchanged");
             }
             /*
              * Compare the buffer content with the original data array. The comparison starts

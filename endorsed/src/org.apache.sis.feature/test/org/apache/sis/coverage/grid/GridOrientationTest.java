@@ -20,7 +20,8 @@ import org.apache.sis.referencing.cs.AxesConvention;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.TestCase;
 
 
@@ -50,13 +51,10 @@ public final class GridOrientationTest extends TestCase {
                 case RIGHT_HANDED:     assertNotSame(test, test.useVariantOfCRS(c)); break;
                 case DISPLAY_ORIENTED: assertSame   (test, test.useVariantOfCRS(c)); break;
                 default: {
-                    try {
-                        test.useVariantOfCRS(c);
-                        fail("Should not accept " + c);
-                    } catch (IllegalArgumentException e) {
-                        final String message = e.getMessage();
-                        assertTrue(message, message.contains(c.toString()));
-                    }
+                    var e = assertThrows(IllegalArgumentException.class,
+                            () -> test.useVariantOfCRS(c),
+                            () -> "Should not accept " + c);
+                    assertMessageContains(e, c.toString());
                 }
             }
         }

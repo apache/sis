@@ -24,7 +24,7 @@ import org.apache.sis.storage.IllegalNameException;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -77,7 +77,7 @@ public final class TypesTest extends TestCase {
      * Verifies that the given text is non-null and non-empty.
      */
     private static void assertNonEmpty(final String name, final InternationalString i18n) {
-        assertNotNull(name, i18n);
-        assertTrue(name, i18n.length() != 0);
+        assertNotNull(i18n, name);
+        assertTrue(i18n.length() != 0, name);
     }
 }

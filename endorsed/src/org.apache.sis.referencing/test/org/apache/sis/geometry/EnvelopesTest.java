@@ -129,10 +129,10 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
     public void testFromWKT() throws FactoryException {
         final Envelope envelope = Envelopes.fromWKT("BOX(-100 -80, 70 40)");
         assertEquals(2, envelope.getDimension());
-        assertEquals(-100, envelope.getMinimum(0), 0);
-        assertEquals(  70, envelope.getMaximum(0), 0);
-        assertEquals( -80, envelope.getMinimum(1), 0);
-        assertEquals(  40, envelope.getMaximum(1), 0);
+        assertEquals(-100, envelope.getMinimum(0));
+        assertEquals(  70, envelope.getMaximum(0));
+        assertEquals( -80, envelope.getMinimum(1));
+        assertEquals(  40, envelope.getMaximum(1));
         validate(envelope);
     }
 
@@ -185,10 +185,10 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
          * as expected, then the envelope coordinates should not be NaN.
          */
         final Envelope env2D = Envelopes.transform(env, targetCRS);
-        assertEquals(-170, env2D.getMinimum(0), 0);
-        assertEquals( 170, env2D.getMaximum(0), 0);
-        assertEquals( -80, env2D.getMinimum(1), 0);
-        assertEquals(  80, env2D.getMaximum(1), 0);
+        assertEquals(-170, env2D.getMinimum(0));
+        assertEquals( 170, env2D.getMaximum(0));
+        assertEquals( -80, env2D.getMinimum(1));
+        assertEquals(  80, env2D.getMaximum(1));
     }
 
     /**

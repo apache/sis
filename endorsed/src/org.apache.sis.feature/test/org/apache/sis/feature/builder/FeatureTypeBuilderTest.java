@@ -17,7 +17,6 @@
 package org.apache.sis.feature.builder;
 
 import java.util.Map;
-import java.util.Iterator;
 import com.esri.core.geometry.Geometry;
 import com.esri.core.geometry.Point;
 import org.opengis.geometry.Envelope;
@@ -27,7 +26,8 @@ import org.apache.sis.feature.internal.AttributeConvention;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.feature.DefaultFeatureTypeTest;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
@@ -39,7 +39,6 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.FeatureType;
 import org.opengis.feature.IdentifiedType;
-import org.opengis.feature.PropertyType;
 import org.opengis.feature.Operation;
 
 
@@ -64,7 +63,7 @@ public final class FeatureTypeBuilderTest extends TestCase {
      */
     @Test
     public void testNullParents() {
-        final FeatureTypeBuilder builder = new FeatureTypeBuilder(null);
+        var builder = new FeatureTypeBuilder(null);
         assertSame(builder, builder.setSuperTypes(new FeatureType[6]));
         assertEquals(0, builder.getSuperTypes().length);
     }
@@ -75,10 +74,10 @@ public final class FeatureTypeBuilderTest extends TestCase {
      */
     @Test
     public void testSetAbstract() {
-        final FeatureTypeBuilder builder = new FeatureTypeBuilder(null);
-        assertFalse("isAbstract", builder.isAbstract());
+        var builder = new FeatureTypeBuilder(null);
+        assertFalse(builder.isAbstract());
         assertSame (builder, builder.setAbstract(true));
-        assertTrue ("isAbstract", builder.isAbstract());
+        assertTrue (builder.isAbstract());
     }
 
     /**
@@ -87,10 +86,10 @@ public final class FeatureTypeBuilderTest extends TestCase {
      */
     @Test
     public void testSetDeprecated() {
-        FeatureTypeBuilder builder = new FeatureTypeBuilder();
-        assertFalse("isDeprecated", builder.isDeprecated());
+        var builder = new FeatureTypeBuilder();
+        assertFalse(builder.isDeprecated());
         builder.setDeprecated(true);
-        assertTrue("isDeprecated", builder.isDeprecated());
+        assertTrue(builder.isDeprecated());
     }
 
     /**
@@ -98,10 +97,10 @@ public final class FeatureTypeBuilderTest extends TestCase {
      */
     @Test
     public void testSetNameSpace() {
-        final FeatureTypeBuilder builder = new FeatureTypeBuilder();
-        assertNull("nameSpace", builder.getNameSpace());
+        var builder = new FeatureTypeBuilder();
+        assertNull(builder.getNameSpace());
         assertSame(builder, builder.setNameSpace("myNameSpace"));
-        assertEquals("nameSpace", "myNameSpace", builder.getNameSpace());
+        assertEquals("myNameSpace", builder.getNameSpace());
     }
 
     /**
@@ -110,21 +109,17 @@ public final class FeatureTypeBuilderTest extends TestCase {
     @Test
     @DependsOnMethod({"testSetAbstract", "testSetDeprecated", "testSetNameSpace"})
     public void testInitialization() {
-        final FeatureTypeBuilder builder = new FeatureTypeBuilder();
-        try {
-            builder.build();
-            fail("Builder should have failed if there is not at least a name set.");
-        } catch (IllegalArgumentException ex) {
-            final String message = ex.getMessage();
-            assertTrue(message, message.contains("name"));
-        }
-        assertSame(builder, builder.setName("scope", "test"));
-        final FeatureType type = builder.build();
+        var builder = new FeatureTypeBuilder();
+        var e = assertThrows(IllegalArgumentException.class, () -> builder.build(),
+                "Builder should have failed if there is not at least a name set.");
+        assertMessageContains(e, "name");
 
-        assertEquals("name", "scope:test",   type.getName().toString());
-        assertFalse ("isAbstract",           type.isAbstract());
-        assertEquals("properties count",  0, type.getProperties(true).size());
-        assertEquals("super-types count", 0, type.getSuperTypes().size());
+        assertSame(builder, builder.setName("scope", "test"));
+        final var feature = builder.build();
+        assertEquals("scope:test", feature.getName().toString());
+        assertFalse (feature.isAbstract());
+        assertEquals(0, feature.getProperties(true).size());
+        assertEquals(0, feature.getSuperTypes().size());
     }
 
     /**
@@ -133,7 +128,7 @@ public final class FeatureTypeBuilderTest extends TestCase {
     @Test
     @DependsOnMethod("testInitialization")
     public void testAddAttribute() {
-        final FeatureTypeBuilder builder = new FeatureTypeBuilder();
+        final var builder = new FeatureTypeBuilder();
         assertSame(builder, builder.setName("myScope", "myName"));
         assertSame(builder, builder.setDefinition ("test definition"));
         assertSame(builder, builder.setDesignation("test designation"));
@@ -144,49 +139,49 @@ public final class FeatureTypeBuilderTest extends TestCase {
         builder.addAttribute(Point  .class).setName("location").setCRS(HardCodedCRS.WGS84);
         builder.addAttribute(Double .class).setName("score").setDefaultValue(10.0).setMinimumOccurs(5).setMaximumOccurs(50);
 
-        final FeatureType type = builder.build();
-        assertEquals("name",        "myScope:myName",   type.getName().toString());
-        assertEquals("definition",  "test definition",  type.getDefinition().toString());
-        assertEquals("description", "test description", type.getDescription().toString());
-        assertEquals("designation", "test designation", type.getDesignation().toString());
-        assertTrue  ("isAbstract",                      type.isAbstract());
+        final var feature = builder.build();
+        assertEquals("myScope:myName",   feature.getName().toString());
+        assertEquals("test definition",  feature.getDefinition().toString());
+        assertEquals("test description", feature.getDescription().toString());
+        assertEquals("test designation", feature.getDesignation().toString());
+        assertTrue  (                    feature.isAbstract());
 
-        final Iterator<? extends PropertyType> it = type.getProperties(true).iterator();
-        final AttributeType<?> a0 = (AttributeType<?>) it.next();
-        final AttributeType<?> a1 = (AttributeType<?>) it.next();
-        final AttributeType<?> a2 = (AttributeType<?>) it.next();
-        final AttributeType<?> a3 = (AttributeType<?>) it.next();
-        assertFalse("properties count", it.hasNext());
+        final var it = feature.getProperties(true).iterator();
+        final var a0 = attributeType(it.next());
+        final var a1 = attributeType(it.next());
+        final var a2 = attributeType(it.next());
+        final var a3 = attributeType(it.next());
+        assertFalse(it.hasNext());
 
-        assertEquals("name", "name",     a0.getName().toString());
-        assertEquals("name", "age",      a1.getName().toString());
-        assertEquals("name", "location", a2.getName().toString());
-        assertEquals("name", "score",    a3.getName().toString());
+        assertEquals("name",     a0.getName().toString());
+        assertEquals("age",      a1.getName().toString());
+        assertEquals("location", a2.getName().toString());
+        assertEquals("score",    a3.getName().toString());
 
-        assertEquals("valueClass", String.class,  a0.getValueClass());
-        assertEquals("valueClass", Integer.class, a1.getValueClass());
-        assertEquals("valueClass", Point.class,   a2.getValueClass());
-        assertEquals("valueClass", Double.class,  a3.getValueClass());
+        assertEquals(String.class,  a0.getValueClass());
+        assertEquals(Integer.class, a1.getValueClass());
+        assertEquals(Point.class,   a2.getValueClass());
+        assertEquals(Double.class,  a3.getValueClass());
 
-        assertEquals("minimumOccurs",   1, a0.getMinimumOccurs());
-        assertEquals("minimumOccurs",   1, a1.getMinimumOccurs());
-        assertEquals("minimumOccurs",   1, a2.getMinimumOccurs());
-        assertEquals("minimumOccurs",   5, a3.getMinimumOccurs());
+        assertEquals(1, a0.getMinimumOccurs());
+        assertEquals(1, a1.getMinimumOccurs());
+        assertEquals(1, a2.getMinimumOccurs());
+        assertEquals(5, a3.getMinimumOccurs());
 
-        assertEquals("maximumOccurs",   1, a0.getMaximumOccurs());
-        assertEquals("maximumOccurs",   1, a1.getMaximumOccurs());
-        assertEquals("maximumOccurs",   1, a2.getMaximumOccurs());
-        assertEquals("maximumOccurs",  50, a3.getMaximumOccurs());
+        assertEquals( 1, a0.getMaximumOccurs());
+        assertEquals( 1, a1.getMaximumOccurs());
+        assertEquals( 1, a2.getMaximumOccurs());
+        assertEquals(50, a3.getMaximumOccurs());
 
-        assertEquals("defaultValue", null, a0.getDefaultValue());
-        assertEquals("defaultValue", null, a1.getDefaultValue());
-        assertEquals("defaultValue", null, a2.getDefaultValue());
-        assertEquals("defaultValue", 10.0, a3.getDefaultValue());
+        assertEquals(null, a0.getDefaultValue());
+        assertEquals(null, a1.getDefaultValue());
+        assertEquals(null, a2.getDefaultValue());
+        assertEquals(10.0, a3.getDefaultValue());
 
-        assertFalse("characterizedByCRS", AttributeConvention.characterizedByCRS(a0));
-        assertFalse("characterizedByCRS", AttributeConvention.characterizedByCRS(a1));
-        assertTrue ("characterizedByCRS", AttributeConvention.characterizedByCRS(a2));
-        assertFalse("characterizedByCRS", AttributeConvention.characterizedByCRS(a3));
+        assertFalse(AttributeConvention.characterizedByCRS(a0));
+        assertFalse(AttributeConvention.characterizedByCRS(a1));
+        assertTrue (AttributeConvention.characterizedByCRS(a2));
+        assertFalse(AttributeConvention.characterizedByCRS(a3));
     }
 
     /**
@@ -196,7 +191,7 @@ public final class FeatureTypeBuilderTest extends TestCase {
     @Test
     @DependsOnMethod("testAddAttribute")
     public void testAddIdentifierAndGeometry() {
-        final FeatureTypeBuilder builder = new FeatureTypeBuilder();
+        final var builder = new FeatureTypeBuilder();
         assertSame(builder, builder.setName("scope", "test"));
         assertSame(builder, builder.setIdentifierDelimiters("-", "pref.", null));
         builder.addAttribute(String.class).setName("name")
@@ -205,23 +200,23 @@ public final class FeatureTypeBuilderTest extends TestCase {
                 .setCRS(HardCodedCRS.WGS84)
                 .addRole(AttributeRole.DEFAULT_GEOMETRY);
 
-        final FeatureType type = builder.build();
-        assertEquals("name", "scope:test", type.getName().toString());
-        assertFalse ("isAbstract", type.isAbstract());
+        final var feature = builder.build();
+        assertEquals("scope:test", feature.getName().toString());
+        assertFalse(feature.isAbstract());
 
-        final Iterator<? extends PropertyType> it = type.getProperties(true).iterator();
-        final PropertyType a0 = it.next();
-        final PropertyType a1 = it.next();
-        final PropertyType a2 = it.next();
-        final PropertyType a3 = it.next();
-        final PropertyType a4 = it.next();
-        assertFalse("properties count", it.hasNext());
+        final var it = feature.getProperties(true).iterator();
+        final var a0 = it.next();
+        final var a1 = it.next();
+        final var a2 = it.next();
+        final var a3 = it.next();
+        final var a4 = it.next();
+        assertFalse(it.hasNext());
 
-        assertEquals("name", AttributeConvention.IDENTIFIER_PROPERTY, a0.getName());
-        assertEquals("name", AttributeConvention.ENVELOPE_PROPERTY,   a1.getName());
-        assertEquals("name", AttributeConvention.GEOMETRY_PROPERTY,   a2.getName());
-        assertEquals("name", "name",                                  a3.getName().toString());
-        assertEquals("name", "shape",                                 a4.getName().toString());
+        assertEquals(AttributeConvention.IDENTIFIER_PROPERTY, a0.getName());
+        assertEquals(AttributeConvention.ENVELOPE_PROPERTY,   a1.getName());
+        assertEquals(AttributeConvention.GEOMETRY_PROPERTY,   a2.getName());
+        assertEquals("name",                                  a3.getName().toString());
+        assertEquals("shape",                                 a4.getName().toString());
     }
 
     /**
@@ -232,19 +227,19 @@ public final class FeatureTypeBuilderTest extends TestCase {
     @Test
     @DependsOnMethod("testAddIdentifierAndGeometry")
     public void testAddAnonymousIdentifier() {
-        final FeatureTypeBuilder builder = new FeatureTypeBuilder();
+        final var builder = new FeatureTypeBuilder();
         assertSame(builder, builder.setName("City"));
         builder.addAttribute(String.class).setName(AttributeConvention.IDENTIFIER_PROPERTY).addRole(AttributeRole.IDENTIFIER_COMPONENT);
         builder.addAttribute(Integer.class).setName("population");
-        final FeatureType type = builder.build();
-        final Iterator<? extends PropertyType> it = type.getProperties(true).iterator();
-        final PropertyType a0 = it.next();
-        final PropertyType a1 = it.next();
-        assertFalse("properties count", it.hasNext());
-        assertEquals("name", AttributeConvention.IDENTIFIER_PROPERTY, a0.getName());
-        assertEquals("type", String.class,  ((AttributeType<?>) a0).getValueClass());
-        assertEquals("name", "population", a1.getName().toString());
-        assertEquals("type", Integer.class, ((AttributeType<?>) a1).getValueClass());
+        final var feature = builder.build();
+        final var it = feature.getProperties(true).iterator();
+        final var a0 = attributeType(it.next());
+        final var a1 = attributeType(it.next());
+        assertFalse(it.hasNext());
+        assertEquals(AttributeConvention.IDENTIFIER_PROPERTY, a0.getName());
+        assertEquals(String.class, a0.getValueClass());
+        assertEquals("population", a1.getName().toString());
+        assertEquals(Integer.class, a1.getValueClass());
     }
 
     /**
@@ -255,21 +250,21 @@ public final class FeatureTypeBuilderTest extends TestCase {
     @Test
     @DependsOnMethod("testAddIdentifierAndGeometry")
     public void testAddAnonymousGeometry() {
-        final FeatureTypeBuilder builder = new FeatureTypeBuilder();
+        final var builder = new FeatureTypeBuilder();
         assertSame(builder, builder.setName("City"));
         builder.addAttribute(Point.class).setName(AttributeConvention.GEOMETRY_PROPERTY).addRole(AttributeRole.DEFAULT_GEOMETRY);
         builder.addAttribute(Integer.class).setName("population");
-        final FeatureType type = builder.build();
-        final Iterator<? extends PropertyType> it = type.getProperties(true).iterator();
-        final PropertyType a0 = it.next();
-        final PropertyType a1 = it.next();
-        final PropertyType a2 = it.next();
-        assertFalse("properties count", it.hasNext());
-        assertEquals("name", AttributeConvention.ENVELOPE_PROPERTY, a0.getName());
-        assertEquals("name", AttributeConvention.GEOMETRY_PROPERTY, a1.getName());
-        assertEquals("type", Point.class,   ((AttributeType<?>) a1).getValueClass());
-        assertEquals("name", "population", a2.getName().toString());
-        assertEquals("type", Integer.class, ((AttributeType<?>) a2).getValueClass());
+        final var feature = builder.build();
+        final var it = feature.getProperties(true).iterator();
+        final var a0 = /*operation*/(it.next());
+        final var a1 = attributeType(it.next());
+        final var a2 = attributeType(it.next());
+        assertFalse(it.hasNext());
+        assertEquals(AttributeConvention.ENVELOPE_PROPERTY, a0.getName());
+        assertEquals(AttributeConvention.GEOMETRY_PROPERTY, a1.getName());
+        assertEquals(Point.class,   a1.getValueClass());
+        assertEquals("population",  a2.getName().toString());
+        assertEquals(Integer.class, a2.getValueClass());
     }
 
     /**
@@ -278,16 +273,16 @@ public final class FeatureTypeBuilderTest extends TestCase {
      */
     @Test
     public void testCreateFromTemplate() {
-        final FeatureTypeBuilder builder = new FeatureTypeBuilder(DefaultFeatureTypeTest.capital());
-        assertEquals("name",       "Capital", builder.getName().toString());
-        assertEquals("superTypes", "City",    TestUtilities.getSingleton(builder.getSuperTypes()).getName().toString());
-        assertFalse ("isAbstract",            builder.isAbstract());
+        final var builder = new FeatureTypeBuilder(DefaultFeatureTypeTest.capital());
+        assertEquals("Capital", builder.getName().toString());
+        assertEquals("City",    TestUtilities.getSingleton(builder.getSuperTypes()).getName().toString());
+        assertFalse (           builder.isAbstract());
 
         // The list of properties does not include super-type properties.
-        final AttributeTypeBuilder<?> a0 = (AttributeTypeBuilder<?>) TestUtilities.getSingleton(builder.properties());
-        assertEquals("name",  "parliament",  a0.getName().toString());
-        assertEquals("type",  String.class,  a0.getValueClass());
-        assertTrue  ("roles",                a0.roles().isEmpty());
+        final var a0 = attributeTypeBuilder(TestUtilities.getSingleton(builder.properties()));
+        assertEquals("parliament",  a0.getName().toString());
+        assertEquals(String.class,  a0.getValueClass());
+        assertTrue  (               a0.roles().isEmpty());
     }
 
     /**
@@ -296,32 +291,32 @@ public final class FeatureTypeBuilderTest extends TestCase {
     @Test
     @DependsOnMethod("testCreateFromTemplate")
     public void testCreateFromTemplateWithRoles() {
-        FeatureTypeBuilder builder = new FeatureTypeBuilder().setName("City");
+        var builder = new FeatureTypeBuilder().setName("City");
         builder.addAttribute(String  .class).setName("name").roles().add(AttributeRole.IDENTIFIER_COMPONENT);
         builder.addAttribute(Integer .class).setName("population");
         builder.addAttribute(Geometry.class).setName("area").roles().add(AttributeRole.DEFAULT_GEOMETRY);
 
-        final FeatureType type = builder.build();
-        builder = new FeatureTypeBuilder(type);
-        assertEquals("name", "City", builder.getName().toString());
-        assertEquals("superTypes", 0, builder.getSuperTypes().length);
+        final var feature = builder.build();
+        builder = new FeatureTypeBuilder(feature);
+        assertEquals("City", builder.getName().toString());
+        assertEquals(0, builder.getSuperTypes().length);
 
-        final Iterator<PropertyTypeBuilder> it = builder.properties().iterator();
-        final AttributeTypeBuilder<?> a0 = (AttributeTypeBuilder<?>) it.next();
-        final AttributeTypeBuilder<?> a1 = (AttributeTypeBuilder<?>) it.next();
-        final AttributeTypeBuilder<?> a2 = (AttributeTypeBuilder<?>) it.next();
-        assertFalse("properties count", it.hasNext());
-        assertEquals("name", "name",       a0.getName().toString());
-        assertEquals("name", "population", a1.getName().toString());
-        assertEquals("name", "area",       a2.getName().toString());
+        final var it = builder.properties().iterator();
+        final var a0 = attributeTypeBuilder(it.next());
+        final var a1 = attributeTypeBuilder(it.next());
+        final var a2 = attributeTypeBuilder(it.next());
+        assertFalse(it.hasNext());
+        assertEquals("name",       a0.getName().toString());
+        assertEquals("population", a1.getName().toString());
+        assertEquals("area",       a2.getName().toString());
 
-        assertEquals("type", String.class,   a0.getValueClass());
-        assertEquals("type", Integer.class,  a1.getValueClass());
-        assertEquals("type", Geometry.class, a2.getValueClass());
+        assertEquals(String.class,   a0.getValueClass());
+        assertEquals(Integer.class,  a1.getValueClass());
+        assertEquals(Geometry.class, a2.getValueClass());
 
-        assertTrue  ("roles", a1.roles().isEmpty());
-        assertEquals("roles", AttributeRole.IDENTIFIER_COMPONENT, TestUtilities.getSingleton(a0.roles()));
-        assertEquals("roles", AttributeRole.DEFAULT_GEOMETRY,     TestUtilities.getSingleton(a2.roles()));
+        assertTrue  (a1.roles().isEmpty());
+        assertEquals(AttributeRole.IDENTIFIER_COMPONENT, TestUtilities.getSingleton(a0.roles()));
+        assertEquals(AttributeRole.DEFAULT_GEOMETRY,     TestUtilities.getSingleton(a2.roles()));
     }
 
     /**
@@ -331,20 +326,20 @@ public final class FeatureTypeBuilderTest extends TestCase {
     @Test
     @DependsOnMethod("testAddAttribute")
     public void testBuildCache() {
-        final FeatureTypeBuilder builder = new FeatureTypeBuilder().setName("City");
-        final AttributeType<String> name = builder.addAttribute(String.class).setName("name").build();
-        final FeatureType city = builder.build();
-        assertSame("Should return the existing AttributeType.", name, city.getProperty("name"));
-        assertSame("Should return the existing FeatureType.", city, builder.build());
+        final var builder   = new FeatureTypeBuilder().setName("City");
+        final var attribute = builder.addAttribute(String.class).setName("name").build();
+        final var feature   = builder.build();
+        assertSame(attribute, feature.getProperty("name"), "Should return the existing AttributeType.");
+        assertSame(feature, builder.build(), "Should return the existing FeatureType.");
 
-        assertSame("Should return the existing AttributeType since we didn't changed anything.",
-                   name, builder.getProperty("name").build());
+        assertSame(attribute, builder.getProperty("name").build(),
+                "Should return the existing AttributeType since we didn't changed anything.");
 
-        assertNotSame("Should return a new AttributeType since we changed something.",
-                      name, builder.getProperty("name").setDescription("Name of the city").build());
+        assertNotSame(attribute, builder.getProperty("name").setDescription("Name of the city").build(),
+                "Should return a new AttributeType since we changed something.");
 
-        assertNotSame("Should return a new FeatureType since we changed an attribute.",
-                      city, builder.build());
+        assertNotSame(feature, builder.build(),
+                "Should return a new FeatureType since we changed an attribute.");
     }
 
     /**
@@ -353,15 +348,15 @@ public final class FeatureTypeBuilderTest extends TestCase {
      */
     @Test
     public void testEnvelopeOverride() {
-        FeatureTypeBuilder builder = new FeatureTypeBuilder().setName("CoverageRecord").setAbstract(true);
+        var builder = new FeatureTypeBuilder().setName("CoverageRecord").setAbstract(true);
         builder.addAttribute(Geometry.class).setName(AttributeConvention.GEOMETRY_PROPERTY).addRole(AttributeRole.DEFAULT_GEOMETRY);
-        final FeatureType parentType = builder.build();
+        final var parentFeature = builder.build();
 
-        builder = new FeatureTypeBuilder().setName("Record").setSuperTypes(parentType);
+        builder = new FeatureTypeBuilder().setName("Record").setSuperTypes(parentFeature);
         builder.addAttribute(Envelope.class).setName(AttributeConvention.ENVELOPE_PROPERTY);
-        final FeatureType childType = builder.build();
+        final var childFeature = builder.build();
 
-        final Iterator<? extends PropertyType> it = childType.getProperties(true).iterator();
+        final var it = childFeature.getProperties(true).iterator();
         assertPropertyEquals("sis:envelope", Envelope.class, it.next());
         assertPropertyEquals("sis:geometry", Geometry.class, it.next());
         assertFalse(it.hasNext());
@@ -373,16 +368,16 @@ public final class FeatureTypeBuilderTest extends TestCase {
      */
     @Test
     public void testOverrideByOperation() {
-        FeatureTypeBuilder builder = new FeatureTypeBuilder().setName("Parent").setAbstract(true);
-        final AttributeType<Integer> pa = builder.addAttribute(Integer.class).setName("A").build();
-        builder.addAttribute(Integer.class).setName("B");
-        final FeatureType parentType = builder.build();
+        var builder   = new FeatureTypeBuilder().setName("Parent").setAbstract(true);
+        var attribute = builder.addAttribute(Integer.class).setName("A").build();
+        /* no local */  builder.addAttribute(Integer.class).setName("B");
+        final var parentFeature = builder.build();
 
-        builder = new FeatureTypeBuilder().setName("Child").setSuperTypes(parentType);
-        builder.addProperty(FeatureOperations.link(Map.of(AbstractOperation.NAME_KEY, "B"), pa));
-        final FeatureType childType = builder.build();
+        builder = new FeatureTypeBuilder().setName("Child").setSuperTypes(parentFeature);
+        builder.addProperty(FeatureOperations.link(Map.of(AbstractOperation.NAME_KEY, "B"), attribute));
+        final var childFeature = builder.build();
 
-        final Iterator<? extends PropertyType> it = childType.getProperties(true).iterator();
+        final var it = childFeature.getProperties(true).iterator();
         assertPropertyEquals("A", Integer.class, it.next());
         assertPropertyEquals("B", Integer.class, it.next());
         assertFalse(it.hasNext());
@@ -392,10 +387,24 @@ public final class FeatureTypeBuilderTest extends TestCase {
      * Verifies that the given property is an attribute with the given name and value class.
      */
     private static void assertPropertyEquals(final String name, final Class<?> valueClass, IdentifiedType property) {
-        assertEquals("name", name, property.getName().toString());
+        assertEquals(name, property.getName().toString());
         if (property instanceof Operation) {
             property = ((Operation) property).getResult();
         }
-        assertEquals("valueClass", valueClass, ((AttributeType<?>) property).getValueClass());
+        assertEquals(valueClass, attributeType(property).getValueClass());
+    }
+
+    /**
+     * Casts a property to an attribute.
+     */
+    private static AttributeType<?> attributeType(final IdentifiedType property) {
+        return assertInstanceOf(AttributeType.class, property);
+    }
+
+    /**
+     * Casts a property builder to an attribute builder.
+     */
+    private static AttributeTypeBuilder<?> attributeTypeBuilder(final PropertyTypeBuilder builder) {
+        return assertInstanceOf(AttributeTypeBuilder.class, builder);
     }
 }

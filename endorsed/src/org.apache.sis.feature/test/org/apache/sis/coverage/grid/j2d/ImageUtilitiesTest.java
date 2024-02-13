@@ -31,7 +31,7 @@ import static org.apache.sis.util.internal.Numerics.COMPARISON_THRESHOLD;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -116,8 +116,8 @@ public final class ImageUtilitiesTest extends TestCase {
     private static void assertBandNamesEqual(final int nde, final int type, final short... names) {
         final BufferedImage image = new BufferedImage(1, 1, type);
         final ColorModel cm = image.getColorModel();
-        assertEquals("numDataElements", nde, image.getSampleModel().getNumDataElements());
-        assertArrayEquals("bandNames", names, ImageUtilities.bandNames(cm, image.getSampleModel()));
+        assertEquals(nde, image.getSampleModel().getNumDataElements());
+        assertArrayEquals(names, ImageUtilities.bandNames(cm, image.getSampleModel()));
         /*
          * The following is more for testing our understanding of the way BufferedImage works.
          * We want to verify that no matter which BufferedImage.TYPE_* constant we used, values
@@ -222,16 +222,14 @@ public final class ImageUtilitiesTest extends TestCase {
         final AffineTransform test = new AffineTransform(4, 0, 0, 4, -400, -1186);
         final AffineTransform copy = new AffineTransform(test);
         assertTrue(ImageUtilities.roundIfAlmostInteger(test));
-        assertEquals("Coefficients were already integers, so the " +
-                "transform should not have been modified.", copy, test);
+        assertEquals(copy, test);       // Coefficients were already integers, so the transform should not have been modified.
 
         test.scale(1 + tolerance/8, 1 - tolerance/8);
         assertTrue(ImageUtilities.roundIfAlmostInteger(test));
-        assertEquals("Coefficients should have been rounded.", copy, test);
+        assertEquals(copy, test);       // Coefficients should have been rounded.
 
         test.scale(1 + tolerance*2, 1 - tolerance*2);
         assertFalse(ImageUtilities.roundIfAlmostInteger(test));
-        assertFalse("Change was larger than threshold, so the " +
-                "transform should not have been modified.", copy.equals(test));
+        assertNotEquals(copy, test);    // Change was larger than threshold, so the transform should not have been modified.
     }
 }

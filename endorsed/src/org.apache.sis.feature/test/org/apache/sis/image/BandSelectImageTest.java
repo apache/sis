@@ -31,8 +31,7 @@ import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.feature.Assertions.assertValuesEqual;
@@ -98,8 +97,8 @@ public final class BandSelectImageTest extends TestCase {
             cm = ColorModelFactory.createGrayScale(DataBuffer.TYPE_BYTE, numBands, checkedBand, Byte.MIN_VALUE, Byte.MAX_VALUE);
         }
         @SuppressWarnings("UseOfObsoleteCollectionType")
-        final Hashtable<String,Object> properties = new Hashtable<>();
-        final double[] resolutions = new double[numBands];
+        final var properties = new Hashtable<String,Object>();
+        final var resolutions = new double[numBands];
         for (int i=0; i<numBands; i++) resolutions[i] = resolution(i);
         properties.put(PlanarImage.SAMPLE_RESOLUTIONS_KEY, resolutions);
         bufferedImage = new BufferedImage(cm, (WritableRaster) image.getTile(0, 0), false, properties);
@@ -133,9 +132,9 @@ public final class BandSelectImageTest extends TestCase {
      */
     private static void verifySamples(final RenderedImage image, final int numBands, final int checkedBand) {
         final Raster tile = image.getTile(0,0);
-        assertEquals("numBands", numBands, tile.getNumBands());
-        assertEquals("numBands", numBands, ImageUtilities.getNumBands(image));
-        assertEquals("sampleModel", image.getSampleModel(), tile.getSampleModel());
+        assertEquals(numBands, tile.getNumBands());
+        assertEquals(numBands, ImageUtilities.getNumBands(image));
+        assertEquals(image.getSampleModel(), tile.getSampleModel());
         assertValuesEqual(tile, checkedBand, expectedSampleValues());
     }
 
@@ -146,13 +145,13 @@ public final class BandSelectImageTest extends TestCase {
      * @param  bands  selected bands.
      */
     private static void verifyProperties(final RenderedImage image, final int... bands) {
-        assertArrayEquals("propertyNames", new String[] {PlanarImage.SAMPLE_RESOLUTIONS_KEY}, image.getPropertyNames());
+        assertArrayEquals(new String[] {PlanarImage.SAMPLE_RESOLUTIONS_KEY}, image.getPropertyNames());
         final double[] resolutions = (double[]) image.getProperty(PlanarImage.SAMPLE_RESOLUTIONS_KEY);
         final double[] expected = new double[bands.length];
         for (int i=0; i<bands.length; i++) {
             expected[i] = resolution(bands[i]);
         }
-        assertArrayEquals(expected, resolutions, STRICT);
+        assertArrayEquals(expected, resolutions);
     }
 
     /**
@@ -172,14 +171,14 @@ public final class BandSelectImageTest extends TestCase {
         verifySamples(test, 2, 1);
 
         test = processor.selectBands(bufferedImage, 1);
-        assertInstanceOf("image", BufferedImage.class, test);
-        assertEquals("colorModel", IndexColorModel.class, test.getColorModel().getClass());
+        assertInstanceOf(BufferedImage.class, test);
+        assertEquals(IndexColorModel.class, test.getColorModel().getClass());
         verifySamples(test, 1, 0);
         verifyProperties(test, 1);
 
         test = processor.selectBands(bufferedImage, 0, 1);
-        assertInstanceOf("image", BufferedImage.class, test);
-        assertInstanceOf("colorModel", IndexColorModel.class, test.getColorModel());
+        assertInstanceOf(BufferedImage.class, test);
+        assertInstanceOf(IndexColorModel.class, test.getColorModel());
         verifySamples(test, 2, 1);
         verifyProperties(test, 0, 1);
     }
@@ -198,8 +197,8 @@ public final class BandSelectImageTest extends TestCase {
         verifySamples(test, 3, 2);
 
         test = processor.selectBands(bufferedImage, 3, 0, 2);
-        assertInstanceOf("image", BufferedImage.class, test);
-        assertNotNull("colorModel", test.getColorModel());
+        assertInstanceOf(BufferedImage.class, test);
+        assertNotNull(test.getColorModel());
         verifySamples(test, 3, 2);
         verifyProperties(test, 3, 0, 2);
     }

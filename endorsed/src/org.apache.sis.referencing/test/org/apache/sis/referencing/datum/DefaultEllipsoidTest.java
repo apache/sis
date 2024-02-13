@@ -100,7 +100,7 @@ public final class DefaultEllipsoidTest extends TestCase {
         assertInstanceOf(Sphere.class, sphere);
         assertTrue  (sphere.isSphere());
         assertFalse (GRS80 .isSphere());
-        assertEquals(6371007, sphere.getAuthalicRadius(), 0.0);
+        assertEquals(6371007, sphere.getAuthalicRadius());
         assertEquals(6371007, GRS80 .getAuthalicRadius(), 0.2);
     }
 

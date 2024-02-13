@@ -43,7 +43,7 @@ import static org.apache.sis.coverage.grid.GridGeometryTest.assertExtentEquals;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Assert.assertBetween;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
@@ -239,8 +239,8 @@ public final class GridDerivationTest extends TestCase {
         DirectPosition2D src = new DirectPosition2D();
         DirectPosition2D tgt = new DirectPosition2D();
         DirectPosition2D exp = new DirectPosition2D();
-        src.x = 94; src.y = 13; exp.x = -50; exp.y =  8; assertEquals("Lower corner", exp, cornerToCRS.transform(src, tgt));
-        src.x = 96; src.y = 40; exp.x = +31; exp.y = 12; assertEquals("Upper corner", exp, cornerToCRS.transform(src, tgt));
+        src.x = 94; src.y = 13; exp.x = -50; exp.y =  8; assertEquals(exp, cornerToCRS.transform(src, tgt), "Lower corner");
+        src.x = 96; src.y = 40; exp.x = +31; exp.y = 12; assertEquals(exp, cornerToCRS.transform(src, tgt), "Upper corner");
     }
 
     /**
@@ -404,7 +404,7 @@ public final class GridDerivationTest extends TestCase {
         grid = derivation.subgrid(envelope, 2, 1).build();
         assertExtentEquals(new long[] {55, 0}, new long[] {204, 39}, derivation.getIntersection());
         assertExtentEquals(new long[] {11, 0}, new long[] { 40,  7}, grid.getExtent());
-        assertArrayEquals(new double[] {2.5, 1.25}, grid.getResolution(false), STRICT);
+        assertArrayEquals(new double[] {2.5, 1.25}, grid.getResolution(false));
         /*
          * Without chunk size, the resolution would have been {2,1} which correspond to a subsampling of {4,4}.
          * But because of the chunk size, the subsampling have been rounded to {5,5} which correspond to above
@@ -478,7 +478,7 @@ public final class GridDerivationTest extends TestCase {
         GridDerivation change = base.derive().subgrid(query);
         GridGeometry   result = change.build();
         Matrix         toCRS  = MathTransforms.getMatrix(result.getGridToCRS(PixelInCell.CELL_CENTER));
-        assertArrayEquals(new double[] {10, 40}, result.getResolution(false), STRICT);
+        assertArrayEquals(new double[] {10, 40}, result.getResolution(false));
         assertMatrixEquals("gridToCRS", new Matrix3(
                  10,   0, 205,
                   0, -40, 480,      // Note the negative sign, preserved from base grid geometry.
@@ -506,7 +506,7 @@ public final class GridDerivationTest extends TestCase {
         assertFalse(result.isDefined(GridGeometry.GRID_TO_CRS));
         assertFalse(result.isDefined(GridGeometry.CRS));
         assertTrue (result.isDefined(GridGeometry.RESOLUTION));
-        assertArrayEquals(new double[] {3, 5}, result.getResolution(false), STRICT);
+        assertArrayEquals(new double[] {3, 5}, result.getResolution(false));
     }
 
     /**
@@ -526,7 +526,7 @@ public final class GridDerivationTest extends TestCase {
          */
         GridGeometry slice = grid.derive().slice(new GeneralDirectPosition(Double.NaN, Double.NaN, 15)).build();
         assertNotSame(grid, slice);
-        assertSame("gridToCRS", grid.gridToCRS, slice.gridToCRS);
+        assertSame(grid.gridToCRS, slice.gridToCRS);
         final long[] expectedLow  = {336,  20, 6};
         final long[] expectedHigh = {401, 419, 6};
         assertExtentEquals(expectedLow, expectedHigh, slice.getExtent());
@@ -538,7 +538,7 @@ public final class GridDerivationTest extends TestCase {
         p.setOrdinate(0, 1500);
         slice = grid.derive().slice(p).build();
         assertNotSame(grid, slice);
-        assertSame("gridToCRS", grid.gridToCRS, slice.gridToCRS);
+        assertSame(grid.gridToCRS, slice.gridToCRS);
         assertExtentEquals(expectedLow, expectedHigh, slice.getExtent());
     }
 
@@ -561,7 +561,7 @@ public final class GridDerivationTest extends TestCase {
                 .slice(new DirectPosition2D(51, -173))
                 .build();
 
-        assertEquals("Slice with wrap-around", expectedResult, fromWrapAround);
+        assertEquals(expectedResult, fromWrapAround, "Slice with wrap-around");
         assertBetween("Wrapped Y coordinate",
                       base.envelope.getMinimum(1),
                       base.envelope.getMaximum(1),

@@ -25,7 +25,7 @@ import org.apache.sis.util.ObjectConverter;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
@@ -80,18 +80,18 @@ public final class DerivedMapTest extends TestCase implements ObjectConverter<In
         assertEquals(target.keySet(),   tested.keySet());
         assertEquals(target.entrySet(), tested.entrySet());
         assertEquals(target,            tested);
-        assertTrue ("containsKey(400)", tested.containsKey(400));
-        assertFalse("containsKey(4)",   tested.containsKey(4));
+        assertTrue (tested.containsKey(400));
+        assertFalse(tested.containsKey(4));
 
-        assertEquals("before remove(300)", 8,  source.get        (3  ).intValue());
-        assertEquals("       remove(300)", 80, tested.remove     (300).intValue());
-        assertFalse ("after  remove(300)",     source.containsKey(3  ));
-        assertEquals("       remove(300)", 80, target.remove     (300).intValue());         // For comparison purpose.
+        assertEquals(8,  source.get        (3  ).intValue());       // Test before change.
+        assertEquals(80, tested.remove     (300).intValue());
+        assertFalse (    source.containsKey(3  ));                  // Test after change.
+        assertEquals(80, target.remove     (300).intValue());       // For comparison purpose.
         assertEquals(target, tested);
 
-        assertEquals("before put(900)", 1,  source.get(9      ).intValue());
-        assertEquals("       put(900)", 10, tested.put(900, 30).intValue());
-        assertEquals("after  put(900)", 3,  source.get(9      ).intValue());
+        assertEquals(1,  source.get(9      ).intValue());
+        assertEquals(10, tested.put(900, 30).intValue());
+        assertEquals(3,  source.get(9      ).intValue());
     }
 
     /**

@@ -74,16 +74,16 @@ public final class DefaultGeocentricCRSTest extends TestCase {
     public void testShiftLongitudeRange() {
         final DefaultGeocentricCRS crs = HardCodedCRS.SPHERICAL;
         CoordinateSystemAxis axis = crs.getCoordinateSystem().getAxis(1);
-        assertEquals(-180.0, axis.getMinimumValue(), STRICT);
-        assertEquals(+180.0, axis.getMaximumValue(), STRICT);
+        assertEquals(-180.0, axis.getMinimumValue());
+        assertEquals(+180.0, axis.getMaximumValue());
 
         final DefaultGeocentricCRS shifted =  crs.forConvention(AxesConvention.POSITIVE_RANGE);
         assertNotSame(crs, shifted, "Expected a new CRS.");
         Validators.validate(shifted);
 
         axis = shifted.getCoordinateSystem().getAxis(1);
-        assertEquals(  0.0, axis.getMinimumValue(), STRICT);
-        assertEquals(360.0, axis.getMaximumValue(), STRICT);
+        assertEquals(  0.0, axis.getMinimumValue());
+        assertEquals(360.0, axis.getMaximumValue());
         assertSame(shifted, shifted.forConvention(AxesConvention.POSITIVE_RANGE), "Expected a no-op.");
         assertSame(shifted,     crs.forConvention(AxesConvention.POSITIVE_RANGE), "Expected cached instance.");
     }

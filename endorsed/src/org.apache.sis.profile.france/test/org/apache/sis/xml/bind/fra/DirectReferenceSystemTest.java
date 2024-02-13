@@ -27,7 +27,7 @@ import org.apache.sis.util.ComparisonMode;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;

@@ -88,12 +88,12 @@ public class CoverageJsonStoreTest {
             {   //test data
                 GridCoverage coverage = gcr.read(null);
                 Raster data = coverage.render(null).getData();
-                assertEquals(0.5, data.getSampleDouble(0, 0, 0), 0.0);
-                assertEquals(0.6, data.getSampleDouble(1, 0, 0), 0.0);
-                assertEquals(0.4, data.getSampleDouble(2, 0, 0), 0.0);
-                assertEquals(0.6, data.getSampleDouble(0, 1, 0), 0.0);
-                assertEquals(0.2, data.getSampleDouble(1, 1, 0), 0.0);
-                assertEquals(Double.NaN, data.getSampleDouble(2, 1, 0), 0.0);
+                assertEquals(0.5, data.getSampleDouble(0, 0, 0));
+                assertEquals(0.6, data.getSampleDouble(1, 0, 0));
+                assertEquals(0.4, data.getSampleDouble(2, 0, 0));
+                assertEquals(0.6, data.getSampleDouble(0, 1, 0));
+                assertEquals(0.2, data.getSampleDouble(1, 1, 0));
+                assertEquals(Double.NaN, data.getSampleDouble(2, 1, 0));
             }
         }
     }

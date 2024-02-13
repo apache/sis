@@ -440,7 +440,8 @@ public final class DefaultFeatureTypeTest extends TestCase {
 
         assertPropertiesEquals(metroCapital, false, "country");
         assertPropertiesEquals(metroCapital, true, "city", "population", "region", "isGlobal", "parliament", "country");
-        assertEquals(CharSequence.class, ((AttributeType<?>) metroCapital.getProperty("region")).getValueClass());
+        assertEquals(CharSequence.class,
+                assertInstanceOf(AttributeType.class, metroCapital.getProperty("region")).getValueClass());
 
         // Check based only on name.
         assertTrue (DefaultFeatureType.maybeAssignableFrom(capital, metroCapital));
@@ -481,7 +482,8 @@ public final class DefaultFeatureTypeTest extends TestCase {
 
         assertPropertiesEquals(worldMetropolis, false, "region", "temperature");
         assertPropertiesEquals(worldMetropolis, true, "city", "population", "region", "isGlobal", "universities", "temperature");
-        assertEquals(InternationalString.class, ((AttributeType<?>) worldMetropolis.getProperty("region")).getValueClass());
+        assertEquals(InternationalString.class,
+                assertInstanceOf(AttributeType.class, worldMetropolis.getProperty("region")).getValueClass());
 
         // Check based only on name.
         assertTrue (DefaultFeatureType.maybeAssignableFrom(metropolis, worldMetropolis));

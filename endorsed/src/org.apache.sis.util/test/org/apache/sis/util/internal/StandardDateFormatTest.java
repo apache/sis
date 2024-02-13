@@ -25,7 +25,7 @@ import java.text.ParseException;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.date;
@@ -49,9 +49,9 @@ public final class StandardDateFormatTest extends TestCase {
      */
     @Test
     public void verifyConstantValues() {
-        assertEquals("MILLISECONDS_PER_DAY",  TimeUnit.DAYS.toMillis(1),        StandardDateFormat.MILLISECONDS_PER_DAY);
-        assertEquals("NANOS_PER_MILLISECOND", TimeUnit.MILLISECONDS.toNanos(1), StandardDateFormat.NANOS_PER_MILLISECOND);
-        assertEquals("NANOS_PER_SECOND",      TimeUnit.SECONDS.toNanos(1),      StandardDateFormat.NANOS_PER_SECOND);
+        assertEquals(TimeUnit.DAYS.toMillis(1),        StandardDateFormat.MILLISECONDS_PER_DAY);
+        assertEquals(TimeUnit.MILLISECONDS.toNanos(1), StandardDateFormat.NANOS_PER_MILLISECOND);
+        assertEquals(TimeUnit.SECONDS.toNanos(1),      StandardDateFormat.NANOS_PER_SECOND);
     }
 
     /**
@@ -84,10 +84,10 @@ public final class StandardDateFormatTest extends TestCase {
     public void testParse() throws ParseException {
         final long day = 1466985600000L;
         final StandardDateFormat f = new StandardDateFormat();
-        assertEquals("millis", day + ((16*60 + 48)*60     )*1000,      f.parse("2016-06-27T16:48Z")      .getTime());
-        assertEquals("millis", day + ((16*60 + 48)*60 + 12)*1000,      f.parse("2016-06-27T16:48:12Z")   .getTime());
-        assertEquals("millis", day,                                    f.parse("2016-06-27")             .getTime());
-        assertEquals("millis", day + (( 3*60 +  2)*60 +  1)*1000 + 90, f.parse("2016-06-27T03:02:01.09Z").getTime());
+        assertEquals(day + ((16*60 + 48)*60     )*1000,      f.parse("2016-06-27T16:48Z")      .getTime());
+        assertEquals(day + ((16*60 + 48)*60 + 12)*1000,      f.parse("2016-06-27T16:48:12Z")   .getTime());
+        assertEquals(day,                                    f.parse("2016-06-27")             .getTime());
+        assertEquals(day + (( 3*60 +  2)*60 +  1)*1000 + 90, f.parse("2016-06-27T03:02:01.09Z").getTime());
 
         assertEquals(date("2009-01-01 05:00:00"), f.parse("2009-01-01T06:00:00+01:00"));
         assertEquals(date("2005-09-22 04:30:15"), f.parse("2005-09-22T04:30:15Z"));

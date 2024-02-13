@@ -30,7 +30,7 @@ import org.apache.sis.util.iso.Names;
 
 // Test dependencies
 import org.junit.Test;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
@@ -158,7 +158,7 @@ public final class FeatureQueryTest extends TestCase {
     private void verifyQueryResult(final int... indices) throws DataStoreException {
         final FeatureSet fs = query.execute(featureSet);
         final List<Feature> result = fs.features(false).collect(Collectors.toList());
-        assertEquals("size", indices.length, result.size());
+        assertEquals(indices.length, result.size());
         for (int i=0; i<indices.length; i++) {
             final Feature expected = features[indices[i]];
             final Feature actual   = result.get(i);
@@ -354,8 +354,8 @@ public final class FeatureQueryTest extends TestCase {
                             new FeatureQuery.NamedExpression(ff.property("dependency/value3"), "value3"));
         query.setOffset(2);
         final Feature instance = executeAndGetFirst();
-        assertEquals("value1",  2, instance.getPropertyValue("value1"));
-        assertEquals("value3", 25, instance.getPropertyValue("value3"));
+        assertEquals( 2, instance.getPropertyValue("value1"));
+        assertEquals(25, instance.getPropertyValue("value3"));
     }
 
     /**

@@ -21,7 +21,7 @@ import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.grid.SequenceType;
