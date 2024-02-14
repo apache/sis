@@ -394,12 +394,12 @@ public abstract class FeatureTestCase extends TestCase {
         final AbstractFeature clone = cloneFeature();
         assertNotSame(clone, feature);
         assertTrue(clone.equals(feature));
-        assertTrue(clone.hashCode() == feature.hashCode());
+        assertEquals(clone.hashCode(), feature.hashCode());
         setAttributeValue(property, oldValue, newValue);
         assertEquals(oldValue, clone  .getPropertyValue(property), property);
         assertEquals(newValue, feature.getPropertyValue(property), property);
-        assertFalse(clone.equals(feature));
-        assertFalse(clone.hashCode() == feature.hashCode());
+        assertNotEquals(clone, feature);
+        assertNotEquals(clone.hashCode(), feature.hashCode());
     }
 
     /**

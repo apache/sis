@@ -62,7 +62,7 @@ public final class XLinkTest extends TestCase {
     public void testGetType() throws URISyntaxException {
         final XLink link = new XLink();
         int hashCode = link.hashCode();
-        assertFalse(hashCode == 0);
+        assertNotEquals(0, hashCode);
         assertNull(link.getType());
 
         link.setType(XLink.Type.AUTO);
@@ -166,22 +166,22 @@ public final class XLinkTest extends TestCase {
 
         final XLink other = new XLink();
         assertFalse(link.equals(other));
-        assertFalse(link.hashCode() == other.hashCode());
+        assertNotEquals(link.hashCode(), other.hashCode());
 
         other.setType(XLink.Type.AUTO);
         assertFalse(link.equals(other));
-        assertFalse(link.hashCode() == other.hashCode());
+        assertNotEquals(link.hashCode(), other.hashCode());
 
         other.setRole(new URI("org:apache:sis:role"));
         assertFalse(link.equals(other));
-        assertFalse(link.hashCode() == other.hashCode());
+        assertNotEquals(link.hashCode(), other.hashCode());
 
         other.setTitle(new SimpleInternationalString("Some title"));
-        assertEquals(link, other);
+        assertTrue(link.equals(other));
         assertEquals(link.hashCode(), other.hashCode());
 
         other.freeze();
-        assertEquals(link, other);
+        assertTrue(link.equals(other));
         assertEquals(link.hashCode(), other.hashCode());
     }
 }

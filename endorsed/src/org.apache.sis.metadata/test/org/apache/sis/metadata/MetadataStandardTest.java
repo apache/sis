@@ -251,7 +251,7 @@ public final class MetadataStandardTest extends TestCase {
         final var platform   = (DefaultPlatform)   getSingleton(p2.getPlatforms());
         final var instrument = (DefaultInstrument) getSingleton(platform.getInstruments());
         instrument.setType(new SimpleInternationalString("Another instrument type."));
-        assertFalse(p1.equals(p2));
+        assertNotEquals(p1, p2);
     }
 
     /**

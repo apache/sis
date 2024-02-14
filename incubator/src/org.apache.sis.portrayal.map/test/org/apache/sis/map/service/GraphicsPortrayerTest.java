@@ -99,8 +99,8 @@ public class GraphicsPortrayerTest {
 
         int color1 = image.getRGB(180, 45);
         int color2 = image.getRGB(179, 45);
-        assertTrue(color1 == Color.BLACK.getRGB());
-        assertTrue(color2 == new Color(0,0,0,0).getRGB());
+        assertEquals(color1, Color.BLACK.getRGB());
+        assertEquals(color2, new Color(0,0,0,0).getRGB());
     }
 
     /**

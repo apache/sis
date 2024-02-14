@@ -153,7 +153,7 @@ public final class DefaultTreeTableTest extends TestCase {
         assertEquals(table, newTable);
         assertEquals(table.hashCode(), newTable.hashCode());
         getChildrenList(newTable).get(1).setValue(NAME, "New name");
-        assertFalse(newTable.equals(table));
+        assertNotEquals(newTable, table);
     }
 
     /**
@@ -168,7 +168,7 @@ public final class DefaultTreeTableTest extends TestCase {
     public static void testSerialization(final TreeTable table) {
         final TreeTable newTable = assertSerializedEquals(table);
         getChildrenList(newTable).get(1).setValue(NAME, "New name");
-        assertFalse(newTable.equals(table));
+        assertNotEquals(newTable, table);
     }
 
     /**

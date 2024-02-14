@@ -212,9 +212,9 @@ public final class LinearConverterTest extends TestCase {
         assertFalse(c1.equals(c2));
         assertTrue (c1.equals(c3));
         assertFalse(c2.equals(c3));
-        assertFalse(c1.hashCode() == c2.hashCode());
-        assertTrue (c1.hashCode() == c3.hashCode());
-        assertFalse(c2.hashCode() == c3.hashCode());
+        assertNotEquals(c1.hashCode(), c2.hashCode());
+        assertEquals   (c1.hashCode(), c3.hashCode());
+        assertNotEquals(c2.hashCode(), c3.hashCode());
     }
 
     /**

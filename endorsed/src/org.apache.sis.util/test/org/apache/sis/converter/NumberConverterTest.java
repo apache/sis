@@ -69,7 +69,7 @@ public final class NumberConverterTest extends TestCase {
             final ObjectConverter<S,T> c, final S source, final T target, final S inverse)
             throws UnconvertibleObjectException
     {
-        assertFalse(source.equals(inverse));
+        assertNotEquals(source, inverse);
         assertEquals(target,  c.apply(source), "Forward conversion.");
         assertEquals(inverse, c.inverse().apply(target), "Inverse conversion.");
     }

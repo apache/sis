@@ -79,7 +79,7 @@ public final class MatricesTest extends TestCase {
 
         final MatrixSIS matrix = Matrices.create(SIZE, SIZE, elements);
         assertExtendedPrecision(matrix);
-        assertFalse(expected.equals(matrix));
+        assertNotEquals(expected, matrix);
         assertTrue(Matrices.equals(expected, matrix, ComparisonMode.BY_CONTRACT));
     }
 

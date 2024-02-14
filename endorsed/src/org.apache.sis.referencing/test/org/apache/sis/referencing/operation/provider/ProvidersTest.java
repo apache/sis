@@ -285,8 +285,8 @@ public final class ProvidersTest extends TestCase {
      */
     @Test
     public void testDescription() {
-        assertFalse(SatelliteTracking.SATELLITE_ORBIT_INCLINATION.getDescription().length() == 0);
-        assertFalse(SatelliteTracking.SATELLITE_ORBITAL_PERIOD   .getDescription().length() == 0);
-        assertFalse(SatelliteTracking.ASCENDING_NODE_PERIOD      .getDescription().length() == 0);
+        assertNotEquals(0, SatelliteTracking.SATELLITE_ORBIT_INCLINATION.getDescription().length());
+        assertNotEquals(0, SatelliteTracking.SATELLITE_ORBITAL_PERIOD   .getDescription().length());
+        assertNotEquals(0, SatelliteTracking.ASCENDING_NODE_PERIOD      .getDescription().length());
     }
 }

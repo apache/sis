@@ -78,7 +78,7 @@ public final class DirectPosition2DTest extends TestCase {
         p1.setOrdinate(0, p1.getOrdinate(0) + 1);
         assertFalse(p1.equals(p2));
         assertFalse(p2.equals(p1));
-        assertFalse(p2.hashCode() == p1.hashCode());
+        assertNotEquals(p2.hashCode(), p1.hashCode());
     }
 
     /**

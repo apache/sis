@@ -34,10 +34,9 @@ repositories {
     mavenCentral()
 }
 dependencies {
-    implementation (group = "org.apache.commons", name = "commons-compress",        version = "1.23.0")
-    testCompileOnly(group = "junit",              name = "junit",                   version = "4.13.2")
-    testRuntimeOnly(group = "org.junit.vintage",  name = "junit-vintage-engine",    version = "5.9.3")
-    testRuntimeOnly(group = "org.junit.platform", name = "junit-platform-launcher", version = "1.9.3")
+    implementation (group = "org.apache.commons", name = "commons-compress",     version = "1.23.0")
+    testCompileOnly(group = "org.junit.jupiter",  name = "junit-jupiter-api",    version = "5.10.2")
+    testRuntimeOnly(group = "org.junit.jupiter",  name = "junit-jupiter-engine", version = "5.10.2")
 }
 
 /*

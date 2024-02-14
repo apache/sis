@@ -556,7 +556,7 @@ public final class RangeSetTest extends TestCase {
         final RangeSet<Integer> clone = ranges.clone();
         assertEquals(ranges, clone, "The clone shall be equal to the original set.");
         assertTrue(ranges.add(60, 70));
-        assertFalse(ranges.equals(clone), "Modifying the original set shall not modify the clone.");
+        assertNotEquals(ranges, clone, "Modifying the original set shall not modify the clone.");
     }
 
     /**

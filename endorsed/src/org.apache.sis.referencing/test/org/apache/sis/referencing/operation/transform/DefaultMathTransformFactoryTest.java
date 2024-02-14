@@ -284,8 +284,7 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
             if (mt instanceof LinearTransform) {
                 continue;
             }
-            assertInstanceOf(Parameterized.class, mt, classification);
-            pg = ((Parameterized) mt).getParameterValues();
+            pg = assertInstanceOf(Parameterized.class, mt, classification).getParameterValues();
             assertNotNull(pg, classification);
             assertEquals(pg.getDescriptor().getName().getCode(), classification);
             assertEquals(6377563.396,       pg.parameter("semi_major").doubleValue(), 1E-4, classification);

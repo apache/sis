@@ -154,7 +154,7 @@ public final class SingletonAttributeTest extends TestCase {
         assertEquals(a1.hashCode(), a2.hashCode());
         a2.setValue(1000);
         assertFalse(a1.equals(a2));
-        assertFalse(a1.hashCode() == a2.hashCode());
+        assertNotEquals(a1.hashCode(), a2.hashCode());
     }
 
     /**

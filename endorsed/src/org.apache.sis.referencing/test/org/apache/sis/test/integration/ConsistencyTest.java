@@ -261,7 +261,7 @@ public final class ConsistencyTest extends TestCase {
     private void lookup(final CoordinateReferenceSystem parsed, final CoordinateReferenceSystem crs) throws FactoryException {
         final Identifier id = IdentifiedObjects.getIdentifier(crs, null);
         final String urn = IdentifiedObjects.toURN(crs.getClass(), id);
-        assertNotNull(crs.getName().getCode(), urn);
+        assertNotNull(urn, crs.getName().getCode());
         /*
          * Lookup operation is not going to work if the CRS are not approximately equal.
          * However, in current Apache SIS implementation, we can perform this check only

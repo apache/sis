@@ -165,7 +165,7 @@ public final class AbstractMapTest extends TestCase {
         assertEquals("two", map.put(2, "deux"));
         assertFalse(copy.equals(map));
         assertFalse(map.equals(copy));
-        assertFalse(copy.hashCode() == map.hashCode());
+        assertNotEquals(copy.hashCode(), map.hashCode());
     }
 
     /**

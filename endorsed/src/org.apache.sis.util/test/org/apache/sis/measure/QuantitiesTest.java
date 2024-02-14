@@ -136,9 +136,9 @@ public final class QuantitiesTest extends TestCase {
         Quantity<?> q1 = Quantities.create(2, Units.VOLT);
         Quantity<?> q2 = Quantities.create(2, Units.VOLT);
         Quantity<?> q3 = Quantities.create(3, Units.VOLT);
-        assertTrue (q1.hashCode() == q2.hashCode());
-        assertFalse(q1.hashCode() == q3.hashCode());
-        assertTrue (q1.hashCode() != 0);
+        assertEquals   (q1.hashCode(), q2.hashCode());
+        assertNotEquals(q1.hashCode(), q3.hashCode());
+        assertNotEquals(0, q1.hashCode());
         assertTrue (q1.equals(q2));
         assertFalse(q1.equals(q3));
     }

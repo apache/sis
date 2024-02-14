@@ -180,6 +180,6 @@ public final class CommandRunnerTest extends TestCase {
         assertEquals("", c.outputBuffer.toString());
         assertTrue(c.hasUnexpectedFileCount(2, 3));
         String message = c.outputBuffer.toString();
-        assertTrue(message.length() != 0);
+        assertNotEquals(0, message.length());
     }
 }

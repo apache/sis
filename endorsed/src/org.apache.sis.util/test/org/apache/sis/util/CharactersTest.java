@@ -111,7 +111,7 @@ public final class CharactersTest extends TestCase {
     public void testSuperScript() {
         for (char c='0'; c<='9'; c++) {
             final char s = toSuperScript(c);
-            assertFalse(s == c);
+            assertNotEquals(s, c);
             assertFalse(isSuperScript(c));
             assertTrue (isSuperScript(s));
             assertEquals(c, toNormalScript(s));
@@ -129,7 +129,7 @@ public final class CharactersTest extends TestCase {
     public void testSubScript() {
         for (char c='0'; c<='9'; c++) {
             final char s = toSubScript(c);
-            assertFalse(s == c);
+            assertNotEquals(s, c);
             assertFalse(isSubScript(c));
             assertTrue (isSubScript(s));
             assertEquals(c, toNormalScript(s));

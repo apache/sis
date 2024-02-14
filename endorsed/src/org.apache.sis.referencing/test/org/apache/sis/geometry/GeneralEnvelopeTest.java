@@ -804,7 +804,7 @@ public class GeneralEnvelopeTest extends TestCase {
         assertFalse(e1.equals  (e2));
         assertTrue (e1.equals  (e2, EPS, true ));
         assertTrue (e1.equals  (e2, EPS, false));
-        assertFalse(e1.hashCode() == e2.hashCode());
+        assertNotEquals(e1.hashCode(), e2.hashCode());
         /*
          * Applies a greater offset. Should not be equal,
          * even when comparing with a tolerance value.
@@ -815,7 +815,7 @@ public class GeneralEnvelopeTest extends TestCase {
         assertFalse(e1.equals  (e2));
         assertFalse(e1.equals  (e2, EPS, true ));
         assertFalse(e1.equals  (e2, EPS, false));
-        assertFalse(e1.hashCode() == e2.hashCode());
+        assertNotEquals(e1.hashCode(), e2.hashCode());
     }
 
     /**

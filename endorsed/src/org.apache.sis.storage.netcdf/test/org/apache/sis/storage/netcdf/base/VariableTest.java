@@ -116,7 +116,7 @@ public class VariableTest extends TestCase {
         for (final Variable variable : variables) {
             final String name = variable.getName();
             final DataType dataType = variable.getDataType();
-            assertFalse(propertyIndex == expected.length);
+            assertNotEquals(propertyIndex, expected.length);
             assertEquals(expected[propertyIndex++], name, name);
             assertEquals(expected[propertyIndex++], variable.getDescription(), name);
             assertEquals(expected[propertyIndex++], dataType, name);

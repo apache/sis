@@ -233,7 +233,7 @@ public final class StatisticsTest extends TestCase {
                 assertEquals(block,  byBlock, "Adding for the first time; should have the same amount of data.");
                 assertEquals(global, byBlock, "Adding for the first time; should have got exactly the same data.");
             } else {
-                assertFalse(byBlock.equals(block), "Should have more data that the block we just computed.");
+                assertNotEquals(byBlock, block, "Should have more data that the block we just computed.");
             }
             assertEquals(global.count(),    byBlock.count());
             assertEquals(global.countNaN(), byBlock.countNaN());

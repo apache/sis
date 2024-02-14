@@ -78,6 +78,6 @@ public final class TypesTest extends TestCase {
      */
     private static void assertNonEmpty(final String name, final InternationalString i18n) {
         assertNotNull(i18n, name);
-        assertTrue(i18n.length() != 0, name);
+        assertNotEquals(i18n.length(), 0, name);
     }
 }

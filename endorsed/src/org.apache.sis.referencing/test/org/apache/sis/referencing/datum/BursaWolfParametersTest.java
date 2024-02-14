@@ -142,10 +142,10 @@ public final class BursaWolfParametersTest extends TestCase {
     @Test
     @DependsOnMethod("testGetValues")
     public void testSetValues() {
-        final BursaWolfParameters actual =  createWGS72_to_WGS84();
+        final BursaWolfParameters actual   = createWGS72_to_WGS84();
         final BursaWolfParameters expected = createED87_to_WGS84();
         final double[] values = expected.getValues();
-        assertFalse(actual.equals(expected));
+        assertNotEquals(expected, actual);
         actual.setValues(values);
         assertArrayEquals(values, actual.getValues());
         // Cannot test assertEquals(expected, actual) because of different geographic extent.

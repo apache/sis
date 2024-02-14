@@ -239,8 +239,8 @@ public final class DefaultConversionTest extends TestCase {
          */
         assertNull(definingConversion.getSourceCRS());
         assertNull(definingConversion.getTargetCRS());
-        assertFalse(definingConversion.equals(reference));
-        assertFalse(reference.equals(definingConversion));
+        assertNotEquals(definingConversion, reference);
+        assertNotEquals(reference, definingConversion);
         /*
          * Now create a normal conversion from the defining one,
          * but add a swapping of (latitude, longitude) axes.

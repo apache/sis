@@ -888,7 +888,7 @@ public final class EPSGFactoryTest extends TestCase {
         assertSame (sourceCRS, operation2.getSourceCRS());
         assertSame (targetCRS, operation2.getTargetCRS());
         assertFalse(operation2.getMathTransform().isIdentity());
-        assertFalse(transform.equals(operation2.getMathTransform()), "Should be a more accurate transformation.");
+        assertNotEquals(transform, operation2.getMathTransform(), "Should be a more accurate transformation.");
         assertEquals(1.5, AbstractCoordinateOperation.castOrCopy(operation2).getLinearAccuracy());
         /*
          * ED50 (4230)  to  WGS 84 (4326)  using
@@ -901,7 +901,7 @@ public final class EPSGFactoryTest extends TestCase {
         assertSame (sourceCRS, operation3.getSourceCRS());
         assertSame (targetCRS, operation3.getTargetCRS());
         assertFalse(operation3.getMathTransform().isIdentity());
-        assertFalse(transform.equals(operation3.getMathTransform()), "Should be a more accurate transformation.");
+        assertNotEquals(transform, operation3.getMathTransform(), "Should be a more accurate transformation.");
         assertEquals(1.0, AbstractCoordinateOperation.castOrCopy(operation3).getLinearAccuracy());
         /*
          * Creates from CRS codes. There is 40 such operations in EPSG version 6.7.
