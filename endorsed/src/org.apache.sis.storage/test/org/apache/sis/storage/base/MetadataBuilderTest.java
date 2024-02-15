@@ -25,7 +25,7 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.feature.DefaultFeatureType;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;

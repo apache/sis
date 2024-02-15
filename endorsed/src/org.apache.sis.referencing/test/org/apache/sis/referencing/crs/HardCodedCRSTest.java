@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.crs;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.ValidatorContainer;
 import org.apache.sis.test.TestCase;

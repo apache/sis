@@ -32,7 +32,7 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import org.apache.sis.util.ComparisonMode;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.test.DependsOnMethod;

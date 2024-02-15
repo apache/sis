@@ -23,12 +23,13 @@ import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
+import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
 
 /**
@@ -68,10 +69,10 @@ public final class DefaultGeographicBoundingBoxTest extends TestCase {
     /**
      * Tests construction with an invalid range of latitudes.
      */
-    @SuppressWarnings("ResultOfObjectAllocationIgnored")
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testInvalidLatitudeRange() {
-        new DefaultGeographicBoundingBox(-1, +1, 12, 10);
+        var e = assertThrows(IllegalArgumentException.class, () -> new DefaultGeographicBoundingBox(-1, +1, 12, 10));
+        assertMessageContains(e);
     }
 
     /**

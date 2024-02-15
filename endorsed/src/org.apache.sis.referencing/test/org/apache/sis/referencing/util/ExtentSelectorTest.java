@@ -24,8 +24,8 @@ import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 
 // Test dependencies
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
@@ -91,7 +91,7 @@ public final class ExtentSelectorTest extends TestCase {
      * Tests using temporal ranges.
      */
     @Test
-    @Ignore("Require temporal module, not yet available in SIS.")
+    @Disabled("Require temporal module, not yet available in SIS.")
     public void testTemporal() {
         assertBestEquals(time(1000, 2000, true), 2,
                          time(1500, 2000, true),
@@ -104,7 +104,7 @@ public final class ExtentSelectorTest extends TestCase {
      * The criterion should give precedence to larger geographic area instead of better centered.
      */
     @Test
-    @Ignore("Require temporal module, not yet available in SIS.")
+    @Disabled("Require temporal module, not yet available in SIS.")
     public void testAlternateOrdering() {
         alternateOrdering = true;
         assertBestEquals(time(1000, 2000, true), 1,
@@ -117,7 +117,7 @@ public final class ExtentSelectorTest extends TestCase {
      * Tests using temporal ranges with {@link ExtentSelector#setTimeGranularity(Duration)} defined.
      */
     @Test
-    @Ignore("Require temporal module, not yet available in SIS.")
+    @Disabled("Require temporal module, not yet available in SIS.")
     public void testTimeGranularity() {
         granularity = Duration.ofSeconds(20);
         assertBestEquals(time(10000, 70000, true), 3,

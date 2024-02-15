@@ -21,11 +21,11 @@ import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.util.PositionalAccuracyConstant;
 
 // Test dependencies
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.Assume.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
@@ -45,7 +45,7 @@ public final class ReferencingFunctionsTest extends TestCase {
     /**
      * Creates a {@link ReferencingFunctions} instance to use for all tests.
      */
-    @BeforeClass
+    @BeforeAll
     public static void createReferencingInstance() {
         instance = new ReferencingFunctions(null);
         instance.setLocale(new com.sun.star.lang.Locale("en", "US", null));
@@ -54,7 +54,7 @@ public final class ReferencingFunctionsTest extends TestCase {
     /**
      * Disposes the {@link ReferencingFunctions} instance after all tests completed.
      */
-    @AfterClass
+    @AfterAll
     public static void disposeReferencingInstance() {
         instance = null;
     }

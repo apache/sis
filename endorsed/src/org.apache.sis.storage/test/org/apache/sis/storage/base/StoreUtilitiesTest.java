@@ -19,7 +19,7 @@ package org.apache.sis.storage.base;
 import java.nio.charset.StandardCharsets;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 

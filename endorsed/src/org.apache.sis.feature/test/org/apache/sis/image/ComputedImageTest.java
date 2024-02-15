@@ -26,7 +26,7 @@ import java.awt.image.ImagingOpException;
 import java.util.function.Consumer;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;

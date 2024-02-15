@@ -39,8 +39,8 @@ import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.geometry.DirectPosition2D;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assume.assumeTrue;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
@@ -192,12 +192,12 @@ public final class CoordinateOperationTest extends MathTransformTestCase {
         final double expectedY = 175688.20;
 
         CRSAuthorityFactory crsFactory = CRS.getAuthorityFactory("EPSG");
-        assumeTrue("EPSG authority factory is required for this test.",
-                   crsFactory instanceof CoordinateOperationAuthorityFactory);
-        CoordinateOperationAuthorityFactory opFactory = (CoordinateOperationAuthorityFactory) crsFactory;
+        assumeTrue(crsFactory instanceof CoordinateOperationAuthorityFactory,
+                   "EPSG authority factory is required for this test.");
+        CoordinateOperationAuthorityFactory asOpFactory = (CoordinateOperationAuthorityFactory) crsFactory;
 
         // MGI (Ferro) to WGS 84 (1)
-        CoordinateOperation datumOperation = opFactory.createCoordinateOperation("3966");
+        CoordinateOperation datumOperation = asOpFactory.createCoordinateOperation("3966");
 
         // MGI (Ferro) / Austria GK East Zone
         CoordinateReferenceSystem targetCRS = crsFactory.createCoordinateReferenceSystem("31253");
@@ -239,20 +239,20 @@ public final class CoordinateOperationTest extends MathTransformTestCase {
     @Test
     public void testMercatorWraparound() throws FactoryException, TransformException {
         CRSAuthorityFactory crsFactory = CRS.getAuthorityFactory("EPSG");
-        assumeTrue("EPSG authority factory is required for this test.",
-                   crsFactory instanceof CoordinateOperationAuthorityFactory);
+        assumeTrue(crsFactory instanceof CoordinateOperationAuthorityFactory,
+                   "EPSG authority factory is required for this test.");
 
         CoordinateReferenceSystem sourceCRS = crsFactory.createCoordinateReferenceSystem("3001");
         CoordinateReferenceSystem targetCRS = crsFactory.createCoordinateReferenceSystem("4211");
 
         CoordinateOperation operation = opFactory.createOperation(sourceCRS, targetCRS);
-        MathTransform transform = operation.getMathTransform();
+        MathTransform mt = operation.getMathTransform();
 
         double[] expectedXyValues = new double[] {-2.0, -71.0};
         double[] sourceXyValues   = new double[] {23764105.84, 679490.646};
         double[] actualXyValues   = new double[2];
 
-        transform.transform(sourceXyValues, 0, actualXyValues, 0, 1);
+        mt.transform(sourceXyValues, 0, actualXyValues, 0, 1);
         assertEquals(expectedXyValues[0], actualXyValues[0], 6E-7);
         assertEquals(expectedXyValues[1], actualXyValues[1], 6E-7);
     }

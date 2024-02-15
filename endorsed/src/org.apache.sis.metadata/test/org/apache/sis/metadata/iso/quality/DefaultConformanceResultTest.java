@@ -22,7 +22,7 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.NilReason;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
 

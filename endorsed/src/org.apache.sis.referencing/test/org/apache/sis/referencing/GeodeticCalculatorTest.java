@@ -41,10 +41,9 @@ import org.apache.sis.measure.Units;
 import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADIUS;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Assert.assertBetween;
-import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.test.OptionalTestData;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
@@ -311,7 +310,7 @@ public class GeodeticCalculatorTest extends TestCase {
         /*
          * The more accurate curve cannot be simplified to a Java2D primitive.
          */
-        assertInstanceOf("Multicurves", Path2D.class, multiCurves);
+        assertInstanceOf(Path2D.class, multiCurves);
         if (VisualCheck.SHOW_WIDGET) {
             VisualCheck.show(singleCurve, multiCurves);
         }

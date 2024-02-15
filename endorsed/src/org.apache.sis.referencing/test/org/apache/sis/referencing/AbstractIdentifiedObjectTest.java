@@ -27,7 +27,7 @@ import org.apache.sis.xml.bind.referencing.Code;
 import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;

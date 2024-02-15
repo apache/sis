@@ -26,8 +26,8 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.util.InternationalString;
 
 // Test dependencies
-import org.junit.Test;
-import org.junit.After;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -216,7 +216,7 @@ public final class IndexedResourceBundleTest extends TestCase {
      *
      * @throws IOException should never happen since this test writes only in memory.
      */
-    @After
+    @AfterEach
     public void dumpResourcesOnError() throws IOException {
         if (testing != null) {
             out.print("Error while testing ");

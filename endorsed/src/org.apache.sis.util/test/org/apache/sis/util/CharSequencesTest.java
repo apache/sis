@@ -21,7 +21,7 @@ import java.nio.CharBuffer;
 import static org.apache.sis.util.CharSequences.*;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;

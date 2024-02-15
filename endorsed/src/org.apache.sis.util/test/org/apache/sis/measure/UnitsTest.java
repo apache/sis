@@ -25,7 +25,7 @@ import static org.apache.sis.measure.SexagesimalConverter.*;
 import static org.apache.sis.measure.Units.*;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;

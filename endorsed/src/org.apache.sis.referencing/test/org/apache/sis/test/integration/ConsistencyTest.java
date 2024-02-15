@@ -41,8 +41,8 @@ import org.apache.sis.io.wkt.UnformattableObjectException;
 import org.apache.sis.util.iso.DefaultNameSpace;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assume.assumeTrue;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -114,7 +114,7 @@ public final class ConsistencyTest extends TestCase {
      */
     @Test
     public void testCoordinateReferenceSystems() throws FactoryException {
-        assumeTrue("Extensive tests not enabled.", RUN_EXTENSIVE_TESTS);
+        assumeTrue(RUN_EXTENSIVE_TESTS, "Extensive tests not enabled.");
         final WKTFormat v1  = new WKTFormat();
         final WKTFormat v1c = new WKTFormat();
         final WKTFormat v2  = new WKTFormat();

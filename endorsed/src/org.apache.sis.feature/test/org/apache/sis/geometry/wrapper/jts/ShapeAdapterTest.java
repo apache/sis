@@ -27,7 +27,7 @@ import org.locationtech.jts.geom.Polygon;
 import org.apache.sis.geometry.wrapper.j2d.DecimatedShape;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 

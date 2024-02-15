@@ -40,7 +40,7 @@ import org.apache.sis.referencing.operation.transform.MathTransformWrapper;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.referencing.operation.HardCodedConversions;

@@ -23,8 +23,9 @@ import java.text.AttributedCharacterIterator;
 import java.text.ParseException;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -50,37 +51,40 @@ public final class AngleFormatTest extends TestCase {
     /**
      * Tests a pattern with illegal usage of D, M and S symbols.
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testIllegalPattern() {
         final AngleFormat f = new AngleFormat(Locale.CANADA);
-        f.applyPattern("DD°SS′MM″");
+        var e = assertThrows(IllegalArgumentException.class, () -> f.applyPattern("DD°SS′MM″"));
+        assertMessageContains(e);
     }
 
     /**
      * Tests an illegal pattern with illegal symbols for the fraction part.
      */
-    @Test(expected = IllegalArgumentException.class)
     public void testIllegalFractionPattern() {
         final AngleFormat f = new AngleFormat(Locale.CANADA);
-        f.applyPattern("DD°MM′SS.m″");
+        var e = assertThrows(IllegalArgumentException.class, () -> f.applyPattern("DD°MM′SS.m″"));
+        assertMessageContains(e);
     }
 
     /**
      * Tests a {@code '?'} symbol without suffix.
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testIllegalOptionalField() {
         final AngleFormat f = new AngleFormat(Locale.CANADA);
-        f.applyPattern("DD°MM?SS.m″");
+        var e = assertThrows(IllegalArgumentException.class, () -> f.applyPattern("DD°MM?SS.m″"));
+        assertMessageContains(e);
     }
 
     /**
      * Tests a {@code '?'} symbol without suffix.
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testIllegalOptionalLastField() {
         final AngleFormat f = new AngleFormat(Locale.CANADA);
-        f.applyPattern("DD°MM?");
+        var e = assertThrows(IllegalArgumentException.class, () -> f.applyPattern("DD°MM?"));
+        assertMessageContains(e);
     }
 
     /**

@@ -22,7 +22,7 @@ import org.apache.sis.storage.DataStoreException;
 import static org.apache.sis.storage.netcdf.AttributeNames.*;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.TestUtilities.date;
 

@@ -23,7 +23,7 @@ import static org.apache.sis.util.ArraysExt.isSorted;
 import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;

@@ -32,7 +32,7 @@ import org.apache.sis.metadata.iso.lineage.DefaultProcessing;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.apache.sis.metadata.iso.citation.DefaultCitationTest;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;

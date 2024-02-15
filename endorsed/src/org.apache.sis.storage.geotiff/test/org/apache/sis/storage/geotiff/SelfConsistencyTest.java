@@ -26,10 +26,10 @@ import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.StorageConnector;
 
 // Test dependencies
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assume.assumeNotNull;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.OptionalTestData;
@@ -57,13 +57,13 @@ public final class SelfConsistencyTest extends CoverageReadConsistency {
      *
      * @throws DataStoreException if an error occurred while opening the file.
      */
-    @BeforeClass
+    @BeforeAll
     public static void openFile() throws DataStoreException {
         final Optional<Path> path = OptionalTestData.GEOTIFF.path();
         if (path.isPresent()) {
             store = new GeoTiffStore(null, new StorageConnector(path.get()));
         }
-        assumeNotNull(store);
+        assumeTrue(store != null, "Test file not found.");
     }
 
     /**
@@ -71,7 +71,7 @@ public final class SelfConsistencyTest extends CoverageReadConsistency {
      *
      * @throws DataStoreException if an error occurred while closing the file.
      */
-    @AfterClass
+    @AfterAll
     public static void closeFile() throws DataStoreException {
         final GeoTiffStore s = store;
         if (s != null) {

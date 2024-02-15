@@ -37,7 +37,7 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.geom.Point;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 

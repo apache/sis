@@ -26,7 +26,7 @@ import org.apache.sis.referencing.operation.provider.ObliqueStereographic;
 import org.apache.sis.parameter.Parameters;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.TestCase;
 

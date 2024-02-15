@@ -30,9 +30,8 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultIndividual;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -117,10 +116,9 @@ public final class ValueMapTest extends TestCase {
          * The ISBN shall also be visible as an identifier.
          */
         final Object identifiers = map.get("identifiers");
-        assertInstanceOf("identifiers", Collection.class, identifiers);
+        assertInstanceOf(Collection.class, identifiers);
         final Object identifier = getSingleton((Collection<?>) identifiers);
-        assertInstanceOf("identifier", Identifier.class, identifier);
-        assertEquals("9782505004509", ((Identifier) identifier).getCode());
+        assertEquals("9782505004509", assertInstanceOf(Identifier.class, identifier).getCode());
     }
 
     /**

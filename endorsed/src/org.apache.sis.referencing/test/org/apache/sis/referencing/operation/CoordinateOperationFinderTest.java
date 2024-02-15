@@ -59,9 +59,9 @@ import static org.apache.sis.referencing.util.Formulas.ANGULAR_TOLERANCE;
 import static org.apache.sis.referencing.util.PositionalAccuracyConstant.DATUM_SHIFT_APPLIED;
 
 // Test dependencies
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
@@ -123,7 +123,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      *
      * @throws ParseException if an error occurred while preparing the WKT parser.
      */
-    @BeforeClass
+    @BeforeAll
     public static void createFactory() throws ParseException {
         factory = new DefaultCoordinateOperationFactory();
         parser  = new WKTFormat();
@@ -153,7 +153,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
     /**
      * Disposes the factory created by {@link #createFactory()} after all tests have been executed.
      */
-    @AfterClass
+    @AfterAll
     public static void disposeFactory() {
         factory = null;
         parser  = null;

@@ -33,7 +33,7 @@ import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.ArraysExt;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.TestCase;

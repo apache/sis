@@ -20,7 +20,7 @@ import java.util.List;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

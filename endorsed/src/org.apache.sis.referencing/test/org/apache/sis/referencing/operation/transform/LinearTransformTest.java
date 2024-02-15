@@ -18,11 +18,12 @@ package org.apache.sis.referencing.operation.transform;
 
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 
@@ -39,12 +40,14 @@ public final class LinearTransformTest extends ProjectiveTransformTest {
      * Creates a new test suite.
      */
     public LinearTransformTest() {
-        super(new MathTransformFactoryBase() {
-            @Override
-            public LinearTransform createAffineTransform(final Matrix matrix) {
-                return MathTransforms.linear(matrix);
-            }
-        });
+    }
+
+    /**
+     * Creates the math transform to test.
+     */
+    @Override
+    MathTransform createAffineTransform(final Matrix matrix) {
+        return MathTransforms.linear(matrix);
     }
 
     /**

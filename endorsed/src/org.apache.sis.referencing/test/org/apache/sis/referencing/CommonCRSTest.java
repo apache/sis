@@ -40,7 +40,7 @@ import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.util.internal.Constants;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOnMethod;

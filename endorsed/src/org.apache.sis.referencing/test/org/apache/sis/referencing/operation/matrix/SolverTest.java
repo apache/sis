@@ -23,7 +23,7 @@ import static org.apache.sis.referencing.operation.matrix.MatrixTestCase.assertE
 import static org.apache.sis.referencing.operation.matrix.MatrixTestCase.assertEqualsElements;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;

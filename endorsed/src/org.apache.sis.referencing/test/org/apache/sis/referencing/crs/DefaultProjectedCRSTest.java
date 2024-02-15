@@ -36,10 +36,10 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
-import org.junit.After;
-import org.junit.Test;
-import org.junit.Rule;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.opengis.test.Validators;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOnMethod;
@@ -89,13 +89,13 @@ public final class DefaultProjectedCRSTest extends TestCase {
      * <p>This field is public because JUnit requires us to do so, but should be considered as an implementation details
      * (it should have been a private field).</p>
      */
-    @Rule
+    @RegisterExtension
     public final LoggingWatcher loggings = new LoggingWatcher(Loggers.COORDINATE_OPERATION);
 
     /**
      * Verifies that no unexpected warning has been emitted in any test defined in this class.
      */
-    @After
+    @AfterEach
     public void assertNoUnexpectedLog() {
         loggings.assertNoUnexpectedLog();
     }

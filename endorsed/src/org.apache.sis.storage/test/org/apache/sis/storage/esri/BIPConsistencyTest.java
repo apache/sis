@@ -22,8 +22,8 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 
 // Test dependencies
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.storage.test.CoverageReadConsistency;
 
@@ -45,7 +45,7 @@ public final class BIPConsistencyTest extends CoverageReadConsistency {
      * @throws IOException if an error occurred while opening the file.
      * @throws DataStoreException if an error occurred while reading the file.
      */
-    @BeforeClass
+    @BeforeAll
     public static void openFile() throws IOException, DataStoreException {
         final URL url = BIPConsistencyTest.class.getResource("BIP.raw");
         assertNotNull(url, "Test file not found.");
@@ -57,7 +57,7 @@ public final class BIPConsistencyTest extends CoverageReadConsistency {
      *
      * @throws DataStoreException if an error occurred while closing the file.
      */
-    @AfterClass
+    @AfterAll
     public static void closeFile() throws DataStoreException {
         final RawRasterStore s = store;
         if (s != null) {

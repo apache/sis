@@ -20,7 +20,7 @@ import java.util.Random;
 import org.apache.sis.util.internal.DoubleDouble;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 

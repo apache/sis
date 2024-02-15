@@ -22,9 +22,9 @@ import org.opengis.util.MemberName;
 import org.opengis.util.RecordType;
 
 // Test dependencies
-import org.junit.Test;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
@@ -49,7 +49,7 @@ public final class DefaultRecordTest extends TestCase {
     /**
      * Creates the {@link DefaultRecordType} to be used by all tests in this class.
      */
-    @BeforeClass
+    @BeforeAll
     public static void createRecordType() {
         final var schema = new SerializableRecordSchema("MySchema");
         final var members = new LinkedHashMap<CharSequence,Class<?>>(8);
@@ -64,7 +64,7 @@ public final class DefaultRecordTest extends TestCase {
     /**
      * Clears the {@link DefaultRecordType} used by the tests.
      */
-    @AfterClass
+    @AfterAll
     public static void clearRecordType() {
         SerializableRecordSchema.INSTANCE = null;
         recordType = null;

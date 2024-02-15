@@ -35,8 +35,8 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.measure.NumberRange;
 
 // Test dependencies
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.DependsOnMethod;
@@ -64,8 +64,10 @@ public class PixelIteratorTest extends TestCase {
 
     /**
      * The raster or image data type as one of the {@link DataBuffer} constants.
+     * This is initialized at test construction time, then kept constant.
+     * The default value is {@link DataBuffer#TYPE_SHORT}.
      */
-    private final int dataType;
+    int dataType;
 
     /**
      * <var>x</var> coordinate of upper left corner in raster or image.
@@ -120,7 +122,7 @@ public class PixelIteratorTest extends TestCase {
      * than the actual iteration order chosen by the iterator because the iterator may
      * replace default order by a more specific one.
      */
-    private final SequenceType requestedOrder;
+    SequenceType requestedOrder;
 
     /**
      * {@code true} for testing write operations in addition of read operations.
@@ -133,21 +135,10 @@ public class PixelIteratorTest extends TestCase {
     boolean useBandedSampleModel;
 
     /**
-     * Creates a new test case for the given data type.
-     *
-     * @param  dataType  the raster or image data type as one of the {@link DataBuffer} constants.
-     */
-    PixelIteratorTest(final int dataType, final SequenceType requestedOrder) {
-        this.dataType = dataType;
-        this.requestedOrder = requestedOrder;
-    }
-
-    /**
      * Creates a new test case.
      */
     public PixelIteratorTest() {
         dataType = DataBuffer.TYPE_SHORT;
-        requestedOrder = null;
     }
 
     /**
@@ -393,7 +384,7 @@ public class PixelIteratorTest extends TestCase {
     /**
      * Invoked after every tests for releasing resources.
      */
-    @After
+    @AfterEach
     public void dispose() {
         iterator.close();
     }

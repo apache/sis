@@ -39,7 +39,7 @@ public final class BandedIteratorTest extends PixelIteratorTest {
      * Creates a new test case.
      */
     public BandedIteratorTest() {
-        super(DataBuffer.TYPE_FLOAT, null);
+        dataType = DataBuffer.TYPE_FLOAT;
         useBandedSampleModel = true;
     }
 

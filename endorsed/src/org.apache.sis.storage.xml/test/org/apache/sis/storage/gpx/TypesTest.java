@@ -23,7 +23,7 @@ import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.storage.IllegalNameException;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 

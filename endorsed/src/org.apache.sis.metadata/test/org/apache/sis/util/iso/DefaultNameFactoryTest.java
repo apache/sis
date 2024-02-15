@@ -20,9 +20,9 @@ import org.opengis.util.GenericName;
 import org.apache.sis.util.SimpleInternationalString;
 
 // Test dependencies
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.util.NameTest;
 import org.apache.sis.test.DependsOn;
@@ -51,7 +51,7 @@ public final class DefaultNameFactoryTest extends NameTest {
     /**
      * Creates the singleton factory instance to be reused for all tests in this class.
      */
-    @BeforeClass
+    @BeforeAll
     public static void createFactory() {
         factorySIS = new DefaultNameFactory();
     }
@@ -59,7 +59,7 @@ public final class DefaultNameFactoryTest extends NameTest {
     /**
      * Disposes the singleton factory instance after all tests have been executed.
      */
-    @AfterClass
+    @AfterAll
     public static void disposeFactory() {
         factorySIS = null;
     }

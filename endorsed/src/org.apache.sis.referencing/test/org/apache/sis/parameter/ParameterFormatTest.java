@@ -29,9 +29,9 @@ import static org.apache.sis.metadata.iso.citation.Citations.OGC;
 import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
 
 // Test dependencies
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -63,7 +63,7 @@ public final class ParameterFormatTest extends TestCase {
      * with arbitrary non-zero default values. Those default values are not part of EPSG definitions.
      * They are added here only for testing purpose.
      */
-    @BeforeClass
+    @BeforeAll
     public static void createParameterDescriptor() {
         descriptor = createMercatorParameters();
     }
@@ -94,7 +94,7 @@ public final class ParameterFormatTest extends TestCase {
     /**
      * Forgets the parameter descriptors after all tests are done.
      */
-    @AfterClass
+    @AfterAll
     public static void clearParameterDescriptor() {
         descriptor = null;
     }

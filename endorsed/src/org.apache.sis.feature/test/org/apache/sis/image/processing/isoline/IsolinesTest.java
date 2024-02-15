@@ -26,7 +26,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.grid.j2d.RasterFactory;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 

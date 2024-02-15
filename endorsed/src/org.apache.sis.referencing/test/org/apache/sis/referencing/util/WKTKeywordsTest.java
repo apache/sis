@@ -23,7 +23,7 @@ import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 

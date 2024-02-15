@@ -25,8 +25,8 @@ import java.lang.reflect.Field;
 import org.opengis.util.FactoryException;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assume.assumeTrue;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;

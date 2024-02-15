@@ -30,7 +30,7 @@ import org.apache.sis.measure.ValueRange;
 import org.apache.sis.measure.Range;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;

@@ -19,7 +19,7 @@ package org.apache.sis.geometry;
 import static java.lang.Double.NaN;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.test.DependsOn;

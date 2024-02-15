@@ -42,7 +42,8 @@ import org.apache.sis.util.internal.Constants;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
@@ -85,7 +86,7 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
      * Tests the registration as a service provider.
      */
     @Test
-    @org.junit.Ignore("Pending the completion of migration to JDK 9")
+    @Disabled("Pending the completion of migration to JDK 9")
     public void testServiceProvider() {
         final MathTransformFactory factory = ServiceLoader.load(MathTransformFactory.class).findFirst().orElse(null);
         assertNotNull(factory, "No Apache SIS implementation of MathTransformFactory found in “module-info”.");

@@ -22,8 +22,8 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.system.DataDirectory;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assume.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assumptions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.ProjectDirectories;
 import org.apache.sis.xml.test.SchemaCompliance;
@@ -54,7 +54,7 @@ public final class SchemaComplianceTest extends TestCase {
     @Test
     public void verifyMetadata() throws Exception {
         Path directory = DataDirectory.SCHEMAS.getDirectory();
-        assumeNotNull(directory);
+        assumeTrue(directory != null, "Schema directory is not specified.");
         directory = directory.resolve("iso");
         assumeTrue(Files.isDirectory(directory.resolve("19115")));
         /*

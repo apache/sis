@@ -27,7 +27,7 @@ import static java.lang.StrictMath.*;
 import org.apache.sis.image.ImageTestCase;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 

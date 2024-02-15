@@ -19,7 +19,7 @@ package org.apache.sis.storage.netcdf.base;
 import org.apache.sis.util.Numbers;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 

@@ -25,7 +25,7 @@ import org.apache.sis.feature.FeatureOperations;
 import org.apache.sis.util.iso.Names;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;

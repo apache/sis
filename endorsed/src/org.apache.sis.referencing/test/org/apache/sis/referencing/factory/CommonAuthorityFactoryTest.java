@@ -43,8 +43,8 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -299,7 +299,7 @@ public final class CommonAuthorityFactoryTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testAuto42001")
-    @Ignore("Pending the port of Orthographic projection.")
+    @Disabled("Pending the port of Orthographic projection.")
     public void testAuto42003() throws FactoryException {
         final ProjectedCRS crs = factory.createProjectedCRS("AUTO:42003,9001,10,45");
         final ParameterValueGroup p = crs.getConversionFromBase().getParameterValues();

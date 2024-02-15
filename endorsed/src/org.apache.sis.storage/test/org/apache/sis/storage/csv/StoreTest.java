@@ -33,7 +33,7 @@ import org.apache.sis.setup.OptionKey;
 import org.apache.sis.setup.GeometryLibrary;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.date;

@@ -71,7 +71,6 @@ dependencies {
     runtimeOnly(drivers.derby.tools)
 
     // Test dependencies
-    testImplementation(tests.junit4)
     testImplementation(tests.junit5)
     testImplementation(tests.geoapi)
     testImplementation(tests.jama)
@@ -88,8 +87,7 @@ dependencies {
     testImplementation(drivers.h2)
 
     // For test execution
-    testRuntimeOnly(tests.junit)
-    testRuntimeOnly(tests.junitLauncher)
+    testRuntimeOnly(tests.jupiter)
     testRuntimeOnly(tests.slf4j)
 }
 
@@ -104,7 +102,7 @@ tasks.compileJava {
 }
 tasks.compileTestJava {
     srcDir.list().forEach {
-        addRead(options.compilerArgs, it, "org.apache.sis.test.endorsed,org.junit.jupiter.api,junit")
+        addRead(options.compilerArgs, it, "org.apache.sis.test.endorsed,org.junit.jupiter.api")
     }
     addExportForTests(options.compilerArgs)
 }
@@ -134,7 +132,12 @@ fun addExport(args : MutableList<String>, module : String, pkg : String, consume
  * The same options are required for both compiling and executing the tests.
  */
 fun addExportForTests(args : MutableList<String>) {
-    var allModules = srcDir.list().joinToString(separator=",")
+    addRead(args, "org.apache.sis.metadata",    "org.apache.derby.tools,com.h2database,org.hsqldb")
+    addRead(args, "org.apache.sis.referencing", "jama,GeographicLib.Java")
+    addRead(args, "org.apache.sis.storage",     "esri.geometry.api")
+    addRead(args, "org.apache.sis.storage.xml", "esri.geometry.api")
+
+    var allModules = srcDir.list().joinToString(separator=",") + ",ALL-UNNAMED"
 
     // ――――――――――――― Module name ――――――――――――――――――――――― Package to export ―――――――――――――――
     addExport(args, "org.apache.sis.util",              "org.apache.sis.test",
@@ -184,13 +187,6 @@ fun addExportForTests(args : MutableList<String>) {
 tasks.test {
     val args = mutableListOf("-enableassertions")
     addExportForTests(args)
-    /*
-     * Dependencies needed only for executing the tests (not for compilation).
-     */
-    addRead(args, "org.apache.sis.metadata",    "org.apache.derby.tools,com.h2database,org.hsqldb")
-    addRead(args, "org.apache.sis.referencing", "jama,GeographicLib.Java")
-    addRead(args, "org.apache.sis.storage",     "esri.geometry.api")
-    addRead(args, "org.apache.sis.storage.xml", "esri.geometry.api")
     /*
      * JAXB implementation needs permissions to do reflection.
      */

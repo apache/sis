@@ -37,9 +37,9 @@ import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 
 // Test dependencies
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -86,7 +86,7 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
      *
      * @throws ParseException if an error occurred while preparing the WKT parser.
      */
-    @BeforeClass
+    @BeforeAll
     public static void createFactory() throws ParseException {
         factory = new DefaultCoordinateOperationFactory();
         parser  = new WKTFormat();
@@ -127,7 +127,7 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
     /**
      * Disposes the factory created by {@link #createFactory()} after all tests have been executed.
      */
-    @AfterClass
+    @AfterAll
     public static void disposeFactory() {
         factory = null;
         parser  = null;

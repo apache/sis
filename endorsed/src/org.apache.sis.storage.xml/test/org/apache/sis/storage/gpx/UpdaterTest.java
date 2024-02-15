@@ -31,11 +31,11 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 
 // Test dependencies
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -62,7 +62,7 @@ public final class UpdaterTest extends TestCase {
     /**
      * Creates the provider to be shared by all data stores created in this test class.
      */
-    @BeforeClass
+    @BeforeAll
     public static void createProvider() {
         provider = new StoreProvider();
     }
@@ -70,7 +70,7 @@ public final class UpdaterTest extends TestCase {
     /**
      * Disposes the data store provider after all tests have been completed.
      */
-    @AfterClass
+    @AfterAll
     public static void disposeProvider() {
         provider = null;
     }
@@ -91,7 +91,7 @@ public final class UpdaterTest extends TestCase {
      *
      * @throws IOException if the temporary file cannot be created.
      */
-    @Before
+    @BeforeEach
     public void createTemporaryFile() throws IOException {
         file = Files.createTempFile("GPX", ".xml");
     }
@@ -101,7 +101,7 @@ public final class UpdaterTest extends TestCase {
      *
      * @throws IOException if the temporary file cannot be deleted.
      */
-    @After
+    @AfterEach
     public void deleteTemporaryFile() throws IOException {
         if (file != null) {
             Files.delete(file);

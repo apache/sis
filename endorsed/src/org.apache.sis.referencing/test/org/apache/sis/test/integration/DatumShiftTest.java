@@ -21,7 +21,7 @@ import org.apache.sis.system.DataDirectory;
 import org.apache.sis.referencing.operation.gridded.GridFile;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.apache.sis.referencing.operation.provider.NTv2Test;
 import org.apache.sis.referencing.operation.provider.NADCONTest;
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;

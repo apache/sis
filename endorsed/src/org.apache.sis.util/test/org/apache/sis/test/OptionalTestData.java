@@ -26,7 +26,7 @@ import java.nio.file.Path;
 import org.apache.sis.system.DataDirectory;
 
 // Test dependencies
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 
 /**
@@ -138,22 +138,21 @@ public enum OptionalTestData {
     /**
      * If the test file represented by this enumeration exists, opens it as an input stream.
      * If the file does not exist, throws {@link org.junit.AssumptionViolatedException} as
-     * by {@link org.junit.Assume} methods.
+     * by {@link org.junit.jupiter.api.Assumptions} methods.
      *
      * @return an input stream for the test file represented by this enumeration.
      * @throws IOException if an error occurred while opening the test file.
      */
     private InputStream open() throws IOException {
         final Optional<Path> path = path();
-        assumeTrue("File “$SIS_DATA/Tests/" + filename + "” has not been found.", path.isPresent());
-//      assumeTrue(path.isPresent(), () -> "File “$SIS_DATA/Tests/" + filename + "” has not been found.");
+        assumeTrue(path.isPresent(), () -> "File “$SIS_DATA/Tests/" + filename + "” has not been found.");
         return Files.newInputStream(path.get());
     }
 
     /**
      * If the test file represented by this enumeration exists, opens it as a UTF-8 character reader.
      * If the file does not exist, throws {@link org.junit.AssumptionViolatedException} as by
-     * {@link org.junit.Assume} methods.
+     * {@link org.junit.jupiter.api.Assumptions} methods.
      *
      * @return an UTF-8 character reader for the test file represented by this enumeration.
      * @throws IOException if an error occurred while opening the test file.

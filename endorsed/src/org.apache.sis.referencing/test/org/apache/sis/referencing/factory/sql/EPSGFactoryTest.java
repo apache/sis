@@ -57,14 +57,14 @@ import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.TestFactorySource;
 
 // Test dependencies
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.Ignore;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import static org.junit.Assume.assumeTrue;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOnMethod;
@@ -100,7 +100,7 @@ public final class EPSGFactoryTest extends TestCase {
      *
      * @throws FactoryException if an error occurred while creating the factory.
      */
-    @BeforeClass
+    @BeforeAll
     public static void createFactory() throws FactoryException {
         TestFactorySource.createFactory();
     }
@@ -110,7 +110,7 @@ public final class EPSGFactoryTest extends TestCase {
      *
      * @throws FactoryException if an error occurred while closing the connections.
      */
-    @AfterClass
+    @AfterAll
     public static void close() throws FactoryException {
         TestFactorySource.close();
     }
@@ -119,13 +119,13 @@ public final class EPSGFactoryTest extends TestCase {
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
      * do so, but should be considered as an implementation details (it should have been a private field).
      */
-    @Rule
+    @RegisterExtension
     public final LoggingWatcher loggings = new LoggingWatcher(Loggers.CRS_FACTORY);
 
     /**
      * Verifies that no unexpected warning has been emitted in any test defined in this class.
      */
-    @After
+    @AfterEach
     public void assertNoUnexpectedLog() {
         loggings.assertNoUnexpectedLog();
     }
@@ -351,7 +351,7 @@ public final class EPSGFactoryTest extends TestCase {
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    @Ignore("“Lambert Azimuthal Equal Area (Spherical)” projection is not yet implemented.")
+    @Disabled("“Lambert Azimuthal Equal Area (Spherical)” projection is not yet implemented.")
     public void testProjectedOnPole() throws FactoryException {
         final EPSGFactory factory = TestFactorySource.factory;
         assumeTrue(factory != null);

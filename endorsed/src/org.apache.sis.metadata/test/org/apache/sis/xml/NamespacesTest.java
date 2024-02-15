@@ -19,7 +19,7 @@ package org.apache.sis.xml;
 import static org.apache.sis.metadata.internal.ImplementationHelper.ISO_NAMESPACE;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 

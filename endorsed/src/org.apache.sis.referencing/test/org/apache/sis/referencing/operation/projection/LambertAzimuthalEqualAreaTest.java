@@ -30,7 +30,7 @@ import static org.apache.sis.referencing.util.Formulas.LINEAR_TOLERANCE;
 import static org.apache.sis.referencing.util.Formulas.ANGULAR_TOLERANCE;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 

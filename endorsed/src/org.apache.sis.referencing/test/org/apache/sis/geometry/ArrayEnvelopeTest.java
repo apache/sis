@@ -19,11 +19,12 @@ package org.apache.sis.geometry;
 import org.apache.sis.io.wkt.Formatter;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
+import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
-import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 
 
@@ -113,9 +114,10 @@ public final class ArrayEnvelopeTest extends TestCase {
     /**
      * Verifies that attempt to create an envelope from an invalid WKT results in an exception.
      */
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCreatesFromInvalidWKT() {
-        assertNotNull(new ArrayEnvelope("BBOX[\"invalid\"]").coordinates);
+        var e = assertThrows(IllegalArgumentException.class, () -> new ArrayEnvelope("BBOX[\"invalid\"]"));
+        assertMessageContains(e);
     }
 
     /**

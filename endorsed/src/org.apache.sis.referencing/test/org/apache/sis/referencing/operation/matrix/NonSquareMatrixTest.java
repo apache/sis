@@ -20,8 +20,8 @@ import java.util.Random;
 import static java.lang.Double.NaN;
 
 // Test dependencies
-import org.junit.AfterClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
@@ -210,7 +210,7 @@ public final class NonSquareMatrixTest extends MatrixTestCase {
      * Prints the statistics about the differences between JAMA and SIS matrix elements.
      * Those statistics will be visible only if {@link #VERBOSE} is {@code true}.
      */
-    @AfterClass
+    @AfterAll
     public static void printStatistics() {
         if (statistics != null) {
             TestUtilities.printSeparator("Overall statistics on agreement of matrix arithmetic");

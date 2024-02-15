@@ -38,8 +38,8 @@ import org.apache.sis.math.Statistics;
 import org.apache.sis.math.StatisticsFormat;
 
 // Test dependencies
-import org.junit.AfterClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
@@ -440,7 +440,7 @@ nextSlice:  for (;;) {
     /**
      * Prints statistics about execution time (in milliseconds) after all tests completed.
      */
-    @AfterClass
+    @AfterAll
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public static void printDurations() {
         if (statistics != null) {

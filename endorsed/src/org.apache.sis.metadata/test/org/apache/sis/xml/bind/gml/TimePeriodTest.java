@@ -31,9 +31,9 @@ import org.apache.sis.xml.util.XmlUtilities;
 import org.apache.sis.pending.temporal.DefaultTemporalFactory;
 
 // Test dependencies
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
@@ -85,7 +85,7 @@ public final class TimePeriodTest extends TestCase {
      *
      * @see #disposeMarshallerPool()
      */
-    @BeforeClass
+    @BeforeAll
     public static void createMarshallerPool() throws JAXBException {
         final Map<String,Object> properties = new HashMap<>(4);
         assertNull(properties.put(XML.LOCALE, Locale.FRANCE));
@@ -97,7 +97,7 @@ public final class TimePeriodTest extends TestCase {
      * Invoked by JUnit after the execution of every tests in order to dispose
      * the {@link MarshallerPool} instance used internally by this class.
      */
-    @AfterClass
+    @AfterAll
     public static void disposeMarshallerPool() {
         pool = null;
     }

@@ -19,7 +19,7 @@ package org.apache.sis.math;
 import java.util.Random;
 
 // Test dependencies
-import org.junit.*;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;

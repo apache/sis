@@ -34,7 +34,7 @@ import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.ComparisonMode;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;

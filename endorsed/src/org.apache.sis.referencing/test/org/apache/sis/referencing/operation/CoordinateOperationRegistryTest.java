@@ -37,10 +37,10 @@ import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 
 // Test dependencies
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Test;
-import static org.junit.Assume.assumeTrue;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -103,7 +103,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
      */
     public CoordinateOperationRegistryTest() throws FactoryException {
         crsFactory = CRS.getAuthorityFactory("EPSG");
-        assumeTrue("EPSG factory required.", crsFactory instanceof CoordinateOperationAuthorityFactory);
+        assumeTrue(crsFactory instanceof CoordinateOperationAuthorityFactory, "EPSG factory required.");
         registry = new CoordinateOperationRegistry((CoordinateOperationAuthorityFactory) crsFactory, factory, null);
     }
 
@@ -113,7 +113,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
      *
      * @throws ParseException if an error occurred while preparing the WKT parser.
      */
-    @BeforeClass
+    @BeforeAll
     public static void createFactory() throws ParseException {
         factory = new DefaultCoordinateOperationFactory();
         parser  = new WKTFormat();
@@ -125,7 +125,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
     /**
      * Disposes the factory created by {@link #createFactory()} after all tests have been executed.
      */
-    @AfterClass
+    @AfterAll
     public static void disposeFactory() {
         factory = null;
         parser  = null;

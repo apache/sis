@@ -25,7 +25,7 @@ import org.apache.sis.referencing.operation.transform.AbstractMathTransform1D;
 import static org.apache.sis.referencing.operation.projection.NormalizedProjectionTest.TOLERANCE;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.DependsOnMethod;

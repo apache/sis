@@ -27,7 +27,7 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.base.MemoryFeatureSet;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;

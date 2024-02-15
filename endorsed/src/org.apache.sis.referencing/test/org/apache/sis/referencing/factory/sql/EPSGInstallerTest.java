@@ -38,10 +38,10 @@ import org.apache.sis.util.internal.Constants;
 import org.apache.sis.metadata.sql.util.Reflection;
 
 // Test dependencies
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import static org.junit.Assume.assumeTrue;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOn;
@@ -74,13 +74,13 @@ public final class EPSGInstallerTest extends TestCase {
      * <p>This field is public because JUnit requires us to do so, but should be considered
      * as an implementation details (it should have been a private field).</p>
      */
-    @Rule
+    @RegisterExtension
     public final LoggingWatcher loggings = new LoggingWatcher(Loggers.CRS_FACTORY);
 
     /**
      * Verifies that no unexpected warning has been emitted in any test defined in this class.
      */
-    @After
+    @AfterEach
     public void assertNoUnexpectedLog() {
         loggings.assertNoUnexpectedLog();
     }
@@ -123,8 +123,8 @@ public final class EPSGInstallerTest extends TestCase {
      */
     private static InstallationScriptProvider getScripts() throws IOException {
         final InstallationScriptProvider scripts = new InstallationScriptProvider.Default(null);
-        assumeTrue("EPSG scripts not found in Databases/ExternalSources directory.",
-                scripts.getAuthorities().contains(Constants.EPSG));
+        assumeTrue(scripts.getAuthorities().contains(Constants.EPSG),
+                "EPSG scripts not found in Databases/ExternalSources directory.");
         return scripts;
     }
 

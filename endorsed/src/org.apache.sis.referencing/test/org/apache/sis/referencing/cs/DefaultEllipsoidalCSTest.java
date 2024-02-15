@@ -25,7 +25,7 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.GeodeticObjectVerifier;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOn;

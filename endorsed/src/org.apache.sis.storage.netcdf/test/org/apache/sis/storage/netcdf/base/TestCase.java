@@ -34,7 +34,7 @@ import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.event.StoreListeners;
 
 // Test dependencies
-import org.junit.AfterClass;
+import org.junit.jupiter.api.AfterAll;
 import static org.junit.jupiter.api.Assertions.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -178,7 +178,7 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      *
      * @throws IOException if an error occurred while closing a file.
      */
-    @AfterClass
+    @AfterAll
     public static void closeAllDecoders() throws IOException {
         final var ds = new DataStoreMock("lock");
         Throwable failure = null;

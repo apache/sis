@@ -30,7 +30,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import static org.apache.sis.util.internal.Numerics.COMPARISON_THRESHOLD;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 

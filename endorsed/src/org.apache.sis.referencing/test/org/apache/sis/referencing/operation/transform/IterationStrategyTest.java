@@ -23,7 +23,7 @@ import org.opengis.referencing.operation.TransformException;
 import static org.apache.sis.referencing.operation.transform.IterationStrategy.*;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;

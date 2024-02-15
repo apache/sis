@@ -21,7 +21,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 
 // Test dependencies
-import org.junit.*;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 

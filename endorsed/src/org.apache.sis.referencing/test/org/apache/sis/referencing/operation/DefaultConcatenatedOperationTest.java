@@ -30,7 +30,7 @@ import org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransfor
 import org.apache.sis.io.wkt.Convention;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOn;

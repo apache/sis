@@ -72,11 +72,8 @@ dependencyResolutionManagement {
         }
         create("tests") {
             library("geoapi",        "org.opengis",            "geoapi-conformance")     .version {strictly(geoapiVersion)}
-            library("junit4",        "junit",                  "junit")                  .version {strictly("4.13.2")}
             library("junit5",        "org.junit.jupiter",      "junit-jupiter-api")      .version {strictly("5.10.2")}
-            library("junit",         "org.junit.vintage",      "junit-vintage-engine")   .version {strictly("5.10.2")}
             library("jupiter",       "org.junit.jupiter",      "junit-jupiter-engine")   .version {strictly("5.10.2")}
-            library("junitLauncher", "org.junit.platform",     "junit-platform-launcher").version {strictly("1.10.2")}
             library("jama",          "gov.nist.math",          "jama")                   .version {strictly("1.0.3")}
             library("geographiclib", "net.sf.geographiclib",   "GeographicLib-Java")     .version {strictly("2.0")}
             library("slf4j",         "org.slf4j",              "slf4j-jdk14").version {

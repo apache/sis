@@ -32,7 +32,7 @@ import org.apache.sis.util.CharSequences;
 import static org.apache.sis.referencing.operation.provider.TransverseMercator.LATITUDE_OF_ORIGIN;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.apache.sis.test.OptionalTestData;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;

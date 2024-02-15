@@ -24,7 +24,7 @@ import static org.apache.sis.referencing.operation.transform.AbstractMathTransfo
 import static org.apache.sis.referencing.operation.transform.AbstractMathTransform.MAXIMUM_BUFFER_SIZE;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;

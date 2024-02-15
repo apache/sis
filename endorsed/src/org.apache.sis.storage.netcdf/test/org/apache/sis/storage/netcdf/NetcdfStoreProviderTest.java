@@ -29,7 +29,7 @@ import org.apache.sis.storage.netcdf.classic.ChannelDecoder;
 import org.apache.sis.util.Version;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.storage.netcdf.classic.ChannelDecoderTest;
 import org.apache.sis.test.DependsOn;

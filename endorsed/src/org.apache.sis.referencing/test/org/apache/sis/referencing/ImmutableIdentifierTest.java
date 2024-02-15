@@ -29,7 +29,8 @@ import org.apache.sis.util.internal.Constants;
 import org.apache.sis.io.wkt.Convention;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOnMethod;
@@ -170,7 +171,7 @@ public final class ImmutableIdentifierTest extends TestCase {
      * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
-    @org.junit.Ignore("To be replaced by GML")
+    @Disabled("To be replaced by GML")
     public void testMarshal() throws JAXBException {
         final ImmutableIdentifier identifier = new ImmutableIdentifier(new DefaultCitation("EPSG"), null, "4326");
         assertXmlEquals(

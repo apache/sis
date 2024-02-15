@@ -31,7 +31,7 @@ import static org.apache.sis.util.internal.Constants.STANDARD_PARALLEL_1;
 import static org.apache.sis.util.internal.Constants.STANDARD_PARALLEL_2;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;

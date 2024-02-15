@@ -19,7 +19,7 @@ package org.apache.sis.io;
 import java.io.IOException;
 
 // Test dependencies
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 
@@ -42,8 +42,8 @@ public final class LeftMarginTest extends LineAppenderTest {
     /**
      * Creates and configure the {@link LineAppender} to test.
      */
-    @Before
     @Override
+    @BeforeEach
     public void createLineAppender() {
         appender = new LineAppender(appender) {
             @Override

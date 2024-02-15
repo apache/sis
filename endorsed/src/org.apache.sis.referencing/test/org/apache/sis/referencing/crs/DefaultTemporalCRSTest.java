@@ -26,7 +26,7 @@ import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_D
 import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_MILLISECOND;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.cs.HardCodedCS;

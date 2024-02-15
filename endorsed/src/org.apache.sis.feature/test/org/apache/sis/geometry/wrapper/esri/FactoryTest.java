@@ -23,7 +23,7 @@ import org.apache.sis.geometry.wrapper.GeometriesTestCase;
 import org.apache.sis.util.StringBuilders;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 

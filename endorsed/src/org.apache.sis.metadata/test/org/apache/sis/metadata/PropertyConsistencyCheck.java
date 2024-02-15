@@ -30,7 +30,7 @@ import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.metadata.internal.Dependencies;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.xml.test.AnnotationConsistencyCheck;

@@ -21,7 +21,6 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.MathTransform2D;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -34,8 +33,8 @@ import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.math.Fraction;
 
 // Test dependencies
-import org.junit.After;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOn;
 
@@ -61,36 +60,51 @@ public class ProjectiveTransformTest extends AffineTransformTest {
     private static final double STRICT = 0;
 
     /**
-     * For {@link LinearTransformTest} constructor only.
+     * A math transform factory which delegates instantiations to the enclosing test class.
+     * This is a workaround for RFE #4093999 ("Relax constraint on placement of this()/super()
+     * call in constructors").
      */
-    ProjectiveTransformTest(final MathTransformFactory factory) {
-        super(factory);
+    private static final class Proxy extends MathTransformFactoryBase {
+        /** The enclosing test class. */
+        ProjectiveTransformTest test;
+
+        /** Delegates object creation to the enclosing test class. */
+        @Override public MathTransform createAffineTransform(final Matrix matrix) {
+            return test.createAffineTransform(matrix);
+        }
     }
 
     /**
      * Creates a new test suite.
      */
     public ProjectiveTransformTest() {
-        super(new MathTransformFactoryBase() {
-            @Override
-            public MathTransform createAffineTransform(final Matrix matrix) {
-                final ProjectiveTransform tested;
-                if (matrix.getNumRow() == 3 && matrix.getNumCol() == 3) {
-                    tested = new ProjectiveTransform2D(matrix);
-                } else {
-                    tested = new ProjectiveTransform(matrix);
-                }
-                final MathTransform reference = tested.optimize();
-                if (tested != reference) {
-                    /*
-                     * Opportunistically tests `ScaleTransform` together with `ProjectiveTransform`.
-                     * We take `ScaleTransform` as a reference implementation because it is simpler.
-                     */
-                    return new TransformResultComparator(reference, tested, 1E-12);
-                }
-                return tested;
-            }
-        });
+        super(new Proxy());
+        ((Proxy) mtFactory).test = this;
+    }
+
+    /**
+     * Creates the transform to test.
+     * This method is overridden by subclass testing a different kind of transform.
+     *
+     * @param  matrix  coefficients of the affine transform.
+     * @return the transform to test.
+     */
+    MathTransform createAffineTransform(final Matrix matrix) {
+        final ProjectiveTransform tested;
+        if (matrix.getNumRow() == 3 && matrix.getNumCol() == 3) {
+            tested = new ProjectiveTransform2D(matrix);
+        } else {
+            tested = new ProjectiveTransform(matrix);
+        }
+        final MathTransform reference = tested.optimize();
+        if (tested != reference) {
+            /*
+             * Opportunistically tests `ScaleTransform` together with `ProjectiveTransform`.
+             * We take `ScaleTransform` as a reference implementation because it is simpler.
+             */
+            return new TransformResultComparator(reference, tested, 1E-12);
+        }
+        return tested;
     }
 
     /**
@@ -230,7 +244,7 @@ public class ProjectiveTransformTest extends AffineTransformTest {
      * In addition, all Apache SIS classes for linear transforms shall implement
      * {@link LinearTransform} and {@link Parameterized} interfaces.
      */
-    @After
+    @AfterEach
     public final void ensureImplementRightInterface() {
         /*
          * `TransformResultComparator.tested` is the `ProjectiveTransform` before call to `optimize()`.

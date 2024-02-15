@@ -30,7 +30,7 @@ import org.apache.sis.xml.XLink;
 import static org.apache.sis.xml.IdentifierSpace.*;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;

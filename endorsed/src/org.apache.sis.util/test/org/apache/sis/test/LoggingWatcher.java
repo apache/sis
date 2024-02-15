@@ -27,10 +27,9 @@ import java.util.logging.SimpleFormatter;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
 
 /**
@@ -38,14 +37,14 @@ import org.junit.runner.Description;
  * For using, create a rule in the JUnit test class like below:
  *
  * {@snippet lang="java" :
- *     @Rule
+ *     @RegisterExtension
  *     public final LoggingWatcher loggings = new LoggingWatcher(Logger.getLogger(Loggers.XML));
  *     }
  *
  * Recommended but not mandatory, ensure that there is no unexpected logging in any tests:
  *
  * {@snippet lang="java" :
- *     @After
+ *     @AfterEach
  *     public void assertNoUnexpectedLog() {
  *         loggings.assertNoUnexpectedLog();
  *     }
@@ -61,7 +60,7 @@ import org.junit.runner.Description;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class LoggingWatcher extends TestWatcher implements Filter {
+public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallback, Filter {
     /**
      * The logged messages.
      */
@@ -106,7 +105,7 @@ public final class LoggingWatcher extends TestWatcher implements Filter {
      * @see #isLoggable(LogRecord)
      */
     @Override
-    protected final void starting(final Description description) {
+    public final void beforeEach(final ExtensionContext description) {
         assertNull(logger.getFilter());
         logger.setFilter(this);
     }
@@ -118,7 +117,7 @@ public final class LoggingWatcher extends TestWatcher implements Filter {
      * @param  description  a description of the JUnit test that finished.
      */
     @Override
-    protected final void finished(final Description description) {
+    public final void afterEach(final ExtensionContext description) {
         logger.setFilter(null);
     }
 
@@ -145,6 +144,7 @@ public final class LoggingWatcher extends TestWatcher implements Filter {
      * @param  keywords  the keywords that are expected to exist in the next log message
      *                   if that log message has been emitted.
      */
+    @SuppressWarnings("StringEquality")
     public void skipNextLogIfContains(final String... keywords) {
         final String message = messages.peek();
         if (message != null) {

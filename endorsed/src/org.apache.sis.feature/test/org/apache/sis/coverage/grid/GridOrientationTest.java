@@ -19,7 +19,7 @@ package org.apache.sis.coverage.grid;
 import org.apache.sis.referencing.cs.AxesConvention;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.TestCase;

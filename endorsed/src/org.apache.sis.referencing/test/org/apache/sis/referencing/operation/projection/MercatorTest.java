@@ -34,7 +34,7 @@ import org.apache.sis.parameter.Parameters;
 import static org.apache.sis.referencing.operation.projection.ConformalProjectionTest.LN_INFINITY;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Assert.assertBetween;
 import org.apache.sis.test.DependsOnMethod;

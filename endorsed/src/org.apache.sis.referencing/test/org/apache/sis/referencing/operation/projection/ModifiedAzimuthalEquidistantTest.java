@@ -21,7 +21,8 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.provider.MapProjection;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 import org.apache.sis.test.DependsOn;
 
 
@@ -93,7 +94,7 @@ public final class ModifiedAzimuthalEquidistantTest extends AzimuthalEquidistant
      */
     @Test
     @Override
-    @org.junit.Ignore("Implementation not yet completed")
+    @Disabled("Implementation not yet completed")
     public void testDerivative() throws FactoryException, TransformException {
         // TODO
     }

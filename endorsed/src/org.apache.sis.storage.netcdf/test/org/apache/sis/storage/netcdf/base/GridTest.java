@@ -22,7 +22,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.storage.DataStoreException;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;

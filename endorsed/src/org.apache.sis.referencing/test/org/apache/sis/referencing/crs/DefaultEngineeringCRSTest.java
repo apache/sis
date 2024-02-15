@@ -27,7 +27,7 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.xml.Namespaces;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
 import org.apache.sis.referencing.cs.HardCodedCS;

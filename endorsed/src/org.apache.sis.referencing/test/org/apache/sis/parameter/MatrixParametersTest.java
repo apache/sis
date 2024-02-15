@@ -17,7 +17,7 @@
 package org.apache.sis.parameter;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -48,19 +48,8 @@ public class MatrixParametersTest extends TensorParametersTest {
      * Creates a new test case for {@link MatrixParameters}.
      */
     public MatrixParametersTest() {
-        super(TensorParameters.WKT1, ELEMENT_NAMES, ALPHANUM_NAMES, null);
-    }
-
-    /**
-     * Creates a new test case for a {@link MatrixParameters} defined by the subclass.
-     *
-     * @param  param        the instance tested by this class.
-     * @param  names        the expected parameter names for all matrix elements.
-     * @param  aliases      the expected parameter aliases for all matrix elements, or {@code null} for no alias.
-     * @param  identifiers  the expected parameter identifiers for all matrix elements, or {@code null} for no identifier.
-     */
-    MatrixParametersTest(TensorParameters<Double> param, String[][] names, String[][] aliases, short[][] identifiers) {
-        super(param, names, aliases, identifiers);
+        param = TensorParameters.WKT1;
+        aliases = ALPHANUM_NAMES;
     }
 
     /**

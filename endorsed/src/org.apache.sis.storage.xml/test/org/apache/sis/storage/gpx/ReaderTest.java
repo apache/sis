@@ -32,9 +32,9 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.gps.Fix;
 
 // Test dependencies
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -64,7 +64,7 @@ public final class ReaderTest extends TestCase {
     /**
      * Creates the provider to be shared by all data stores created in this test class.
      */
-    @BeforeClass
+    @BeforeAll
     public static void createProvider() {
         provider = new StoreProvider();
     }
@@ -72,7 +72,7 @@ public final class ReaderTest extends TestCase {
     /**
      * Disposes the data store provider after all tests have been completed.
      */
-    @AfterClass
+    @AfterAll
     public static void disposeProvider() {
         provider = null;
     }

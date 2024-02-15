@@ -26,8 +26,7 @@ import static org.apache.sis.util.internal.Constants.NUM_ROW;
 import static org.apache.sis.util.internal.Constants.NUM_COL;
 
 // Test dependencies
-import org.junit.AfterClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
@@ -57,7 +56,10 @@ public class TensorParametersTest extends TestCase {
      * except that it is not an instance of the {@link MatrixParameters} subclass. Those parameters
      * do not contain EPSG aliases and identifiers.
      */
-    private static TensorParameters<Double> WKT1;
+    private static final TensorParameters<Double> WKT1 =
+            new TensorParameters<>(Double.class, "elt_", "_",
+                    TensorParameters.WKT1.getDimensionDescriptor(0),
+                    TensorParameters.WKT1.getDimensionDescriptor(1));
 
     /**
      * The expected parameter names according the WKT 1 convention for the matrix elements.
@@ -74,66 +76,33 @@ public class TensorParametersTest extends TestCase {
     /**
      * The instance tested by this class.
      */
-    final TensorParameters<Double> param;
+    TensorParameters<Double> param;
 
     /**
      * The expected parameter names for all matrix elements.
      * Example: {@link #ELEMENT_NAMES}.
      */
-    private final String[][] names;
+    String[][] names;
 
     /**
      * The expected parameter aliases for all matrix elements, or {@code null} for no alias.
      * Example: {@link MatrixParametersTest#ALPHANUM_NAMES}.
      */
-    private final String[][] aliases;
+    String[][] aliases;
 
     /**
      * The expected parameter identifiers for all matrix elements, or {@code null} for no identifier.
      * Example: {@link MatrixParametersAlphaNumTest#IDENTIFIERS}.
      */
-    private final short[][] identifiers;
+    short[][] identifiers;
 
     /**
      * Creates a new test case for {@link TensorParameters}.
      */
     @SuppressWarnings("unchecked")
     public TensorParametersTest() {
-        if (WKT1 == null) {
-            WKT1 = new TensorParameters<>(Double.class, "elt_", "_",
-                    TensorParameters.WKT1.getDimensionDescriptor(0),
-                    TensorParameters.WKT1.getDimensionDescriptor(1));
-        }
-        param       = WKT1;
-        names       = ELEMENT_NAMES;
-        aliases     = null;
-        identifiers = null;
-    }
-
-    /**
-     * Creates a new test case for a {@link MatrixParameters} defined by the subclass.
-     *
-     * @param  param        the instance tested by this class.
-     * @param  names        the expected parameter names for all matrix elements.
-     * @param  aliases      the expected parameter aliases for all matrix elements, or {@code null} for no alias.
-     * @param  identifiers  the expected parameter identifiers for all matrix elements, or {@code null} for no identifier.
-     */
-    TensorParametersTest(final TensorParameters<Double> param, final String[][] names, final String[][] aliases,
-            final short[][] identifiers)
-    {
-        this.param       = param;
-        this.names       = names;
-        this.aliases     = aliases;
-        this.identifiers = identifiers;
-    }
-
-    /**
-     * Discards the parameters used by the tests in this class.
-     * This method is invoked by JUnit only after all tests completed.
-     */
-    @AfterClass
-    public static void clearTensorParameters() {
-        WKT1 = null;
+        param = WKT1;
+        names = ELEMENT_NAMES;
     }
 
     /**

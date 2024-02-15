@@ -31,7 +31,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.io.wkt.Convention;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.test.TestCase;

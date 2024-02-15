@@ -40,7 +40,7 @@ import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.cat.CodeListUID;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opentest4j.AssertionFailedError;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;

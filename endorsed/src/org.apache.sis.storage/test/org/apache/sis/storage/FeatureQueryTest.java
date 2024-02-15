@@ -29,7 +29,7 @@ import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.util.iso.Names;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;

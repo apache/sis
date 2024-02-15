@@ -46,7 +46,7 @@ import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.xml.TestUsingFile;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;

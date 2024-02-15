@@ -20,7 +20,7 @@ import java.util.Locale;
 import static org.apache.sis.util.DefaultInternationalStringTest.MESSAGE;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.test.TestCase;

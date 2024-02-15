@@ -25,7 +25,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.xml.TestUsingFile;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.bind.lan.FreeTextMarshallingTest;
 import org.apache.sis.test.DependsOn;

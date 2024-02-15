@@ -199,21 +199,24 @@ final class ModularTest extends Conventions {
         args.add(String.join(",", moduleDirectories.keySet()));
         /*
          * --patch-module ${module}=${buildDir}/classes/java/test/${it}
-         * --add-reads    ${module}=junit,ALL-UNNAMED
+         * --add-reads    ${module}=org.junit.jupiter.api,ALL-UNNAMED
          */
         moduleDirectories.entrySet().forEach((entry) -> {
             final String module = entry.getKey();
             args.add("--patch-module"); args.add(module + '=' + entry.getValue());
-            args.add("--add-reads");    args.add(module + "=junit,ALL-UNNAMED");
+            args.add("--add-reads");    args.add(module + "=ALL-UNNAMED");
         });
         /*
-         * --add-exports ${module}/${package}=junit
+         * --add-exports ${module}/${package}=org.junit.jupiter.engine
+         *
+         * We have to replace "org.junit.jupiter.engine" by "ALL-UNNAMED" for now
+         * because the JAR is wrongly placed on the class-path instead of module-path.
          */
         for (final String name : testedPackages) {
             String module = packageVisibility.remove(name);
             if (module != null && !EXPORTED.equals(module)) {
                 args.add("--add-exports");
-                args.add(module + '/' + name + "=junit");
+                args.add(module + '/' + name + "=ALL-UNNAMED");
             }
         }
         return args;

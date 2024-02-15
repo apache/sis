@@ -21,7 +21,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.util.Localized;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 

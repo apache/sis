@@ -42,8 +42,8 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.referencing.ObjectFactoryTest;
 import org.apache.sis.test.DependsOn;
@@ -75,7 +75,7 @@ public final class GeodeticObjectFactoryTest extends ObjectFactoryTest {
 
     @Override
     @Deprecated
-    @Ignore("Replaced by testProjectedWithGeoidalHeight()")
+    @Disabled("Replaced by testProjectedWithGeoidalHeight()")
     public void testProjected3D() throws FactoryException {
     }
 

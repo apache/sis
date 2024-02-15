@@ -28,7 +28,7 @@ import java.awt.image.ImagingOpException;
 import static java.lang.StrictMath.round;
 
 // Test dependencies
-import org.junit.AfterClass;
+import org.junit.jupiter.api.AfterAll;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestConfiguration;
@@ -162,7 +162,7 @@ public abstract class ImageTestCase extends TestCase {
      * If a frame has been created by {@link #showCurrentImage(String)},
      * waits for its disposal before to move to the next test class.
      */
-    @AfterClass
+    @AfterAll
     public static void waitForFrameDisposal() {
         if (viewUsed) {
             TestViewer.waitForFrameDisposal();

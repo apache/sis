@@ -27,8 +27,8 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.sql.EPSGFactory;
 
 // Test dependencies
-import static org.junit.Assume.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.*;
 import static org.opengis.test.Assert.assertBetween;
 
 
@@ -38,12 +38,12 @@ import static org.opengis.test.Assert.assertBetween;
  * Use this class as below:
  *
  * {@snippet lang="java" :
- *     @BeforeClass
+ *     @BeforeAll
  *     public static void createFactory() throws FactoryException {
  *         TestFactorySource.createFactory();
  *     }
  *
- *     @AfterClass
+ *     @AfterAll
  *     public static void close() throws FactoryException {
  *         TestFactorySource.close();
  *     }
@@ -98,7 +98,7 @@ public final class TestFactorySource {
     }
 
     /**
-     * Returns the system-wide EPSG factory, or interrupts the tests with {@link org.junit.Assume}
+     * Returns the system-wide EPSG factory, or interrupts the tests with JUnit {@code Assumptions}
      * if the EPSG factory is not available. Note that this method breaks isolation between tests.
      * For more isolated tests, use {@link #createFactory()} and {@link #close()} instead.
      *
@@ -106,16 +106,15 @@ public final class TestFactorySource {
      * @throws FactoryException if an error occurred while fetching the factory.
      */
     public static synchronized EPSGFactory getSharedFactory() throws FactoryException {
-        assumeFalse("No connection to EPSG dataset.", isUnavailable);
+        assumeFalse(isUnavailable, "No connection to EPSG dataset.");
         final CRSAuthorityFactory crsFactory = CRS.getAuthorityFactory(Constants.EPSG);
-        assumeTrue("No connection to EPSG dataset.", crsFactory instanceof EPSGFactory);
+        assumeTrue(crsFactory instanceof EPSGFactory, "No connection to EPSG dataset.");
         try {
             assertNotNull(crsFactory.createGeographicCRS("4326"));
         } catch (UnavailableFactoryException e) {
             isUnavailable = true;
             GeodeticAuthorityFactory.LOGGER.warning(e.toString());
-            assumeNoException("No connection to EPSG dataset.", e);
-//          abort("No connection to EPSG dataset.");
+            abort("No connection to EPSG dataset.");
         }
         return (EPSGFactory) crsFactory;
     }

@@ -23,9 +23,9 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.StorageConnector;
 
 // Test dependencies
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import static org.junit.Assume.assumeNotNull;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import org.apache.sis.test.OptionalTestData;
 import org.apache.sis.storage.test.CoverageReadConsistency;
 
@@ -50,13 +50,13 @@ public final class SelfConsistencyTest extends CoverageReadConsistency {
      *
      * @throws DataStoreException if an error occurred while opening the file.
      */
-    @BeforeClass
+    @BeforeAll
     public static void openFile() throws DataStoreException {
         final Optional<Path> path = OptionalTestData.NETCDF.path();
         if (path.isPresent()) {
             store = new NetcdfStore(null, new StorageConnector(path.get()));
         }
-        assumeNotNull(store);
+        assumeTrue(store != null, "Test file not found.");
     }
 
     /**
@@ -64,7 +64,7 @@ public final class SelfConsistencyTest extends CoverageReadConsistency {
      *
      * @throws DataStoreException if an error occurred while closing the file.
      */
-    @AfterClass
+    @AfterAll
     public static void closeFile() throws DataStoreException {
         final NetcdfStore s = store;
         if (s != null) {

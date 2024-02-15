@@ -28,10 +28,10 @@ import org.apache.sis.system.Modules;
 import org.apache.sis.math.Statistics;
 
 // Test dependencies
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestCase;
@@ -54,7 +54,7 @@ public final class StatisticsCalculatorTest extends TestCase {
     /**
      * Intercepts log records for verifying them.
      */
-    @Rule
+    @RegisterExtension
     public final LoggingWatcher loggings = new LoggingWatcher(getLogger(Modules.RASTER));
 
     /**

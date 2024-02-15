@@ -26,7 +26,7 @@ import java.awt.image.RenderedImage;
 import org.opengis.referencing.operation.MathTransform;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.image.processing.isoline.IsolinesTest;
 import org.apache.sis.test.DependsOn;

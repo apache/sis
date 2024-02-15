@@ -23,9 +23,8 @@ import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
@@ -56,8 +55,8 @@ public final class NumberConverterTest extends TestCase {
             final Class<S> sourceClass, final Class<T> targetClass)
     {
         final ObjectConverter<S,T> converter = SystemRegistry.INSTANCE.findExact(sourceClass, targetClass);
-        assertInstanceOf("ConverterRegistry.find(" + sourceClass.getSimpleName() + ", " + targetClass.getSimpleName() + ')',
-                (targetClass == Comparable.class) ? NumberConverter.Comparable.class : NumberConverter.class, converter);
+        final Class<?> expected = (targetClass == Comparable.class) ? NumberConverter.Comparable.class : NumberConverter.class;
+        assertInstanceOf(expected, converter, () -> "ConverterRegistry.find(" + sourceClass.getSimpleName() + ", " + targetClass.getSimpleName() + ')');
         return converter;
     }
 

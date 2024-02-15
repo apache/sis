@@ -33,13 +33,13 @@ import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.math.Vector;
 
 // Test dependencies
-import org.junit.Test;
-import org.junit.Rule;
-import org.junit.After;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import org.apache.sis.test.TestCase;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.apache.sis.test.LoggingWatcher;
+import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -105,7 +105,7 @@ public abstract class RegistryTestCase<G> extends TestCase {
      *
      * @see #assertNoUnexpectedLog()
      */
-    @Rule
+    @RegisterExtension
     public final LoggingWatcher loggings = new LoggingWatcher(Node.LOGGER);
 
     /**
@@ -513,7 +513,7 @@ public abstract class RegistryTestCase<G> extends TestCase {
     /**
      * Executed after each test for verifying that no unexpected log message has been emitted.
      */
-    @After
+    @AfterEach
     public void assertNoUnexpectedLog() {
         loggings.assertNoUnexpectedLog();
     }
