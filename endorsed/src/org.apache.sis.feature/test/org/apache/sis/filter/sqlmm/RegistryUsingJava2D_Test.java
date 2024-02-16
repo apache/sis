@@ -19,8 +19,8 @@ package org.apache.sis.filter.sqlmm;
 import java.awt.Shape;
 
 // Test dependencies
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 
 /**
@@ -39,43 +39,43 @@ public final class RegistryUsingJava2D_Test extends RegistryTestCase<Shape> {
 
     @Test
     @Override
-    @Ignore("Reprojection not yet implemented.")
+    @Disabled("Reprojection not yet implemented.")
     public void testTransform() {
     }
 
     @Test
     @Override
-    @Ignore("Reprojection not yet implemented.")
+    @Disabled("Reprojection not yet implemented.")
     public void testOptimization() {
     }
 
     @Test
     @Override
-    @Ignore("Reprojection not yet implemented.")
+    @Disabled("Reprojection not yet implemented.")
     public void testFeatureOptimization() {
     }
 
     @Test
     @Override
-    @Ignore("Reprojection not yet implemented.")
+    @Disabled("Reprojection not yet implemented.")
     public void testIntersectsWithReprojection() {
     }
 
     @Test
     @Override
-    @Ignore("Operation not yet implemented.")
+    @Disabled("Operation not yet implemented.")
     public void testBuffer() {
     }
 
     @Test
     @Override
-    @Ignore("Operation not yet implemented.")
+    @Disabled("Operation not yet implemented.")
     public void testSimplify() {
     }
 
     @Test
     @Override
-    @Ignore("Operation not yet implemented.")
+    @Disabled("Operation not yet implemented.")
     public void testSimplifyPreserveTopology() {
     }
 }

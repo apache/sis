@@ -22,8 +22,8 @@ import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -69,8 +69,8 @@ public final class ReferencingByIdentifiersTest extends TestCase {
     public void testEquals() {
         final ReferencingByIdentifiers t1 = create(false);
         final ReferencingByIdentifiers t2 = create(true);
-        assertEquals("hashCode", t1.hashCode(), t2.hashCode());
-        assertEquals("equals", t1, t2);
+        assertEquals(t1.hashCode(), t2.hashCode());
+        assertEquals(t1, t2);
     }
 
     /**

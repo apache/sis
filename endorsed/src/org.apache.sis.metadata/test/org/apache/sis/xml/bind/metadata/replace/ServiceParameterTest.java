@@ -22,8 +22,8 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.iso.Names;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
@@ -67,10 +67,10 @@ public final class ServiceParameterTest extends TestCase {
     public void testGetName() {
         final ServiceParameter param = create();
         final Identifier name = param.getName();
-        assertEquals("codeSpace", "TestSpace", name.getCodeSpace());
-        assertEquals("code", "My service parameter", name.getCode());
-        assertEquals("name", "TestSpace:My service parameter", String.valueOf(name));
-        assertNull  ("description", param.getDescription());
+        assertEquals("TestSpace", name.getCodeSpace());
+        assertEquals("My service parameter", name.getCode());
+        assertEquals("TestSpace:My service parameter", String.valueOf(name));
+        assertNull  (param.getDescription());
     }
 
     /**
@@ -79,8 +79,8 @@ public final class ServiceParameterTest extends TestCase {
     @Test
     public void testGetValueType() {
         final ServiceParameter param = create();
-        assertEquals("valueType", "OGC:CharacterString", param.getValueType().toFullyQualifiedName().toString());
-        assertEquals("valueClass", String.class, param.getValueClass());
+        assertEquals("OGC:CharacterString", param.getValueType().toFullyQualifiedName().toString());
+        assertEquals(String.class, param.getValueClass());
     }
 
     /**

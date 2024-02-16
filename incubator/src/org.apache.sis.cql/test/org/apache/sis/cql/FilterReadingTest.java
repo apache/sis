@@ -16,7 +16,6 @@
  */
 package org.apache.sis.cql;
 
-import java.util.List;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Iterator;
@@ -41,9 +40,9 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 
 // Test dependencies
-import org.junit.Ignore;
-import org.junit.Test;
-import static org.opengis.test.Assert.*;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -146,7 +145,8 @@ public final class FilterReadingTest extends CQLTestCase {
                 new LinearRing[0]
                 );
 
-        final String cql = "NOT (INTERSECTS(BoundingBox, ENVELOPE(10, 20, 40, 30)) OR CONTAINS(BoundingBox, POINT(12.1 28.9))) AND BBOX(BoundingBox, 10,20,30,40)";
+        final String cql = "NOT (INTERSECTS(BoundingBox, ENVELOPE(10, 20, 40, 30)) "
+                + "OR CONTAINS(BoundingBox, POINT(12.1 28.9))) AND BBOX(BoundingBox, 10,20,30,40)";
         final Filter<?> filter = CQL.parseFilter(cql);
         assertEquals(
                 FF.and(
@@ -183,13 +183,14 @@ public final class FilterReadingTest extends CQLTestCase {
     @Test
     public void testNotIn() throws CQLException {
         final Filter<?> filter = CQL.parseFilter("att NOT IN ( 15, 30, 'hello')");
-        assertInstanceOf("NOT", LogicalOperator.class, filter);
         assertEquals(LogicalOperatorName.NOT, filter.getOperatorType());
-        verifyIn((LogicalOperator<?>) ((LogicalOperator<?>) filter).getOperands().get(0));
+        LogicalOperator<?> logical = assertInstanceOf(LogicalOperator.class, filter);
+        logical = assertInstanceOf(LogicalOperator.class, logical.getOperands().get(0));
+        verifyIn(logical);
     }
 
     private void verifyIn(final LogicalOperator<?> filter) {
-        assertInstanceOf("OR", LogicalOperator.class, filter);
+        assertInstanceOf(LogicalOperator.class, filter);
         assertEquals(LogicalOperatorName.OR, filter.getOperatorType());
         final Iterator<?> expected = Arrays.asList(15, 30, "hello").iterator();
         for (final Filter<?> operand : filter.getOperands()) {
@@ -302,14 +303,12 @@ public final class FilterReadingTest extends CQLTestCase {
 
     private void testBBOX(final String cql, final String att, final Envelope env) throws CQLException {
         final Filter<?> filter = CQL.parseFilter(cql);
-        assertInstanceOf(null, BinarySpatialOperator.class, filter);
+        final BinarySpatialOperator<?> bsp = assertInstanceOf(BinarySpatialOperator.class, filter);
         assertEquals(SpatialOperatorName.BBOX, filter.getOperatorType());
-        assertEquals(FF.property(att), ((BinarySpatialOperator)filter).getOperand1());
-        assertEquals(FF.property(att), ((BinarySpatialOperator)filter).getOperand1());
-        final Expression<?, ?> arg2 = ((BinarySpatialOperator) filter).getOperand2();
-        assertTrue("Second argument should be a literal expression", arg2 instanceof Literal);
-        final AbstractEnvelope argEnv = AbstractEnvelope.castOrCopy((Envelope) ((Literal<?, ?>) arg2).getValue());
-        assertTrue(argEnv.equals(env, 1e-2, false));
+        assertEquals(FF.property(att), bsp.getOperand1());
+        final Literal<?,?> literal = assertInstanceOf(Literal.class, bsp.getOperand2());
+        final Envelope value = assertInstanceOf(Envelope.class, literal.getValue());
+        assertTrue(AbstractEnvelope.castOrCopy(value).equals(env, 1e-2, false));
     }
 
     /**
@@ -318,17 +317,17 @@ public final class FilterReadingTest extends CQLTestCase {
     @Test
     public void testDWithin() throws CQLException {
         final String cql = "DWITHIN(BoundingBox, POINT(12.1 28.9), 10, 'meters')";
-        final DistanceOperator<?> filter = (DistanceOperator<?>) CQL.parseFilter(cql);
+        final DistanceOperator<?> filter = assertInstanceOf(DistanceOperator.class, CQL.parseFilter(cql));
         assertEquals(DistanceOperatorName.WITHIN, filter.getOperatorType());
 
-        final List expressions = filter.getExpressions();
+        final var expressions = filter.getExpressions();
         assertEquals(FF.property("BoundingBox"), expressions.get(0));
         final Quantity<Length> distance = filter.getDistance();
         assertEquals(10.0, distance.getValue().doubleValue(), DELTA);
         assertEquals(Units.METRE, distance.getUnit());
 
-        final Literal<?,?> literal = (Literal<?,?>) expressions.get(1);
-        final Geometry value = (Geometry) literal.getValue();
+        final Literal<?,?> literal = assertInstanceOf(Literal.class, expressions.get(1));
+        final Geometry value = assertInstanceOf(Geometry.class, literal.getValue());
         assertTrue(baseGeometryPoint.equalsExact(value));
     }
 
@@ -356,13 +355,13 @@ public final class FilterReadingTest extends CQLTestCase {
         final String name = operator.identifier().toUpperCase(Locale.US);
         final String cql = name + "(\"att\", POLYGON((10 20, 30 40, 50 60, 10 20))" + suffix + ')';
         final Filter<?> filter = CQL.parseFilter(cql);
-        assertInstanceOf(name, SpatialOperator.class, filter);
-        assertEquals(name, operator, filter.getOperatorType());
+        assertInstanceOf(SpatialOperator.class, filter, name);
+        assertEquals(operator, filter.getOperatorType(), name);
 
-        final List expressions = filter.getExpressions();
+        final var expressions = filter.getExpressions();
         assertEquals(FF.property("att"), expressions.get(0));
-        final Literal<?,?> literal = (Literal<?,?>) expressions.get(1);
-        final Geometry value = (Geometry) literal.getValue();
+        final Literal<?,?> literal = assertInstanceOf(Literal.class, expressions.get(1));
+        final Geometry value = assertInstanceOf(Geometry.class, literal.getValue());
         assertTrue(baseGeometry.equalsExact(value));
         return filter;
     }
@@ -379,7 +378,7 @@ public final class FilterReadingTest extends CQLTestCase {
 
     private void testCombine(final String cql) throws CQLException {
         final Filter<?> filter = CQL.parseFilter(cql);
-        assertInstanceOf("OR", LogicalOperator.class, filter);
+        assertInstanceOf(LogicalOperator.class, filter);
         assertEquals(LogicalOperatorName.OR, filter.getOperatorType());
         assertEquals(
                 FF.or(
@@ -394,7 +393,7 @@ public final class FilterReadingTest extends CQLTestCase {
     public void testCombine3() throws CQLException {
         final String cql = "(NOT att1 = 15) AND (att2 = 15 OR att3 BETWEEN 15 AND 30) AND (att4 BETWEEN 1 AND 2)";
         final Filter<?> filter = CQL.parseFilter(cql);
-        assertInstanceOf("AND", LogicalOperator.class, filter);
+        assertInstanceOf(LogicalOperator.class, filter);
         assertEquals(LogicalOperatorName.AND, filter.getOperatorType());
         assertEquals(
                 FF.and(
@@ -412,11 +411,11 @@ public final class FilterReadingTest extends CQLTestCase {
     }
 
     @Test
-    @Ignore("Mismatched type in `property(…, type)`.")
+    @Disabled("Mismatched type in `property(…, type)`.")
     public void testCombine4() throws CQLException {
         final String cql = "(x+7) <= (y-9)";
         final Filter<?> filter = CQL.parseFilter(cql);
-        assertInstanceOf("<=", BinaryComparisonOperator.class, filter);
+        assertInstanceOf(BinaryComparisonOperator.class, filter);
         assertEquals(ComparisonOperatorName.PROPERTY_IS_LESS_THAN_OR_EQUAL_TO, filter.getOperatorType());
         assertEquals(
                 FF.lessOrEqual(
@@ -433,14 +432,14 @@ public final class FilterReadingTest extends CQLTestCase {
             final String name = operator.identifier().toUpperCase(Locale.US);
             final String cql  = "att " + name + " 2012-03-21T05:42:36Z";
             final Filter<?> filter = CQL.parseFilter(cql);
-            assertInstanceOf(name, TemporalOperator.class, filter);
-            assertEquals(name, operator, filter.getOperatorType());
-            final List expressions = filter.getExpressions();
+            assertInstanceOf(TemporalOperator.class, filter, name);
+            assertEquals(operator, filter.getOperatorType(),name);
+            final var expressions = filter.getExpressions();
 
-            assertEquals(name, FF.property("att"), expressions.get(0));
-            final Literal<?,?> literal = (Literal<?,?>) expressions.get(1);
-            final TemporalAccessor time = (TemporalAccessor) literal.getValue();
-            assertEquals(name, Instant.parse("2012-03-21T05:42:36Z"), Instant.from(time));
+            assertEquals(FF.property("att"), expressions.get(0), name);
+            final Literal<?,?> literal = assertInstanceOf(Literal.class, expressions.get(1));
+            final TemporalAccessor time = assertInstanceOf(TemporalAccessor.class, literal.getValue());
+            assertEquals(Instant.parse("2012-03-21T05:42:36Z"), Instant.from(time), name);
 
             // Skip any non-standard operators added by user.
             if (operator == TemporalOperatorName.ANY_INTERACTS) break;

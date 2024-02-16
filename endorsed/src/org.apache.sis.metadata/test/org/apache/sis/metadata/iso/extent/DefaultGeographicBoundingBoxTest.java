@@ -23,12 +23,13 @@ import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
+import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
 
 /**
@@ -51,11 +52,11 @@ public final class DefaultGeographicBoundingBoxTest extends TestCase {
                                         final double φmin, final double φmax,
                                         final GeographicBoundingBox box)
     {
-        assertEquals("inclusion", Boolean.TRUE, box.getInclusion());
-        assertEquals("westBoundLongitude", λbgn, box.getWestBoundLongitude(), STRICT);
-        assertEquals("eastBoundLongitude", λend, box.getEastBoundLongitude(), STRICT);
-        assertEquals("southBoundLatitude", φmin, box.getSouthBoundLatitude(), STRICT);
-        assertEquals("northBoundLatitude", φmax, box.getNorthBoundLatitude(), STRICT);
+        assertEquals(Boolean.TRUE, box.getInclusion(),  "inclusion");
+        assertEquals(λbgn, box.getWestBoundLongitude(), "westBoundLongitude");
+        assertEquals(λend, box.getEastBoundLongitude(), "eastBoundLongitude");
+        assertEquals(φmin, box.getSouthBoundLatitude(), "southBoundLatitude");
+        assertEquals(φmax, box.getNorthBoundLatitude(), "northBoundLatitude");
     }
 
     /**
@@ -68,10 +69,10 @@ public final class DefaultGeographicBoundingBoxTest extends TestCase {
     /**
      * Tests construction with an invalid range of latitudes.
      */
-    @SuppressWarnings("ResultOfObjectAllocationIgnored")
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testInvalidLatitudeRange() {
-        new DefaultGeographicBoundingBox(-1, +1, 12, 10);
+        var e = assertThrows(IllegalArgumentException.class, () -> new DefaultGeographicBoundingBox(-1, +1, 12, 10));
+        assertMessageContains(e);
     }
 
     /**

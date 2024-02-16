@@ -19,8 +19,8 @@ package org.apache.sis.feature;
 import java.util.Map;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
@@ -65,11 +65,11 @@ public final class LinkOperationTest extends TestCase {
      * Implementation of the test methods.
      */
     private static void run(final AbstractFeature feature) {
-        assertEquals("Get directly",     "Utopia", feature.getPropertyValue("city"));
-        assertEquals("Get through link", "Utopia", feature.getPropertyValue("name"));
+        assertEquals("Utopia", feature.getPropertyValue("city"), "Get directly");
+        assertEquals("Utopia", feature.getPropertyValue("name"), "Get through link");
         feature.setPropertyValue("name", "Atlantide");                                          // Set through link.
-        assertEquals("Get directly",     "Atlantide", feature.getPropertyValue("city"));
-        assertEquals("Get through link", "Atlantide", feature.getPropertyValue("name"));
+        assertEquals("Atlantide", feature.getPropertyValue("city"), "Get directly");
+        assertEquals("Atlantide", feature.getPropertyValue("name"), "Get through link");
         assertSame(feature.getProperty("name"), feature.getProperty("name"));
     }
 

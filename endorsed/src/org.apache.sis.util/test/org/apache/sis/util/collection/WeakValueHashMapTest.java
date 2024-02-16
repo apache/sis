@@ -21,8 +21,8 @@ import java.util.HashMap;
 import java.util.Random;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -80,15 +80,15 @@ public final class WeakValueHashMapTest extends TestCase {
             for (int i=0; i<SAMPLE_SIZE; i++) {
                 final Integer   key   = random.nextInt(SAMPLE_SIZE);
                 final IntObject value = new IntObject(random.nextInt(SAMPLE_SIZE));
-                assertEquals("containsKey:",   strongMap.containsKey(key),     weakMap.containsKey(key));
-                assertEquals("containsValue:", strongMap.containsValue(value), weakMap.containsValue(value));
-                assertSame  ("get:",           strongMap.get(key),             weakMap.get(key));
+                assertEquals(strongMap.containsKey(key),     weakMap.containsKey(key),     "containsKey:");
+                assertEquals(strongMap.containsValue(value), weakMap.containsValue(value), "containsValue:");
+                assertSame  (strongMap.get(key),             weakMap.get(key),             "get:");
                 if (random.nextBoolean()) {
                     // Test addition.
-                    assertSame("put:", strongMap.put(key, value), weakMap.put(key, value));
+                    assertSame(strongMap.put(key, value), weakMap.put(key, value), "put:");
                 } else {
                     // Test remove
-                    assertSame("remove:", strongMap.remove(key), weakMap.remove(key));
+                    assertSame(strongMap.remove(key), weakMap.remove(key), "remove:");
                 }
                 assertMapEquals(strongMap, weakMap);
             }
@@ -135,16 +135,16 @@ public final class WeakValueHashMapTest extends TestCase {
                          * a strong reference would exist which should have prevented the element
                          * from being removed from the WeakValueHashMap.
                          */
-                        assertNull("put:", strongPrevious);
+                        assertNull(strongPrevious, "put:");
                     } else {
                         assertNotSame(value, weakPrevious);
                     }
                     if (strongPrevious != null) {
                         /*
-                         * Note: If 'strongPrevious==null', 'weakPrevious' cannot
+                         * Note: If `strongPrevious==null`, `weakPrevious` cannot
                          *       be null since GC has not collected its entry yet.
                          */
-                        assertSame("put:", strongPrevious, weakPrevious);
+                        assertSame(strongPrevious, weakPrevious, "put:");
                     }
                 } else {
                     /*
@@ -153,10 +153,10 @@ public final class WeakValueHashMapTest extends TestCase {
                     final IntObject   weakPrevious = weakMap.get(key);
                     final IntObject strongPrevious = strongMap.remove(key);
                     if (strongPrevious != null) {
-                        assertSame("remove:", strongPrevious, weakPrevious);
+                        assertSame(strongPrevious, weakPrevious, "remove:");
                     }
                 }
-                assertTrue("containsAll:", weakMap.entrySet().containsAll(strongMap.entrySet()));
+                assertTrue(weakMap.entrySet().containsAll(strongMap.entrySet()), "containsAll:");
             }
             /*
              * The test below needs the garbage collector to complete fully its job in a timely
@@ -171,7 +171,7 @@ public final class WeakValueHashMapTest extends TestCase {
                  * Clearing all strong references should make the map empty.
                  */
                 strongMap.clear();
-                assertTrue("Expected an empty map.", waitForGarbageCollection(weakMap::isEmpty));
+                assertTrue(waitForGarbageCollection(weakMap::isEmpty));
             }
         }
     }

@@ -26,9 +26,8 @@ import static org.apache.sis.util.collection.TreeTables.*;
 import static org.apache.sis.util.collection.TableColumn.*;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
@@ -169,11 +168,11 @@ public final class TreeTablesTest extends TestCase {
 
         final String asString = table.toString();
         assertEquals(3, replaceCharSequences(table, null));
-        assertInstanceOf("replaceCharSequences:", String.class, root  .getValue(NAME));
-        assertInstanceOf("replaceCharSequences:", String.class, parent.getValue(NAME));
-        assertInstanceOf("replaceCharSequences:", String.class, child1.getValue(NAME));
-        assertInstanceOf("replaceCharSequences:", String.class, child2.getValue(NAME));
-        assertSame("Expected unique instance of String.", child1.getValue(NAME), child2.getValue(NAME));
-        assertEquals("String representation shall be the same.", asString, table.toString());
+        assertInstanceOf(String.class, root  .getValue(NAME));
+        assertInstanceOf(String.class, parent.getValue(NAME));
+        assertInstanceOf(String.class, child1.getValue(NAME));
+        assertInstanceOf(String.class, child2.getValue(NAME));
+        assertSame(child1.getValue(NAME), child2.getValue(NAME), "Expected unique instance of String.");
+        assertEquals(asString, table.toString(), "String representation shall be the same.");
     }
 }

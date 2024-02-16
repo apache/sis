@@ -30,11 +30,11 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -142,7 +142,7 @@ public final class EnvelopeOperationTest extends TestCase {
         set("g1", crs1, asCharacteristic1, new Point(4, 7));
         set("g2", crs2, asCharacteristic2, new Polyline(new Point(12, 15), new Point(17, 14)));
         final Object result = feature.getPropertyValue("sis:envelope");
-        assertInstanceOf("sis:envelope", Envelope.class, result);
+        assertInstanceOf(Envelope.class, result, "sis:envelope");
         return (Envelope) result;
     }
 
@@ -163,9 +163,8 @@ public final class EnvelopeOperationTest extends TestCase {
 
         if (asCharacteristic) {
             @SuppressWarnings("unchecked")
-            final Attribute<GeometryWrapper> property =
-                    (Attribute<GeometryWrapper>) feature.getProperty(propertyName);
-            final Attribute<CoordinateReferenceSystem> crsCharacteristic = Features.cast(
+            final var property = (Attribute<GeometryWrapper>) feature.getProperty(propertyName);
+            final var crsCharacteristic = Features.cast(
                     property.getType().characteristics().get(AttributeConvention.CRS),
                     CoordinateReferenceSystem.class).newInstance();
             crsCharacteristic.setValue(crs);
@@ -188,7 +187,7 @@ public final class EnvelopeOperationTest extends TestCase {
         final Envelope result = compute(HardCodedCRS.WGS84, HardCodedCRS.WGS84);
         final Envelope expected = new Envelope2D(HardCodedCRS.WGS84, 4, 7, 13, 8);
         assertSame(HardCodedCRS.WGS84, result.getCoordinateReferenceSystem());
-        assertEnvelopeEquals(expected, result, STRICT);
+        assertEnvelopeEquals(expected, result);
     }
 
     /**
@@ -201,7 +200,7 @@ public final class EnvelopeOperationTest extends TestCase {
         final Envelope result = compute(null, null);
         final Envelope expected = new Envelope2D(HardCodedCRS.WGS84, 4, 7, 13, 8);
         assertSame(HardCodedCRS.WGS84, result.getCoordinateReferenceSystem());
-        assertEnvelopeEquals(expected, result, STRICT);
+        assertEnvelopeEquals(expected, result);
     }
 
     /**
@@ -216,7 +215,7 @@ public final class EnvelopeOperationTest extends TestCase {
         final Envelope result = compute(HardCodedCRS.WGS84, HardCodedCRS.WGS84_LATITUDE_FIRST);
         final Envelope expected = new Envelope2D(HardCodedCRS.WGS84, 4, 7, 11, 10);
         assertSame(HardCodedCRS.WGS84, result.getCoordinateReferenceSystem());
-        assertEnvelopeEquals(expected, result, STRICT);
+        assertEnvelopeEquals(expected, result);
     }
 
     /**
@@ -228,7 +227,7 @@ public final class EnvelopeOperationTest extends TestCase {
         final Envelope result = compute(HardCodedCRS.WGS84, true, HardCodedCRS.WGS84, true);
         final Envelope expected = new Envelope2D(HardCodedCRS.WGS84, 4, 7, 13, 8);
         assertSame(HardCodedCRS.WGS84, result.getCoordinateReferenceSystem());
-        assertEnvelopeEquals(expected, result, STRICT);
+        assertEnvelopeEquals(expected, result);
     }
 
     /**
@@ -239,17 +238,12 @@ public final class EnvelopeOperationTest extends TestCase {
     @Test
     public void unspecified_crs() {
         initialize();
-        try {
-            final Envelope result = compute(null, null);
-            fail("Should not combine envelopes without CRS, but a value has been returned: " + result);
-        } catch (FeatureOperationException e) {
-            // Expected behavior
-            assertNotNull(e.getMessage());
-        }
+        var exception = assertThrows(FeatureOperationException.class, () -> compute(null, null));
+        assertMessageContains(exception);
         feature.setPropertyValue("g2", null);
         final Envelope result = (Envelope) feature.getPropertyValue("sis:envelope");
         assertNull(result.getCoordinateReferenceSystem());
-        assertEnvelopeEquals(new Envelope2D(null, 4, 7, 0, 0), result, STRICT);
+        assertEnvelopeEquals(new Envelope2D(null, 4, 7, 0, 0), result);
     }
 
     /**
@@ -259,12 +253,7 @@ public final class EnvelopeOperationTest extends TestCase {
     @Test
     public void partially_unspecified_crs() {
         initialize();
-        try {
-            final Envelope result = compute(null, HardCodedCRS.WGS84);
-            fail("Ambiguity in CRS should have caused an error, but a value has been returned: " + result);
-        } catch (FeatureOperationException e) {
-            // Expected behavior
-            assertNotNull(e.getMessage());
-        }
+        var exception = assertThrows(FeatureOperationException.class, () -> compute(null, HardCodedCRS.WGS84));
+        assertMessageContains(exception);
     }
 }

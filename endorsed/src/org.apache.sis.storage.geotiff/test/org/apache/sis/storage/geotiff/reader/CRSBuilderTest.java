@@ -17,8 +17,8 @@
 package org.apache.sis.storage.geotiff.reader;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -43,10 +43,10 @@ public final class CRSBuilderTest extends TestCase {
     @Test
     public void testSplitName() {
         final String[] names = CRSBuilder.splitName("GCS Name = wgs84|Datum = unknown|Ellipsoid = WGS_1984|Primem = Greenwich|");
-        assertEquals("GCRS",      "wgs84",     names[CRSBuilder.GCRS]);
-        assertEquals("DATUM",     "unknown",   names[CRSBuilder.DATUM]);
-        assertEquals("ELLIPSOID", "WGS_1984",  names[CRSBuilder.ELLIPSOID]);
-        assertEquals("PRIMEM",    "Greenwich", names[CRSBuilder.PRIMEM]);
+        assertEquals("wgs84",     names[CRSBuilder.GCRS]);
+        assertEquals("unknown",   names[CRSBuilder.DATUM]);
+        assertEquals("WGS_1984",  names[CRSBuilder.ELLIPSOID]);
+        assertEquals("Greenwich", names[CRSBuilder.PRIMEM]);
     }
 
     /**
@@ -55,9 +55,9 @@ public final class CRSBuilderTest extends TestCase {
     @Test
     public void testNoSplit() {
         final String[] names = CRSBuilder.splitName("WGS 84");
-        assertEquals("GCRS", "WGS 84", names[CRSBuilder.GCRS]);
-        assertNull  ("DATUM",          names[CRSBuilder.DATUM]);
-        assertNull  ("ELLIPSOID",      names[CRSBuilder.ELLIPSOID]);
-        assertNull  ("PRIMEM",         names[CRSBuilder.PRIMEM]);
+        assertEquals("WGS 84", names[CRSBuilder.GCRS]);
+        assertNull  (names[CRSBuilder.DATUM]);
+        assertNull  (names[CRSBuilder.ELLIPSOID]);
+        assertNull  (names[CRSBuilder.PRIMEM]);
     }
 }

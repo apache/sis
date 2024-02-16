@@ -29,8 +29,8 @@ import org.apache.sis.measure.Units;
 import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -157,7 +157,7 @@ public final class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {
                              * the threshold value that determine when to use Karney (2013) equation 57 instead.
                              * That threshold is in `GeodesicOnEllipsoid.computeDistance()` method.
                              */
-                            assertEquals("μ(x²,y²)", μ, value, abs(μ) * 1E-8);
+                            assertEquals(μ, value, abs(μ) * 1E-8, "μ(x²,y²)");
                         }
                     }
                 }
@@ -201,7 +201,7 @@ public final class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {
             }
             double value = values[index];
             if (angular) value = toDegrees(value);
-            assertEquals(name, expected, value, tolerance);
+            assertEquals(expected, value, tolerance, name);
         } else if (GeodesicsOnEllipsoid.STORE_LOCAL_VARIABLES) {
             fail("Missing value: " + name);
         }
@@ -224,13 +224,13 @@ public final class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {
      * <p><b>Source:</b>Karney (2013) table 1.</p>
      */
     private void verifyParametersForWGS84() {
-        assertEquals("a",    6378137,             testedEarth.semiMajorAxis,                    STRICT);
-        assertEquals("b",    6356752.314245,      testedEarth.ellipsoid.getSemiMinorAxis(),     1E-6);
-        assertEquals("1/f",  298.257223563,       testedEarth.ellipsoid.getInverseFlattening(), 1E-9);
-        assertEquals("ℯ²",   0.00669437999014132, testedEarth.eccentricitySquared,              1E-17);
-        assertEquals("ℯ′²",  0.00673949674227643, testedEarth.secondEccentricitySquared,        1E-17);
-        assertEquals("n",    0.00167922038638370, testedEarth.thirdFlattening,                  1E-16);
-        assertEquals("unit", Units.METRE,         testedEarth.getDistanceUnit());
+        assertEquals(6378137,             testedEarth.semiMajorAxis,                          "a");
+        assertEquals(6356752.314245,      testedEarth.ellipsoid.getSemiMinorAxis(),     1E-6, "b");
+        assertEquals(298.257223563,       testedEarth.ellipsoid.getInverseFlattening(), 1E-9, "1/f");
+        assertEquals(0.00669437999014132, testedEarth.eccentricitySquared,              1E-17, "ℯ²");
+        assertEquals(0.00673949674227643, testedEarth.secondEccentricitySquared,        1E-17, "ℯ′²");
+        assertEquals(0.00167922038638370, testedEarth.thirdFlattening,                  1E-16, "n");
+        assertEquals(Units.METRE,         testedEarth.getDistanceUnit());
     }
 
     /**
@@ -257,9 +257,9 @@ public final class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {
         testedEarth.setStartGeographicPoint(40, 10);
         testedEarth.setStartingAzimuth(30);
         testedEarth.setGeodesicDistance(10000000);
-        assertEquals("λ₁", toDegrees(testedEarth.λ1), 10.0, Formulas.ANGULAR_TOLERANCE);
-        assertEquals("φ₁", toDegrees(testedEarth.φ1), 40.0, Formulas.ANGULAR_TOLERANCE);
-        assertEquals("∆s", testedEarth.geodesicDistance, 10000000, STRICT);
+        assertEquals(toDegrees(testedEarth.λ1), 10.0, Formulas.ANGULAR_TOLERANCE, "λ₁");
+        assertEquals(toDegrees(testedEarth.φ1), 40.0, Formulas.ANGULAR_TOLERANCE, "φ₁");
+        assertEquals(testedEarth.geodesicDistance, 10000000, "∆s");
         /*
          * The following method invocation causes calculation of all intermediate values.
          * Some intermediate values are verified by `assertValueEquals` statements below.
@@ -318,9 +318,9 @@ public final class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {
          *   λ₂  —  end point longitude. Shifted by 10° compared to Karney because of λ₁ = 10°.
          *   α₂  —  azimuth at end point.
          */
-        assertEquals("φ₂",  41.79331020506, endPoint.getOrdinate(1), 1E-11);
-        assertEquals("λ₂", 147.84490004377, endPoint.getOrdinate(0), 1E-11);
-        assertEquals("α₂", 149.09016931807, testedEarth.getEndingAzimuth(), 1E-11);
+        assertEquals( 41.79331020506, endPoint.getOrdinate(1), 1E-11, "φ₂");
+        assertEquals(147.84490004377, endPoint.getOrdinate(0), 1E-11, "λ₂");
+        assertEquals(149.09016931807, testedEarth.getEndingAzimuth(), 1E-11, "α₂");
     }
 
     /**
@@ -368,9 +368,9 @@ public final class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {
          * Final result. Values are slightly different than the values published
          * in Karney table 3 because GeodeticCalculator has done an iteration.
          */
-        assertEquals("α₁", 77.04353354237, testedEarth.getStartingAzimuth(), 1E-8);     // Last 3 digits differ.
-        assertEquals("α₂", 77.04350844913, testedEarth.getEndingAzimuth(),   1E-8);
-        assertEquals("Δs", 4.944208,       distance,                         1E-6);
+        assertEquals(77.04353354237, testedEarth.getStartingAzimuth(), 1E-8, "α₁");     // Last 3 digits differ.
+        assertEquals(77.04350844913, testedEarth.getEndingAzimuth(),   1E-8, "α₂");
+        assertEquals(4.944208,       distance,                         1E-6, "Δs");
     }
 
     /**
@@ -480,9 +480,9 @@ public final class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {
         /*
          * Final result:
          */
-        assertEquals("α₁", 161.89052473633, testedEarth.getStartingAzimuth(), 1E-11);
-        assertEquals("α₂",  18.09073724574, testedEarth.getEndingAzimuth(),   1E-11);
-        assertEquals("Δs", 19989832.827610, distance,                         1E-6);
+        assertEquals(161.89052473633, testedEarth.getStartingAzimuth(), 1E-11, "α₁");
+        assertEquals( 18.09073724574, testedEarth.getEndingAzimuth(),   1E-11, "α₂");
+        assertEquals(19989832.827610, distance, 1E-6, "Δs");
     }
 
     /**
@@ -502,21 +502,21 @@ public final class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {
          *   Spherical:     -94.41°   -78.42°   18743 km
          *   Ellipsoidal:   -94.82°   -78.29°   18752 km
          */
-        assertEquals(Units.METRE,                c.getDistanceUnit());
-        assertEquals("α₁",        -94.82071749,  c.getStartingAzimuth(),         1E-8);
-        assertEquals("α₂",        -78.28609385,  c.getEndingAzimuth(),           1E-8);
-        assertEquals("distance",   18752.493521, c.getGeodesicDistance() / 1000, 1E-6);
-        assertPositionEquals(31.4, 121.8,        c.getEndPoint(),                1E-12);    // Should be the specified value.
+        assertEquals(Units.METRE,  c.getDistanceUnit());
+        assertEquals(-94.82071749, c.getStartingAzimuth(), 1E-8, "α₁");
+        assertEquals(-78.28609385, c.getEndingAzimuth(),   1E-8, "α₂");
+        assertEquals(18752.493521, c.getGeodesicDistance() / 1000, 1E-6, "distance");
+        assertPositionEquals(31.4, 121.8, c.getEndPoint(), 1E-12);    // Should be the specified value.
         /*
          * Keep start point unchanged, but set above azimuth and distance.
          * Verify that we get the Shanghai coordinates.
          */
         c.setStartingAzimuth(-94.82);
         c.setGeodesicDistance(18752494);
-        assertEquals("α₁",   -94.82,       c.getStartingAzimuth(), 1E-12);                  // Should be the specified value.
-        assertEquals("α₂",   -78.28678389, c.getEndingAzimuth(),   1E-8);
-        assertEquals("Δs", 18752.494,      c.getGeodesicDistance() / 1000, STRICT);         // Should be the specified value.
-        assertPositionEquals(31.4, 121.8,  c.getEndPoint(), 0.0002);
+        assertEquals(-94.82,       c.getStartingAzimuth(), 1E-12, "α₁");    // Should be the specified value.
+        assertEquals(-78.28678389, c.getEndingAzimuth(),   1E-8,  "α₂");
+        assertEquals(18752.494,    c.getGeodesicDistance() / 1000, "Δs");   // Should be the specified value.
+        assertPositionEquals(31.4, 121.8, c.getEndPoint(), 0.0002);
     }
 
     /**
@@ -563,9 +563,9 @@ public final class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {
         assertValueEquals("m₁", 0,  615.43 / scale,      1E-6, false);
         assertValueEquals("m₂", 0, 3201.59 / scale,      1E-6, false);
         assertValueEquals("Δm", 0, 2586.16 / scale,      1E-6, false);
-        assertEquals("azimuth",  54.99008056, testedEarth.getConstantAzimuth(), 1E-8);
-        assertEquals("distance", 4507.7 * NAUTICAL_MILE, distance, 0.05 * NAUTICAL_MILE);   // From Bennett (1996)
-        assertEquals("distance", 8348285.202, distance, Formulas.LINEAR_TOLERANCE);         // From Karney's online calculator.
+        assertEquals(54.99008056, testedEarth.getConstantAzimuth(), 1E-8, "azimuth");
+        assertEquals(4507.7 * NAUTICAL_MILE, distance, 0.05 * NAUTICAL_MILE, "distance");   // From Bennett (1996)
+        assertEquals(8348285.202, distance, Formulas.LINEAR_TOLERANCE, "distance");         // From Karney's online calculator.
     }
 
     /**
@@ -582,9 +582,9 @@ public final class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {
         assertValueEquals("Δλ", 0,  55+57.0 / 60,         1E-11, true);
         assertValueEquals("ΔΨ", 0,   -38.12 / (10800/PI), 1E-5, false);
 //      assertValueEquals("C",  0,  90.6505,              1E-4, true);
-        assertEquals("azimuth",  90.65049570, testedEarth.getConstantAzimuth(), 1E-8);
-        assertEquals("distance", 2028.9 * NAUTICAL_MILE, distance, 0.05 * NAUTICAL_MILE);   // From Bennett (1996)
-        assertEquals("distance", 3757550.656, distance, Formulas.LINEAR_TOLERANCE);         // From Karney's online calculator.
+        assertEquals(90.65049570, testedEarth.getConstantAzimuth(), 1E-8, "azimuth");
+        assertEquals(2028.9 * NAUTICAL_MILE, distance, 0.05 * NAUTICAL_MILE, "distance");   // From Bennett (1996)
+        assertEquals(3757550.656, distance, Formulas.LINEAR_TOLERANCE, "distance");         // From Karney's online calculator.
     }
 
     /**
@@ -599,8 +599,8 @@ public final class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {
         testedEarth.setEndGeographicPoint  (48+45.0/60,   5+13.2/60);
         final double distance = testedEarth.getRhumblineLength();
         assertValueEquals("Δλ", 0, 4004.3 / 60, 1E-11, true);
-        assertEquals("azimuth",  90.00000000, testedEarth.getConstantAzimuth(), 1E-8);
-        assertEquals("distance", 2649.9 * NAUTICAL_MILE, distance, 0.1 * NAUTICAL_MILE);    // From Bennett (1996)
-        assertEquals("distance", 4907757.375, distance, Formulas.LINEAR_TOLERANCE);         // From Karney's online calculator.
+        assertEquals(90.00000000, testedEarth.getConstantAzimuth(), 1E-8, "azimuth");
+        assertEquals(2649.9 * NAUTICAL_MILE, distance, 0.1 * NAUTICAL_MILE, "distance");    // From Bennett (1996)
+        assertEquals(4907757.375, distance, Formulas.LINEAR_TOLERANCE, "distance");         // From Karney's online calculator.
     }
 }

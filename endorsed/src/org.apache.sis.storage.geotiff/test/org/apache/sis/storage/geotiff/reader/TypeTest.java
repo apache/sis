@@ -19,8 +19,8 @@ package org.apache.sis.storage.geotiff.reader;
 import org.apache.sis.io.stream.ChannelDataInput;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -52,7 +52,7 @@ public final class TypeTest extends TestCase {
             final Class<?> c = type.getClass();
             final boolean readLong   = c.getMethod("readAsLong",   parameters).getDeclaringClass() == Type.class;
             final boolean readDouble = c.getMethod("readAsDouble", parameters).getDeclaringClass() == Type.class;
-            assertFalse(type.name(), readLong & readDouble);
+            assertFalse(readLong & readDouble, type.name());
         }
     }
 
@@ -61,22 +61,22 @@ public final class TypeTest extends TestCase {
      */
     @Test
     public void testValueOf() {
-        assertEquals("UBYTE",     Type.UBYTE,     Type.valueOf( 1));
-        assertEquals("ASCII",     Type.ASCII,     Type.valueOf( 2));
-        assertEquals("USHORT",    Type.USHORT,    Type.valueOf( 3));
-        assertEquals("UINT",      Type.UINT,      Type.valueOf( 4));
-        assertEquals("URATIONAL", Type.URATIONAL, Type.valueOf( 5));      // unsigned Integer / unsigned Integer
-        assertEquals("BYTE",      Type.BYTE,      Type.valueOf( 6));
-        assertEquals("UNDEFINED", Type.UNDEFINED, Type.valueOf( 7));
-        assertEquals("SHORT",     Type.SHORT,     Type.valueOf( 8));
-        assertEquals("INT",       Type.INT,       Type.valueOf( 9));
-        assertEquals("RATIONAL",  Type.RATIONAL,  Type.valueOf(10));     // signed Integer / signed Integer
-        assertEquals("FLOAT",     Type.FLOAT,     Type.valueOf(11));
-        assertEquals("DOUBLE",    Type.DOUBLE,    Type.valueOf(12));
-        assertEquals("IFD",       Type.UINT,      Type.valueOf(13));     // IFD is like UINT.
-        assertEquals("ULONG",     Type.ULONG,     Type.valueOf(16));
-        assertEquals("LONG",      Type.LONG,      Type.valueOf(17));
-        assertEquals("IFD8",      Type.ULONG,     Type.valueOf(18));     // IFD8 is like ULONG.
+        assertEquals(Type.UBYTE,     Type.valueOf( 1), "UBYTE");
+        assertEquals(Type.ASCII,     Type.valueOf( 2), "ASCII");
+        assertEquals(Type.USHORT,    Type.valueOf( 3), "USHORT");
+        assertEquals(Type.UINT,      Type.valueOf( 4), "UINT");
+        assertEquals(Type.URATIONAL, Type.valueOf( 5), "URATIONAL");    // unsigned Integer / unsigned Integer
+        assertEquals(Type.BYTE,      Type.valueOf( 6), "BYTE");
+        assertEquals(Type.UNDEFINED, Type.valueOf( 7), "UNDEFINED");
+        assertEquals(Type.SHORT,     Type.valueOf( 8), "SHORT");
+        assertEquals(Type.INT,       Type.valueOf( 9), "INT");
+        assertEquals(Type.RATIONAL,  Type.valueOf(10), "RATIONAL");     // signed Integer / signed Integer
+        assertEquals(Type.FLOAT,     Type.valueOf(11), "FLOAT");
+        assertEquals(Type.DOUBLE,    Type.valueOf(12), "DOUBLE");
+        assertEquals(Type.UINT,      Type.valueOf(13), "IFD");          // IFD is like UINT.
+        assertEquals(Type.ULONG,     Type.valueOf(16), "ULONG");
+        assertEquals(Type.LONG,      Type.valueOf(17), "LONG");
+        assertEquals(Type.ULONG,     Type.valueOf(18), "IFD8");         // IFD8 is like ULONG.
     }
 
     /**

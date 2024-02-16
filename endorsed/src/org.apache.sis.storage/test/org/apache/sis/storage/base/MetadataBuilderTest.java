@@ -25,9 +25,8 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.feature.DefaultFeatureType;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import static org.apache.sis.metadata.Assertions.assertPartyNameEquals;
@@ -92,11 +91,11 @@ public final class MetadataBuilderTest extends TestCase {
         final LegalConstraints constraints = (LegalConstraints) getSingleton(getSingleton(
                 builder.build().getIdentificationInfo()).getResourceConstraints());
 
-        assertEquals("useConstraints", Restriction.COPYRIGHT, getSingleton(constraints.getUseConstraints()));
+        assertEquals(Restriction.COPYRIGHT, getSingleton(constraints.getUseConstraints()));
         final Citation ref = getSingleton(constraints.getReferences());
         assertTitleEquals("reference.title", notice, ref);
         assertPartyNameEquals("reference.citedResponsibleParty", "John Smith", ref);
-        assertEquals("date", date("1992-01-01 00:00:00"), getSingleton(ref.getDates()).getDate());
+        assertEquals(date("1992-01-01 00:00:00"), getSingleton(ref.getDates()).getDate());
     }
 
     /**
@@ -154,9 +153,9 @@ public final class MetadataBuilderTest extends TestCase {
             assertTrue(metadata.getContentInfo().isEmpty());
         } else {
             final ContentInformation content = getSingleton(metadata.getContentInfo());
-            assertInstanceOf("Metadata.contentInfo", FeatureCatalogueDescription.class, content);
+            assertInstanceOf(FeatureCatalogueDescription.class, content);
             final FeatureTypeInfo info = getSingleton(((FeatureCatalogueDescription) content).getFeatureTypeInfo());
-            assertEquals(errorMessage, expected, info.getFeatureInstanceCount());
+            assertEquals(expected, info.getFeatureInstanceCount(), errorMessage);
         }
     }
 }

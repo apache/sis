@@ -30,7 +30,7 @@ import org.apache.sis.metadata.sql.util.Dialect;
 import org.apache.sis.storage.sql.TestOnAllDatabases;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.metadata.sql.TestDatabase;
 
 
@@ -222,7 +222,7 @@ public final class TemporalValueGetterTest extends TestOnAllDatabases {
                                                 final BiPredicate<V,V> comparator, final String title) throws Exception
     {
         for (final V expectedValue : expected) {
-            assertTrue("Too few result rows", actual.next());
+            assertTrue(actual.next());
             final V actualValue = getter.getValue(null, actual, 1);
             if (comparator != null && expectedValue != null && actualValue != null) {
                 if (comparator.test(expectedValue, actualValue)) {
@@ -230,8 +230,8 @@ public final class TemporalValueGetterTest extends TestOnAllDatabases {
                 }
                 // Otherwise `assertEquals(…)` will format an error message.
             }
-            assertEquals(title, expectedValue, actualValue);
+            assertEquals(expectedValue, actualValue, title);
         }
-        assertFalse("Too many result rows", actual.next());
+        assertFalse(actual.next());
     }
 }

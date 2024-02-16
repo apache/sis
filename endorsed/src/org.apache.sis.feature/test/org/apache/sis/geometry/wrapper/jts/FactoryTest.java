@@ -21,8 +21,8 @@ import org.locationtech.jts.geom.MultiLineString;
 import org.apache.sis.geometry.wrapper.GeometriesTestCase;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -47,7 +47,7 @@ public final class FactoryTest extends GeometriesTestCase {
     public void testCreatePolyline() {
         super.testCreatePolyline();
         final MultiLineString mp = (MultiLineString) geometry;
-        assertEquals("numGeometries", 2, mp.getNumGeometries());
+        assertEquals(2, mp.getNumGeometries());
         verifyTwoFirstGeometries(mp);
     }
 
@@ -76,7 +76,7 @@ public final class FactoryTest extends GeometriesTestCase {
     public void testMergePolylines() {
         super.testMergePolylines();
         final MultiLineString mp = (MultiLineString) geometry;
-        assertEquals("numGeometries", 3, mp.getNumGeometries());
+        assertEquals(3, mp.getNumGeometries());
         verifyTwoFirstGeometries(mp);
         assertArrayEquals(new CoordinateXY[] {
                 new CoordinateXY(13, 11),

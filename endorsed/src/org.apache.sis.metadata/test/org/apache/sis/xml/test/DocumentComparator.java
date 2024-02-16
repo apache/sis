@@ -50,8 +50,7 @@ import org.apache.sis.xml.util.LegacyNamespaces;
 import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
 
 // Test dependencies
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -342,7 +341,7 @@ public class DocumentComparator {
      * @param actual    the actual node.
      */
     protected void compareTextNode(final Text expected, final Node actual) {
-        assertInstanceOf("Actual node is not of the expected type.", Text.class, actual);
+        assertInstanceOf(Text.class, actual, "Actual node is not of the expected type.");
         compareNames(expected, actual);
         compareAttributes(expected, actual);
         assertTextContentEquals(expected, actual);
@@ -359,7 +358,7 @@ public class DocumentComparator {
      * @param actual    the actual node.
      */
     protected void compareCDATASectionNode(final CDATASection expected, final Node actual) {
-        assertInstanceOf("Actual node is not of the expected type.", CDATASection.class, actual);
+        assertInstanceOf(CDATASection.class, actual, "Actual node is not of the expected type.");
         compareNames(expected, actual);
         compareAttributes(expected, actual);
         assertTextContentEquals(expected, actual);
@@ -376,7 +375,7 @@ public class DocumentComparator {
      * @param actual    the actual node.
      */
     protected void compareCommentNode(final Comment expected, final Node actual) {
-        assertInstanceOf("Actual node is not of the expected type.", Comment.class, actual);
+        assertInstanceOf(Comment.class, actual, "Actual node is not of the expected type.");
         compareNames(expected, actual);
         compareAttributes(expected, actual);
         assertTextContentEquals(expected, actual);
@@ -393,7 +392,7 @@ public class DocumentComparator {
      * @param actual    the actual node.
      */
     protected void compareProcessingInstructionNode(final ProcessingInstruction expected, final Node actual) {
-        assertInstanceOf("Actual node is not of the expected type.", ProcessingInstruction.class, actual);
+        assertInstanceOf(ProcessingInstruction.class, actual, "Actual node is not of the expected type.");
         compareNames(expected, actual);
         compareAttributes(expected, actual);
         assertTextContentEquals(expected, actual);
@@ -410,7 +409,7 @@ public class DocumentComparator {
      * @param actual    the actual node.
      */
     protected void compareAttributeNode(final Attr expected, final Node actual) {
-        assertInstanceOf("Actual node is not of the expected type.", Attr.class, actual);
+        assertInstanceOf(Attr.class, actual, "Actual node is not of the expected type.");
         compareNames(expected, actual);
         compareAttributes(expected, actual);
         assertTextContentEquals(expected, actual);

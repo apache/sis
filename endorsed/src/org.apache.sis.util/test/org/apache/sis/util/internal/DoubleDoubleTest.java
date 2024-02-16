@@ -25,8 +25,8 @@ import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.ArraysExt;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
@@ -104,8 +104,8 @@ public final class DoubleDoubleTest extends TestCase {
      * </ul>
      */
     private static void assertNormalizedAndEquals(final double expected, final DoubleDouble actual) {
-        assertTrue("DoubleDouble is not normalized.", abs(actual.error) <= ulp(actual.value));
-        assertEquals("Unexpected arithmetic result.", expected, actual.value, STRICT);
+        assertTrue(abs(actual.error) <= ulp(actual.value), "DoubleDouble is not normalized.");
+        assertEquals(expected, actual.value, "Unexpected arithmetic result.");
     }
 
     /**
@@ -226,7 +226,7 @@ public final class DoubleDoubleTest extends TestCase {
     @DependsOnMethod("testDivide")
     public void testRatio_1m_1p() {
         final DoubleDouble t = DoubleDouble.of(0.25, false).ratio_1m_1p();
-        assertEquals((1 - 0.25) / (1 + 0.25), t.doubleValue(), STRICT);
+        assertEquals((1 - 0.25) / (1 + 0.25), t.doubleValue());
     }
 
     /**
@@ -272,7 +272,7 @@ public final class DoubleDoubleTest extends TestCase {
     @DependsOnMethod({"testMultiply", "testAdd"})
     public void testSeries() {
         DoubleDouble t = DoubleDouble.of(2).series(1, 1./3, 1./9, 1./7, 1./13);     // Random coefficients.
-        assertEquals(1 + 2./3 + 4./9 + 8./7 + 16./13, t.doubleValue(), STRICT);
+        assertEquals(1 + 2./3 + 4./9 + 8./7 + 16./13, t.doubleValue());
     }
 
     /**
@@ -351,9 +351,9 @@ public final class DoubleDoubleTest extends TestCase {
             final BigDecimal accurate      = new BigDecimal(text);
             final BigDecimal approximation = new BigDecimal(value);
             final double     expected      = accurate.subtract(approximation).doubleValue();
-            assertEquals(text,  expected, DoubleDouble.errorForWellKnownValue( value), STRICT);
-            assertEquals(text, -expected, DoubleDouble.errorForWellKnownValue(-value), STRICT);
-            assertFalse("There is no point to define an entry for values having no error.", expected == 0);
+            assertEquals( expected, DoubleDouble.errorForWellKnownValue( value), text);
+            assertEquals(-expected, DoubleDouble.errorForWellKnownValue(-value), text);
+            assertNotEquals(expected, 0, "There is no point to define an entry for values having no error.");
         }
     }
 
@@ -371,18 +371,18 @@ public final class DoubleDoubleTest extends TestCase {
     @Test
     @DependsOnMethod("testErrorForWellKnownValue")
     public void testPI() {
-        assertEquals(1.224646799147353207E-16, DoubleDouble.errorForWellKnownValue(PI    ), STRICT);
-        assertEquals(2.449293598294706414E-16, DoubleDouble.errorForWellKnownValue(PI * 2), STRICT);
-        assertEquals(6.123233995736766036E-17, DoubleDouble.errorForWellKnownValue(PI / 2), STRICT);
-        assertEquals(3.061616997868383018E-17, DoubleDouble.errorForWellKnownValue(PI / 4), STRICT);
-        assertEquals(9.184850993605148436E-17, DoubleDouble.errorForWellKnownValue(PI * (3./4)), STRICT);
-        assertEquals(9.320078015422868E-23,    DoubleDouble.errorForWellKnownValue(PI / (180 * 60 * 60)), STRICT);
+        assertEquals(1.224646799147353207E-16, DoubleDouble.errorForWellKnownValue(PI    ));
+        assertEquals(2.449293598294706414E-16, DoubleDouble.errorForWellKnownValue(PI * 2));
+        assertEquals(6.123233995736766036E-17, DoubleDouble.errorForWellKnownValue(PI / 2));
+        assertEquals(3.061616997868383018E-17, DoubleDouble.errorForWellKnownValue(PI / 4));
+        assertEquals(9.184850993605148436E-17, DoubleDouble.errorForWellKnownValue(PI * (3./4)));
+        assertEquals(9.320078015422868E-23,    DoubleDouble.errorForWellKnownValue(PI / (180 * 60 * 60)));
 
         // Following is actually an anti-regression test.
-        assertEquals("toDegrees", -1.9878495670576283E-15, DoubleDouble.errorForWellKnownValue(180 / PI),     STRICT);
-        assertEquals("toDegrees", -1.9878495670576283E-15, DoubleDouble.errorForWellKnownValue(toDegrees(1)), STRICT);
-        assertEquals("toRadians",  2.9486522708701687E-19, DoubleDouble.errorForWellKnownValue(PI / 180),     STRICT);
-        assertEquals("toRadians",  2.9486522708701687E-19, DoubleDouble.errorForWellKnownValue(toRadians(1)), STRICT);
+        assertEquals(-1.9878495670576283E-15, DoubleDouble.errorForWellKnownValue(180 / PI));
+        assertEquals(-1.9878495670576283E-15, DoubleDouble.errorForWellKnownValue(toDegrees(1)));
+        assertEquals( 2.9486522708701687E-19, DoubleDouble.errorForWellKnownValue(PI / 180));
+        assertEquals( 2.9486522708701687E-19, DoubleDouble.errorForWellKnownValue(toRadians(1)));
     }
 
     /**
@@ -400,7 +400,7 @@ public final class DoubleDoubleTest extends TestCase {
                 case 3:  dd = DoubleDouble.SECONDS_TO_RADIANS; break;
                 default: return;                                             // Test done.
             }
-            assertEquals(DoubleDouble.errorForWellKnownValue(dd.value), dd.error, STRICT);
+            assertEquals(DoubleDouble.errorForWellKnownValue(dd.value), dd.error);
         }
     }
 
@@ -411,12 +411,12 @@ public final class DoubleDoubleTest extends TestCase {
     public void testLong() {
         long value = Long.MAX_VALUE - 10;
         DoubleDouble t = DoubleDouble.of(value);
-        assertEquals(-10, t.error, STRICT);
+        assertEquals(-10, t.error);
         assertEquals(value, t.longValue());
 
         value = Long.MIN_VALUE + 10;
         t = DoubleDouble.of(value);
-        assertEquals(10, t.error, STRICT);
+        assertEquals(10, t.error);
         assertEquals(value, t.longValue());
     }
 }

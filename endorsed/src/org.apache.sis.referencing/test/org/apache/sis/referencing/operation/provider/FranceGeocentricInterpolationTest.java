@@ -30,9 +30,8 @@ import org.apache.sis.referencing.operation.gridded.LoadedGrid;
 import org.apache.sis.referencing.operation.gridded.CompressedGrid;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestStep;
 
@@ -150,10 +149,10 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
         try (BufferedReader in = file.newBufferedReader()) {
             grid = FranceGeocentricInterpolation.Loader.load(in, file);
         }
-        assertEquals("cellPrecision",   0.005, grid.getCellPrecision(), STRICT);
-        assertEquals("getCellMean",  168.2587, grid.getCellMean(0), 0.0001);
-        assertEquals("getCellMean",   58.7163, grid.getCellMean(1), 0.0001);
-        assertEquals("getCellMean", -320.1801, grid.getCellMean(2), 0.0001);
+        assertEquals(    0.005, grid.getCellPrecision());
+        assertEquals( 168.2587, grid.getCellMean(0), 0.0001);
+        assertEquals(  58.7163, grid.getCellMean(1), 0.0001);
+        assertEquals(-320.1801, grid.getCellMean(2), 0.0001);
         verifyGrid(grid);
         return grid;
     }
@@ -177,11 +176,11 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
                 FranceGeocentricInterpolation.TY,           //   60 metres
                 FranceGeocentricInterpolation.TZ},          // -320 metres
                 FranceGeocentricInterpolation.PRECISION);
-        assertInstanceOf("Failed to compress 'float' values into 'short' values.", CompressedGrid.class, grid);
-        assertEquals("cellPrecision", 0.0005, grid.getCellPrecision(), STRICT);
-        assertEquals("getCellMean",  168, grid.getCellMean(0), STRICT);
-        assertEquals("getCellMean",   60, grid.getCellMean(1), STRICT);
-        assertEquals("getCellMean", -320, grid.getCellMean(2), STRICT);
+        assertInstanceOf(CompressedGrid.class, grid, "Failed to compress `float` values into `short` values.");
+        assertEquals(0.0005, grid.getCellPrecision());
+        assertEquals( 168,   grid.getCellMean(0));
+        assertEquals(  60,   grid.getCellMean(1));
+        assertEquals(-320,   grid.getCellMean(2));
         verifyGrid(grid);
         return grid;
     }
@@ -193,10 +192,10 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
      */
     private static void verifyGrid(final LoadedGrid<Angle,Length> grid) throws TransformException {
         final Envelope envelope = grid.getDomainOfValidity();
-        assertEquals("xmin",  2.2, envelope.getMinimum(0), 1E-12);
-        assertEquals("xmax",  2.5, envelope.getMaximum(0), 1E-12);
-        assertEquals("ymin", 48.5, envelope.getMinimum(1), 1E-12);
-        assertEquals("ymax", 49.0, envelope.getMaximum(1), 1E-12);
+        assertEquals( 2.2, envelope.getMinimum(0), 1E-12, "xmin");
+        assertEquals( 2.5, envelope.getMaximum(0), 1E-12, "xmax");
+        assertEquals(48.5, envelope.getMinimum(1), 1E-12, "ymin");
+        assertEquals(49.0, envelope.getMaximum(1), 1E-12, "ymax");
         /*
          * The values in the NTG_88 document are:
          *
@@ -207,11 +206,11 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
          *
          * Directions (signs) are reversed compared to NTG_88 document.
          */
-        assertEquals("translationDimensions", 3, grid.getTranslationDimensions());
-        assertEquals("grid.accuracy",      0.05, grid.accuracy,              STRICT);
-        assertEquals("getCellValue",    168.196, grid.getCellValue(0, 2, 1), STRICT);
-        assertEquals("getCellValue",     58.778, grid.getCellValue(1, 2, 1), STRICT);
-        assertEquals("getCellValue",   -320.127, grid.getCellValue(2, 2, 1), STRICT);
+        assertEquals(       3, grid.getTranslationDimensions());
+        assertEquals(    0.05, grid.accuracy);
+        assertEquals( 168.196, grid.getCellValue(0, 2, 1));
+        assertEquals(  58.778, grid.getCellValue(1, 2, 1));
+        assertEquals(-320.127, grid.getCellValue(2, 2, 1));
         /*
          * Interpolate the (ΔX, ΔY, ΔZ) at a point.
          * Directions (signs) are reversed compared to NTG_88 document.
@@ -223,7 +222,7 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
         };
         final double[] point  = samplePoint(3);
         final double[] vector = grid.interpolateAt(point[0], point[1]);
-        assertArrayEquals("(ΔX, ΔY, ΔZ)", expected, vector, 0.0005);
+        assertArrayEquals(expected, vector, 0.0005, "(ΔX, ΔY, ΔZ)");
     }
 
     /**
@@ -241,11 +240,12 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
                         FranceGeocentricInterpolation.TZ},
                         FranceGeocentricInterpolation.PRECISION);
         verifyGrid(grid);
-        assertSame("Expected a cached value.", grid, FranceGeocentricInterpolation.getOrLoad(
+        assertSame(grid, FranceGeocentricInterpolation.getOrLoad(
                 getResource(TEST_FILE), new double[] {
                         FranceGeocentricInterpolation.TX,
                         FranceGeocentricInterpolation.TY,
                         FranceGeocentricInterpolation.TZ},
-                        FranceGeocentricInterpolation.PRECISION));
+                        FranceGeocentricInterpolation.PRECISION),
+                "Expected a cached value.");
     }
 }

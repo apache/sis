@@ -24,8 +24,8 @@ import java.lang.reflect.Field;
 import org.apache.sis.io.stream.ChannelDataInput;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 
@@ -310,7 +310,7 @@ public final class CCITTRLETest extends TestCase {
          * @return child of this node for the given bit.
          */
         final Node child(final char bit) {
-            assertEquals("Node shall be a leaf. Index value: ", -1, runLength);
+            assertEquals(-1, runLength, "Node shall be a leaf. Index value: ");
             Node child;
             switch (bit) {
                 case '0': child = child0; break;
@@ -332,9 +332,9 @@ public final class CCITTRLETest extends TestCase {
          * This method is invoked after the last bit in a word such as "0000110111".
          */
         final void leaf(final int length) {
-            assertNull("child0", child0);
-            assertNull("child1", child1);
-            assertEquals("Node shall be a leaf.", -1, runLength);
+            assertNull(child0, "child0");
+            assertNull(child1, "child1");
+            assertEquals(-1, runLength, "Node shall be a leaf.");
             runLength = length;
         }
 
@@ -358,8 +358,8 @@ public final class CCITTRLETest extends TestCase {
         final int toTree(final short[] codes, int offset) {
             assertEquals(0, codes[offset]);
             if (runLength >= 0) {
-                assertNull("child0", child0);
-                assertNull("child1", child1);
+                assertNull(child0, "child0");
+                assertNull(child1, "child1");
                 assertTrue(runLength <= Short.MAX_VALUE);
                 codes[offset++] = (short) ~runLength;
             } else {
@@ -437,7 +437,7 @@ public final class CCITTRLETest extends TestCase {
         int   runLength = 0;
         for (final String line : codes.split("\n")) {
             int s = line.indexOf(' ');
-            assertEquals("indexToRunlength", runLength, Integer.parseInt(line.substring(0, s)));
+            assertEquals(runLength, Integer.parseInt(line.substring(0, s)), "indexToRunlength");
             /*
              * Parsing the binary value is not sufficient. The number of leading zeros is significant.
              * We parse the binary as text and create a node for each bit, including leading zeros.

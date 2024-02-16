@@ -30,10 +30,10 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.gps.Fix;
 
 // Test dependencies
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
@@ -62,7 +62,7 @@ public final class WriterTest extends TestCase {
     /**
      * Creates the provider to be shared by all data stores created in this test class.
      */
-    @BeforeClass
+    @BeforeAll
     public static void createProvider() {
         provider = new StoreProvider();
     }
@@ -70,7 +70,7 @@ public final class WriterTest extends TestCase {
     /**
      * Disposes the data store provider after all tests have been completed.
      */
-    @AfterClass
+    @AfterAll
     public static void disposeProvider() {
         provider = null;
     }
@@ -382,7 +382,7 @@ public final class WriterTest extends TestCase {
              * but the main purpose of following code is to advance in the stream.
              */
             ReaderTest.verifyMetadata((Metadata) store.getMetadata(), 3);
-            assertEquals("version", StoreProvider.V1_1, store.getVersion());
+            assertEquals(StoreProvider.V1_1, store.getVersion());
             /*
              * Replace the metadata content by route content. The data store should rewind
              * to the begining of the file and replace the input stream by an output stream.

@@ -26,11 +26,12 @@ import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.StorageConnector;
 
 // Test dependencies
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.junit.Assume.assumeNotNull;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.OptionalTestData;
 import org.apache.sis.storage.test.CoverageReadConsistency;
 
@@ -56,13 +57,13 @@ public final class SelfConsistencyTest extends CoverageReadConsistency {
      *
      * @throws DataStoreException if an error occurred while opening the file.
      */
-    @BeforeClass
+    @BeforeAll
     public static void openFile() throws DataStoreException {
         final Optional<Path> path = OptionalTestData.GEOTIFF.path();
         if (path.isPresent()) {
             store = new GeoTiffStore(null, new StorageConnector(path.get()));
         }
-        assumeNotNull(store);
+        assumeTrue(store != null, "Test file not found.");
     }
 
     /**
@@ -70,7 +71,7 @@ public final class SelfConsistencyTest extends CoverageReadConsistency {
      *
      * @throws DataStoreException if an error occurred while closing the file.
      */
-    @AfterClass
+    @AfterAll
     public static void closeFile() throws DataStoreException {
         final GeoTiffStore s = store;
         if (s != null) {
@@ -106,13 +107,8 @@ public final class SelfConsistencyTest extends CoverageReadConsistency {
             foundResource = store.findResource(name.tip().toString());
             assertSame(dataset, foundResource);
         }
-        try {
-            final GridCoverageResource r = store.findResource("a_wrong_namespace:1");
-            fail("No dataset should be returned when user specify the wrong namespace. However, the datastore returned " + r);
-        } catch (IllegalNameException e) {
-            // Expected behaviour.
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("a_wrong_namespace:1"));
-        }
+        var e = assertThrows(IllegalNameException.class, () -> store.findResource("a_wrong_namespace:1"),
+                "No dataset should be returned when user specifies the wrong namespace.");
+        assertMessageContains(e, "a_wrong_namespace:1");
     }
 }

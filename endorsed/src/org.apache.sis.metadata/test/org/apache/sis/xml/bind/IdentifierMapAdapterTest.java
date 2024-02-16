@@ -17,15 +17,14 @@
 package org.apache.sis.xml.bind;
 
 import java.util.Map;
-import java.util.List;
 import java.util.ArrayList;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import static org.apache.sis.xml.IdentifierSpace.*;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -51,7 +50,7 @@ public class IdentifierMapAdapterTest extends TestCase {
         assertSame(UUID, assertSerializedEquals(UUID));
         assertSame(HREF, assertSerializedEquals(HREF));
 
-        final List<Identifier> identifiers = new ArrayList<>();
+        final var identifiers = new ArrayList<Identifier>();
         final Map<Citation,String> map = new IdentifierMapAdapter(identifiers);
         assertTrue(identifiers.add(new IdentifierMapEntry(ID,   "myID")));
         assertTrue(identifiers.add(new IdentifierMapEntry(UUID, "myUUID")));

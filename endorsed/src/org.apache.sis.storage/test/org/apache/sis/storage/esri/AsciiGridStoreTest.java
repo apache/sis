@@ -28,8 +28,8 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -87,7 +87,7 @@ public final class AsciiGridStoreTest extends TestCase {
              */
             final Identification id = getSingleton(metadata.getIdentificationInfo());
             final String format = getSingleton(id.getResourceFormats()).getFormatSpecificationCitation().getTitle().toString();
-            assertTrue(format, format.contains("ASCII Grid"));
+            assertTrue(format.contains("ASCII Grid"), format);
             /*
              * This information should have been read from the PRJ file.
              */
@@ -116,7 +116,7 @@ public final class AsciiGridStoreTest extends TestCase {
             assertEquals(2, categories.size());
             assertEquals(   -2, categories.get(0).getSampleRange().getMinDouble(), 1);
             assertEquals(   30, categories.get(0).getSampleRange().getMaxDouble(), 1);
-            assertEquals(-9999, categories.get(1).forConvertedValues(false).getSampleRange().getMinDouble(), 0);
+            assertEquals(-9999, categories.get(1).forConvertedValues(false).getSampleRange().getMinDouble());
             /*
              * Check sample values.
              */
@@ -125,11 +125,11 @@ public final class AsciiGridStoreTest extends TestCase {
             assertEquals(10, image.getWidth());
             assertEquals(20, image.getHeight());
             final Raster tile = image.getTile(0,0);
-            assertEquals(   1.061f, tile.getSampleFloat(0,  0, 0), 0f);
-            assertEquals(Float.NaN, tile.getSampleFloat(9,  0, 0), 0f);
-            assertEquals(Float.NaN, tile.getSampleFloat(9, 19, 0), 0f);
-            assertEquals(  -1.075f, tile.getSampleFloat(0, 19, 0), 0f);
-            assertEquals(  27.039f, tile.getSampleFloat(4, 10, 0), 0f);
+            assertEquals(   1.061f, tile.getSampleFloat(0,  0, 0));
+            assertEquals(Float.NaN, tile.getSampleFloat(9,  0, 0));
+            assertEquals(Float.NaN, tile.getSampleFloat(9, 19, 0));
+            assertEquals(  -1.075f, tile.getSampleFloat(0, 19, 0));
+            assertEquals(  27.039f, tile.getSampleFloat(4, 10, 0));
             /*
              * Verify that the coverage is cached.
              */

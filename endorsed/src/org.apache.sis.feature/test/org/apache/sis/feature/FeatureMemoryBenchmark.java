@@ -23,9 +23,6 @@ import java.util.Map;
 import java.util.Random;
 import org.apache.sis.util.internal.StandardDateFormat;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.feature.Feature;
-
 
 /**
  * Compares {@link org.apache.sis.feature} memory usage with a plain {@link HashMap}.
@@ -127,7 +124,7 @@ public final class FeatureMemoryBenchmark {
         final Float  latitude  = random.nextFloat() * 180 -  90;
         final Float  longitude = random.nextFloat() * 360 - 180;
         if (type != null) {
-            final Feature feature = type.newInstance();
+            final var feature = type.newInstance();
             feature.setPropertyValue("city",      city);
             feature.setPropertyValue("latitude",  latitude);
             feature.setPropertyValue("longitude", longitude);

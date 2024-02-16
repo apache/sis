@@ -22,7 +22,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;

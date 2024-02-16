@@ -19,8 +19,8 @@ package org.apache.sis.filter;
 import java.awt.Shape;
 
 // Test dependencies
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 
 /**
@@ -41,7 +41,7 @@ public final class BinarySpatialFilterUsingJava2D_Test extends BinarySpatialFilt
      */
     @Test
     @Override
-    @Ignore("Not yet mapped to a Java2D operation.")
+    @Disabled("Not yet mapped to a Java2D operation.")
     public void testTouches() {
     }
 
@@ -50,7 +50,7 @@ public final class BinarySpatialFilterUsingJava2D_Test extends BinarySpatialFilt
      */
     @Test
     @Override
-    @Ignore("Not yet mapped to a Java2D operation.")
+    @Disabled("Not yet mapped to a Java2D operation.")
     public void testCrosses() {
     }
 
@@ -59,7 +59,7 @@ public final class BinarySpatialFilterUsingJava2D_Test extends BinarySpatialFilt
      */
     @Test
     @Override
-    @Ignore("Not yet mapped to a Java2D operation.")
+    @Disabled("Not yet mapped to a Java2D operation.")
     public void testOverlaps() {
     }
 
@@ -68,7 +68,7 @@ public final class BinarySpatialFilterUsingJava2D_Test extends BinarySpatialFilt
      */
     @Test
     @Override
-    @Ignore("Not yet mapped to a Java2D operation.")
+    @Disabled("Not yet mapped to a Java2D operation.")
     public void testDWithin() {
     }
 
@@ -77,7 +77,7 @@ public final class BinarySpatialFilterUsingJava2D_Test extends BinarySpatialFilt
      */
     @Test
     @Override
-    @Ignore("Not yet mapped to a Java2D operation.")
+    @Disabled("Not yet mapped to a Java2D operation.")
     public void testBeyond() {
     }
 
@@ -86,7 +86,7 @@ public final class BinarySpatialFilterUsingJava2D_Test extends BinarySpatialFilt
      */
     @Test
     @Override
-    @Ignore("Not yet mapped to a Java2D operation.")
+    @Disabled("Not yet mapped to a Java2D operation.")
     public void testWithReprojection() {
     }
 
@@ -95,7 +95,7 @@ public final class BinarySpatialFilterUsingJava2D_Test extends BinarySpatialFilt
      */
     @Test
     @Override
-    @Ignore("Requires geometry reprojection.")
+    @Disabled("Requires geometry reprojection.")
     public void testSpatialContextDoesNotDegenerateEnvelope() {
     }
 
@@ -103,7 +103,7 @@ public final class BinarySpatialFilterUsingJava2D_Test extends BinarySpatialFilt
      * Test ignored for now because {@link java.awt.geom.Path2D} does not implement {@code equals(Object)}.
      */
     @Test
-    @Ignore
+    @Disabled
     @Override
     public void testSerialization() {
     }

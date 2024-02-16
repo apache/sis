@@ -32,8 +32,8 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.internal.StandardDateFormat;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
@@ -90,11 +90,11 @@ public final class CacheTest extends TestCase {
         final String key   = "The key";
         final String value = "The value";
         final Cache<String,String> cache = new Cache<>();
-        assertTrue("No initial value expected.", cache.isEmpty());
-        assertNull("No initial value expected.", cache.peek(key));
+        assertTrue(cache.isEmpty(), "No initial value expected.");
+        assertNull(cache.peek(key), "No initial value expected.");
 
         final Cache.Handler<String> handler = cache.lock(key);
-        assertNull("No initial value expected.", handler.peek());
+        assertNull(handler.peek(), "No initial value expected.");
         handler.putAndUnlock(value);
 
         assertEquals(1,           cache.size());
@@ -168,7 +168,7 @@ public final class CacheTest extends TestCase {
         final OtherThread thread = new OtherThread();
         thread.start();
         TestUtilities.waitForBlockedState(thread);
-        assertNull("The blocked thread shall not have added a value.", cache.peek(keyByOtherThread));
+        assertNull(cache.peek(keyByOtherThread), "The blocked thread shall not have added a value.");
         /*
          * Write. This will release the lock and let the other thread continue its job.
          */
@@ -178,7 +178,7 @@ public final class CacheTest extends TestCase {
         /*
          * Checks the map content.
          */
-        final Map<String,String> expected = new HashMap<>(4);
+        final var expected = new HashMap<String,String>(4);
         assertNull(expected.put( keyByMainThread,  valueByMainThread));
         assertNull(expected.put(keyByOtherThread, valueByOtherThread));
         assertMapEquals(expected, cache);
@@ -193,7 +193,7 @@ public final class CacheTest extends TestCase {
      * @return Statistics on the key values of the given map.
      */
     private static Statistics validateStressEntries(final String name, final Map<Integer,IntObject> cache) {
-        final Statistics statistics = new Statistics(name);
+        final var statistics = new Statistics(name);
         for (final Map.Entry<Integer,IntObject> entry : cache.entrySet()) {
             final int key = entry.getKey();
             final IntObject value = entry.getValue();
@@ -267,14 +267,15 @@ public final class CacheTest extends TestCase {
          * Verifies the values.
          */
         final Statistics beforeGC = validateStressEntries("Before GC", cache);
-        assertTrue("Should not have more entries than what we put in.", cache.size() <= count);
-        assertFalse("Some entries should be retained by strong references.", cache.isEmpty());
+        assertTrue(cache.size() <= count, "Should not have more entries than what we put in.");
+        assertFalse(cache.isEmpty(), "Some entries should be retained by strong references.");
         /*
          * If verbose test output is enabled, report the number of cache hits.
          * The numbers below are for tuning the test only. The output is somewhat
          * random so we cannot check it in a test suite.  However if the test is
          * properly tuned, most values should be non-zero.
          */
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final PrintWriter out = CacheTest.out;
         TestUtilities.printSeparator("CacheTest.stress() - testing concurrent accesses");
         out.print("There is "); out.print(threads.length); out.print(" threads, each of them"
@@ -324,7 +325,7 @@ public final class CacheTest extends TestCase {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-        assertTrue("Minimum key value should be greater after garbage collection.",
-                afterGC.minimum() >= beforeGC.minimum());
+        assertTrue(afterGC.minimum() >= beforeGC.minimum(),
+                "Minimum key value should be greater after garbage collection.");
     }
 }

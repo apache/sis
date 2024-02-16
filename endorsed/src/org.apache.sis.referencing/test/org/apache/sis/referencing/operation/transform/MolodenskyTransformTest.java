@@ -29,9 +29,8 @@ import org.apache.sis.referencing.operation.provider.Molodensky;
 import org.apache.sis.referencing.util.Formulas;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;
 import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
 import org.apache.sis.test.DependsOn;
@@ -396,7 +395,7 @@ public final class MolodenskyTransformTest extends MathTransformTestCase {
         final Ellipsoid source = CommonCRS.WGS84.ellipsoid();
         transform = MolodenskyTransform.createGeodeticTransformation(
                 DefaultMathTransformFactory.provider(), source, false, source, false, 0, 0, 0, false);
-        assertInstanceOf("Expected optimized type.", LinearTransform.class, transform);
+        assertInstanceOf(LinearTransform.class, transform);
         assertTrue(transform.isIdentity());
         validate();
     }

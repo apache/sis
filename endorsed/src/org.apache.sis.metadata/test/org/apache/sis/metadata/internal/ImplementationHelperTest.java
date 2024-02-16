@@ -25,8 +25,8 @@ import java.util.Locale;
 import static java.util.Locale.*;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -72,7 +72,7 @@ public final class ImplementationHelperTest extends TestCase {
         assertArrayEquals(new Locale[] {GERMAN}, locales.toArray());
 
         locales = Arrays.asList(ENGLISH, JAPANESE, FRENCH);                 // Content will be modified.
-        assertSame("Shall set value in-place.", locales, ImplementationHelper.setFirst(locales, GERMAN));
+        assertSame(locales, ImplementationHelper.setFirst(locales, GERMAN), "Shall set value in-place.");
         assertArrayEquals(new Locale[] {GERMAN, JAPANESE, FRENCH}, locales.toArray());
 
         locales = new LinkedHashSet<>(List.of(ENGLISH, JAPANESE, FRENCH));

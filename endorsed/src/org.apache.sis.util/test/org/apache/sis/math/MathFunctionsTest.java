@@ -23,8 +23,8 @@ import static org.apache.sis.util.ArraysExt.isSorted;
 import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
@@ -68,8 +68,8 @@ public final class MathFunctionsTest extends TestCase {
      */
     @Test
     public void testConstants() {
-        assertEquals(StrictMath.sqrt (2), SQRT_2,  STRICT);
-        assertEquals(StrictMath.log10(2), LOG10_2, STRICT);
+        assertEquals(StrictMath.sqrt (2), SQRT_2);
+        assertEquals(StrictMath.log10(2), LOG10_2);
     }
 
     /**
@@ -81,7 +81,7 @@ public final class MathFunctionsTest extends TestCase {
         for (int i=0; i<100; i++) {
             final long x = random.nextInt(200000) - 100000;
             final long y = random.nextInt(200000) - 100000;
-            assertEquals((x + y) * 0.5, average(x, y), STRICT);
+            assertEquals((x + y) * 0.5, average(x, y));
         }
     }
 
@@ -91,14 +91,14 @@ public final class MathFunctionsTest extends TestCase {
     @Test
     @DependsOnMethod({"testIsPositiveZero", "testIsNegativeZero"})
     public void testTruncate() {
-        assertEquals(+4.0, truncate(+4.9), STRICT);
-        assertEquals(-4.0, truncate(-4.9), STRICT);
-        assertEquals(+0.0, truncate(+0.1), STRICT);
-        assertEquals(-0.0, truncate(-0.1), STRICT);
-        assertTrue("Positive zero", isPositiveZero(truncate(+0.5)));
-        assertTrue("Negative zero", isNegativeZero(truncate(-0.5)));
-        assertTrue("Positive zero", isPositiveZero(truncate(+0.0)));
-        assertTrue("Negative zero", isNegativeZero(truncate(-0.0)));
+        assertEquals(+4.0, truncate(+4.9));
+        assertEquals(-4.0, truncate(-4.9));
+        assertEquals(+0.0, truncate(+0.1));
+        assertEquals(-0.0, truncate(-0.1));
+        assertTrue(isPositiveZero(truncate(+0.5)));
+        assertTrue(isNegativeZero(truncate(-0.5)));
+        assertTrue(isPositiveZero(truncate(+0.0)));
+        assertTrue(isNegativeZero(truncate(-0.0)));
     }
 
     /**
@@ -161,7 +161,7 @@ public final class MathFunctionsTest extends TestCase {
          */
         for (int i = MIN_EXPONENT - (DOUBLE_PRECISION - 1); i <= MAX_EXPONENT; i++) {
             assertEquals(StrictMath.floor(StrictMath.log10(StrictMath.scalb(1.0, i))),
-                         StrictMath.floor(LOG10_2 * i /* i = getExponent(value) */), STRICT);
+                         StrictMath.floor(LOG10_2 * i /* i = getExponent(value) */));
         }
     }
 
@@ -174,7 +174,7 @@ public final class MathFunctionsTest extends TestCase {
         for (int i=0; i<100; i++) {
             final long base = r.nextInt(21) - 10;
             final int exponent = r.nextInt(15);
-            assertEquals(StrictMath.pow(base, exponent), pow(base, exponent), STRICT);
+            assertEquals(StrictMath.pow(base, exponent), pow(base, exponent));
         }
     }
 
@@ -243,10 +243,10 @@ public final class MathFunctionsTest extends TestCase {
      */
     @Test
     public void testXorSign() {
-        assertEquals( 10, xorSign( 10,  0.5), STRICT);
-        assertEquals(-10, xorSign(-10,  0.5), STRICT);
-        assertEquals( 10, xorSign(-10, -0.5), STRICT);
-        assertEquals(-10, xorSign( 10, -0.5), STRICT);
+        assertEquals( 10, xorSign( 10,  0.5));
+        assertEquals(-10, xorSign(-10,  0.5));
+        assertEquals( 10, xorSign(-10, -0.5));
+        assertEquals(-10, xorSign( 10, -0.5));
     }
 
     /**

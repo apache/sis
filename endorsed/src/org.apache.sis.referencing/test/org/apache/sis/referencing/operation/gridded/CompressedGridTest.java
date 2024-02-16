@@ -20,7 +20,7 @@ import javax.measure.quantity.Dimensionless;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 
 // Test dependencies
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -45,6 +45,6 @@ public final class CompressedGridTest extends LoadedGridTest {
     void init(final double rotation) throws NoninvertibleTransformException {
         super.init(0);      // No rotation in order to have integer values.
         grid = CompressedGrid.compress((LoadedGrid.Float<Dimensionless,Dimensionless>) grid, null, 0.5);
-        assertInstanceOf("grid", CompressedGrid.class, grid);
+        assertInstanceOf(CompressedGrid.class, grid);
     }
 }

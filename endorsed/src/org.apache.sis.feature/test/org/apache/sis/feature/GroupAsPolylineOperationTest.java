@@ -24,15 +24,12 @@ import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.setup.GeometryLibrary;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Attribute;
-import org.opengis.feature.Feature;
-import org.opengis.feature.Operation;
-import org.opengis.feature.Property;
 
 
 /**
@@ -53,22 +50,22 @@ public final class GroupAsPolylineOperationTest extends TestCase {
      */
     @Test
     public void testPoints() {
-        final FeatureTypeBuilder builder = new FeatureTypeBuilder().setName("test");
+        final var builder = new FeatureTypeBuilder().setName("test");
         builder.addAttribute(Point.class).setMaximumOccurs(10).setName("points");
-        final Feature feature = builder.build().newInstance();
+        final var feature = builder.build().newInstance();
         feature.setPropertyValue("points", Arrays.asList(
-            new Point(-6, 4),
-            new Point(12, 7),
-            new Point( 8, 6)));
+                new Point(-6, 4),
+                new Point(12, 7),
+                new Point( 8, 6)));
 
-        final Operation group = FeatureOperations.groupAsPolyline(Map.of("name", "polyline"),
-                                GeometryLibrary.ESRI, feature.getType().getProperty("points"));
+        final var group = FeatureOperations.groupAsPolyline(Map.of("name", "polyline"),
+                          GeometryLibrary.ESRI, feature.getType().getProperty("points"));
 
-        final Property result = group.apply(feature, null);
-        final Object   value  = ((Attribute<?>) result).getValue();
-        final Polyline poly   = (Polyline) value;
-        assertEquals(-6, poly.getPoint(0).getX(), STRICT);
-        assertEquals( 7, poly.getPoint(1).getY(), STRICT);
-        assertEquals( 8, poly.getPoint(2).getX(), STRICT);
+        final var result = group.apply(feature, null);
+        final var value  = assertInstanceOf(Attribute.class, result).getValue();
+        final var poly   = assertInstanceOf(Polyline.class, value);
+        assertEquals(-6, poly.getPoint(0).getX());
+        assertEquals( 7, poly.getPoint(1).getY());
+        assertEquals( 8, poly.getPoint(2).getX());
     }
 }

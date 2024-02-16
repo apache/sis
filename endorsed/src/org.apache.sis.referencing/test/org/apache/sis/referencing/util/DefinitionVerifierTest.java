@@ -26,8 +26,8 @@ import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -57,10 +57,10 @@ public final class DefinitionVerifierTest extends TestCase {
     public void testConformCRS() throws FactoryException {
         final DefaultGeographicCRS crs = HardCodedCRS.WGS84_LATITUDE_FIRST;
         final DefinitionVerifier ver = DefinitionVerifier.withAuthority(crs, null, false, null);
-        assertNotNull("Should replace by EPSG:4326", ver);
-        assertNotSame("Should replace by EPSG:4326", crs, ver.recommendation);
-        assertSame   ("Should replace by EPSG:4326", CommonCRS.WGS84.geographic(), ver.recommendation);
-        assertNull   ("Should be silent.", ver.warning(true));
+        assertNotNull(ver, "Should replace by EPSG:4326");
+        assertNotSame(crs, ver.recommendation, "Should replace by EPSG:4326");
+        assertSame(CommonCRS.WGS84.geographic(), ver.recommendation, "Should replace by EPSG:4326");
+        assertNull(ver.warning(true), "Should be silent.");
     }
 
     /**
@@ -72,12 +72,12 @@ public final class DefinitionVerifierTest extends TestCase {
     @DependsOnMethod("testConformCRS")
     public void testNormalizedCRS() throws FactoryException {
         final DefaultGeographicCRS crs = HardCodedCRS.WGS84;
-        assertNull("No replacement without EPSG code.", DefinitionVerifier.withAuthority(crs, null, false, null));
+        assertNull(DefinitionVerifier.withAuthority(crs, null, false, null), "No replacement without EPSG code.");
         final DefinitionVerifier ver = DefinitionVerifier.withAuthority(crs, null, true, null);
-        assertNotNull("Should replace by normalized CRS", ver);
-        assertNotSame("Should replace by normalized CRS", crs, ver.recommendation);
-        assertSame   ("Should replace by normalized CRS", CommonCRS.WGS84.normalizedGeographic(), ver.recommendation);
-        assertNull   ("Should be silent.", ver.warning(true));
+        assertNotNull(ver, "Should replace by normalized CRS");
+        assertNotSame(crs, ver.recommendation, "Should replace by normalized CRS");
+        assertSame(CommonCRS.WGS84.normalizedGeographic(), ver.recommendation, "Should replace by normalized CRS");
+        assertNull(ver.warning(true), "Should be silent.");
     }
 
     /**
@@ -95,14 +95,14 @@ public final class DefinitionVerifierTest extends TestCase {
         crs = new DefaultGeographicCRS(properties, crs.getDatum(), crs.getCoordinateSystem());
 
         final DefinitionVerifier ver = DefinitionVerifier.withAuthority(crs, null, false, null);
-        assertNotNull("Should replace by normalized CRS", ver);
-        assertNotSame("Should replace by normalized CRS", crs, ver.recommendation);
-        assertSame   ("Should replace by normalized CRS", CommonCRS.WGS84.normalizedGeographic(), ver.recommendation);
+        assertNotNull(ver, "Should replace by normalized CRS");
+        assertNotSame(crs, ver.recommendation, "Should replace by normalized CRS");
+        assertSame(CommonCRS.WGS84.normalizedGeographic(), ver.recommendation, "Should replace by normalized CRS");
 
         final LogRecord warning = ver.warning(true);
-        assertNotNull("Should emit a warning.", warning);
+        assertNotNull(warning, "Should emit a warning.");
         final String message = new SimpleFormatter().formatMessage(warning);
-        assertTrue(message, message.contains("WGS 84"));
-        assertTrue(message, message.contains("EPSG:4326"));
+        assertTrue(message.contains("WGS 84"), message);
+        assertTrue(message.contains("EPSG:4326"), message);
     }
 }

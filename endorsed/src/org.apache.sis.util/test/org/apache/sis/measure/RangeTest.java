@@ -20,11 +20,11 @@ import java.util.Locale;
 import java.time.Instant;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assume.assumeTrue;
-import static org.junit.Assert.*;
-import org.apache.sis.test.TestCase;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
+import org.apache.sis.test.TestCase;
 
 
 /**
@@ -87,11 +87,12 @@ public final class RangeTest extends TestCase {
      *
      * <p>This test requires assertions to be enabled.</p>
      */
-    @Test(expected = IllegalArgumentException.class)
-    @SuppressWarnings({"unchecked", "rawtypes", "ResultOfObjectAllocationIgnored"})
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void testConstructorErrors00() {
-        assumeTrue(Range.class.desiredAssertionStatus());
-        new Range(Double.class, "error", true, "blast", true);
+        assertTrue(Range.class.desiredAssertionStatus());
+        var e = assertThrows(IllegalArgumentException.class, () -> new Range(Double.class, "error", true, "blast", true));
+        assertMessageContains(e);
     }
 
     /**
@@ -102,11 +103,12 @@ public final class RangeTest extends TestCase {
      *
      * <p>This test requires assertions to be enabled.</p>
      */
-    @Test(expected = IllegalArgumentException.class)
-    @SuppressWarnings({"unchecked", "rawtypes", "ResultOfObjectAllocationIgnored"})
+    @Test
+    @SuppressWarnings({"unchecked", "rawtypes"})
     public void testConstructorErrors01() {
-        assumeTrue(Range.class.desiredAssertionStatus());
-        new Range(String.class, 123.233, true, 8740.09, true);
+        assertTrue(Range.class.desiredAssertionStatus());
+        var e = assertThrows(IllegalArgumentException.class, () -> new Range(String.class, 123.233, true, 8740.09, true));
+        assertMessageContains(e);
     }
 
     /**
@@ -359,7 +361,7 @@ public final class RangeTest extends TestCase {
          * value in a call to 'Range.formatTo(Formatter, …)`. So we verify only the year and the month.
          */
         final String result = String.format(Locale.CANADA_FRENCH, "%s", range);
-        assertTrue(result, result.matches("\\[2019-12-.+ … 2020-05-.+\\]"));
+        assertTrue(result.matches("\\[2019-12-.+ … 2020-05-.+\\]"), result);
     }
 
     /**

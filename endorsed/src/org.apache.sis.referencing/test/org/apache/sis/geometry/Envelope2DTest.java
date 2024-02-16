@@ -19,8 +19,8 @@ package org.apache.sis.geometry;
 import java.awt.geom.Rectangle2D;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -75,11 +75,11 @@ public final class Envelope2DTest extends TestCase {
         final Rectangle2D[] rectangles = envelope.toRectangles();
         assertEquals(1, rectangles.length);
         final Rectangle2D r = rectangles[0];
-        assertNotSame("toRectangles() shall copy the envelope.", envelope, r);
-        assertEquals(-20.0, r.getX(),      STRICT);
-        assertEquals(-10.0, r.getY(),      STRICT);
-        assertEquals( 50.0, r.getWidth(),  STRICT);
-        assertEquals( 40.0, r.getHeight(), STRICT);
+        assertNotSame(envelope, r, "toRectangles() shall copy the envelope.");
+        assertEquals(-20.0, r.getX());
+        assertEquals(-10.0, r.getY());
+        assertEquals( 50.0, r.getWidth());
+        assertEquals( 40.0, r.getHeight());
     }
 
     /**
@@ -95,14 +95,13 @@ public final class Envelope2DTest extends TestCase {
         final Rectangle2D r0 = rectangles[0];
         final Rectangle2D r1 = rectangles[1];
 
-        assertEquals( 155.0, r0.getX(),      STRICT);
-        assertEquals(   0.0, r0.getY(),      STRICT);
-        assertEquals(  25.0, r0.getWidth(),  STRICT);
-        assertEquals(  50.0, r0.getHeight(), STRICT);
-
-        assertEquals(-180.0, r1.getX(),      STRICT);
-        assertEquals(   0.0, r1.getY(),      STRICT);
-        assertEquals(  30.0, r1.getWidth(),  STRICT);
-        assertEquals(  50.0, r1.getHeight(), STRICT);
+        assertEquals( 155.0, r0.getX());
+        assertEquals(   0.0, r0.getY());
+        assertEquals(  25.0, r0.getWidth());
+        assertEquals(  50.0, r0.getHeight());
+        assertEquals(-180.0, r1.getX());
+        assertEquals(   0.0, r1.getY());
+        assertEquals(  30.0, r1.getWidth());
+        assertEquals(  50.0, r1.getHeight());
     }
 }

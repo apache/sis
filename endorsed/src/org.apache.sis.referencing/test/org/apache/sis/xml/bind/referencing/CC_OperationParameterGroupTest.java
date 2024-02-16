@@ -35,8 +35,8 @@ import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
 import static org.apache.sis.xml.bind.referencing.CC_GeneralOperationParameter.DEFAULT_OCCURRENCE;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
@@ -121,8 +121,8 @@ public final class CC_OperationParameterGroupTest extends TestCase {
         final var merged = CC_OperationParameterGroup.merge(fromXML,
                 fromValues.toArray(GeneralParameterDescriptor[]::new), replacements);
 
-        assertTrue("Expected no replacement.", replacements.isEmpty());
-        assertEquals("Number of parameters", 2, merged.length);
+        assertTrue(replacements.isEmpty());
+        assertEquals(2, merged.length);
         assertNotSame(expected, merged);
         assertArrayEquals(expected, merged);
         for (int i=0; i<merged.length; i++) {
@@ -147,8 +147,8 @@ public final class CC_OperationParameterGroupTest extends TestCase {
         /*
          * "Longitude of natural origin" parameter should be the same.
          */
-        assertEquals("Number of parameters", 2, merged.length);
-        assertSame("Longitude of natural origin", fromValues[1], merged[1]);
+        assertEquals(2, merged.length);
+        assertSame(fromValues[1], merged[1], "Longitude of natural origin");
         /*
          * "Latitude of natural origin" should be a new parameter, because we merged the remarks from the
          * 'fromXML' descriptor with value class, unit and default value from the 'fromValue' descriptor.
@@ -156,16 +156,16 @@ public final class CC_OperationParameterGroupTest extends TestCase {
         final GeneralParameterDescriptor    incomplete = fromXML.descriptors().get(0);
         final DefaultParameterDescriptor<?> fromValue  = (DefaultParameterDescriptor<?>) fromValues[0];
         final DefaultParameterDescriptor<?> complete   = (DefaultParameterDescriptor<?>) merged[0];
-        assertNotSame("Latitude of natural origin", incomplete,  complete);
-        assertNotSame("Latitude of natural origin", fromValue,   complete);
-        assertSame   ("name",        fromValue .getName(),       complete.getName());
-        assertSame   ("remarks",     incomplete.getRemarks(),    complete.getRemarks());
-        assertEquals ("valueClass",  Double.class,               complete.getValueClass());
-        assertSame   ("valueDomain", fromValue.getValueDomain(), complete.getValueDomain());
+        assertNotSame(incomplete, complete, "Latitude of natural origin");
+        assertNotSame(fromValue,  complete, "Latitude of natural origin");
+        assertSame   (fromValue .getName(),       complete.getName());
+        assertSame   (incomplete.getRemarks(),    complete.getRemarks());
+        assertEquals (Double.class,               complete.getValueClass());
+        assertSame   (fromValue.getValueDomain(), complete.getValueDomain());
         /*
          * All references to 'fromValue' will need to be replaced by references to 'complete'.
          */
-        assertEquals("replacements", Map.of(fromValue, complete), replacements);
+        assertEquals(Map.of(fromValue, complete), replacements);
     }
 
     /**
@@ -184,8 +184,8 @@ public final class CC_OperationParameterGroupTest extends TestCase {
         group = CC_OperationMethod.group(group.getName(), descriptors.toArray(GeneralParameterDescriptor[]::new));
         descriptors = group.descriptors();
 
-        assertSame("name", group.getName(), group.getName());
-        assertEquals("descriptors.size", 2, descriptors.size());
+        assertSame(group.getName(), group.getName());
+        assertEquals(2, descriptors.size());
         verifyMethodParameter(Mercator1SP.LATITUDE_OF_ORIGIN, REMARK, (ParameterDescriptor<?>) descriptors.get(0));
         verifyMethodParameter(Mercator1SP.LONGITUDE_OF_ORIGIN,  null, (ParameterDescriptor<?>) descriptors.get(1));
     }
@@ -199,13 +199,13 @@ public final class CC_OperationParameterGroupTest extends TestCase {
     public static void verifyMethodParameter(final ParameterDescriptor<?> expected,
                                              final ParameterDescriptor<?> actual)
     {
-        assertEquals("name",          expected.getName(),         actual.getName());
-        assertEquals("description",   expected.getDescription(),  actual.getDescription());
-        assertEquals("valueClass",    expected.getValueClass(),   actual.getValueClass());
-        assertEquals("validValues",   expected.getValidValues(),  actual.getValidValues());
-        assertEquals("unit",          expected.getUnit(),         actual.getUnit());
-        assertEquals("minimumOccurs", DEFAULT_OCCURRENCE,         actual.getMinimumOccurs());
-        assertEquals("maximumOccurs", DEFAULT_OCCURRENCE,         actual.getMaximumOccurs());
+        assertEquals(expected.getName(),         actual.getName());
+        assertEquals(expected.getDescription(),  actual.getDescription());
+        assertEquals(expected.getValueClass(),   actual.getValueClass());
+        assertEquals(expected.getValidValues(),  actual.getValidValues());
+        assertEquals(expected.getUnit(),         actual.getUnit());
+        assertEquals(DEFAULT_OCCURRENCE,         actual.getMinimumOccurs());
+        assertEquals(DEFAULT_OCCURRENCE,         actual.getMaximumOccurs());
     }
 
     /**
@@ -219,14 +219,14 @@ public final class CC_OperationParameterGroupTest extends TestCase {
             final String remarks, final ParameterDescriptor<?> actual)
     {
         verifyMethodParameter(expected, actual);
-        assertSame("name",         expected.getName(),         actual.getName());
-        assertSame("minimumValue", expected.getMinimumValue(), actual.getMinimumValue());
-        assertSame("maximumValue", expected.getMaximumValue(), actual.getMaximumValue());
-        assertSame("defaultValue", expected.getDefaultValue(), actual.getDefaultValue());
+        assertSame(expected.getName(),         actual.getName());
+        assertSame(expected.getMinimumValue(), actual.getMinimumValue());
+        assertSame(expected.getMaximumValue(), actual.getMaximumValue());
+        assertSame(expected.getDefaultValue(), actual.getDefaultValue());
         if (remarks != null) {
-            assertEquals("remarks", remarks, actual.getRemarks().toString());
+            assertEquals(remarks, actual.getRemarks().toString());
         } else {
-            assertSame("remarks", expected.getRemarks(), actual.getRemarks());
+            assertSame(expected.getRemarks(), actual.getRemarks());
         }
     }
 }

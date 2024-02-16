@@ -17,8 +17,8 @@
 package org.apache.sis.referencing.cs;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
@@ -69,12 +69,12 @@ public final class HardCodedCSTest extends TestCase {
      */
     @Test
     public void testDimensions() {
-        assertEquals("Cartesian 2D",   2, PROJECTED  .getDimension());
-        assertEquals("Cartesian 3D",   3, GEOCENTRIC .getDimension());
-        assertEquals("Ellipsoidal 2D", 2, GEODETIC_2D.getDimension());
-        assertEquals("Ellipsoidal 3D", 3, GEODETIC_3D.getDimension());
-        assertEquals("Vertical",       1, DEPTH      .getDimension());
-        assertEquals("Temporal",       1, DAYS       .getDimension());
+        assertEquals(2, PROJECTED  .getDimension(), "Cartesian 2D");
+        assertEquals(3, GEOCENTRIC .getDimension(), "Cartesian 3D");
+        assertEquals(2, GEODETIC_2D.getDimension(), "Ellipsoidal 2D");
+        assertEquals(3, GEODETIC_3D.getDimension(), "Ellipsoidal 3D");
+        assertEquals(1, DEPTH      .getDimension(), "Vertical");
+        assertEquals(1, DAYS       .getDimension(), "Temporal");
     }
 
     /**

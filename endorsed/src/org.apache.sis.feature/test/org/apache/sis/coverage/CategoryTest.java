@@ -24,9 +24,8 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.MathFunctions;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 
@@ -53,28 +52,26 @@ public final class CategoryTest extends TestCase {
      */
     private static void assertNaN(final String message, final NumberRange<?> range) {
         final double value = range.getMinDouble();
-        assertTrue(message, Double.isNaN(value));
-        assertEquals(message, Double.doubleToRawLongBits(value), Double.doubleToRawLongBits(range.getMaxDouble()));
+        assertTrue(Double.isNaN(value), message);
+        assertEquals(Double.doubleToRawLongBits(value), Double.doubleToRawLongBits(range.getMaxDouble()), message);
     }
 
     /**
      * Checks if a {@link Comparable} is a number identical to the supplied integer value.
      */
     private static void assertBoundEquals(final String message, final int expected, final Comparable<?> actual) {
-        assertInstanceOf(message, Integer.class, actual);
-        assertEquals(message, expected, ((Number) actual).intValue());
+        assertEquals(expected, assertInstanceOf(Integer.class, actual, message).intValue(), message);
     }
 
     /**
      * Checks if a {@link Comparable} is a number identical to the supplied float value.
      */
     private static void assertBoundEquals(final String message, final double expected, final Comparable<?> actual) {
-        assertInstanceOf(message, Double.class, actual);
-        final double value = ((Number) actual).doubleValue();
+        final double value = assertInstanceOf(Double.class, actual, message);
         if (Double.isNaN(expected)) {
-            assertEquals(message, Double.doubleToRawLongBits(expected), Double.doubleToRawLongBits(value));
+            assertEquals(Double.doubleToRawLongBits(expected), Double.doubleToRawLongBits(value), message);
         } else {
-            assertEquals(message, expected, value, EPS);
+            assertEquals(expected, value, EPS, message);
         }
     }
 
@@ -92,37 +89,37 @@ public final class CategoryTest extends TestCase {
             final int      sample    = random.nextInt(20);
             final boolean  collision = toNaN.contains(sample);
             final Category category  = new Category("Random", NumberRange.create(sample, true, sample, true), null, null, toNaN);
-            assertTrue("Allocated NaN ordinal", toNaN.contains(sample));
+            assertTrue(toNaN.contains(sample), "Allocated NaN ordinal");
             /*
              * Verify properties on the category that we created.
              * The sample values are integers in our test.
              */
-            assertEquals     ("name",           "Random",       String.valueOf(category.name));
-            assertEquals     ("name",           "Random",       String.valueOf(category.getName()));
-            assertBoundEquals("range.minValue", sample,         category.range.getMinValue());
-            assertBoundEquals("range.maxValue", sample,         category.range.getMaxValue());
-            assertSame       ("sampleRange",    category.range, category.getSampleRange());
-            assertFalse      ("measurementRange",               category.getMeasurementRange().isPresent());
-            assertFalse      ("toConverse.isIdentity",          category.toConverse.isIdentity());
-            assertFalse      ("transferFunction",               category.getTransferFunction().isPresent());
-            assertFalse      ("isQuantitative",                 category.isQuantitative());
+            assertEquals("Random", String.valueOf(category.name));
+            assertEquals("Random", String.valueOf(category.getName()));
+            assertBoundEquals("range.minValue", sample, category.range.getMinValue());
+            assertBoundEquals("range.maxValue", sample, category.range.getMaxValue());
+            assertSame (category.range, category.getSampleRange());
+            assertFalse(category.getMeasurementRange().isPresent());
+            assertFalse(category.toConverse.isIdentity());
+            assertFalse(category.getTransferFunction().isPresent());
+            assertFalse(category.isQuantitative());
             /*
              * Verify properties on the converse category. Values shall be NaN
              * and the transfer function shall be absent.
              */
             final Category converse = category.converse;
-            assertNotSame("converse",           category, converse);
-            assertSame   ("converse.converse",  category, converse.converse);
-            assertSame   ("converted",          converse, category.converted());
-            assertSame   ("converted",          converse, converse.converted());
-            assertEquals ("name",               "Random", String.valueOf(converse.name));
-            assertEquals ("name",               "Random", String.valueOf(converse.getName()));
-            assertNaN    ("range",                        converse.range);
-            assertNotNull("sampleRange",                  converse.getSampleRange());
-            assertFalse  ("measurementRange",             category.getMeasurementRange().isPresent());
-            assertFalse  ("toConverse.isIdentity",        converse.toConverse.isIdentity());
-            assertFalse  ("transferFunction",             converse.getTransferFunction().isPresent());
-            assertFalse  ("isQuantitative",               converse.isQuantitative());
+            assertNotSame(category, converse);
+            assertSame   (category, converse.converse);
+            assertSame   (converse, category.converted());
+            assertSame   (converse, converse.converted());
+            assertEquals ("Random", String.valueOf(converse.name));
+            assertEquals ("Random", String.valueOf(converse.getName()));
+            assertNaN    ("range", converse.range);
+            assertNotNull(converse.getSampleRange());
+            assertFalse  (category.getMeasurementRange().isPresent());
+            assertFalse  (converse.toConverse.isIdentity());
+            assertFalse  (converse.getTransferFunction().isPresent());
+            assertFalse  (converse.isQuantitative());
             /*
              * Test sample values conversions. They are expected to produce NaN values and
              * the converter shall be able to go back to original values from those NaNs.
@@ -131,14 +128,14 @@ public final class CategoryTest extends TestCase {
             for (int i=0; i<4; i++) {
                 final float x = 100 * random.nextFloat();
                 final float y = (float) category.toConverse.transform(x);
-                assertTrue("isNaN", Float.isNaN(y));
+                assertTrue(Float.isNaN(y));
                 final int ordinal = MathFunctions.toNanOrdinal(y);
                 if (collision) {
-                    assertNotEquals("ordinal", sample, ordinal);
+                    assertNotEquals(sample, ordinal);
                 } else {
-                    assertEquals("ordinal", sample, ordinal);
+                    assertEquals(sample, ordinal);
                 }
-                assertEquals("inverse", sample, (float) inverse.transform(y), (float) STRICT);
+                assertEquals(sample, (float) inverse.transform(y));
             }
         }
     }
@@ -161,41 +158,41 @@ public final class CategoryTest extends TestCase {
                     (MathTransform1D) MathTransforms.linear(scale, offset), null, null);
 
             final Category converse = category.converse;
-            assertNotSame    ("converse",           category, converse);
-            assertSame       ("converse.converse",  category, converse.converse);
-            assertSame       ("converted",          converse, category.converted());
-            assertSame       ("converted",          converse, converse.converted());
-            assertEquals     ("name",               "Random",            String.valueOf(category.name));
-            assertEquals     ("name",               "Random",            String.valueOf(converse.name));
-            assertEquals     ("name",               "Random",            String.valueOf(category.getName()));
-            assertEquals     ("name",               "Random",            String.valueOf(converse.getName()));
-            assertEquals     ("minimum",            lower,               category.range.getMinDouble(true), STRICT);
-            assertEquals     ("maximum",            upper,               category.range.getMaxDouble(true), STRICT);
-            assertEquals     ("minimum",            lower*scale+offset,  converse.range.getMinDouble(true), EPS);
-            assertEquals     ("maximum",            upper*scale+offset,  converse.range.getMaxDouble(true), EPS);
-            assertBoundEquals("range.minValue",     lower,               category.range.getMinValue());
-            assertBoundEquals("range.maxValue",     upper,               category.range.getMaxValue());
-            assertSame       ("sampleRange",        category.range,      category.getSampleRange());
-            assertSame       ("sampleRange",        converse.range,      converse.getSampleRange());
-            assertSame       ("measurementRange",   converse.range,      category.getMeasurementRange().get());
-            assertSame       ("measurementRange",   converse.range,      converse.getMeasurementRange().get());
-            assertSame       ("transferFunction",   category.toConverse, category.getTransferFunction().get());
-            assertNotSame    ("transferFunction",   converse.toConverse, converse.getTransferFunction().get());
-            assertTrue       ("transferFunction",                        converse.getTransferFunction().get().isIdentity());
-            assertFalse      ("toConverse.isIdentity",                   category.toConverse.isIdentity());
-            assertFalse      ("toConverse.isIdentity",                   converse.toConverse.isIdentity());
-            assertTrue       ("isQuantitative",                          category.isQuantitative());
-            assertTrue       ("isQuantitative",                          converse.isQuantitative());
+            assertNotSame    (category, converse);
+            assertSame       (category, converse.converse);
+            assertSame       (converse, category.converted());
+            assertSame       (converse, converse.converted());
+            assertEquals     ("Random", String.valueOf(category.name));
+            assertEquals     ("Random", String.valueOf(converse.name));
+            assertEquals     ("Random", String.valueOf(category.getName()));
+            assertEquals     ("Random", String.valueOf(converse.getName()));
+            assertEquals     (lower,    category.range.getMinDouble(true));
+            assertEquals     (upper,    category.range.getMaxDouble(true));
+            assertEquals     (lower*scale+offset, converse.range.getMinDouble(true), EPS);
+            assertEquals     (upper*scale+offset, converse.range.getMaxDouble(true), EPS);
+            assertBoundEquals("range.minValue", lower, category.range.getMinValue());
+            assertBoundEquals("range.maxValue", upper, category.range.getMaxValue());
+            assertSame       (category.range,      category.getSampleRange());
+            assertSame       (converse.range,      converse.getSampleRange());
+            assertSame       (converse.range,      category.getMeasurementRange().get());
+            assertSame       (converse.range,      converse.getMeasurementRange().get());
+            assertSame       (category.toConverse, category.getTransferFunction().get());
+            assertNotSame    (converse.toConverse, converse.getTransferFunction().get());
+            assertTrue       (converse.getTransferFunction().get().isIdentity());
+            assertFalse      (category.toConverse.isIdentity());
+            assertFalse      (converse.toConverse.isIdentity());
+            assertTrue       (category.isQuantitative());
+            assertTrue       (converse.isQuantitative());
             /*
              * Test sample values conversions.
              */
             final MathTransform1D inverse = category.converse.toConverse;
-            assertSame("inverse", inverse, category.toConverse.inverse());
+            assertSame(inverse, category.toConverse.inverse());
             for (int i=0; i<20; i++) {
                 final double x = 100 * random.nextDouble();
                 final double y = x*scale + offset;
-                assertEquals("toConverse", y, category.toConverse.transform(x), EPS);
-                assertEquals("inverse",    x, inverse.transform(y), EPS);
+                assertEquals(y, category.toConverse.transform(x), EPS);
+                assertEquals(x, inverse.transform(y), EPS);
             }
         }
     }
@@ -212,16 +209,16 @@ public final class CategoryTest extends TestCase {
             final Category category = new Category("Random", NumberRange.create(lower, true, upper, true),
                     (MathTransform1D) MathTransforms.identity(1), null, null);
 
-            assertSame       ("converse",           category,            category.converse);
-            assertEquals     ("name",               "Random",            String.valueOf(category.name));
-            assertEquals     ("name",               "Random",            String.valueOf(category.getName()));
-            assertBoundEquals("range.minValue",     lower,               category.range.getMinValue());
-            assertBoundEquals("range.maxValue",     upper,               category.range.getMaxValue());
-            assertSame       ("sampleRange",        category.range,      category.getSampleRange());
-            assertSame       ("measurementRange",   category.range,      category.getMeasurementRange().get());
-            assertSame       ("transferFunction",   category.toConverse, category.getTransferFunction().get());
-            assertTrue       ("toConverse.isIdentity",                   category.toConverse.isIdentity());
-            assertTrue       ("isQuantitative",                          category.isQuantitative());
+            assertSame  (category, category.converse);
+            assertEquals("Random", String.valueOf(category.name));
+            assertEquals("Random", String.valueOf(category.getName()));
+            assertBoundEquals("range.minValue", lower, category.range.getMinValue());
+            assertBoundEquals("range.maxValue", upper, category.range.getMaxValue());
+            assertSame(category.range,      category.getSampleRange());
+            assertSame(category.range,      category.getMeasurementRange().get());
+            assertSame(category.toConverse, category.getTransferFunction().get());
+            assertTrue(category.toConverse.isIdentity());
+            assertTrue(category.isQuantitative());
         }
     }
 
@@ -232,15 +229,15 @@ public final class CategoryTest extends TestCase {
     public void testCategoryNaN() {
         final Category category = new Category("NaN", new NumberRange<>(Float.class, Float.NaN, true, Float.NaN, true), null, null, null);
         final NumberRange<?> range = category.getSampleRange();
-        assertSame  ("converse",       category,   category.converse);
-        assertEquals("name",           "NaN",      String.valueOf(category.name));
-        assertEquals("name",           "NaN",      String.valueOf(category.getName()));
-        assertNaN   ("sampleRange",                category.range);
-        assertEquals("range.minValue", Float.NaN,  range.getMinValue());
-        assertEquals("range.maxValue", Float.NaN,  range.getMaxValue());
-        assertFalse ("measurementRange",           category.getMeasurementRange().isPresent());
-        assertFalse ("transferFunction",           category.getTransferFunction().isPresent());
-        assertTrue  ("toConverse.isIdentity",      category.toConverse.isIdentity());
-        assertFalse ("isQuantitative",             category.isQuantitative());
+        assertSame  (category, category.converse);
+        assertEquals("NaN",    String.valueOf(category.name));
+        assertEquals("NaN",    String.valueOf(category.getName()));
+        assertNaN   ("sampleRange", category.range);
+        assertEquals(Float.NaN, range.getMinValue());
+        assertEquals(Float.NaN, range.getMaxValue());
+        assertFalse (category.getMeasurementRange().isPresent());
+        assertFalse (category.getTransferFunction().isPresent());
+        assertTrue  (category.toConverse.isIdentity());
+        assertFalse (category.isQuantitative());
     }
 }

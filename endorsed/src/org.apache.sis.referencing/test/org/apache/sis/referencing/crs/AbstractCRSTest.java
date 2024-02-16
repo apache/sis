@@ -22,8 +22,8 @@ import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.AxesConvention;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.referencing.cs.HardCodedAxes;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -56,7 +56,7 @@ public final class AbstractCRSTest extends TestCase {
                     HardCodedAxes.GEODETIC_LONGITUDE, HardCodedAxes.GEODETIC_LATITUDE, HardCodedAxes.ALTITUDE, HardCodedAxes.TIME));
         actual   =  toTest.forConvention(AxesConvention.RIGHT_HANDED);
 
-        assertEquals("forConvention(RIGHT_HANDED)", expected, actual);
+        assertEquals(expected, actual, "forConvention(RIGHT_HANDED)");
         assertSame(actual,   toTest  .forConvention(AxesConvention.RIGHT_HANDED));
         assertSame(actual,   toTest  .forConvention(AxesConvention.DISPLAY_ORIENTED));
         assertSame(actual,   toTest  .forConvention(AxesConvention.NORMALIZED));

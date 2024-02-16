@@ -17,8 +17,8 @@
 package org.apache.sis.math;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -57,8 +57,8 @@ public final class RepeatedVectorTest extends TestCase {
         assertEquals(15, vec.intValue  (11));
 
         Vector sub = vec.subSampling(0, 4, 3);
-        assertFalse("Expected the backing array.", sub instanceof RepeatedVector);
-        assertArrayEquals(new float[] {10, 12, 15}, sub.floatValues(), (float) STRICT);
+        assertFalse(sub instanceof RepeatedVector, "Expected the backing array.");
+        assertArrayEquals(new float[] {10, 12, 15}, sub.floatValues());
     }
 
     /**
@@ -84,8 +84,8 @@ public final class RepeatedVectorTest extends TestCase {
         assertEquals(15, vec.intValue  (10));
 
         Vector sub = vec.subList(0, 4);
-        assertFalse("Expected the backing array.", sub instanceof RepeatedVector);
-        assertArrayEquals(new float[] {10, 12, 15, 18}, sub.floatValues(), (float) STRICT);
+        assertFalse(sub instanceof RepeatedVector, "Expected the backing array.");
+        assertArrayEquals(new float[] {10, 12, 15, 18}, sub.floatValues());
     }
 
     /**
@@ -120,8 +120,8 @@ public final class RepeatedVectorTest extends TestCase {
         assertEquals(12, vec.intValue  (28));
 
         Vector sub = vec.subSampling(0, 3, 4);
-        assertFalse("Expected the backing array.", sub instanceof RepeatedVector);
-        assertArrayEquals(new float[] {10, 12, 15, 18}, sub.floatValues(), (float) STRICT);
+        assertFalse(sub instanceof RepeatedVector, "Expected the backing array.");
+        assertArrayEquals(new float[] {10, 12, 15, 18}, sub.floatValues());
     }
 
     /**
@@ -165,12 +165,12 @@ public final class RepeatedVectorTest extends TestCase {
         assertEquals(18, vec.intValue  (17));
 
         Vector sub = vec.subSampling(0, 1, 6);
-        assertFalse("Expected the backing array.", sub instanceof RepeatedVector);
-        assertArrayEquals(new float[] {10, 10, 10, 12, 15, 18}, sub.floatValues(), (float) STRICT);
+        assertFalse(sub instanceof RepeatedVector, "Expected the backing array.");
+        assertArrayEquals(new float[] {10, 10, 10, 12, 15, 18}, sub.floatValues());
 
         sub = vec.subSampling(0, 1, 12);
         assertArrayEquals(new float[] {10, 10, 10, 12, 15, 18,
-                                       10, ip, 10, 12, 15, 18}, sub.floatValues(), (float) STRICT);
+                                       10, ip, 10, 12, 15, 18}, sub.floatValues());
     }
 
     /**
@@ -186,7 +186,7 @@ public final class RepeatedVectorTest extends TestCase {
             2, -4, 7, 3,
             2, -4, 7, 3,
             2, -4, 7, 3
-        }, vec.floatValues(), (float) STRICT);
+        }, vec.floatValues());
         assertSame(vec, vec.repeat(false, 1));
 
         vec = vec.repeat(false, 2);
@@ -197,7 +197,7 @@ public final class RepeatedVectorTest extends TestCase {
             2, -4, 7, 3,
             2, -4, 7, 3,
             2, -4, 7, 3
-        }, vec.floatValues(), (float) STRICT);
+        }, vec.floatValues());
     }
 
     /**
@@ -214,7 +214,7 @@ public final class RepeatedVectorTest extends TestCase {
             -4, -4, -4,
              7,  7,  7,
              3,  3,  3
-        }, vec.floatValues(), (float) STRICT);
+        }, vec.floatValues());
         assertSame(vec, vec.repeat(false, 1));
 
         vec = vec.repeat(true, 2);
@@ -223,6 +223,6 @@ public final class RepeatedVectorTest extends TestCase {
             -4, -4, -4, -4, -4, -4,
              7,  7,  7,  7,  7,  7,
              3,  3,  3,  3,  3,  3
-        }, vec.floatValues(), (float) STRICT);
+        }, vec.floatValues());
     }
 }

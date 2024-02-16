@@ -29,13 +29,13 @@ import javax.measure.quantity.Length;
 import javax.measure.quantity.Time;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMapEquals;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
@@ -70,8 +70,8 @@ public final class SystemUnitTest extends TestCase {
                 if (related != null) {
                     final String symbol = ((SystemUnit<?>) value).getSymbol();
                     for (final ConventionalUnit<?> r : related) {
-                        assertNotNull(symbol, r);
-                        assertInstanceOf(symbol, LinearConverter.class, r.toTarget);
+                        assertNotNull(r, symbol);
+                        assertInstanceOf(LinearConverter.class, r.toTarget, symbol);
                     }
                 }
             }
@@ -114,9 +114,9 @@ public final class SystemUnitTest extends TestCase {
     @Test
     @DependsOnMethod("testEqualsAndHashCode")
     public void testPow() {
-        assertSame("UNITY",        Units.UNITY,        Units.UNITY.pow(4));
-        assertSame("SQUARE_METRE", Units.SQUARE_METRE, Units.METRE.pow(2));
-        assertSame("CUBIC_METRE",  Units.CUBIC_METRE,  Units.METRE.pow(3));
+        assertSame(Units.UNITY,        Units.UNITY.pow(4));
+        assertSame(Units.SQUARE_METRE, Units.METRE.pow(2));
+        assertSame(Units.CUBIC_METRE,  Units.METRE.pow(3));
     }
 
     /**
@@ -125,9 +125,9 @@ public final class SystemUnitTest extends TestCase {
     @Test
     @DependsOnMethod("testEqualsAndHashCode")
     public void testRoot() {
-        assertSame("UNITY",        Units.UNITY, Units.UNITY.root(4));
-        assertSame("SQUARE_METRE", Units.METRE, Units.SQUARE_METRE.root(2));
-        assertSame("CUBIC_METRE",  Units.METRE, Units.CUBIC_METRE.root(3));
+        assertSame(Units.UNITY, Units.UNITY.root(4));
+        assertSame(Units.METRE, Units.SQUARE_METRE.root(2));
+        assertSame(Units.METRE, Units.CUBIC_METRE.root(3));
     }
 
     /**
@@ -137,9 +137,9 @@ public final class SystemUnitTest extends TestCase {
      */
     @Test
     public void testGetBaseDimensions() {
-        assertNull("METRE",  Units.METRE .getBaseUnits());      // Null value as per JSR-385 specification.
-        assertNull("SECOND", Units.SECOND.getBaseUnits());
-        assertTrue("UNITY",  Units.UNITY .getBaseUnits().isEmpty());
+        assertNull(Units.METRE .getBaseUnits());      // Null value as per JSR-385 specification.
+        assertNull(Units.SECOND.getBaseUnits());
+        assertTrue(Units.UNITY .getBaseUnits().isEmpty());
 
         assertMapEquals(Map.of(Units.METRE, 3), Units.CUBIC_METRE.getBaseUnits());
 
@@ -179,9 +179,9 @@ public final class SystemUnitTest extends TestCase {
      * @param b         {@link Units} constant from which to get the first dimension to compare.
      */
     private static void verifyEqualsAndHashCode(final String message, final boolean expected, final Unit<?> a, final Unit<?> b) {
-        assertEquals(message, expected, a.equals(b));
-        assertEquals(message, expected, b.equals(a));
-        assertEquals(message, expected, a.hashCode() == b.hashCode());
+        assertEquals(expected, a.equals(b), message);
+        assertEquals(expected, b.equals(a), message);
+        assertEquals(expected, a.hashCode() == b.hashCode(), message);
     }
 
     /**
@@ -231,25 +231,15 @@ public final class SystemUnitTest extends TestCase {
     @SuppressWarnings("unchecked")
     @DependsOnMethod("testGetConverterTo")
     public void testIllegalGetConverterTo() {
-        try {
-            Units.METRE.getConverterTo((Unit) Units.SECOND);
-            fail("Conversion should not have been allowed.");
-        } catch (UnconvertibleException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("m"));     // metre unit symbol
-            assertTrue(message, message.contains("s"));     // second unit symbol
-        }
+        UnconvertibleException e;
+        e = assertThrows(UnconvertibleException.class, () -> Units.METRE.getConverterTo((Unit) Units.SECOND));
+        assertMessageContains(e, "m", "s");
         /*
          * Following is tricker because "radian" and "unity" are compatible units,
          * but should nevertheless not be allowed by the 'getConverterTo' method.
          */
-        try {
-            Units.RADIAN.getConverterTo((Unit) Units.UNITY);
-            fail("Conversion should not have been allowed.");
-        } catch (UnconvertibleException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("rad"));
-        }
+        e = assertThrows(UnconvertibleException.class, () -> Units.RADIAN.getConverterTo((Unit) Units.UNITY));
+        assertMessageContains(e, "rad");
     }
 
     /**
@@ -265,14 +255,8 @@ public final class SystemUnitTest extends TestCase {
         assertTrue(Units.RADIAN.getConverterToAny(Units.RADIAN).isIdentity());
         assertTrue(Units.RADIAN.getConverterToAny(Units.UNITY ).isIdentity());
         assertTrue(Units.UNITY .getConverterToAny(Units.RADIAN).isIdentity());
-        try {
-            Units.METRE.getConverterToAny(Units.SECOND);
-            fail("Conversion should not have been allowed.");
-        } catch (IncommensurableException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("m"));     // metre unit symbol
-            assertTrue(message, message.contains("s"));     // second unit symbol
-        }
+        var e = assertThrows(IncommensurableException.class, () -> Units.METRE.getConverterToAny(Units.SECOND));
+        assertMessageContains(e, "m", "s");
     }
 
     /**
@@ -283,20 +267,15 @@ public final class SystemUnitTest extends TestCase {
         assertSame(Units.RADIAN, Units.RADIAN.alternate("rad"));
         assertSame(Units.PIXEL,  Units.PIXEL .alternate("px"));
         assertSame(Units.PIXEL , Units.UNITY .alternate("px"));
-        try {
-            Units.UNITY.alternate("rad");
-            fail("Should not accept since “rad” is already used for a unit of another quantity type (Angle).");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("rad"));
-        }
-        try {
-            Units.RADIAN.alternate("°");
-            fail("Should not accept since “°” is already used for a unit of another type (ConventionalUnit).");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("°"));
-        }
+        IllegalArgumentException e;
+
+        // Should not accept because “rad” is already used for a unit of another quantity type (Angle).
+        e = assertThrows(IllegalArgumentException.class, () -> Units.UNITY.alternate("rad"));
+        assertMessageContains(e, "rad");
+
+        // Should not accept since “°” is already used for a unit of another type (ConventionalUnit).
+        e = assertThrows(IllegalArgumentException.class, () -> Units.RADIAN.alternate("°"));
+        assertMessageContains(e, "°");
     }
 
     /**
@@ -317,14 +296,8 @@ public final class SystemUnitTest extends TestCase {
          * Verify that the unit cannot be casted to an incompatible units.
          */
         for (final Unit<Length> unit : List.of(Units.METRE, anonymous, otherName)) {
-            try {
-                unit.asType(Time.class);
-                fail("Expected an exception for incompatible quantity types.");
-            } catch (ClassCastException e) {
-                final String message = e.getMessage();
-                assertTrue(message, message.contains("Length"));
-                assertTrue(message, message.contains("Time"));
-            }
+            var e = assertThrows(ClassCastException.class, () -> unit.asType(Time.class));
+            assertMessageContains(e, "Length", "Time");
         }
     }
 
@@ -340,19 +313,13 @@ public final class SystemUnitTest extends TestCase {
          */
         final Unit<Strange> strange = Units.METRE.asType(Strange.class);
         final Unit<Strange> named   = strange.alternate("strange");
-        assertNull  ("Should not have symbol since this is a unit for a new quantity.", strange.getSymbol());
-        assertEquals("Should have a name since we invoked 'alternate'.", "strange", named.getSymbol());
-        assertSame  ("Should prefer the named instance.", named, Units.METRE.asType(Strange.class));
-        assertSame  ("Go back to the fundamental unit.",  Units.METRE, named.asType(Length.class));
+        assertNull  (strange.getSymbol());                      // Should not have symbol since this is a unit for a new quantity.
+        assertEquals("strange", named.getSymbol());             // Should have a name since we invoked `alternate`.
+        assertSame(named, Units.METRE.asType(Strange.class));   // Should prefer the named instance.
+        assertSame(Units.METRE, named.asType(Length.class));    // Go back to the fundamental unit.
         for (final Unit<Strange> unit : List.of(strange, named)) {
-            try {
-                unit.asType(Time.class);
-                fail("Expected an exception for incompatible quantity types.");
-            } catch (ClassCastException e) {
-                final String message = e.getMessage();
-                assertTrue(message, message.contains("Strange"));
-                assertTrue(message, message.contains("Time"));
-            }
+            var e = assertThrows(ClassCastException.class, () -> unit.asType(Time.class));
+            assertMessageContains(e, "Strange", "Time");
         }
     }
 

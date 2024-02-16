@@ -25,8 +25,8 @@ import org.apache.sis.util.internal.Constants;
 import static org.apache.sis.math.MathFunctions.atanh;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.assertEquals;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
 

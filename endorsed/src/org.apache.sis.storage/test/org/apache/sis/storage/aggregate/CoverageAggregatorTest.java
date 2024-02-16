@@ -20,8 +20,8 @@ import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStoreException;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -45,6 +45,7 @@ public final class CoverageAggregatorTest extends TestCase {
     @Test
     public void testEmpty() throws DataStoreException {
         final var aggregator = new CoverageAggregator();
-        assertTrue(((Aggregate) aggregator.build(null)).components().isEmpty());
+        final var aggregate  = assertInstanceOf(Aggregate.class, aggregator.build(null));
+        assertTrue(aggregate.components().isEmpty());
     }
 }

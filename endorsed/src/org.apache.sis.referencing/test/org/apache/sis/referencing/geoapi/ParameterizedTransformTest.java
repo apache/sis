@@ -23,9 +23,9 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 
 // Test dependencies
-import org.junit.After;
-import org.junit.Test;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 
 /**
@@ -48,11 +48,11 @@ public final class ParameterizedTransformTest extends org.opengis.test.referenci
      * Note that some tests inherited from the parent class are not about
      * map projections.
      */
-    @After
+    @AfterEach
     public void ensureMathTransform2D() {
         final MathTransform tr = transform;
         if (tr != null && tr.getSourceDimensions() == 2 && tr.getTargetDimensions() == 2) {
-            assertInstanceOf("Unexpected implementation.", MathTransform2D.class, tr);
+            assertInstanceOf(MathTransform2D.class, tr);
         }
     }
 

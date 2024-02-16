@@ -20,7 +20,7 @@ import java.util.Random;
 import java.io.InputStream;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -87,7 +87,7 @@ final class ComputedInputStream extends InputStream {
      */
     @Override
     public int read() {
-        assertFalse("closed", closed);
+        assertFalse(closed, "closed");
         if (available != 0) available--;
         return (position < length) ? Byte.toUnsignedInt(valueAt(position++)) : -1;
     }
@@ -103,11 +103,11 @@ final class ComputedInputStream extends InputStream {
      */
     @Override
     public int read(final byte[] bytes, int offset, int count) {
-        assertFalse("closed", closed);
+        assertFalse(closed, "closed");
         assertNotNull(bytes);
-        assertTrue("Negative count",  count  >= 0);
-        assertTrue("Nagative offset", offset >= 0);
-        assertTrue("Out of bounds", offset + count <= bytes.length);
+        assertTrue(count >= 0, "Count is negative.");
+        assertTrue(offset >= 0, "Offset is negative.");
+        assertTrue(offset + count <= bytes.length, "Out of bounds.");
         if (position >= length) {
             return -1;
         }
@@ -133,7 +133,7 @@ final class ComputedInputStream extends InputStream {
      */
     @Override
     public int available() {
-        assertFalse("closed", closed);
+        assertFalse(closed, "closed");
         return available;
     }
 

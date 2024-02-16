@@ -31,8 +31,8 @@ import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -90,7 +90,7 @@ public final class OperationMethodSetTest extends TestCase {
 
             @Override
             public Iterator<DefaultOperationMethod> iterator() {
-                assertFalse("Expected no more than one iteration.", isIterationDone);
+                assertFalse(isIterationDone);
                 isIterationDone = true;
                 return super.iterator();
             }
@@ -112,16 +112,12 @@ public final class OperationMethodSetTest extends TestCase {
      * Asserts that the given {@link OperationMethodSet} is empty.
      */
     private static void assertEmpty(final OperationMethodSet set) {
-        assertTrue  ("isEmpty", set.isEmpty());
-        assertEquals("size", 0, set.size());
+        assertTrue  (set.isEmpty());
+        assertEquals(0, set.size());
         final Iterator<OperationMethod> iterator = set.iterator();
         assertFalse(iterator.hasNext());
-        try {
-            iterator.next();
-            fail("Expected NoSuchElementException");
-        } catch (NoSuchElementException e) {
-            // This is the expected exception.
-        }
+        var e = assertThrows(NoSuchElementException.class, () -> iterator.next());
+        assertNotNull(e);
     }
 
     /**
@@ -147,11 +143,11 @@ public final class OperationMethodSetTest extends TestCase {
         final Iterator<OperationMethod> iterator = mercators.iterator();
         assertSame(merA, iterator.next());
         assertSame(merB, iterator.next());
-        assertArrayEquals("toArray", new DefaultOperationMethod[] {merA, merB, merC}, mercators.toArray());
+        assertArrayEquals(new DefaultOperationMethod[] {merA, merB, merC}, mercators.toArray());
         assertSame(merC, iterator.next());
         assertFalse (iterator.hasNext());
-        assertFalse ("isEmpty", mercators.isEmpty());
-        assertEquals("size", 3, mercators.size());
+        assertFalse (mercators.isEmpty());
+        assertEquals(3, mercators.size());
         /*
          * Lambert case. Test twice since the two excecutions will take different code paths.
          */

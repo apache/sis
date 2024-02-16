@@ -21,8 +21,8 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 
 // Test dependencies
-import org.junit.*;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -83,9 +83,9 @@ public final class UtilitiesTest extends TestCase {
         assertTrue(c2.add(e3));
         assertEquals(!orderIsSignificant, Utilities.deepEquals(c1, c2, mode));
 
-        assertTrue(e1.comparisonCount != 0);
-        assertTrue(e2.comparisonCount != 0);
-        assertTrue(e3.comparisonCount != 0);
+        assertNotEquals(0, e1.comparisonCount);
+        assertNotEquals(0, e2.comparisonCount);
+        assertNotEquals(0, e3.comparisonCount);
     }
 
     /**
@@ -109,7 +109,7 @@ public final class UtilitiesTest extends TestCase {
 
         /** Compares this object with the given one. */
         @Override public boolean equals(final Object other, final ComparisonMode mode) {
-            assertEquals(label, expected, mode);
+            assertEquals(expected, mode, label);
             comparisonCount++;
             return equals(other);
         }

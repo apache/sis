@@ -29,7 +29,7 @@ import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADIUS;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.apache.sis.referencing.Assertions;
 
 

@@ -21,12 +21,12 @@ import java.util.Collection;
 import static org.apache.sis.util.collection.TableColumn.*;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestStep;
 import org.apache.sis.test.DependsOn;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -56,10 +56,10 @@ public final class DefaultTreeTableTest extends TestCase {
      */
     @TestStep
     public static DefaultTreeTable testTableCreation() {
-        final DefaultTreeTable table = new DefaultTreeTable(NAME, TYPE);
-        assertEquals("Number of columns:",      2,                  table.columnIndices.size());
-        assertEquals("Index of first column:",  Integer.valueOf(0), table.columnIndices.get(NAME));
-        assertEquals("Index of second column:", Integer.valueOf(1), table.columnIndices.get(TYPE));
+        final var table = new DefaultTreeTable(NAME, TYPE);
+        assertEquals(2,                  table.columnIndices.size());
+        assertEquals(Integer.valueOf(0), table.columnIndices.get(NAME));
+        assertEquals(Integer.valueOf(1), table.columnIndices.get(TYPE));
         assertArrayEquals(new TableColumn<?>[] {NAME, TYPE}, table.getColumns().toArray());
         return table;
     }
@@ -80,28 +80,28 @@ public final class DefaultTreeTableTest extends TestCase {
         /*
          * Create a root node with an initially empty list of children.
          */
-        final DefaultTreeTable.Node root = new DefaultTreeTable.Node(table);
-        assertSame("Internal table sharing:", table.columnIndices, root.columnIndices);
-        assertTrue("Initial children list:",  root.getChildren().isEmpty());
+        final var root = new DefaultTreeTable.Node(table);
+        assertSame(table.columnIndices, root.columnIndices, "Internal table sharing:");
+        assertTrue(root.getChildren().isEmpty(),            "Initial children list:");
         table.setRoot(root);
         /*
          * Create a first child node, which should be added automatically
          * to the root list of children.
          */
         final DefaultTreeTable.Node node1 = root.newChild();
-        assertSame("Internal table sharing:",  table.columnIndices, node1.columnIndices);
-        assertTrue("Initial children list:",   node1.getChildren().isEmpty());
-        assertSame("Specified parent:",        root, node1.getParent());
-        assertSame("Children list after add:", node1, getSingleton(root.getChildren()));
+        assertSame(table.columnIndices, node1.columnIndices, "Internal table sharing:");
+        assertTrue(node1.getChildren().isEmpty(),            "Initial children list:");
+        assertSame(root, node1.getParent(),                  "Specified parent:");
+        assertSame(node1, getSingleton(root.getChildren()),  "Children list after add:");
         /*
          * Create a child of the previous child.
          */
         final DefaultTreeTable.Node node2 = new DefaultTreeTable.Node(node1, 0);
-        assertSame("Internal table sharing:",    table.columnIndices, node2.columnIndices);
-        assertTrue("Initial children list:",     node2.getChildren().isEmpty());
-        assertSame("Specified parent:",          node1, node2.getParent());
-        assertSame("Children list after add:",   node2, getSingleton(node1.getChildren()));
-        assertSame("Independent children list:", node1, getSingleton(root.getChildren()));
+        assertSame(table.columnIndices, node2.columnIndices, "Internal table sharing:");
+        assertTrue(node2.getChildren().isEmpty(),            "Initial children list:");
+        assertSame(node1, node2.getParent(),                 "Specified parent:");
+        assertSame(node2, getSingleton(node1.getChildren()), "Children list after add:");
+        assertSame(node1, getSingleton(root.getChildren()),  "Independent children list:");
         /*
          * For chaining with next tests.
          */
@@ -123,21 +123,17 @@ public final class DefaultTreeTableTest extends TestCase {
         final Collection<TreeTable.Node> rootChildren, nodeChildren;
         final TreeTable.Node node1 = getSingleton(rootChildren = root .getChildren());
         final TreeTable.Node node2 = getSingleton(nodeChildren = node1.getChildren());
-        try {
-            assertTrue(rootChildren.add(node2));
-            fail("Should not be allowed to add a child before we removed it from its previous parent.");
-        } catch (IllegalArgumentException e) {
-            // This is the expected exception.
-            assertTrue(e.getMessage().contains("Node-0"));
-        }
-        assertSame("Initial parent:", node1,       node2.getParent());
-        assertTrue(                                nodeChildren.remove(node2));
-        assertTrue("Children list after removal:", nodeChildren.isEmpty());
-        assertNull("Parent after removal:",        node2.getParent());
-        assertTrue(                                rootChildren.add(node2));
-        assertSame("Parent after add:", root,      node2.getParent());
-        assertArrayEquals("Children list after add:",
-                new TreeTable.Node[] {node1, node2}, rootChildren.toArray());
+        var e = assertThrows(IllegalArgumentException.class, () -> rootChildren.add(node2),
+                "Should not be allowed to add a child before we removed it from its previous parent.");
+        assertMessageContains(e, "Node-0");
+
+        assertSame(node1, node2.getParent(), "Initial parent:");
+        assertTrue(nodeChildren.remove(node2));
+        assertTrue(nodeChildren.isEmpty(), "Children list after removal:");
+        assertNull(node2.getParent(), "Parent after removal:");
+        assertTrue(rootChildren.add(node2));
+        assertSame(root, node2.getParent(), "Parent after add:");
+        assertArrayEquals(new TreeTable.Node[] {node1, node2}, rootChildren.toArray(), "Children list after add:");
     }
 
     /**
@@ -153,11 +149,11 @@ public final class DefaultTreeTableTest extends TestCase {
     @TestStep
     public static void testClone(final DefaultTreeTable table) throws CloneNotSupportedException {
         final TreeTable newTable = table.clone();
-        assertNotSame("clone", table, newTable);
-        assertEquals("newTable.equals(table)", table, newTable);
-        assertEquals("hashCode", table.hashCode(), newTable.hashCode());
+        assertNotSame(table, newTable);
+        assertEquals(table, newTable);
+        assertEquals(table.hashCode(), newTable.hashCode());
         getChildrenList(newTable).get(1).setValue(NAME, "New name");
-        assertFalse("newTable.equals(table)", newTable.equals(table));
+        assertNotEquals(newTable, table);
     }
 
     /**
@@ -172,7 +168,7 @@ public final class DefaultTreeTableTest extends TestCase {
     public static void testSerialization(final TreeTable table) {
         final TreeTable newTable = assertSerializedEquals(table);
         getChildrenList(newTable).get(1).setValue(NAME, "New name");
-        assertFalse("newTable.equals(table)", newTable.equals(table));
+        assertNotEquals(newTable, table);
     }
 
     /**
@@ -182,7 +178,7 @@ public final class DefaultTreeTableTest extends TestCase {
      */
     private static List<TreeTable.Node> getChildrenList(final TreeTable table) {
         final Collection<TreeTable.Node> children = table.getRoot().getChildren();
-        assertInstanceOf("TreeTable.Node.getChildren()", List.class, children);
+        assertInstanceOf(List.class, children);
         return (List<TreeTable.Node>) children;
     }
 

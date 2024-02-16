@@ -17,8 +17,8 @@
 package org.apache.sis.parameter;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 
 
@@ -46,7 +46,10 @@ public final class MatrixParametersAlphaNumTest extends MatrixParametersTest {
      * Creates a new test case for {@link MatrixParameters}.
      */
     public MatrixParametersAlphaNumTest() {
-        super(TensorParameters.ALPHANUM, ALPHANUM_NAMES, ELEMENT_NAMES, IDENTIFIERS);
+        param       = TensorParameters.ALPHANUM;
+        names       = ALPHANUM_NAMES;
+        aliases     = ELEMENT_NAMES;
+        identifiers = IDENTIFIERS;
     }
 
     /**

@@ -23,8 +23,8 @@ import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
-import org.junit.Test;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -61,7 +61,7 @@ public final class LongitudeRotationTest extends TestCase {
          * This conversion from grad to degrees is specific to Apache SIS and may be revised in
          * future version. See org.apache.sis.referencing.operation package javadoc.
          */
-        assertInstanceOf("Shall be an affine transform.", LinearTransform.class, mt);
+        assertInstanceOf(LinearTransform.class, mt, "Shall be an affine transform.");
         assertMatrixEquals("Expected a longitude rotation",
                 new Matrix3(1, 0, 2.33722917,
                             0, 1, 0,

@@ -24,7 +24,7 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.apache.sis.measure.Units;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.referencing.cs.HardCodedCS;

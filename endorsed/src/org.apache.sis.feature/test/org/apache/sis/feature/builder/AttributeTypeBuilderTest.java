@@ -25,21 +25,17 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.feature.internal.AttributeConvention;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertSetEquals;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.Assertions.assertSetEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Attribute;
 import org.opengis.feature.AttributeType;
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
-import org.opengis.feature.Property;
-import org.opengis.feature.PropertyType;
 
 
 /**
@@ -64,19 +60,19 @@ public final class AttributeTypeBuilderTest extends TestCase {
     @Test
     public void testInitialization() {
         final AttributeTypeBuilder<String> builder = new FeatureTypeBuilder().addAttribute(String.class);
-        assertEquals("default name", "string", builder.getName().toString());
+        assertEquals("string", builder.getName().toString());
 
         builder.setName("myScope", "myName");
-        final AttributeType<?> att = builder.build();
+        final var attribute = builder.build();
 
-        assertEquals("name", "myScope:myName",   att.getName().toString());
-        assertEquals("valueClass", String.class, att.getValueClass());
-        assertNull  ("defaultValue",             att.getDefaultValue());
-        assertNull  ("definition",               att.getDefinition());
-        assertNull  ("description",              att.getDescription());
-        assertNull  ("designation",              att.getDesignation());
-        assertEquals("minimumOccurs", 1,         att.getMinimumOccurs());
-        assertEquals("maximumOccurs", 1,         att.getMaximumOccurs());
+        assertEquals("myScope:myName", attribute.getName().toString());
+        assertEquals(String.class, attribute.getValueClass());
+        assertNull(attribute.getDefaultValue());
+        assertNull(attribute.getDefinition());
+        assertNull(attribute.getDescription());
+        assertNull(attribute.getDesignation());
+        assertEquals(1, attribute.getMinimumOccurs());
+        assertEquals(1, attribute.getMaximumOccurs());
     }
 
     /**
@@ -93,19 +89,18 @@ public final class AttributeTypeBuilderTest extends TestCase {
         assertSame(builder, builder.setDefaultValue("test default value."));
         assertSame(builder, builder.setMinimumOccurs(10).setMaximumOccurs(60));
         assertSame(builder, builder.setMaximalLength(80));
-        final AttributeType<?> att = builder.build();
+        final var attribute = builder.build();
 
-        assertEquals("name",          "myScope:myName",      att.getName().toString());
-        assertEquals("definition",    "test definition",     att.getDefinition().toString());
-        assertEquals("description",   "test description",    att.getDescription().toString());
-        assertEquals("designation",   "test designation",    att.getDesignation().toString());
-        assertEquals("valueClass",    String.class,          att.getValueClass());
-        assertEquals("defaultValue",  "test default value.", att.getDefaultValue());
-        assertEquals("minimumOccurs", 10,                    att.getMinimumOccurs());
-        assertEquals("maximumOccurs", 60,                    att.getMaximumOccurs());
-        assertTrue  ("characterizedByMaximalLength", AttributeConvention.characterizedByMaximalLength(att));
-        assertEquals("maximalLengthCharacteristic", Integer.valueOf(80),
-                AttributeConvention.getMaximalLengthCharacteristic(att.newInstance()));
+        assertEquals("myScope:myName",      attribute.getName().toString());
+        assertEquals("test definition",     attribute.getDefinition().toString());
+        assertEquals("test description",    attribute.getDescription().toString());
+        assertEquals("test designation",    attribute.getDesignation().toString());
+        assertEquals(String.class,          attribute.getValueClass());
+        assertEquals("test default value.", attribute.getDefaultValue());
+        assertEquals(10,                    attribute.getMinimumOccurs());
+        assertEquals(60,                    attribute.getMaximumOccurs());
+        assertTrue  (AttributeConvention.characterizedByMaximalLength(attribute));
+        assertEquals(Integer.valueOf(80), AttributeConvention.getMaximalLengthCharacteristic(attribute.newInstance()));
     }
 
     /**
@@ -122,7 +117,7 @@ public final class AttributeTypeBuilderTest extends TestCase {
         assertSame(builder, builder.setDescription ("test description"));
         assertSame(builder, builder.setDefaultValue(25f));
         assertSame(builder, builder.setValueClass(Float.class));
-        assertEquals("valueClass", Float.class, builder.getValueClass());
+        assertEquals(Float.class, builder.getValueClass());
         assertSetEquals(Set.of(builder), builder.owner().properties());
         final CharacteristicTypeBuilder<Float> stddev = builder.addCharacteristic(Float.class);
         assertSame(stddev, stddev.setName("stddev"));
@@ -132,34 +127,30 @@ public final class AttributeTypeBuilderTest extends TestCase {
          * In current implementation this requires the creation of a new builder instance,
          * but there is no guarantee that it will always be the case in future versions.
          */
-        final AttributeTypeBuilder<Double> newb = builder.setValueClass(Double.class);
-        assertEquals("name",          "temperature",      newb.getName().toString());
-        assertEquals("definition",    "test definition",  newb.getDefinition());
-        assertEquals("description",   "test description", newb.getDescription());
-        assertEquals("designation",   "test designation", newb.getDesignation());
-        assertEquals("valueClass",    Double.class,       newb.getValueClass());
-        assertEquals("defaultValue",  Double.valueOf(25), newb.getDefaultValue());
-        assertSetEquals(Set.of(newb), newb.owner().properties());
+        final AttributeTypeBuilder<Double> b2 = builder.setValueClass(Double.class);
+        assertEquals("temperature",      b2.getName().toString());
+        assertEquals("test definition",  b2.getDefinition());
+        assertEquals("test description", b2.getDescription());
+        assertEquals("test designation", b2.getDesignation());
+        assertEquals(Double.class,       b2.getValueClass());
+        assertEquals(Double.valueOf(25), b2.getDefaultValue());
+        assertSetEquals(Set.of(b2), b2.owner().properties());
         /*
          * In order to avoid accidental misuse, the old builder should not be usable anymore.
          */
-        try {
-            builder.setName("new name");
-            fail("Should not allow modification of disposed instance.");
-        } catch (IllegalStateException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("AttributeTypeBuilder"));
-        }
+        var e = assertThrows(IllegalStateException.class, () -> builder.setName("new name"),
+                             "Should not allow modification of disposed instance.");
+        assertMessageContains(e, "AttributeTypeBuilder");
         /*
          * Verify the attribute created by the builder.
          */
-        final AttributeType<?> att = newb.build();
-        assertEquals("name",          "temperature",      att.getName().toString());
-        assertEquals("definition",    "test definition",  att.getDefinition().toString());
-        assertEquals("description",   "test description", att.getDescription().toString());
-        assertEquals("designation",   "test designation", att.getDesignation().toString());
-        assertEquals("valueClass",    Double.class,       att.getValueClass());
-        assertEquals("defaultValue",  Double.valueOf(25), att.getDefaultValue());
+        final var attribute = b2.build();
+        assertEquals("temperature",      attribute.getName().toString());
+        assertEquals("test definition",  attribute.getDefinition().toString());
+        assertEquals("test description", attribute.getDescription().toString());
+        assertEquals("test designation", attribute.getDesignation().toString());
+        assertEquals(Double.class,       attribute.getValueClass());
+        assertEquals(Double.valueOf(25), attribute.getDefaultValue());
     }
 
     /**
@@ -169,7 +160,7 @@ public final class AttributeTypeBuilderTest extends TestCase {
     @DependsOnMethod("testBuilder")
     public void testSetValidValues() {
         final AttributeTypeBuilder<String> builder = new FeatureTypeBuilder().addAttribute(String.class);
-        assertEquals("length", 0, builder.getValidValues().length);
+        assertEquals(0, builder.getValidValues().length);
         assertSame(builder, builder.setValidValues("Blue", "Green", "Red"));
         assertArrayEquals(new String[] {"Blue", "Green", "Red"}, builder.getValidValues());
         assertSame(builder, builder.setValidValues("Yellow", "Cyan", "Magenta"));
@@ -185,21 +176,21 @@ public final class AttributeTypeBuilderTest extends TestCase {
     @DependsOnMethod("testBuilder")
     public void testOtherCharacteristics() {
         final AttributeTypeBuilder<String> builder = new FeatureTypeBuilder().addAttribute(String.class);
-        assertNull("maximalLength", builder.getMaximalLength());
-        assertNull("crs", builder.getCRS());
+        assertNull(builder.getMaximalLength());
+        assertNull(builder.getCRS());
 
         assertSame(builder, builder.setMaximalLength(20));
-        assertEquals("maximalLength", Integer.valueOf(20), builder.getMaximalLength());
-        assertNull("crs", builder.getCRS());
+        assertEquals(Integer.valueOf(20), builder.getMaximalLength());
+        assertNull(builder.getCRS());
 
         final CoordinateReferenceSystem crs = CommonCRS.defaultGeographic();
         assertSame(builder, builder.setCRS(crs));
-        assertEquals("maximalLength", Integer.valueOf(20), builder.getMaximalLength());
-        assertSame("crs", crs, builder.getCRS());
+        assertEquals(Integer.valueOf(20), builder.getMaximalLength());
+        assertSame(crs, builder.getCRS());
 
         assertSame(builder, builder.setMaximalLength(30));
-        assertEquals("maximalLength", Integer.valueOf(30), builder.getMaximalLength());
-        assertSame("crs", crs, builder.getCRS());
+        assertEquals(Integer.valueOf(30), builder.getMaximalLength());
+        assertSame(crs, builder.getCRS());
     }
 
     /**
@@ -212,18 +203,13 @@ public final class AttributeTypeBuilderTest extends TestCase {
         final CharacteristicTypeBuilder<Float> a = builder.addCharacteristic(Float.class).setName("a", "temp");
         final CharacteristicTypeBuilder<Float> b = builder.addCharacteristic(Float.class).setName("b", "temp");
         final CharacteristicTypeBuilder<Float> c = builder.addCharacteristic(Float.class).setName("c");
-        assertNull("dummy", builder.getCharacteristic("dummy"));
-        assertSame("c", c, builder.getCharacteristic("c"));
-        assertSame("b", b, builder.getCharacteristic("b:temp"));
-        assertSame("a", a, builder.getCharacteristic("a:temp"));
-        try {
-            builder.getCharacteristic("temp");
-            fail("Given name should be considered ambiguous.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("a:temp"));
-            assertTrue(message, message.contains("b:temp"));
-        }
+        assertNull(builder.getCharacteristic("dummy"));
+        assertSame(c, builder.getCharacteristic("c"));
+        assertSame(b, builder.getCharacteristic("b:temp"));
+        assertSame(a, builder.getCharacteristic("a:temp"));
+        var e = assertThrows(IllegalArgumentException.class, () -> builder.getCharacteristic("temp"),
+                             "Given name should be considered ambiguous.");
+        assertMessageContains(e, "a:temp", "b:temp");
     }
 
     /**
@@ -234,23 +220,23 @@ public final class AttributeTypeBuilderTest extends TestCase {
     public void testRoles() {
         final AttributeTypeBuilder<Geometry> builder = new FeatureTypeBuilder().addAttribute(Geometry.class);
         final Set<AttributeRole> roles = builder.roles();
-        assertTrue("isEmpty", roles.isEmpty());
+        assertTrue(roles.isEmpty());
 
-        assertTrue("add(DEFAULT_GEOMETRY)", builder.addRole(AttributeRole.DEFAULT_GEOMETRY));
+        assertTrue(builder.addRole(AttributeRole.DEFAULT_GEOMETRY));
         assertSetEquals(Set.of(AttributeRole.DEFAULT_GEOMETRY), roles);
-        assertFalse("add(DEFAULT_GEOMETRY)", builder.addRole(AttributeRole.DEFAULT_GEOMETRY));
+        assertFalse(builder.addRole(AttributeRole.DEFAULT_GEOMETRY));
 
-        assertTrue("add(IDENTIFIER_COMPONENT)", roles.add(AttributeRole.IDENTIFIER_COMPONENT));
+        assertTrue(roles.add(AttributeRole.IDENTIFIER_COMPONENT));
         assertSetEquals(List.of(AttributeRole.DEFAULT_GEOMETRY, AttributeRole.IDENTIFIER_COMPONENT), roles);
-        assertFalse("add(IDENTIFIER_COMPONENT)", roles.add(AttributeRole.IDENTIFIER_COMPONENT));
+        assertFalse(roles.add(AttributeRole.IDENTIFIER_COMPONENT));
 
-        assertTrue("remove(DEFAULT_GEOMETRY)", roles.remove(AttributeRole.DEFAULT_GEOMETRY));
+        assertTrue(roles.remove(AttributeRole.DEFAULT_GEOMETRY));
         assertSetEquals(Set.of(AttributeRole.IDENTIFIER_COMPONENT), roles);
-        assertFalse("remove(DEFAULT_GEOMETRY)", roles.remove(AttributeRole.DEFAULT_GEOMETRY));
+        assertFalse(roles.remove(AttributeRole.DEFAULT_GEOMETRY));
 
-        assertTrue("remove(IDENTIFIER_COMPONENT)", roles.remove(AttributeRole.IDENTIFIER_COMPONENT));
-        assertTrue("isEmpty", roles.isEmpty());
-        assertFalse("remove(IDENTIFIER_COMPONENT)", roles.remove(AttributeRole.IDENTIFIER_COMPONENT));
+        assertTrue(roles.remove(AttributeRole.IDENTIFIER_COMPONENT));
+        assertTrue(roles.isEmpty());
+        assertFalse(roles.remove(AttributeRole.IDENTIFIER_COMPONENT));
     }
 
     /**
@@ -259,23 +245,21 @@ public final class AttributeTypeBuilderTest extends TestCase {
     @Test
     @SuppressWarnings("UnnecessaryBoxing")
     public void testBoxing() {
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder().setName("boxing");
+        final var ftb = new FeatureTypeBuilder().setName("boxing");
         final AttributeTypeBuilder<Integer> boxBuilder = ftb.addAttribute(int.class).setName("boxed");
-        assertEquals("Attribute value type should have been boxed", Integer.class, boxBuilder.getValueClass());
+        assertEquals(Integer.class, boxBuilder.getValueClass(), "Attribute value type should have been boxed");
 
-        final FeatureType ft = ftb.build();
-        final PropertyType boxedProperty = ft.getProperty("boxed");
-        assertInstanceOf("Unexpected property type.", AttributeType.class, boxedProperty);
-        assertEquals("Attribute value type should have been boxed", Integer.class, ((AttributeType<?>) boxedProperty).getValueClass());
-        final Feature feature = ft.newInstance();
+        final var featureType  = ftb.build();
+        final var propertyType = assertInstanceOf(AttributeType.class, featureType.getProperty("boxed"));
+        assertEquals(Integer.class, propertyType.getValueClass(), "Attribute value type should have been boxed");
 
-        final Property p = feature.getProperty("boxed");
-        assertInstanceOf("Unexpected property type.", Attribute.class, p);
-        assertEquals("Attribute value type should have been boxed", Integer.class, ((Attribute<?>) p).getType().getValueClass());
+        final var feature  = featureType.newInstance();
+        final var property = assertInstanceOf(Attribute.class, feature.getProperty("boxed"));
+        assertEquals(Integer.class, property.getType().getValueClass(), "Attribute value type should have been boxed");
 
         int value = 3;
-        Features.cast((Attribute<?>) p, Integer.class).setValue(value);
-        assertEquals(value, p.getValue());
+        Features.cast(property, Integer.class).setValue(value);
+        assertEquals(value, property.getValue());
 
         feature.setPropertyValue("boxed", Integer.valueOf(4));
         assertEquals(4, feature.getPropertyValue("boxed"));

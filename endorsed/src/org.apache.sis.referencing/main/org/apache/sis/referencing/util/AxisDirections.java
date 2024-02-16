@@ -81,7 +81,7 @@ public final class AxisDirections extends Static {
     @UML(identifier="forward", obligation=CONDITIONAL, specification=ISO_19162)
     public static final AxisDirection FORWARD = AxisDirection.valueOf("FORWARD");
     /*
-     * TODO: remove @Ignore in `WKTParserTest` after the code list values in this class have been removed.
+     * TODO: remove @Disabled in `WKTParserTest` after the code list values in this class have been removed.
      */
 
     /**

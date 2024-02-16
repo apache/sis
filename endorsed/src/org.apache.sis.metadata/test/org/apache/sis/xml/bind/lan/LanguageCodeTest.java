@@ -31,10 +31,10 @@ import org.apache.sis.xml.util.LegacyNamespaces;
 import static org.apache.sis.util.internal.StandardDateFormat.UTC;
 
 // Test dependencies
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.mock.MetadataMock;
 import org.apache.sis.xml.test.TestCase;
@@ -94,7 +94,7 @@ public final class LanguageCodeTest extends TestCase {
      *
      * @see #disposeMarshallerPool()
      */
-    @BeforeClass
+    @BeforeAll
     public static void createMarshallerPool() throws JAXBException {
         final Map<String,Object> properties = new HashMap<>(4);
         assertNull(properties.put(XML.LOCALE, Locale.UK));
@@ -107,7 +107,7 @@ public final class LanguageCodeTest extends TestCase {
      * Invoked by JUnit after the execution of every tests in order to dispose
      * the {@link MarshallerPool} instance used internally by this class.
      */
-    @AfterClass
+    @AfterAll
     public static void disposeMarshallerPool() {
         pool = null;
     }

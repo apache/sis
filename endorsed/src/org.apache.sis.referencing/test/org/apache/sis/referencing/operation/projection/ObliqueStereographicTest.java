@@ -29,8 +29,8 @@ import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 
@@ -193,8 +193,8 @@ public final class ObliqueStereographicTest extends MapProjectionTestCase {
         dstPts[0] += FE;
         dstPts[1] += FN;
 
-        assertEquals("Easting",  Et, dstPts[0], Formulas.LINEAR_TOLERANCE);
-        assertEquals("Northing", Nt, dstPts[1], Formulas.LINEAR_TOLERANCE);
+        assertEquals(Et, dstPts[0], Formulas.LINEAR_TOLERANCE);
+        assertEquals(Nt, dstPts[1], Formulas.LINEAR_TOLERANCE);
     }
 
     /**
@@ -223,8 +223,8 @@ public final class ObliqueStereographicTest extends MapProjectionTestCase {
         dstPts[0] = toDegrees(dstPts[0] + λ0);
         dstPts[1] = toDegrees(dstPts[1]);
 
-        assertEquals("Longitude", λt, dstPts[0], Formulas.ANGULAR_TOLERANCE);
-        assertEquals("Latitude",  φt, dstPts[1], Formulas.ANGULAR_TOLERANCE);
+        assertEquals(λt, dstPts[0], Formulas.ANGULAR_TOLERANCE);
+        assertEquals(φt, dstPts[1], Formulas.ANGULAR_TOLERANCE);
     }
 
     /**
@@ -304,7 +304,7 @@ public final class ObliqueStereographicTest extends MapProjectionTestCase {
         dstPts[1] += FN;
 
         // Use a smaller tolerance because spherical and elliptical formulas should be equivalent in this case.
-        assertArrayEquals("Spherical projection", refPts, dstPts, Formulas.LINEAR_TOLERANCE / 1E4);
+        assertArrayEquals(refPts, dstPts, Formulas.LINEAR_TOLERANCE / 1E4);
     }
 
     /**
@@ -347,7 +347,7 @@ public final class ObliqueStereographicTest extends MapProjectionTestCase {
         dstPts[1] = toDegrees(dstPts[1]);
 
         // Use a smaller tolerance because spherical and elliptical formulas should be equivalent in this case.
-        assertArrayEquals("Spherical reverse projection", refPts, dstPts, Formulas.ANGULAR_TOLERANCE / 1E6);
+        assertArrayEquals(refPts, dstPts, Formulas.ANGULAR_TOLERANCE / 1E6);
     }
 
     /**

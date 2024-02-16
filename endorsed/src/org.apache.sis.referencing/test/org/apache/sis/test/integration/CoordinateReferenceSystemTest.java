@@ -27,10 +27,9 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.TestFactorySource;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assume.assumeNotNull;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
@@ -61,9 +60,9 @@ public final class CoordinateReferenceSystemTest extends TestCase {
      */
     @Test
     public void testCreateFromCombinedURN() throws FactoryException {
-        assumeNotNull(TestFactorySource.getSharedFactory());
+        assumeTrue(TestFactorySource.getSharedFactory() != null);
         CoordinateReferenceSystem crs = CRS.forCode("urn:ogc:def:crs, crs:EPSG::27700, crs:EPSG::5701");
-        assertSame("OSGB 1936 / British National Grid + ODN height", CRS.forCode("EPSG:7405"), crs);
+        assertSame(CRS.forCode("EPSG:7405"), crs, "OSGB 1936 / British National Grid + ODN height");
     }
 
     /**
@@ -73,12 +72,12 @@ public final class CoordinateReferenceSystemTest extends TestCase {
      */
     @Test
     public void testDerivedCRS() throws FactoryException {
-        assumeNotNull(TestFactorySource.getSharedFactory());
+        assumeTrue(TestFactorySource.getSharedFactory() != null);
         CoordinateReferenceSystem crs = CRS.forCode("EPSG:5820");
-        assertInstanceOf("Derived CRS type",  DerivedCRS .class, crs);
-        assertInstanceOf("Derived CRS type",  GeodeticCRS.class, crs);
-        assertInstanceOf("CS of derived CRS", CartesianCS.class, crs.getCoordinateSystem());
-        assertInstanceOf("CS of base CRS",    CartesianCS.class, ((GeneralDerivedCRS) crs).getBaseCRS().getCoordinateSystem());
+        assertInstanceOf(DerivedCRS .class, crs);
+        assertInstanceOf(GeodeticCRS.class, crs);
+        assertInstanceOf(CartesianCS.class, crs.getCoordinateSystem());
+        assertInstanceOf(CartesianCS.class, ((GeneralDerivedCRS) crs).getBaseCRS().getCoordinateSystem());
         /*
          * Some tests are disabled because `EPSGDataAccess` confuse this derived CRS
          * with a projected CRS. We are waiting for upgrade to EPSG database 10+
@@ -87,9 +86,9 @@ public final class CoordinateReferenceSystemTest extends TestCase {
          * https://issues.apache.org/jira/browse/SIS-518
          */
         crs = CRS.forCode("EPSG:5819");
-//      assertInstanceOf("Derived CRS type",  DerivedCRS .class, crs);
-//      assertInstanceOf("Derived CRS type",  GeodeticCRS.class, crs);
-        assertInstanceOf("CS of derived CRS", CartesianCS.class, crs.getCoordinateSystem());
-        assertInstanceOf("CS of base CRS",    EllipsoidalCS.class, ((GeneralDerivedCRS) crs).getBaseCRS().getCoordinateSystem());
+//      assertInstanceOf(DerivedCRS .class, crs);
+//      assertInstanceOf(GeodeticCRS.class, crs);
+        assertInstanceOf(CartesianCS.class, crs.getCoordinateSystem());
+        assertInstanceOf(EllipsoidalCS.class, ((GeneralDerivedCRS) crs).getBaseCRS().getCoordinateSystem());
     }
 }

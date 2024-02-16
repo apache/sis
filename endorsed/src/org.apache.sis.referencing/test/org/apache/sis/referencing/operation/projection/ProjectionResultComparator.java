@@ -28,7 +28,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Debug;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -102,12 +102,12 @@ final class ProjectionResultComparator extends NormalizedProjection {
                 final NormalizedProjection spherical = (NormalizedProjection) step;
                 final Class<?> sphericalClass = spherical.getClass();
                 final Class<?> ellipticalClass = sphericalClass.getSuperclass();
-                assertEquals("Class name for the spherical formulas.", "Spherical", sphericalClass.getSimpleName());
-                assertEquals("Eccentricity of spherical case.", 0, spherical.eccentricity, 0);
-                assertSame("In SIS implementation, the spherical cases are defined as inner classes named “Spherical”"
+                assertEquals("Spherical", sphericalClass.getSimpleName(), "Class name for the spherical formulas.");
+                assertEquals(0, spherical.eccentricity, "Eccentricity of spherical case.");
+                assertSame(sphericalClass.getEnclosingClass(), ellipticalClass,
+                        "In SIS implementation, the spherical cases are defined as inner classes named “Spherical”"
                         + " which extend their enclosing class. This is only a convention, which we verify here. But"
-                        + " there is nothing wrong if a future version choose to not follow this convention anymore.",
-                        sphericalClass.getEnclosingClass(), ellipticalClass);
+                        + " there is nothing wrong if a future version choose to not follow this convention anymore.");
                 final Object elliptical;
                 try {
                     elliptical = ellipticalClass.getDeclaredConstructor(ellipticalClass).newInstance(spherical);
@@ -122,7 +122,7 @@ final class ProjectionResultComparator extends NormalizedProjection {
                 numReplacements++;
             }
         }
-        assertEquals("Unexpected number of NormalizedTransform instances in the transformation chain.", 1, numReplacements);
+        assertEquals(1, numReplacements, "Unexpected number of NormalizedTransform instances in the transformation chain.");
         transform = steps.get(0);
         for (int i=1; i<steps.size(); i++) {
             transform = MathTransforms.concatenate(transform, steps.get(i));
@@ -141,14 +141,14 @@ final class ProjectionResultComparator extends NormalizedProjection {
         final Matrix derivative = tested.transform(srcPts, srcOff, dstPts, dstOff, derivate);
         final Matrix expected = reference.transform(point, 0, point, 0, derivate);
         if (dstPts != null) {
-            assertEquals("x", point[0], dstPts[dstOff  ], FORWARD_TOLERANCE);
-            assertEquals("y", point[1], dstPts[dstOff+1], FORWARD_TOLERANCE);
+            assertEquals(point[0], dstPts[dstOff  ], FORWARD_TOLERANCE, "x");
+            assertEquals(point[1], dstPts[dstOff+1], FORWARD_TOLERANCE, "y");
         }
         if (expected != null && derivative != null) {
-            assertEquals("m00", expected.getElement(0,0), derivative.getElement(0,0), DERIVATIVE_TOLERANCE);
-            assertEquals("m01", expected.getElement(0,1), derivative.getElement(0,1), DERIVATIVE_TOLERANCE);
-            assertEquals("m10", expected.getElement(1,0), derivative.getElement(1,0), DERIVATIVE_TOLERANCE);
-            assertEquals("m11", expected.getElement(1,1), derivative.getElement(1,1), DERIVATIVE_TOLERANCE);
+            assertEquals(expected.getElement(0,0), derivative.getElement(0,0), DERIVATIVE_TOLERANCE, "m00");
+            assertEquals(expected.getElement(0,1), derivative.getElement(0,1), DERIVATIVE_TOLERANCE, "m01");
+            assertEquals(expected.getElement(1,0), derivative.getElement(1,0), DERIVATIVE_TOLERANCE, "m10");
+            assertEquals(expected.getElement(1,1), derivative.getElement(1,1), DERIVATIVE_TOLERANCE, "m11");
         }
         return derivative;
     }
@@ -164,8 +164,8 @@ final class ProjectionResultComparator extends NormalizedProjection {
         final double[] point = Arrays.copyOfRange(srcPts, srcOff, srcOff + DIMENSION);
         tested.inverseTransform(srcPts, srcOff, dstPts, dstOff);
         reference.inverseTransform(point, 0, point, 0);
-        assertEquals("φ", point[0], dstPts[dstOff  ], INVERSE_TOLERANCE);
-        assertEquals("λ", point[1], dstPts[dstOff+1], INVERSE_TOLERANCE);
+        assertEquals(point[0], dstPts[dstOff  ], INVERSE_TOLERANCE, "φ");
+        assertEquals(point[1], dstPts[dstOff+1], INVERSE_TOLERANCE, "λ");
     }
 
     /**

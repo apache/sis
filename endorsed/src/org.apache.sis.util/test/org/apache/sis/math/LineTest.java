@@ -19,8 +19,8 @@ package org.apache.sis.math;
 import java.util.Random;
 
 // Test dependencies
-import org.junit.*;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -51,33 +51,33 @@ public final class LineTest extends TestCase {
     public void testSetFromPoints() {
         final Line line = new Line();
         line.setFromPoints(-2, 2,  8, 22);
-        assertEquals("slope", 2, line.slope(), EPS);
-        assertEquals("x₀",   -3, line.x0(),    EPS);
-        assertEquals("y₀",    6, line.y0(),    EPS);
+        assertEquals( 2, line.slope(), EPS, "slope");
+        assertEquals(-3, line.x0(),    EPS, "x₀");
+        assertEquals( 6, line.y0(),    EPS, "y₀");
 
         // Horizontal line
         line.setFromPoints(-2, 2,  8, 2);
-        assertEquals("slope", 0, line.slope(), EPS);
-        assertTrue  ("x₀", Double.isInfinite(line.x0()));
-        assertEquals("y₀",    2, line.y0(),    EPS);
+        assertEquals(0, line.slope(), EPS, "slope");
+        assertTrue(Double.isInfinite(line.x0()), "x₀");
+        assertEquals(2, line.y0(), EPS, "y₀");
 
         // Vertical line
         line.setFromPoints(-2, 2,  -2, 22);
-        assertTrue  ("slope", Double.isInfinite(line.slope()));
-        assertEquals("x₀", -2, line.x0(), EPS);
-        assertTrue  ("y₀", Double.isInfinite(line.y0()));
+        assertTrue(Double.isInfinite(line.slope()), "slope");
+        assertEquals(-2, line.x0(), EPS, "x₀");
+        assertTrue(Double.isInfinite(line.y0()), "y₀");
 
         // Horizontal line on the x axis
         line.setFromPoints(-2, 0, 8, 0);
-        assertEquals("slope", 0, line.slope(), EPS);
-        assertTrue  ("x₀", Double.isInfinite(line.x0()));
-        assertEquals("y₀", 0, line.y0(), EPS);
+        assertEquals(0, line.slope(), EPS, "slope");
+        assertTrue(Double.isInfinite(line.x0()), "x₀");
+        assertEquals(0, line.y0(), EPS, "y₀");
 
         // Vertical line on the y axis
         line.setFromPoints(0, 2, 0, 22);
-        assertTrue  ("slope", Double.isInfinite(line.slope()));
-        assertEquals("x₀", 0, line.x0(), EPS);
-        assertTrue  ("y₀", Double.isInfinite(line.y0()));
+        assertTrue(Double.isInfinite(line.slope()), "slope");
+        assertEquals(0, line.x0(), EPS, "x₀");
+        assertTrue(Double.isInfinite(line.y0()), "y₀");
     }
 
     /**
@@ -99,10 +99,10 @@ public final class LineTest extends TestCase {
         }
         final Line line = new Line();
         final double correlation = line.fit(x, y);
-        assertEquals("slope", slope,        line.slope(), 1E-6);
-        assertEquals("x₀",    offset,       line.y0(),    0.5 );
-        assertEquals("y₀",   -offset/slope, line.x0(),    0.1 );
-        assertEquals("corr",  1.0,          correlation,  1E-6);
+        assertEquals( slope,        line.slope(), 1E-6, "slope");
+        assertEquals( offset,       line.y0(),    0.5,  "x₀");
+        assertEquals(-offset/slope, line.x0(),    0.1,  "y₀");
+        assertEquals( 1.0,          correlation,  1E-6, "corr");
     }
 
     /**

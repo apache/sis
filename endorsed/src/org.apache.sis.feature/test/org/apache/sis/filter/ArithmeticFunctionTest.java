@@ -17,14 +17,13 @@
 package org.apache.sis.filter;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
-import org.opengis.filter.Expression;
 import org.opengis.filter.FilterFactory;
 
 
@@ -51,9 +50,9 @@ public final class ArithmeticFunctionTest extends TestCase {
      */
     @Test
     public void testAdd() {
-        Expression<Feature,?> op = factory.add(factory.literal(10.0), factory.literal(20.0));
-        assertEquals(30.0, op.apply(null));
-        assertSerializedEquals(op);
+        var expression = factory.add(factory.literal(10.0), factory.literal(20.0));
+        assertEquals(30.0, expression.apply(null));
+        assertSerializedEquals(expression);
     }
 
     /**
@@ -61,9 +60,9 @@ public final class ArithmeticFunctionTest extends TestCase {
      */
     @Test
     public void testSubtract() {
-        Expression<Feature,?> op = factory.subtract(factory.literal(10.0), factory.literal(20.0));
-        assertEquals(-10.0, op.apply(null));
-        assertSerializedEquals(op);
+        var expression = factory.subtract(factory.literal(10.0), factory.literal(20.0));
+        assertEquals(-10.0, expression.apply(null));
+        assertSerializedEquals(expression);
     }
 
     /**
@@ -71,9 +70,9 @@ public final class ArithmeticFunctionTest extends TestCase {
      */
     @Test
     public void testMultiply() {
-        Expression<Feature,?> op = factory.multiply(factory.literal(10.0), factory.literal(20.0));
-        assertEquals(200.0, op.apply(null));
-        assertSerializedEquals(op);
+        var expression = factory.multiply(factory.literal(10.0), factory.literal(20.0));
+        assertEquals(200.0, expression.apply(null));
+        assertSerializedEquals(expression);
     }
 
     /**
@@ -81,8 +80,8 @@ public final class ArithmeticFunctionTest extends TestCase {
      */
     @Test
     public void testDivide() {
-        Expression<Feature,?> op = factory.divide(factory.literal(10.0), factory.literal(20.0));
-        assertEquals(0.5, op.apply(null));
-        assertSerializedEquals(op);
+        var expression = factory.divide(factory.literal(10.0), factory.literal(20.0));
+        assertEquals(0.5, expression.apply(null));
+        assertSerializedEquals(expression);
     }
 }

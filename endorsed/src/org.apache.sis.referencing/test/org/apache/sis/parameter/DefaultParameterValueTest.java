@@ -28,7 +28,7 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.test.DependsOnMethod;
@@ -350,20 +350,20 @@ public final class DefaultParameterValueTest extends TestCase {
         final Watcher<double[]> parameter = new Watcher<>(
                 DefaultParameterDescriptorTest.createForArray("myValues", 4, 4000, Units.METRE));
         parameter.setValue(values);
-        assertArrayEquals(values, parameter.getValue(), 0);
-        assertArrayEquals(values, parameter.convertedValue, 0);
-        assertArrayEquals(values, parameter.doubleValueList(), 0);
-        assertArrayEquals(new double[] {500, 1000, 1500}, parameter.doubleValueList(Units.CENTIMETRE), 0);
+        assertArrayEquals(values, parameter.getValue());
+        assertArrayEquals(values, parameter.convertedValue);
+        assertArrayEquals(values, parameter.doubleValueList());
+        assertArrayEquals(new double[] {500, 1000, 1500}, parameter.doubleValueList(Units.CENTIMETRE));
         /*
          * New values in kilometres.
          */
         values = new double[] {3, 2, 4};
         final double[] metres = new double[] {3000, 2000, 4000};
         parameter.setValue(values, Units.KILOMETRE);
-        assertArrayEquals(values, parameter.getValue(), 0);
-        assertArrayEquals(metres, parameter.convertedValue, 0);
-        assertArrayEquals(values, parameter.doubleValueList(), 0);
-        assertArrayEquals(metres, parameter.doubleValueList(Units.METRE), 0);
+        assertArrayEquals(values, parameter.getValue());
+        assertArrayEquals(metres, parameter.convertedValue);
+        assertArrayEquals(values, parameter.doubleValueList());
+        assertArrayEquals(metres, parameter.doubleValueList(Units.METRE));
 
         // Values out of range.
         InvalidParameterValueException exception;

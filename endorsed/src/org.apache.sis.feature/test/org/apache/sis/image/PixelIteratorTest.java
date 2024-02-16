@@ -35,9 +35,10 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.measure.NumberRange;
 
 // Test dependencies
-import org.junit.After;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
@@ -63,8 +64,10 @@ public class PixelIteratorTest extends TestCase {
 
     /**
      * The raster or image data type as one of the {@link DataBuffer} constants.
+     * This is initialized at test construction time, then kept constant.
+     * The default value is {@link DataBuffer#TYPE_SHORT}.
      */
-    private final int dataType;
+    int dataType;
 
     /**
      * <var>x</var> coordinate of upper left corner in raster or image.
@@ -119,7 +122,7 @@ public class PixelIteratorTest extends TestCase {
      * than the actual iteration order chosen by the iterator because the iterator may
      * replace default order by a more specific one.
      */
-    private final SequenceType requestedOrder;
+    SequenceType requestedOrder;
 
     /**
      * {@code true} for testing write operations in addition of read operations.
@@ -132,21 +135,10 @@ public class PixelIteratorTest extends TestCase {
     boolean useBandedSampleModel;
 
     /**
-     * Creates a new test case for the given data type.
-     *
-     * @param  dataType  the raster or image data type as one of the {@link DataBuffer} constants.
-     */
-    PixelIteratorTest(final int dataType, final SequenceType requestedOrder) {
-        this.dataType = dataType;
-        this.requestedOrder = requestedOrder;
-    }
-
-    /**
      * Creates a new test case.
      */
     public PixelIteratorTest() {
         dataType = DataBuffer.TYPE_SHORT;
-        requestedOrder = null;
     }
 
     /**
@@ -204,7 +196,7 @@ public class PixelIteratorTest extends TestCase {
             }
             value += 10;                // Arbitrary offset.
         }
-        assertEquals("Number of expected values", expected.length, n);
+        assertEquals(expected.length, n);
         return raster;
     }
 
@@ -261,7 +253,7 @@ public class PixelIteratorTest extends TestCase {
             }
             if (x == y) value += 10;        // Arbitrary offset.
         }
-        assertEquals("Number of expected values", expected.length, n);
+        assertEquals(expected.length, n);
         return image;
     }
 
@@ -340,7 +332,7 @@ public class PixelIteratorTest extends TestCase {
      * @param  singleTile  {@code true} if iteration occurs in a single tile, or {@code false} for the whole image.
      */
     private void verifyIterationOrder(final boolean singleTile) {
-        assertEquals("getIterationOrder()", Optional.ofNullable(getIterationOrder(singleTile)), iterator.getIterationOrder());
+        assertEquals(Optional.ofNullable(getIterationOrder(singleTile)), iterator.getIterationOrder());
     }
 
     /**
@@ -355,8 +347,8 @@ public class PixelIteratorTest extends TestCase {
      */
     void createPixelIterator(WritableRaster raster, Rectangle subArea) {
         iterator = new WritablePixelIterator(raster, isWritable ? raster : null, subArea, null, requestedOrder);
-        assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder().get());
-        assertEquals("isWritable", isWritable, iterator.isWritable());
+        assertEquals(SequenceType.LINEAR, iterator.getIterationOrder().get());
+        assertEquals(isWritable, iterator.isWritable());
     }
 
     /**
@@ -371,7 +363,7 @@ public class PixelIteratorTest extends TestCase {
      */
     void createPixelIterator(WritableRenderedImage image, Rectangle subArea) {
         iterator = new WritablePixelIterator(image, isWritable ? image : null, subArea, null, requestedOrder);
-        assertEquals("isWritable", isWritable, iterator.isWritable());
+        assertEquals(isWritable, iterator.isWritable());
     }
 
     /**
@@ -386,13 +378,13 @@ public class PixelIteratorTest extends TestCase {
      */
     void createWindowIterator(WritableRenderedImage image, Dimension window) {
         iterator = new WritablePixelIterator(image, isWritable ? image : null, null, window, requestedOrder);
-        assertEquals("isWritable", isWritable, iterator.isWritable());
+        assertEquals(isWritable, iterator.isWritable());
     }
 
     /**
      * Invoked after every tests for releasing resources.
      */
-    @After
+    @AfterEach
     public void dispose() {
         iterator.close();
     }
@@ -442,7 +434,7 @@ public class PixelIteratorTest extends TestCase {
         if (isWritable) {
             final float newValue = a + 20;
             iterator.setSample(b, newValue);
-            assertEquals("Verification after write", newValue, iterator.getSampleFloat(b), 0f);
+            assertEquals(newValue, iterator.getSampleFloat(b), "Verification after write.");
             expected[i] = newValue;
         }
     }
@@ -464,13 +456,13 @@ public class PixelIteratorTest extends TestCase {
                 if (verifyIndices) {
                     final int p = i / numBands;
                     final Point position = iterator.getPosition();
-                    assertEquals("x", (p % width) + xmin, position.x);
-                    assertEquals("y", (p / width) + ymin, position.y);
+                    assertEquals((p % width) + xmin, position.x);
+                    assertEquals((p / width) + ymin, position.y);
                 }
                 i++;
             }
         }
-        assertEquals("Too few elements in iteration.", expected.length, i);
+        assertEquals(expected.length, i, "Too few elements in iteration.");
     }
 
     /**
@@ -520,7 +512,7 @@ public class PixelIteratorTest extends TestCase {
         numBands =  3;
         final Rectangle subArea = new Rectangle(4, 6, 5, 4);
         createPixelIterator(createRaster(subArea), subArea);
-        assertTrue("Expected a non-empty set of values.", expected.length != 0);
+        assertNotEquals(0, expected.length);
         verifyIteration(false);
     }
 
@@ -539,7 +531,7 @@ public class PixelIteratorTest extends TestCase {
         numBands =  1;
         final Rectangle subArea = new Rectangle(16, 9, 10, 6);
         createPixelIterator(createRaster(subArea), subArea);
-        assertTrue("Expected a non-empty set of values.", expected.length != 0);
+        assertNotEquals(0, expected.length);
         verifyIteration(false);
     }
 
@@ -558,7 +550,7 @@ public class PixelIteratorTest extends TestCase {
         numBands =  4;
         final Rectangle subArea = new Rectangle(2, -2, 10, 12);
         createPixelIterator(createRaster(subArea), subArea);
-        assertTrue("Expected a non-empty set of values.", expected.length != 0);
+        assertNotEquals(0, expected.length);
         verifyIteration(false);
     }
 
@@ -577,7 +569,7 @@ public class PixelIteratorTest extends TestCase {
         numBands =  3;
         final Rectangle subArea = new Rectangle(3, 10, 4, 9);
         createPixelIterator(createRaster(subArea), subArea);
-        assertTrue("Expected a non-empty set of values.", expected.length != 0);
+        assertNotEquals(0, expected.length);
         verifyIteration(false);
     }
 
@@ -596,7 +588,7 @@ public class PixelIteratorTest extends TestCase {
         numBands =  2;
         final Rectangle subArea = new Rectangle(10, 9, 8, 6);
         createPixelIterator(createRaster(subArea), subArea);
-        assertTrue("Expected a non-empty set of values.", expected.length != 0);
+        assertNotEquals(0, expected.length);
         verifyIteration(false);
 
         iterator.rewind();
@@ -618,7 +610,7 @@ public class PixelIteratorTest extends TestCase {
         numBands =  3;
         final Rectangle subArea = new Rectangle(2, 3, 25, 17);
         createPixelIterator(createRaster(subArea), subArea);
-        assertTrue("Expected a non-empty set of values.", expected.length != 0);
+        assertNotEquals(0, expected.length);
         verifyIteration(true);
 
         iterator.rewind();
@@ -640,7 +632,7 @@ public class PixelIteratorTest extends TestCase {
         numBands = 3;
         final Rectangle subArea = new Rectangle(-17, -20, 5, 15);
         createPixelIterator(createRaster(subArea), subArea);
-        assertEquals("Expected an empty set of values.", 0, expected.length);
+        assertEquals(0, expected.length);
         verifyIteration(true);
 
         iterator.rewind();
@@ -659,25 +651,17 @@ public class PixelIteratorTest extends TestCase {
         height   =  4;
         numBands =  1;
         createPixelIterator(createRaster(null), null);
-        assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        try {
-            iterator.moveTo(2, 3);
-            fail("Expected IndexOutOfBoundsException.");
-        } catch (IndexOutOfBoundsException e) {
-            assertNotNull(e.getMessage());
-        }
-        try {
-            iterator.moveTo(9, 3);
-            fail("Expected IndexOutOfBoundsException.");
-        } catch (IndexOutOfBoundsException e) {
-            assertNotNull(e.getMessage());
-        }
-        try {
-            iterator.moveTo(2, 10);
-            fail("Expected IndexOutOfBoundsException.");
-        } catch (IndexOutOfBoundsException e) {
-            assertNotNull(e.getMessage());
-        }
+        assertNotEquals(0, expected.length);
+        IndexOutOfBoundsException e;
+
+        e = assertThrows(IndexOutOfBoundsException.class, () -> iterator.moveTo(2, 3));
+        assertNotNull(e.getMessage());
+
+        e = assertThrows(IndexOutOfBoundsException.class, () -> iterator.moveTo(9, 3));
+        assertNotNull(e.getMessage());
+
+        e = assertThrows(IndexOutOfBoundsException.class, () -> iterator.moveTo(2, 10));
+        assertNotNull(e.getMessage());
     }
 
     /**
@@ -740,7 +724,7 @@ public class PixelIteratorTest extends TestCase {
         minTileX   = -1;
         final Rectangle subArea = new Rectangle(-10, -20, 8, 28);
         createPixelIterator(createImage(subArea), subArea);
-        assertTrue("Expected a non-empty set of values.", expected.length != 0);
+        assertNotEquals(0, expected.length);
         verifyIterationOrder(true);
         verifyIteration(false);
     }
@@ -764,7 +748,7 @@ public class PixelIteratorTest extends TestCase {
         minTileY   = -2;
         final Rectangle subArea = new Rectangle(45, -20, 30, 29);
         createPixelIterator(createImage(subArea), subArea);
-        assertTrue("Expected a non-empty set of values.", expected.length != 0);
+        assertNotEquals(0, expected.length);
         verifyIterationOrder(true);
         verifyIteration(false);
     }
@@ -789,7 +773,7 @@ public class PixelIteratorTest extends TestCase {
         minTileY   = 20;
         final Rectangle subArea = new Rectangle(68, 5, 4, 4);
         createPixelIterator(createImage(subArea), subArea);
-        assertTrue("Expected a non-empty set of values.", expected.length != 0);
+        assertNotEquals(0, expected.length);
         verifyIterationOrder(true);
         verifyIteration(false);
     }
@@ -814,7 +798,7 @@ public class PixelIteratorTest extends TestCase {
         minTileY   =  20;
         final Rectangle subArea = new Rectangle(0, 0, 9, 50);
         createPixelIterator(createImage(subArea), subArea);
-        assertTrue("Expected a non-empty set of values.", expected.length != 0);
+        assertNotEquals(0, expected.length);
         verifyIterationOrder(true);
         verifyIteration(false);
     }
@@ -837,7 +821,7 @@ public class PixelIteratorTest extends TestCase {
         minTileY   =  3;
         final Rectangle subArea = new Rectangle(6, 20, 4, 5);
         createPixelIterator(createImage(subArea), subArea);
-        assertTrue("Expected a non-empty set of values.", expected.length != 0);
+        assertNotEquals(0, expected.length);
         verifyIterationOrder(true);
         verifyIteration(false);
     }
@@ -861,7 +845,7 @@ public class PixelIteratorTest extends TestCase {
         minTileY   =  8;
         final Rectangle subArea = new Rectangle(-10, -5, 25, 22);
         createPixelIterator(createImage(subArea), subArea);
-        assertTrue("Expected a non-empty set of values.", expected.length != 0);
+        assertNotEquals(0, expected.length);
         verifyIterationOrder(false);
         verifyIteration(false);
     }
@@ -885,7 +869,7 @@ public class PixelIteratorTest extends TestCase {
         minTileY   = 20;
         final Rectangle subArea = new Rectangle(27, -20, 30, 37);
         createPixelIterator(createImage(subArea), subArea);
-        assertTrue("Expected a non-empty set of values.", expected.length != 0);
+        assertNotEquals(0, expected.length);
         verifyIterationOrder(false);
         verifyIteration(false);
     }
@@ -909,7 +893,7 @@ public class PixelIteratorTest extends TestCase {
         minTileY   =  2;
         final Rectangle subArea = new Rectangle(36, 8, 12, 20);
         createPixelIterator(createImage(subArea), subArea);
-        assertTrue("Expected a non-empty set of values.", expected.length != 0);
+        assertNotEquals(0, expected.length);
         verifyIterationOrder(false);
         verifyIteration(false);
     }
@@ -933,7 +917,7 @@ public class PixelIteratorTest extends TestCase {
         minTileY   = -9;
         final Rectangle subArea = new Rectangle(-20, -1, 30, 20);
         createPixelIterator(createImage(subArea), subArea);
-        assertTrue("Expected a non-empty set of values.", expected.length != 0);
+        assertNotEquals(0, expected.length);
         verifyIterationOrder(false);
         verifyIteration(false);
     }
@@ -956,7 +940,7 @@ public class PixelIteratorTest extends TestCase {
         minTileY   = -20;
         final Rectangle subArea = new Rectangle(20, 10, 30, 25);
         createPixelIterator(createImage(subArea), subArea);
-        assertTrue("Expected a non-empty set of values.", expected.length != 0);
+        assertNotEquals(0, expected.length);
         verifyIterationOrder(false);
         verifyIteration(false);
     }
@@ -978,7 +962,7 @@ public class PixelIteratorTest extends TestCase {
         minTileY   = -99;
         final Rectangle subArea = new Rectangle(-10, -10, 150, 80);
         createPixelIterator(createImage(subArea), subArea);
-        assertTrue("Expected a non-empty set of values.", expected.length != 0);
+        assertNotEquals(0, expected.length);
         verifyIterationOrder(false);
         verifyIteration(false);
     }
@@ -998,7 +982,7 @@ public class PixelIteratorTest extends TestCase {
         numBands   = 2;
         final Rectangle subArea = new Rectangle(-100, -50, 5, 17);
         createPixelIterator(createImage(subArea), subArea);
-        assertEquals("Expected an empty set of values.", 0, expected.length);
+        assertEquals(0, expected.length);
         verifyIteration(true);
     }
 
@@ -1017,13 +1001,9 @@ public class PixelIteratorTest extends TestCase {
         tileHeight =  3;
         numBands   =  1;
         createPixelIterator(createImage(null), null);
-        assertTrue("Expected a non-empty set of values.", expected.length != 0);
-        try {
-            iterator.moveTo(102, 53);
-            fail("Expected IndexOutOfBoundsException.");
-        } catch (IndexOutOfBoundsException e) {
-            assertNotNull(e.getMessage());
-        }
+        assertNotEquals(0, expected.length);
+        var e = assertThrows(IndexOutOfBoundsException.class, () -> iterator.moveTo(102, 53));
+        assertMessageContains(e);
     }
 
     /**
@@ -1040,14 +1020,10 @@ public class PixelIteratorTest extends TestCase {
         tileHeight =  3;
         numBands   =  1;
         createPixelIterator(createImage(null), null);
-        assertTrue("Expected a non-empty set of values.", expected.length != 0);
+        assertNotEquals(0, expected.length);
         verifyIteration(false);
-        try {
-            iterator.next();
-            fail("Expected IllegalStateException.");
-        } catch (IllegalStateException e) {
-            assertNotNull(e.getMessage());
-        }
+        var e = assertThrows(IllegalStateException.class, () -> iterator.next());
+        assertMessageContains(e);
     }
 
     /**
@@ -1065,7 +1041,7 @@ public class PixelIteratorTest extends TestCase {
         minTileX   =  10;
         minTileY   = 100;
         createPixelIterator(createImage(null), null);
-        assertTrue("Expected a non-empty set of values.", expected.length != 0);
+        assertNotEquals(0, expected.length);
         final int[] coordinates = getCoordinatesInExpectedOrder(new Rectangle(xmin, ymin, width, height));
         int i = 0;
         for (int j=0; j<coordinates.length;) {
@@ -1073,13 +1049,13 @@ public class PixelIteratorTest extends TestCase {
             final int y = coordinates[j++];
             assertTrue(iterator.next());
             final Point position = iterator.getPosition();
-            assertEquals("x", x, position.x);
-            assertEquals("y", y, position.y);
+            assertEquals(x, position.x);
+            assertEquals(y, position.y);
             for (int b=0; b<numBands; b++) {
-                assertEquals(expected[i++], iterator.getSampleFloat(b), 0f);
+                assertEquals(expected[i++], iterator.getSampleFloat(b));
             }
         }
-        assertEquals("Too few elements in iteration.", expected.length, i);
+        assertEquals(expected.length, i);
     }
 
     /**
@@ -1095,8 +1071,8 @@ public class PixelIteratorTest extends TestCase {
          */
         iterator.moveTo(x, y);
         final Point p = iterator.getPosition();
-        assertEquals("x", x, p.x);
-        assertEquals("y", y, p.y);
+        assertEquals(x, p.x);
+        assertEquals(y, p.y);
         /*
          * Compute index of the (x,y) position in the array of expected values.
          * Iteration verification will need to begin at that value.
@@ -1112,7 +1088,7 @@ public class PixelIteratorTest extends TestCase {
                 verifySample(i++, b);
             }
         } while (iterator.next());
-        assertEquals("Too few elements in iteration.", expected.length, i);
+        assertEquals(expected.length, i);
     }
 
     /**
@@ -1249,9 +1225,9 @@ public class PixelIteratorTest extends TestCase {
                     }
                 }
             }
-            if (ti) assertEquals("buffer.remaining()", 0, wi.values.remaining());
-            if (tf) assertEquals("buffer.remaining()", 0, wf.values.remaining());
-            if (td) assertEquals("buffer.remaining()", 0, wd.values.remaining());
+            if (ti) assertEquals(0, wi.values.remaining());
+            if (tf) assertEquals(0, wf.values.remaining());
+            if (td) assertEquals(0, wd.values.remaining());
         }
     }
 
@@ -1316,7 +1292,7 @@ public class PixelIteratorTest extends TestCase {
         tileHeight = height;
         final Dimension window = new Dimension(3, 4);
         createWindowIterator(createImage(null), window);
-        assertTrue("Expected a non-empty set of values.", expected.length != 0);
+        assertNotEquals(0, expected.length);
         verifyIterationOrder(true);
         verifyWindow(window);
     }
@@ -1338,7 +1314,7 @@ public class PixelIteratorTest extends TestCase {
         minTileY   = 200;
         final Dimension window = new Dimension(2, 3);
         createWindowIterator(createImage(null), window);
-        assertTrue("Expected a non-empty set of values.", expected.length != 0);
+        assertNotEquals(0, expected.length);
         verifyIterationOrder(false);
         verifyWindow(window);
     }
@@ -1384,7 +1360,7 @@ public class PixelIteratorTest extends TestCase {
         tileWidth  = width  = 3;
         tileHeight = height = 2;
         numBands            = 1;
-        final Rectangle subArea = new Rectangle(5, 1, 3, 2);    // No intersection with image bounds.
+        final var subArea = new Rectangle(5, 1, 3, 2);      // No intersection with image bounds.
         createPixelIterator(createImage(subArea), subArea);
         assertEquals(0, expected.length);
         verifyIteration(true);

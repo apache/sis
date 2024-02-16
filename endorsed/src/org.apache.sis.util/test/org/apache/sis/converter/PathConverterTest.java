@@ -27,9 +27,9 @@ import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assume.assumeTrue;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.PlatformDependent;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -65,11 +65,11 @@ public final class PathConverterTest extends TestCase {
     private static <S,T> void runInvertibleConversion(final ObjectConverter<S,T> c,
             final S source, final T target) throws UnconvertibleObjectException
     {
-        assertEquals("Forward conversion.", target, c.apply(source));
-        assertEquals("Inverse conversion.", source, c.inverse().apply(target));
-        assertSame("Inconsistent inverse.", c, c.inverse().inverse());
-        assertTrue("Invertible converters shall declare this capability.",
-                c.properties().contains(FunctionProperty.INVERTIBLE));
+        assertEquals(target, c.apply(source), "Forward conversion.");
+        assertEquals(source, c.inverse().apply(target), "Inverse conversion.");
+        assertSame(c, c.inverse().inverse(), "Inconsistent inverse.");
+        assertTrue(c.properties().contains(FunctionProperty.INVERTIBLE),
+                   "Invertible converters shall declare this capability.");
     }
 
     /**

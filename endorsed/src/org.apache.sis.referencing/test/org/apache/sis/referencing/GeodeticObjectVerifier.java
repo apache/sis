@@ -35,8 +35,7 @@ import org.apache.sis.metadata.internal.AxisNames;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -48,11 +47,6 @@ import static org.opengis.test.Assert.assertInstanceOf;
  * @todo Move this class to GeoAPI.
  */
 public final class GeodeticObjectVerifier {
-    /**
-     * The tolerance threshold for strict comparisons of floating point values.
-     */
-    private static final double STRICT = 0;
-
     /**
      * Creates a new test case.
      */
@@ -102,12 +96,12 @@ public final class GeodeticObjectVerifier {
     public static void assertIsWorld(final GeographicBoundingBox box) {
         final Boolean inclusion = box.getInclusion();
         if (inclusion != null) {
-            assertEquals("inclusion", Boolean.TRUE, inclusion);
+            assertEquals(Boolean.TRUE, inclusion, "inclusion");
         }
-        assertEquals("westBoundLongitude", -180, box.getWestBoundLongitude(), STRICT);
-        assertEquals("eastBoundLongitude", +180, box.getEastBoundLongitude(), STRICT);
-        assertEquals("southBoundLatitude",  -90, box.getSouthBoundLatitude(), STRICT);
-        assertEquals("northBoundLatitude",  +90, box.getNorthBoundLatitude(), STRICT);
+        assertEquals(-180, box.getWestBoundLongitude(), "westBoundLongitude");
+        assertEquals(+180, box.getEastBoundLongitude(), "eastBoundLongitude");
+        assertEquals( -90, box.getSouthBoundLatitude(), "southBoundLatitude");
+        assertEquals( +90, box.getNorthBoundLatitude(), "northBoundLatitude");
     }
 
     /**
@@ -128,9 +122,9 @@ public final class GeodeticObjectVerifier {
      * @param  meridian  the prime meridian to verify.
      */
     public static void assertIsGreenwich(final PrimeMeridian meridian) {
-        assertEquals("name",               "Greenwich",        meridian.getName().getCode());
-        assertEquals("greenwichLongitude", 0,                  meridian.getGreenwichLongitude(), STRICT);
-        assertEquals("angularUnit",        Units.DEGREE, meridian.getAngularUnit());
+        assertEquals("Greenwich",  meridian.getName().getCode(), "name");
+        assertEquals(0,            meridian.getGreenwichLongitude(), "greenwichLongitude");
+        assertEquals(Units.DEGREE, meridian.getAngularUnit(), "angularUnit");
     }
 
     /**
@@ -151,9 +145,9 @@ public final class GeodeticObjectVerifier {
      * @param  meridian  the prime meridian to verify.
      */
     public static void assertIsParis(final PrimeMeridian meridian) {
-        assertEquals("name",               "Paris",    meridian.getName().getCode());
-        assertEquals("greenwichLongitude", 2.5969213,  meridian.getGreenwichLongitude(), STRICT);
-        assertEquals("angularUnit",        Units.GRAD, meridian.getAngularUnit());
+        assertEquals("Paris",    meridian.getName().getCode(), "name");
+        assertEquals(2.5969213,  meridian.getGreenwichLongitude(), "greenwichLongitude");
+        assertEquals(Units.GRAD, meridian.getAngularUnit(), "angularUnit");
     }
 
     /**
@@ -180,12 +174,12 @@ public final class GeodeticObjectVerifier {
      * @param  ellipsoid  the ellipsoid to verify.
      */
     public static void assertIsWGS84(final Ellipsoid ellipsoid) {
-        assertTrue  ("name",              ellipsoid.getName().getCode().matches("WGS\\s?(?:19)?84"));
-        assertEquals("axisUnit",          Units.METRE,       ellipsoid.getAxisUnit());
-        assertEquals("semiMajorAxis",     6378137,           ellipsoid.getSemiMajorAxis(),     STRICT);
-        assertEquals("semiMinorAxis",     6356752.314245179, ellipsoid.getSemiMinorAxis(),     0.001);
-        assertEquals("inverseFlattening", 298.257223563,     ellipsoid.getInverseFlattening(), STRICT);
-        assertTrue  ("isIvfDefinitive",                      ellipsoid.isIvfDefinitive());
+        assertTrue  (ellipsoid.getName().getCode().matches("WGS\\s?(?:19)?84"), "name");
+        assertEquals(Units.METRE,       ellipsoid.getAxisUnit(),             "axisUnit");
+        assertEquals(6378137,           ellipsoid.getSemiMajorAxis(),        "semiMajorAxis");
+        assertEquals(6356752.314245179, ellipsoid.getSemiMinorAxis(), 0.001, "semiMinorAxis");
+        assertEquals(298.257223563,     ellipsoid.getInverseFlattening(),    "inverseFlattening");
+        assertTrue  (                   ellipsoid.isIvfDefinitive() ,        "isIvfDefinitive");
     }
 
     /**
@@ -210,7 +204,7 @@ public final class GeodeticObjectVerifier {
      *                            {@code Extent} element for the world, or {@code false} if optional.
      */
     public static void assertIsWGS84(final GeodeticDatum datum, final boolean isExtentMandatory) {
-        assertEquals("name", "World Geodetic System 1984", datum.getName().getCode());
+        assertEquals("World Geodetic System 1984", datum.getName().getCode(), "name");
         assertIsWorld    (datum.getDomainOfValidity(), isExtentMandatory);
         assertIsGreenwich(datum.getPrimeMeridian());
         assertIsWGS84    (datum.getEllipsoid());
@@ -240,11 +234,11 @@ public final class GeodeticObjectVerifier {
      *                            shall be defined, or {@code false} if they are optional.
      */
     public static void assertIsWGS84(final GeodeticCRS crs, final boolean isExtentMandatory, final boolean isRangeMandatory) {
-        assertEquals("name", "WGS 84", crs.getName().getCode());
+        assertEquals("WGS 84", crs.getName().getCode(), "name");
         assertIsWorld(crs.getDomainOfValidity(), isExtentMandatory);
         assertIsWGS84(crs.getDatum(), isExtentMandatory);
         final CoordinateSystem cs = crs.getCoordinateSystem();
-        assertInstanceOf("coordinateSystem", EllipsoidalCS.class, cs);
+        assertInstanceOf(EllipsoidalCS.class, cs, "coordinateSystem");
         assertIsGeodetic2D((EllipsoidalCS) cs, isRangeMandatory);
     }
 
@@ -266,7 +260,7 @@ public final class GeodeticObjectVerifier {
      *                            {@code Extent} element for the world, or {@code false} if optional.
      */
     public static void assertIsMeanSeaLevel(final VerticalDatum datum, final boolean isExtentMandatory) {
-        assertEquals("name", "Mean Sea Level", datum.getName().getCode());
+        assertEquals("Mean Sea Level", datum.getName().getCode());
         assertIsWorld(datum.getDomainOfValidity(), isExtentMandatory);
     }
 
@@ -302,19 +296,19 @@ public final class GeodeticObjectVerifier {
      * @param  cs  the coordinate system to verify.
      */
     public static void assertIsProjected2D(final CartesianCS cs) {
-        assertEquals("dimension", 2, cs.getDimension());
+        assertEquals(2, cs.getDimension(), "dimension");
         final CoordinateSystemAxis E = cs.getAxis(0);
         final CoordinateSystemAxis N = cs.getAxis(1);
-        assertNotNull("axis", E);
-        assertNotNull("axis", N);
-        assertEquals("axis[0].name",         AxisNames.EASTING,   E.getName().getCode());
-        assertEquals("axis[1].name",         AxisNames.NORTHING,  N.getName().getCode());
-        assertEquals("axis[0].abbreviation", "E",                 E.getAbbreviation());
-        assertEquals("axis[1].abbreviation", "N",                 N.getAbbreviation());
-        assertEquals("axis[0].direction",    AxisDirection.EAST,  E.getDirection());
-        assertEquals("axis[1].direction",    AxisDirection.NORTH, N.getDirection());
-        assertEquals("axis[0].unit",         Units.METRE,            E.getUnit());
-        assertEquals("axis[1].unit",         Units.METRE,            N.getUnit());
+        assertNotNull(E, "axis");
+        assertNotNull(N, "axis");
+        assertEquals(AxisNames.EASTING,   E.getName().getCode(), "axis[0].name");
+        assertEquals(AxisNames.NORTHING,  N.getName().getCode(), "axis[1].name");
+        assertEquals("E",                 E.getAbbreviation(),   "axis[0].abbreviation");
+        assertEquals("N",                 N.getAbbreviation(),   "axis[1].abbreviation");
+        assertEquals(AxisDirection.EAST,  E.getDirection(),      "axis[0].direction");
+        assertEquals(AxisDirection.NORTH, N.getDirection(),      "axis[1].direction");
+        assertEquals(Units.METRE,         E.getUnit(),           "axis[0].unit");
+        assertEquals(Units.METRE,         N.getUnit(),           "axis[1].unit");
         verifyRange(E, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null, true);
         verifyRange(N, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null, true);
     }
@@ -357,19 +351,19 @@ public final class GeodeticObjectVerifier {
      *                           or {@code false} if they are optional.
      */
     public static void assertIsGeodetic2D(final EllipsoidalCS cs, final boolean isRangeMandatory) {
-        assertEquals("dimension", 2, cs.getDimension());
+        assertEquals(2, cs.getDimension(), "dimension");
         final CoordinateSystemAxis latitude  = cs.getAxis(0);
         final CoordinateSystemAxis longitude = cs.getAxis(1);
-        assertNotNull("axis", latitude);
-        assertNotNull("axis", longitude);
-        assertEquals("axis[0].name",       AxisNames.GEODETIC_LATITUDE,  latitude .getName().getCode());
-        assertEquals("axis[1].name",       AxisNames.GEODETIC_LONGITUDE, longitude.getName().getCode());
-        assertEquals("axis[0].direction",  AxisDirection.NORTH,          latitude .getDirection());
-        assertEquals("axis[1].direction",  AxisDirection.EAST,           longitude.getDirection());
-        assertEquals("axis[0].unit",       Units.DEGREE,           latitude .getUnit());
-        assertEquals("axis[1].unit",       Units.DEGREE,           longitude.getUnit());
-        verifyRange(latitude,   -90,  +90, RangeMeaning.EXACT,           isRangeMandatory);
-        verifyRange(longitude, -180, +180, RangeMeaning.WRAPAROUND,      isRangeMandatory);
+        assertNotNull(latitude, "axis");
+        assertNotNull(longitude, "axis");
+        assertEquals(AxisNames.GEODETIC_LATITUDE,  latitude .getName().getCode(), "axis[0].name");
+        assertEquals(AxisNames.GEODETIC_LONGITUDE, longitude.getName().getCode(), "axis[1].name");
+        assertEquals(AxisDirection.NORTH,          latitude .getDirection(),      "axis[0].direction");
+        assertEquals(AxisDirection.EAST,           longitude.getDirection(),      "axis[1].direction");
+        assertEquals(Units.DEGREE,                 latitude .getUnit(),           "axis[0].unit");
+        assertEquals(Units.DEGREE,                 longitude.getUnit(),           "axis[1].unit");
+        verifyRange(latitude,   -90,  +90, RangeMeaning.EXACT,      isRangeMandatory);
+        verifyRange(longitude, -180, +180, RangeMeaning.WRAPAROUND, isRangeMandatory);
     }
 
     /**
@@ -385,9 +379,9 @@ public final class GeodeticObjectVerifier {
                 minimumValue != Double.NEGATIVE_INFINITY ||
                 maximumValue != Double.POSITIVE_INFINITY)
         {
-            assertEquals("axis.minimumValue", min, minimumValue, STRICT);
-            assertEquals("axis.maximumValue", max, maximumValue, STRICT);
-            assertEquals("axis.rangeMeaning", expected, rangeMeaning);
+            assertEquals(min, minimumValue, "axis.minimumValue");
+            assertEquals(max, maximumValue, "axis.maximumValue");
+            assertEquals(expected, rangeMeaning, "axis.rangeMeaning");
         }
     }
 }

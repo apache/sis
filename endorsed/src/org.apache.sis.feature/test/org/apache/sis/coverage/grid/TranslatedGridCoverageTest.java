@@ -25,8 +25,8 @@ import org.apache.sis.coverage.grid.j2d.RasterFactory;
 import org.apache.sis.geometry.DirectPosition2D;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 
@@ -84,6 +84,6 @@ public final class TranslatedGridCoverageTest extends TestCase {
          */
         final DirectPosition2D p = new DirectPosition2D(HardCodedCRS.WGS84, -75, -18);
         assertArrayEquals(source.evaluator().apply(p),
-                          target.evaluator().apply(p), STRICT);
+                          target.evaluator().apply(p));
     }
 }

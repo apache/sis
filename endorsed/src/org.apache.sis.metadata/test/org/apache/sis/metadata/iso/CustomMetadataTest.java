@@ -36,8 +36,8 @@ import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.xml.XML;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
 
 
@@ -119,7 +119,7 @@ public final class CustomMetadataTest extends TestCase {
         /*
          * A few simple checks.
          */
-        assertTrue("Missing Identification attribute.",     xml.contains("Description"));
-        assertTrue("Missing DataIdentification attribute.", xml.contains("Environment"));
+        assertTrue(xml.contains("Description"));
+        assertTrue(xml.contains("Environment"));
     }
 }

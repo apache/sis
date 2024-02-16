@@ -26,7 +26,7 @@ import org.apache.sis.referencing.operation.provider.NTv2;
 import org.apache.sis.referencing.util.Formulas;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;
 import org.apache.sis.referencing.operation.provider.NADCONTest;
 import org.apache.sis.referencing.operation.provider.NTv2Test;

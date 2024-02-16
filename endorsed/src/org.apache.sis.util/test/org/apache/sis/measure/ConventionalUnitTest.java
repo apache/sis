@@ -22,8 +22,8 @@ import javax.measure.UnitConverter;
 import javax.measure.quantity.Volume;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -54,9 +54,9 @@ public final class ConventionalUnitTest extends TestCase {
      * @param  scale   the expected scale factor.
      */
     static void verify(final Unit<?> system, final Unit<?> unit, final String symbol, final double scale) {
-        assertSame  ("getSystemUnit()", system, unit.getSystemUnit());
-        assertEquals("getSymbol()",     symbol, unit.getSymbol());
-        assertEquals("UnitConverter",   scale,  Units.toStandardUnit(unit), STRICT);
+        assertSame  (system, unit.getSystemUnit());
+        assertEquals(symbol, unit.getSymbol());
+        assertEquals(scale,  Units.toStandardUnit(unit));
     }
 
     /**
@@ -89,15 +89,15 @@ public final class ConventionalUnitTest extends TestCase {
      */
     @Test
     public void testPower() {
-        assertEquals("m",    1, ConventionalUnit.power("m"));
-        assertEquals("m²",   2, ConventionalUnit.power("m²"));
-        assertEquals("m2",   2, ConventionalUnit.power("m2"));
-        assertEquals("m₂",   1, ConventionalUnit.power("m₂"));      // Because the "2" is in indice.
-        assertEquals("m³",   3, ConventionalUnit.power("m³"));
-        assertEquals("m/s²", 1, ConventionalUnit.power("m/s²"));
-        assertEquals("km/h", 1, ConventionalUnit.power("km/h"));
-        assertEquals("m³/s", 3, ConventionalUnit.power("m³/s"));
-        assertEquals("m³s",  0, ConventionalUnit.power("m³s"));     // Illegal symbol.
+        assertEquals(1, ConventionalUnit.power("m"));
+        assertEquals(2, ConventionalUnit.power("m²"));
+        assertEquals(2, ConventionalUnit.power("m2"));
+        assertEquals(1, ConventionalUnit.power("m₂"));      // Because the "2" is in indice.
+        assertEquals(3, ConventionalUnit.power("m³"));
+        assertEquals(1, ConventionalUnit.power("m/s²"));
+        assertEquals(1, ConventionalUnit.power("km/h"));
+        assertEquals(3, ConventionalUnit.power("m³/s"));
+        assertEquals(0, ConventionalUnit.power("m³s"));     // Illegal symbol.
     }
 
     /**
@@ -208,8 +208,8 @@ public final class ConventionalUnitTest extends TestCase {
     @Test
     public void testConvertAngle() {
         final UnitConverter c = Units.GRAD.getConverterTo(Units.DEGREE);
-        assertEquals(180,        c.convert(200),       STRICT);
-        assertEquals(2.33722917, c.convert(2.5969213), STRICT);
+        assertEquals(180,        c.convert(200));
+        assertEquals(2.33722917, c.convert(2.5969213));
     }
 
     /**
@@ -218,9 +218,9 @@ public final class ConventionalUnitTest extends TestCase {
     @Test
     public void testConvertTemperature() {
         final UnitConverter c = Units.FAHRENHEIT.getConverterTo(Units.CELSIUS);
-        assertEquals("50°F",  10, c.convert(50),          STRICT);
-        assertEquals("5°F",  -15, c.convert(5),           STRICT);
-        assertEquals("0°C",   32, c.inverse().convert(0), STRICT);
+        assertEquals( 10, c.convert(50),          "50°F");
+        assertEquals(-15, c.convert(5),           "5°F");
+        assertEquals( 32, c.inverse().convert(0), "0°C");
     }
 
     /**
@@ -231,12 +231,12 @@ public final class ConventionalUnitTest extends TestCase {
                                          final String s2, final Unit<Volume> u2)
             throws IncommensurableException
     {
-        assertEquals("unit1.symbol", s1, u1.getSymbol());
-        assertEquals("unit2.symbol", s2, u2.getSymbol());
-        assertTrue("getConverterTo(…).isIdentity", u1.getConverterTo(u2).isIdentity());
-        assertTrue("getConverterTo(…).isIdentity", u2.getConverterTo(u1).isIdentity());
-        assertTrue("getConverterTo(…).isIdentity", u1.getConverterToAny(u2).isIdentity());
-        assertTrue("getConverterTo(…).isIdentity", u2.getConverterToAny(u1).isIdentity());
+        assertEquals(s1, u1.getSymbol());
+        assertEquals(s2, u2.getSymbol());
+        assertTrue(u1.getConverterTo(u2).isIdentity());
+        assertTrue(u2.getConverterTo(u1).isIdentity());
+        assertTrue(u1.getConverterToAny(u2).isIdentity());
+        assertTrue(u2.getConverterToAny(u1).isIdentity());
     }
 
     /**
@@ -280,8 +280,8 @@ public final class ConventionalUnitTest extends TestCase {
         final Unit<Volume> cl  = Units.LITRE.divide(100);
         final Unit<Volume> ml  = Units.LITRE.divide(1000);
         final Unit<Volume> cm3 = Units.CUBIC_METRE.divide(1E+06);
-        assertEquals("4 L to ml", 4000,  l.getConverterTo(ml) .convert(4), STRICT);
-        assertEquals("4 cL to cm³", 40, cl.getConverterTo(cm3).convert(4), STRICT);
+        assertEquals(4000,  l.getConverterTo(ml) .convert(4), "4 L to ml");
+        assertEquals(40, cl.getConverterTo(cm3).convert(4), "4 cL to cm³");
     }
 
     /**

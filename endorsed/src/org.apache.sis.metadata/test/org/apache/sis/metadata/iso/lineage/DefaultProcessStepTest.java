@@ -24,9 +24,8 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.xml.TestUsingFile;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -93,7 +92,7 @@ public final class DefaultProcessStepTest extends TestUsingFile {
          * namespaces are managed. We will convert to the parent DefaultProcessStep type before comparison.
          */
         DefaultProcessStep step = unmarshalFile(DefaultProcessStep.class, openTestFile(format));
-        assertInstanceOf("The unmarshalled object is expected to be in GMI namespace.", LE_ProcessStep.class, step);
+        assertInstanceOf(LE_ProcessStep.class, step, "The unmarshalled object is expected to be in GMI namespace.");
         step = new DefaultProcessStep(step);
         assertEquals(processStep, step);
     }

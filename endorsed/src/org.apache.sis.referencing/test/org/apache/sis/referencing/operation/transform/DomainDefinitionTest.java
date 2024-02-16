@@ -22,7 +22,7 @@ import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 

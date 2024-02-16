@@ -33,8 +33,9 @@ import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.ArraysExt;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -101,14 +102,14 @@ public final class WorldFileStoreTest extends TestCase {
             final Metadata metadata = store.getMetadata();
             final Identification id = getSingleton(metadata.getIdentificationInfo());
             final String format = getSingleton(id.getResourceFormats()).getFormatSpecificationCitation().getTitle().toString();
-            assertTrue(format, format.contains("PNG"));
+            assertTrue(format.contains("PNG"), format);
             assertEquals("WGS 84", getSingleton(metadata.getReferenceSystemInfo()).getName().getCode());
             final GeographicBoundingBox bbox = (GeographicBoundingBox)
                     getSingleton(getSingleton(id.getExtents()).getGeographicElements());
-            assertEquals( -90, bbox.getSouthBoundLatitude(), STRICT);
-            assertEquals( +90, bbox.getNorthBoundLatitude(), STRICT);
-            assertEquals(-180, bbox.getWestBoundLongitude(), STRICT);
-            assertEquals(+180, bbox.getEastBoundLongitude(), STRICT);
+            assertEquals( -90, bbox.getSouthBoundLatitude());
+            assertEquals( +90, bbox.getNorthBoundLatitude());
+            assertEquals(-180, bbox.getWestBoundLongitude());
+            assertEquals(+180, bbox.getEastBoundLongitude());
             /*
              * Verify that the metadata is cached.
              */
@@ -132,7 +133,7 @@ public final class WorldFileStoreTest extends TestCase {
             try (WorldFileStore source = provider.open(testData())) {
                 assertFalse(source instanceof WritableStore);
                 final GridCoverageResource resource = getSingleton(source.components());
-                assertEquals("identifier", "gradient:1", resource.getIdentifier().get().toString());
+                assertEquals("gradient:1", resource.getIdentifier().get().toString());
                 /*
                  * Above `resource` is the content of "gradient.png" file.
                  * Write the resource in a new file using a different format.
@@ -153,13 +154,9 @@ public final class WorldFileStoreTest extends TestCase {
                      * Verify that attempt to write again without `REPLACE` mode fails.
                      */
                     final GridCoverage coverage = resource.read(null, null);
-                    try {
-                        copy.write(coverage);
-                        fail("Should not have replaced existing resource.");
-                    } catch (ResourceAlreadyExistsException e) {
-                        final String message = e.getMessage();
-                        assertTrue(message, message.contains("1"));     // "1" is the image identifier.
-                    }
+                    var e = assertThrows(ResourceAlreadyExistsException.class, () -> copy.write(coverage),
+                                         "Should not have replaced existing resource.");
+                    assertMessageContains(e, "1");      // "1" is the image identifier.
                     /*
                      * Try to write again in `REPLACE` mode.
                      */

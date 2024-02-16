@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.cs;
 
-import java.util.Map;
 import java.util.HashMap;
 import javax.measure.Unit;
 import org.opengis.referencing.cs.AxisDirection;
@@ -480,7 +479,7 @@ public final class HardCodedAxes {
             final AxisDirection direction, final Unit<?> unit, final double minimum, final double maximum,
             final RangeMeaning meaning)
     {
-        final Map<String,Object> properties = new HashMap<>(8);
+        final var properties = new HashMap<String,Object>(8);
         properties.put(DefaultCoordinateSystemAxis.NAME_KEY, name);
         properties.put(DefaultCoordinateSystemAxis.MINIMUM_VALUE_KEY, minimum);
         properties.put(DefaultCoordinateSystemAxis.MAXIMUM_VALUE_KEY, maximum);

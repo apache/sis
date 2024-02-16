@@ -20,8 +20,8 @@ import org.apache.sis.profile.japan.netcdf.GCOM_C;
 import org.apache.sis.storage.netcdf.base.Convention;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 

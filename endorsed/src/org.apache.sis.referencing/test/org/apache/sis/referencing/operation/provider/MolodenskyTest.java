@@ -19,8 +19,8 @@ package org.apache.sis.referencing.operation.provider;
 import org.opengis.referencing.operation.OperationMethod;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -52,8 +52,8 @@ public final class MolodenskyTest extends TestCase {
         for (int sourceDimensions = 2; sourceDimensions <= 3; sourceDimensions++) {
             for (int targetDimensions = 2; targetDimensions <= 3; targetDimensions++) {
                 final OperationMethod redim = provider.redimension(sourceDimensions, targetDimensions);
-                assertEquals("sourceDimensions", sourceDimensions, redim.getSourceDimensions().intValue());
-                assertEquals("targetDimensions", targetDimensions, redim.getTargetDimensions().intValue());
+                assertEquals(sourceDimensions, redim.getSourceDimensions().intValue());
+                assertEquals(targetDimensions, redim.getTargetDimensions().intValue());
             }
         }
     }

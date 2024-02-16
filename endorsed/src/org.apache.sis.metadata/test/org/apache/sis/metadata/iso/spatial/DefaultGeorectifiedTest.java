@@ -21,10 +21,10 @@ import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.xml.bind.Context;
 
 // Test dependencies
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestCase;
 
@@ -39,13 +39,13 @@ public final class DefaultGeorectifiedTest extends TestCase {
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
      * do so, but should be considered as an implementation details (it should have been a private field).
      */
-    @Rule
+    @RegisterExtension
     public final LoggingWatcher loggings = new LoggingWatcher(Context.LOGGER);
 
     /**
      * Verifies that no unexpected warning has been emitted in any test defined in this class.
      */
-    @After
+    @AfterEach
     public void assertNoUnexpectedLog() {
         loggings.assertNoUnexpectedLog();
     }
@@ -64,21 +64,21 @@ public final class DefaultGeorectifiedTest extends TestCase {
     public void testCheckPointAvailable() {
         final DefaultGeorectified metadata = new DefaultGeorectified();
         final InternationalString description = new SimpleInternationalString("A check point description.");
-        assertFalse("checkPointAvailability", metadata.isCheckPointAvailable());
+        assertFalse(metadata.isCheckPointAvailable());
 
         // Setting the description shall set automatically the availability.
         metadata.setCheckPointDescription(description);
-        assertTrue("checkPointAvailability", metadata.isCheckPointAvailable());
+        assertTrue(metadata.isCheckPointAvailable());
         loggings.assertNoUnexpectedLog();
 
         // Setting the availability flag shall hide the description and logs a message.
         metadata.setCheckPointAvailable(false);
-        assertNull("checkPointDescription", metadata.getCheckPointDescription());
+        assertNull(metadata.getCheckPointDescription());
         loggings.assertNextLogContains("checkPointDescription", "checkPointAvailability");
         loggings.assertNoUnexpectedLog();
 
         // Setting the availability flag shall bring back the description.
         metadata.setCheckPointAvailable(true);
-        assertSame("checkPointDescription", description, metadata.getCheckPointDescription());
+        assertSame(description, metadata.getCheckPointDescription());
     }
 }

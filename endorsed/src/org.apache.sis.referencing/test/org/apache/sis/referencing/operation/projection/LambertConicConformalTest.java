@@ -32,8 +32,8 @@ import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.parameter.Parameters;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
@@ -125,41 +125,41 @@ public final class LambertConicConformalTest extends MapProjectionTestCase {
             createNormalizedProjection(true, 40);       // Elliptical case
         }
         final double INF = POSITIVE_INFINITY;
-        assertEquals ("Not a number",     NaN, transform(NaN),             NORMALIZED_TOLERANCE);
-        assertEquals ("Out of range",     NaN, transform(+2),              NORMALIZED_TOLERANCE);
-        assertEquals ("Out of range",     NaN, transform(-2),              NORMALIZED_TOLERANCE);
-        assertEquals ("Forward 0°N",      1,   transform(0),               NORMALIZED_TOLERANCE);
-        assertEquals ("Forward 90°S",     0,   transform(-PI/2),           NORMALIZED_TOLERANCE);
-        assertEquals ("Forward 90°N",     INF, transform(+PI/2),           NORMALIZED_TOLERANCE);
-        assertEquals ("Forward (90+ε)°S", 0,   transform(nextDown(-PI/2)), NORMALIZED_TOLERANCE);
-        assertEquals ("Forward (90+ε)°N", INF, transform(nextUp  (+PI/2)), NORMALIZED_TOLERANCE);
-        assertEquals ("Forward (90-ε)°S", 0,   transform(nextUp  (-PI/2)), 1E-10);
+        assertEquals(NaN, transform(NaN),             NORMALIZED_TOLERANCE, "Not a number");
+        assertEquals(NaN, transform(+2),              NORMALIZED_TOLERANCE, "Out of range");
+        assertEquals(NaN, transform(-2),              NORMALIZED_TOLERANCE, "Out of range");
+        assertEquals(1,   transform(0),               NORMALIZED_TOLERANCE, "Forward 0°N");
+        assertEquals(0,   transform(-PI/2),           NORMALIZED_TOLERANCE, "Forward 90°S");
+        assertEquals(INF, transform(+PI/2),           NORMALIZED_TOLERANCE, "Forward 90°N");
+        assertEquals(0,   transform(nextDown(-PI/2)), NORMALIZED_TOLERANCE, "Forward (90+ε)°S");
+        assertEquals(INF, transform(nextUp  (+PI/2)), NORMALIZED_TOLERANCE, "Forward (90+ε)°N");
+        assertEquals(0,   transform(nextUp  (-PI/2)), 1E-10,                "Forward (90-ε)°S");
 
-        assertEquals ("Not a number", NaN, inverseTransform(NaN),  NORMALIZED_TOLERANCE);
-        assertEquals ("Inverse 0",  -PI/2, inverseTransform( 0),   NORMALIZED_TOLERANCE);
-        assertEquals ("Inverse +1",     0, inverseTransform(+1),   NORMALIZED_TOLERANCE);
-        assertEquals ("Inverse -1",     0, inverseTransform(-1),   NORMALIZED_TOLERANCE);
-        assertEquals ("Inverse +∞", +PI/2, inverseTransform(INF),  NORMALIZED_TOLERANCE);
-        assertEquals ("Inverse −∞", +PI/2, inverseTransform(-INF), NORMALIZED_TOLERANCE);
+        assertEquals( NaN, inverseTransform(NaN),   NORMALIZED_TOLERANCE, "Not a number");
+        assertEquals(-PI/2, inverseTransform( 0),   NORMALIZED_TOLERANCE, "Inverse 0");
+        assertEquals(    0, inverseTransform(+1),   NORMALIZED_TOLERANCE, "Inverse +1");
+        assertEquals(    0, inverseTransform(-1),   NORMALIZED_TOLERANCE, "Inverse -1");
+        assertEquals(+PI/2, inverseTransform(INF),  NORMALIZED_TOLERANCE, "Inverse +∞");
+        assertEquals(+PI/2, inverseTransform(-INF), NORMALIZED_TOLERANCE, "Inverse −∞");
 
         // Like the north case, but with sign inversed.
         createNormalizedProjection(((LambertConicConformal) transform).eccentricity != 0, -40);
         validate();
 
-        assertEquals ("Not a number",     NaN, transform(NaN),             NORMALIZED_TOLERANCE);
-        assertEquals ("Out of range",     NaN, transform(+2),              NORMALIZED_TOLERANCE);
-        assertEquals ("Out of range",     NaN, transform(-2),              NORMALIZED_TOLERANCE);
-        assertEquals ("Forward 0°N",      1,   transform(0),               NORMALIZED_TOLERANCE);
-        assertEquals ("Forward 90°N",     INF, transform(+PI/2),           NORMALIZED_TOLERANCE);
-        assertEquals ("Forward 90°S",     0,   transform(-PI/2),           NORMALIZED_TOLERANCE);
-        assertEquals ("Forward (90+ε)°N", INF, transform(nextUp  (+PI/2)), NORMALIZED_TOLERANCE);
-        assertEquals ("Forward (90+ε)°S", 0,   transform(nextDown(-PI/2)), NORMALIZED_TOLERANCE);
-        assertEquals ("Forward (90-ε)°S", 0,   transform(nextUp  (-PI/2)), 1E-10);
+        assertEquals(NaN, transform(NaN),             NORMALIZED_TOLERANCE, "Not a number");
+        assertEquals(NaN, transform(+2),              NORMALIZED_TOLERANCE, "Out of range");
+        assertEquals(NaN, transform(-2),              NORMALIZED_TOLERANCE, "Out of range");
+        assertEquals(1,   transform(0),               NORMALIZED_TOLERANCE, "Forward 0°N");
+        assertEquals(INF, transform(+PI/2),           NORMALIZED_TOLERANCE, "Forward 90°N");
+        assertEquals(0,   transform(-PI/2),           NORMALIZED_TOLERANCE, "Forward 90°S");
+        assertEquals(INF, transform(nextUp  (+PI/2)), NORMALIZED_TOLERANCE, "Forward (90+ε)°N");
+        assertEquals(0,   transform(nextDown(-PI/2)), NORMALIZED_TOLERANCE, "Forward (90+ε)°S");
+        assertEquals(0,   transform(nextUp  (-PI/2)), 1E-10,                "Forward (90-ε)°S");
 
-        assertEquals ("Not a number", NaN, inverseTransform(NaN),  NORMALIZED_TOLERANCE);
-        assertEquals ("Inverse 0",  -PI/2, inverseTransform( 0),   NORMALIZED_TOLERANCE);
-        assertEquals ("Inverse +∞", +PI/2, inverseTransform(INF),  NORMALIZED_TOLERANCE);
-        assertEquals ("Inverse −∞", +PI/2, inverseTransform(-INF), NORMALIZED_TOLERANCE);
+        assertEquals( NaN,  inverseTransform(NaN),  NORMALIZED_TOLERANCE, "Not a number");
+        assertEquals(-PI/2, inverseTransform( 0),   NORMALIZED_TOLERANCE, "Inverse 0");
+        assertEquals(+PI/2, inverseTransform(INF),  NORMALIZED_TOLERANCE, "Inverse +∞");
+        assertEquals(+PI/2, inverseTransform(-INF), NORMALIZED_TOLERANCE, "Inverse −∞");
     }
 
     /**
@@ -323,7 +323,7 @@ public final class LambertConicConformalTest extends MapProjectionTestCase {
         testDerivative();
 
         // Make sure that the above methods did not overwrote the 'transform' field.
-        assertEquals("transform.class", LambertConicConformal.Spherical.class, transform.getClass());
+        assertEquals(LambertConicConformal.Spherical.class, transform.getClass());
     }
 
     /**

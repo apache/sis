@@ -20,8 +20,8 @@ import java.awt.geom.Path2D;
 import org.apache.sis.geometry.wrapper.GeometriesTestCase;
 
 // Test dependencies
-import org.junit.Test;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 
 /**
@@ -44,7 +44,7 @@ public final class FactoryTest extends GeometriesTestCase {
     @Override
     public void testCreatePolyline() {
         super.testCreatePolyline();
-        assertInstanceOf("geometry", Path2D.class, geometry);
+        assertInstanceOf(Path2D.class, geometry);
     }
 
     /**
@@ -54,6 +54,6 @@ public final class FactoryTest extends GeometriesTestCase {
     @Override
     public void testMergePolylines() {
         super.testMergePolylines();
-        assertInstanceOf("geometry", Path2D.class, geometry);
+        assertInstanceOf(Path2D.class, geometry);
     }
 }

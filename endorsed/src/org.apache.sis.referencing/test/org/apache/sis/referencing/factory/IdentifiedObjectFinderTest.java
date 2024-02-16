@@ -25,8 +25,8 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -62,16 +62,16 @@ public final class IdentifiedObjectFinderTest extends TestCase {
     public void testFindSingleton() throws FactoryException {
         final GeographicCRS CRS84 = factory.createGeographicCRS("CRS:84");
         final IdentifiedObjectFinder finder = factory.newIdentifiedObjectFinder();
-        assertEquals("Newly created finder should default to full scan.",
-                IdentifiedObjectFinder.Domain.VALID_DATASET, finder.getSearchDomain());
+        assertEquals(IdentifiedObjectFinder.Domain.VALID_DATASET, finder.getSearchDomain(),
+                     "Newly created finder should default to full scan.");
 
         finder.setSearchDomain(IdentifiedObjectFinder.Domain.DECLARATION);
-        assertSame("Should find without the need for scan, since we can use the CRS:84 identifier.",
-                   CRS84, finder.findSingleton(CRS84));
+        assertSame(CRS84, finder.findSingleton(CRS84),
+                   "Should find without the need for scan, since we can use the CRS:84 identifier.");
 
         finder.setSearchDomain(IdentifiedObjectFinder.Domain.VALID_DATASET);
-        assertSame("Allowing scanning should not make any difference for this CRS84 instance.",
-                   CRS84, finder.findSingleton(CRS84));
+        assertSame(CRS84, finder.findSingleton(CRS84),
+                   "Allowing scanning should not make any difference for this CRS84 instance.");
         /*
          * Same test as above, using a CRS without identifier.
          * The intent is to force a full scan.
@@ -82,12 +82,12 @@ public final class IdentifiedObjectFinderTest extends TestCase {
         assertEqualsIgnoreMetadata(CRS84, search);              // Required condition for next test.
 
         finder.setSearchDomain(IdentifiedObjectFinder.Domain.DECLARATION);
-        assertNull("Should not find WGS84 without a full scan, since it does not contains the CRS:84 identifier.",
-                   finder.findSingleton(search));
+        assertNull(finder.findSingleton(search),
+                   "Should not find WGS84 without a full scan, since it does not contains the CRS:84 identifier.");
 
         finder.setSearchDomain(IdentifiedObjectFinder.Domain.VALID_DATASET);
-        assertSame("A full scan should allow us to find WGS84, since it is equal ignoring metadata to CRS:84.",
-                   CRS84, finder.findSingleton(search));
+        assertSame(CRS84, finder.findSingleton(search),
+                   "A full scan should allow us to find WGS84, since it is equal ignoring metadata to CRS:84.");
     }
 
     /**

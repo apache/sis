@@ -25,9 +25,8 @@ import java.awt.image.MultiPixelPackedSampleModel;
 import org.apache.sis.image.DataType;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -57,11 +56,11 @@ public final class SampleModelFactoryTest extends TestCase {
         final BandedSampleModel model = test(BandedSampleModel.class,
                 new SampleModelFactory(DataType.FLOAT, WIDTH, HEIGHT, NUM_BANDS, Float.SIZE, true));
 
-        assertArrayEquals("bankIndices", new int[] {1, 0, 2}, model.getBankIndices());
-        assertArrayEquals("bandOffsets", new int[] {0, 0, 0}, model.getBandOffsets());
-        assertEquals("pixelStride",        1, model.getPixelStride());
-        assertEquals("scanlineStride", WIDTH, model.getScanlineStride());
-        assertEquals("dataType", DataBuffer.TYPE_FLOAT, model.getDataType());
+        assertArrayEquals(new int[] {1, 0, 2}, model.getBankIndices());
+        assertArrayEquals(new int[] {0, 0, 0}, model.getBandOffsets());
+        assertEquals(1, model.getPixelStride());
+        assertEquals(WIDTH, model.getScanlineStride());
+        assertEquals(DataBuffer.TYPE_FLOAT, model.getDataType());
     }
 
     /**
@@ -72,11 +71,11 @@ public final class SampleModelFactoryTest extends TestCase {
         final PixelInterleavedSampleModel model = test(PixelInterleavedSampleModel.class,
                 new SampleModelFactory(DataType.BYTE, WIDTH, HEIGHT, NUM_BANDS, Byte.SIZE, false));
 
-        assertArrayEquals("bankIndices", new int[] {0, 0, 0}, model.getBankIndices());
-        assertArrayEquals("bandOffsets", new int[] {1, 0, 2}, model.getBandOffsets());
-        assertEquals("pixelStride",          3, model.getPixelStride());
-        assertEquals("scanlineStride", WIDTH*3, model.getScanlineStride());
-        assertEquals("dataType", DataBuffer.TYPE_BYTE, model.getDataType());
+        assertArrayEquals(new int[] {0, 0, 0}, model.getBankIndices());
+        assertArrayEquals(new int[] {1, 0, 2}, model.getBandOffsets());
+        assertEquals(      3, model.getPixelStride());
+        assertEquals(WIDTH*3, model.getScanlineStride());
+        assertEquals(DataBuffer.TYPE_BYTE, model.getDataType());
     }
 
     /**
@@ -94,9 +93,9 @@ public final class SampleModelFactoryTest extends TestCase {
             0b11111,                // Band 1 specified, 0 after compression.
             0b111110000000000       // Band 4 specified, 2 after compression.
         };
-        assertArrayEquals("bitMasks", expected, model.getBitMasks());
-        assertEquals("scanlineStride", WIDTH, model.getScanlineStride());
-        assertEquals("dataType", DataBuffer.TYPE_USHORT, model.getDataType());
+        assertArrayEquals(expected, model.getBitMasks());
+        assertEquals(WIDTH, model.getScanlineStride());
+        assertEquals(DataBuffer.TYPE_USHORT, model.getDataType());
     }
 
     /**
@@ -110,9 +109,9 @@ public final class SampleModelFactoryTest extends TestCase {
         SampleModelFactory factory = new SampleModelFactory(DataType.INT, WIDTH, HEIGHT, 1, bitsPerSample, false);
         final MultiPixelPackedSampleModel model = (MultiPixelPackedSampleModel) factory.build();
 
-        assertEquals("pixelBitStride", bitsPerSample, model.getPixelBitStride());
-        assertEquals("scanlineStride", WIDTH / (Integer.SIZE / bitsPerSample), model.getScanlineStride());
-        assertEquals("dataType", DataBuffer.TYPE_INT, model.getDataType());
+        assertEquals(bitsPerSample, model.getPixelBitStride());
+        assertEquals(WIDTH / (Integer.SIZE / bitsPerSample), model.getScanlineStride());
+        assertEquals(DataBuffer.TYPE_INT, model.getDataType());
 
         factory = new SampleModelFactory(model);
         assertEquals(model, factory.build());
@@ -127,7 +126,7 @@ public final class SampleModelFactoryTest extends TestCase {
         assertEquals(WIDTH,     model.getWidth());
         assertEquals(HEIGHT,    model.getHeight());
         assertEquals(NUM_BANDS, model.getNumBands());
-        assertInstanceOf("build", modelType, model);
+        assertInstanceOf(modelType, model);
         /*
          * Select a subset of the bands and verify again.
          * The subset is fixed by this method's contract.
@@ -138,7 +137,7 @@ public final class SampleModelFactoryTest extends TestCase {
         assertEquals(WIDTH,  subset.getWidth());
         assertEquals(HEIGHT, subset.getHeight());
         assertEquals(3,      subset.getNumBands());
-        assertInstanceOf("subsetAndCompress", modelType, subset);
+        assertInstanceOf(modelType, subset);
         /*
          * Repeat the same operations on a factory created using a sample
          * model as a template, and verify that we get the same results.

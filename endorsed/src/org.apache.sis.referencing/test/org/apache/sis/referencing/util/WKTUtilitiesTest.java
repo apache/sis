@@ -22,8 +22,8 @@ import org.apache.sis.math.Vector;
 import static org.apache.sis.referencing.util.WKTUtilities.*;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.referencing.crs.HardCodedCRS;

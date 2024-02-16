@@ -45,8 +45,8 @@ import org.apache.sis.style.se1.Symbolizer;
 import org.apache.sis.style.se1.Symbology;
 
 // Test dependencies
-import static org.junit.Assert.*;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
 
 
 /**
@@ -99,8 +99,8 @@ public class GraphicsPortrayerTest {
 
         int color1 = image.getRGB(180, 45);
         int color2 = image.getRGB(179, 45);
-        assertTrue(color1 == Color.BLACK.getRGB());
-        assertTrue(color2 == new Color(0,0,0,0).getRGB());
+        assertEquals(color1, Color.BLACK.getRGB());
+        assertEquals(color2, new Color(0,0,0,0).getRGB());
     }
 
     /**
@@ -123,7 +123,6 @@ public class GraphicsPortrayerTest {
 
         final LineSymbolizer<Feature> symbolizer = new LineSymbolizer<>(FeatureTypeStyle.FACTORY);
         final Symbology style = createStyle(symbolizer);
-
 
         final MapLayer item = new MapLayer();
         item.setData(featureSet);

@@ -239,7 +239,7 @@ public class DefaultTelephone extends ISOMetadata implements Telephone {
     final DefaultTelephone setOwner(final Collection<Telephone> phones) {
         if (owner != phones) {
             if (owner != null && !CollectionsExt.identityEquals(owner.iterator(), phones.iterator())) {
-                final DefaultTelephone copy = new DefaultTelephone(this);
+                final var copy = new DefaultTelephone(this);
                 copy.owner = phones;
                 return copy;
             }

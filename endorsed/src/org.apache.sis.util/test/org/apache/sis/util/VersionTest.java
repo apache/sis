@@ -17,8 +17,8 @@
 package org.apache.sis.util;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -131,7 +131,7 @@ public final class VersionTest extends TestCase {
     public void testCachedValueOf() {
         for (int major=1; major<=2; major++) {
             final Version version = Version.valueOf(major);
-            assertSame(version.toString(), version, Version.valueOf(major));
+            assertSame(version, Version.valueOf(major), version.toString());
         }
     }
 

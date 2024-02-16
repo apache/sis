@@ -20,7 +20,7 @@ import java.util.Locale;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 

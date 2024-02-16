@@ -27,8 +27,8 @@ import org.apache.sis.filter.DefaultFilterFactory;
 import org.apache.sis.filter.Optimization;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.metadata.sql.TestDatabase;
 import org.apache.sis.referencing.crs.HardCodedCRS;

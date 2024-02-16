@@ -19,7 +19,7 @@ package org.apache.sis.style.se1;
 import java.awt.Color;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

@@ -33,8 +33,8 @@ import static java.lang.Double.NEGATIVE_INFINITY;
 import static org.apache.sis.util.internal.StandardDateFormat.UTC;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 
@@ -73,7 +73,7 @@ public final class RangeFormatTest extends TestCase {
     private String format(final Range<?> range) {
         final String s1 = format.format(range, new StringBuffer(), minPos).toString();
         final String s2 = format.format(range, new StringBuffer(), maxPos).toString();
-        assertEquals("Two consecutive formats produced different results.", s1, s2);
+        assertEquals(s1, s2, "Two consecutive formats produced different results.");
         return s1;
     }
 
@@ -85,15 +85,14 @@ public final class RangeFormatTest extends TestCase {
     private Range<?> parse(final String text) {
         parsePos.setIndex(0);
         final Range<?> range = format.parse(text, parsePos);
-        assertEquals("Index position shall be modified on parse success, and only parse success.", parsePos.getIndex()      == 0, range == null);
-        assertEquals("Error position shall be defined on parse failure, and only parse failure",   parsePos.getErrorIndex() >= 0, range == null);
+        assertEquals(parsePos.getIndex()      == 0, range == null, "Index position shall be modified on parse success, and only parse success.");
+        assertEquals(parsePos.getErrorIndex() >= 0, range == null, "Error position shall be defined on parse failure, and only parse failure");
         if (range != null) {
             int i = parsePos.getIndex();
-            assertTrue("The parse method parsed a character that it shouldn't have accepted.", text.lastIndexOf('_', i-1) < 0);
+            assertTrue(text.lastIndexOf('_', i-1) < 0, "The parse method parsed a character that it shouldn't have accepted.");
             while (i < text.length()) {
                 final char c = text.charAt(i++);
-                assertTrue("Looks like that the parse method didn't parsed everything.",
-                           Character.isWhitespace(c) || c == '_');
+                assertTrue(Character.isWhitespace(c) || c == '_', "Looks like that the parse method didn't parsed everything.");
             }
         }
         return range;
@@ -110,98 +109,98 @@ public final class RangeFormatTest extends TestCase {
 
         // Closed range
         assertEquals("[-10 … 20]", format(NumberRange.create(-10, true, 20, true)));
-        assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
-        assertEquals("minPos.endIndex",   4, minPos.getEndIndex());
-        assertEquals("maxPos.beginIndex", 7, maxPos.getBeginIndex());
-        assertEquals("maxPos.endIndex",   9, maxPos.getEndIndex());
+        assertEquals(1, minPos.getBeginIndex());
+        assertEquals(4, minPos.getEndIndex());
+        assertEquals(7, maxPos.getBeginIndex());
+        assertEquals(9, maxPos.getEndIndex());
 
         // Open range
         assertEquals("(-3 … 4)", format(NumberRange.create(-3, false, 4, false)));
-        assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
-        assertEquals("minPos.endIndex",   3, minPos.getEndIndex());
-        assertEquals("maxPos.beginIndex", 6, maxPos.getBeginIndex());
-        assertEquals("maxPos.endIndex",   7, maxPos.getEndIndex());
+        assertEquals(1, minPos.getBeginIndex());
+        assertEquals(3, minPos.getEndIndex());
+        assertEquals(6, maxPos.getBeginIndex());
+        assertEquals(7, maxPos.getEndIndex());
 
         // Half-open range
         assertEquals("[2 … 8)", format(NumberRange.create(2, true, 8, false)));
-        assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
-        assertEquals("minPos.endIndex",   2, minPos.getEndIndex());
-        assertEquals("maxPos.beginIndex", 5, maxPos.getBeginIndex());
-        assertEquals("maxPos.endIndex",   6, maxPos.getEndIndex());
+        assertEquals(1, minPos.getBeginIndex());
+        assertEquals(2, minPos.getEndIndex());
+        assertEquals(5, maxPos.getBeginIndex());
+        assertEquals(6, maxPos.getEndIndex());
 
         // Half-open range
         assertEquals("(40 … 90]", format(NumberRange.create(40, false, 90, true)));
-        assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
-        assertEquals("minPos.endIndex",   3, minPos.getEndIndex());
-        assertEquals("maxPos.beginIndex", 6, maxPos.getBeginIndex());
-        assertEquals("maxPos.endIndex",   8, maxPos.getEndIndex());
+        assertEquals(1, minPos.getBeginIndex());
+        assertEquals(3, minPos.getEndIndex());
+        assertEquals(6, maxPos.getBeginIndex());
+        assertEquals(8, maxPos.getEndIndex());
 
         // Single value
         assertEquals("{300}", format(NumberRange.create(300, true, 300, true)));
-        assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
-        assertEquals("minPos.endIndex",   4, minPos.getEndIndex());
-        assertEquals("maxPos.beginIndex", 1, maxPos.getBeginIndex());
-        assertEquals("maxPos.endIndex",   4, maxPos.getEndIndex());
+        assertEquals(1, minPos.getBeginIndex());
+        assertEquals(4, minPos.getEndIndex());
+        assertEquals(1, maxPos.getBeginIndex());
+        assertEquals(4, maxPos.getEndIndex());
 
         // Empty range
         assertEquals("{}", format(NumberRange.create(300, true, 300, false)));
-        assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
-        assertEquals("minPos.endIndex",   1, minPos.getEndIndex());
-        assertEquals("maxPos.beginIndex", 1, maxPos.getBeginIndex());
-        assertEquals("maxPos.endIndex",   1, maxPos.getEndIndex());
+        assertEquals(1, minPos.getBeginIndex());
+        assertEquals(1, minPos.getEndIndex());
+        assertEquals(1, maxPos.getBeginIndex());
+        assertEquals(1, maxPos.getEndIndex());
 
         // Negative infinity
         assertEquals("(−∞ … 30]", format(NumberRange.create(Double.NEGATIVE_INFINITY, true, 30, true)));
-        assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
-        assertEquals("minPos.endIndex",   3, minPos.getEndIndex());
-        assertEquals("maxPos.beginIndex", 6, maxPos.getBeginIndex());
-        assertEquals("maxPos.endIndex",   8, maxPos.getEndIndex());
+        assertEquals(1, minPos.getBeginIndex());
+        assertEquals(3, minPos.getEndIndex());
+        assertEquals(6, maxPos.getBeginIndex());
+        assertEquals(8, maxPos.getEndIndex());
 
         // Positive infinity
         assertEquals("[50 … ∞)", format(NumberRange.create(50, true, Double.POSITIVE_INFINITY, true)));
-        assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
-        assertEquals("minPos.endIndex",   3, minPos.getEndIndex());
-        assertEquals("maxPos.beginIndex", 6, maxPos.getBeginIndex());
-        assertEquals("maxPos.endIndex",   7, maxPos.getEndIndex());
+        assertEquals(1, minPos.getBeginIndex());
+        assertEquals(3, minPos.getEndIndex());
+        assertEquals(6, maxPos.getBeginIndex());
+        assertEquals(7, maxPos.getEndIndex());
 
         // Positive infinities
         assertEquals("(−∞ … ∞)", format(NumberRange.create(Double.NEGATIVE_INFINITY, true, Double.POSITIVE_INFINITY, true)));
-        assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
-        assertEquals("minPos.endIndex",   3, minPos.getEndIndex());
-        assertEquals("maxPos.beginIndex", 6, maxPos.getBeginIndex());
-        assertEquals("maxPos.endIndex",   7, maxPos.getEndIndex());
+        assertEquals(1, minPos.getBeginIndex());
+        assertEquals(3, minPos.getEndIndex());
+        assertEquals(6, maxPos.getBeginIndex());
+        assertEquals(7, maxPos.getEndIndex());
 
         // Positive infinity with integers
         assertEquals("[50 … ∞)", format(new NumberRange<>(Integer.class, 50, true, null, true)));
-        assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
-        assertEquals("minPos.endIndex",   3, minPos.getEndIndex());
-        assertEquals("maxPos.beginIndex", 6, maxPos.getBeginIndex());
-        assertEquals("maxPos.endIndex",   7, maxPos.getEndIndex());
+        assertEquals(1, minPos.getBeginIndex());
+        assertEquals(3, minPos.getEndIndex());
+        assertEquals(6, maxPos.getBeginIndex());
+        assertEquals(7, maxPos.getEndIndex());
 
         // Negative infinity with integers
         assertEquals("(−∞ … 40]", format(new NumberRange<>(Integer.class, null, true, 40, true)));
-        assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
-        assertEquals("minPos.endIndex",   3, minPos.getEndIndex());
-        assertEquals("maxPos.beginIndex", 6, maxPos.getBeginIndex());
-        assertEquals("maxPos.endIndex",   8, maxPos.getEndIndex());
+        assertEquals(1, minPos.getBeginIndex());
+        assertEquals(3, minPos.getEndIndex());
+        assertEquals(6, maxPos.getBeginIndex());
+        assertEquals(8, maxPos.getEndIndex());
 
         // Measurement
         assertEquals("[-10 … 20] m", format(MeasurementRange.create(-10, true, 20, true, Units.METRE)));
-        assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
-        assertEquals("minPos.endIndex",   4, minPos.getEndIndex());
-        assertEquals("maxPos.beginIndex", 7, maxPos.getBeginIndex());
-        assertEquals("maxPos.endIndex",   9, maxPos.getEndIndex());
+        assertEquals(1, minPos.getBeginIndex());
+        assertEquals(4, minPos.getEndIndex());
+        assertEquals(7, maxPos.getBeginIndex());
+        assertEquals(9, maxPos.getEndIndex());
 
         assertEquals("[-10 … 20]°", format(MeasurementRange.create(-10, true, 20, true, Units.DEGREE)));
-        assertEquals("minPos.beginIndex", 1, minPos.getBeginIndex());
-        assertEquals("minPos.endIndex",   4, minPos.getEndIndex());
-        assertEquals("maxPos.beginIndex", 7, maxPos.getBeginIndex());
-        assertEquals("maxPos.endIndex",   9, maxPos.getEndIndex());
+        assertEquals(1, minPos.getBeginIndex());
+        assertEquals(4, minPos.getEndIndex());
+        assertEquals(7, maxPos.getBeginIndex());
+        assertEquals(9, maxPos.getEndIndex());
 
         maxPos = new FieldPosition(RangeFormat.Field.UNIT);
         assertEquals("[-1 … 2] km", format(MeasurementRange.create(-1, true, 2, true, Units.KILOMETRE)));
-        assertEquals("unitPos.beginIndex", 9, maxPos.getBeginIndex());
-        assertEquals("unitPos.endIndex",  11, maxPos.getEndIndex());
+        assertEquals( 9, maxPos.getBeginIndex());
+        assertEquals(11, maxPos.getEndIndex());
     }
 
     /**
@@ -286,13 +285,8 @@ public final class RangeFormatTest extends TestCase {
         assertNull(parse("[10 … TB]")); assertEquals(6, parsePos.getErrorIndex());
         assertNull(parse("[10 x 20]")); assertEquals(4, parsePos.getErrorIndex());
         assertNull(parse("[10 … 20" )); assertEquals(8, parsePos.getErrorIndex());
-        try {
-            assertNull(format.parse("[10 … TB]"));
-            fail("Parsing should have failed.");
-        } catch (ParseException e) {
-            // This is the expected exception.
-            assertEquals(6, e.getErrorOffset());
-        }
+        var e = assertThrows(ParseException.class, () -> format.parse("[10 … TB]"));
+        assertEquals(6, e.getErrorOffset());
     }
 
     /**
@@ -322,7 +316,7 @@ public final class RangeFormatTest extends TestCase {
          * to small variation in output format (years may be on 2 digits).
          */
         final String result = format.format(range);
-        assertTrue(result, result.matches("\\[(20)?19-12-23 … (20)?20-05-31\\]"));
+        assertTrue(result.matches("\\[(20)?19-12-23 … (20)?20-05-31\\]"), result);
     }
 
     /**

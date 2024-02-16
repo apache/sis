@@ -29,8 +29,8 @@ import static org.apache.sis.referencing.util.AxisDirections.CLOCKWISE;
 import static org.apache.sis.referencing.util.AxisDirections.COUNTER_CLOCKWISE;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.referencing.cs.HardCodedAxes;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.test.DependsOnMethod;
@@ -178,7 +178,7 @@ public final class AxisDirectionsTest extends TestCase {
     @Test
     public void testIsVertical() {
         for (final AxisDirection dir : AxisDirection.values()) {
-            assertEquals(dir.name(), dir == UP || dir == DOWN, AxisDirections.isVertical(dir));
+            assertEquals(dir == UP || dir == DOWN, AxisDirections.isVertical(dir), dir.name());
         }
     }
 
@@ -188,7 +188,7 @@ public final class AxisDirectionsTest extends TestCase {
     @Test
     public void testIsTemporal() {
         for (final AxisDirection dir : AxisDirection.values()) {
-            assertEquals(dir.name(), dir == FUTURE || dir == PAST, AxisDirections.isTemporal(dir));
+            assertEquals(dir == FUTURE || dir == PAST, AxisDirections.isTemporal(dir), dir.name());
         }
     }
 
@@ -248,9 +248,9 @@ public final class AxisDirectionsTest extends TestCase {
     {
         for (final AxisDirection dir : directions) {
             final String name = dir.name();
-            assertEquals(name, isGrid, AxisDirections.isGrid(dir));
-            assertEquals(name, isSpatial, AxisDirections.isSpatialOrUserDefined(dir, false));
-            assertEquals(name, isSpatial | isGrid | isDisplay, AxisDirections.isSpatialOrUserDefined(dir, true));
+            assertEquals(isGrid, AxisDirections.isGrid(dir), name);
+            assertEquals(isSpatial, AxisDirections.isSpatialOrUserDefined(dir, false), name);
+            assertEquals(isSpatial | isGrid | isDisplay, AxisDirections.isSpatialOrUserDefined(dir, true), name);
         }
     }
 
@@ -287,11 +287,11 @@ public final class AxisDirectionsTest extends TestCase {
             int io = i+h, in = i;
             if (i >= h) io -= AxisDirections.COMPASS_COUNT;
             if (i >  h) in -= AxisDirections.COMPASS_COUNT;
-            assertEquals(message, base + i,  direction.ordinal());
-            assertEquals(message, base + io, opposite.ordinal());
-            assertEquals(message, 0,     AxisDirections.angleForCompass(direction, direction));
-            assertEquals(message, h, abs(AxisDirections.angleForCompass(direction, opposite)));
-            assertEquals(message, in,    AxisDirections.angleForCompass(direction, NORTH));
+            assertEquals(base + i,  direction.ordinal(), message);
+            assertEquals(base + io, opposite.ordinal(), message);
+            assertEquals(0,     AxisDirections.angleForCompass(direction, direction), message);
+            assertEquals(h, abs(AxisDirections.angleForCompass(direction, opposite)), message);
+            assertEquals(in,    AxisDirections.angleForCompass(direction, NORTH), message);
         }
     }
 
@@ -529,8 +529,9 @@ public final class AxisDirectionsTest extends TestCase {
         for (final Field field : HardCodedAxes.class.getFields()) {
             if (CoordinateSystemAxis.class.isAssignableFrom(field.getType())) {
                 final CoordinateSystemAxis axis = (CoordinateSystemAxis) field.get(null);
-                assertEquals(field.getName(), axis.getAbbreviation(), AxisDirections.suggestAbbreviation(
-                        axis.getName().getCode(), axis.getDirection(), axis.getUnit()));
+                assertEquals(axis.getAbbreviation(), AxisDirections.suggestAbbreviation(
+                        axis.getName().getCode(), axis.getDirection(), axis.getUnit()),
+                        field.getName());
             }
         }
     }

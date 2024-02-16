@@ -20,8 +20,8 @@ import static java.lang.StrictMath.*;
 import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -58,10 +58,10 @@ public final class NormalizedProjectionTest extends TransformTestCase {
     @Test
     public void testDocumentation() {
         double minutes = toDegrees(NormalizedProjection.ANGULAR_TOLERANCE) * 60;
-        assertEquals("Documentation said 1 cm precision.", 0.01, minutes*NAUTICAL_MILE, 0.005);
+        assertEquals(0.01, minutes*NAUTICAL_MILE, 0.005, "Documentation said 1 cm precision.");
 
         minutes = toDegrees(NormalizedProjection.ITERATION_TOLERANCE) * 60;
-        assertEquals("Documentation said 2.5 mm precision.", 0.0025, minutes*NAUTICAL_MILE, 0.0005);
+        assertEquals(0.0025, minutes*NAUTICAL_MILE, 0.0005, "Documentation said 2.5 mm precision.");
     }
 
     /**
@@ -71,7 +71,7 @@ public final class NormalizedProjectionTest extends TransformTestCase {
     public void testEccentricity() {
         NormalizedProjection projection;
         transform = projection = new NoOp(false);
-        assertEquals("eccentricity", 0.0, projection.eccentricity, 0.0);
+        assertEquals(0.0, projection.eccentricity);
         /*
          * Tested methods. Note the similarity between (1) and (3).
          *
@@ -80,9 +80,9 @@ public final class NormalizedProjectionTest extends TransformTestCase {
          *  (3) Using double-double arithmetic and flattening:    0.0818191908426215
          */
         transform = projection = new NoOp(true, false);
-        assertEquals("eccentricity", 0.08181919084262244, projection.eccentricity, 0.0);
+        assertEquals(0.08181919084262244, projection.eccentricity);
 
         transform = projection = new NoOp(true, true);
-        assertEquals("eccentricity", 0.0818191908426215, projection.eccentricity, 0.0);
+        assertEquals(0.0818191908426215, projection.eccentricity);
     }
 }

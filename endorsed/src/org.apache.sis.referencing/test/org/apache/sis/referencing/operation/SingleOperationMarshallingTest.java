@@ -29,7 +29,6 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
-import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.operation.provider.Mercator1SP;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
@@ -42,10 +41,10 @@ import org.apache.sis.xml.XML;
 import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
 
 // Test dependencies
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.After;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.opengis.test.Validators;
 import org.apache.sis.xml.bind.referencing.CC_OperationParameterGroupTest;
 import org.apache.sis.test.DependsOn;
@@ -75,13 +74,13 @@ public final class SingleOperationMarshallingTest extends TestCase {
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
      * do so, but should be considered as an implementation details (it should have been a private field).
      */
-    @Rule
+    @RegisterExtension
     public final LoggingWatcher loggings = new LoggingWatcher(Loggers.XML);
 
     /**
      * Verifies that no unexpected warning has been emitted in any test defined in this class.
      */
-    @After
+    @AfterEach
     public void assertNoUnexpectedLog() {
         loggings.assertNoUnexpectedLog();
     }
@@ -278,12 +277,11 @@ public final class SingleOperationMarshallingTest extends TestCase {
         assertEquals("Geodetic survey.", targetCRS.getScope().toString(), "targetCRS.scope");
         assertEquals("4275", getSingleton(targetCRS.getIdentifiers()).getCode(), "targetCRS.identifier");
 
-        final MathTransform tr = c.getMathTransform();
-        assertInstanceOf(LinearTransform.class, tr, "mathTransform");
+        final var tr = assertInstanceOf(LinearTransform.class, c.getMathTransform());
         assertMatrixEquals("mathTransform.matrix",
                 new Matrix3(1, 0, 0,
                             0, 1, 2.33722917,
-                            0, 0, 1), ((LinearTransform) tr).getMatrix(), STRICT);
+                            0, 0, 1), tr.getMatrix(), STRICT);
         /*
          * Validate object, then discard warnings caused by duplicated identifiers.
          * Those duplications are intentional, see comment in `Transformation.xml`.

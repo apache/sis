@@ -21,8 +21,8 @@ import java.nio.CharBuffer;
 import static org.apache.sis.util.CharSequences.*;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -146,14 +146,14 @@ public final class CharSequencesTest extends TestCase {
      */
     @Test
     public void testIndexOfLineStart() {
-        assertEquals("Forward search: expected the begining of \"Third\"", 15,
-                indexOfLineStart("\nFirst\r\nSecond\nThird\r4\n5", 2, 3));
-        assertEquals("Current line: expected the begining of \"Third\"", 15,
-                indexOfLineStart("\nFirst\r\nSecond\nThird\r4\n5", 0, 17));
-        assertEquals("Backward search: expected the begining of \"Second\"", 8,
-                indexOfLineStart("\nFirst\r\nSecond\nThird\r4\n5", -1, 17));
-        assertEquals("Backward search: expected the begining of \"First\"", 1,
-                indexOfLineStart("\nFirst\r\nSecond\nThird\r4\n5", -2, 17));
+        assertEquals(15, indexOfLineStart("\nFirst\r\nSecond\nThird\r4\n5", 2, 3),
+                     "Forward search: expected the begining of \"Third\"");
+        assertEquals(15, indexOfLineStart("\nFirst\r\nSecond\nThird\r4\n5", 0, 17),
+                     "Current line: expected the begining of \"Third\"");
+        assertEquals(8, indexOfLineStart("\nFirst\r\nSecond\nThird\r4\n5", -1, 17),
+                     "Backward search: expected the begining of \"Second\"");
+        assertEquals(1, indexOfLineStart("\nFirst\r\nSecond\nThird\r4\n5", -2, 17),
+                     "Backward search: expected the begining of \"First\"");
     }
 
     /**
@@ -187,7 +187,7 @@ public final class CharSequencesTest extends TestCase {
     @DependsOnMethod("testSplit")
     public void testParseDoubles() {
         assertEquals(0, parseDoubles("", ',').length);
-        assertArrayEquals(new double[] {5, 1.5, Double.NaN, -8}, parseDoubles("5 , 1.5,, -8 ", ','), 0.0);
+        assertArrayEquals(new double[] {5, 1.5, Double.NaN, -8}, parseDoubles("5 , 1.5,, -8 ", ','));
     }
 
     /**
@@ -197,7 +197,7 @@ public final class CharSequencesTest extends TestCase {
     @DependsOnMethod("testSplit")
     public void testParseFloats() {
         assertEquals(0, parseFloats("", ',').length);
-        assertArrayEquals(new float[] {5, 1.5f, Float.NaN, -8}, parseFloats("5 , 1.5,, -8 ", ','), 0f);
+        assertArrayEquals(new float[] {5, 1.5f, Float.NaN, -8}, parseFloats("5 , 1.5,, -8 ", ','));
     }
 
     /**
@@ -395,28 +395,28 @@ public final class CharSequencesTest extends TestCase {
      */
     @Test
     public void testIsUnicodeIdentifier() {
-        assertFalse(        isUnicodeIdentifier(null));
-        assertTrue ("A123", isUnicodeIdentifier("A123"));
-        assertFalse("123A", isUnicodeIdentifier("123A"));
-        assertTrue ("A_1",  isUnicodeIdentifier("A_1"));
-        assertFalse("A-1",  isUnicodeIdentifier("A-1"));
-        assertFalse("A+1",  isUnicodeIdentifier("A+1"));
-        assertFalse("A/1",  isUnicodeIdentifier("A/1"));
-        assertFalse("A\\1", isUnicodeIdentifier("A\\1"));
-        assertFalse("A*1",  isUnicodeIdentifier("A*1"));
-        assertFalse("A.1",  isUnicodeIdentifier("A.1"));
-        assertFalse("A,1",  isUnicodeIdentifier("A,1"));
-        assertFalse("A:1",  isUnicodeIdentifier("A:1"));
-        assertFalse("A;1",  isUnicodeIdentifier("A;1"));
-        assertFalse("A#1",  isUnicodeIdentifier("A#1"));
-        assertFalse("A?1",  isUnicodeIdentifier("A?1"));
-        assertFalse("A!1",  isUnicodeIdentifier("A!1"));
-        assertFalse("A°1",  isUnicodeIdentifier("A°1"));  // Degree
-        assertTrue ("Aº1",  isUnicodeIdentifier("Aº1"));  // Masculine ordinal
-        assertFalse("A 1",  isUnicodeIdentifier("A 1"));  // Ordinary space
-        assertFalse("A 1",  isUnicodeIdentifier("A" + Characters.NO_BREAK_SPACE + "1"));
-        assertFalse("A‐1",  isUnicodeIdentifier("A" + Characters.HYPHEN         + "1"));
-        assertTrue ("A­1",  isUnicodeIdentifier("A" + Characters.SOFT_HYPHEN    + "1"));
+        assertFalse(isUnicodeIdentifier(null));
+        assertTrue (isUnicodeIdentifier("A123"));
+        assertFalse(isUnicodeIdentifier("123A"));
+        assertTrue (isUnicodeIdentifier("A_1"));
+        assertFalse(isUnicodeIdentifier("A-1"));
+        assertFalse(isUnicodeIdentifier("A+1"));
+        assertFalse(isUnicodeIdentifier("A/1"));
+        assertFalse(isUnicodeIdentifier("A\\1"));
+        assertFalse(isUnicodeIdentifier("A*1"));
+        assertFalse(isUnicodeIdentifier("A.1"));
+        assertFalse(isUnicodeIdentifier("A,1"));
+        assertFalse(isUnicodeIdentifier("A:1"));
+        assertFalse(isUnicodeIdentifier("A;1"));
+        assertFalse(isUnicodeIdentifier("A#1"));
+        assertFalse(isUnicodeIdentifier("A?1"));
+        assertFalse(isUnicodeIdentifier("A!1"));
+        assertFalse(isUnicodeIdentifier("A°1"));  // Degree
+        assertTrue (isUnicodeIdentifier("Aº1"));  // Masculine ordinal
+        assertFalse(isUnicodeIdentifier("A 1"));  // Ordinary space
+        assertFalse(isUnicodeIdentifier("A" + Characters.NO_BREAK_SPACE + "1"));
+        assertFalse(isUnicodeIdentifier("A" + Characters.HYPHEN         + "1"));
+        assertTrue (isUnicodeIdentifier("A" + Characters.SOFT_HYPHEN    + "1"));
     }
 
     /**
@@ -424,15 +424,15 @@ public final class CharSequencesTest extends TestCase {
      */
     @Test
     public void testIsUpperCase() {
-        assertFalse("null",  isUpperCase(null));
-        assertFalse("empty", isUpperCase(""));
-        assertTrue ("ABC",   isUpperCase("ABC"));
-        assertFalse("AbC",   isUpperCase("AbC"));
-        assertTrue ("A2C",   isUpperCase("A2C"));
-        assertFalse("A2c",   isUpperCase("A2c"));
-        assertTrue ("A.C",   isUpperCase("A.C"));
-        assertTrue ("A C",   isUpperCase("A C"));
-        assertFalse(".2-",   isUpperCase(".2-"));
+        assertFalse(isUpperCase(null));
+        assertFalse(isUpperCase(""));
+        assertTrue (isUpperCase("ABC"));
+        assertFalse(isUpperCase("AbC"));
+        assertTrue (isUpperCase("A2C"));
+        assertFalse(isUpperCase("A2c"));
+        assertTrue (isUpperCase("A.C"));
+        assertTrue (isUpperCase("A C"));
+        assertFalse(isUpperCase(".2-"));
     }
 
     /**

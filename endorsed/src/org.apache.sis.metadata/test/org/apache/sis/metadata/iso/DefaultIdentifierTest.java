@@ -21,8 +21,8 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.xml.Namespaces;
 
 // Test dependencies
-import org.junit.*;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
@@ -83,8 +83,8 @@ public final class DefaultIdentifierTest extends TestCase {
     @Test
     public void testUnmarshall() throws JAXBException {
         final DefaultIdentifier identifier = unmarshal(DefaultIdentifier.class, XML);
-        assertNull       ("identifier",        identifier.getVersion());
+        assertNull(identifier.getVersion());
         assertTitleEquals("authority", "EPSG", identifier.getAuthority());
-        assertEquals     ("code",      "4326", identifier.getCode());
+        assertEquals("4326", identifier.getCode());
     }
 }

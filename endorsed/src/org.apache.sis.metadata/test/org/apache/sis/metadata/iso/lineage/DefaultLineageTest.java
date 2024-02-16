@@ -24,8 +24,8 @@ import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.xml.test.TestCase;
@@ -66,7 +66,7 @@ public final class DefaultLineageTest extends TestCase {
      */
     private static void verify(final DefaultLineage lineage) {
         final Source source = TestUtilities.getSingleton(lineage.getSources());
-        assertEquals("source.description", "Description of source data level.", String.valueOf(source.getDescription()));
+        assertEquals("Description of source data level.", String.valueOf(source.getDescription()));
     }
 
     /**

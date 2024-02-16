@@ -21,9 +21,8 @@ import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.referencing.Assertions.assertIsNotIdentity;
@@ -85,7 +84,7 @@ public final class ExponentialTransform1DTest extends MathTransformTestCase {
     private void run(final Class<? extends MathTransform1D> expectedType, final double base, final double scale,
             final boolean preAffine, final boolean postAffine) throws TransformException
     {
-        assertInstanceOf("Expected the use of mathematical identities.", expectedType, transform);
+        assertInstanceOf(expectedType, transform, "Expected the use of mathematical identities.");
         assertIsNotIdentity(transform);
         validate();
 
@@ -127,8 +126,8 @@ public final class ExponentialTransform1DTest extends MathTransformTestCase {
         final double offset = -log(SCALE) / log(base);
         final MathTransform1D log = LogarithmicTransform1D.create(base, offset);
         transform = (LinearTransform1D) MathTransforms.concatenate(transform, log);
-        assertEquals("C1", C1, ((LinearTransform1D) transform).scale,  EPS);
-        assertEquals("C0", C0, ((LinearTransform1D) transform).offset, EPS);
+        assertEquals(C1, ((LinearTransform1D) transform).scale,  EPS);
+        assertEquals(C0, ((LinearTransform1D) transform).offset, EPS);
     }
 
     /**

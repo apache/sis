@@ -48,7 +48,7 @@ import org.apache.sis.util.internal.X364;
 import static org.apache.sis.util.internal.StandardDateFormat.UTC;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -258,7 +258,7 @@ public final class TestUtilities extends Static {
         } catch (ParseException e) {
             throw new AssertionError(e);
         }
-        assertEquals("Parsed text not equal to the original value", value, parsed);
+        assertEquals(value, parsed, "Parsed text not equal to the original value");
         return text;
     }
 
@@ -333,8 +333,8 @@ public final class TestUtilities extends Static {
      * @return the singleton element from the array.
      */
     public static <E> E getSingleton(final E[] array) {
-        assertNotNull("Null array.", array);
-        assertEquals("Not a singleton array.", 1, array.length);
+        assertNotNull(array, "Null array.");
+        assertEquals(1, array.length, "Not a singleton array.");
         return array[0];
     }
 
@@ -347,11 +347,11 @@ public final class TestUtilities extends Static {
      * @return the singleton element from the collection.
      */
     public static <E> E getSingleton(final Iterable<? extends E> collection) {
-        assertNotNull("Null collection.", collection);
+        assertNotNull(collection, "Null collection.");
         final Iterator<? extends E> it = collection.iterator();
-        assertTrue("The collection is empty.", it.hasNext());
+        assertTrue(it.hasNext(), "The collection is empty.");
         final E element = it.next();
-        assertFalse("The collection has more than one element.", it.hasNext());
+        assertFalse(it.hasNext(), "The collection has more than one element.");
         return element;
     }
 
@@ -364,7 +364,7 @@ public final class TestUtilities extends Static {
      * @return copy of the given {@code coordinates} array with only the {@code targetDim} first dimension for each point.
      */
     public static double[] dropLastDimensions(final double[] coordinates, final int sourceDim, final int targetDim) {
-        assertEquals("Unexpected array length.", 0, coordinates.length % sourceDim);
+        assertEquals(0, coordinates.length % sourceDim, "Unexpected array length.");
         final int numPts = coordinates.length / sourceDim;
         final double[] reduced = new double[numPts * targetDim];
         for (int i=0; i<numPts; i++) {
@@ -430,7 +430,7 @@ public final class TestUtilities extends Static {
      * @throws InterruptedException if this thread has been interrupted while waiting.
      */
     public static boolean waitForGarbageCollection(final Callable<Boolean> stopCondition) throws InterruptedException {
-        assertTrue("GC-dependent tests not allowed in this run.", TestConfiguration.allowGarbageCollectorDependentTests());
+        assertTrue(TestConfiguration.allowGarbageCollectorDependentTests(), "GC-dependent tests not allowed in this run.");
         int retry = MAXIMAL_WAIT_TIME / 50;             // 50 shall be the same number as in the call to Thread.sleep.
         boolean stop;
         do {

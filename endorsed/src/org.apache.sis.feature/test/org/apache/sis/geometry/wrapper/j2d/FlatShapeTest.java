@@ -20,7 +20,7 @@ import java.awt.geom.Path2D;
 import org.opengis.referencing.operation.TransformException;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.feature.Assertions.assertPathEquals;
 

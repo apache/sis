@@ -38,7 +38,7 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;

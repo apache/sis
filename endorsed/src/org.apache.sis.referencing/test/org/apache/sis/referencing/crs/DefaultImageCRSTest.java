@@ -29,9 +29,8 @@ import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.xml.Namespaces;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.cs.HardCodedAxes;
@@ -152,19 +151,19 @@ public final class DefaultImageCRSTest extends TestCase {
         assertXmlEquals(expected, xml, "xmlns:*");
 
         final DefaultImageCRS crs = unmarshal(DefaultImageCRS.class, xml);
-        assertEquals("name", "An image CRS", crs.getName().getCode());
-        assertEquals("datum.name", "C1", crs.getDatum().getName().getCode());
+        assertEquals("An image CRS", crs.getName().getCode());
+        assertEquals("C1", crs.getDatum().getName().getCode());
 
         final CoordinateSystem cs = crs.getCoordinateSystem();
-        assertInstanceOf("coordinateSystem", cartesian ? CartesianCS.class : AffineCS.class, cs);
-        assertEquals("cs.isCartesian", cartesian, cs instanceof CartesianCS);
-        assertEquals("cs.name", "Grid", cs.getName().getCode());
-        assertEquals("cs.dimension", 2, cs.getDimension());
+        assertInstanceOf((Class<?>) (cartesian ? CartesianCS.class : AffineCS.class), cs);
+        assertEquals(cartesian, cs instanceof CartesianCS);
+        assertEquals("Grid", cs.getName().getCode());
+        assertEquals(2, cs.getDimension());
         assertAxisDirectionsEqual("cartesianCS", cs, AxisDirection.COLUMN_POSITIVE, AxisDirection.ROW_POSITIVE);
 
-        assertEquals("cs.axis[0].name", "Column",    cs.getAxis(0).getName().getCode());
-        assertEquals("cs.axis[1].name", "Row",       cs.getAxis(1).getName().getCode());
-        assertEquals("cs.axis[0].abbreviation", "i", cs.getAxis(0).getAbbreviation());
-        assertEquals("cs.axis[1].abbreviation", "j", cs.getAxis(1).getAbbreviation());
+        assertEquals("Column", cs.getAxis(0).getName().getCode());
+        assertEquals("Row",    cs.getAxis(1).getName().getCode());
+        assertEquals("i",      cs.getAxis(0).getAbbreviation());
+        assertEquals("j",      cs.getAxis(1).getAbbreviation());
     }
 }

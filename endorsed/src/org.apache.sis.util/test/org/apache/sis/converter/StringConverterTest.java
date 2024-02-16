@@ -39,10 +39,11 @@ import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.SimpleInternationalString;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
@@ -61,24 +62,19 @@ public final class StringConverterTest extends TestCase {
     private static <T> void runInvertibleConversion(final ObjectConverter<String,T> c,
             final String source, final T target) throws UnconvertibleObjectException
     {
-        assertEquals("Forward conversion.", target, c.apply(source));
-        assertEquals("Inverse conversion.", source, c.inverse().apply(target));
-        assertSame("Inconsistent inverse.", c, c.inverse().inverse());
-        assertTrue("Invertible converters shall declare this capability.",
-                c.properties().contains(FunctionProperty.INVERTIBLE));
+        assertEquals(target, c.apply(source), "Forward conversion.");
+        assertEquals(source, c.inverse().apply(target), "Inverse conversion.");
+        assertSame(c, c.inverse().inverse(), "Inconsistent inverse.");
+        assertTrue(c.properties().contains(FunctionProperty.INVERTIBLE),
+                   "Invertible converters shall declare this capability.");
     }
 
     /**
      * Tries to convert an unconvertible value.
      */
     private static void tryUnconvertibleValue(final ObjectConverter<String,?> c) {
-        try {
-            c.apply("他の言葉");
-            fail("Should not accept a text.");
-        } catch (UnconvertibleObjectException e) {
-            // This is the expected exception.
-            assertTrue(e.getMessage().contains("他の言葉"));
-        }
+        var e = assertThrows(UnconvertibleObjectException.class, () -> c.apply("他の言葉"));
+        assertMessageContains(e, "他の言葉");
     }
 
     /**

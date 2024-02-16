@@ -89,7 +89,7 @@ final class LegalSymbols {
      */
     static void parse(final String notice, final DefaultLegalConstraints constraints) {
         final int length = notice.length();
-        final StringBuilder buffer = new StringBuilder(length);
+        final var buffer = new StringBuilder(length);
         int     year           = 0;         // The copyright year, or 0 if none.
         int     quoteLevel     = 0;         // Incremented on ( [ « characters, decremented on ) ] » characters.
         boolean isCopyright    = false;     // Whether the word parsed by previous iteration was "Copyright" or "(C)".
@@ -205,7 +205,7 @@ parse:  for (int i = 0; i < length;) {
             if (!isSpaceOrPunctuation(c)) break;
             i -= Character.charCount(c);
         }
-        final DefaultCitation c = new DefaultCitation(notice);
+        final var c = new DefaultCitation(notice);
         if (year != 0) {
             final Date date = new Date(LocalDate.of(year, 1, 1).toEpochDay() * MILLISECONDS_PER_DAY);
             c.setDates(Collections.singleton(new DefaultCitationDate(date, DateType.IN_FORCE)));
@@ -213,7 +213,7 @@ parse:  for (int i = 0; i < length;) {
         if (i != 0) {
             buffer.setLength(i);
             // Same limitation as MetadataBuilder.party().
-            final AbstractParty party = new AbstractParty(buffer, null);
+            final var party = new AbstractParty(buffer, null);
             final var r = new DefaultResponsibleParty(Role.OWNER);
             r.setParties(Collections.singleton(party));
             c.setCitedResponsibleParties(Collections.singleton(r));

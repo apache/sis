@@ -30,7 +30,7 @@ import org.apache.sis.util.internal.CollectionsExt;
 import org.apache.sis.metadata.internal.Dependencies;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.xml.test.AnnotationConsistencyCheck;
@@ -84,9 +84,9 @@ public abstract class PropertyConsistencyCheck extends AnnotationConsistencyChec
      */
     @Override
     protected <T> Class<? extends T> getImplementation(final Class<T> type) {
-        assertTrue(type.getName(), standard.isMetadata(type));
+        assertTrue(standard.isMetadata(type), type.getName());
         final Class<? extends T> impl = standard.getImplementation(type);
-        assertNotNull(type.getName(), impl);
+        assertNotNull(impl, type.getName());
         return impl;
     }
 
@@ -179,7 +179,7 @@ public abstract class PropertyConsistencyCheck extends AnnotationConsistencyChec
      * @param  metadata  the metadata to validate.
      */
     protected void validate(final AbstractMetadata metadata) {
-        assertTrue("AbstractMetadata.isEmpty()", metadata.isEmpty());
+        assertTrue(metadata.isEmpty(), "AbstractMetadata.isEmpty()");
     }
 
     /**
@@ -195,7 +195,7 @@ public abstract class PropertyConsistencyCheck extends AnnotationConsistencyChec
             if (!ControlledVocabulary.class.isAssignableFrom(type)) {
                 final Class<?> impl = getImplementation(type);
                 if (impl != null) {
-                    assertTrue("Not an implementation of expected interface.", type.isAssignableFrom(impl));
+                    assertTrue(type.isAssignableFrom(impl), "Not an implementation of expected interface.");
                     testPropertyValues(new PropertyAccessor(type, impl, impl));
                 }
             }
@@ -233,39 +233,39 @@ public abstract class PropertyConsistencyCheck extends AnnotationConsistencyChec
                 continue;
             }
             final String property = accessor.name(i, KeyNamePolicy.JAVABEANS_PROPERTY);
-            assertNotNull("Missing method name.", testingMethod);
-            assertNotNull("Missing property name.", property);
-            assertEquals("Wrong property index.", i, accessor.indexOf(property, true));
+            assertNotNull(testingMethod, "Missing method name.");
+            assertNotNull(property, "Missing property name.");
+            assertEquals(i, accessor.indexOf(property, true), "Wrong property index.");
             /*
              * Get the property type. In the special case where the property type
              * is a collection, this is the type of elements in that collection.
              */
             final Class<?> propertyType = Numbers.primitiveToWrapper(accessor.type(i, TypeValuePolicy.PROPERTY_TYPE));
             final Class<?>  elementType = Numbers.primitiveToWrapper(accessor.type(i, TypeValuePolicy.ELEMENT_TYPE));
-            assertNotNull(testingMethod, propertyType);
-            assertNotNull(testingMethod, elementType);
+            assertNotNull(propertyType, testingMethod);
+            assertNotNull(elementType, testingMethod);
             final boolean isMap        =        Map.class.isAssignableFrom(propertyType);
             final boolean isCollection = Collection.class.isAssignableFrom(propertyType);
-            assertFalse("Element type cannot be Collection.", Collection.class.isAssignableFrom(elementType));
-            assertEquals("Property and element types shall be the same if and only if not a collection.",
-                         !(isMap | isCollection), propertyType == elementType);
+            assertFalse(Collection.class.isAssignableFrom(elementType), "Element type cannot be Collection.");
+            assertEquals(!(isMap | isCollection), propertyType == elementType,
+                    "Property and element types shall be the same if and only if not a collection.");
             /*
              * Try to get a value.
              */
             Object value = accessor.get(i, instance);
             if (value == null) {
-                assertFalse("Null values are not allowed to be collections.", isMap | isCollection);
+                assertFalse(isMap | isCollection, "Null values are not allowed to be collections.");
             } else {
-                assertTrue("Wrong property type.", propertyType.isInstance(value));
+                assertTrue(propertyType.isInstance(value), "Wrong property type.");
                 if (value instanceof CheckedContainer<?>) {
-                    assertTrue("Wrong element type in collection.",
-                            elementType.isAssignableFrom(((CheckedContainer<?>) value).getElementType()));
+                    assertTrue(elementType.isAssignableFrom(((CheckedContainer<?>) value).getElementType()),
+                               "Wrong element type in collection.");
                 }
                 if (isMap) {
-                    assertTrue("Collections shall be initially empty.", ((Map<?,?>) value).isEmpty());
+                    assertTrue(((Map<?,?>) value).isEmpty(), "Collections shall be initially empty.");
                     value = CollectionsExt.modifiableCopy((Map<?,?>) value);                          // Protect from changes.
                 } else if (isCollection) {
-                    assertTrue("Collections shall be initially empty.", ((Collection<?>) value).isEmpty());
+                    assertTrue(((Collection<?>) value).isEmpty(), "Collections shall be initially empty.");
                     value = CollectionsExt.modifiableCopy((Collection<?>) value);                     // Protect from changes.
                 }
             }
@@ -282,19 +282,19 @@ public abstract class PropertyConsistencyCheck extends AnnotationConsistencyChec
                 }
                 final Object newValue = sampleValueFor(property, elementType);
                 final Object oldValue = accessor.set(i, instance, newValue, PropertyAccessor.RETURN_PREVIOUS);
-                assertEquals("PropertyAccessor.set(…) shall return the value previously returned by get(…).", value, oldValue);
+                assertEquals(value, oldValue, "PropertyAccessor.set(…) shall return the value previously returned by get(…).");
                 value = accessor.get(i, instance);
                 if (isCollection) {
                     if (newValue == null) {
-                        assertTrue("We did not generated a random value for this type, consequently the "
-                                + "collection should still empty.", ((Collection<?>) value).isEmpty());
+                        assertTrue(((Collection<?>) value).isEmpty(), "We did not generated a random value"
+                                + " for this type, consequently the collection should still empty.");
                         value = null;
                     } else {
                         value = TestUtilities.getSingleton((Collection<?>) value);
                     }
                 }
-                assertEquals("PropertyAccessor.get(…) shall return the value that we have just set.",
-                        normalizeType(newValue), normalizeType(value));
+                assertEquals(normalizeType(newValue), normalizeType(value),
+                        "PropertyAccessor.get(…) shall return the value that we have just set.");
             }
         }
     }
@@ -334,14 +334,14 @@ public abstract class PropertyConsistencyCheck extends AnnotationConsistencyChec
 
                     // Property shall exist.
                     final int index = accessor.indexOf(name, false);
-                    assertTrue(message, index >= 0);
+                    assertTrue(index >= 0, message);
 
                     // Property cannot be a metadata.
                     final Class<?> elementType = accessor.type(index, TypeValuePolicy.ELEMENT_TYPE);
-                    assertFalse(message, standard.isMetadata(elementType));
+                    assertFalse(standard.isMetadata(elementType), message);
 
                     // Property shall be a singleton.
-                    assertSame(message, elementType, accessor.type(index, TypeValuePolicy.PROPERTY_TYPE));
+                    assertSame(elementType, accessor.type(index, TypeValuePolicy.PROPERTY_TYPE), message);
                 }
             }
         }
@@ -371,8 +371,8 @@ public abstract class PropertyConsistencyCheck extends AnnotationConsistencyChec
                          * Currently, @Dependencies is applied only on deprecated getter methods.
                          * However, this policy may change in future Apache SIS versions.
                          */
-                        assertTrue(name, name.startsWith("get"));
-                        assertTrue(name, method.isAnnotationPresent(Deprecated.class));
+                        assertTrue(name.startsWith("get"), name);
+                        assertTrue(method.isAnnotationPresent(Deprecated.class), name);
                         /*
                          * All dependencies shall be non-deprecated methods. Combined with above
                          * restriction about @Dependencies applied only on deprected methods, this
@@ -380,10 +380,10 @@ public abstract class PropertyConsistencyCheck extends AnnotationConsistencyChec
                          */
                         for (final String ref : dep.value()) {
                             // Verify that the dependency is a property name.
-                            assertEquals(name, names.get(ref), ref);
+                            assertEquals(names.get(ref), ref, name);
 
                             // Verify that the referenced method is non-deprecated.
-                            assertFalse(name, impl.getMethod(names.get(ref)).isAnnotationPresent(Deprecated.class));
+                            assertFalse(impl.getMethod(names.get(ref)).isAnnotationPresent(Deprecated.class), name);
                         }
                     }
                 }

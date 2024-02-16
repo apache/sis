@@ -17,10 +17,8 @@
 package org.apache.sis.storage.shapefile.shp;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.channels.WritableByteChannel;
 import java.nio.file.*;
 import org.locationtech.jts.geom.CoordinateSequence;
 import org.locationtech.jts.geom.LineString;
@@ -38,7 +36,7 @@ import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 

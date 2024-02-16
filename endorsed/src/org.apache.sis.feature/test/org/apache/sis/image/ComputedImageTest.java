@@ -26,9 +26,9 @@ import java.awt.image.ImagingOpException;
 import java.util.function.Consumer;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.feature.Assertions.assertValuesEqual;
@@ -170,10 +170,10 @@ public final class ComputedImageTest extends TestCase {
      * If non-null, the given indices shall contain (1,2) and shall not contain (2,1).
      */
     private static void verifyWritableTiles(final ComputedImage image, final Point... expected) {
-        assertFalse      ("isTileWritable",                   image.isTileWritable(2, 1));
-        assertEquals     ("isTileWritable", null != expected, image.isTileWritable(TILE_X, TILE_Y));
-        assertEquals     ("hasTileWriters", null != expected, image.hasTileWriters());
-        assertArrayEquals("getWritableTileIndices", expected, image.getWritableTileIndices());
+        assertFalse      (                  image.isTileWritable(2, 1));
+        assertEquals     (null != expected, image.isTileWritable(TILE_X, TILE_Y));
+        assertEquals     (null != expected, image.hasTileWriters());
+        assertArrayEquals(expected, image.getWritableTileIndices());
     }
 
     /**
@@ -183,23 +183,16 @@ public final class ComputedImageTest extends TestCase {
     public void testErrorFlag() {
         onComputeTile = ComputedImageTest::makeError;
         final ComputedImage image = createImage();
-        try {
-            image.getTile(TILE_X, TILE_Y);
-            fail("Computation should have failed.");
-        } catch (ImagingOpException e) {
-            assertInstanceOf("cause", IllegalStateException.class, e.getCause());
-        }
+        final Executable request = () -> image.getTile(TILE_X, TILE_Y);
+        var e = assertThrows(ImagingOpException.class, request);
+        assertNotNull(assertInstanceOf(IllegalStateException.class, e.getCause()));
         /*
          * Ask again for the same tile. ComputedTile should have set a flag for remembering
          * that the computation of this tile failed, and should not try to compute it again.
          */
         onComputeTile = ComputedImageTest::notInvoked;
-        try {
-            image.getTile(TILE_X, TILE_Y);
-            fail("Computation should have failed.");
-        } catch (ImagingOpException e) {
-            assertNull("cause", e.getCause());
-        }
+        e = assertThrows(ImagingOpException.class, request);
+        assertNull(e.getCause());
         /*
          * Clearing the error flag should allow to compute the tile again.
          */

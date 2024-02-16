@@ -17,15 +17,14 @@
 package org.apache.sis.util.internal;
 
 import java.util.Locale;
-import java.text.ParseException;
 import java.text.ParsePosition;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -48,20 +47,19 @@ public final class LocalizedParseExceptionTest extends TestCase {
      */
     @Test
     public void testAutomaticMessage() {
-        final ParsePosition pos = new ParsePosition(0);
+        final var pos = new ParsePosition(0);
         pos.setErrorIndex(5);
-        final ParseException e = new LocalizedParseException(
-                Locale.CANADA, Angle.class, "Some text to parse", pos);
+        final var e = new LocalizedParseException(Locale.CANADA, Angle.class, "Some text to parse", pos);
         String message = e.getLocalizedMessage();
-        assertTrue(message, message.contains("Some text to parse"));
-        assertTrue(message, message.contains("cannot be parsed"));
-        assertTrue(message, message.contains("Angle"));
+        assertTrue(message.contains("Some text to parse"), message);
+        assertTrue(message.contains("cannot be parsed"), message);
+        assertTrue(message.contains("Angle"), message);
 
         assertEquals(message, Exceptions.getLocalizedMessage(e, Locale.CANADA));
         message = Exceptions.getLocalizedMessage(e, Locale.FRANCE);
-        assertTrue(message, message.contains("Some text to parse"));
-        assertTrue(message, message.contains("n’est pas reconnu"));
-        assertTrue(message, message.contains("Angle"));
+        assertTrue(message.contains("Some text to parse"), message);
+        assertTrue(message.contains("n’est pas reconnu"), message);
+        assertTrue(message.contains("Angle"), message);
     }
 
     /**
@@ -70,9 +68,9 @@ public final class LocalizedParseExceptionTest extends TestCase {
      */
     @Test
     public void testResourceKeyForText() {
-        final ParseException e = new LocalizedParseException(
+        final var e = new LocalizedParseException(
                 Locale.CANADA, Errors.Keys.NodeHasNoParent_1, new Object[] {"text"}, 5);
         String message = e.getLocalizedMessage();
-        assertTrue(message, message.contains("Node “text” has no parent."));
+        assertTrue(message.contains("Node “text” has no parent."), message);
     }
 }

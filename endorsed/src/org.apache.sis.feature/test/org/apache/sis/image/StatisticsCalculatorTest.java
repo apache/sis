@@ -28,9 +28,10 @@ import org.apache.sis.system.Modules;
 import org.apache.sis.math.Statistics;
 
 // Test dependencies
-import org.junit.Rule;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestCase;
@@ -53,7 +54,7 @@ public final class StatisticsCalculatorTest extends TestCase {
     /**
      * Intercepts log records for verifying them.
      */
-    @Rule
+    @RegisterExtension
     public final LoggingWatcher loggings = new LoggingWatcher(getLogger(Modules.RASTER));
 
     /**
@@ -122,13 +123,13 @@ public final class StatisticsCalculatorTest extends TestCase {
         for (int i=0; i<expected.length; i++) {
             final Statistics e = expected[i];
             final Statistics a = actual  [i];
-            assertEquals("minimum", e.minimum(), a.minimum(), STRICT);
-            assertEquals("maximum", e.maximum(), a.maximum(), STRICT);
-            assertEquals("sum",     e.sum(),     a.sum(),     STRICT);
+            assertEquals(e.minimum(), a.minimum());
+            assertEquals(e.maximum(), a.maximum());
+            assertEquals(e.sum(),     a.sum());
         }
         loggings.assertNoUnexpectedLog();
-        assertEquals("minimum", minimum, actual[0].minimum(), STRICT);
-        assertEquals("maximum", maximum, actual[0].maximum(), STRICT);
+        assertEquals(minimum, actual[0].minimum());
+        assertEquals(maximum, actual[0].maximum());
     }
 
     /**
@@ -174,14 +175,10 @@ public final class StatisticsCalculatorTest extends TestCase {
         operations.setExecutionMode(ImageProcessor.Mode.PARALLEL);
         final TiledImageMock image = createImage();
         image.failRandomly(new Random(-8739538736973900203L), true);
-        try {
-            operations.valueOfStatistics(image, areaOfInterest, sampleFilters);
-            fail("Expected ImagingOpException.");
-        } catch (ImagingOpException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains(StatisticsCalculator.STATISTICS_KEY));
-            assertNotNull("Expected a cause.", e.getCause());
-        }
+        var e = assertThrows(ImagingOpException.class,
+                () -> operations.valueOfStatistics(image, areaOfInterest, sampleFilters));
+        assertMessageContains(e, StatisticsCalculator.STATISTICS_KEY);
+        assertNotNull(e.getCause());
         loggings.assertNoUnexpectedLog();
     }
 
@@ -214,13 +211,13 @@ public final class StatisticsCalculatorTest extends TestCase {
     public void testFilterNodataValues() {
         assertNull(StatisticsCalculator.filterNodataValues(new Number[] {null, Double.NaN}));
         DoubleUnaryOperator op =  StatisticsCalculator.filterNodataValues(new Number[] {100});
-        assertEquals( 10, op.applyAsDouble( 10), STRICT);
-        assertEquals(202, op.applyAsDouble(202), STRICT);
+        assertEquals( 10, op.applyAsDouble( 10));
+        assertEquals(202, op.applyAsDouble(202));
         assertTrue(Double.isNaN(op.applyAsDouble(100)));
 
         op =  StatisticsCalculator.filterNodataValues(new Number[] {201, null, 100, 310, Double.NaN, 201});
-        assertEquals( 10, op.applyAsDouble( 10), STRICT);
-        assertEquals(202, op.applyAsDouble(202), STRICT);
+        assertEquals( 10, op.applyAsDouble( 10));
+        assertEquals(202, op.applyAsDouble(202));
         assertTrue(Double.isNaN(op.applyAsDouble(100)));
         assertTrue(Double.isNaN(op.applyAsDouble(310)));
         assertTrue(Double.isNaN(op.applyAsDouble(201)));

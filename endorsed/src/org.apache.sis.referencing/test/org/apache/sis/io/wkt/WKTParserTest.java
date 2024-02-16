@@ -24,8 +24,8 @@ import org.apache.sis.metadata.internal.AxisNames;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 
 // Test dependencies
-import org.junit.Test;
-import org.junit.Ignore;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Disabled;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.wkt.CRSParserTest;
 import org.apache.sis.test.DependsOn;
@@ -240,7 +240,7 @@ public final class WKTParserTest extends CRSParserTest {
      */
     @Test
     @Override
-    @Ignore("Lambert Azimuthal Equal Area projection method not yet implemented.")
+    @Disabled("Lambert Azimuthal Equal Area projection method not yet implemented.")
     public void testProjectedYX() throws FactoryException {
     }
 
@@ -475,7 +475,7 @@ public final class WKTParserTest extends CRSParserTest {
      */
     @Test
     @Override
-    @org.junit.Ignore("Pending new AxisDirection code list in GeoAPI.")
+    @Disabled("Pending new AxisDirection code list in GeoAPI.")
     public void testEngineeringForShip() throws FactoryException {
         super.testEngineeringForShip();
         final CoordinateSystem cs = object.getCoordinateSystem();
@@ -573,7 +573,7 @@ public final class WKTParserTest extends CRSParserTest {
      */
     @Test
     @Override
-    @org.junit.Ignore("Pending implementation of EPSG:1049 — Seismic bin grid.")
+    @Disabled("Pending implementation of EPSG:1049 — Seismic bin grid.")
     public void testDerivedEngineeringFromProjected() throws FactoryException {
         super.testDerivedEngineeringFromProjected();
         final CoordinateSystem cs = object.getCoordinateSystem();

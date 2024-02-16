@@ -20,7 +20,7 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.CRS;
 
 // Test dependencies
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
 
 /**
@@ -48,7 +48,7 @@ public final class AuthorityFactoryTest extends org.opengis.test.referencing.Aut
      * Skips for now the <cite>Krovak</cite> projection.
      */
     @Override
-    @Ignore("Projection not yet implemented")
+    @Disabled("Projection not yet implemented")
     public void testEPSG_2065() {
     }
 
@@ -56,7 +56,7 @@ public final class AuthorityFactoryTest extends org.opengis.test.referencing.Aut
      * Skips for now the <cite>Lambert Azimuthal Equal Area</cite> projection.
      */
     @Override
-    @Ignore("Projection not yet implemented")
+    @Disabled("Projection not yet implemented")
     public void testEPSG_3035() {
     }
 
@@ -65,7 +65,7 @@ public final class AuthorityFactoryTest extends org.opengis.test.referencing.Aut
      * because projection derivative (Jacobian matrix) is not yet implemented.
      */
     @Override
-    @Ignore("Derivative (Jacobian) not yet implemented")
+    @Disabled("Derivative (Jacobian) not yet implemented")
     public void testEPSG_3139() {
     }
 }

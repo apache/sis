@@ -24,11 +24,12 @@ import org.apache.sis.math.Fraction;
 import org.apache.sis.util.UnconvertibleObjectException;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.test.Assertions.assertMapEquals;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
@@ -93,9 +94,9 @@ public final class UnitDimensionTest extends TestCase {
     @Test
     @DependsOnMethod("testEqualsAndHashCode")
     public void testPow() {
-        assertSame("DIMENSIONLESS", DIMENSIONLESS, DIMENSIONLESS.pow(4));
-        assertSame("AREA",          AREA,          LENGTH.pow(2));
-        assertSame("VOLUME",        VOLUME,        LENGTH.pow(3));
+        assertSame(DIMENSIONLESS, DIMENSIONLESS.pow(4));
+        assertSame(AREA,          LENGTH.pow(2));
+        assertSame(VOLUME,        LENGTH.pow(3));
     }
 
     /**
@@ -104,9 +105,9 @@ public final class UnitDimensionTest extends TestCase {
     @Test
     @DependsOnMethod("testEqualsAndHashCode")
     public void testRoot() {
-        assertSame("DIMENSIONLESS", DIMENSIONLESS, DIMENSIONLESS.root(4));
-        assertSame("AREA",          LENGTH,        AREA.root(2));
-        assertSame("VOLUME",        LENGTH,        VOLUME.root(3));
+        assertSame(DIMENSIONLESS, DIMENSIONLESS.root(4));
+        assertSame(LENGTH,        AREA.root(2));
+        assertSame(LENGTH,        VOLUME.root(3));
     }
 
     /**
@@ -128,13 +129,8 @@ public final class UnitDimensionTest extends TestCase {
         assertNull(expected.put(MASS,   new Fraction(-1, 1)));
         assertNull(expected.put(LENGTH, new Fraction(-1, 1)));
         assertMapEquals(expected, ((UnitDimension) dim).components);
-        try {
-            dim.getBaseDimensions().toString();
-            fail("Mapping from Fraction to Integer should not be allowed.");
-        } catch (UnconvertibleObjectException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("Integer"));
-        }
+        var e = assertThrows(UnconvertibleObjectException.class, () -> dim.getBaseDimensions().toString());
+        assertMessageContains(e, "Integer");
         // 'toString()' formatting tested in UnitFormatTest.testRationalPower().
     }
 
@@ -146,9 +142,9 @@ public final class UnitDimensionTest extends TestCase {
      */
     @Test
     public void testGetBaseDimensions() {
-        assertNull("LENGTH",        LENGTH       .getBaseDimensions());     // Null value as per JSR-385 specification.
-        assertNull("TIME",          TIME         .getBaseDimensions());
-        assertTrue("DIMENSIONLESS", DIMENSIONLESS.getBaseDimensions().isEmpty());
+        assertNull(LENGTH       .getBaseDimensions());     // Null value as per JSR-385 specification.
+        assertNull(TIME         .getBaseDimensions());
+        assertTrue(DIMENSIONLESS.getBaseDimensions().isEmpty());
         assertMapEquals(Map.of(LENGTH, 3), VOLUME.getBaseDimensions());
 
         final Map<Dimension,Integer> expected = new HashMap<>(4);
@@ -189,9 +185,9 @@ public final class UnitDimensionTest extends TestCase {
     private static void verifyEqualsAndHashCode(final String message, final boolean expected, final Unit<?> a, final Unit<?> b) {
         final Dimension da = a.getDimension();
         final Dimension db = b.getDimension();
-        assertEquals(message, expected, da.equals(db));
-        assertEquals(message, expected, db.equals(da));
-        assertEquals(message, expected, da.hashCode() == db.hashCode());
+        assertEquals(expected, da.equals(db), message);
+        assertEquals(expected, db.equals(da), message);
+        assertEquals(expected, da.hashCode() == db.hashCode(), message);
     }
 
     /**

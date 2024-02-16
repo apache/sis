@@ -24,8 +24,8 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 

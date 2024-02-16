@@ -41,10 +41,9 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.system.DataDirectory;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assume.assumeTrue;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.referencing.operation.gridded.LoadedGridTest;
 
@@ -128,21 +127,21 @@ public final class NTv2Test extends DatumShiftTestCase {
     {
         final double cellSize = 360;
         final LoadedGrid<Angle,Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
-        assertInstanceOf("Should not be compressed.", LoadedGrid.Float.class, grid);
-        assertEquals("coordinateUnit",  Units.ARC_SECOND, grid.getCoordinateUnit());
-        assertEquals("translationUnit", Units.ARC_SECOND, grid.getTranslationUnit());
-        assertEquals("translationDimensions", 2,          grid.getTranslationDimensions());
-        assertTrue  ("isCellValueRatio",                  grid.isCellValueRatio());
-        assertEquals("cellPrecision", (ACCURACY / 10) / cellSize, grid.getCellPrecision(), 0.5E-6 / cellSize);
+        assertInstanceOf(LoadedGrid.Float.class, grid, "Should not be compressed.");
+        assertEquals(Units.ARC_SECOND, grid.getCoordinateUnit());
+        assertEquals(Units.ARC_SECOND, grid.getTranslationUnit());
+        assertEquals(2, grid.getTranslationDimensions());
+        assertTrue(grid.isCellValueRatio());
+        assertEquals((ACCURACY / 10) / cellSize, grid.getCellPrecision(), 0.5E-6 / cellSize);
         /*
          * Verify the envelope and the conversion between geographic coordinates and grid indices.
          * The cells are expected to have the same size (360″ or 0.1°) in longitudes and latitudes.
          */
         final Envelope envelope = grid.getDomainOfValidity();
-        assertEquals("xmin", xmin, envelope.getMinimum(0), STRICT);
-        assertEquals("xmax", xmax, envelope.getMaximum(0), STRICT);
-        assertEquals("ymin", ymin, envelope.getMinimum(1), STRICT);
-        assertEquals("ymax", ymax, envelope.getMaximum(1), STRICT);
+        assertEquals(xmin, envelope.getMinimum(0), "xmin");
+        assertEquals(xmax, envelope.getMaximum(0), "xmax");
+        assertEquals(ymin, envelope.getMinimum(1), "ymin");
+        assertEquals(ymax, envelope.getMaximum(1), "ymax");
         assertMatrixEquals("coordinateToGrid",
                 new Matrix3(-cellSize,  0,  xmax,
                             0,  +cellSize,  ymin,
@@ -170,13 +169,13 @@ public final class NTv2Test extends DatumShiftTestCase {
         grid.interpolateInCell(indices[0], indices[1], vector);
         vector[0] *= -cellSize;   // Was positive toward west.
         vector[1] *= +cellSize;
-        assertArrayEquals("interpolateInCell", expected, vector,
+        assertArrayEquals(expected, vector,
                 FranceGeocentricInterpolationTest.ANGULAR_TOLERANCE * DEGREES_TO_SECONDS);
 
         // Same test as above, but let DatumShiftGrid do the conversions for us.
-        assertArrayEquals("interpolateAt", expected, grid.interpolateAt(position),
+        assertArrayEquals(expected, grid.interpolateAt(position),
                 FranceGeocentricInterpolationTest.ANGULAR_TOLERANCE * DEGREES_TO_SECONDS);
-        assertSame("Grid should be cached.", grid, NTv2.getOrLoad(NTv2.class, file, 2));
+        assertSame(grid, NTv2.getOrLoad(NTv2.class, file, 2), "Grid should be cached.");
     }
 
     /**
@@ -196,11 +195,11 @@ public final class NTv2Test extends DatumShiftTestCase {
         assumeTrue(Files.exists(file.path().orElseThrow()));
 
         final LoadedGrid<Angle,Angle> grid = NTv2.getOrLoad(NTv2.class, file, 2);
-        assertInstanceOf("Should contain many grids.", GridGroup.class, grid);
-        assertEquals("coordinateUnit",  Units.ARC_SECOND, grid.getCoordinateUnit());
-        assertEquals("translationUnit", Units.ARC_SECOND, grid.getTranslationUnit());
-        assertEquals("translationDimensions", 2,          grid.getTranslationDimensions());
-        assertTrue  ("isCellValueRatio",                  grid.isCellValueRatio());
+        assertInstanceOf(GridGroup.class, grid, "Should contain many grids.");
+        assertEquals(Units.ARC_SECOND, grid.getCoordinateUnit());
+        assertEquals(Units.ARC_SECOND, grid.getTranslationUnit());
+        assertEquals(2, grid.getTranslationDimensions());
+        assertTrue(grid.isCellValueRatio());
         /*
          * Area of use declared in EPSG database for coordinate operation EPSG::1693:
          *
@@ -211,10 +210,10 @@ public final class NTv2Test extends DatumShiftTestCase {
          */
         final double cellSize = 300;                                    // Number of arc-seconds in a cell.
         final Envelope envelope = grid.getDomainOfValidity();
-        assertEquals("xmin", -142.25 * DEGREES_TO_SECONDS, envelope.getMinimum(0), 1E-10);
-        assertEquals("xmax",  -44.00 * DEGREES_TO_SECONDS, envelope.getMaximum(0), 1E-10);
-        assertEquals("ymin",   40.00 * DEGREES_TO_SECONDS, envelope.getMinimum(1), 1E-10);
-        assertEquals("ymax",   84.00 * DEGREES_TO_SECONDS, envelope.getMaximum(1), 1E-10);
+        assertEquals(-142.25 * DEGREES_TO_SECONDS, envelope.getMinimum(0), 1E-10, "xmin");
+        assertEquals( -44.00 * DEGREES_TO_SECONDS, envelope.getMaximum(0), 1E-10, "xmax");
+        assertEquals(  40.00 * DEGREES_TO_SECONDS, envelope.getMinimum(1), 1E-10, "ymin");
+        assertEquals(  84.00 * DEGREES_TO_SECONDS, envelope.getMaximum(1), 1E-10, "ymax");
         /*
          * Test a point. This point is located on the 3th grid in the NTv2 file.
          * Consequently, if the NTv2 implementation just pickups the first grid,
@@ -226,8 +225,8 @@ public final class NTv2Test extends DatumShiftTestCase {
         grid.getCoordinateToGrid().transform(position, 0, indices, 0, 1);
         final int gridX = Math.toIntExact(Math.round(indices[0]));
         final int gridY = Math.toIntExact(Math.round(indices[1]));
-        assertEquals("gridX", 1092, gridX);                                 // Value determined empirically.
-        assertEquals("gridY",  252, gridY);
+        assertEquals(1092, gridX);                                 // Value determined empirically.
+        assertEquals( 252, gridY);
         /*
          * First check the value computed by `getCellValue(…)`. This method is only a fallback and
          * should not be invoked in normal usage, so a direct invocation is the only way to test it.
@@ -236,7 +235,7 @@ public final class NTv2Test extends DatumShiftTestCase {
             position[0] - grid.getCellValue(0, gridX, gridY) * cellSize,    // Positive translation is toward west.
             position[1] + grid.getCellValue(1, gridX, gridY) * cellSize
         };
-        assertArrayEquals("getCellValue", expected, result, 0.001);
+        assertArrayEquals(expected, result, 0.001);
         /*
          * Check `interpolateInCell(…)`, which is the method invoked by `InterpolatedTransform`
          * when `SpecializableTransform` has not been able to find the most appropriate grid.
@@ -244,11 +243,11 @@ public final class NTv2Test extends DatumShiftTestCase {
         grid.interpolateInCell(indices[0], indices[1], result);
         result[0] = position[0] - result[0] * cellSize;                     // Positive translation is toward west.
         result[1] = position[1] + result[1] * cellSize;
-        assertArrayEquals("interpolateInCell", expected, result, Formulas.ANGULAR_TOLERANCE * DEGREES_TO_SECONDS);
+        assertArrayEquals(expected, result, Formulas.ANGULAR_TOLERANCE * DEGREES_TO_SECONDS);
         /*
          * Verify that the caching mechanism works for GridGroup too.
          */
-        assertSame("Grid should be cached.", grid, NTv2.getOrLoad(NTv2.class, file, 2));
+        assertSame(grid, NTv2.getOrLoad(NTv2.class, file, 2), "Grid should be cached.");
     }
 
 

@@ -17,7 +17,7 @@
 package org.apache.sis.io;
 
 // Test dependencies
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.apache.sis.test.DependsOn;
 
 
@@ -40,8 +40,8 @@ public final class WordWrapWithLineSeparatorTest extends WordWrapTest {
     /**
      * Creates and configure the {@link LineAppender} to test.
      */
-    @Before
     @Override
+    @BeforeEach
     public void createLineAppender() {
         appender = new LineAppender(new LineAppender(appender, "\r", false), WordWrapTest.LINE_LENGTH, false);
     }

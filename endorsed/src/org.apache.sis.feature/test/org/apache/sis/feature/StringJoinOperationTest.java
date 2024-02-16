@@ -20,16 +20,14 @@ import java.util.Map;
 import org.apache.sis.feature.internal.AttributeConvention;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
-import org.opengis.feature.PropertyType;
 import org.opengis.feature.InvalidPropertyValueException;
 
 
@@ -64,9 +62,9 @@ public final class StringJoinOperationTest extends TestCase {
      * @return the feature for a person.
      */
     private static DefaultFeatureType person() {
-        final PropertyType nameType = new DefaultAttributeType<>(name("name"), String.class, 1, 1, null);
-        final PropertyType ageType  = new DefaultAttributeType<>(name("age"), Integer.class, 1, 1, null);
-        final PropertyType cmpType  = FeatureOperations.compound(name("concat"), "/", "<<:", ":>>", nameType, ageType);
+        final var nameType = new DefaultAttributeType<>(name("name"), String.class, 1, 1, null);
+        final var ageType  = new DefaultAttributeType<>(name("age"), Integer.class, 1, 1, null);
+        final var cmpType  = FeatureOperations.compound(name("concat"), "/", "<<:", ":>>", nameType, ageType);
         return new DefaultFeatureType(name("person"), false, null, nameType, ageType, cmpType);
     }
 
@@ -118,9 +116,9 @@ public final class StringJoinOperationTest extends TestCase {
      */
     private static void testSetValue(final AbstractFeature feature) {
         feature.setPropertyValue("concat", "<<:emile/37:>>");
-        assertEquals("name",   "emile", feature.getPropertyValue("name"));
-        assertEquals("age",         37, feature.getPropertyValue("age"));
-        assertEquals("concat", "<<:emile/37:>>", feature.getPropertyValue("concat"));
+        assertEquals("emile", feature.getPropertyValue("name"));
+        assertEquals(37, feature.getPropertyValue("age"));
+        assertEquals("<<:emile/37:>>", feature.getPropertyValue("concat"));
     }
 
     /**
@@ -130,14 +128,14 @@ public final class StringJoinOperationTest extends TestCase {
     @Test
     @DependsOnMethod({"testGetValue", "testSetValue"})
     public void testEscapeCharacter() {
-        final DenseFeature feature = new DenseFeature(person());
+        final var feature = new DenseFeature(person());
         feature.setPropertyValue("name", "marc/emile\\julie");
         feature.setPropertyValue("age", 30);
         assertEquals("<<:marc\\/emile\\\\julie/30:>>", feature.getPropertyValue("concat"));
 
         feature.setPropertyValue("concat", "<<:emile\\\\julie\\/marc/:>>");
-        assertEquals("name", "emile\\julie/marc", feature.getPropertyValue("name"));
-        assertNull  ("age", feature.getPropertyValue("age"));
+        assertEquals("emile\\julie/marc", feature.getPropertyValue("name"));
+        assertNull(feature.getPropertyValue("age"));
     }
 
     /**
@@ -145,38 +143,28 @@ public final class StringJoinOperationTest extends TestCase {
      */
     @Test
     public void testIllegalArgument() {
-        final DenseFeature feature = new DenseFeature(person());
-        try {
-            feature.setPropertyValue("concat", "((:marc/21:>>");
-            fail("Should fail because of mismatched prefix.");
-        } catch (InvalidPropertyValueException e) {
-            String message = e.getMessage();
-            assertTrue(message, message.contains("<<:"));
-            assertTrue(message, message.contains("(("));
-        }
-        try {
-            feature.setPropertyValue("concat", "<<:marc/21:))");
-            fail("Should fail because of mismatched suffix.");
-        } catch (InvalidPropertyValueException e) {
-            String message = e.getMessage();
-            assertTrue(message, message.contains(":>>"));
-            assertTrue(message, message.contains("))"));
-        }
-        try {
-            feature.setPropertyValue("concat", "<<:marc/21/julie:>>");
-            fail("Should fail because of too many components.");
-        } catch (InvalidPropertyValueException e) {
-            String message = e.getMessage();
-            assertTrue(message, message.contains("<<:marc/21/julie:>>"));
-        }
-        try {
-            feature.setPropertyValue("concat", "<<:marc/julie:>>");
-            fail("Should fail because of unparsable number.");
-        } catch (InvalidPropertyValueException e) {
-            String message = e.getMessage();
-            assertTrue(message, message.contains("julie"));
-            assertTrue(message, message.contains("age"));
-        }
+        final var feature = new DenseFeature(person());
+        InvalidPropertyValueException e;
+
+        e = assertThrows(InvalidPropertyValueException.class,
+                () -> feature.setPropertyValue("concat", "((:marc/21:>>"),
+                "Should fail because of mismatched prefix.");
+        assertMessageContains(e, "<<:", "((");
+
+        e = assertThrows(InvalidPropertyValueException.class,
+                () -> feature.setPropertyValue("concat", "<<:marc/21:))"),
+                "Should fail because of mismatched suffix.");
+        assertMessageContains(e, ":>>", "))");
+
+        e = assertThrows(InvalidPropertyValueException.class,
+                () -> feature.setPropertyValue("concat", "<<:marc/21/julie:>>"),
+                "Should fail because of too many components.");
+        assertMessageContains(e, "<<:marc/21/julie:>>");
+
+        e = assertThrows(InvalidPropertyValueException.class,
+                () -> feature.setPropertyValue("concat", "<<:marc/julie:>>"),
+                "Should fail because of unparsable number.");
+        assertMessageContains(e, "julie", "age");
     }
 
     /**
@@ -185,12 +173,12 @@ public final class StringJoinOperationTest extends TestCase {
      */
     @Test
     public void testFeatureAssociation() {
-        final PropertyType id1 = new DefaultAttributeType<>(name(AttributeConvention.IDENTIFIER_PROPERTY), String.class, 1, 1, null);
-        final FeatureType  ft1 = new DefaultFeatureType(name("Child feature"), false, null, id1);
-        final PropertyType  p1 = new DefaultAssociationRole(name("first"), ft1, 1, 1);
-        final PropertyType  p2 = new DefaultAttributeType<>(name("second"), Integer.class, 1, 1, null);
-        final PropertyType idc = FeatureOperations.compound(name("concat"), "/", "<<:", ":>>", p1, p2);
-        final Feature  feature = new DefaultFeatureType(name("Parent feature"), false, null, p1, p2, idc).newInstance();
+        final var id1     = new DefaultAttributeType<>(name(AttributeConvention.IDENTIFIER_PROPERTY), String.class, 1, 1, null);
+        final var ft1     = new DefaultFeatureType(name("Child feature"), false, null, id1);
+        final var p1      = new DefaultAssociationRole(name("first"), ft1, 1, 1);
+        final var p2      = new DefaultAttributeType<>(name("second"), Integer.class, 1, 1, null);
+        final var idc     = FeatureOperations.compound(name("concat"), "/", "<<:", ":>>", p1, p2);
+        final var feature = new DefaultFeatureType(name("Parent feature"), false, null, p1, p2, idc).newInstance();
         /*
          * For empty feature, should have only the prefix, delimiter and suffix.
          */
@@ -204,7 +192,7 @@ public final class StringJoinOperationTest extends TestCase {
          * Create the associated feature and set its identifier.
          * The compound identifier shall be updated accordingly.
          */
-        final Feature f1 = ft1.newInstance();
+        final var f1 = ft1.newInstance();
         feature.setPropertyValue("first", f1);
         f1.setPropertyValue("sis:identifier", "SomeKey");
         assertEquals("<<:SomeKey/21:>>", feature.getPropertyValue("concat"));

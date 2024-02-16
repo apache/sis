@@ -35,9 +35,8 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 
@@ -203,10 +202,10 @@ public final class GeocentricTranslationTest extends MathTransformTestCase {
         setTranslation(values);
         setEllipsoids(values, CommonCRS.WGS84.ellipsoid(), CommonCRS.ED50.ellipsoid());
         final MathTransform gt = new GeocentricTranslation().createMathTransform(factory, values);
-        assertFalse("isIdentity", gt.isIdentity());
-        assertEquals("sourceDimensions", 3, gt.getSourceDimensions());
-        assertEquals("targetDimensions", 3, gt.getTargetDimensions());
-        assertInstanceOf("Geocentric translation", LinearTransform.class, gt);
+        assertFalse(gt.isIdentity());
+        assertEquals(3, gt.getSourceDimensions());
+        assertEquals(3, gt.getTargetDimensions());
+        assertInstanceOf(LinearTransform.class, gt);
         return Geographic3Dto2DTest.createDatumShiftForGeographic2D(factory, gt, values);
     }
 
@@ -250,7 +249,7 @@ public final class GeocentricTranslationTest extends MathTransformTestCase {
     @Test
     public void testGeocentricDomain() throws FactoryException, TransformException {
         create(new GeocentricTranslation());
-        assertTrue(transform instanceof LinearTransform);
+        assertInstanceOf(LinearTransform.class, transform);
         derivativeDeltas = new double[] {100, 100, 100};                // In metres
         datumShift(2, 3);
     }

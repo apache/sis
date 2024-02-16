@@ -24,7 +24,7 @@ import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.parameter.Parameterized;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.apache.sis.test.DependsOnMethod;
 
 

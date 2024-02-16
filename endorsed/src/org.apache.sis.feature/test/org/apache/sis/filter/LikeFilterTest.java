@@ -17,14 +17,9 @@
 package org.apache.sis.filter;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.feature.Feature;
-import org.opengis.filter.FilterFactory;
-import org.opengis.filter.Literal;
 
 
 /**
@@ -67,8 +62,8 @@ public final class LikeFilterTest extends TestCase {
      */
     @Test
     public void testLike() {
-        final FilterFactory<Feature,Object,?> factory = DefaultFilterFactory.forFeatures();
-        final Literal<Feature, String> literal = factory.literal("Apache SIS");
+        final var factory = DefaultFilterFactory.forFeatures();
+        final var literal = factory.literal("Apache SIS");
 
         assertTrue (factory.like(literal, "Apache%").test(null));
         assertFalse(factory.like(literal, "Oracle%").test(null));

@@ -16,18 +16,15 @@
  */
 package org.apache.sis.test;
 
-import java.util.logging.Logger;
-import java.util.logging.Handler;
-import java.util.logging.ConsoleHandler;
-import java.util.logging.LogManager;
 import java.io.Console;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import org.apache.sis.system.Loggers;
-import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.MonolineFormatter;
+
+// Test dependencies
+import org.junit.jupiter.api.extension.ExtendWith;
 
 
 /**
@@ -49,6 +46,7 @@ import org.apache.sis.util.logging.MonolineFormatter;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@ExtendWith(FailureDetailsReporter.class)
 public abstract class TestCase {
     /**
      * A flag for code that are pending future SIS development before to be enabled.
@@ -71,11 +69,6 @@ public abstract class TestCase {
 
     /**
      * Tolerance threshold for strict comparisons of floating point numbers.
-     * This constant can be used like below, where {@code expected} and {@code actual} are {@code double} values:
-     *
-     * {@snippet lang="java" :
-     *     assertEquals(expected, actual, STRICT);
-     *     }
      */
     protected static final double STRICT = 0;
 
@@ -129,12 +122,6 @@ public abstract class TestCase {
     }
 
     /**
-     * The parent logger of all Apache SIS loggers.
-     * Needs to be retained by strong reference.
-     */
-    static final Logger LOGGER = Logger.getLogger(Loggers.ROOT);
-
-    /**
      * Installs Apache SIS monoline formatter for easier identification of Apache SIS log messages among Maven outputs.
      */
     static {
@@ -142,45 +129,6 @@ public abstract class TestCase {
         f.setHeader(null);
         f.setTimeFormat(null);
         f.setSourceFormat("class.method");
-    }
-
-    /**
-     * Initializes {@link MonolineFormatter} if it has been specified in the {@code logging.properties}
-     * configuration file.
-     */
-    static {
-        final LogManager manager = LogManager.getLogManager();
-        if (MonolineFormatter.class.getName().equals(manager.getProperty(ConsoleHandler.class.getName() + ".formatter"))) {
-            MonolineFormatter.install();
-        }
-    }
-
-    /**
-     * Sets the encoding of the console logging handler, if an encoding has been specified.
-     * Note that we look specifically for {@link ConsoleHandler}; we do not generalize to
-     * {@link StreamHandler} because the log files may not be intended for being show in
-     * the console.
-     *
-     * <p>In case of failure to use the given encoding, we will just print a short error
-     * message and left the encoding unchanged.</p>
-     */
-    static {
-        final String encoding = System.getProperty(TestConfiguration.OUTPUT_ENCODING_KEY);
-        if (encoding != null) try {
-            for (Logger logger=LOGGER; logger!=null; logger=logger.getParent()) {
-                for (final Handler handler : logger.getHandlers()) {
-                    if (handler instanceof ConsoleHandler) {
-                        handler.setEncoding(encoding);
-                    }
-                }
-                if (!logger.getUseParentHandlers()) {
-                    break;
-                }
-            }
-        } catch (UnsupportedEncodingException e) {
-            Logging.recoverableException(LOGGER, TestCase.class, "<clinit>", e);
-        }
-        LOGGER.addHandler(LogRecordCollector.INSTANCE);
     }
 
     /**

@@ -34,8 +34,8 @@ import org.apache.sis.parameter.Parameters;
 import static org.apache.sis.referencing.operation.projection.ConformalProjectionTest.LN_INFINITY;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Assert.assertBetween;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -147,23 +147,23 @@ public final class MercatorTest extends MapProjectionTestCase {
         if (transform == null) {                    // May have been initialized by 'testSphericalCase'.
             createNormalizedProjection(true);       // Elliptical case
         }
-        assertEquals ("Not a number",     NaN,                    transform(NaN),             tolerance);
-        assertEquals ("Out of range",     NaN,                    transform(+2),              tolerance);
-        assertEquals ("Out of range",     NaN,                    transform(-2),              tolerance);
-        assertEquals ("Forward 0°N",      0,                      transform(0),               tolerance);
-        assertEquals ("Forward 90°N",     POSITIVE_INFINITY,      transform(+PI/2),           tolerance);
-        assertEquals ("Forward 90°S",     NEGATIVE_INFINITY,      transform(-PI/2),           tolerance);
-        assertEquals ("Forward (90+ε)°N", POSITIVE_INFINITY,      transform(nextUp  ( PI/2)), tolerance);
-        assertEquals ("Forward (90+ε)°S", NEGATIVE_INFINITY,      transform(nextDown(-PI/2)), tolerance);
+        assertEquals(NaN,               transform(NaN),             tolerance, "Not a number");
+        assertEquals(NaN,               transform(+2),              tolerance, "Out of range");
+        assertEquals(NaN,               transform(-2),              tolerance, "Out of range");
+        assertEquals(0,                 transform(0),               tolerance, "Forward 0°N");
+        assertEquals(POSITIVE_INFINITY, transform(+PI/2),           tolerance, "Forward 90°N");
+        assertEquals(NEGATIVE_INFINITY, transform(-PI/2),           tolerance, "Forward 90°S");
+        assertEquals(POSITIVE_INFINITY, transform(nextUp  ( PI/2)), tolerance, "Forward (90+ε)°N");
+        assertEquals(NEGATIVE_INFINITY, transform(nextDown(-PI/2)), tolerance, "Forward (90+ε)°S");
         assertBetween("Forward (90-ε)°N", +MIN_VALUE, +MAX_VALUE, transform(nextDown( PI/2)));
         assertBetween("Forward (90-ε)°S", -MAX_VALUE, -MIN_VALUE, transform(nextUp  (-PI/2)));
 
-        assertEquals ("Not a number",     NaN,   inverseTransform(NaN),                tolerance);
-        assertEquals ("Inverse 0 m",      0,     inverseTransform(0),                  tolerance);
-        assertEquals ("Inverse +∞",       +PI/2, inverseTransform(POSITIVE_INFINITY),  tolerance);
-        assertEquals ("Inverse +∞ appr.", +PI/2, inverseTransform(LN_INFINITY + 1),    tolerance);
-        assertEquals ("Inverse −∞",       -PI/2, inverseTransform(NEGATIVE_INFINITY),  tolerance);
-        assertEquals ("Inverse −∞ appr.", -PI/2, inverseTransform(-(LN_INFINITY + 1)), tolerance);
+        assertEquals(NaN,   inverseTransform(NaN),                tolerance, "Not a number");
+        assertEquals(0,     inverseTransform(0),                  tolerance, "Inverse 0 m");
+        assertEquals(+PI/2, inverseTransform(POSITIVE_INFINITY),  tolerance, "Inverse +∞");
+        assertEquals(+PI/2, inverseTransform(LN_INFINITY + 1),    tolerance, "Inverse +∞ appr.");
+        assertEquals(-PI/2, inverseTransform(NEGATIVE_INFINITY),  tolerance, "Inverse −∞");
+        assertEquals(-PI/2, inverseTransform(-(LN_INFINITY + 1)), tolerance, "Inverse −∞ appr.");
     }
 
     /**
@@ -354,7 +354,7 @@ public final class MercatorTest extends MapProjectionTestCase {
         testDerivative();
 
         // Make sure that the above methods did not overwrote the 'transform' field.
-        assertEquals("transform.class", Mercator.Spherical.class, transform.getClass());
+        assertEquals(Mercator.Spherical.class, transform.getClass());
     }
 
     /**

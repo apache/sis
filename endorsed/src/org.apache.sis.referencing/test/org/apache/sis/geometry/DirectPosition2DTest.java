@@ -19,8 +19,8 @@ package org.apache.sis.geometry;
 import org.opengis.geometry.DirectPosition;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -78,7 +78,7 @@ public final class DirectPosition2DTest extends TestCase {
         p1.setOrdinate(0, p1.getOrdinate(0) + 1);
         assertFalse(p1.equals(p2));
         assertFalse(p2.equals(p1));
-        assertFalse(p2.hashCode() == p1.hashCode());
+        assertNotEquals(p2.hashCode(), p1.hashCode());
     }
 
     /**
@@ -88,9 +88,9 @@ public final class DirectPosition2DTest extends TestCase {
     public void testClone() {
         final DirectPosition2D p1 = new DirectPosition2D(10, 30);
         final DirectPosition2D p2 = p1.clone();
-        assertEquals("Expected the same CRS and coordinates.", p1, p2);
-        assertEquals("Expected the same coordinates.", 10.0, p2.x, 0.0);
-        assertEquals("Expected the same coordinates.", 30.0, p2.y, 0.0);
+        assertEquals(p1, p2);
+        assertEquals(10.0, p2.x);
+        assertEquals(30.0, p2.y);
         validate(p2);
     }
 

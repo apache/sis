@@ -27,7 +27,7 @@ import javax.imageio.stream.IIOByteBuffer;
 import javax.imageio.stream.ImageInputStream;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 

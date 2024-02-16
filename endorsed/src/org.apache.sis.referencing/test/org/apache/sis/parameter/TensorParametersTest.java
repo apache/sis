@@ -26,9 +26,8 @@ import static org.apache.sis.util.internal.Constants.NUM_ROW;
 import static org.apache.sis.util.internal.Constants.NUM_COL;
 
 // Test dependencies
-import org.junit.AfterClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -57,7 +56,10 @@ public class TensorParametersTest extends TestCase {
      * except that it is not an instance of the {@link MatrixParameters} subclass. Those parameters
      * do not contain EPSG aliases and identifiers.
      */
-    private static TensorParameters<Double> WKT1;
+    private static final TensorParameters<Double> WKT1 =
+            new TensorParameters<>(Double.class, "elt_", "_",
+                    TensorParameters.WKT1.getDimensionDescriptor(0),
+                    TensorParameters.WKT1.getDimensionDescriptor(1));
 
     /**
      * The expected parameter names according the WKT 1 convention for the matrix elements.
@@ -74,66 +76,33 @@ public class TensorParametersTest extends TestCase {
     /**
      * The instance tested by this class.
      */
-    final TensorParameters<Double> param;
+    TensorParameters<Double> param;
 
     /**
      * The expected parameter names for all matrix elements.
      * Example: {@link #ELEMENT_NAMES}.
      */
-    private final String[][] names;
+    String[][] names;
 
     /**
      * The expected parameter aliases for all matrix elements, or {@code null} for no alias.
      * Example: {@link MatrixParametersTest#ALPHANUM_NAMES}.
      */
-    private final String[][] aliases;
+    String[][] aliases;
 
     /**
      * The expected parameter identifiers for all matrix elements, or {@code null} for no identifier.
      * Example: {@link MatrixParametersAlphaNumTest#IDENTIFIERS}.
      */
-    private final short[][] identifiers;
+    short[][] identifiers;
 
     /**
      * Creates a new test case for {@link TensorParameters}.
      */
     @SuppressWarnings("unchecked")
     public TensorParametersTest() {
-        if (WKT1 == null) {
-            WKT1 = new TensorParameters<>(Double.class, "elt_", "_",
-                    TensorParameters.WKT1.getDimensionDescriptor(0),
-                    TensorParameters.WKT1.getDimensionDescriptor(1));
-        }
-        param       = WKT1;
-        names       = ELEMENT_NAMES;
-        aliases     = null;
-        identifiers = null;
-    }
-
-    /**
-     * Creates a new test case for a {@link MatrixParameters} defined by the subclass.
-     *
-     * @param  param        the instance tested by this class.
-     * @param  names        the expected parameter names for all matrix elements.
-     * @param  aliases      the expected parameter aliases for all matrix elements, or {@code null} for no alias.
-     * @param  identifiers  the expected parameter identifiers for all matrix elements, or {@code null} for no identifier.
-     */
-    TensorParametersTest(final TensorParameters<Double> param, final String[][] names, final String[][] aliases,
-            final short[][] identifiers)
-    {
-        this.param       = param;
-        this.names       = names;
-        this.aliases     = aliases;
-        this.identifiers = identifiers;
-    }
-
-    /**
-     * Discards the parameters used by the tests in this class.
-     * This method is invoked by JUnit only after all tests completed.
-     */
-    @AfterClass
-    public static void clearTensorParameters() {
-        WKT1 = null;
+        param = WKT1;
+        names = ELEMENT_NAMES;
     }
 
     /**
@@ -146,8 +115,8 @@ public class TensorParametersTest extends TestCase {
     private static void verifyDescriptor(final String name, final Number defaultValue,
             final ParameterDescriptor<?> actual)
     {
-        assertEquals("name", name, actual.getName().getCode());
-        assertEquals("defaultValue", defaultValue, actual.getDefaultValue());
+        assertEquals(name, actual.getName().getCode());
+        assertEquals(defaultValue, actual.getDefaultValue());
     }
 
     /**
@@ -161,9 +130,9 @@ public class TensorParametersTest extends TestCase {
     private void verifyDescriptor(final Number defaultValue, final ParameterDescriptor<?> actual,
             final int row, final int column)
     {
-        assertEquals("name", names[row][column], actual.getName().getCode());
+        assertEquals(names[row][column], actual.getName().getCode());
         assertAliasTipEquals((aliases != null) ? aliases[row][column] : null, actual);
-        assertEquals("defaultValue", defaultValue, actual.getDefaultValue());
+        assertEquals(defaultValue, actual.getDefaultValue());
         if (identifiers != null) {
             final short expected = identifiers[row][column];
             if (expected != 0) {
@@ -255,7 +224,7 @@ public class TensorParametersTest extends TestCase {
         verifyDescriptor(NUM_ROW, N3, descriptors[0]);
         verifyDescriptor(NUM_COL, N3, descriptors[1]);
         verifyDescriptor(N1, descriptors[2], 0, 0);
-        assertEquals("size", 3, descriptors.length);
+        assertEquals(3, descriptors.length);
 
         descriptors = param.getAllDescriptors(2, 3);
         verifyDescriptor(NUM_ROW, N3, descriptors[0]);
@@ -266,7 +235,7 @@ public class TensorParametersTest extends TestCase {
         verifyDescriptor(N0, descriptors[5], 1, 0);
         verifyDescriptor(N1, descriptors[6], 1, 1);
         verifyDescriptor(N0, descriptors[7], 1, 2);
-        assertEquals("size", 8, descriptors.length);
+        assertEquals(8, descriptors.length);
 
         descriptors = param.getAllDescriptors(3, 3);
         verifyDescriptor(NUM_ROW, N3, descriptors[0]);
@@ -280,7 +249,7 @@ public class TensorParametersTest extends TestCase {
         verifyDescriptor(N0, descriptors[ 8], 2, 0);
         verifyDescriptor(N0, descriptors[ 9], 2, 1);
         verifyDescriptor(N1, descriptors[10], 2, 2);
-        assertEquals("size", 11, descriptors.length);
+        assertEquals(11, descriptors.length);
 
         descriptors = param.getAllDescriptors(4, 4);
         verifyDescriptor(NUM_ROW, N3, descriptors[0]);
@@ -301,7 +270,7 @@ public class TensorParametersTest extends TestCase {
         verifyDescriptor(N0, descriptors[15], 3, 1);
         verifyDescriptor(N0, descriptors[16], 3, 2);
         verifyDescriptor(N1, descriptors[17], 3, 3);
-        assertEquals("size", 18, descriptors.length);
+        assertEquals(18, descriptors.length);
     }
 
     /**
@@ -324,10 +293,10 @@ public class TensorParametersTest extends TestCase {
                 final ParameterValueGroup group = param.createValueGroup(
                         Map.of(ParameterDescriptor.NAME_KEY, "Test"), matrix);
                 validate(group);
-                assertEquals(NUM_ROW,    numRow, group.parameter(NUM_ROW).intValue());
-                assertEquals(NUM_COL,    numCol, group.parameter(NUM_COL).intValue());
-                assertEquals("elements", matrix, param.toMatrix(group));
-                assertEquals("elements", matrix, param.toMatrix(new ParameterValueGroupWrapper(group)));
+                assertEquals(numRow, group.parameter(NUM_ROW).intValue());
+                assertEquals(numCol, group.parameter(NUM_COL).intValue());
+                assertEquals(matrix, param.toMatrix(group));
+                assertEquals(matrix, param.toMatrix(new ParameterValueGroupWrapper(group)));
             }
         }
     }

@@ -22,8 +22,8 @@ import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -87,7 +87,7 @@ public final class AffineTest extends TestCase {
             final String expectedName = expectedNames[index++];
             assertEquals(expectedName, p.getName().getCode());
         }
-        assertEquals("Number of parameters", expectedNames.length, index);
+        assertEquals(expectedNames.length, index);
     }
 
     /**

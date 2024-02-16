@@ -27,9 +27,8 @@ import org.apache.sis.feature.internal.AttributeConvention;
 import org.apache.sis.geometry.GeneralEnvelope;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -74,10 +73,10 @@ public final class FeatureOperationsTest extends TestCase {
      * @return the feature for a school.
      */
     private static DefaultFeatureType school(final int defaultGeometry) throws FactoryException {
-        final DefaultAttributeType<?> standardCRS = new DefaultAttributeType<>(
+        final var standardCRS = new DefaultAttributeType<>(
                 name(AttributeConvention.CRS_CHARACTERISTIC), CoordinateReferenceSystem.class, 1, 1, HardCodedCRS.WGS84_LATITUDE_FIRST);
 
-        final DefaultAttributeType<?> normalizedCRS = new DefaultAttributeType<>(
+        final var normalizedCRS = new DefaultAttributeType<>(
                 name(AttributeConvention.CRS_CHARACTERISTIC), CoordinateReferenceSystem.class, 1, 1, HardCodedCRS.WGS84);
 
         final PropertyType[] attributes = {
@@ -110,18 +109,16 @@ public final class FeatureOperationsTest extends TestCase {
      */
     @Test
     public void testConstruction() throws FactoryException {
-        final PropertyType property = school(3).getProperty("bounds");
-        assertInstanceOf("bounds", EnvelopeOperation.class, property);
-        final EnvelopeOperation op = (EnvelopeOperation) property;
-        assertSame("targetCRS", HardCodedCRS.WGS84, op.targetCRS);
-        assertSetEquals(List.of("classes", "climbing wall", "gymnasium"), op.getDependencies());
+        final var property = assertInstanceOf(EnvelopeOperation.class, school(3).getProperty("bounds"));
+        assertSame(HardCodedCRS.WGS84, property.targetCRS, "targetCRS");
+        assertSetEquals(List.of("classes", "climbing wall", "gymnasium"), property.getDependencies());
     }
 
     /**
      * Implementation of {@link #testDenseFeature()} and {@link #testSparseFeature()} methods.
      */
     private static void run(final AbstractFeature feature) {
-        assertNull("Before a geometry is set", feature.getPropertyValue("bounds"));
+        assertNull(feature.getPropertyValue("bounds"));
         GeneralEnvelope expected;
 
         // Set one geometry

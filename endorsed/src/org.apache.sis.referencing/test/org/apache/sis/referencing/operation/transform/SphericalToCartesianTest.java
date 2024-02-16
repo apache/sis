@@ -23,8 +23,8 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 
 // Test dependencies
-import org.junit.Test;
-import org.junit.Before;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
@@ -101,7 +101,7 @@ public final class SphericalToCartesianTest extends TransformTestCase {
      *
      * @throws FactoryException if the transform cannot be created.
      */
-    @Before
+    @BeforeEach
     public void createInstance() throws FactoryException {
         transform = SphericalToCartesian.INSTANCE.completeTransform(DefaultMathTransformFactory.provider());
     }

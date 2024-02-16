@@ -37,9 +37,8 @@ import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.referencing.operation.matrix.MatrixTestCase;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.referencing.Assertions;
 
@@ -201,17 +200,17 @@ public abstract class MathTransformTestCase extends TransformTestCase {
      * @see Validators#validate(MathTransform)
      */
     protected final void validate() {
-        assertNotNull("The `transform` field shall be assigned a value.", transform);
+        assertNotNull(transform, "The `transform` field shall be assigned a value.");
         Validators.validate(transform);
         final int dimension = transform.getSourceDimensions();
         if (transform.getTargetDimensions() == dimension) {
-            assertEquals("transform instanceof MathTransform1D:", (transform instanceof MathTransform1D), dimension == 1);
-            assertEquals("transform instanceof MathTransform2D:", (transform instanceof MathTransform2D), dimension == 2);
+            assertEquals(transform instanceof MathTransform1D, dimension == 1);
+            assertEquals(transform instanceof MathTransform2D, dimension == 2);
         } else {
-            assertFalse("transform instanceof MathTransform1D:", transform instanceof MathTransform1D);
-            assertFalse("transform instanceof MathTransform2D:", transform instanceof MathTransform2D);
+            assertFalse(transform instanceof MathTransform1D);
+            assertFalse(transform instanceof MathTransform2D);
         }
-        assertInstanceOf("The transform does not implement all expected interfaces.", Parameterized.class, transform);
+        assertInstanceOf(Parameterized.class, transform, "The transform does not implement all expected interfaces.");
         MatrixTestCase.validate(MathTransforms.getMatrix(transform));
     }
 
@@ -243,7 +242,7 @@ public abstract class MathTransformTestCase extends TransformTestCase {
         final float[] asFloats = ArraysExt.copyAsFloats(coordinates);
         final float[] result   = verifyConsistency(asFloats);
         for (int i=0; i<coordinates.length; i++) {
-            assertEquals("Detected change in source coordinates.", (float) coordinates[i], asFloats[i], 0f);    // Paranoiac check.
+            assertEquals((float) coordinates[i], asFloats[i], "Detected change in source coordinates.");    // Paranoiac check.
         }
         /*
          * The comparison below needs a higher tolerance threshold, because we converted the source
@@ -313,7 +312,7 @@ public abstract class MathTransformTestCase extends TransformTestCase {
      * @return random coordinates in the given domain.
      */
     final double[] generateRandomCoordinates(final CoordinateDomain domain, final float propNaN) {
-        assertNotNull("The 'transform' field shall be assigned a value.", transform);
+        assertNotNull(transform, "The `transform` field shall be assigned a value.");
         final int dimension = transform.getSourceDimensions();
         final int numPts    = ORDINATE_COUNT / dimension;
         final Random random = TestUtilities.createRandomNumberGenerator();
@@ -338,10 +337,10 @@ public abstract class MathTransformTestCase extends TransformTestCase {
      *          tolerating a difference up to the {@linkplain #tolerance(double) tolerance threshold}.
      */
     protected final void assertParameterEquals(final ParameterDescriptorGroup descriptor, final ParameterValueGroup values) {
-        assertInstanceOf("The transform does not implement all expected interfaces.", Parameterized.class, transform);
+        assertInstanceOf(Parameterized.class, transform, "The transform does not implement all expected interfaces.");
         if (descriptor != null) {
-            assertSame("transform.getParameterDescriptors():", descriptor,
-                    ((Parameterized) transform).getParameterDescriptors());
+            assertSame(descriptor, ((Parameterized) transform).getParameterDescriptors(),
+                       "transform.getParameterDescriptors():");
         }
         if (values != null) {
             assertSame(descriptor, values.getDescriptor());
@@ -359,7 +358,7 @@ public abstract class MathTransformTestCase extends TransformTestCase {
      * @see #printInternalWKT()
      */
     protected final void assertWktEquals(final String expected) {
-        assertNotNull("The 'transform' field shall be assigned a value.", transform);
+        assertNotNull(transform, "The `transform` field shall be assigned a value.");
         Assertions.assertWktEquals(Convention.WKT1, expected, transform);
     }
 
@@ -372,7 +371,7 @@ public abstract class MathTransformTestCase extends TransformTestCase {
      * @see #printInternalWKT()
      */
     protected final void assertWktEqualsRegex(final String expected) {
-        assertNotNull("The 'transform' field shall be assigned a value.", transform);
+        assertNotNull(transform, "The `transform` field shall be assigned a value.");
         Assertions.assertWktEqualsRegex(Convention.WKT1, expected, transform);
     }
 
@@ -382,7 +381,7 @@ public abstract class MathTransformTestCase extends TransformTestCase {
      * @param  expected  the expected internal WKT.
      */
     protected final void assertInternalWktEquals(final String expected) {
-        assertNotNull("The 'transform' field shall be assigned a value.", transform);
+        assertNotNull(transform, "The `transform` field shall be assigned a value.");
         Assertions.assertWktEquals(Convention.INTERNAL, expected, transform);
     }
 
@@ -393,7 +392,7 @@ public abstract class MathTransformTestCase extends TransformTestCase {
      * @param  expected  a regular expression for the expected internal WKT.
      */
     protected final void assertInternalWktEqualsRegex(final String expected) {
-        assertNotNull("The 'transform' field shall be assigned a value.", transform);
+        assertNotNull(transform, "The `transform` field shall be assigned a value.");
         Assertions.assertWktEqualsRegex(Convention.INTERNAL, expected, transform);
     }
 

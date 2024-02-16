@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.nio.charset.StandardCharsets;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -180,6 +180,6 @@ public final class CommandRunnerTest extends TestCase {
         assertEquals("", c.outputBuffer.toString());
         assertTrue(c.hasUnexpectedFileCount(2, 3));
         String message = c.outputBuffer.toString();
-        assertTrue(message.length() != 0);
+        assertNotEquals(0, message.length());
     }
 }

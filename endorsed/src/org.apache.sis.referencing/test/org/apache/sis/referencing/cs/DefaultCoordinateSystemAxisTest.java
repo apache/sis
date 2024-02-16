@@ -25,8 +25,8 @@ import org.apache.sis.util.ComparisonMode;
 import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -157,25 +157,25 @@ public final class DefaultCoordinateSystemAxisTest extends TestCase {
         /*
          * Verifies the properties inferred by the constructor.
          */
-        assertEquals("minimumValue", -180, LONGITUDE.getMinimumValue(), STRICT);
-        assertEquals("maximumValue", +180, LONGITUDE.getMaximumValue(), STRICT);
-        assertEquals("rangeMeaning", RangeMeaning.WRAPAROUND, LONGITUDE.getRangeMeaning());
-        assertEquals("minimumValue", -90, LATITUDE.getMinimumValue(), STRICT);
-        assertEquals("maximumValue", +90, LATITUDE.getMaximumValue(), STRICT);
-        assertEquals("rangeMeaning", RangeMeaning.EXACT, LATITUDE.getRangeMeaning());
+        assertEquals(-180, LONGITUDE.getMinimumValue());
+        assertEquals(+180, LONGITUDE.getMaximumValue());
+        assertEquals(RangeMeaning.WRAPAROUND, LONGITUDE.getRangeMeaning());
+        assertEquals(-90, LATITUDE.getMinimumValue());
+        assertEquals(+90, LATITUDE.getMaximumValue());
+        assertEquals(RangeMeaning.EXACT, LATITUDE.getRangeMeaning());
         /*
          * Those axes shall be considered different.
          */
-        assertFalse("X",         X        .equals(GEOCENTRIC_X,        ComparisonMode.IGNORE_METADATA));
-        assertFalse("Longitude", LONGITUDE.equals(GEODETIC_LONGITUDE,  ComparisonMode.STRICT));
-        assertFalse("Longitude", LONGITUDE.equals(SPHERICAL_LONGITUDE, ComparisonMode.STRICT));
-        assertFalse("Longitude", LONGITUDE.equals(SPHERICAL_LONGITUDE, ComparisonMode.IGNORE_METADATA));
+        assertFalse(X        .equals(GEOCENTRIC_X,        ComparisonMode.IGNORE_METADATA));
+        assertFalse(LONGITUDE.equals(GEODETIC_LONGITUDE,  ComparisonMode.STRICT));
+        assertFalse(LONGITUDE.equals(SPHERICAL_LONGITUDE, ComparisonMode.STRICT));
+        assertFalse(LONGITUDE.equals(SPHERICAL_LONGITUDE, ComparisonMode.IGNORE_METADATA));
         /*
          * Tests aliases in the special "longitude" and "latitude" cases.
          */
-        assertTrue ("Longitude", LONGITUDE.equals(GEODETIC_LONGITUDE,  ComparisonMode.IGNORE_METADATA));
-        assertTrue ("Latitude",  LATITUDE .equals(GEODETIC_LATITUDE,   ComparisonMode.IGNORE_METADATA));
-        assertFalse("Lon/Lat",   LATITUDE .equals(LONGITUDE,           ComparisonMode.IGNORE_METADATA));
+        assertTrue (LONGITUDE.equals(GEODETIC_LONGITUDE,  ComparisonMode.IGNORE_METADATA));
+        assertTrue (LATITUDE .equals(GEODETIC_LATITUDE,   ComparisonMode.IGNORE_METADATA));
+        assertFalse(LATITUDE .equals(LONGITUDE,           ComparisonMode.IGNORE_METADATA));
         /*
          * Ensures that difference in "wraparound" ranges causes the axes to be considered different.
          */

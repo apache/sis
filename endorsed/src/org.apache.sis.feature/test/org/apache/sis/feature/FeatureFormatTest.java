@@ -24,14 +24,11 @@ import java.util.HashMap;
 import java.util.Random;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.feature.PropertyType;
 
 
 /**
@@ -89,7 +86,7 @@ public final class FeatureFormatTest extends TestCase {
     @SuppressWarnings("serial")
     public void testFeatureTypeWithOperations() {
         DefaultFeatureType feature = DefaultFeatureTypeTest.city();
-        final PropertyType city = feature.getProperty("city");
+        final var city = feature.getProperty("city");
         feature = new DefaultFeatureType(name("Identified city"), false, new DefaultFeatureType[] {feature},
                 FeatureOperations.link(name("someId"), city),
                 FeatureOperations.compound(name("anotherId"), ":", "<", ">", city, feature.getProperty("population")),

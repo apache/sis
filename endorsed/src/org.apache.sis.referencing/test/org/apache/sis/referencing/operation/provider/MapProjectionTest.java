@@ -24,8 +24,8 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import static org.apache.sis.util.internal.Constants.*;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.referencing.Assertions.assertOgcIdentifierEquals;
@@ -132,7 +132,7 @@ public final class MapProjectionTest extends TestCase {
         } else {
             assertOgcIdentifierEquals(ogcName, actual.getName());
         }
-        assertEquals("minimumOccurs", isMandatory ? 1 : 0, actual.getMinimumOccurs());
+        assertEquals(isMandatory ? 1 : 0, actual.getMinimumOccurs());
         if (epsgName != null) {
             for (final GenericName alias : actual.getAlias()) {
                 if (alias instanceof Identifier && ((Identifier) alias).getAuthority() != Citations.EPSG) {
@@ -149,7 +149,7 @@ public final class MapProjectionTest extends TestCase {
      * This test is mostly for {@link Equirectangular#LATITUDE_OF_ORIGIN}.
      */
     private static void assertIsForcedToZero(final ParameterDescriptor<?> parameter) {
-        assertEquals("minimumValue", -0.0, parameter.getMinimumValue());
-        assertEquals("maximumValue", +0.0, parameter.getMaximumValue());
+        assertEquals(-0.0, parameter.getMinimumValue());
+        assertEquals(+0.0, parameter.getMaximumValue());
     }
 }

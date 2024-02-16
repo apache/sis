@@ -39,9 +39,9 @@ import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.geometry.DirectPosition2D;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assume.assumeTrue;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 
@@ -92,9 +92,9 @@ public final class CoordinateOperationTest extends MathTransformTestCase {
         final CoordinateOperation       operation = opFactory.createOperation(sourceCRS, targetCRS);
         transform = operation.getMathTransform();
         final int dimension = transform.getSourceDimensions();
-        assertEquals("Source dimension", 3, dimension);
-        assertEquals("Target dimension", 3, transform.getTargetDimensions());
-        assertSame("Inverse transform", transform, transform.inverse().inverse());
+        assertEquals(3, dimension);
+        assertEquals(3, transform.getTargetDimensions());
+        assertSame(transform, transform.inverse().inverse());
         validate();
         /*
          * Constructs an array of random points. The first 8 points
@@ -139,9 +139,9 @@ public final class CoordinateOperationTest extends MathTransformTestCase {
         transform          .transform(array0, 0, array1, 0, array0.length / dimension);
         transform.inverse().transform(array1, 0, array2, 0, array1.length / dimension);
         for (int i=0; i<array0.length;) {
-            assertEquals("Longitude", array2[i], array0[i], 0.1/3600); i++;
-            assertEquals("Latitude",  array2[i], array0[i], 0.1/3600); i++;
-            assertEquals("Height",    array2[i], array0[i], 0.01); i++;
+            assertEquals(array2[i], array0[i], 0.1/3600); i++;
+            assertEquals(array2[i], array0[i], 0.1/3600); i++;
+            assertEquals(array2[i], array0[i], 0.01); i++;
         }
         /*
          * Compares the distances between "special" points with expected distances.
@@ -154,7 +154,7 @@ public final class CoordinateOperationTest extends MathTransformTestCase {
                     array1[base+1] - array1[base+4],
                     array1[base+2] - array1[base+5]);
             if (i < distance.length) {
-                assertEquals("Cartesian distance", distance[i], cartesian, 0.1);
+                assertEquals(distance[i], cartesian, 0.1);
             }
         }
     }
@@ -192,12 +192,12 @@ public final class CoordinateOperationTest extends MathTransformTestCase {
         final double expectedY = 175688.20;
 
         CRSAuthorityFactory crsFactory = CRS.getAuthorityFactory("EPSG");
-        assumeTrue("EPSG authority factory is required for this test.",
-                   crsFactory instanceof CoordinateOperationAuthorityFactory);
-        CoordinateOperationAuthorityFactory opFactory = (CoordinateOperationAuthorityFactory) crsFactory;
+        assumeTrue(crsFactory instanceof CoordinateOperationAuthorityFactory,
+                   "EPSG authority factory is required for this test.");
+        CoordinateOperationAuthorityFactory asOpFactory = (CoordinateOperationAuthorityFactory) crsFactory;
 
         // MGI (Ferro) to WGS 84 (1)
-        CoordinateOperation datumOperation = opFactory.createCoordinateOperation("3966");
+        CoordinateOperation datumOperation = asOpFactory.createCoordinateOperation("3966");
 
         // MGI (Ferro) / Austria GK East Zone
         CoordinateReferenceSystem targetCRS = crsFactory.createCoordinateReferenceSystem("31253");
@@ -224,8 +224,8 @@ public final class CoordinateOperationTest extends MathTransformTestCase {
         DirectPosition source = new DirectPosition2D(latitude, longitude);
         DirectPosition target = completeTransform.transform(source, null);
         final double[] coordinate = target.getCoordinate();
-        assertEquals("x", expectedX, coordinate[0], 0.01);
-        assertEquals("y", expectedY, coordinate[1], 0.01);
+        assertEquals(expectedX, coordinate[0], 0.01);
+        assertEquals(expectedY, coordinate[1], 0.01);
     }
 
     /**
@@ -239,21 +239,21 @@ public final class CoordinateOperationTest extends MathTransformTestCase {
     @Test
     public void testMercatorWraparound() throws FactoryException, TransformException {
         CRSAuthorityFactory crsFactory = CRS.getAuthorityFactory("EPSG");
-        assumeTrue("EPSG authority factory is required for this test.",
-                   crsFactory instanceof CoordinateOperationAuthorityFactory);
+        assumeTrue(crsFactory instanceof CoordinateOperationAuthorityFactory,
+                   "EPSG authority factory is required for this test.");
 
         CoordinateReferenceSystem sourceCRS = crsFactory.createCoordinateReferenceSystem("3001");
         CoordinateReferenceSystem targetCRS = crsFactory.createCoordinateReferenceSystem("4211");
 
         CoordinateOperation operation = opFactory.createOperation(sourceCRS, targetCRS);
-        MathTransform transform = operation.getMathTransform();
+        MathTransform mt = operation.getMathTransform();
 
         double[] expectedXyValues = new double[] {-2.0, -71.0};
         double[] sourceXyValues   = new double[] {23764105.84, 679490.646};
         double[] actualXyValues   = new double[2];
 
-        transform.transform(sourceXyValues, 0, actualXyValues, 0, 1);
-        assertEquals("x", expectedXyValues[0], actualXyValues[0], 6E-7);
-        assertEquals("y", expectedXyValues[1], actualXyValues[1], 6E-7);
+        mt.transform(sourceXyValues, 0, actualXyValues, 0, 1);
+        assertEquals(expectedXyValues[0], actualXyValues[0], 6E-7);
+        assertEquals(expectedXyValues[1], actualXyValues[1], 6E-7);
     }
 }

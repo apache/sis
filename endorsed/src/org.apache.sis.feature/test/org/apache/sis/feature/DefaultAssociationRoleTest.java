@@ -23,8 +23,8 @@ import org.apache.sis.util.iso.DefaultNameFactory;
 import static org.apache.sis.feature.DefaultAssociationRole.NAME_KEY;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -78,8 +78,8 @@ public final class DefaultAssociationRoleTest extends TestCase {
      */
     static DefaultFeatureType twinTownCity(final boolean cyclic) {
         final DefaultAssociationRole twinTown = twinTown(cyclic);
-        final FeatureType parent = cyclic ? DefaultFeatureTypeTest.city() : twinTown.getValueType();
-        return createType("Twin town", parent, twinTown);
+        final var parentType = cyclic ? DefaultFeatureTypeTest.city() : twinTown.getValueType();
+        return createType("Twin town", parentType, twinTown);
     }
 
     /**
@@ -130,8 +130,8 @@ public final class DefaultAssociationRoleTest extends TestCase {
     @Test
     public void testBidirectionalAssociation() {
         final DefaultFeatureType twinTown = twinTownCity(true);
-        final FeatureAssociationRole association = (FeatureAssociationRole) twinTown.getProperty("twin town");
-        assertSame("twinTown.property(“twin town”).valueType", twinTown, association.getValueType());
+        final var association = assertInstanceOf(FeatureAssociationRole.class, twinTown.getProperty("twin town"));
+        assertSame(twinTown, association.getValueType());
         /*
          * Creates a FeatureType copy containing the same properties. Used for verifying
          * that 'DefaultFeatureType.equals(Object)' does not fall in an infinite loop.
@@ -139,9 +139,9 @@ public final class DefaultAssociationRoleTest extends TestCase {
         final DefaultFeatureType copy = createType(twinTown.getName(),
                 getSingleton(twinTown.getSuperTypes()), association);
 
-        assertTrue("equals", copy.equals(twinTown));
-        assertTrue("equals", twinTown.equals(copy));
-        assertEquals("hashCode", copy.hashCode(), twinTown.hashCode());
+        assertTrue(copy.equals(twinTown));
+        assertTrue(twinTown.equals(copy));
+        assertEquals(copy.hashCode(), twinTown.hashCode());
     }
 
     /**
@@ -179,33 +179,33 @@ public final class DefaultAssociationRoleTest extends TestCase {
          * to change as they are not the instances to be replaced by the name resolutions, but we
          * verify them as a paranoiac check.
          */
-        assertSame("A.properties", toB, getSingleton(typeA.getProperties(false)));
-        assertSame("B.properties", toC, getSingleton(typeB.getProperties(false)));
-        assertSame("C.properties", toD, getSingleton(typeC.getProperties(false)));
-        assertSame("D.properties", toAr, typeD.getProperty("toA"));
-        assertSame("D.properties", toBr, typeD.getProperty("toB"));
-        assertSame("D.properties", toCr, typeD.getProperty("toC"));
-        assertSame("D.properties", toD,  typeD.getProperty("toD"));
+        assertSame(toB, getSingleton(typeA.getProperties(false)));
+        assertSame(toC, getSingleton(typeB.getProperties(false)));
+        assertSame(toD, getSingleton(typeC.getProperties(false)));
+        assertSame(toAr, typeD.getProperty("toA"));
+        assertSame(toBr, typeD.getProperty("toB"));
+        assertSame(toCr, typeD.getProperty("toC"));
+        assertSame(toD,  typeD.getProperty("toD"));
         /*
          * CORE OF THIS TEST: verify that the values of toB, toC and toD have been replaced by the actual
          * FeatureType instances. Also verify that as a result, toB.equals(toBr) and toC.equals(toCr).
          */
-        assertSame("toA", typeA, toAr.getValueType());
-        assertSame("toB", typeB, toBr.getValueType());
-        assertSame("toB", typeB, toB .getValueType());
-        assertSame("toC", typeC, toCr.getValueType());
-        assertSame("toC", typeC, toC .getValueType());
-        assertSame("toD", typeD, toD .getValueType());
-        assertEquals("toB", toB, toBr);
-        assertEquals("toC", toC, toCr);
+        assertSame(typeA, toAr.getValueType());
+        assertSame(typeB, toBr.getValueType());
+        assertSame(typeB, toB .getValueType());
+        assertSame(typeC, toCr.getValueType());
+        assertSame(typeC, toC .getValueType());
+        assertSame(typeD, toD .getValueType());
+        assertEquals(toB, toBr);
+        assertEquals(toC, toCr);
         /*
          * Other equality tests, mostly for verifying that we do not fall in an infinite loop here.
          */
-        assertFalse("equals", typeA.equals(typeD));
-        assertFalse("equals", typeD.equals(typeA));
-        assertFalse("equals", typeB.equals(typeC));
-        assertFalse("equals", typeC.equals(typeB));
-        assertFalse("hashCode", typeA.hashCode() == typeB.hashCode());
-        assertFalse("hashCode", typeC.hashCode() == typeD.hashCode());
+        assertNotEquals(typeA, typeD);
+        assertNotEquals(typeD, typeA);
+        assertNotEquals(typeB, typeC);
+        assertNotEquals(typeC, typeB);
+        assertNotEquals(typeA.hashCode(), typeB.hashCode());
+        assertNotEquals(typeC.hashCode(), typeD.hashCode());
     }
 }

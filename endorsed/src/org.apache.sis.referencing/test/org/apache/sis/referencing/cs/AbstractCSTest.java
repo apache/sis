@@ -24,8 +24,8 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.resources.Vocabulary;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -60,10 +60,10 @@ public final class AbstractCSTest extends TestCase {
             final CoordinateSystemAxis... expected)
     {
         final AbstractCS derived = cs.forConvention(convention);
-        assertNotSame("cs.forConvention(…)", cs, derived);
-        assertSame("derived.forConvention(…)", derived, derived.forConvention(convention));
-        assertSame("cs.forConvention(…)", derived, cs.forConvention(convention));
-        assertEquals("dimension", expected.length, cs.getDimension());
+        assertNotSame(cs, derived);
+        assertSame(derived, derived.forConvention(convention));
+        assertSame(derived, cs.forConvention(convention));
+        assertEquals(expected.length, cs.getDimension());
         for (int i=0; i<expected.length; i++) {
             assertEquals(expected[i], derived.getAxis(i));
         }
@@ -75,7 +75,7 @@ public final class AbstractCSTest extends TestCase {
      */
     @Test
     public void testForRightHandedConvention() {
-        final AbstractCS cs = new AbstractCS(Map.of(NAME_KEY, "Test"),
+        final var cs = new AbstractCS(Map.of(NAME_KEY, "Test"),
                 HardCodedAxes.GEODETIC_LATITUDE,
                 HardCodedAxes.TIME,
                 HardCodedAxes.ALTITUDE,
@@ -85,12 +85,12 @@ public final class AbstractCSTest extends TestCase {
                 HardCodedAxes.GEODETIC_LATITUDE,
                 HardCodedAxes.ALTITUDE,
                 HardCodedAxes.TIME);
-        assertSame("Right-handed CS shall be same as display-oriented for this test.",
-                cs.forConvention(AxesConvention.RIGHT_HANDED),
-                cs.forConvention(AxesConvention.DISPLAY_ORIENTED));
-        assertSame("Right-handed CS shall be same as normalized for this test.",
-                cs.forConvention(AxesConvention.RIGHT_HANDED),
-                cs.forConvention(AxesConvention.NORMALIZED));
+        assertSame(cs.forConvention(AxesConvention.RIGHT_HANDED),
+                   cs.forConvention(AxesConvention.DISPLAY_ORIENTED),
+                   "Right-handed CS shall be same as display-oriented for this test.");
+        assertSame(cs.forConvention(AxesConvention.RIGHT_HANDED),
+                   cs.forConvention(AxesConvention.NORMALIZED),
+                   "Right-handed CS shall be same as normalized for this test.");
     }
 
     /**
@@ -109,17 +109,17 @@ public final class AbstractCSTest extends TestCase {
                 Map.of(NAME_KEY, Vocabulary.format(Vocabulary.Keys.Unnamed)), "E", AxisDirection.EAST, Units.METRE);
         final var HEIGHT = new DefaultCoordinateSystemAxis(
                 Map.of(NAME_KEY, "Height"), "h", AxisDirection.UP, Units.METRE);
-        assertEquals("minimumValue", Double.NEGATIVE_INFINITY, EASTING.getMinimumValue(), STRICT);
-        assertEquals("maximumValue", Double.POSITIVE_INFINITY, EASTING.getMaximumValue(), STRICT);
-        assertNull  ("rangeMeaning", EASTING.getRangeMeaning());
-        assertEquals("minimumValue", Double.NEGATIVE_INFINITY, HEIGHT.getMinimumValue(), STRICT);
-        assertEquals("maximumValue", Double.POSITIVE_INFINITY, HEIGHT.getMaximumValue(), STRICT);
-        assertNull  ("rangeMeaning", HEIGHT.getRangeMeaning());
+        assertEquals(Double.NEGATIVE_INFINITY, EASTING.getMinimumValue());
+        assertEquals(Double.POSITIVE_INFINITY, EASTING.getMaximumValue());
+        assertNull  (EASTING.getRangeMeaning());
+        assertEquals(Double.NEGATIVE_INFINITY, HEIGHT.getMinimumValue());
+        assertEquals(Double.POSITIVE_INFINITY, HEIGHT.getMaximumValue());
+        assertNull  (HEIGHT.getRangeMeaning());
         /*
          * Now the actual test. First we opportunistically test RIGHT_HANDED and DISPLAY_ORIENTED
          * before to test NORMALIZED, in order to test in increasing complexity.
          */
-        final AbstractCS cs = new AbstractCS(Map.of(NAME_KEY, "Test"),
+        final var cs = new AbstractCS(Map.of(NAME_KEY, "Test"),
                 HardCodedAxes.TIME,
                 HardCodedAxes.NORTHING,
                 HardCodedAxes.WESTING,
@@ -147,7 +147,7 @@ public final class AbstractCSTest extends TestCase {
      */
     @Test
     public void testForPositiveRangeConvention() {
-        final AbstractCS cs = new AbstractCS(Map.of(NAME_KEY, "Test"),
+        final var cs = new AbstractCS(Map.of(NAME_KEY, "Test"),
                 HardCodedAxes.GEODETIC_LONGITUDE, HardCodedAxes.GEODETIC_LATITUDE);
         verifyAxesConvention(AxesConvention.POSITIVE_RANGE, cs,
                 HardCodedAxes.SHIFTED_LONGITUDE, HardCodedAxes.GEODETIC_LATITUDE);
@@ -158,7 +158,7 @@ public final class AbstractCSTest extends TestCase {
      */
     @Test
     public void testSerialization() {
-        final AbstractCS cs = new AbstractCS(Map.of(NAME_KEY, "Test"), HardCodedAxes.X, HardCodedAxes.Y);
+        final var cs = new AbstractCS(Map.of(NAME_KEY, "Test"), HardCodedAxes.X, HardCodedAxes.Y);
         assertNotSame(cs, assertSerializedEquals(cs));
     }
 }

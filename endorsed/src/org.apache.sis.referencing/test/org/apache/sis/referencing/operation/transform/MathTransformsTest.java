@@ -30,9 +30,8 @@ import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.geometry.GeneralDirectPosition;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -104,7 +103,7 @@ public final class MathTransformsTest extends TestCase {
         assertEquals(3, steps.size());
         assertMatrixEquals("Step 1", scale, MathTransforms.getMatrix(steps.get(0)), STRICT);
         assertMatrixEquals("Step 3", swap,  MathTransforms.getMatrix(steps.get(2)), STRICT);
-        assertInstanceOf  ("Step 2", PassThroughTransform.class, steps.get(1));
+        assertInstanceOf(PassThroughTransform.class, steps.get(1));
     }
 
     /**
@@ -226,7 +225,7 @@ public final class MathTransformsTest extends TestCase {
             0,  0,  0,  1));
 
         LinearTransform linear = MathTransforms.tangent(tr, pos);
-        assertSame("Linear transform shall be returned unchanged.", tr, linear);
+        assertSame(tr, linear, "Linear transform shall be returned unchanged.");
 
         tr = MathTransforms.concatenate(nonLinear3D(), tr);
         linear = MathTransforms.tangent(tr, pos);
@@ -246,11 +245,11 @@ public final class MathTransformsTest extends TestCase {
     @Test
     public void testTranslation() {
         MathTransform tr = MathTransforms.translation(4);
-        assertInstanceOf("1D", MathTransform1D.class, tr);
-        assertFalse("isIdentity", tr.isIdentity());
+        assertInstanceOf(MathTransform1D.class, tr);
+        assertFalse(tr.isIdentity());
 
         tr = MathTransforms.translation(4, 7);
-        assertInstanceOf("2D", MathTransform2D.class, tr);
-        assertFalse("isIdentity", tr.isIdentity());
+        assertInstanceOf(MathTransform2D.class, tr);
+        assertFalse(tr.isIdentity());
     }
 }

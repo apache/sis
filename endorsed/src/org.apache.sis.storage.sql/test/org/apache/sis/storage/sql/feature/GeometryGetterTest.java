@@ -32,8 +32,8 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.setup.GeometryLibrary;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 
@@ -140,10 +140,10 @@ public final class GeometryGetterTest extends TestCase {
                 final String wkt = results.getString(1);
                 final Geometry geometry = (Geometry) reader.getValue(fromSridToCRS, results, 2);
                 final GeometryWrapper expected = GF.parseWKT(wkt);
-                assertEquals("WKT and WKB parsings gave different results.", GF.getGeometry(expected), geometry);
+                assertEquals(GF.getGeometry(expected), geometry, "WKT and WKB parsings gave different results.");
                 final CoordinateReferenceSystem expectedCRS = getExpectedCRS(results.getInt(3));
                 if (expectedCRS != null) {
-                    assertSame("SRID", expectedCRS, GF.castOrWrap(geometry).getCoordinateReferenceSystem());
+                    assertSame(expectedCRS, GF.castOrWrap(geometry).getCoordinateReferenceSystem(), "SRID");
                 }
             }
         }

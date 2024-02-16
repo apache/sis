@@ -39,7 +39,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.StringBuilders;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.ProjectDirectories;
 
 

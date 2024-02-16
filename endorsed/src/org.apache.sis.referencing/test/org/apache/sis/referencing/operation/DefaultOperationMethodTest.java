@@ -30,8 +30,8 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -105,16 +105,16 @@ public final class DefaultOperationMethodTest extends TestCase {
     public void testEquals() {
         final DefaultOperationMethod m1 = create("Mercator (variant A)", "9804", "EPSG guidance note #7-2");
         final DefaultOperationMethod m2 = create("Mercator (variant A)", "9804", "E = FE + a*ko(lon - lonO)");
-        assertFalse ("STRICT",          m1.equals(m2, ComparisonMode.STRICT));
-        assertFalse ("BY_CONTRACT",     m1.equals(m2, ComparisonMode.BY_CONTRACT));
-        assertTrue  ("IGNORE_METADATA", m1.equals(m2, ComparisonMode.IGNORE_METADATA));
-        assertEquals("Hash code should ignore metadata.", m1.hashCode(), m2.hashCode());
+        assertFalse (m1.equals(m2, ComparisonMode.STRICT));
+        assertFalse (m1.equals(m2, ComparisonMode.BY_CONTRACT));
+        assertTrue  (m1.equals(m2, ComparisonMode.IGNORE_METADATA));
+        assertEquals(m1.hashCode(), m2.hashCode(), "Hash code should ignore metadata.");
 
         final DefaultOperationMethod m3 = create("Mercator (variant B)", "9805", "EPSG guidance note #7-2");
         final DefaultOperationMethod m4 = create("mercator (variant b)", "9805", "EPSG guidance note #7-2");
-        assertFalse("IGNORE_METADATA", m1.equals(m3, ComparisonMode.IGNORE_METADATA));
-        assertTrue ("IGNORE_METADATA", m3.equals(m4, ComparisonMode.IGNORE_METADATA));
-        assertFalse("BY_CONTRACT",     m3.equals(m4, ComparisonMode.BY_CONTRACT));
+        assertFalse(m1.equals(m3, ComparisonMode.IGNORE_METADATA));
+        assertTrue (m3.equals(m4, ComparisonMode.IGNORE_METADATA));
+        assertFalse(m3.equals(m4, ComparisonMode.BY_CONTRACT));
     }
 
     /**

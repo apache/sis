@@ -20,8 +20,8 @@ import java.util.Locale;
 import org.opengis.util.InternationalString;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
@@ -90,12 +90,12 @@ public final class DefaultInternationalStringTest extends TestCase {
      *                   depending on the localization details being tested.
      */
     private static void assertLocalized(final InternationalString toTest, final String quebecker) {
-        assertEquals ("Unlocalized message:", MESSAGE,    toTest.toString(null));
-        assertEquals ("Unlocalized message:", MESSAGE,    toTest.toString(Locale.ROOT));
-        assertEquals ("English message:",     MESSAGE_en, toTest.toString(Locale.ENGLISH));
-        assertEquals ("French message:",      MESSAGE_fr, toTest.toString(Locale.FRENCH));
-        assertEquals ("Quebecker message:",   quebecker,  toTest.toString(Locale.CANADA_FRENCH));
-        assertNotNull("Other language:",                  toTest.toString(Locale.JAPANESE));
+        assertEquals (MESSAGE,    toTest.toString(null));
+        assertEquals (MESSAGE,    toTest.toString(Locale.ROOT));
+        assertEquals (MESSAGE_en, toTest.toString(Locale.ENGLISH));
+        assertEquals (MESSAGE_fr, toTest.toString(Locale.FRENCH));
+        assertEquals (quebecker,  toTest.toString(Locale.CANADA_FRENCH));
+        assertNotNull(            toTest.toString(Locale.JAPANESE));
     }
 
     /**
@@ -109,9 +109,9 @@ public final class DefaultInternationalStringTest extends TestCase {
         toTest.add(Locale.FRENCH,        MESSAGE_fr);
         toTest.add(Locale.CANADA_FRENCH, MESSAGE_fr_CA);
 
-        assertEquals("Unlocalized message:", MESSAGE,    String.format(Locale.ROOT,    "%s", toTest));
-        assertEquals("English message:",     MESSAGE_en, String.format(Locale.ENGLISH, "%s", toTest));
-        assertEquals("French message:",      MESSAGE_fr, String.format(Locale.FRENCH,  "%s", toTest));
+        assertEquals(MESSAGE,    String.format(Locale.ROOT,    "%s", toTest));
+        assertEquals(MESSAGE_en, String.format(Locale.ENGLISH, "%s", toTest));
+        assertEquals(MESSAGE_fr, String.format(Locale.FRENCH,  "%s", toTest));
 
         assertEquals("  Thi…", String.format(Locale.ROOT,    "%6.4s",  toTest));
         assertEquals("  Thi…", String.format(Locale.ENGLISH, "%6.4s",  toTest));

@@ -21,23 +21,18 @@ import java.util.List;
 import java.util.Collection;
 import java.util.function.Function;
 import java.util.function.BiFunction;
-import java.util.function.Predicate;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.math.FunctionProperty;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
-import org.opengis.feature.FeatureType;
-import org.opengis.filter.Expression;
 import org.opengis.filter.Filter;
-import org.opengis.filter.Literal;
 import org.opengis.filter.FilterFactory;
 import org.opengis.filter.LogicalOperator;
 
@@ -85,9 +80,9 @@ public final class LogicalFilterTest extends TestCase {
      */
     @Test
     public void testNot() {
-        final Literal<Feature,String>  literal = factory.literal("text");
-        final Filter<Feature>          operand = factory.isNull(literal);
-        final LogicalOperator<Feature> filter  = factory.not(operand);
+        final var literal = factory.literal("text");
+        final var operand = factory.isNull(literal);
+        final var filter  = factory.not(operand);
         assertArrayEquals(new Filter<?>[] {operand}, filter.getOperands().toArray());
         assertTrue(filter.test(null));
         assertSerializedEquals(filter);
@@ -99,9 +94,9 @@ public final class LogicalFilterTest extends TestCase {
      */
     @Test
     public void testNegate() {
-        final Literal<Feature,String>  literal = factory.literal("text");
-        final Filter<Feature>          operand = factory.isNull(literal);
-        assertInstanceOf("Predicate.negate()", LogicalFilter.Not.class, operand.negate());
+        final var literal = factory.literal("text");
+        final var operand = factory.isNull(literal);
+        assertInstanceOf(LogicalFilter.Not.class, operand.negate());
     }
 
     /**
@@ -114,8 +109,8 @@ public final class LogicalFilterTest extends TestCase {
                 return Set.of(FunctionProperty.VOLATILE);
             }
         };
-        final Filter<Feature>          operand = factory.isNull(literal);
-        final LogicalOperator<Feature> filter  = factory.not(operand);
+        final var operand = factory.isNull(literal);
+        final var filter  = factory.not(operand);
         assertTrue(isVolatile(filter));
     }
 
@@ -130,33 +125,29 @@ public final class LogicalFilterTest extends TestCase {
                         final Function<Collection<Filter<Feature>>, LogicalOperator<Feature>> anyArity,
                         final boolean expected)
     {
-        final Filter<Feature> f1 = factory.isNull(factory.literal("text"));
-        final Filter<Feature> f2 = factory.isNull(factory.literal(null));
-        try {
-            binary.apply(null, null);
-            fail("Creation with a null operand shall raise an exception.");
-        } catch (NullPointerException ex) {
-        }
-        try {
-            binary.apply(f1, null);
-            fail("Creation with a null operand shall raise an exception.");
-        } catch (NullPointerException ex) {
-        }
-        try {
-            binary.apply(null, f2);
-            fail("Creation with a null operand shall raise an exception.");
-        } catch (NullPointerException ex) {
-        }
-        try {
-            anyArity.apply(Set.of(f1));
-            fail("Creation with less then two operands shall raise an exception.");
-        } catch (IllegalArgumentException ex) {
-            assertNotNull(ex.getMessage());
-        }
+        final var f1 = factory.isNull(factory.literal("text"));
+        final var f2 = factory.isNull(factory.literal(null));
+        RuntimeException e;
+
+        e = assertThrows(NullPointerException.class, () -> binary.apply(null, null),
+                         "Creation with a null operand shall raise an exception.");
+        assertNotNull(e);
+
+        e = assertThrows(NullPointerException.class, () -> binary.apply(f1, null),
+                         "Creation with a null operand shall raise an exception.");
+        assertNotNull(e);
+
+        e = assertThrows(NullPointerException.class, () -> binary.apply(null, f2),
+                         "Creation with a null operand shall raise an exception.");
+        assertNotNull(e);
+
+        e = assertThrows(IllegalArgumentException.class, () -> anyArity.apply(Set.of(f1)),
+                         "Creation with less then two operands shall raise an exception.");
+        assertNotNull(e);
         /*
          * Test construction, evaluation and serialization.
          */
-        LogicalOperator<Feature> filter = binary.apply(f1, f2);
+        var filter = binary.apply(f1, f2);
         assertArrayEquals(new Filter<?>[] {f1, f2}, filter.getOperands().toArray());
         assertEquals(expected, filter.test(null));
         assertSerializedEquals(filter);
@@ -172,9 +163,9 @@ public final class LogicalFilterTest extends TestCase {
         /*
          * Test the `Predicate` methods, which should be overridden by `Optimization.OnFilter`.
          */
-        assertInstanceOf("Predicate.and(…)",   Optimization.OnFilter.class, f1.and(f2));
-        assertInstanceOf("Predicate.or(…)",    Optimization.OnFilter.class, f1.or(f2));
-        assertInstanceOf("Predicate.negate()", Optimization.OnFilter.class, f1.negate());
+        assertInstanceOf(Optimization.OnFilter.class, f1.and(f2));
+        assertInstanceOf(Optimization.OnFilter.class, f1.or(f2));
+        assertInstanceOf(Optimization.OnFilter.class, f1.negate());
     }
 
     /**
@@ -182,14 +173,14 @@ public final class LogicalFilterTest extends TestCase {
      */
     @Test
     public void testEvaluateOnFeature() {
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
-        ftb.addAttribute(String.class).setName("attNull");
-        ftb.addAttribute(String.class).setName("attNotNull");
-        final Feature feature = ftb.setName("Test").build().newInstance();
+        final var builder = new FeatureTypeBuilder();
+        builder.addAttribute(String.class).setName("attNull");
+        builder.addAttribute(String.class).setName("attNotNull");
+        final var feature = builder.setName("Test").build().newInstance();
         feature.setPropertyValue("attNotNull", "a value");
 
-        final Filter<Feature> filterTrue  = factory.isNull(factory.property("attNull",    String.class));
-        final Filter<Feature> filterFalse = factory.isNull(factory.property("attNotNull", String.class));
+        final var filterTrue  = factory.isNull(factory.property("attNull",    String.class));
+        final var filterFalse = factory.isNull(factory.property("attNotNull", String.class));
 
         assertTrue (factory.and(filterTrue,  filterTrue ).test(feature));
         assertFalse(factory.and(filterFalse, filterTrue ).test(feature));
@@ -206,12 +197,12 @@ public final class LogicalFilterTest extends TestCase {
         /*
          * Test the `Predicate` methods, which should be overridden by `Optimization.OnFilter`.
          */
-        Predicate<Feature> predicate = filterTrue.and(filterFalse);
-        assertInstanceOf("Predicate.and(…)", Optimization.OnFilter.class, predicate);
+        var predicate = filterTrue.and(filterFalse);
+        assertInstanceOf(Optimization.OnFilter.class, predicate);
         assertFalse(predicate.test(feature));
 
         predicate = filterTrue.or(filterFalse);
-        assertInstanceOf("Predicate.or(…)", Optimization.OnFilter.class, predicate);
+        assertInstanceOf(Optimization.OnFilter.class, predicate);
         assertTrue(predicate.test(feature));
     }
 
@@ -220,9 +211,9 @@ public final class LogicalFilterTest extends TestCase {
      */
     @Test
     public void testOptimization() {
-        final Filter<Feature> f1 = factory.isNull(factory.literal("text"));     // False
-        final Filter<Feature> f2 = factory.isNull(factory.literal(null));       // True
-        final Filter<Feature> f3 = factory.isNull(factory.property("*"));       // Indeterminate
+        final var f1 = factory.isNull(factory.literal("text"));     // False
+        final var f2 = factory.isNull(factory.literal(null));       // True
+        final var f3 = factory.isNull(factory.property("*"));       // Indeterminate
         optimize(factory.and(f1, f2), Filter.exclude());
         optimize(factory.or (f1, f2), Filter.include());
         optimize(factory.and(f3, factory.not(f3)), Filter.exclude());
@@ -233,42 +224,42 @@ public final class LogicalFilterTest extends TestCase {
      * Verifies an optimization which is expected to evaluate immediately.
      */
     private static void optimize(final Filter<Feature> original, final Filter<Feature> expected) {
-        final Filter<? super Feature> optimized = new Optimization().apply(original);
-        assertNotSame("Expected a new optimized filter.", original, optimized);
-        assertSame("Second optimization should have no effect.", optimized, new Optimization().apply(optimized));
-        assertSame("Expression should have been evaluated now.", expected, optimized);
+        final Filter<?> optimized = new Optimization().apply(original);
+        assertNotSame(original, optimized, "Expected a new optimized filter.");
+        assertSame(optimized, new Optimization().apply(optimized), "Second optimization should have no effect.");
+        assertSame(expected, optimized, "Expression should have been evaluated now.");
     }
 
     /**
-     * Tests {@link Optimization} applied on logical filters when the {@link FeatureType} is known.
+     * Tests {@link Optimization} applied on logical filters when the {@code FeatureType} is known.
      */
     @Test
     public void testFeatureOptimization() {
         final String attribute = "population";
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
-        ftb.addAttribute(String.class).setName(attribute);
-        final FeatureType type = ftb.setName("Test").build();
-        final Feature instance = type.newInstance();
+        final var builder = new FeatureTypeBuilder();
+        builder.addAttribute(String.class).setName(attribute);
+        final var feature  = builder.setName("Test").build();
+        final var instance = feature.newInstance();
         instance.setPropertyValue("population", "1000");
         /*
          * Prepare an expression which divide the population value by 5.
          */
-        final Expression<Feature,Number> e = factory.divide(factory.property(attribute, Integer.class), factory.literal(5));
+        final var expression = factory.divide(factory.property(attribute, Integer.class), factory.literal(5));
         final Optimization optimization = new Optimization();
-        assertSame(e, optimization.apply(e));                       // No optimization.
-        assertEquals(200, e.apply(instance).intValue());
+        assertSame(expression, optimization.apply(expression));                       // No optimization.
+        assertEquals(200, expression.apply(instance).intValue());
         /*
          * Notify the optimizer that property values will be of `String` type.
          * The optimizer should compute an `ObjectConverter` in advance.
          */
-        optimization.setFeatureType(type);
-        final Expression<? super Feature, ? extends Number> opt = optimization.apply(e);
-        assertEquals(200, e.apply(instance).intValue());
-        assertNotSame(e, opt);
+        optimization.setFeatureType(feature);
+        final var optimized = optimization.apply(expression);
+        assertEquals(200, expression.apply(instance).intValue());
+        assertNotSame(expression, optimized);
 
-        final PropertyValue<?> p = (PropertyValue<?>) opt.getParameters().get(0);
-        assertEquals(String.class, p.getSourceClass());
-        assertEquals(Number.class, p.getValueClass());
+        final var property = assertInstanceOf(PropertyValue.class, optimized.getParameters().get(0));
+        assertEquals(String.class, property.getSourceClass());
+        assertEquals(Number.class, property.getValueClass());
     }
 
     /**
