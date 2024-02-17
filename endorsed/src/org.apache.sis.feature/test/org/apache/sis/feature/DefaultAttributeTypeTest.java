@@ -24,9 +24,8 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -69,8 +68,7 @@ public final class DefaultAttributeTypeTest extends TestCase {
         assertNull(identification.put(DefaultAttributeType.DEFINITION_KEY  + "_fr", "Le nom de la ville."));
         assertNull(identification.put(DefaultAttributeType.DEFINITION_KEY  + "_ja", "都市の名前。"));
         assertNull(identification.put(DefaultAttributeType.DESCRIPTION_KEY, "Some verbose description."));
-        final DefaultAttributeType<String> city = new DefaultAttributeType<>(identification,
-                String.class, 1, 1, "Utopia");
+        final var city = new DefaultAttributeType<String>(identification, String.class, 1, 1, "Utopia");
         identification.clear();
         return city;
     }
@@ -84,8 +82,7 @@ public final class DefaultAttributeTypeTest extends TestCase {
         assertNull(identification.put(DefaultAttributeType.NAME_KEY, "population"));
         // We may add more properties here in a future version.
 
-        final DefaultAttributeType<Integer> population = new DefaultAttributeType<>(
-                identification, Integer.class, 1, 1, null);
+        final var population = new DefaultAttributeType<Integer>(identification, Integer.class, 1, 1, null);
         identification.clear();
         return population;
     }
@@ -128,27 +125,27 @@ public final class DefaultAttributeTypeTest extends TestCase {
     public void testMandatorySingleton() {
         final DefaultAttributeType<String> city = city();
         final GenericName name = city.getName();
-        assertInstanceOf("city.name", LocalName.class, name);
-        assertEquals("city.name", "city", name.toString());
+        assertInstanceOf(LocalName.class, name);
+        assertEquals("city", name.toString());
 
         InternationalString p = city.getDesignation();
-        assertNotNull("designation", p);
-        assertEquals("designation", "City",  p.toString(Locale.ENGLISH));
-        assertEquals("designation", "Ville", p.toString(Locale.FRENCH));
-        assertEquals("designation", "都市",   p.toString(Locale.JAPANESE));
+        assertNotNull(p);
+        assertEquals("City",  p.toString(Locale.ENGLISH));
+        assertEquals("Ville", p.toString(Locale.FRENCH));
+        assertEquals("都市",   p.toString(Locale.JAPANESE));
 
         p = city.getDefinition();
-        assertEquals("definition",  "The name of the city.", p.toString(Locale.ENGLISH));
-        assertEquals("definition",  "Le nom de la ville.", p.toString(Locale.FRENCH));
-        assertEquals("definition",  "都市の名前。", p.toString(Locale.JAPANESE));
+        assertEquals("The name of the city.", p.toString(Locale.ENGLISH));
+        assertEquals("Le nom de la ville.", p.toString(Locale.FRENCH));
+        assertEquals("都市の名前。", p.toString(Locale.JAPANESE));
 
         p = city.getDescription();
-        assertEquals("description",  "Some verbose description.", p.toString(Locale.ENGLISH));
-        assertEquals("valueClass",   String.class, city.getValueClass());
-        assertEquals("defaultValue", "Utopia",     city.getDefaultValue());
+        assertEquals("Some verbose description.", p.toString(Locale.ENGLISH));
+        assertEquals(String.class, city.getValueClass());
+        assertEquals("Utopia",     city.getDefaultValue());
 
-        assertEquals("minimumOccurs", 1, city.getMinimumOccurs());
-        assertEquals("axnimumOccurs", 1, city.getMaximumOccurs());
+        assertEquals(1, city.getMinimumOccurs());
+        assertEquals(1, city.getMaximumOccurs());
     }
 
     /**
@@ -157,12 +154,12 @@ public final class DefaultAttributeTypeTest extends TestCase {
     @Test
     @SuppressWarnings("ObjectEqualsNull")
     public void testEquals() {
-        final Map<String,Object> identification = new HashMap<>(4);
+        final var identification = new HashMap<String,Object>(4);
         final DefaultAttributeType<Integer> a1 = population(identification);
         final DefaultAttributeType<Integer> a2 = population(identification);
-        assertFalse ("equals",   a1.equals(null));
-        assertTrue  ("equals",   a1.equals(a2));
-        assertEquals("hashCode", a1.hashCode(), a2.hashCode());
+        assertFalse (a1.equals(null));
+        assertTrue  (a1.equals(a2));
+        assertEquals(a1.hashCode(), a2.hashCode());
     }
 
     /**

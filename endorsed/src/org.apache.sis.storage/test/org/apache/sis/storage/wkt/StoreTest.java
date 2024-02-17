@@ -26,8 +26,8 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -80,7 +80,7 @@ public final class StoreTest extends TestCase {
         final Metadata metadata;
         try (Store store = new Store(null, new StorageConnector(new StringReader(WKT)))) {
             metadata = store.getMetadata();
-            assertSame("Expected cached value.", metadata, store.getMetadata());
+            assertSame(metadata, store.getMetadata(), "Expected cached value.");
         }
         validate((GeographicCRS) TestUtilities.getSingleton(metadata.getReferenceSystemInfo()));
     }
@@ -97,10 +97,10 @@ public final class StoreTest extends TestCase {
         final Metadata metadata;
         final StoreProvider p = new StoreProvider();
         final StorageConnector c = new StorageConnector(new ByteArrayInputStream(StoreTest.WKT.getBytes(StandardCharsets.US_ASCII)));
-        assertTrue("isSupported", p.probeContent(c).isSupported());
+        assertTrue(p.probeContent(c).isSupported());
         try (Store store = new Store(null, c)) {
             metadata = store.getMetadata();
-            assertSame("Expected cached value.", metadata, store.getMetadata());
+            assertSame(metadata, store.getMetadata(), "Expected cached value.");
         }
         validate((GeographicCRS) TestUtilities.getSingleton(metadata.getReferenceSystemInfo()));
     }

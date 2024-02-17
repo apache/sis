@@ -124,7 +124,7 @@ public final class FeatureMemoryBenchmark {
         final Float  latitude  = random.nextFloat() * 180 -  90;
         final Float  longitude = random.nextFloat() * 360 - 180;
         if (type != null) {
-            final AbstractFeature feature = type.newInstance();
+            final var feature = type.newInstance();
             feature.setPropertyValue("city",      city);
             feature.setPropertyValue("latitude",  latitude);
             feature.setPropertyValue("longitude", longitude);

@@ -19,8 +19,8 @@ package org.apache.sis.filter.sqlmm;
 import com.esri.core.geometry.Geometry;
 
 // Test dependencies
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 
 /**
@@ -39,37 +39,37 @@ public final class RegistryUsingESRI_Test extends RegistryTestCase<Geometry> {
 
     @Test
     @Override
-    @Ignore("Reprojection not yet implemented.")
+    @Disabled("Reprojection not yet implemented.")
     public void testTransform() {
     }
 
     @Test
     @Override
-    @Ignore("Reprojection not yet implemented.")
+    @Disabled("Reprojection not yet implemented.")
     public void testOptimization() {
     }
 
     @Test
     @Override
-    @Ignore("Reprojection not yet implemented.")
+    @Disabled("Reprojection not yet implemented.")
     public void testFeatureOptimization() {
     }
 
     @Test
     @Override
-    @Ignore("Reprojection not yet implemented.")
+    @Disabled("Reprojection not yet implemented.")
     public void testIntersectsWithReprojection() {
     }
 
     @Test
     @Override
-    @Ignore("Current implementation ignores the distance parameter.")
+    @Disabled("Current implementation ignores the distance parameter.")
     public void testSimplify() {
     }
 
     @Test
     @Override
-    @Ignore("Operation not yet implemented.")
+    @Disabled("Operation not yet implemented.")
     public void testSimplifyPreserveTopology() {
     }
 }

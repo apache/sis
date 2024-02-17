@@ -31,8 +31,8 @@ import org.apache.sis.util.internal.SimpleCharacterIterator;
 import static org.apache.sis.measure.AngleFormat.Field.*;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 
@@ -74,18 +74,18 @@ public final class FormattedCharacterIteratorTest extends TestCase {
         for (char c=it.first(); c!=DONE; c=it.next()) {
             assertEquals(text.charAt(i), c);
             assertEquals(it  .charAt(i), c);
-            assertEquals("getIndex",    i++,           it.getIndex());
-            assertEquals("getRunStart", 0,             it.getRunStart());
-            assertEquals("getRunLimit", text.length(), it.getRunLimit());
+            assertEquals(i++,           it.getIndex());
+            assertEquals(0,             it.getRunStart());
+            assertEquals(text.length(), it.getRunLimit());
             assertTrue(it.getAttributes().isEmpty());
         }
         assertEquals(text.length(), i);
         for (char c=it.last(); c!=DONE; c=it.previous()) {
             assertEquals(text.charAt(--i), c);
             assertEquals(it  .charAt(  i), c);
-            assertEquals("getIndex",    i,             it.getIndex());
-            assertEquals("getRunStart", 0,             it.getRunStart());
-            assertEquals("getRunLimit", text.length(), it.getRunLimit());
+            assertEquals(i,             it.getIndex());
+            assertEquals(0,             it.getRunStart());
+            assertEquals(text.length(), it.getRunLimit());
             assertTrue(it.getAttributes().isEmpty());
         }
         assertEquals(0, i);
@@ -233,22 +233,22 @@ public final class FormattedCharacterIteratorTest extends TestCase {
                 }
             }
             final Map<Attribute,Object> attributes = it.getAttributes();
-            assertEquals("attributes.size", numAttributes, attributes.size());
-            assertEquals("attributes.get",  value,         attributes.get(key));
-            assertEquals("attributes.get",  isInteger,     attributes.get(INTEGER) != null);
-            assertEquals("attributes.get",  isFraction,    attributes.get(FRACTION) != null);
-            assertEquals("attributes.get",  isSeparator,   attributes.get(DECIMAL_SEPARATOR) != null);
+            assertEquals(numAttributes, attributes.size());
+            assertEquals(value,         attributes.get(key));
+            assertEquals(isInteger,     attributes.get(INTEGER) != null);
+            assertEquals(isFraction,    attributes.get(FRACTION) != null);
+            assertEquals(isSeparator,   attributes.get(DECIMAL_SEPARATOR) != null);
 
-            assertEquals("getRunStart", start,          it.getRunStart(key));
-            assertEquals("getRunLimit", limit,          it.getRunLimit(key));
-            assertEquals("getRunStart", startInteger,   it.getRunStart(INTEGER));
-            assertEquals("getRunLimit", limitInteger,   it.getRunLimit(INTEGER));
-            assertEquals("getRunStart", startFraction,  it.getRunStart(FRACTION));
-            assertEquals("getRunLimit", limitFraction,  it.getRunLimit(FRACTION));
-            assertEquals("getRunStart", startSeparator, it.getRunStart(DECIMAL_SEPARATOR));
-            assertEquals("getRunLimit", limitSeparator, it.getRunLimit(DECIMAL_SEPARATOR));
-            assertEquals("getRunStart", max(max(max(startInteger, startSeparator), startFraction), start), it.getRunStart());
-            assertEquals("getRunLimit", min(min(min(limitInteger, limitSeparator), limitFraction), limit), it.getRunLimit());
+            assertEquals(start,          it.getRunStart(key));
+            assertEquals(limit,          it.getRunLimit(key));
+            assertEquals(startInteger,   it.getRunStart(INTEGER));
+            assertEquals(limitInteger,   it.getRunLimit(INTEGER));
+            assertEquals(startFraction,  it.getRunStart(FRACTION));
+            assertEquals(limitFraction,  it.getRunLimit(FRACTION));
+            assertEquals(startSeparator, it.getRunStart(DECIMAL_SEPARATOR));
+            assertEquals(limitSeparator, it.getRunLimit(DECIMAL_SEPARATOR));
+            assertEquals(max(max(max(startInteger, startSeparator), startFraction), start), it.getRunStart());
+            assertEquals(min(min(min(limitInteger, limitSeparator), limitFraction), limit), it.getRunLimit());
         }
     }
 }

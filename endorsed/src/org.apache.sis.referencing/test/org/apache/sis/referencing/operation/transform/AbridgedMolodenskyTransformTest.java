@@ -23,9 +23,8 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.util.Formulas;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.datum.HardCodedDatum;
@@ -61,6 +60,7 @@ public final class AbridgedMolodenskyTransformTest extends MathTransformTestCase
      */
     @Test
     public void compareWithReferenceImplementation() throws FactoryException, TransformException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final AbstractMathTransform transform = new AbridgedMolodenskyTransform2D(
                 HardCodedDatum.WGS84 .getEllipsoid(),
                 HardCodedDatum.SPHERE.getEllipsoid());
@@ -88,11 +88,11 @@ public final class AbridgedMolodenskyTransformTest extends MathTransformTestCase
         int n = 0;
         for (final MathTransform step : MathTransforms.getSteps(tr)) {
             if (!(step instanceof LinearTransform)) {
-                assertInstanceOf("kernel", AbridgedMolodenskyTransform2D.class, step);
+                assertInstanceOf(AbridgedMolodenskyTransform2D.class, step);
                 n++;
             }
         }
-        assertEquals("Number of Molodensky transform instance", 1, n);
+        assertEquals(1, n);
         return tr;
     }
 

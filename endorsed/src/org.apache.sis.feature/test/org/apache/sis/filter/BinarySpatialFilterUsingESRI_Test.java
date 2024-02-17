@@ -19,8 +19,8 @@ package org.apache.sis.filter;
 import com.esri.core.geometry.Geometry;
 
 // Test dependencies
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 
 /**
@@ -42,7 +42,7 @@ public final class BinarySpatialFilterUsingESRI_Test extends BinarySpatialFilter
      */
     @Test
     @Override
-    @Ignore("Not yet mapped to an ESRI operation.")
+    @Disabled("Not yet mapped to an ESRI operation.")
     public void testDWithin() {
     }
 
@@ -51,7 +51,7 @@ public final class BinarySpatialFilterUsingESRI_Test extends BinarySpatialFilter
      */
     @Test
     @Override
-    @Ignore("Not yet mapped to an ESRI operation.")
+    @Disabled("Not yet mapped to an ESRI operation.")
     public void testBeyond() {
     }
 
@@ -60,7 +60,7 @@ public final class BinarySpatialFilterUsingESRI_Test extends BinarySpatialFilter
      */
     @Test
     @Override
-    @Ignore("Not yet mapped to an ESRI operation.")
+    @Disabled("Not yet mapped to an ESRI operation.")
     public void testWithReprojection() {
     }
 
@@ -69,7 +69,7 @@ public final class BinarySpatialFilterUsingESRI_Test extends BinarySpatialFilter
      */
     @Test
     @Override
-    @Ignore("Requires geometry reprojection.")
+    @Disabled("Requires geometry reprojection.")
     public void testSpatialContextDoesNotDegenerateEnvelope() {
     }
 }

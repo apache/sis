@@ -20,8 +20,8 @@ import static java.lang.Double.NaN;
 import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 
 // Specific to the main branch:
@@ -72,7 +72,7 @@ public final class Matrix4Test extends MatrixTestCase {
                 elements[ 8], elements[ 9], elements[10], elements[11],
                 elements[12], elements[13], elements[14], elements[15]);
         validateImplementation(matrix);
-        assertArrayEquals(elements, matrix.getElements(), STRICT);
+        assertArrayEquals(elements, matrix.getElements());
     }
 
     /**
@@ -147,6 +147,6 @@ public final class Matrix4Test extends MatrixTestCase {
          * disabled, because some scale factors will be 0.9999999999999999 instead of 1.
          */
         final MatrixSIS result = step3.multiply(step2).multiply(step1);
-        assertTrue("isIdentity()", result.isIdentity());
+        assertTrue(result.isIdentity());
     }
 }

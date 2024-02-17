@@ -22,9 +22,8 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.storage.DataStoreException;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.test.TestUtilities.getSingleton;
@@ -75,13 +74,13 @@ public class GridTest extends TestCase {
     @Test
     public void testDimensions() throws IOException, DataStoreException {
         Grid geometry = getSingleton(filter(selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getGridCandidates()));
-        assertEquals("getSourceDimensions()", 2, geometry.getSourceDimensions());
-        assertEquals("getTargetDimensions()", 2, geometry.getAxes(decoder()).length);
+        assertEquals(2, geometry.getSourceDimensions());
+        assertEquals(2, geometry.getAxes(decoder()).length);
 
         final int n = includeRuntimeDimension ? 5 : 4;
         geometry = getSingleton(filter(selectDataset(TestData.NETCDF_4D_PROJECTED).getGridCandidates()));
-        assertEquals("getSourceDimensions()", 4, geometry.getSourceDimensions());
-        assertEquals("getTargetDimensions()", n, geometry.getAxes(decoder()).length);
+        assertEquals(4, geometry.getSourceDimensions());
+        assertEquals(n, geometry.getAxes(decoder()).length);
     }
 
     /**
@@ -157,12 +156,12 @@ public class GridTest extends TestCase {
     public void testGridMapping() throws IOException, DataStoreException {
         final Node data = selectDataset(TestData.NETCDF_4D_PROJECTED).findNode("CIP");
         final GridMapping mapping = GridMapping.forVariable((Variable) data);
-        assertNotNull("mapping", mapping);
-        assertInstanceOf("crs", ProjectedCRS.class, mapping.crs);
+        assertNotNull(mapping);
+        assertInstanceOf(ProjectedCRS.class, mapping.crs);
         final ParameterValueGroup pg = ((ProjectedCRS) mapping.crs).getConversionFromBase().getParameterValues();
-        assertEquals("Latitude of false origin",           25,    pg.parameter("Latitude of false origin")         .doubleValue(), STRICT);
-        assertEquals("Longitude of false origin",         -95,    pg.parameter("Longitude of false origin")        .doubleValue(), STRICT);
-        assertEquals("Latitude of 1st standard parallel",  25,    pg.parameter("Latitude of 1st standard parallel").doubleValue(), STRICT);
-        assertEquals("Latitude of 2nd standard parallel",  25.05, pg.parameter("Latitude of 2nd standard parallel").doubleValue(), STRICT);
+        assertEquals( 25,    pg.parameter("Latitude of false origin")         .doubleValue());
+        assertEquals(-95,    pg.parameter("Longitude of false origin")        .doubleValue());
+        assertEquals( 25,    pg.parameter("Latitude of 1st standard parallel").doubleValue());
+        assertEquals( 25.05, pg.parameter("Latitude of 2nd standard parallel").doubleValue());
     }
 }

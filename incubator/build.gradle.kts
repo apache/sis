@@ -49,11 +49,8 @@ dependencies {
     api(files("../endorsed/build/classes/java/main/org.apache.sis.storage"))
 
     // Test dependencies
-    testImplementation(tests.geoapi)
     testImplementation(tests.junit5)
-    testImplementation(tests.junit4)
-    testRuntimeOnly   (tests.junit)
-    testRuntimeOnly   (tests.junitLauncher)
+    testRuntimeOnly   (tests.jupiter)
     /*
      * Dependencies used only by incubated modules. The dependencies are not declared
      * in the global `settings.gradle.kts` because incubated modules are not released.
@@ -82,7 +79,7 @@ tasks.compileJava {
 }
 tasks.compileTestJava {
     srcDir.list().forEach {
-        addRead(options.compilerArgs, it, "org.apache.sis.test.incubator,org.junit.jupiter.api,junit")
+        addRead(options.compilerArgs, it, "org.apache.sis.test.incubator,org.junit.jupiter.api")
     }
 }
 

@@ -25,11 +25,11 @@ import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.collection.CodeListSet;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 
 
@@ -53,7 +53,7 @@ public final class ModifiableMetadataTest extends TestCase {
         md = new DefaultMedium();
         md.setMediumNote(new SimpleInternationalString("The original note."));
         md.setIdentifier(new DefaultIdentifier("A medium identifier"));
-        assertInstanceOf("mediumFormat", CodeListSet.class, md.getMediumFormats());    // Force assignation of a Set in private field.
+        assertInstanceOf(CodeListSet.class, md.getMediumFormats());    // Force assignation of a Set in private field.
     }
 
     /**
@@ -67,16 +67,9 @@ public final class ModifiableMetadataTest extends TestCase {
      * Verifies the metadata properties values.
      */
     private void assertPropertiesEqual(final Integer volumes, final String mediumNote, final MediumFormat... formats) {
-        assertEquals("mediumNote", mediumNote, String.valueOf(md.getMediumNote()));
-        assertEquals("volumes", volumes, md.getVolumes());
+        assertEquals(mediumNote, String.valueOf(md.getMediumNote()));
+        assertEquals(volumes, md.getVolumes());
         assertSetEquals(Arrays.asList(formats), md.getMediumFormats());
-    }
-
-    /**
-     * Verifies the exception for an unmodifiable metadata.
-     */
-    private static void verifyUnmodifiableException(final UnmodifiableMetadataException e) {
-        assertNotNull("Expected an error message.", e.getMessage());
     }
 
     /**
@@ -85,9 +78,9 @@ public final class ModifiableMetadataTest extends TestCase {
      */
     @Test
     public void testStateEditable() {
-        assertFalse("transitionTo", md.transitionTo(ModifiableMetadata.State.EDITABLE));        // Shall be a no-op.
-        assertEquals("state", ModifiableMetadata.State.EDITABLE, md.state());
-        assertEquals("identifier.state", ModifiableMetadata.State.EDITABLE, identifierState());
+        assertFalse(md.transitionTo(ModifiableMetadata.State.EDITABLE));        // Shall be a no-op.
+        assertEquals(ModifiableMetadata.State.EDITABLE, md.state());
+        assertEquals(ModifiableMetadata.State.EDITABLE, identifierState());
         /*
          * Verify conditions given in Javadoc: allow new values and overwriting.
          */
@@ -105,39 +98,34 @@ public final class ModifiableMetadataTest extends TestCase {
      */
     @Test
     public void testStateCompletable() {
-        assertTrue("transitionTo", md.transitionTo(ModifiableMetadata.State.COMPLETABLE));
-        assertEquals("state", ModifiableMetadata.State.COMPLETABLE, md.state());
-        assertEquals("identifier.state", ModifiableMetadata.State.COMPLETABLE, identifierState());
-        try {
-            md.transitionTo(ModifiableMetadata.State.EDITABLE);
-            fail("Shall not be allowed to transition back to editable state.");
-        } catch (UnmodifiableMetadataException e) {
-            verifyUnmodifiableException(e);
-        }
+        assertTrue(md.transitionTo(ModifiableMetadata.State.COMPLETABLE));
+        assertEquals(ModifiableMetadata.State.COMPLETABLE, md.state());
+        assertEquals(ModifiableMetadata.State.COMPLETABLE, identifierState());
+
+        RuntimeException e;
+        e = assertThrows(UnmodifiableMetadataException.class,
+                         () -> md.transitionTo(ModifiableMetadata.State.EDITABLE),
+                         "Shall not be allowed to transition back to editable state.");
+        assertMessageContains(e);
         /*
          * Verify conditions given in Javadoc: allow new values but not overwriting.
          */
         md.setVolumes(4);
-        try {
-            md.setMediumNote(new SimpleInternationalString("A new note."));
-            fail("Overwriting an existing value shall not be allowed.");
-        } catch (UnmodifiableMetadataException e) {
-            verifyUnmodifiableException(e);
-            assertTrue(e.getMessage().contains("The original note."));
-        }
-        try {
-            md.getMediumFormats().add(MediumFormat.TAR);
-            fail("Adding new value shall not be allowed.");
-        } catch (UnsupportedOperationException e) {
-            // This is the expected exception.
-        }
+        e = assertThrows(UnmodifiableMetadataException.class,
+                         () -> md.setMediumNote(new SimpleInternationalString("A new note.")),
+                         "Overwriting an existing value shall not be allowed.");
+        assertMessageContains(e, "The original note.");
+
+        e = assertThrows(UnsupportedOperationException.class,
+                         () -> md.getMediumFormats().add(MediumFormat.TAR),
+                         "Adding a new value shall not be allowed.");
+        assertNotNull(e);
+
         md.setMediumFormats(Set.of(MediumFormat.CPIO));
-        try {
-            md.getMediumFormats().add(MediumFormat.ISO_9660);
-            fail("Adding new value shall not be allowed.");
-        } catch (UnsupportedOperationException e) {
-            // This is the expected exception.
-        }
+        e = assertThrows(UnsupportedOperationException.class,
+                         () -> md.getMediumFormats().add(MediumFormat.ISO_9660),
+                         "Setting a new value shall not be allowed.");
+        assertNotNull(e);
         assertPropertiesEqual(4, "The original note.", MediumFormat.CPIO);
     }
 
@@ -147,42 +135,37 @@ public final class ModifiableMetadataTest extends TestCase {
      */
     @Test
     public void testStateFinal() {
-        assertTrue("transitionTo", md.transitionTo(ModifiableMetadata.State.FINAL));
-        assertEquals("state", ModifiableMetadata.State.FINAL, md.state());
-        assertEquals("identifier.state", ModifiableMetadata.State.FINAL, identifierState());
-        try {
-            md.transitionTo(ModifiableMetadata.State.EDITABLE);
-            fail("Shall not be allowed to transition back to editable state.");
-        } catch (UnmodifiableMetadataException e) {
-            verifyUnmodifiableException(e);
-        }
+        assertTrue(md.transitionTo(ModifiableMetadata.State.FINAL));
+        assertEquals(ModifiableMetadata.State.FINAL, md.state());
+        assertEquals(ModifiableMetadata.State.FINAL, identifierState());
+
+        RuntimeException e;
+        e = assertThrows(UnmodifiableMetadataException.class,
+                         () -> md.transitionTo(ModifiableMetadata.State.EDITABLE),
+                         "Shall not be allowed to transition back to editable state.");
+        assertMessageContains(e);
         /*
          * Verify conditions given in Javadoc: new values and overwriting not allowed.
          */
-        try {
-            md.setVolumes(4);
-            fail("Setting new value shall not be allowed.");
-        } catch (UnmodifiableMetadataException e) {
-            verifyUnmodifiableException(e);
-        }
-        try {
-            md.setMediumNote(new SimpleInternationalString("A new note."));
-            fail("Overwriting an existing value shall not be allowed.");
-        } catch (UnmodifiableMetadataException e) {
-            verifyUnmodifiableException(e);
-        }
-        try {
-            md.getMediumFormats().add(MediumFormat.TAR);
-            fail("Adding new value shall not be allowed.");
-        } catch (UnsupportedOperationException e) {
-            // This is the expected exception.
-        }
-        try {
-            md.setMediumFormats(Set.of(MediumFormat.CPIO));
-            fail("Setting new value shall not be allowed.");
-        } catch (UnmodifiableMetadataException e) {
-            verifyUnmodifiableException(e);
-        }
+        e = assertThrows(UnmodifiableMetadataException.class,
+                         () -> md.setVolumes(4),
+                         "Setting a new value shall not be allowed.");
+        assertMessageContains(e);
+
+        e = assertThrows(UnmodifiableMetadataException.class,
+                         () -> md.setMediumNote(new SimpleInternationalString("A new note.")),
+                         "Overwriting an existing value shall not be allowed.");
+        assertMessageContains(e);
+
+        e = assertThrows(UnsupportedOperationException.class,
+                         () -> md.getMediumFormats().add(MediumFormat.TAR),
+                         "Adding a new value shall not be allowed.");
+        assertNotNull(e);
+
+        e = assertThrows(UnmodifiableMetadataException.class,
+                         () -> md.setMediumFormats(Set.of(MediumFormat.CPIO)),
+                         "Setting a new value shall not be allowed.");
+        assertMessageContains(e);
         assertPropertiesEqual(null, "The original note.");
     }
 

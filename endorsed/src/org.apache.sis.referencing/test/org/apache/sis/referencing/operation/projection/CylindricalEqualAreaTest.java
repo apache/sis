@@ -26,7 +26,7 @@ import org.apache.sis.referencing.operation.provider.LambertCylindricalEqualArea
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.apache.sis.test.DependsOnMethod;
 
 

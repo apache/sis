@@ -22,7 +22,7 @@ import java.awt.image.DataBuffer;
 import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.feature.Assertions.assertValuesEqual;

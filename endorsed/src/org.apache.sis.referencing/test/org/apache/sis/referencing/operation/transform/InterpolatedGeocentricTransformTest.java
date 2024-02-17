@@ -25,7 +25,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolation;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;
 import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
 import org.apache.sis.test.DependsOn;

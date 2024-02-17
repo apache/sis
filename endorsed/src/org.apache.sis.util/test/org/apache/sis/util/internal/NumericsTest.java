@@ -29,8 +29,8 @@ import static org.apache.sis.pending.jdk.JDK19.FLOAT_PRECISION;
 import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 
@@ -170,11 +170,11 @@ public final class NumericsTest extends TestCase {
     @Test
     public void testToExp10() {
         for (int i=-2620; i<=2620; i++) {
-            assertEquals(StrictMath.floor(i * MathFunctions.LOG10_2), toExp10(i), 0);
+            assertEquals(StrictMath.floor(i * MathFunctions.LOG10_2), toExp10(i));
         }
         for (int i=-307; i<=308; i++) {
             final String value = "1E" + i;
-            assertEquals(value, (i == 0) ? i : i-1, toExp10(StrictMath.getExponent(Double.parseDouble(value))));
+            assertEquals((i == 0) ? i : i-1, toExp10(StrictMath.getExponent(Double.parseDouble(value))), value);
         }
     }
 
@@ -226,7 +226,7 @@ public final class NumericsTest extends TestCase {
         assertEquals(expected, getSignificand(value));
         final int e = StrictMath.getExponent(value) - (DOUBLE_PRECISION - 1);
         final double recomposed = StrictMath.scalb((double) expected, e);
-        assertEquals(value, StrictMath.copySign(recomposed, value), 0);
+        assertEquals(value, StrictMath.copySign(recomposed, value));
     }
 
     /**
@@ -237,6 +237,6 @@ public final class NumericsTest extends TestCase {
         assertEquals(expected, getSignificand(value));
         final int e = StrictMath.getExponent(value) - (FLOAT_PRECISION - 1);
         final float recomposed = StrictMath.scalb((float) expected, e);
-        assertEquals(value, StrictMath.copySign(recomposed, value), 0f);
+        assertEquals(value, StrictMath.copySign(recomposed, value));
     }
 }

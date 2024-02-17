@@ -35,8 +35,8 @@ import org.apache.sis.metadata.iso.extent.AbstractGeographicExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
@@ -88,7 +88,7 @@ public final class TypeMapTest extends TestCase {
         }, map.entrySet().toArray());
 
         assertEquals(InternationalString.class, map.get("alternateTitle"));
-        assertNull("Shall not exists.", map.get("dummy"));
+        assertNull(map.get("dummy"));
     }
 
     /**

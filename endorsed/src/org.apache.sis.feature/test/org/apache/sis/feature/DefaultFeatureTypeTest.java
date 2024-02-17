@@ -18,18 +18,17 @@ package org.apache.sis.feature;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Collection;
-import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.DefaultNameFactory;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -67,7 +66,7 @@ public final class DefaultFeatureTypeTest extends TestCase {
      * @return the feature for a city.
      */
     public static DefaultFeatureType city() {
-        final Map<String,Object> identification = new HashMap<>();
+        final var identification = new HashMap<String,Object>();
         final DefaultAttributeType<String>  city       = DefaultAttributeTypeTest.city(identification);
         final DefaultAttributeType<Integer> population = DefaultAttributeTypeTest.population(identification);
         return new DefaultFeatureType(name("City"), false, null, city, population);
@@ -121,7 +120,7 @@ public final class DefaultFeatureTypeTest extends TestCase {
      * @return the feature for a metropolis.
      */
     public static DefaultFeatureType metropolis() {
-        final Map<String,Object> identification = new HashMap<>(4);
+        final var identification = new HashMap<String,Object>(4);
         assertNull(identification.put(DefaultFeatureType.NAME_KEY,         "Metropolis"));
         assertNull(identification.put(DefaultFeatureType.NAME_KEY + "_fr", "Métropole"));
         return new DefaultFeatureType(identification, false,
@@ -164,27 +163,25 @@ public final class DefaultFeatureTypeTest extends TestCase {
         final Collection<?> superTypes         = feature.getSuperTypes();
         final Collection<?> declaredProperties = feature.getProperties(false);
         final Collection<?> allProperties      = feature.getProperties(true);
-        if (!superTypes.isEmpty()) try {
-            superTypes.clear();
-            fail("Super-types collection shall not be modifiable.");
-        } catch (UnsupportedOperationException e) {
+        if (!superTypes.isEmpty()) {
+            var e = assertThrows(UnsupportedOperationException.class, () -> superTypes.clear());
             assertFalse(superTypes.isEmpty());
+            assertNotNull(e);
         }
-        if (!declaredProperties.isEmpty()) try {
-            declaredProperties.clear();
-            fail("Properties collection shall not be modifiable.");
-        } catch (UnsupportedOperationException e) {
+        if (!declaredProperties.isEmpty()) {
+            var e = assertThrows(UnsupportedOperationException.class, () -> declaredProperties.clear());
             assertFalse(declaredProperties.isEmpty());
+            assertNotNull(e);
         }
-        if (!allProperties.isEmpty()) try {
-            allProperties.clear();
-            fail("Properties collection shall not be modifiable.");
-        } catch (UnsupportedOperationException e) {
+        if (!allProperties.isEmpty()) {
+            var e = assertThrows(UnsupportedOperationException.class, () -> allProperties.clear());
             assertFalse(allProperties.isEmpty());
+            assertNotNull(e);
         }
-        // Opportunist check.
-        assertTrue("'properties(true)' shall contain all 'properties(false)' elements.",
-                allProperties.containsAll(declaredProperties));
+        /*
+         * Opportunist check: `properties(true)` shall contain all `properties(false)` elements.
+         */
+        assertTrue(allProperties.containsAll(declaredProperties));
     }
 
     /**
@@ -206,21 +203,15 @@ public final class DefaultFeatureTypeTest extends TestCase {
     {
         int index = 0;
         for (final AbstractIdentifiedType property : feature.getProperties(includeSuperTypes)) {
-            assertTrue("Found more properties than expected.", index < expected.length);
+            assertTrue(index < expected.length, "Found more properties than expected.");
             final String name = expected[index++];
-            assertNotNull(name, property);
-            assertEquals (name, property.getName().toString());
-            assertSame   (name, property, feature.getProperty(name));
+            assertNotNull(property, name);
+            assertEquals (property.getName().toString(), name);
+            assertSame   (property, feature.getProperty(name), name);
         }
-        assertEquals("Unexpected number of properties.", expected.length, index);
-        try {
-            feature.getProperty("apple");
-            fail("Shall not found a non-existent property.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("apple"));
-            assertTrue(message, message.contains(feature.getName().toString()));
-        }
+        assertEquals(expected.length, index, "Unexpected number of properties.");
+        var e = assertThrows(IllegalArgumentException.class, () -> feature.getProperty("apple"));
+        assertMessageContains(e, "apple", feature.getName().toString());
     }
 
     /**
@@ -233,13 +224,13 @@ public final class DefaultFeatureTypeTest extends TestCase {
     public void testSimple() {
         final DefaultFeatureType simple = city();
         assertUnmodifiable(simple);
-        assertEquals("name", "City",     simple.getName().toString());
-        assertTrue  ("superTypes",       simple.getSuperTypes().isEmpty());
-        assertFalse ("isAbstract",       simple.isAbstract());
-        assertFalse ("isSparse",         simple.isSparse());
-        assertTrue  ("isSimple",         simple.isSimple());
-        assertTrue  ("isAssignableFrom", simple.isAssignableFrom(simple));
-        assertEquals("instanceSize", 2,  simple.indices().size());
+        assertEquals("City", simple.getName().toString());
+        assertTrue  (        simple.getSuperTypes().isEmpty());
+        assertFalse (        simple.isAbstract());
+        assertFalse (        simple.isSparse());
+        assertTrue  (        simple.isSimple());
+        assertTrue  (        simple.isAssignableFrom(simple));
+        assertEquals(2,      simple.indices().size());
         assertPropertiesEquals(simple, false, "city", "population");
     }
 
@@ -251,7 +242,7 @@ public final class DefaultFeatureTypeTest extends TestCase {
     @Test
     @DependsOnMethod("testSimple")
     public void testComplex() {
-        final Map<String,Object> identification = new HashMap<>();
+        final var identification = new HashMap<String,Object>();
         final DefaultAttributeType<String>  city       = DefaultAttributeTypeTest.city(identification);
         final DefaultAttributeType<Integer> population = DefaultAttributeTypeTest.population(identification);
         testComplex(city, population, 0, 0);    // Simple
@@ -276,22 +267,22 @@ public final class DefaultFeatureTypeTest extends TestCase {
                 name("Festival"), false, null, city, population, festival);
 
         assertUnmodifiable(complex);
-        final Collection<AbstractIdentifiedType> properties = complex.getProperties(false);
-        final Iterator<AbstractIdentifiedType> it = properties.iterator();
+        final var properties = complex.getProperties(false);
+        final var it = properties.iterator();
 
-        assertEquals("name",            "Festival",                     complex.getName().toString());
-        assertTrue  ("superTypes",                                      complex.getSuperTypes().isEmpty());
-        assertTrue  ("isAssignableFrom",                                complex.isAssignableFrom(complex));
-        assertFalse ("isAbstract",                                      complex.isAbstract());
-        assertFalse ("isSparse",                                        complex.isSparse());
-        assertEquals("isSimple",        maximumOccurs == minimumOccurs, complex.isSimple());
-        assertEquals("instanceSize",    maximumOccurs == 0 ? 2 : 3,     complex.indices().size());
-        assertEquals("minimumOccurs",   minimumOccurs,                  festival.getMinimumOccurs());
-        assertEquals("maximumOccurs",   maximumOccurs,                  festival.getMaximumOccurs());
-        assertEquals("properties.size", 3,                              properties.size());
-        assertSame  ("properties[0]",   city,                           it.next());
-        assertSame  ("properties[1]",   population,                     it.next());
-        assertSame  ("properties[2]",   festival,                       it.next());
+        assertEquals("Festival",                     complex.getName().toString());
+        assertTrue  (                                complex.getSuperTypes().isEmpty());
+        assertTrue  (                                complex.isAssignableFrom(complex));
+        assertFalse (                                complex.isAbstract());
+        assertFalse (                                complex.isSparse());
+        assertEquals(maximumOccurs == minimumOccurs, complex.isSimple());
+        assertEquals(maximumOccurs == 0 ? 2 : 3,     complex.indices().size());
+        assertEquals(minimumOccurs,                  festival.getMinimumOccurs());
+        assertEquals(maximumOccurs,                  festival.getMaximumOccurs());
+        assertEquals(3,                              properties.size());
+        assertSame  (city,                           it.next());
+        assertSame  (population,                     it.next());
+        assertSame  (festival,                       it.next());
         assertFalse (it.hasNext());
     }
 
@@ -301,18 +292,13 @@ public final class DefaultFeatureTypeTest extends TestCase {
     @Test
     @DependsOnMethod("testSimple")
     public void testNameCollision() {
-        final DefaultAttributeType<String>  city       = new DefaultAttributeType<>(name("name"),       String.class,  1, 1, null);
-        final DefaultAttributeType<Integer> cityId     = new DefaultAttributeType<>(name("name"),       Integer.class, 1, 1, null);
-        final DefaultAttributeType<Integer> population = new DefaultAttributeType<>(name("population"), Integer.class, 1, 1, null);
-
-        try {
-            final Object t = new DefaultFeatureType(name("City"), false, null, city, population, cityId);
-            fail("Duplicated attribute names shall not be allowed:\n" + t);
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("name"));      // Property name.
-            assertTrue(message, message.contains("City"));      // Feature name.
-        }
+        final var city       = new DefaultAttributeType<>(name("name"),       String.class,  1, 1, null);
+        final var cityId     = new DefaultAttributeType<>(name("name"),       Integer.class, 1, 1, null);
+        final var population = new DefaultAttributeType<>(name("population"), Integer.class, 1, 1, null);
+        var e = assertThrows(IllegalArgumentException.class,
+                () -> new DefaultFeatureType(name("City"), false, null, city, population, cityId),
+                "Duplicated attribute names shall not be allowed");
+        assertMessageContains(e, "name", "City");
     }
 
     /**
@@ -322,46 +308,36 @@ public final class DefaultFeatureTypeTest extends TestCase {
     @Test
     @DependsOnMethod("testNameCollision")
     public void testQualifiedNames() {
-        final NameFactory factory = DefaultNameFactory.provider();
-        final DefaultAttributeType<String> city = new DefaultAttributeType<>(
+        final var factory = DefaultNameFactory.provider();
+        final var city = new DefaultAttributeType<>(
                 name(factory.createGenericName(null, "ns1", "name")),
                 String.class, 1, 1, null);
-        final DefaultAttributeType<Integer> cityId = new DefaultAttributeType<>(
+        final var cityId = new DefaultAttributeType<>(
                 name(factory.createGenericName(null, "ns2", "name")),
                 Integer.class, 1, 1, null);
-        final DefaultAttributeType<Integer> population = new DefaultAttributeType<>(
+        final var population = new DefaultAttributeType<>(
                 name(factory.createGenericName(null, "ns1", "population")),
                 Integer.class, 1, 1, null);
-        final DefaultFeatureType feature = new DefaultFeatureType(
+        final var feature = new DefaultFeatureType(
                 name("City"), false, null, city, cityId, population);
 
-        final Iterator<AbstractIdentifiedType> it = feature.getProperties(false).iterator();
-        assertSame ("properties[0]", city,       it.next());
-        assertSame ("properties[1]", cityId,     it.next());
-        assertSame ("properties[2]", population, it.next());
+        final var it = feature.getProperties(false).iterator();
+        assertSame (city,       it.next());
+        assertSame (cityId,     it.next());
+        assertSame (population, it.next());
         assertFalse(it.hasNext());
 
-        assertSame("Shall get from fully qualified name.", city,       feature.getProperty("ns1:name"));
-        assertSame("Shall get from fully qualified name.", cityId,     feature.getProperty("ns2:name"));
-        assertSame("Shall get from fully qualified name.", population, feature.getProperty("ns1:population"));
-        assertSame("Shall get from short alias.",          population, feature.getProperty(    "population"));
-        try {
-            feature.getProperty("name");
-            fail("Expected no alias because of ambiguity.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("name"));      // Property name.
-            assertTrue(message, message.contains("ns1:name"));  // Ambiguity 1.
-            assertTrue(message, message.contains("ns2:name"));  // Ambiguity 2.
-        }
-        try {
-            feature.getProperty("other");
-            fail("Expected no property.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("other"));     // Property name.
-            assertTrue(message, message.contains("City"));      // Feature name.
-        }
+        assertSame(city,       feature.getProperty("ns1:name"));
+        assertSame(cityId,     feature.getProperty("ns2:name"));
+        assertSame(population, feature.getProperty("ns1:population"));
+        assertSame(population, feature.getProperty(    "population"));
+
+        IllegalArgumentException e;
+        e = assertThrows(IllegalArgumentException.class, () -> feature.getProperty("name"), "Expected no alias because of ambiguity.");
+        assertMessageContains(e, "name", "ns1:name", "ns2:name");
+
+        e = assertThrows(IllegalArgumentException.class, () -> feature.getProperty("other"));
+        assertMessageContains(e, "other", "City");
     }
 
     /**
@@ -370,18 +346,18 @@ public final class DefaultFeatureTypeTest extends TestCase {
     @Test
     @DependsOnMethod("testQualifiedNames")
     public void testQualifiedAndUnqualifiedNames() {
-        final NameFactory factory = DefaultNameFactory.provider();
-        final DefaultAttributeType<String> a1 = new DefaultAttributeType<>(
+        final var factory = DefaultNameFactory.provider();
+        final var a1 = new DefaultAttributeType<>(
                 name(factory.createGenericName(null, "sis", "identifier")),
                 String.class, 1, 1, null);
-        final DefaultAttributeType<String> a2 = new DefaultAttributeType<>(
+        final var a2 = new DefaultAttributeType<>(
                 name(factory.createGenericName(null, "identifier")),
                 String.class, 1, 1, null);
-        final DefaultFeatureType feature = new DefaultFeatureType(
+        final var feature = new DefaultFeatureType(
                 name("City"), false, null, a1, a2);
 
-        assertSame("sis:identifier", a1, feature.getProperty("sis:identifier"));
-        assertSame(    "identifier", a2, feature.getProperty(    "identifier"));
+        assertSame(a1, feature.getProperty("sis:identifier"));
+        assertSame(a2, feature.getProperty(    "identifier"));
     }
 
     /**
@@ -399,16 +375,10 @@ public final class DefaultFeatureTypeTest extends TestCase {
          * Try to add an operation that depends on a non-existent property.
          * Such construction shall not be allowed.
          */
-        final AbstractIdentifiedType parliament = new LinkOperation(identifierName, DefaultAttributeTypeTest.parliament());
-        try {
-            final DefaultFeatureType illegal = new DefaultFeatureType(featureName, false, parent, parliament);
-            fail("Should not have been allowed to create this feature:\n" + illegal);
-        } catch (IllegalArgumentException e) {
-            final String message = e.getLocalizedMessage();
-            assertTrue(message, message.contains("identifier"));
-            assertTrue(message, message.contains("parliament"));
-            assertTrue(message, message.contains("Identified city"));
-        }
+        final var parliament = new LinkOperation(identifierName, DefaultAttributeTypeTest.parliament());
+        var e = assertThrows(IllegalArgumentException.class,
+                () -> new DefaultFeatureType(featureName, false, parent, parliament));
+        assertMessageContains(e, "identifier", "parliament", "Identified city");
     }
 
     /**
@@ -422,24 +392,24 @@ public final class DefaultFeatureTypeTest extends TestCase {
         final DefaultFeatureType city    = city();      // Tested by 'testSimple()'.
         final DefaultFeatureType capital = capital();
         assertUnmodifiable(capital);
-        assertEquals("name", "Capital", capital.getName().toString());
-        assertEquals("superTypes",      city, getSingleton(capital.getSuperTypes()));
-        assertFalse ("isAbstract",      capital.isAbstract());
-        assertFalse ("isSparse",        capital.isSparse());
-        assertTrue  ("isSimple",        capital.isSimple());
-        assertEquals("instanceSize", 3, capital.indices().size());
+        assertEquals("Capital", capital.getName().toString());
+        assertEquals(city, getSingleton(capital.getSuperTypes()));
+        assertFalse (   capital.isAbstract());
+        assertFalse (   capital.isSparse());
+        assertTrue  (   capital.isSimple());
+        assertEquals(3, capital.indices().size());
 
         assertPropertiesEquals(city,    false, "city", "population");
         assertPropertiesEquals(capital, false, "parliament");
         assertPropertiesEquals(capital, true,  "city", "population", "parliament");
 
         // Check based only on name.
-        assertTrue ("maybeAssignableFrom", DefaultFeatureType.maybeAssignableFrom(city, capital));
-        assertFalse("maybeAssignableFrom", DefaultFeatureType.maybeAssignableFrom(capital, city));
+        assertTrue (DefaultFeatureType.maybeAssignableFrom(city, capital));
+        assertFalse(DefaultFeatureType.maybeAssignableFrom(capital, city));
 
         // Public API.
-        assertTrue ("isAssignableFrom", city.isAssignableFrom(capital));
-        assertFalse("isAssignableFrom", capital.isAssignableFrom(city));
+        assertTrue (city.isAssignableFrom(capital));
+        assertFalse(capital.isAssignableFrom(city));
     }
 
     /**
@@ -457,29 +427,29 @@ public final class DefaultFeatureTypeTest extends TestCase {
                         String.class, 1, 1, null));
 
         assertUnmodifiable(metroCapital);
-        assertEquals     ("name", "Metropolis and capital", metroCapital.getName().toString());
-        assertArrayEquals("superTypes", new Object[] {metropolis, capital}, metroCapital.getSuperTypes().toArray());
-        assertFalse      ("isAbstract",      metroCapital.isAbstract());
-        assertFalse      ("isSparse",        metroCapital.isSparse());
-        assertTrue       ("isSimple",        metroCapital.isSimple());
-        assertEquals     ("instanceSize", 6, metroCapital.indices().size());
+        assertEquals     ("Metropolis and capital", metroCapital.getName().toString());
+        assertArrayEquals(new Object[] {metropolis, capital}, metroCapital.getSuperTypes().toArray());
+        assertFalse      (   metroCapital.isAbstract());
+        assertFalse      (   metroCapital.isSparse());
+        assertTrue       (   metroCapital.isSimple());
+        assertEquals     (6, metroCapital.indices().size());
 
         assertPropertiesEquals(metroCapital, false, "country");
         assertPropertiesEquals(metroCapital, true, "city", "population", "region", "isGlobal", "parliament", "country");
-        assertEquals("property(“region”).valueClass", CharSequence.class,
-                ((DefaultAttributeType<?>) metroCapital.getProperty("region")).getValueClass());
+        assertEquals(CharSequence.class,
+                assertInstanceOf(DefaultAttributeType.class, metroCapital.getProperty("region")).getValueClass());
 
         // Check based only on name.
-        assertTrue ("maybeAssignableFrom", DefaultFeatureType.maybeAssignableFrom(capital, metroCapital));
-        assertFalse("maybeAssignableFrom", DefaultFeatureType.maybeAssignableFrom(metroCapital, capital));
-        assertTrue ("maybeAssignableFrom", DefaultFeatureType.maybeAssignableFrom(metropolis, metroCapital));
-        assertFalse("maybeAssignableFrom", DefaultFeatureType.maybeAssignableFrom(metroCapital, metropolis));
+        assertTrue (DefaultFeatureType.maybeAssignableFrom(capital, metroCapital));
+        assertFalse(DefaultFeatureType.maybeAssignableFrom(metroCapital, capital));
+        assertTrue (DefaultFeatureType.maybeAssignableFrom(metropolis, metroCapital));
+        assertFalse(DefaultFeatureType.maybeAssignableFrom(metroCapital, metropolis));
 
         // Public API.
-        assertTrue ("isAssignableFrom", capital.isAssignableFrom(metroCapital));
-        assertFalse("isAssignableFrom", metroCapital.isAssignableFrom(capital));
-        assertTrue ("isAssignableFrom", metropolis.isAssignableFrom(metroCapital));
-        assertFalse("isAssignableFrom", metroCapital.isAssignableFrom(metropolis));
+        assertTrue (capital.isAssignableFrom(metroCapital));
+        assertFalse(metroCapital.isAssignableFrom(capital));
+        assertTrue (metropolis.isAssignableFrom(metroCapital));
+        assertFalse(metroCapital.isAssignableFrom(metropolis));
     }
 
     /**
@@ -491,35 +461,33 @@ public final class DefaultFeatureTypeTest extends TestCase {
         final DefaultFeatureType metropolis     = metropolis();
         final DefaultFeatureType universityCity = universityCity();
         final DefaultAttributeType<?> temperature = CharacteristicTypeMapTest.temperature();
-        try {
-            worldMetropolis(metropolis, universityCity, temperature, Integer.class);
-            fail("Shall not be allowed to override a 'CharSequence' attribute with an 'Integer' one.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("region"));
-            assertTrue(message, message.contains("Metropolis"));
-        }
+
+        var e = assertThrows(IllegalArgumentException.class,
+                () -> worldMetropolis(metropolis, universityCity, temperature, Integer.class),
+                "Shall not be allowed to override a 'CharSequence' attribute with an 'Integer' one.");
+        assertMessageContains(e, "region" ,"Metropolis");
+
         final DefaultFeatureType worldMetropolis = worldMetropolis(metropolis, universityCity, temperature, InternationalString.class);
         assertUnmodifiable(worldMetropolis);
-        assertEquals     ("name", "World metropolis", worldMetropolis.getName().toString());
-        assertArrayEquals("superTypes", new Object[] {metropolis, universityCity}, worldMetropolis.getSuperTypes().toArray());
-        assertFalse      ("isAbstract",      worldMetropolis.isAbstract());
-        assertFalse      ("isSparse",        worldMetropolis.isSparse());
-        assertFalse      ("isSimple",        worldMetropolis.isSimple());           // Because of the arbitrary number of universities.
-        assertEquals     ("instanceSize", 6, worldMetropolis.indices().size());
+        assertEquals     ("World metropolis", worldMetropolis.getName().toString());
+        assertArrayEquals(new Object[] {metropolis, universityCity}, worldMetropolis.getSuperTypes().toArray());
+        assertFalse      (   worldMetropolis.isAbstract());
+        assertFalse      (   worldMetropolis.isSparse());
+        assertFalse      (   worldMetropolis.isSimple());           // Because of the arbitrary number of universities.
+        assertEquals     (6, worldMetropolis.indices().size());
 
         assertPropertiesEquals(worldMetropolis, false, "region", "temperature");
         assertPropertiesEquals(worldMetropolis, true, "city", "population", "region", "isGlobal", "universities", "temperature");
-        assertEquals("property(“region”).valueClass", InternationalString.class,
-                ((DefaultAttributeType<?>) worldMetropolis.getProperty("region")).getValueClass());
+        assertEquals(InternationalString.class,
+                assertInstanceOf(DefaultAttributeType.class, worldMetropolis.getProperty("region")).getValueClass());
 
         // Check based only on name.
-        assertTrue ("maybeAssignableFrom", DefaultFeatureType.maybeAssignableFrom(metropolis, worldMetropolis));
-        assertFalse("maybeAssignableFrom", DefaultFeatureType.maybeAssignableFrom(worldMetropolis, metropolis));
+        assertTrue (DefaultFeatureType.maybeAssignableFrom(metropolis, worldMetropolis));
+        assertFalse(DefaultFeatureType.maybeAssignableFrom(worldMetropolis, metropolis));
 
         // Public API.
-        assertTrue ("isAssignableFrom", metropolis.isAssignableFrom(worldMetropolis));
-        assertFalse("isAssignableFrom", worldMetropolis.isAssignableFrom(metropolis));
+        assertTrue (metropolis.isAssignableFrom(worldMetropolis));
+        assertFalse(worldMetropolis.isAssignableFrom(metropolis));
     }
 
     /**

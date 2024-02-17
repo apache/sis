@@ -30,8 +30,8 @@ import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_D
 import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_SECOND;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -69,8 +69,8 @@ public final class RangeSetTest extends TestCase {
     private static void assertEqual(final Range<?> expected,
             final Range<?> fromIterator, final Range<?> fromGetter)
     {
-        assertEquals("Value from iterator", expected, fromIterator);
-        assertEquals("Value from getter",   expected, fromGetter);
+        assertEquals(expected, fromIterator, "Value from iterator");
+        assertEquals(expected, fromGetter,   "Value from getter");
     }
 
     /**
@@ -84,8 +84,8 @@ public final class RangeSetTest extends TestCase {
     private static <E extends Comparable<? super E>> void checkContains(final RangeSet<E> ranges,
             final Range<E> range, final boolean exact, final boolean included)
     {
-        assertEquals("RangeSet.contains(…, true)",  exact,    ranges.contains(range, true));
-        assertEquals("RangeSet.contains(…, false)", included, ranges.contains(range));
+        assertEquals(exact,    ranges.contains(range, true));
+        assertEquals(included, ranges.contains(range));
     }
 
     /**
@@ -296,10 +296,10 @@ public final class RangeSetTest extends TestCase {
         assertEquals(-10L,  ranges.getMaxLong(0));
         assertEquals( -5L,  ranges.getMinLong(1));
         assertEquals( 25L,  ranges.getMaxLong(1));
-        assertEquals(-20.0, ranges.getMinDouble(0), 0.0);
-        assertEquals(-10.0, ranges.getMaxDouble(0), 0.0);
-        assertEquals( -5.0, ranges.getMinDouble(1), 0.0);
-        assertEquals( 25.0, ranges.getMaxDouble(1), 0.0);
+        assertEquals(-20.0, ranges.getMinDouble(0));
+        assertEquals(-10.0, ranges.getMaxDouble(0));
+        assertEquals( -5.0, ranges.getMinDouble(1));
+        assertEquals( 25.0, ranges.getMaxDouble(1));
     }
 
     /**
@@ -348,7 +348,7 @@ public final class RangeSetTest extends TestCase {
     @DependsOnMethod("testRangeOfIntegers")
     public void testRemoveRangeOfIntegers() {
         final RangeSet<Integer> ranges = RangeSet.create(Integer.class, true, false);
-        assertFalse("Remove on empty collection should return false.", ranges.remove(Integer.MIN_VALUE, Integer.MAX_VALUE));
+        assertFalse(ranges.remove(Integer.MIN_VALUE, Integer.MAX_VALUE), "Remove on empty collection should return false.");
         assertTrue(ranges.add(-20, -10));
         /*
          *                   A             B
@@ -359,7 +359,7 @@ public final class RangeSetTest extends TestCase {
          *                   A      RA
          */
         assertTrue(ranges.remove(-15, -5));
-        assertEquals("size", 1, ranges.size());
+        assertEquals(1, ranges.size());
         Range<Integer> r = ranges.first();
         assertEquals(-20, r.getMinValue().intValue());
         assertEquals(-15, r.getMaxValue().intValue());
@@ -372,9 +372,9 @@ public final class RangeSetTest extends TestCase {
          *                                RB      B
          */
         assertTrue(ranges.add(-20, -10));
-        assertEquals("size", 1, ranges.size());
+        assertEquals(1, ranges.size());
         assertTrue(ranges.remove(-25, -15));
-        assertEquals("size", 1, ranges.size());
+        assertEquals(1, ranges.size());
         r = ranges.first();
         assertEquals(-15, r.getMinValue().intValue());
         assertEquals(-10, r.getMaxValue().intValue());
@@ -387,9 +387,9 @@ public final class RangeSetTest extends TestCase {
          *                   A      RA         RB    B
          */
         assertTrue(ranges.add(-20, -10));
-        assertEquals("size", 1, ranges.size());
+        assertEquals(1, ranges.size());
         assertTrue(ranges.remove(-17, -13));
-        assertEquals("size", 2, ranges.size());
+        assertEquals(2, ranges.size());
         r = ranges.getRange(0);
         assertEquals(-20, r.getMinValue().intValue());
         assertEquals(-17, r.getMaxValue().intValue());
@@ -407,7 +407,7 @@ public final class RangeSetTest extends TestCase {
          * Expected result :           "empty"
          */
         assertTrue(ranges.add(-20, -10));
-        assertEquals("size", 1, ranges.size());
+        assertEquals(1, ranges.size());
         assertTrue(ranges.remove(-21, -9));
         assertTrue(ranges.isEmpty());
     }
@@ -436,9 +436,9 @@ public final class RangeSetTest extends TestCase {
         assertTrue(ranges.add(  1.9,   4.3));
         assertTrue(ranges.add(  6.1,  12.7));
         assertTrue(ranges.add( 15.3,  21.71));
-        assertEquals("size", 7, ranges.size());
+        assertEquals(7, ranges.size());
         assertTrue(ranges.remove(-21.0, -1.4));
-        assertEquals("size", 4, ranges.size());
+        assertEquals(4, ranges.size());
         Range<Double> r = ranges.first();
         assertEquals(-1.4, r.getMinValue(), EPS);
         assertEquals( 1.1, r.getMaxValue(), EPS);
@@ -458,9 +458,9 @@ public final class RangeSetTest extends TestCase {
         assertTrue(ranges.add( -9.5,  -7.9));
         assertTrue(ranges.add( -6.7,  -3.3));
         assertTrue(ranges.add( -2.4,   1.1 ));
-        assertEquals("size", 7, ranges.size());
+        assertEquals(7, ranges.size());
         assertTrue(ranges.remove(0.7, 22.3));
-        assertEquals("size", 4, ranges.size());
+        assertEquals(4, ranges.size());
         r = ranges.first();
         assertEquals(-20.2, r.getMinValue(), EPS);
         assertEquals(-10.1, r.getMaxValue(), EPS);
@@ -480,9 +480,9 @@ public final class RangeSetTest extends TestCase {
         assertTrue(ranges.add( 1.9,  4.3));
         assertTrue(ranges.add( 6.1, 12.7));
         assertTrue(ranges.add(15.3, 21.71));
-        assertEquals("size", 7, ranges.size());
+        assertEquals(7, ranges.size());
         assertTrue(ranges.remove(-5.4, -3.9));
-        assertEquals("size", 8, ranges.size());
+        assertEquals(8, ranges.size());
         r = ranges.getRange(4);
         assertEquals(-6.7, r.getMinValue(), EPS);
         assertEquals(-5.4, r.getMaxValue(), EPS);
@@ -499,9 +499,9 @@ public final class RangeSetTest extends TestCase {
          *                       A0    B0   Ai  RA                    RB  Bk    An    Bn
          */
         assertTrue(ranges.add(-6.7, -3.3));
-        assertEquals("size", 7, ranges.size());
+        assertEquals(7, ranges.size());
         assertTrue(ranges.remove(-5.4, 3.1));
-        assertEquals("size", 6, ranges.size());
+        assertEquals(6, ranges.size());
         r = ranges.getRange(4);
         assertEquals(-6.7, r.getMinValue(), EPS);
         assertEquals(-5.4, r.getMaxValue(), EPS);
@@ -520,9 +520,9 @@ public final class RangeSetTest extends TestCase {
         assertTrue(ranges.add(-6.7, -3.3));
         assertTrue(ranges.add(-2.4,  1.1));
         assertTrue(ranges.add( 1.9,  4.3));
-        assertEquals("size", 7, ranges.size());
+        assertEquals(7, ranges.size());
         assertTrue(ranges.remove(-7.1, 5.2));
-        assertEquals("size", 4, ranges.size());
+        assertEquals(4, ranges.size());
         r = ranges.getRange(2);
         assertEquals(-9.5, r.getMinValue(), EPS);
         assertEquals(-7.9, r.getMaxValue(), EPS);
@@ -540,7 +540,7 @@ public final class RangeSetTest extends TestCase {
         assertTrue(ranges.add(-6.7, -3.3));
         assertTrue(ranges.add(-2.4,  1.1));
         assertTrue(ranges.add( 1.9,  4.3));
-        assertEquals("size", 7, ranges.size());
+        assertEquals(7, ranges.size());
         assertTrue(ranges.remove(-50.5, 45.3));
         assertTrue(ranges.isEmpty());
     }
@@ -554,9 +554,9 @@ public final class RangeSetTest extends TestCase {
         assertTrue(ranges.add(-20, -10));
         assertTrue(ranges.add( 40,  50));
         final RangeSet<Integer> clone = ranges.clone();
-        assertEquals("The clone shall be equal to the original set.", ranges, clone);
+        assertEquals(ranges, clone, "The clone shall be equal to the original set.");
         assertTrue(ranges.add(60, 70));
-        assertFalse("Modifying the original set shall not modify the clone.", ranges.equals(clone));
+        assertNotEquals(ranges, clone, "Modifying the original set shall not modify the clone.");
     }
 
     /**

@@ -20,7 +20,7 @@ import java.net.URL;
 import java.io.InputStream;
 
 // Test dependencies
-import static org.junit.Assume.*;
+import static org.junit.jupiter.api.Assumptions.abort;
 
 
 /**
@@ -34,17 +34,17 @@ public enum TestData {
     NETCDF_4D_PROJECTED;
 
     public URL location() {
-        assumeTrue("This test requires GeoAPI 3.1.", false);
+        abort("This test requires GeoAPI 3.1.");
         return null;
     }
 
     public InputStream open() {
-        assumeTrue("This test requires GeoAPI 3.1.", false);
+        abort("This test requires GeoAPI 3.1.");
         return null;
     }
 
     public byte[] content() {
-        assumeTrue("This test requires GeoAPI 3.1.", false);
+        abort("This test requires GeoAPI 3.1.");
         return null;
     }
 }

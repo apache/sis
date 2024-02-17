@@ -24,8 +24,8 @@ import org.opengis.metadata.quality.ConformanceResult;
 import org.opengis.metadata.maintenance.ScopeCode;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -79,17 +79,17 @@ public final class SingletonAttributeTest extends TestCase {
     @Test
     public void testValue() {
         final AbstractAttribute<Integer> attribute = population();
-        assertNull("value",  attribute.getValue());
-        assertTrue("values", attribute.getValues().isEmpty());
+        assertNull(attribute.getValue());
+        assertTrue(attribute.getValues().isEmpty());
 
         final Integer value = 1000;
         attribute.setValue(value);
-        assertEquals     ("value",                 value,  attribute.getValue());
-        assertArrayEquals("values", new Integer[] {value}, attribute.getValues().toArray());
+        assertEquals(value, attribute.getValue());
+        assertArrayEquals(new Integer[] {value}, attribute.getValues().toArray());
 
         attribute.setValue(null);
-        assertNull("value",  attribute.getValue());
-        assertTrue("values", attribute.getValues().isEmpty());
+        assertNull(attribute.getValue());
+        assertTrue(attribute.getValues().isEmpty());
     }
 
     /**
@@ -101,16 +101,18 @@ public final class SingletonAttributeTest extends TestCase {
     public void testQuality() {
         final AbstractAttribute<Integer> attribute = population();
         DataQuality quality = attribute.quality();
-        assertEquals("scope.level", ScopeCode.ATTRIBUTE, quality.getScope().getLevel());
-        assertDomainConsistencyEquals("population", "Missing value for “population” property.",
+        assertEquals(ScopeCode.ATTRIBUTE, quality.getScope().getLevel());
+        assertDomainConsistencyEquals("population",
+                "Missing value for “population” property.",
                 (DomainConsistency) getSingleton(quality.getReports()));
         /*
          * Intentionally store a value of the wrong type, and test again.
          */
         ((AbstractAttribute) attribute).setValue(4.5f);
         quality = attribute.quality();
-        assertEquals("scope.level", ScopeCode.ATTRIBUTE, quality.getScope().getLevel());
-        assertDomainConsistencyEquals("population", "Expected an instance of ‘Integer’ for the “population” property, but got an instance of ‘Float’.",
+        assertEquals(ScopeCode.ATTRIBUTE, quality.getScope().getLevel());
+        assertDomainConsistencyEquals("population",
+                "Expected an instance of ‘Integer’ for the “population” property, but got an instance of ‘Float’.",
                 (DomainConsistency) getSingleton(quality.getReports()));
     }
 
@@ -125,10 +127,10 @@ public final class SingletonAttributeTest extends TestCase {
     private static void assertDomainConsistencyEquals(final String propertyName, final String explanation,
             final DomainConsistency consistency)
     {
-        assertEquals("report.measureIdentification", propertyName, consistency.getMeasureIdentification().getCode());
-        final ConformanceResult result = (ConformanceResult) getSingleton(consistency.getResults());
-        assertFalse ("report.result.pass", result.pass());
-        assertEquals("report.result.explanation", explanation, result.getExplanation().toString(Locale.US));
+        assertEquals(propertyName, consistency.getMeasureIdentification().getCode());
+        final var result = (ConformanceResult) getSingleton(consistency.getResults());
+        assertFalse (result.pass());
+        assertEquals(explanation, result.getExplanation().toString(Locale.US));
     }
 
     /**
@@ -140,7 +142,7 @@ public final class SingletonAttributeTest extends TestCase {
     public void testEquals() {
         final AbstractAttribute<Integer> a1 = population();
         final AbstractAttribute<Integer> a2 = population();
-        assertFalse("equals(null)", a1.equals(null));
+        assertFalse(a1.equals(null));
         testEquals(a1, a2);
     }
 
@@ -148,11 +150,11 @@ public final class SingletonAttributeTest extends TestCase {
      * Implementation of {@link #testEquals()} used also by {@link #testClone()}.
      */
     static void testEquals(final AbstractAttribute<Integer> a1, final AbstractAttribute<Integer> a2) {
-        assertTrue  ("equals",   a1.equals(a2));
-        assertEquals("hashCode", a1.hashCode(), a2.hashCode());
+        assertTrue  (a1.equals(a2));
+        assertEquals(a1.hashCode(), a2.hashCode());
         a2.setValue(1000);
-        assertFalse("equals",   a1.equals(a2));
-        assertFalse("hashCode", a1.hashCode() == a2.hashCode());
+        assertFalse(a1.equals(a2));
+        assertNotEquals(a1.hashCode(), a2.hashCode());
     }
 
     /**

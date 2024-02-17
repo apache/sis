@@ -26,8 +26,8 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 
 // Test dependencies
-import org.junit.Test;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
@@ -93,6 +93,6 @@ public final class MemoryGridResourceTest extends TestCase {
          * https://bugs.openjdk.java.net/browse/JDK-8166038
          */
         assertEqualsIgnoreMetadata(request, coverage.getGridGeometry());
-        assertInstanceOf("render(null)", BufferedImage.class, coverage.render(null));
+        assertInstanceOf(BufferedImage.class, coverage.render(null));
     }
 }

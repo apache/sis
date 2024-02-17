@@ -23,11 +23,11 @@ import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.UnconvertibleObjectException;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
@@ -55,8 +55,8 @@ public final class NumberConverterTest extends TestCase {
             final Class<S> sourceClass, final Class<T> targetClass)
     {
         final ObjectConverter<S,T> converter = SystemRegistry.INSTANCE.findExact(sourceClass, targetClass);
-        assertInstanceOf("ConverterRegistry.find(" + sourceClass.getSimpleName() + ", " + targetClass.getSimpleName() + ')',
-                (targetClass == Comparable.class) ? NumberConverter.Comparable.class : NumberConverter.class, converter);
+        final Class<?> expected = (targetClass == Comparable.class) ? NumberConverter.Comparable.class : NumberConverter.class;
+        assertInstanceOf(expected, converter, () -> "ConverterRegistry.find(" + sourceClass.getSimpleName() + ", " + targetClass.getSimpleName() + ')');
         return converter;
     }
 
@@ -68,9 +68,9 @@ public final class NumberConverterTest extends TestCase {
             final ObjectConverter<S,T> c, final S source, final T target, final S inverse)
             throws UnconvertibleObjectException
     {
-        assertFalse(source.equals(inverse));
-        assertEquals("Forward conversion.", target,  c.apply(source));
-        assertEquals("Inverse conversion.", inverse, c.inverse().apply(target));
+        assertNotEquals(source, inverse);
+        assertEquals(target,  c.apply(source), "Forward conversion.");
+        assertEquals(inverse, c.inverse().apply(target), "Inverse conversion.");
     }
 
     /**
@@ -81,24 +81,19 @@ public final class NumberConverterTest extends TestCase {
             final ObjectConverter<S,T> c, final S source, final T target)
             throws UnconvertibleObjectException
     {
-        assertEquals("Forward conversion.", target, c.apply(source));
-        assertEquals("Inverse conversion.", source, c.inverse().apply(target));
-        assertSame("Inconsistent inverse.", c, c.inverse().inverse());
-        assertTrue("Invertible converters shall declare this capability.",
-                c.properties().contains(FunctionProperty.INVERTIBLE));
+        assertEquals(target, c.apply(source), "Forward conversion.");
+        assertEquals(source, c.inverse().apply(target), "Inverse conversion.");
+        assertSame(c, c.inverse().inverse(), "Inconsistent inverse.");
+        assertTrue(c.properties().contains(FunctionProperty.INVERTIBLE),
+                   "Invertible converters shall declare this capability.");
     }
 
     /**
      * Tries to convert a value which is expected to fail.
      */
     private static <S extends Number> void tryUnconvertibleValue(final ObjectConverter<S,?> c, final S source) {
-        try {
-            c.apply(source);
-            fail("Should not accept the value.");
-        } catch (UnconvertibleObjectException e) {
-            // This is the expected exception.
-            assertTrue(e.getMessage().contains(c.getTargetClass().getSimpleName()));
-        }
+        var e = assertThrows(UnconvertibleObjectException.class, () -> c.apply(source), "Should not accept the value.");
+        assertMessageContains(e, c.getTargetClass().getSimpleName());
     }
 
     /**
@@ -112,7 +107,7 @@ public final class NumberConverterTest extends TestCase {
         runInvertibleConversion(c, Integer.valueOf(Byte.MAX_VALUE), Byte.valueOf(Byte.MAX_VALUE));
         tryUnconvertibleValue  (c, Integer.valueOf(Byte.MIN_VALUE - 1));
         tryUnconvertibleValue  (c, Integer.valueOf(Byte.MAX_VALUE + 1));
-        assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
+        assertSame(c, assertSerializedEquals(c));
     }
 
     /**
@@ -126,7 +121,7 @@ public final class NumberConverterTest extends TestCase {
         runInvertibleConversion(c, Integer.valueOf(Short.MAX_VALUE), Short.valueOf(Short.MAX_VALUE));
         tryUnconvertibleValue  (c, Integer.valueOf(Short.MIN_VALUE - 1));
         tryUnconvertibleValue  (c, Integer.valueOf(Short.MAX_VALUE + 1));
-        assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
+        assertSame(c, assertSerializedEquals(c));
     }
 
     /**
@@ -139,7 +134,7 @@ public final class NumberConverterTest extends TestCase {
         runConversion          (c, Float.valueOf(2.25f), Integer.valueOf(2), Float.valueOf(2f));
         runConversion          (c, Float.valueOf(2.75f), Integer.valueOf(3), Float.valueOf(3f));
         // Cannot easily tests the values around Integer.MIN/MAX_VALUE because of rounding errors in float.
-        assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
+        assertSame(c, assertSerializedEquals(c));
     }
 
     /**
@@ -149,7 +144,7 @@ public final class NumberConverterTest extends TestCase {
     public void testLong() {
         final ObjectConverter<Float, Long> c = create(Float.class, Long.class);
         runInvertibleConversion(c, Float.valueOf(-8), Long.valueOf(-8));
-        assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
+        assertSame(c, assertSerializedEquals(c));
     }
 
     /**
@@ -161,7 +156,7 @@ public final class NumberConverterTest extends TestCase {
         runInvertibleConversion(c, Double.valueOf(2.5), Float.valueOf(2.5f));
         runConversion          (c, Double.valueOf(0.1), Float.valueOf(0.1f), Double.valueOf(0.1f));
         tryUnconvertibleValue  (c, Double.valueOf(1E+40));
-        assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
+        assertSame(c, assertSerializedEquals(c));
     }
 
     /**
@@ -171,7 +166,7 @@ public final class NumberConverterTest extends TestCase {
     public void testDouble() {
         final ObjectConverter<BigDecimal, Double> c = create(BigDecimal.class, Double.class);
         runInvertibleConversion(c, BigDecimal.valueOf(2.5), Double.valueOf(2.5));
-        assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
+        assertSame(c, assertSerializedEquals(c));
     }
 
     /**
@@ -181,7 +176,7 @@ public final class NumberConverterTest extends TestCase {
     public void testBigInteger() {
         final ObjectConverter<Double, BigInteger> c = create(Double.class, BigInteger.class);
         runInvertibleConversion(c, Double.valueOf(1000), BigInteger.valueOf(1000));
-        assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
+        assertSame(c, assertSerializedEquals(c));
     }
 
     /**
@@ -191,7 +186,7 @@ public final class NumberConverterTest extends TestCase {
     public void testBigDecimal() {
         final ObjectConverter<Double, BigDecimal> c = create(Double.class, BigDecimal.class);
         runInvertibleConversion(c, Double.valueOf(2.5), BigDecimal.valueOf(2.5));
-        assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
+        assertSame(c, assertSerializedEquals(c));
     }
 
     /**
@@ -221,6 +216,6 @@ public final class NumberConverterTest extends TestCase {
         final ObjectConverter<Number,Comparable<?>> c = create(Number.class, (Class) Comparable.class);
         final Integer value = 8;
         assertSame(value, c.apply(value));
-        assertSame("Deserialization shall resolves to the singleton instance.", c, assertSerializedEquals(c));
+        assertSame(c, assertSerializedEquals(c));
     }
 }

@@ -22,7 +22,7 @@ import java.nio.file.Files;
 import org.apache.sis.system.DataDirectory;
 
 // Test dependencies
-import static org.junit.Assume.*;
+import static org.junit.jupiter.api.Assumptions.*;
 
 
 /**
@@ -30,11 +30,11 @@ import static org.junit.Assume.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class Assume {
+public final class Assumptions {
     /**
      * Do not allow instantiation.
      */
-    private Assume() {
+    private Assumptions() {
     }
 
     /**
@@ -51,12 +51,12 @@ public final class Assume {
      * @return the path to the given file.
      */
     public static URI assumeDataExists(final DataDirectory type, final String file) {
-        assumeNotNull("$SIS_DATA environment variable not set.", System.getenv(DataDirectory.ENV));
+        assumeTrue(System.getenv(DataDirectory.ENV) != null, "$SIS_DATA environment variable not set.");
         Path path = type.getDirectory();
-        assumeNotNull("$SIS_DATA/" + type + " directory not found.", path);
+        assumeTrue(path != null, () -> "$SIS_DATA/" + type + " directory not found.");
         path = path.resolve(file);
-        assumeTrue("Specified file or directory not found.", Files.exists(path));
-        assumeTrue("Specified directory not readable.", Files.isReadable(path));
+        assumeTrue(Files.exists(path), "Specified file or directory not found.");
+        assumeTrue(Files.isReadable(path), "Specified directory not readable.");
         return path.toUri();
     }
 }

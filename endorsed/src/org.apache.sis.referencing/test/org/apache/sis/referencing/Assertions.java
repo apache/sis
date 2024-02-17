@@ -48,7 +48,7 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.util.internal.Constants;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
@@ -91,11 +91,10 @@ public final class Assertions extends Static {
      */
     public static void assertOgcIdentifierEquals(final String expected, final ReferenceIdentifier actual) {
         assertNotNull(actual);
-        assertEquals("code",       expected,      actual.getCode());
-        assertEquals("codeSpace",  Constants.OGC, actual.getCodeSpace());
-        assertSame  ("authority",  Citations.OGC, actual.getAuthority());
-        assertEquals("identifier", Constants.OGC + Constants.DEFAULT_SEPARATOR + expected,
-                IdentifiedObjects.toString(actual));
+        assertEquals(expected,      actual.getCode(), "code");
+        assertEquals(Constants.OGC, actual.getCodeSpace(), "codeSpace");
+        assertSame  (Citations.OGC, actual.getAuthority(), "authority");
+        assertEquals(Constants.OGC + Constants.DEFAULT_SEPARATOR + expected, IdentifiedObjects.toString(actual), "identifier");
     }
 
     /**
@@ -107,11 +106,10 @@ public final class Assertions extends Static {
      */
     public static void assertEpsgIdentifierEquals(final String expected, final Identifier actual) {
         assertNotNull(actual);
-        assertEquals("code",       expected,        actual.getCode());
-        assertEquals("codeSpace",  Constants.EPSG,  (actual instanceof ReferenceIdentifier) ? ((ReferenceIdentifier) actual).getCodeSpace() : null);
-        assertEquals("authority",  Constants.EPSG,  Citations.toCodeSpace(actual.getAuthority()));
-        assertEquals("identifier", Constants.EPSG + Constants.DEFAULT_SEPARATOR + expected,
-                IdentifiedObjects.toString(actual));
+        assertEquals(expected,        actual.getCode(), "code");
+        assertEquals(Constants.EPSG,  (actual instanceof ReferenceIdentifier) ? ((ReferenceIdentifier) actual).getCodeSpace() : null, "codeSpace");
+        assertEquals(Constants.EPSG,  Citations.toCodeSpace(actual.getAuthority()), "authority");
+        assertEquals(Constants.EPSG + Constants.DEFAULT_SEPARATOR + expected, IdentifiedObjects.toString(actual), "identifier");
     }
 
     /**
@@ -124,7 +122,7 @@ public final class Assertions extends Static {
      * @param object      the object to verify.
      */
     public static void assertEpsgNameAndIdentifierEqual(final String name, final int identifier, final IdentifiedObject object) {
-        assertNotNull(name, object);
+        assertNotNull(object, name);
         assertEpsgIdentifierEquals(name, object.getName());
         assertEpsgIdentifierEquals(String.valueOf(identifier), TestUtilities.getSingleton(object.getIdentifiers()));
     }
@@ -139,9 +137,9 @@ public final class Assertions extends Static {
     public static void assertAliasTipEquals(final String expected, final IdentifiedObject object) {
         final Collection<GenericName> aliases = object.getAlias();
         if (expected == null) {
-            assertTrue("aliases.isEmpty()", aliases.isEmpty());
+            assertTrue(aliases.isEmpty(), "aliases.isEmpty()");
         } else {
-            assertEquals("alias", expected, TestUtilities.getSingleton(aliases).tip().toString());
+            assertEquals(expected, TestUtilities.getSingleton(aliases).tip().toString(), "alias");
         }
     }
 
@@ -161,13 +159,13 @@ public final class Assertions extends Static {
             final double minimumValue, final double maximumValue, final Unit<?> unit, final RangeMeaning rangeMeaning,
             final CoordinateSystemAxis axis)
     {
-        assertEquals("name",         name,         axis.getName().getCode());
-        assertEquals("abbreviation", abbreviation, axis.getAbbreviation());
-        assertEquals("direction",    direction,    axis.getDirection());
-        assertEquals("minimumValue", minimumValue, axis.getMinimumValue(), 0);      // STRICT
-        assertEquals("maximumValue", maximumValue, axis.getMaximumValue(), 0);      // STRICT
-        assertEquals("unit",         unit,         axis.getUnit());
-        assertEquals("rangeMeaning", rangeMeaning, axis.getRangeMeaning());
+        assertEquals(name,         axis.getName().getCode(), "name");
+        assertEquals(abbreviation, axis.getAbbreviation(),   "abbreviation");
+        assertEquals(direction,    axis.getDirection(),      "direction");
+        assertEquals(minimumValue, axis.getMinimumValue(),   "minimumValue");
+        assertEquals(maximumValue, axis.getMaximumValue(),   "maximumValue");
+        assertEquals(unit,         axis.getUnit(),           "unit");
+        assertEquals(rangeMeaning, axis.getRangeMeaning(),   "rangeMeaning");
     }
 
     /**
@@ -195,12 +193,12 @@ public final class Assertions extends Static {
             final ParameterValue<?> a = actual  .parameter(name);
             if (unit != null) {
                 final double f = e.doubleValue(unit);
-                assertEquals(name, f, a.doubleValue(unit), tolerance);
+                assertEquals(f, a.doubleValue(unit), tolerance, name);
             } else if (valueClass == Float.class || valueClass == Double.class) {
                 final double f = e.doubleValue();
-                assertEquals(name, f, a.doubleValue(), tolerance);
+                assertEquals(f, a.doubleValue(), tolerance, name);
             } else {
-                assertEquals(name, e.getValue(), a.getValue());
+                assertEquals(e.getValue(), a.getValue(), name);
             }
         }
     }
@@ -223,8 +221,6 @@ public final class Assertions extends Static {
     {
         final int numRows = matrix.getNumRow();
         final int numCols = matrix.getNumCol();
-        final StringBuilder buffer = new StringBuilder("matrix(");
-        final int bufferBase = buffer.length();
         for (int j=0; j<numRows; j++) {
             for (int i=0; i<numCols; i++) {
                 final double e;
@@ -235,9 +231,8 @@ public final class Assertions extends Static {
                 } else {
                     e = 0;
                 }
-                buffer.setLength(bufferBase);
-                assertEquals(buffer.append(j).append(',').append(i).append(')').toString(),
-                        e, matrix.getElement(j, i), tolerance);
+                final int ti=i, tj=j;       // Because lambda requires final values.
+                assertEquals(e, matrix.getElement(j, i), tolerance, () -> "matrix(" + tj + ", " + ti + ")");
             }
         }
     }
@@ -250,12 +245,12 @@ public final class Assertions extends Static {
      * @param tolerance  the tolerance threshold.
      */
     public static void assertTransformEquals(final AffineTransform expected, final AffineTransform actual, final double tolerance) {
-        assertEquals("scaleX",     expected.getScaleX(),     actual.getScaleX(),     tolerance);
-        assertEquals("scaleY",     expected.getScaleY(),     actual.getScaleY(),     tolerance);
-        assertEquals("shearX",     expected.getShearX(),     actual.getShearX(),     tolerance);
-        assertEquals("shearY",     expected.getShearY(),     actual.getShearY(),     tolerance);
-        assertEquals("translateX", expected.getTranslateX(), actual.getTranslateX(), tolerance);
-        assertEquals("translateY", expected.getTranslateY(), actual.getTranslateY(), tolerance);
+        assertEquals(expected.getScaleX(),     actual.getScaleX(),     tolerance, "scaleX");
+        assertEquals(expected.getScaleY(),     actual.getScaleY(),     tolerance, "scaleY");
+        assertEquals(expected.getShearX(),     actual.getShearX(),     tolerance, "shearX");
+        assertEquals(expected.getShearY(),     actual.getShearY(),     tolerance, "shearY");
+        assertEquals(expected.getTranslateX(), actual.getTranslateX(), tolerance, "translateX");
+        assertEquals(expected.getTranslateY(), actual.getTranslateY(), tolerance, "translateY");
     }
 
     /**
@@ -269,14 +264,14 @@ public final class Assertions extends Static {
     public static void assertRectangleEquals(final RectangularShape expected,
             final RectangularShape actual, final double tolx, final double toly)
     {
-        assertEquals("Min X",    expected.getMinX(),    actual.getMinX(),    tolx);
-        assertEquals("Min Y",    expected.getMinY(),    actual.getMinY(),    toly);
-        assertEquals("Max X",    expected.getMaxX(),    actual.getMaxX(),    tolx);
-        assertEquals("Max Y",    expected.getMaxY(),    actual.getMaxY(),    toly);
-        assertEquals("Center X", expected.getCenterX(), actual.getCenterX(), tolx);
-        assertEquals("Center Y", expected.getCenterY(), actual.getCenterY(), toly);
-        assertEquals("Width",    expected.getWidth(),   actual.getWidth(),   tolx*2);
-        assertEquals("Height",   expected.getHeight(),  actual.getHeight(),  toly*2);
+        assertEquals(expected.getMinX(),    actual.getMinX(),    tolx,   "Min X");
+        assertEquals(expected.getMinY(),    actual.getMinY(),    toly,   "Min Y");
+        assertEquals(expected.getMaxX(),    actual.getMaxX(),    tolx,   "Max X");
+        assertEquals(expected.getMaxY(),    actual.getMaxY(),    toly,   "Max Y");
+        assertEquals(expected.getCenterX(), actual.getCenterX(), tolx,   "Center X");
+        assertEquals(expected.getCenterY(), actual.getCenterY(), toly,   "Center Y");
+        assertEquals(expected.getWidth(),   actual.getWidth(),   tolx*2, "Width");
+        assertEquals(expected.getHeight(),  actual.getHeight(),  toly*2, "Height");
     }
 
     /**
@@ -291,7 +286,7 @@ public final class Assertions extends Static {
      */
     public static void assertEnvelopeEquals(final Envelope expected, final Envelope actual, final double... tolerances) {
         final int dimension = expected.getDimension();
-        assertEquals("dimension", dimension, actual.getDimension());
+        assertEquals(dimension, actual.getDimension(), "dimension");
         final DirectPosition expectedLower = expected.getLowerCorner();
         final DirectPosition expectedUpper = expected.getUpperCorner();
         final DirectPosition actualLower   = actual  .getLowerCorner();
@@ -323,14 +318,13 @@ public final class Assertions extends Static {
      * @param inner  the rectangle which should be contained by the shape.
      */
     public static void assertContains(final RectangularShape outer, final Rectangle2D inner) {
-        assertTrue("outer.contains(inner)",   outer.contains  (inner));
-        assertTrue("outer.intersects(inner)", outer.intersects(inner));
+        assertTrue(outer.contains  (inner), "outer.contains(inner)");
+        assertTrue(outer.intersects(inner), "outer.intersects(inner)");
         if (outer instanceof Rectangle2D) {
-            assertTrue ("inner.intersects(outer)", inner.intersects((Rectangle2D) outer));
-            assertFalse("inner.contains(outer)",   inner.contains  ((Rectangle2D) outer));
+            assertTrue (inner.intersects((Rectangle2D) outer), "inner.intersects(outer)");
+            assertFalse(inner.contains  ((Rectangle2D) outer), "inner.contains(outer)");
         }
-        assertTrue("outer.contains(centerX, centerY)",
-                outer.contains(inner.getCenterX(), inner.getCenterY()));
+        assertTrue(outer.contains(inner.getCenterX(), inner.getCenterY()), "outer.contains(centerX, centerY)");
     }
 
     /**
@@ -342,22 +336,22 @@ public final class Assertions extends Static {
      * @param inner  the envelope which should be contained by the outer envelope.
      */
     public static void assertContains(final AbstractEnvelope outer, final Envelope inner) {
-        assertTrue("outer.contains(inner)",   outer.contains  (inner, true));
-        assertTrue("outer.contains(inner)",   outer.contains  (inner, false));
-        assertTrue("outer.intersects(inner)", outer.intersects(inner, true));
-        assertTrue("outer.intersects(inner)", outer.intersects(inner, false));
+        assertTrue(outer.contains  (inner, true),  "outer.contains(inner)");
+        assertTrue(outer.contains  (inner, false), "outer.contains(inner)");
+        assertTrue(outer.intersects(inner, true),  "outer.intersects(inner)");
+        assertTrue(outer.intersects(inner, false), "outer.intersects(inner)");
         if (inner instanceof AbstractEnvelope) {
             final AbstractEnvelope ai = (AbstractEnvelope) inner;
-            assertTrue ("inner.intersects(outer)", ai.intersects(outer, true));
-            assertTrue ("inner.intersects(outer)", ai.intersects(outer, false));
-            assertFalse("inner.contains(outer)",   ai.contains  (outer, true));
-            assertFalse("inner.contains(outer)",   ai.contains  (outer, false));
+            assertTrue (ai.intersects(outer, true),  "inner.intersects(outer)");
+            assertTrue (ai.intersects(outer, false), "inner.intersects(outer)");
+            assertFalse(ai.contains  (outer, true),  "inner.contains(outer)");
+            assertFalse(ai.contains  (outer, false), "inner.contains(outer)");
         }
         final GeneralDirectPosition median = new GeneralDirectPosition(inner.getDimension());
         for (int i=median.getDimension(); --i>=0;) {
             median.setOrdinate(i, inner.getMedian(i));
         }
-        assertTrue("outer.contains(median)", outer.contains(median));
+        assertTrue(outer.contains(median), "outer.contains(median)");
     }
 
     /**
@@ -372,11 +366,11 @@ public final class Assertions extends Static {
      * @param r2  the second rectangle to test.
      */
     public static void assertDisjoint(final RectangularShape r1, final Rectangle2D r2) {
-        assertFalse("r1.intersects(r2)", r1.intersects(r2));
-        assertFalse("r1.contains(r2)",   r1.contains(r2));
+        assertFalse(r1.intersects(r2), "r1.intersects(r2)");
+        assertFalse(r1.contains(r2), "r1.contains(r2)");
         if (r1 instanceof Rectangle2D) {
-            assertFalse("r2.intersects(r1)", r2.intersects((Rectangle2D) r1));
-            assertFalse("r2.contains(r1)",   r2.contains  ((Rectangle2D) r1));
+            assertFalse(r2.intersects((Rectangle2D) r1), "r2.intersects(r1)");
+            assertFalse(r2.contains  ((Rectangle2D) r1), "r2.contains(r1)");
         }
         for (int i=0; i<9; i++) {
             final double x, y;
@@ -392,7 +386,7 @@ public final class Assertions extends Static {
                 case 2: y = r2.getMaxY();    break;
                 default: throw new AssertionError(i);
             }
-            assertFalse("r1.contains(" + x + ", " + y + ')', r1.contains(x, y));
+            assertFalse(r1.contains(x, y), () -> "r1.contains(" + x + ", " + y + ')');
         }
     }
 
@@ -405,16 +399,16 @@ public final class Assertions extends Static {
      * @param e2  the second envelope to test.
      */
     public static void assertDisjoint(final AbstractEnvelope e1, final Envelope e2) {
-        assertFalse("e1.intersects(e2)", e1.intersects(e2, false));
-        assertFalse("e1.intersects(e2)", e1.intersects(e2, true));
-        assertFalse("e1.contains(e2)",   e1.contains  (e2, false));
-        assertFalse("e1.contains(e2)",   e1.contains  (e2, true));
+        assertFalse(e1.intersects(e2, false), "e1.intersects(e2)");
+        assertFalse(e1.intersects(e2, true),  "e1.intersects(e2)");
+        assertFalse(e1.contains  (e2, false), "e1.contains(e2)");
+        assertFalse(e1.contains  (e2, true),  "e1.contains(e2)");
         if (e2 instanceof AbstractEnvelope) {
             final AbstractEnvelope ae = (AbstractEnvelope) e2;
-            assertFalse("e2.intersects(e1)", ae.intersects(e1, false));
-            assertFalse("e2.intersects(e1)", ae.intersects(e1, true));
-            assertFalse("e2.contains(e1)",   ae.contains  (e1, false));
-            assertFalse("e2.contains(e1)",   ae.contains  (e1, true));
+            assertFalse(ae.intersects(e1, false), "e2.intersects(e1)");
+            assertFalse(ae.intersects(e1, true),  "e2.intersects(e1)");
+            assertFalse(ae.contains  (e1, false), "e2.contains(e1)");
+            assertFalse(ae.contains  (e1, true),  "e2.contains(e1)");
         }
         final int dimension = e1.getDimension();
         final int numCases = toIntExact(round(pow(3, dimension)));
@@ -433,7 +427,7 @@ public final class Assertions extends Static {
                 n /= 3;
             }
             assertEquals(0, n); // Opportunist check of this assert method.
-            assertFalse("e1.contains(" + pos + ')', e1.contains(pos));
+            assertFalse(e1.contains(pos), () -> "e1.contains(" + pos + ')');
         }
     }
 
@@ -444,9 +438,9 @@ public final class Assertions extends Static {
      * @param transform  the transform to test.
      */
     public static void assertIsIdentity(final MathTransform transform) {
-        assertTrue("isIdentity()", transform.isIdentity());
+        assertTrue(transform.isIdentity(), "isIdentity()");
         if (transform instanceof LinearTransform) {
-            assertTrue("getMatrix().isIdentity()", ((LinearTransform) transform).getMatrix().isIdentity());
+            assertTrue(((LinearTransform) transform).getMatrix().isIdentity(), "getMatrix().isIdentity()");
         }
     }
 
@@ -457,9 +451,9 @@ public final class Assertions extends Static {
      * @param transform  the transform to test.
      */
     public static void assertIsNotIdentity(final MathTransform transform) {
-        assertFalse("isIdentity()", transform.isIdentity());
+        assertFalse(transform.isIdentity(), "isIdentity()");
         if (transform instanceof LinearTransform) {
-            assertFalse("getMatrix().isIdentity()", ((LinearTransform) transform).getMatrix().isIdentity());
+            assertFalse(((LinearTransform) transform).getMatrix().isIdentity(), "getMatrix().isIdentity()");
         }
     }
 

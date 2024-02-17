@@ -20,8 +20,8 @@ import java.util.HashSet;
 import java.util.Random;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -61,7 +61,7 @@ public final class WeakHashSetTest extends TestCase {
      */
     @Test
     public void testStrongReferences() {
-        final Random random = new Random();
+        final var random = new Random();
         for (int pass=0; pass<NUM_RETRY; pass++) {
             final WeakHashSet<IntObject> weakSet = new WeakHashSet<>(IntObject.class);
             final HashSet<IntObject> strongSet = new HashSet<>();
@@ -73,11 +73,11 @@ public final class WeakHashSetTest extends TestCase {
                      */
                     final boolean   weakModified = weakSet  .add(value);
                     final boolean strongModified = strongSet.add(value);
-                    assertEquals("add:", strongModified, weakModified);
+                    assertEquals(strongModified, weakModified, "add:");
                     if (strongModified) {
-                        assertSame("get:", value, weakSet.get(value));
+                        assertSame(value, weakSet.get(value), "get:");
                     } else {
-                        assertEquals("get:",  value, weakSet.get(value));
+                        assertEquals(value, weakSet.get(value), "get:");
                     }
                 } else {
                     /*
@@ -85,11 +85,11 @@ public final class WeakHashSetTest extends TestCase {
                      */
                     final boolean   weakModified = weakSet  .remove(value);
                     final boolean strongModified = strongSet.remove(value);
-                    assertEquals("remove:", strongModified, weakModified);
-                    assertNull("get:", weakSet.get(value));
+                    assertEquals(strongModified, weakModified, "remove:");
+                    assertNull(weakSet.get(value), "get:");
                 }
-                assertEquals("contains:", strongSet.contains(value), weakSet.contains(value));
-                assertEquals("equals:", strongSet, weakSet);
+                assertEquals(strongSet.contains(value), weakSet.contains(value), "contains:");
+                assertEquals(strongSet, weakSet, "equals:");
             }
             assertSetEquals(strongSet, weakSet);
         }
@@ -104,7 +104,7 @@ public final class WeakHashSetTest extends TestCase {
     @Test
     @DependsOnMethod("testStrongReferences")
     public void testWeakReferences() throws InterruptedException {
-        final Random random = new Random();
+        final var random = new Random();
         for (int pass=0; pass<NUM_RETRY; pass++) {
             final WeakHashSet<IntObject> weakSet = new WeakHashSet<>(IntObject.class);
             final HashSet<IntObject> strongSet = new HashSet<>();
@@ -123,7 +123,7 @@ public final class WeakHashSetTest extends TestCase {
                          * a strong reference would exist which should have prevented the element
                          * from being removed from the WeakHashSet.
                          */
-                        assertTrue("add:", strongModified);
+                        assertTrue(strongModified, "add:");
                     } else {
                         assertNotSame(value, weakSet.get(value));
                         if (strongModified) {
@@ -147,10 +147,10 @@ public final class WeakHashSetTest extends TestCase {
                      */
                     final boolean c = weakSet.contains(value);
                     if (strongSet.remove(value)) {
-                        assertTrue("contains:", c);
+                        assertTrue(c, "contains:");
                     }
                 }
-                assertTrue("containsAll:", weakSet.containsAll(strongSet));
+                assertTrue(weakSet.containsAll(strongSet), "containsAll:");
             }
             /*
              * The test below needs the garbage collector to complete fully its job in a timely
@@ -165,7 +165,7 @@ public final class WeakHashSetTest extends TestCase {
                  * Clearing all strong references should make the set empty.
                  */
                 strongSet.clear();
-                assertTrue("Expected an empty set.", waitForGarbageCollection(weakSet::isEmpty));
+                assertTrue(waitForGarbageCollection(weakSet::isEmpty), "Expected an empty set.");
             }
         }
     }

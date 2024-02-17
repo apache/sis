@@ -33,8 +33,8 @@ import org.apache.sis.xml.IdentifierSpace;
 import static org.apache.sis.metadata.iso.citation.Citations.*;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -70,15 +70,15 @@ public final class CitationsTest extends TestCase {
         final Set<Citation> citations = Collections.newSetFromMap(new IdentityHashMap<>());
         for (final Citation c : Citations.values()) {
             final String name = ((CitationConstant) c).title;
-            assertTrue(name, citations.add(c));                             // Fail if duplicated instances.
+            assertTrue(citations.add(c), name);                             // Fail if duplicated instances.
         }
         for (final Field field : Citations.class.getFields()) {
             final String name  = field.getName();
             final Object value = field.get(null);
             if (Citation.class.isAssignableFrom(field.getType())) {
-                assertTrue(name, citations.remove((Citation) value));       // Fail if that instance is missing.
+                assertTrue(citations.remove((Citation) value), name);       // Fail if that instance is missing.
             } else for (final Object element : (List<?>) value) {
-                assertTrue(name, citations.remove((Citation) element));     // Fail if that instance is missing.
+                assertTrue(citations.remove((Citation) element), name);     // Fail if that instance is missing.
             }
         }
         assertTrue(citations.isEmpty());
@@ -117,7 +117,7 @@ public final class CitationsTest extends TestCase {
         for (final Field field : Citations.class.getFields()) {
             if (Citation.class.isAssignableFrom(field.getType())) {
                 final String name = field.getName();
-                assertSame(name, field.get(null), Citations.fromName(name));
+                assertSame(field.get(null), Citations.fromName(name), name);
             }
         }
     }
@@ -164,8 +164,8 @@ public final class CitationsTest extends TestCase {
         assertEquals("ISSN",        toCodeSpace(ISSN));
         assertEquals("Proj4",       toCodeSpace(PROJ4));
         assertEquals("S57",         toCodeSpace(S57));
-        assertNull  ("ISO_19115-1", toCodeSpace(ISO_19115.get(0)));
-        assertNull  ("ISO_19115-2", toCodeSpace(ISO_19115.get(1)));
+        assertNull  (               toCodeSpace(ISO_19115.get(0)));
+        assertNull  (               toCodeSpace(ISO_19115.get(1)));
     }
 
     /**
@@ -183,10 +183,10 @@ public final class CitationsTest extends TestCase {
         final SimpleCitation citation = new SimpleCitation(" Valid\u2060Id\u200Bentifier ");
         assertEquals("ValidIdentifier", Citations.toCodeSpace(citation));
 
-        assertNull("Shall not be taken as a valid identifier.",
-                Citations.toCodeSpace(new SimpleCitation("Proj.4")));
-        assertEquals("Shall fallback on the identifier space name.",
-                "TheProj4Space", Citations.toCodeSpace(new Proj4()));
+        assertNull(Citations.toCodeSpace(new SimpleCitation("Proj.4")),
+                   "Shall not be taken as a valid identifier.");
+        assertEquals("TheProj4Space", Citations.toCodeSpace(new Proj4()),
+                     "Shall fallback on the identifier space name.");
     }
 
     /**
@@ -227,7 +227,7 @@ public final class CitationsTest extends TestCase {
      * Tests {@code getCitedResponsibleParties()} on some {@code Citation} constants.
      */
     @Test
-    @org.junit.Ignore("Requires GeoAPI 3.1.")
+    @org.junit.jupiter.api.Disabled("Requires GeoAPI 3.1.")
     public void testGetCitedResponsibleParty() {
         assertEquals("Open Geospatial Consortium",                       getCitedResponsibleParty(OGC));
         assertEquals("International Organization for Standardization",   getCitedResponsibleParty(ISO_19115.get(0)));
@@ -265,12 +265,9 @@ public final class CitationsTest extends TestCase {
     public void ensureUnmodifiable() {
         final Collection<? extends Identifier> identifiers = Citations.EPSG.getIdentifiers();
         assertNotNull(identifiers);
-        try {
-            identifiers.add(null);
-            fail("Predefined metadata shall be unmodifiable.");
-        } catch (UnsupportedOperationException e) {
-            // This is the expected exception.
-        }
+        var e = assertThrows(UnsupportedOperationException.class, () -> identifiers.add(null),
+                             "Predefined metadata shall be unmodifiable.");
+        assertNotNull(e);
     }
 
     /**
@@ -284,7 +281,7 @@ public final class CitationsTest extends TestCase {
         for (final Field field : Citations.class.getDeclaredFields()) {
             if (CitationConstant.class.isAssignableFrom(field.getType())) {
                 final Object c = field.get(null);
-                assertSame(field.getName(), c, assertSerializedEquals(c));
+                assertSame(c, assertSerializedEquals(c), field.getName());
             }
         }
     }
@@ -298,14 +295,14 @@ public final class CitationsTest extends TestCase {
         final Identifier iso = new Id("ISO", "19128");
         final DefaultCitation citation = new DefaultCitation("Web Map Server");
         citation.setIdentifiers(List.of(ogc, iso, new DefaultIdentifier("Foo", "06-042", null)));
-        assertTrue ("With full identifier",  Citations.identifierMatches(citation, ogc, ogc.getCode()));
-        assertTrue ("With full identifier",  Citations.identifierMatches(citation, iso, iso.getCode()));
-        assertFalse("With wrong code",       Citations.identifierMatches(citation, new Id("ISO", "19115"), "19115"));
-        assertFalse("With wrong code space", Citations.identifierMatches(citation, new Id("Foo", "19128"), "19128"));
-        assertFalse("With wrong code",       Citations.identifierMatches(citation, "Foo"));
-        assertTrue ("Without identifier",    Citations.identifierMatches(citation, "19128"));
-        assertTrue ("With parsing",          Citations.identifierMatches(citation, "ISO:19128"));
-        assertFalse("With wrong code space", Citations.identifierMatches(citation, "Foo:19128"));
+        assertTrue (/* With full identifier */ Citations.identifierMatches(citation, ogc, ogc.getCode()));
+        assertTrue (/* With full identifier */ Citations.identifierMatches(citation, iso, iso.getCode()));
+        assertFalse(/* With wrong code      */ Citations.identifierMatches(citation, new Id("ISO", "19115"), "19115"));
+        assertFalse(/* With wrong codespace */ Citations.identifierMatches(citation, new Id("Foo", "19128"), "19128"));
+        assertFalse(/* With wrong code      */ Citations.identifierMatches(citation, "Foo"));
+        assertTrue (/* Without identifier   */ Citations.identifierMatches(citation, "19128"));
+        assertTrue (/* With parsing         */ Citations.identifierMatches(citation, "ISO:19128"));
+        assertFalse(/* With wrong codespace */ Citations.identifierMatches(citation, "Foo:19128"));
     }
 
     @SuppressWarnings("serial")

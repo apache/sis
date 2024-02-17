@@ -23,8 +23,9 @@ import org.apache.sis.geometry.wrapper.GeometriesTestCase;
 import org.apache.sis.util.StringBuilders;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 
 
 /**
@@ -48,7 +49,7 @@ public final class FactoryTest extends GeometriesTestCase {
     public void testCreatePolyline() {
         super.testCreatePolyline();
         final Polyline poly = (Polyline) geometry;
-        assertEquals("pathCount", 2, poly.getPathCount());
+        assertEquals(2, poly.getPathCount());
     }
 
     /**
@@ -59,7 +60,7 @@ public final class FactoryTest extends GeometriesTestCase {
     public void testMergePolylines() {
         super.testMergePolylines();
         final Polyline poly = (Polyline) geometry;
-        assertEquals("pathCount", 3, poly.getPathCount());
+        assertEquals(3, poly.getPathCount());
     }
 
     /**
@@ -85,13 +86,7 @@ public final class FactoryTest extends GeometriesTestCase {
         final Geometries<?> other = org.apache.sis.geometry.wrapper.j2d.Factory.INSTANCE;
         final GeometryWrapper ogw = other.castOrWrap(other.createPoint(5, 6));
         assertNotNull(other.getGeometry(ogw));
-        try {
-            factory.getGeometry(ogw);
-            fail("Expected a ClassCastException");
-        } catch (ClassCastException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("ESRI"));
-            assertTrue(message, message.contains("JAVA2D"));
-        }
+        var e = assertThrows(ClassCastException.class, () -> factory.getGeometry(ogw));
+        assertMessageContains(e, "ESRI", "JAVA2D");
     }
 }

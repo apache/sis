@@ -32,8 +32,8 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.referencing.operation.DefaultConversionTest;
 import org.apache.sis.test.DependsOn;
@@ -79,38 +79,46 @@ public final class DefaultDerivedCRSTest extends TestCase {
      */
     @Test
     public void testGetType() {
-        assertEquals("Using consistent arguments.", WKTKeywords.VerticalCRS,
+        // Using consistent arguments.
+        assertEquals(WKTKeywords.VerticalCRS,
                 DefaultDerivedCRS.getType(HardCodedCRS.ELLIPSOIDAL_HEIGHT, HardCodedCS.GRAVITY_RELATED_HEIGHT));
 
-        assertNull("Using inconsistent arguments.",
-                DefaultDerivedCRS.getType(HardCodedCRS.ELLIPSOIDAL_HEIGHT, HardCodedCS.SECONDS));
+        // Using inconsistent arguments.
+        assertNull(DefaultDerivedCRS.getType(HardCodedCRS.ELLIPSOIDAL_HEIGHT, HardCodedCS.SECONDS));
 
-        assertEquals("Using consistent arguments.", WKTKeywords.TimeCRS,
+        // Using consistent arguments.
+        assertEquals(WKTKeywords.TimeCRS,
                 DefaultDerivedCRS.getType(HardCodedCRS.TIME, HardCodedCS.SECONDS));
 
-        assertNull("Using inconsistent arguments.",
-                DefaultDerivedCRS.getType(HardCodedCRS.TIME, HardCodedCS.GRAVITY_RELATED_HEIGHT));
+        // Using inconsistent arguments.
+        assertNull(DefaultDerivedCRS.getType(HardCodedCRS.TIME, HardCodedCS.GRAVITY_RELATED_HEIGHT));
 
-        assertEquals("Using consistent arguments.", WKTKeywords.GeodeticCRS,
+        // Using consistent arguments.
+        assertEquals(WKTKeywords.GeodeticCRS,
                 DefaultDerivedCRS.getType(HardCodedCRS.WGS84, HardCodedCS.GEODETIC_2D));
 
-        assertEquals("Using consistent arguments but one more dimension.", WKTKeywords.GeodeticCRS,
+        // Using consistent arguments but one more dimension.
+        assertEquals(WKTKeywords.GeodeticCRS,
                 DefaultDerivedCRS.getType(HardCodedCRS.WGS84, HardCodedCS.GEODETIC_3D));
 
-        assertEquals("Using consistent arguments.", WKTKeywords.GeodeticCRS,
+        // Using consistent arguments.
+        assertEquals(WKTKeywords.GeodeticCRS,
                 DefaultDerivedCRS.getType(HardCodedCRS.GEOCENTRIC, HardCodedCS.CARTESIAN_3D));
 
-        assertEquals("Using consistent arguments but one less dimension.", WKTKeywords.GeodeticCRS,
+        // Using consistent arguments but one less dimension.
+        assertEquals(WKTKeywords.GeodeticCRS,
                 DefaultDerivedCRS.getType(HardCodedCRS.GEOCENTRIC, HardCodedCS.CARTESIAN_2D));
 
-        assertEquals("Using different coordinate system type.", WKTKeywords.GeodeticCRS,
+        // Using different coordinate system type.
+        assertEquals(WKTKeywords.GeodeticCRS,
                 DefaultDerivedCRS.getType(HardCodedCRS.GEOCENTRIC, HardCodedCS.SPHERICAL));
 
-        assertEquals("Using different coordinate system type.", WKTKeywords.GeodeticCRS,
+        // Using different coordinate system type.
+        assertEquals(WKTKeywords.GeodeticCRS,
                 DefaultDerivedCRS.getType(HardCodedCRS.WGS84, HardCodedCS.CARTESIAN_2D));
 
-        assertNull("Using illegal coordinate system type.",
-                DefaultDerivedCRS.getType(HardCodedCRS.WGS84, HardCodedCS.GRAVITY_RELATED_HEIGHT));
+        // Using illegal coordinate system type.
+        assertNull(DefaultDerivedCRS.getType(HardCodedCRS.WGS84, HardCodedCS.GRAVITY_RELATED_HEIGHT));
     }
 
     /**
@@ -133,14 +141,14 @@ public final class DefaultDerivedCRSTest extends TestCase {
         final DefaultDerivedCRS crs = createLongitudeRotation();
 //      Validators.validate(crs);
 
-        assertEquals("name",    "Back to Greenwich",                crs.getName().getCode());
-        assertEquals("baseCRS", "NTF (Paris)",                      crs.getBaseCRS().getName().getCode());
-        assertEquals("datum",   "Nouvelle Triangulation Française", crs.getDatum().getName().getCode());
-        assertSame  ("coordinateSystem", HardCodedCS.GEODETIC_φλ,   crs.getCoordinateSystem());
+        assertEquals("Back to Greenwich",                crs.getName().getCode());
+        assertEquals("NTF (Paris)",                      crs.getBaseCRS().getName().getCode());
+        assertEquals("Nouvelle Triangulation Française", crs.getDatum().getName().getCode());
+        assertSame  (HardCodedCS.GEODETIC_φλ,   crs.getCoordinateSystem());
 
         final Conversion conversion = crs.getConversionFromBase();
-        assertSame("sourceCRS", crs.getBaseCRS(), conversion.getSourceCRS());
-        assertSame("targetCRS", crs,              conversion.getTargetCRS());
+        assertSame(crs.getBaseCRS(), conversion.getSourceCRS());
+        assertSame(crs,              conversion.getTargetCRS());
         assertMatrixEquals("Longitude rotation", new Matrix3(
                 0, 1, 0,
                 1, 0, 2.33722917,
@@ -244,9 +252,9 @@ public final class DefaultDerivedCRSTest extends TestCase {
         final Conversion conversion = crs.getConversionFromBase();
         final ParameterValueGroup pg = conversion.getParameterValues();
         assertEpsgNameAndIdentifierEqual("Geographic/topocentric conversions", 9837, conversion.getMethod());
-        assertEquals("Latitude", 55, pg.parameter("Latitude of topocentric origin" ).doubleValue(Units.DEGREE), STRICT);
-        assertEquals("Longitude", 5, pg.parameter("Longitude of topocentric origin").doubleValue(Units.DEGREE), STRICT);
-        assertEquals("Height",    0, pg.parameter("Ellipsoidal height of topocentric origin").doubleValue(Units.METRE),  STRICT);
+        assertEquals(55, pg.parameter("Latitude of topocentric origin" ).doubleValue(Units.DEGREE));
+        assertEquals( 5, pg.parameter("Longitude of topocentric origin").doubleValue(Units.DEGREE));
+        assertEquals( 0, pg.parameter("Ellipsoidal height of topocentric origin").doubleValue(Units.METRE));
         /*
          * Test marshalling and compare with the original file.
          */

@@ -19,7 +19,7 @@ package org.apache.sis.style.se1;
 import org.apache.sis.util.SimpleInternationalString;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 
 /**

@@ -21,9 +21,7 @@
  * @author  Martin Desruisseaux (Geomatys)
  */
 module org.apache.sis.test.incubator {
-    requires transitive junit;
     requires transitive org.junit.jupiter.api;
-    requires transitive org.opengis.geoapi.conformance;
     requires org.apache.sis.feature;
     requires org.apache.sis.storage;
     requires org.locationtech.jts;

@@ -27,8 +27,8 @@ import org.apache.sis.storage.netcdf.ucar.DecoderWrapper;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 
 
@@ -113,17 +113,16 @@ public class VariableTest extends TestCase {
         for (final Variable variable : variables) {
             final String name = variable.getName();
             final DataType dataType = variable.getDataType();
-            assertFalse("Too many variables.", propertyIndex == expected.length);
-            assertEquals(name, expected[propertyIndex++], name);
-            assertEquals(name, expected[propertyIndex++], variable.getDescription());
-            assertEquals(name, expected[propertyIndex++], dataType);
-            assertEquals(name, expected[propertyIndex++], variable.getGridDimensions().size());
-            assertEquals(name, expected[propertyIndex++], variable.getRole());
+            assertNotEquals(propertyIndex, expected.length);
+            assertEquals(expected[propertyIndex++], name, name);
+            assertEquals(expected[propertyIndex++], variable.getDescription(), name);
+            assertEquals(expected[propertyIndex++], dataType, name);
+            assertEquals(expected[propertyIndex++], variable.getGridDimensions().size(), name);
+            assertEquals(expected[propertyIndex++], variable.getRole(), name);
             assertEquals(0, propertyIndex % NUM_BASIC_PROPERTY_COLUMNS);            // Sanity check for VariableTest itself.
         }
-        assertEquals("Expected more variables.",
-                expected.length / NUM_BASIC_PROPERTY_COLUMNS,
-                propertyIndex   / NUM_BASIC_PROPERTY_COLUMNS);
+        assertEquals(expected.length / NUM_BASIC_PROPERTY_COLUMNS,
+                     propertyIndex   / NUM_BASIC_PROPERTY_COLUMNS);
     }
 
     /**
@@ -171,7 +170,7 @@ public class VariableTest extends TestCase {
         final Instant save = variable.epoch;
         try {
             assertSame(Units.DAY, variable.parseUnit("days since 1992-10-8 15:15:42.5 -06:00"));
-            assertEquals("epoch", variable.epoch, Instant.parse("1992-10-08T21:15:42.500Z"));
+            assertEquals(variable.epoch, Instant.parse("1992-10-08T21:15:42.500Z"));
         } finally {
             variable.epoch = save;
         }
@@ -203,13 +202,8 @@ public class VariableTest extends TestCase {
         assertEquals("SST", variable.getName());
 
         final List<Dimension> dimensions = variable.getGridDimensions();
-        assertArrayEquals("getGridDimensionNames()", new String[] {
-            "lat", "lon"
-        }, names(dimensions));
-
-        assertArrayEquals("getGridEnvelope()", new long[] {
-            73, 73
-        }, lengths(dimensions));
+        assertArrayEquals(new String[] {"lat", "lon"}, names(dimensions));
+        assertArrayEquals(new long[] {73, 73}, lengths(dimensions));
     }
 
     /**
@@ -224,13 +218,8 @@ public class VariableTest extends TestCase {
         assertEquals("CIP", variable.getName());
 
         final List<Dimension> dimensions = variable.getGridDimensions();
-        assertArrayEquals("getGridDimensionNames()", new String[] {
-            "time", "z0", "y0", "x0"
-        }, names(dimensions));
-
-        assertArrayEquals("getGridEnvelope()", new long[] {
-            1, 4, 19, 38
-        }, lengths(dimensions));
+        assertArrayEquals(new String[] {"time", "z0", "y0", "x0"}, names(dimensions));
+        assertArrayEquals(new long[] {1, 4, 19, 38}, lengths(dimensions));
     }
 
     /**
@@ -258,18 +247,18 @@ public class VariableTest extends TestCase {
      */
     private static void assertSingletonEquals(final Node variable, final String name, final Object expected) {
         final String t = expected.toString();
-        assertEquals     ("getAttributeValue",     expected,         variable.getAttributeValue    (name));
-        assertEquals     ("getAttributeAsString",  t,                variable.getAttributeAsString (name));
-        assertArrayEquals("getAttributeAsStrings", new String[] {t}, variable.getAttributeAsStrings(name, ' '));
+        assertEquals     (expected,         variable.getAttributeValue    (name));
+        assertEquals     (t,                variable.getAttributeAsString (name));
+        assertArrayEquals(new String[] {t}, variable.getAttributeAsStrings(name, ' '));
         if (expected instanceof Number) {
             final double en = ((Number) expected).doubleValue();
-            assertEquals("getAttributeAsDouble", en, variable.getAttributeAsDouble(name), STRICT);
+            assertEquals(en, variable.getAttributeAsDouble(name));
             final Vector vector = variable.getAttributeAsVector(name);
-            assertNotNull("getAttributeAsVector", vector);
+            assertNotNull(vector);
             assertEquals(1, vector.size());
-            assertEquals(en, vector.get(0).doubleValue(), STRICT);
+            assertEquals(en, vector.get(0).doubleValue());
         } else {
-            assertNull("getAttributeAsVector", variable.getAttributeAsVector(name));
+            assertNull(variable.getAttributeAsVector(name));
         }
     }
 
@@ -279,12 +268,12 @@ public class VariableTest extends TestCase {
      */
     private static void assertVectorEquals(final Node variable, final String name, final Number... expected) {
         final Vector values = variable.getAttributeAsVector(name);
-        assertNotNull(name, values);
-        assertEquals ("size", expected.length, values.size());
-        assertTrue   ("getAttributeAsDouble", Double.isNaN(variable.getAttributeAsDouble(name)));
-        assertEquals ("getAttributeValue", values, variable.getAttributeValue(name));
+        assertNotNull(values, name);
+        assertEquals (expected.length, values.size());
+        assertTrue   (Double.isNaN(variable.getAttributeAsDouble(name)));
+        assertEquals (values, variable.getAttributeValue(name));
         final Object[] texts = Arrays.stream(expected).map(Object::toString).toArray();
-        assertArrayEquals("getAttributeAsStrings", texts, variable.getAttributeAsStrings(name, ' '));
+        assertArrayEquals(texts, variable.getAttributeAsStrings(name, ' '));
     }
 
     /**
@@ -299,11 +288,11 @@ public class VariableTest extends TestCase {
         assertEquals("lon", variable.getName());
         final Vector data = variable.read();
         assertSame(data, variable.readAnyType());
-        assertEquals("lon", Float.class, data.getElementType());
+        assertEquals(Float.class, data.getElementType());
         final int length = data.size();
-        assertEquals("length", 73, length);
+        assertEquals(73, length);
         for (int i=0; i<length; i++) {
-            assertEquals("Longitude value", -180 + 5*i, data.floatValue(i), 0f);
+            assertEquals(-180 + 5*i, data.floatValue(i), "Longitude value");
         }
     }
 }

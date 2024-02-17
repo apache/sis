@@ -19,11 +19,12 @@ package org.apache.sis.referencing.gazetteer;
 import org.opengis.metadata.extent.GeographicDescription;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -152,12 +153,12 @@ public final class LocationTypeTest extends TestCase {
     private static void verify(final AbstractLocationType type, final String name, final String theme,
             final String definition, final String identification, final String owner)
     {
-        assertEquals("name",           name,           String.valueOf(type.getName()));
-        assertEquals("theme",          theme,          String.valueOf(type.getTheme()));
-        assertEquals("definition",     definition,     String.valueOf(type.getDefinition()));
-        assertEquals("identification", identification, String.valueOf(TestUtilities.getSingleton(type.getIdentifications())));
-        assertEquals("owner",          owner,          String.valueOf(type.getOwner().getName()));
-        assertEquals("territoryOfUse", "UK", ((GeographicDescription) type.getTerritoryOfUse()).getGeographicIdentifier().getCode());
+        assertEquals(name,           String.valueOf(type.getName()));
+        assertEquals(theme,          String.valueOf(type.getTheme()));
+        assertEquals(definition,     String.valueOf(type.getDefinition()));
+        assertEquals(identification, String.valueOf(TestUtilities.getSingleton(type.getIdentifications())));
+        assertEquals(owner,          String.valueOf(type.getOwner().getName()));
+        assertEquals("UK", ((GeographicDescription) type.getTerritoryOfUse()).getGeographicIdentifier().getCode());
     }
 
     /**
@@ -223,10 +224,10 @@ public final class LocationTypeTest extends TestCase {
     public void testEquals() {
         final ModifiableLocationType t1 = create(false)[0];
         final ModifiableLocationType t2 = create(true )[0];
-        assertEquals("hashCode", t1.hashCode(), t2.hashCode());
-        assertEquals("equals", t1, t2);
+        assertEquals(t1.hashCode(), t2.hashCode());
+        assertEquals(t1, t2);
         t2.removeIdentification("name");
-        assertNotEquals("equals", t1, t2);
+        assertNotEquals(t1, t2);
     }
 
     /**
@@ -248,13 +249,9 @@ public final class LocationTypeTest extends TestCase {
         final ModifiableLocationType[] types  = create(true);
         final ModifiableLocationType   town   = types[1];
         final ModifiableLocationType   street = types[3];
-        try {
-            town.addParent(street);
-            fail("Shall not accept to add town as a child of street.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("street"));
-        }
+        var e = assertThrows(IllegalArgumentException.class, () -> town.addParent(street),
+                             "Shall not accept to add town as a child of street.");
+        assertMessageContains(e, "street");
         /*
          * Verify the string representation as a way to verify that parent addition
          * has been properly rolled back. If not, we may have an infinite loop here

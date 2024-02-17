@@ -36,8 +36,7 @@ import org.apache.sis.storage.sql.feature.SchemaModifier;
 import org.apache.sis.storage.sql.feature.TableReference;
 
 // Test dependencies
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.metadata.sql.TestDatabase;
 import static org.apache.sis.test.Assertions.assertSetEquals;
@@ -227,7 +226,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
             if (i >= expectedNames.length) {
                 fail("Returned feature-type contains more properties than expected. Example: " + pt.getName());
             }
-            assertEquals("name", expectedNames[i], pt.getName().toString());
+            assertEquals(expectedNames[i], pt.getName().toString(), "name");
             final Object expectedType = expectedTypes[i];
             if (expectedType != null) {
                 final String label;
@@ -239,11 +238,11 @@ public final class SQLStoreTest extends TestOnAllDatabases {
                     label = "association type";
                     value = ((DefaultAssociationRole) pt).getValueType().getName().toString();
                 }
-                assertEquals(label, expectedType, value);
+                assertEquals(expectedType, value, label);
             }
             i++;
         }
-        assertEquals("count", expectedNames.length, i);
+        assertEquals(expectedNames.length, i);
     }
 
     /**
@@ -267,15 +266,15 @@ public final class SQLStoreTest extends TestOnAllDatabases {
         /*
          * Verify attributes. They are the easiest properties to read.
          */
-        assertEquals("pk:country",     c.country,              feature.getPropertyValue("pk:country"));
-        assertEquals("sis:identifier", c.country + ':' + city, feature.getPropertyValue("sis:identifier"));
-        assertEquals("english_name",   c.englishName,          feature.getPropertyValue("english_name"));
-        assertEquals("population",     c.population,           feature.getPropertyValue("population"));
+        assertEquals(c.country,              feature.getPropertyValue("pk:country"));
+        assertEquals(c.country + ':' + city, feature.getPropertyValue("sis:identifier"));
+        assertEquals(c.englishName,          feature.getPropertyValue("english_name"));
+        assertEquals(c.population,           feature.getPropertyValue("population"));
         /*
          * Associations using Relation.Direction.IMPORT.
          * Those associations should be cached; we verify with "Canada" case.
          */
-        assertEquals("country", c.countryName, getIndirectPropertyValue(feature, "country", "native_name"));
+        assertEquals(c.countryName, getIndirectPropertyValue(feature, "country", "native_name"));
         if (isCanada) {
             final AbstractFeature f = (AbstractFeature) feature.getPropertyValue("country");
             if (canada == null) {
@@ -290,23 +289,23 @@ public final class SQLStoreTest extends TestOnAllDatabases {
          * Contrarily to the IMPORT case, those associations can contain many values.
          */
         final Collection<?> actualParks = (Collection<?>) feature.getPropertyValue("parks");
-        assertNotNull("parks", actualParks);
-        assertEquals("parks.length", c.parks.length, actualParks.size());
+        assertNotNull(actualParks);
+        assertEquals(c.parks.length, actualParks.size());
         final Collection<String> expectedParks = new HashSet<>(Arrays.asList(c.parks));
         for (final Object park : actualParks) {
             final AbstractFeature pf = (AbstractFeature) park;
             final String npn = (String) pf.getPropertyValue("native_name");
             final String epn = (String) pf.getPropertyValue("english_name");
-            assertNotNull("park.native_name",  npn);
-            assertNotNull("park.english_name", epn);
-            assertNotEquals("park.names", npn, epn);
-            assertTrue("park.english_name", expectedParks.remove(epn));
+            assertNotNull(npn, "park.native_name");
+            assertNotNull(epn, "park.english_name");
+            assertNotEquals(npn, epn, "park.names");
+            assertTrue(expectedParks.remove(epn), "park.english_name");
             /*
              * Verify the reverse association form Parks to Cities.
              * This create a cyclic graph, but SQLStore is capable to handle it.
              */
             if (isCyclicAssociationAllowed) {
-                assertSame("City → Park → City", feature, pf.getPropertyValue("FK_City"));
+                assertSame(feature, pf.getPropertyValue("FK_City"), "City → Park → City");
             }
         }
     }
@@ -316,9 +315,8 @@ public final class SQLStoreTest extends TestOnAllDatabases {
      */
     private static Object getIndirectPropertyValue(final AbstractFeature feature, final String p1, final String p2) {
         final Object dependency = feature.getPropertyValue(p1);
-        assertNotNull(p1, dependency);
-        assertInstanceOf(p1, AbstractFeature.class, dependency);
-        return ((AbstractFeature) dependency).getPropertyValue(p2);
+        assertNotNull(dependency, p1);
+        return assertInstanceOf(AbstractFeature.class, dependency, p1).getPropertyValue(p2);
     }
 
     /**
@@ -352,7 +350,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
         try (Stream<AbstractFeature> features = subset.features(false)) {
             values = features.map(f -> {
                 final AbstractIdentifiedType p = TestUtilities.getSingleton(f.getType().getProperties(true));
-                assertEquals("Feature has wrong property.", desiredProperty, p.getName().toString());
+                assertEquals(desiredProperty, p.getName().toString(), "Feature has wrong property.");
                 return f.getPropertyValue(desiredProperty);
             }).toArray();
         }
@@ -462,9 +460,9 @@ public final class SQLStoreTest extends TestOnAllDatabases {
 
             long expectedPopulations = 0;
             for (City city : City.values()) expectedPopulations += city.population;
-            assertEquals("Overall population count via Stream pipeline", expectedPopulations, actualPopulations);
-            assertEquals("Number of mapping (by element in the stream)", 24, mapCount.get());
-            assertEquals("Number of peeking (by element in the stream)", 20, peekCount.get());
+            assertEquals(expectedPopulations, actualPopulations, "Overall population count via Stream pipeline");
+            assertEquals(24,  mapCount.get(), "Number of mapping (by element in the stream)");
+            assertEquals(20, peekCount.get(), "Number of peeking (by element in the stream)");
         }
     }
 
@@ -535,25 +533,22 @@ public final class SQLStoreTest extends TestOnAllDatabases {
             final FeatureSet parks = store.findResource("MyQuery");
             final DefaultFeatureType type = parks.getType();
             final DefaultAttributeType<?> property = (DefaultAttributeType<?>) TestUtilities.getSingleton(type.getProperties(true));
-            assertEquals("Property name should be label defined in query", "title", property.getName().toString());
-            assertEquals("Attribute should be a string", String.class, property.getValueClass());
-            assertEquals("Column should be nullable.", 0, property.getMinimumOccurs());
+            assertEquals("title", property.getName().toString(), "Property name should be label defined in query");
+            assertEquals(String.class, property.getValueClass(), "Attribute should be a string");
+            assertEquals(0, property.getMinimumOccurs(), "Column should be nullable.");
             final Integer precision = AttributeConvention.getMaximalLengthCharacteristic(type, property);
-            assertEquals("Column length constraint should be visible from attribute type.", Integer.valueOf(20), precision);
+            assertEquals(Integer.valueOf(20), precision, "Column length constraint should be visible from attribute type.");
             /*
              * Get third row in the table, as query starts on second one, and we want to skip one entry from there.
              * Tries to increase limit. The test will ensure it's not possible.
              */
-            assertArrayEquals(
-                    "Should get fourth and fifth park names from ascending order",
-                    new String[] {"Tuileries Garden", "Yoyogi-kōen"},
-                    getTitles(parks, 1, 4));
+            assertArrayEquals(new String[] {"Tuileries Garden", "Yoyogi-kōen"}, getTitles(parks, 1, 4),
+                              "Should get fourth and fifth park names from ascending order");
             /*
              * Get first row only.
              */
-            assertArrayEquals("Only second third name should be returned",
-                    new String[] {"Shinjuku Gyoen"},
-                    getTitles(parks, 0, 1));
+            assertArrayEquals(new String[] {"Shinjuku Gyoen"}, getTitles(parks, 0, 1),
+                              "Only second third name should be returned");
         }
     }
 
@@ -580,7 +575,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
                 expected = features.map(f -> f.getPropertyValue("country")).toArray();
             }
         }
-        assertArrayEquals("Distinct country names, sorted in ascending order",
-                new String[] {"CAN", "FRA", "JPN"}, expected);
+        assertArrayEquals(new String[] {"CAN", "FRA", "JPN"}, expected,
+                          "Distinct country names, sorted in ascending order");
     }
 }

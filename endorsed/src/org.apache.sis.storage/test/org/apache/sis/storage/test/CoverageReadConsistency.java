@@ -38,9 +38,9 @@ import org.apache.sis.math.Statistics;
 import org.apache.sis.math.StatisticsFormat;
 
 // Test dependencies
-import org.junit.AfterClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
@@ -339,12 +339,12 @@ public class CoverageReadConsistency extends TestCase {
             final GridCoverage subset = resource.read(domain, selectedBands);
             final GridExtent actualReadExtent = subset.getGridGeometry().getExtent();
             if (failOnMismatch) {
-                assertEquals("Unexpected number of dimensions.", dimension, actualReadExtent.getDimension());
+                assertEquals(dimension, actualReadExtent.getDimension(), "Unexpected number of dimensions.");
                 for (int d=0; d<dimension; d++) {
                     if (subsampling[d] == 1) {
-                        assertTrue("Actual extent is too small.", actualReadExtent.getSize(d) > high[d] - low[d]);
-                        assertTrue("Actual extent is too small.", actualReadExtent.getLow (d) <= low [d]);
-                        assertTrue("Actual extent is too small.", actualReadExtent.getHigh(d) >= high[d]);
+                        assertTrue(actualReadExtent.getSize(d) > high[d] - low[d], "Actual extent is too small.");
+                        assertTrue(actualReadExtent.getLow (d) <= low[d],          "Actual extent is too small.");
+                        assertTrue(actualReadExtent.getHigh(d) >= high[d],         "Actual extent is too small.");
                     }
                 }
             }
@@ -393,7 +393,7 @@ nextSlice:  for (;;) {
                                     .append(pr.x).append(", ").append(pr.y).append(") in full image and (")
                                     .append(pc.x).append(", ").append(pc.y).append(") in tested sub-image");
                             findMatchPosition(itr, pr, selectedBands, actual, message);
-                            assertArrayEquals(message.toString(), expected, actual, STRICT);
+                            assertArrayEquals(expected, actual, message.toString());
                             /*
                              * POSSIBLE CAUSES FOR TEST FAILURE (known issues):
                              *
@@ -445,7 +445,7 @@ nextSlice:  for (;;) {
     /**
      * Prints statistics about execution time (in milliseconds) after all tests completed.
      */
-    @AfterClass
+    @AfterAll
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public static void printDurations() {
         if (statistics != null) {

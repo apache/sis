@@ -34,8 +34,8 @@ import org.apache.sis.metadata.sql.util.ScriptRunner;
 import org.apache.sis.util.Debug;
 
 // Test dependencies
-import static org.junit.Assume.assumeFalse;
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import org.apache.sis.test.TestCase;
 
 
@@ -223,7 +223,7 @@ public class TestDatabase implements AutoCloseable {
      * @see <a href="https://sis.apache.org/source.html#postgres">Configuring PostgreSQL for Apache SIS tests</a>
      */
     public static TestDatabase createOnPostgreSQL(final String schema, final boolean create) throws SQLException {
-        assumeTrue("Extensive tests not enabled.", TestCase.RUN_EXTENSIVE_TESTS);
+        assumeTrue(TestCase.RUN_EXTENSIVE_TESTS, "Extensive tests not enabled.");
         final PGSimpleDataSource ds = new PGSimpleDataSource();
         // Server default to "localhost".
         ds.setDatabaseName(NAME);
@@ -248,8 +248,8 @@ public class TestDatabase implements AutoCloseable {
             }
         } catch (SQLException e) {
             final String state = e.getSQLState();
-            assumeFalse("This test needs a PostgreSQL server running on the local host.", "08001".equals(state));
-            assumeFalse("This test needs a PostgreSQL database named \"" + NAME + "\".", "3D000".equals(state));
+            assumeFalse("08001".equals(state), "This test needs a PostgreSQL server running on the local host.");
+            assumeFalse("3D000".equals(state), "This test needs a PostgreSQL database named \"" + NAME + "\".");
             throw e;
         }
         return new TestDatabase(ds, Dialect.POSTGRESQL) {

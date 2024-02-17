@@ -24,8 +24,8 @@ import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.ReferenceResolverMock;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
@@ -66,14 +66,14 @@ public final class PropertyTypeTest extends TestCase {
      * All other properties are expected to be null for this test.
      */
     private static void assertReferenceEqualsUUID(final String uuidref, final PropertyType<?,?> property) {
-        assertNull  ("nilReason",          property.getNilReason());
-        assertEquals("uuidref",   uuidref, property.getUUIDREF());
-        assertNull  ("href",               property.getHRef());
-        assertNull  ("role",               property.getRole());
-        assertNull  ("arcrole",            property.getArcRole());
-        assertNull  ("title",              property.getTitle());
-        assertNull  ("show",               property.getShow());
-        assertNull  ("actuate",            property.getActuate());
+        assertEquals(uuidref, property.getUUIDREF());
+        assertNull(property.getNilReason());
+        assertNull(property.getHRef());
+        assertNull(property.getRole());
+        assertNull(property.getArcRole());
+        assertNull(property.getTitle());
+        assertNull(property.getShow());
+        assertNull(property.getActuate());
     }
 
     /**
@@ -139,7 +139,7 @@ public final class PropertyTypeTest extends TestCase {
             assertSame(metadata, property.metadata);
             assertReferenceEqualsUUID(null, property);
         } else {
-            assertNull("metadata", property.metadata);
+            assertNull(property.metadata, "metadata");
             assertReferenceEqualsUUID(uuid.toString(), property);
         }
     }
@@ -194,15 +194,15 @@ public final class PropertyTypeTest extends TestCase {
         if (!useReferenceResolverMock) {
             assertSame(metadata, property.metadata);
         } else {
-            assertNull("metadata", property.metadata);
+            assertNull(property.metadata, "metadata");
         }
-        assertNull  ("nilReason",                      property.getNilReason());
-        assertNull  ("uuidref",                        property.getUUIDREF());
-        assertNull  ("href",                           property.getHRef());
-        assertNull  ("role",                           property.getRole());
-        assertNull  ("arcrole",                        property.getArcRole());
-        assertEquals("title",   "myLinkTitle",         property.getTitle());
-        assertEquals("show",    XLink.Show.REPLACE,    property.getShow());
-        assertEquals("actuate", XLink.Actuate.ON_LOAD, property.getActuate());
+        assertNull  (property.getNilReason());
+        assertNull  (property.getUUIDREF());
+        assertNull  (property.getHRef());
+        assertNull  (property.getRole());
+        assertNull  (property.getArcRole());
+        assertEquals("myLinkTitle",         property.getTitle());
+        assertEquals(XLink.Show.REPLACE,    property.getShow());
+        assertEquals(XLink.Actuate.ON_LOAD, property.getActuate());
     }
 }

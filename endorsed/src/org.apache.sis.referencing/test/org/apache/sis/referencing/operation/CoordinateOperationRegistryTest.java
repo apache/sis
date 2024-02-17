@@ -37,12 +37,11 @@ import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 
 // Test dependencies
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Test;
-import static org.junit.Assume.assumeTrue;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
@@ -78,16 +77,6 @@ import org.opengis.referencing.ReferenceIdentifier;
 })
 public final class CoordinateOperationRegistryTest extends MathTransformTestCase {
     /**
-     * Tolerance threshold for strict comparisons of floating point numbers.
-     * This constant can be used like below, where {@code expected} and {@code actual} are {@code double} values:
-     *
-     * {@snippet lang="java" :
-     *     assertEquals(expected, actual, STRICT);
-     *     }
-     */
-    private static final double STRICT = 0;
-
-    /**
      * The transformation factory to use for testing.
      */
     private static DefaultCoordinateOperationFactory factory;
@@ -114,7 +103,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
      */
     public CoordinateOperationRegistryTest() throws FactoryException {
         crsFactory = CRS.getAuthorityFactory("EPSG");
-        assumeTrue(crsFactory instanceof CoordinateOperationAuthorityFactory);
+        assumeTrue(crsFactory instanceof CoordinateOperationAuthorityFactory, "EPSG factory required.");
         registry = new CoordinateOperationRegistry((CoordinateOperationAuthorityFactory) crsFactory, factory, null);
     }
 
@@ -124,7 +113,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
      *
      * @throws ParseException if an error occurred while preparing the WKT parser.
      */
-    @BeforeClass
+    @BeforeAll
     public static void createFactory() throws ParseException {
         factory = new DefaultCoordinateOperationFactory();
         parser  = new WKTFormat();
@@ -136,7 +125,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
     /**
      * Disposes the factory created by {@link #createFactory()} after all tests have been executed.
      */
-    @AfterClass
+    @AfterAll
     public static void disposeFactory() {
         factory = null;
         parser  = null;
@@ -157,7 +146,7 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
     {
         registry.stopAtFirst = true;
         final List<CoordinateOperation> operations = registry.createOperations(sourceCRS, targetCRS);
-        assertEquals("Invalid number of operations.", 1, operations.size());
+        assertEquals(1, operations.size(), "Invalid number of operations.");
         return operations.get(0);
     }
 
@@ -339,9 +328,9 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
      * @param  isEPSG  {@code true} if the coordinate operation is expected to contain EPSG identifiers.
      */
     private static void verifyNTF(final CoordinateOperation operation, final String domain, final boolean isEPSG) {
-        assertInstanceOf("Operation should have two steps.", ConcatenatedOperation.class, operation);
+        assertInstanceOf(ConcatenatedOperation.class, operation, "Operation should have two steps.");
         final List<? extends CoordinateOperation> steps = ((ConcatenatedOperation) operation).getOperations();
-        assertEquals("Operation should have two steps.", 2, steps.size());
+        assertEquals(2, steps.size(), "Operation should have two steps.");
         final SingleOperation step1 = (SingleOperation) steps.get(0);
         final SingleOperation step2 = (SingleOperation) steps.get(1);
         if (isEPSG) {
@@ -352,22 +341,22 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
             assertEpsgNameAndIdentifierEqual("NTF to WGS 84 (1)",         1193, step2);
         } else {
             assertEpsgNameWithoutIdentifierEqual("NTF (Paris) to WGS 84 (1)", operation);
-            assertEpsgNameWithoutIdentifierEqual("NTF (Paris)",               operation.getSourceCRS());
-            assertEquals("name",                 "WGS 84",                    operation.getTargetCRS().getName().getCode());
-            assertEpsgNameWithoutIdentifierEqual("NTF (Paris) to NTF (1)",    step1);
-            assertEpsgNameWithoutIdentifierEqual("NTF to WGS 84 (1)",         step2);
+            assertEpsgNameWithoutIdentifierEqual("NTF (Paris)", operation.getSourceCRS());
+            assertEquals("WGS 84", operation.getTargetCRS().getName().getCode());
+            assertEpsgNameWithoutIdentifierEqual("NTF (Paris) to NTF (1)", step1);
+            assertEpsgNameWithoutIdentifierEqual("NTF to WGS 84 (1)",      step2);
         }
-        assertSame("SourceCRS shall be the targetCRS of previous step.",     step1.getTargetCRS(), step2.getSourceCRS());
-        assertEquals("Method 1", "Longitude rotation",                       step1.getMethod().getName().getCode());
-        assertEquals("Method 2", "Geocentric translations (" + domain + ')', step2.getMethod().getName().getCode());
+        assertSame(step1.getTargetCRS(), step2.getSourceCRS(), "SourceCRS shall be the targetCRS of previous step.");
+        assertEquals("Longitude rotation",                       step1.getMethod().getName().getCode());
+        assertEquals("Geocentric translations (" + domain + ')', step2.getMethod().getName().getCode());
 
         final ParameterValueGroup p1 = step1.getParameterValues();
         final ParameterValueGroup p2 = step2.getParameterValues();
-        assertEquals("Longitude offset", 2.5969213, p1.parameter("Longitude offset")  .doubleValue(), STRICT);
-        assertEquals("X-axis translation",    -168, p2.parameter("X-axis translation").doubleValue(), STRICT);
-        assertEquals("Y-axis translation",     -60, p2.parameter("Y-axis translation").doubleValue(), STRICT);
-        assertEquals("Z-axis translation",     320, p2.parameter("Z-axis translation").doubleValue(), STRICT);
-        assertEquals("linearAccuracy",           2, CRS.getLinearAccuracy(operation),                 STRICT);
+        assertEquals(2.5969213, p1.parameter("Longitude offset")  .doubleValue());
+        assertEquals(     -168, p2.parameter("X-axis translation").doubleValue());
+        assertEquals(      -60, p2.parameter("Y-axis translation").doubleValue());
+        assertEquals(      320, p2.parameter("Z-axis translation").doubleValue());
+        assertEquals(        2, CRS.getLinearAccuracy(operation));
     }
 
     /**
@@ -380,10 +369,10 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
      * @param  object  the object to verify.
      */
     private static void assertEpsgNameWithoutIdentifierEqual(final String name, final IdentifiedObject object) {
-        assertNotNull(name, object);
-        assertEquals("name", name, object.getName().getCode());
+        assertNotNull(object, name);
+        assertEquals(name, object.getName().getCode(), "name");
         for (final ReferenceIdentifier id : object.getIdentifiers()) {
-            assertFalse("EPSG identifier not allowed for modified objects.", "EPSG".equalsIgnoreCase(id.getCodeSpace()));
+            assertFalse("EPSG".equalsIgnoreCase(id.getCodeSpace()), "EPSG identifier not allowed for modified objects.");
         }
     }
 
@@ -412,13 +401,13 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
          * Values below are copied from EPSG geodetic dataset 9.1. They may need
          * to be adjusted if a future version of EPSG dataset modify those values.
          */
-        assertEquals("X-axis translation", 127.744,  p.parameter("X-axis translation").doubleValue(), STRICT);
-        assertEquals("Y-axis translation", 547.069,  p.parameter("Y-axis translation").doubleValue(), STRICT);
-        assertEquals("Z-axis translation", 118.359,  p.parameter("Z-axis translation").doubleValue(), STRICT);
-        assertEquals("X-axis rotation",     -3.1116, p.parameter("X-axis rotation")   .doubleValue(), STRICT);
-        assertEquals("Y-axis rotation",      4.9509, p.parameter("Y-axis rotation")   .doubleValue(), STRICT);
-        assertEquals("Z-axis rotation",     -0.8837, p.parameter("Z-axis rotation")   .doubleValue(), STRICT);
-        assertEquals("Scale difference",    14.1012, p.parameter("Scale difference")  .doubleValue(), STRICT);
-        assertEquals("linearAccuracy",       0.1,    CRS.getLinearAccuracy(operation),                STRICT);
+        assertEquals(127.744,  p.parameter("X-axis translation").doubleValue());
+        assertEquals(547.069,  p.parameter("Y-axis translation").doubleValue());
+        assertEquals(118.359,  p.parameter("Z-axis translation").doubleValue());
+        assertEquals( -3.1116, p.parameter("X-axis rotation")   .doubleValue());
+        assertEquals(  4.9509, p.parameter("Y-axis rotation")   .doubleValue());
+        assertEquals( -0.8837, p.parameter("Z-axis rotation")   .doubleValue());
+        assertEquals( 14.1012, p.parameter("Scale difference")  .doubleValue());
+        assertEquals(  0.1,    CRS.getLinearAccuracy(operation));
     }
 }

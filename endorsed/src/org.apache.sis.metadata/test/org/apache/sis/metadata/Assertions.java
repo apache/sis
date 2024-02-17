@@ -30,7 +30,7 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.util.LegacyNamespaces;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.DocumentComparator;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -66,10 +66,10 @@ public final class Assertions extends Static {
      * @see #assertAnyTitleEquals(String, String, Citation)
      */
     public static void assertTitleEquals(final String message, final String expected, final Citation citation) {
-        assertNotNull(message, citation);
+        assertNotNull(citation, message);
         final InternationalString title = citation.getTitle();
-        assertNotNull(message, title);
-        assertEquals(message, expected, title.toString(Locale.US));
+        assertNotNull(title, message);
+        assertEquals(expected, title.toString(Locale.US), message);
     }
 
     /**
@@ -80,12 +80,12 @@ public final class Assertions extends Static {
      * @param expected  the expected English responsibly party name.
      * @param citation  the citation to test.
      */
-    public static void assertPartyNameEquals(final String message, final String expected, final DefaultCitation citation) {
-        assertNotNull(message, citation);
+    public static void assertPartyNameEquals(final String message, final String expected, final Citation citation) {
+        assertNotNull(citation, message);
         final DefaultResponsibility r = (DefaultResponsibility) getSingleton(citation.getCitedResponsibleParties());
         final InternationalString name = getSingleton(r.getParties()).getName();
-        assertNotNull(message, name);
-        assertEquals(message, expected, name.toString(Locale.US));
+        assertNotNull(name, message);
+        assertEquals(expected, name.toString(Locale.US), message);
     }
 
     /**
@@ -98,8 +98,8 @@ public final class Assertions extends Static {
      */
     public static void assertContentInfoEquals(final String name, final Integer count, final FeatureCatalogueDescription catalog) {
         final DefaultFeatureTypeInfo info = getSingleton(((DefaultFeatureCatalogueDescription) catalog).getFeatureTypeInfo());
-        assertEquals("metadata.contentInfo.featureType", name, String.valueOf(info.getFeatureTypeName()));
-        assertEquals("metadata.contentInfo.featureInstanceCount", count, info.getFeatureInstanceCount());
+        assertEquals(name, String.valueOf(info.getFeatureTypeName()), "metadata.contentInfo.featureType");
+        assertEquals(count, info.getFeatureInstanceCount(), "metadata.contentInfo.featureInstanceCount");
     }
 
     /**
@@ -111,15 +111,15 @@ public final class Assertions extends Static {
      * @param  source    the source to validate.
      */
     public static void assertFeatureSourceEquals(final String name, final String[] features, final Source source) {
-        assertEquals("metadata.lineage.source.sourceCitation.title", name, String.valueOf(source.getSourceCitation().getTitle()));
+        assertEquals(name, String.valueOf(source.getSourceCitation().getTitle()), "metadata.lineage.source.sourceCitation.title");
         final DefaultScope scope = (DefaultScope) ((DefaultSource) source).getScope();
-        assertNotNull("metadata.lineage.source.scope", scope);
-        assertEquals("metadata.lineage.source.scope.level", ScopeCode.FEATURE_TYPE, scope.getLevel());
-        final Object[] actual = getSingleton(scope.getLevelDescription()).getFeatures().toArray();
+        assertNotNull(scope, "metadata.lineage.source.scope");
+        assertEquals(ScopeCode.FEATURE_TYPE, scope.getLevel(), "metadata.lineage.source.scope.level");
+        final var actual = getSingleton(scope.getLevelDescription()).getFeatures().toArray(CharSequence[]::new);
         for (int i=0; i<actual.length; i++) {
             actual[i] = actual[i].toString();
         }
-        assertArrayEquals("metadata.lineage.source.scope.levelDescription.feature", features, actual);
+        assertArrayEquals(features, actual, "metadata.lineage.source.scope.levelDescription.feature");
     }
 
     /**

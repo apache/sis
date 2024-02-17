@@ -23,7 +23,5 @@
  * @since   1.4
  */
 module org.apache.sis.test.optional {
-    requires transitive junit;
     requires transitive org.junit.jupiter.api;
-    requires transitive org.opengis.geoapi.conformance;
 }

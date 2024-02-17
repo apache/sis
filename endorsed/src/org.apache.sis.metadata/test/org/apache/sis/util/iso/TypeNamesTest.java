@@ -28,8 +28,8 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import static org.apache.sis.util.internal.Constants.OGC;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
@@ -62,11 +62,11 @@ public final class TypeNamesTest extends TestCase {
     {
         final DefaultNameFactory factory = DefaultNameFactory.provider();
         final TypeName type = factory.toTypeName(valueClass);
-        assertNotNull(name, type);
-        assertSame   (name, valueClass, ((DefaultTypeName) type).toJavaType().get());
-        assertEquals (name, namespace,  type.scope().name().toString());
-        assertEquals (name, name,       type.toString());
-        assertEquals (name, valueClass, TypeNames.toClass(namespace, name));
+        assertNotNull(type, name);
+        assertSame   (valueClass, ((DefaultTypeName) type).toJavaType().get(), name);
+        assertEquals (namespace,  type.scope().name().toString(), name);
+        assertEquals (name,       type.toString(), name);
+        assertEquals (valueClass, TypeNames.toClass(namespace, name), name);
     }
 
     /**
@@ -100,10 +100,10 @@ public final class TypeNamesTest extends TestCase {
     @Test
     public void testNumbers() {
         final DefaultNameFactory factory = DefaultNameFactory.provider();
-        assertEquals("Short",  OGC+":Integer", toTypeName(factory, Short .class));
-        assertEquals("Long",   OGC+":Integer", toTypeName(factory, Long  .class));
-        assertEquals("Float",  OGC+":Real",    toTypeName(factory, Float .class));
-        assertEquals("Double", OGC+":Real",    toTypeName(factory, Double.class));
+        assertEquals(OGC+":Integer", toTypeName(factory, Short .class));
+        assertEquals(OGC+":Integer", toTypeName(factory, Long  .class));
+        assertEquals(OGC+":Real",    toTypeName(factory, Float .class));
+        assertEquals(OGC+":Real",    toTypeName(factory, Double.class));
     }
 
     /**
@@ -137,10 +137,10 @@ public final class TypeNamesTest extends TestCase {
      */
     @Test
     public void testInvalidNames() throws ClassNotFoundException {
-        assertNull  ("Dummy:Real",               TypeNames.toClass("Dummy", "Real"));
-        assertEquals(OGC+":Real",  Double.class, TypeNames.toClass(OGC,     "Real"));
-        assertEquals("Real",       Double.class, TypeNames.toClass(null,    "Real"));
-        assertNull  ("Dummy",                    TypeNames.toClass(null,    "Dummy"));    // Considered not an error.
-        assertEquals(OGC+":Dummy", Void.TYPE,    TypeNames.toClass(OGC,     "Dummy"));    // Considered an error.
+        assertNull  (              TypeNames.toClass("Dummy", "Real"));
+        assertEquals(Double.class, TypeNames.toClass(OGC,     "Real"));
+        assertEquals(Double.class, TypeNames.toClass(null,    "Real"));
+        assertNull  (              TypeNames.toClass(null,    "Dummy"));    // Considered not an error.
+        assertEquals(Void.TYPE,    TypeNames.toClass(OGC,     "Dummy"));    // Considered an error.
     }
 }

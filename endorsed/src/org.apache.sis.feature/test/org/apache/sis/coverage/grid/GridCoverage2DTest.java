@@ -38,12 +38,12 @@ import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.feature.Assertions.assertPixelsEqual;
 
 // Specific to the main branch:
@@ -132,12 +132,12 @@ public class GridCoverage2DTest extends TestCase {
      */
     private static void assertSamplesEqual(final GridCoverage coverage, final double[][] expected) {
         final Raster raster = coverage.render(null).getData();
-        assertEquals("height", expected.length, raster.getHeight());
+        assertEquals(expected.length, raster.getHeight(), "height");
         for (int y=0; y<expected.length; y++) {
-            assertEquals("width", expected[y].length, raster.getWidth());
+            assertEquals(expected[y].length, raster.getWidth(), "width");
             for (int x=0; x<expected[y].length; x++) {
                 double value = raster.getSampleDouble(x, y, 0);
-                assertEquals(expected[y][x], value, STRICT);
+                assertEquals(expected[y][x], value);
             }
         }
     }
@@ -204,31 +204,26 @@ public class GridCoverage2DTest extends TestCase {
         /*
          * Test evaluation at indeger indices. No interpolation should be applied.
          */
-        assertArrayEquals(new double[] {  2}, evaluator.apply(new DirectPosition2D(0, 0)), STRICT);
-        assertArrayEquals(new double[] {  5}, evaluator.apply(new DirectPosition2D(1, 0)), STRICT);
-        assertArrayEquals(new double[] { -5}, evaluator.apply(new DirectPosition2D(0, 1)), STRICT);
-        assertArrayEquals(new double[] {-10}, evaluator.apply(new DirectPosition2D(1, 1)), STRICT);
+        assertArrayEquals(new double[] {  2}, evaluator.apply(new DirectPosition2D(0, 0)));
+        assertArrayEquals(new double[] {  5}, evaluator.apply(new DirectPosition2D(1, 0)));
+        assertArrayEquals(new double[] { -5}, evaluator.apply(new DirectPosition2D(0, 1)));
+        assertArrayEquals(new double[] {-10}, evaluator.apply(new DirectPosition2D(1, 1)));
         /*
          * Test evaluation at fractional indices. Current interpolation is nearest neighor rounding,
          * but future version may do a bilinear interpolation.
          */
-        assertArrayEquals(new double[] {2}, evaluator.apply(new DirectPosition2D(-0.499, -0.499)), STRICT);
-        assertArrayEquals(new double[] {2}, evaluator.apply(new DirectPosition2D( 0.499,  0.499)), STRICT);
+        assertArrayEquals(new double[] {2}, evaluator.apply(new DirectPosition2D(-0.499, -0.499)));
+        assertArrayEquals(new double[] {2}, evaluator.apply(new DirectPosition2D( 0.499,  0.499)));
         /*
          * Test some points that are outside the coverage extent.
          */
-        try {
-            evaluator.apply(new DirectPosition2D(-0.51, 0));
-            fail("Expected PointOutsideCoverageException.");
-        } catch (PointOutsideCoverageException ex) {
-            assertNotNull(ex.getMessage());
-        }
-        try {
-            evaluator.apply(new DirectPosition2D(1.51, 0));
-            fail("Expected PointOutsideCoverageException.");
-        } catch (PointOutsideCoverageException ex) {
-            assertNotNull(ex.getMessage());
-        }
+        var e = assertThrows(PointOutsideCoverageException.class,
+                () -> evaluator.apply(new DirectPosition2D(-0.51, 0)));
+        assertNotNull(e.getMessage());
+
+        e = assertThrows(PointOutsideCoverageException.class,
+                () -> evaluator.apply(new DirectPosition2D(1.51, 0)));
+        assertNotNull(e.getMessage());
     }
 
     /**
@@ -238,18 +233,18 @@ public class GridCoverage2DTest extends TestCase {
     @Test
     @DependsOnMethod("testEvaluator")
     public void testEvaluatorWithWraparound() {
-        final Matrix3 gridToCRS = new Matrix3();
+        final var gridToCRS = new Matrix3();
         gridToCRS.m00 = 100;        // Scale
         gridToCRS.m02 = 100;        // Offset
         final GridCoverage.Evaluator evaluator = createTestCoverage(MathTransforms.linear(gridToCRS)).evaluator();
         evaluator.setWraparoundEnabled(true);
-        assertArrayEquals(new double[] {2}, evaluator.apply(new DirectPosition2D(100, 0)), STRICT);
-        assertArrayEquals(new double[] {5}, evaluator.apply(new DirectPosition2D(200, 0)), STRICT);
+        assertArrayEquals(new double[] {2}, evaluator.apply(new DirectPosition2D(100, 0)));
+        assertArrayEquals(new double[] {5}, evaluator.apply(new DirectPosition2D(200, 0)));
         /*
          * Following tests fail if wraparound is not applied by `GridCoverage.Evaluator`.
          */
-        assertArrayEquals(new double[] {5}, evaluator.apply(new DirectPosition2D(200 - 360, 0)), STRICT);
-        assertArrayEquals(new double[] {2}, evaluator.apply(new DirectPosition2D(100 - 360, 0)), STRICT);
+        assertArrayEquals(new double[] {5}, evaluator.apply(new DirectPosition2D(200 - 360, 0)));
+        assertArrayEquals(new double[] {2}, evaluator.apply(new DirectPosition2D(100 - 360, 0)));
     }
 
     /**
@@ -267,9 +262,9 @@ public class GridCoverage2DTest extends TestCase {
          *   - Pixel source(0, 1) → output(0, 0)
          *   - Pixel source(1, 1) → output(1, 0)
          */
-        final GridExtent singleRow = new GridExtent(GRID_SIZE, 1).translate(0, 1);
+        final var singleRow = new GridExtent(GRID_SIZE, 1).translate(0, 1);
         result = coverage.render(singleRow);
-            assertInstanceOf("render", BufferedImage.class, result);
+            assertInstanceOf(BufferedImage.class, result);
             assertPixelsEqual(coverage.render(null), new Rectangle(0, 1, GRID_SIZE, 1), result, null);
         /*
          * Column extraction:
@@ -278,9 +273,9 @@ public class GridCoverage2DTest extends TestCase {
          *   - Pixel source(1, 0) → output(0, 0)
          *   - Pixel source(1, 1) → output(0, 1)
          */
-        final GridExtent singleCol = new GridExtent(1, GRID_SIZE).translate(1, 0);
+        final var singleCol = new GridExtent(1, GRID_SIZE).translate(1, 0);
         result = coverage.render(singleCol);
-        assertInstanceOf("render", BufferedImage.class, result);
+        assertInstanceOf(BufferedImage.class, result);
         assertPixelsEqual(coverage.render(null), new Rectangle(1, 0, 1, GRID_SIZE), result, null);
     }
 
@@ -295,10 +290,10 @@ public class GridCoverage2DTest extends TestCase {
                 new long[] {-5, -2},
                 new long[] {GRID_SIZE + 3, GRID_SIZE + 5}, true);
         final RenderedImage result = coverage.render(sliceExtent);
-        assertEquals("minX",   5,         result.getMinX());
-        assertEquals("minY",   2,         result.getMinY());
-        assertEquals("width",  GRID_SIZE, result.getWidth());
-        assertEquals("height", GRID_SIZE, result.getHeight());
+        assertEquals(5,         result.getMinX());
+        assertEquals(2,         result.getMinY());
+        assertEquals(GRID_SIZE, result.getWidth());
+        assertEquals(GRID_SIZE, result.getHeight());
         assertPixelsEqual(coverage.render(null), null, result, null);
     }
 
@@ -309,13 +304,9 @@ public class GridCoverage2DTest extends TestCase {
     @Test
     public void testInvalidDimension() {
         final GridCoverage coverage = createTestCoverage();
-        final GridExtent sliceExtent = new GridExtent(null, null, new long[] {GRID_SIZE, GRID_SIZE, 0}, true);
-        try {
-            coverage.render(sliceExtent);
-            fail("Should not have accepted an extent with wrong number of dimensions.");
-        } catch (MismatchedDimensionException e) {
-            // This is the expected exception.
-            assertTrue(e.getMessage().contains("sliceExtent"));
-        }
+        var sliceExtent = new GridExtent(null, null, new long[] {GRID_SIZE, GRID_SIZE, 0}, true);
+        var e = assertThrows(MismatchedDimensionException.class, () -> coverage.render(sliceExtent),
+                "Should not have accepted an extent with wrong number of dimensions.");
+        assertMessageContains(e, "sliceExtent");
     }
 }

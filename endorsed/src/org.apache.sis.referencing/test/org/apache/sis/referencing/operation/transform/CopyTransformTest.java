@@ -21,9 +21,8 @@ import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.referencing.Assertions.assertIsIdentity;
@@ -154,7 +153,7 @@ public final class CopyTransformTest extends MathTransformTestCase {
                 0, 0, 0,
                 0, 0, 1}));
 
-        assertInstanceOf("inverse", CopyTransform.class, transform.inverse());
+        assertInstanceOf(CopyTransform.class, transform.inverse());
         verifyTransform(new double[] {2,3,    6,0,    2, Double.NaN},
                         new double[] {3,2,0,  0,6,0,  Double.NaN, 2, 0});
     }

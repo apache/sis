@@ -29,10 +29,10 @@ import org.apache.sis.system.Loggers;
 import org.apache.sis.xml.Namespaces;
 
 // Test dependencies
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.LoggingWatcher;
@@ -56,13 +56,13 @@ public final class CC_GeneralOperationParameterTest extends TestCase {
      * <p>This field is public because JUnit requires us to do so, but should be considered as an implementation details
      * (it should have been a private field).</p>
      */
-    @Rule
+    @RegisterExtension
     public final LoggingWatcher loggings = new LoggingWatcher(Loggers.XML);
 
     /**
      * Verifies that no unexpected warning has been emitted in any test defined in this class.
      */
-    @After
+    @AfterEach
     public void assertNoUnexpectedLog() {
         loggings.assertNoUnexpectedLog();
     }
@@ -94,12 +94,12 @@ public final class CC_GeneralOperationParameterTest extends TestCase {
          * The most noticeable assertion is the 'valueClass', which is required to be null (despite being an
          * illegal value) for this test.
          */
-        assertEquals("name",       name, p.getName().getCode());
-        assertEquals("remarks", remarks, (remarks == null) ? null : p.getRemarks().toString());
-        assertNull  ("description",      p.getDescription());
-        assertNull  ("valueClass",       p.getValueClass());
-        assertEquals("minimumOccurs", 0, p.getMinimumOccurs());
-        assertEquals("maximumOccurs", 1, p.getMaximumOccurs());
+        assertEquals(name, p.getName().getCode());
+        assertEquals(remarks, (remarks == null) ? null : p.getRemarks().toString());
+        assertNull(p.getDescription());
+        assertNull(p.getValueClass());
+        assertEquals(0, p.getMinimumOccurs());
+        assertEquals(1, p.getMaximumOccurs());
         return p;
     }
 
@@ -116,7 +116,7 @@ public final class CC_GeneralOperationParameterTest extends TestCase {
     private static DefaultParameterDescriptor<Integer> create(final String name, final String remarks,
             final boolean mandatory, final Integer defaultValue)
     {
-        final Map<String,String> properties = new HashMap<>(4);
+        final var properties = new HashMap<String,String>(4);
         assertNull(properties.put(DefaultParameterDescriptor.NAME_KEY, name));
         assertNull(properties.put(DefaultParameterDescriptor.REMARKS_KEY, remarks));
         return new DefaultParameterDescriptor<>(properties, mandatory ? 1 : 0, 1, Integer.class, null, null, defaultValue);
@@ -132,20 +132,20 @@ public final class CC_GeneralOperationParameterTest extends TestCase {
     public void testParameterSubstitution() throws JAXBException {
         ParameterDescriptor<?> provided = unmarshal("Optional parameter", null);
         ParameterDescriptor<?> complete = create("Optional parameter", null, false, null);
-        assertSame("Trivial case.",    complete, CC_GeneralOperationParameter.merge(complete, complete));
-        assertSame("Same properties.", complete, CC_GeneralOperationParameter.merge(provided, complete));
+        assertSame(complete, CC_GeneralOperationParameter.merge(complete, complete));
+        assertSame(complete, CC_GeneralOperationParameter.merge(provided, complete));
 
         complete = create("OptionalParameter", null, false, null);
-        assertSame("Slightly different name.", complete, CC_GeneralOperationParameter.merge(provided, complete));
+        assertSame(complete, CC_GeneralOperationParameter.merge(provided, complete));
 
         complete = create("Optional parameter", null, false, 3);
-        assertSame("With default value.", complete, CC_GeneralOperationParameter.merge(provided, complete));
+        assertSame(complete, CC_GeneralOperationParameter.merge(provided, complete));
 
         complete = create("Optional parameter", "More details here.", false, null);
-        assertSame("With additional property.", complete, CC_GeneralOperationParameter.merge(provided, complete));
+        assertSame(complete, CC_GeneralOperationParameter.merge(provided, complete));
 
         provided = unmarshal("Optional parameter", "More details here.");
-        assertSame("With same remark.", complete, CC_GeneralOperationParameter.merge(provided, complete));
+        assertSame(complete, CC_GeneralOperationParameter.merge(provided, complete));
     }
 
     /**
@@ -160,12 +160,12 @@ public final class CC_GeneralOperationParameterTest extends TestCase {
         ParameterDescriptor<?> provided = unmarshal("Test parameter", null);
         ParameterDescriptor<?> complete = create("Test parameter", null, true, null);
         ParameterDescriptor<?> merged   = (ParameterDescriptor<?>) CC_GeneralOperationParameter.merge(provided, complete);
-        assertNotSame("Different obligation.", complete,           merged);
-        assertSame   ("name",                  complete.getName(), merged.getName());
-        assertEquals ("minimumOccurs",         0,                  merged.getMinimumOccurs());  // From provided descriptor.
-        assertEquals ("maximumOccurs",         1,                  merged.getMaximumOccurs());
-        assertEquals ("valueClass",            Integer.class,      merged.getValueClass());     // From complete descriptor.
-        assertNull   ("remarks",                                   merged.getRemarks());
+        assertNotSame(complete,           merged);
+        assertSame   (complete.getName(), merged.getName());
+        assertEquals (0,                  merged.getMinimumOccurs());  // From provided descriptor.
+        assertEquals (1,                  merged.getMaximumOccurs());
+        assertEquals (Integer.class,      merged.getValueClass());     // From complete descriptor.
+        assertNull   (                    merged.getRemarks());
 
         complete = create("Test parameter", null, false, null);
         assertSame(complete, CC_GeneralOperationParameter.merge(provided, complete));
@@ -173,12 +173,12 @@ public final class CC_GeneralOperationParameterTest extends TestCase {
         // for making sure that the following assertion verifies the effect of the remarks alone.
         provided = unmarshal("Test parameter", "More details here.");
         merged   = (ParameterDescriptor<?>) CC_GeneralOperationParameter.merge(provided, complete);
-        assertNotSame("Different remark.", complete,              merged);
-        assertSame   ("name",              complete.getName(),    merged.getName());
-        assertEquals ("minimumOccurs",     0,                     merged.getMinimumOccurs());
-        assertEquals ("maximumOccurs",     1,                     merged.getMaximumOccurs());
-        assertEquals ("valueClass",        Integer.class,         merged.getValueClass());
-        assertSame   ("remarks",           provided.getRemarks(), merged.getRemarks());
+        assertNotSame(complete,              merged);
+        assertSame   (complete.getName(),    merged.getName());
+        assertEquals (0,                     merged.getMinimumOccurs());
+        assertEquals (1,                     merged.getMaximumOccurs());
+        assertEquals (Integer.class,         merged.getValueClass());
+        assertSame   (provided.getRemarks(), merged.getRemarks());
     }
 
     /**
@@ -234,18 +234,18 @@ public final class CC_GeneralOperationParameterTest extends TestCase {
         final ParameterDescriptorGroup merged =
                 (ParameterDescriptorGroup) CC_GeneralOperationParameter.merge(provided, complete);
         assertNotSame(complete, provided);
-        assertSame   ("name",          complete.getName(),    merged.getName());
-        assertSame   ("remarks",       complete.getRemarks(), merged.getRemarks());
-        assertEquals ("minimumOccurs", 1,                     merged.getMinimumOccurs());
-        assertEquals ("maximumOccurs", 2,                     merged.getMaximumOccurs());
+        assertSame   (complete.getName(),    merged.getName());
+        assertSame   (complete.getRemarks(), merged.getRemarks());
+        assertEquals (1,                     merged.getMinimumOccurs());
+        assertEquals (2,                     merged.getMaximumOccurs());
 
         final Iterator<GeneralParameterDescriptor> itc = complete.descriptors().iterator();
         final Iterator<GeneralParameterDescriptor> itm = merged  .descriptors().iterator();
         verifyParameter(itc.next(), itm.next(), false, "Remarks A.");   // Not same because different obligation.
         verifyParameter(itc.next(), itm.next(), true,  "Remarks B.");   // Same ParameterDescriptor instance.
         verifyParameter(itc.next(), itm.next(), false, "Remarks C.");   // Not same because different remarks.
-        assertTrue ("Missing descriptor.",    itc.hasNext());
-        assertFalse("Unexpected descriptor.", itm.hasNext());
+        assertTrue (itc.hasNext());
+        assertFalse(itm.hasNext());
     }
 
     /**
@@ -273,21 +273,21 @@ public final class CC_GeneralOperationParameterTest extends TestCase {
         final ParameterDescriptorGroup merged =
                 (ParameterDescriptorGroup) CC_GeneralOperationParameter.merge(provided, complete);
         assertNotSame(complete, provided);
-        assertSame   ("name",          complete.getName(),    merged.getName());
-        assertSame   ("remarks",       complete.getRemarks(), merged.getRemarks());
-        assertEquals ("minimumOccurs", 1,                     merged.getMinimumOccurs());
-        assertEquals ("maximumOccurs", 2,                     merged.getMaximumOccurs());
+        assertSame   (complete.getName(),    merged.getName());
+        assertSame   (complete.getRemarks(), merged.getRemarks());
+        assertEquals (1,                     merged.getMinimumOccurs());
+        assertEquals (2,                     merged.getMaximumOccurs());
 
         final Iterator<GeneralParameterDescriptor> itc = complete.descriptors().iterator();
         final Iterator<GeneralParameterDescriptor> itm = merged  .descriptors().iterator();
         verifyParameter(itc.next(), itm.next(), true, null);
 
         // Skip the parameter which is missing in the unmarshalled descriptor group.
-        assertEquals("Missing parameter.", "Parameter B", itc.next().getName().getCode());
+        assertEquals("Parameter B", itc.next().getName().getCode());
 
         verifyParameter(itc.next(), itm.next(), true, null);
-        assertFalse("Unexpected descriptor.", itc.hasNext());
-        assertFalse("Unexpected descriptor.", itm.hasNext());
+        assertFalse(itc.hasNext());
+        assertFalse(itm.hasNext());
     }
 
     /**
@@ -316,10 +316,10 @@ public final class CC_GeneralOperationParameterTest extends TestCase {
         final ParameterDescriptorGroup merged =
                 (ParameterDescriptorGroup) CC_GeneralOperationParameter.merge(provided, complete);
         assertNotSame(complete, provided);
-        assertSame   ("name",          complete.getName(),    merged.getName());
-        assertSame   ("remarks",       complete.getRemarks(), merged.getRemarks());
-        assertEquals ("minimumOccurs", 1,                     merged.getMinimumOccurs());
-        assertEquals ("maximumOccurs", 2,                     merged.getMaximumOccurs());
+        assertSame   (complete.getName(),    merged.getName());
+        assertSame   (complete.getRemarks(), merged.getRemarks());
+        assertEquals (1,                     merged.getMinimumOccurs());
+        assertEquals (2,                     merged.getMaximumOccurs());
         loggings.assertNextLogContains("Parameter B", "Group");
         loggings.assertNoUnexpectedLog();
 
@@ -328,12 +328,12 @@ public final class CC_GeneralOperationParameterTest extends TestCase {
         verifyParameter(itc.next(), itm.next(), true, "Remarks A.");
 
         final GeneralParameterDescriptor extra = itm.next();
-        assertEquals("name",   "Parameter B", extra.getName().getCode());
-        assertEquals("remark", "Remarks B.",  extra.getRemarks().toString());
+        assertEquals("Parameter B", extra.getName().getCode());
+        assertEquals("Remarks B.",  extra.getRemarks().toString());
 
         verifyParameter(itc.next(), itm.next(), true, "Remarks C.");
-        assertFalse("Unexpected descriptor.", itc.hasNext());
-        assertFalse("Unexpected descriptor.", itm.hasNext());
+        assertFalse(itc.hasNext());
+        assertFalse(itm.hasNext());
     }
 
     /**
@@ -343,11 +343,11 @@ public final class CC_GeneralOperationParameterTest extends TestCase {
                                         final GeneralParameterDescriptor merged,
                                         final boolean same, final String remarks)
     {
-        assertEquals("same",          same,               merged == complete);
-        assertSame  ("name",          complete.getName(), merged.getName());
-        assertEquals("minimumOccurs", 0,                  merged.getMinimumOccurs());
-        assertEquals("maximumOccurs", 1,                  merged.getMaximumOccurs());
-        assertEquals("valueClass",    Integer.class,      ((ParameterDescriptor<?>) merged).getValueClass());
-        assertEquals("remarks",       remarks,            (remarks == null) ? null : merged.getRemarks().toString());
+        assertEquals(same,               merged == complete);
+        assertSame  (complete.getName(), merged.getName());
+        assertEquals(0,                  merged.getMinimumOccurs());
+        assertEquals(1,                  merged.getMaximumOccurs());
+        assertEquals(Integer.class,      ((ParameterDescriptor<?>) merged).getValueClass());
+        assertEquals(remarks,            (remarks == null) ? null : merged.getRemarks().toString());
     }
 }

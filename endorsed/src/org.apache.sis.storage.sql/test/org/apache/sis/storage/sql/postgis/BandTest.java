@@ -19,8 +19,8 @@ package org.apache.sis.storage.sql.postgis;
 import java.awt.image.DataBuffer;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 

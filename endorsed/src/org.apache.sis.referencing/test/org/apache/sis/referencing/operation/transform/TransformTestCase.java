@@ -19,7 +19,7 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Random;
 
 // Test dependencies
-import static org.junit.Assume.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.apache.sis.test.GeoapiAssert.PENDING_NEXT_GEOAPI_RELEASE;
 
 

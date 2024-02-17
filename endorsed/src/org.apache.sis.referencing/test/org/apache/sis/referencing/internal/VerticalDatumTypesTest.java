@@ -20,8 +20,8 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.util.ArraysExt;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
@@ -66,7 +66,7 @@ public final class VerticalDatumTypesTest extends TestCase {
     @DependsOnMethod("testFromLegacy")
     public void testVerticalDatumTypes() {
         final VerticalDatumType[] types = VerticalDatumType.values();
-        assertEquals("First code list element.", VerticalDatumType.OTHER_SURFACE, types[0]);
+        assertEquals(VerticalDatumType.OTHER_SURFACE, types[0]);
         assertTrue(ArraysExt.contains(types, VerticalDatumTypes.ELLIPSOIDAL));
     }
 }

@@ -24,8 +24,8 @@ import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import static org.apache.sis.referencing.util.Formulas.JULIAN_YEAR_LENGTH;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -80,7 +80,7 @@ public final class TimeDependentBWPTest extends TestCase {
             +1.42,    +1.34,    +0.90,    -1.5461,    -1.1820,    -1.1551,    +0.000109
         };
         final TimeDependentBWP p = create();
-        assertArrayEquals(expected, p.getValues(), STRICT);
+        assertArrayEquals(expected, p.getValues());
         /*
          * Now perform the actual TimeDependentBWP.invert() test.
          */
@@ -88,7 +88,7 @@ public final class TimeDependentBWPTest extends TestCase {
             expected[i] = -expected[i];
         }
         p.invert();
-        assertArrayEquals(expected, p.getValues(), STRICT);
+        assertArrayEquals(expected, p.getValues());
     }
 
     /**
@@ -169,13 +169,13 @@ public final class TimeDependentBWPTest extends TestCase {
          * for a discussion about the second case.
          */
         if (actual != null) {
-            assertEquals("X", Xt, actual.getElement(0, 0), 0.0005);
-            assertEquals("Y", Yt, actual.getElement(1, 0), 0.0005);
-            assertEquals("Z", Zt, actual.getElement(2, 0), 0.0005);
+            assertEquals(Xt, actual.getElement(0, 0), 0.0005);
+            assertEquals(Yt, actual.getElement(1, 0), 0.0005);
+            assertEquals(Zt, actual.getElement(2, 0), 0.0005);
         } else {
-            assertEquals("X", -3789470.008, Xt, 0.013);     // Smallest tolerance value such as the test do not fail.
-            assertEquals("Y",  4841770.685, Yt, 0.009);
-            assertEquals("Z", -1690895.103, Zt, 0.003);
+            assertEquals(-3789470.008, Xt, 0.013);     // Smallest tolerance value such as the test do not fail.
+            assertEquals( 4841770.685, Yt, 0.009);
+            assertEquals(-1690895.103, Zt, 0.003);
         }
     }
 

@@ -20,8 +20,8 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.io.wkt.Convention;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
@@ -52,7 +52,7 @@ public final class DirectionAlongMeridianTest extends TestCase {
         dir  = DirectionAlongMeridian.parse(name);
         assertNotNull(dir);
         assertEquals(AxisDirection.SOUTH, dir.baseDirection);
-        assertEquals(180, dir.meridian, 0);
+        assertEquals(180, dir.meridian);
         assertEquals(name, dir.toString());
         assertEquals(dir, DirectionAlongMeridian.parse("South along 180 deg"));
 
@@ -60,7 +60,7 @@ public final class DirectionAlongMeridianTest extends TestCase {
         dir  = DirectionAlongMeridian.parse(name);
         assertNotNull(dir);
         assertEquals(AxisDirection.SOUTH, dir.baseDirection);
-        assertEquals(90, dir.meridian, 0);
+        assertEquals(90, dir.meridian);
         assertEquals(name, dir.toString());
         assertEquals(dir, DirectionAlongMeridian.parse("South along 90 deg East"));
 
@@ -68,7 +68,7 @@ public final class DirectionAlongMeridianTest extends TestCase {
         dir  = DirectionAlongMeridian.parse(name);
         assertNotNull(dir);
         assertEquals(AxisDirection.SOUTH, dir.baseDirection);
-        assertEquals(-90, dir.meridian, 0);
+        assertEquals(-90, dir.meridian);
         assertEquals(name, dir.toString());
         assertEquals(dir, DirectionAlongMeridian.parse("South along 90 deg West"));
 
@@ -76,7 +76,7 @@ public final class DirectionAlongMeridianTest extends TestCase {
         dir  = DirectionAlongMeridian.parse(name);
         assertNotNull(dir);
         assertEquals(AxisDirection.NORTH, dir.baseDirection);
-        assertEquals(45, dir.meridian, 0);
+        assertEquals(45, dir.meridian);
         assertEquals(name, dir.toString());
         assertEquals(dir, DirectionAlongMeridian.parse("North along 45 deg East"));
     }
@@ -100,8 +100,8 @@ public final class DirectionAlongMeridianTest extends TestCase {
     private static void assertOrdered(final String dir1, final String dir2) {
         final DirectionAlongMeridian m1 = DirectionAlongMeridian.parse(dir1);
         final DirectionAlongMeridian m2 = DirectionAlongMeridian.parse(dir2);
-        assertEquals(+90, m1.angle(m2), STRICT);
-        assertEquals(-90, m2.angle(m1), STRICT);
+        assertEquals(+90, m1.angle(m2));
+        assertEquals(-90, m2.angle(m1));
         assertEquals( -1, m1.compareTo(m2));
         assertEquals( +1, m2.compareTo(m1));
         assertFalse (m1.equals(m2));

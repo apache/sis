@@ -20,12 +20,9 @@ import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.util.SimpleInternationalString;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-
-// Specific to the main branch:
-import org.apache.sis.feature.DefaultAssociationRole;
 
 
 /**
@@ -54,11 +51,11 @@ public final class AssociationRoleBuilderTest extends TestCase {
                 .setMaximumOccurs(2)
                 .setMinimumOccurs(1);
 
-        final DefaultAssociationRole role = builder.build();
-        assertEquals("minimumOccurs", 1, role.getMinimumOccurs());
-        assertEquals("maximumOccurs", 2, role.getMaximumOccurs());
-        assertEquals("designation", new SimpleInternationalString("A designation"),          role.getDesignation());
-        assertEquals("definition",  new SimpleInternationalString("A definition"),           role.getDefinition());
-        assertEquals("description", new SimpleInternationalString("Bridges on the highway"), role.getDescription());
+        final var role = builder.build();
+        assertEquals(1, role.getMinimumOccurs());
+        assertEquals(2, role.getMaximumOccurs());
+        assertEquals(new SimpleInternationalString("A designation"),          role.getDesignation());
+        assertEquals(new SimpleInternationalString("A definition"),           role.getDefinition());
+        assertEquals(new SimpleInternationalString("Bridges on the highway"), role.getDescription());
     }
 }

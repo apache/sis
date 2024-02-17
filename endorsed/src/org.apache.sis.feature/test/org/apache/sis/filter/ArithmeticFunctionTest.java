@@ -17,8 +17,8 @@
 package org.apache.sis.filter;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -49,9 +49,9 @@ public final class ArithmeticFunctionTest extends TestCase {
      */
     @Test
     public void testAdd() {
-        Expression<AbstractFeature,?> op = factory.add(factory.literal(10.0), factory.literal(20.0));
-        assertEquals(30.0, op.apply(null));
-        assertSerializedEquals(op);
+        var expression = factory.add(factory.literal(10.0), factory.literal(20.0));
+        assertEquals(30.0, expression.apply(null));
+        assertSerializedEquals(expression);
     }
 
     /**
@@ -59,9 +59,9 @@ public final class ArithmeticFunctionTest extends TestCase {
      */
     @Test
     public void testSubtract() {
-        Expression<AbstractFeature,?> op = factory.subtract(factory.literal(10.0), factory.literal(20.0));
-        assertEquals(-10.0, op.apply(null));
-        assertSerializedEquals(op);
+        var expression = factory.subtract(factory.literal(10.0), factory.literal(20.0));
+        assertEquals(-10.0, expression.apply(null));
+        assertSerializedEquals(expression);
     }
 
     /**
@@ -69,9 +69,9 @@ public final class ArithmeticFunctionTest extends TestCase {
      */
     @Test
     public void testMultiply() {
-        Expression<AbstractFeature,?> op = factory.multiply(factory.literal(10.0), factory.literal(20.0));
-        assertEquals(200.0, op.apply(null));
-        assertSerializedEquals(op);
+        var expression = factory.multiply(factory.literal(10.0), factory.literal(20.0));
+        assertEquals(200.0, expression.apply(null));
+        assertSerializedEquals(expression);
     }
 
     /**
@@ -79,8 +79,8 @@ public final class ArithmeticFunctionTest extends TestCase {
      */
     @Test
     public void testDivide() {
-        Expression<AbstractFeature,?> op = factory.divide(factory.literal(10.0), factory.literal(20.0));
-        assertEquals(0.5, op.apply(null));
-        assertSerializedEquals(op);
+        var expression = factory.divide(factory.literal(10.0), factory.literal(20.0));
+        assertEquals(0.5, expression.apply(null));
+        assertSerializedEquals(expression);
     }
 }

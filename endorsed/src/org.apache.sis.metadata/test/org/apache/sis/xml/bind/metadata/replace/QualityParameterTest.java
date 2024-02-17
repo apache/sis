@@ -23,8 +23,8 @@ import org.apache.sis.metadata.iso.quality.DefaultMeasureDescription;
 import org.apache.sis.xml.Namespaces;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
@@ -65,8 +65,8 @@ public final class QualityParameterTest extends TestCase {
     public void testGetName() {
         final QualityParameter param = create();
         final ReferenceIdentifier name = param.getName();
-        assertNull  ("codeSpace", name.getCodeSpace());
-        assertEquals("code", "some parameter", name.getCode());
+        assertNull  (name.getCodeSpace());
+        assertEquals("some parameter", name.getCode());
     }
 
     /**
@@ -75,7 +75,7 @@ public final class QualityParameterTest extends TestCase {
     @Test
     public void testGetValueType() {
         final QualityParameter param = create();
-        assertEquals("valueType", "OGC:Integer", param.getValueType().toFullyQualifiedName().toString());
+        assertEquals("OGC:Integer", param.getValueType().toFullyQualifiedName().toString());
     }
 
     /**

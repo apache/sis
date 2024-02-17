@@ -20,8 +20,8 @@ import java.lang.reflect.Field;
 import org.apache.sis.filter.sqlmm.SQLMM;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -62,6 +62,6 @@ public final class FunctionNamesTest extends TestCase {
                 count++;
             }
         }
-        assertEquals("count", 8, count);
+        assertEquals(8, count);
     }
 }

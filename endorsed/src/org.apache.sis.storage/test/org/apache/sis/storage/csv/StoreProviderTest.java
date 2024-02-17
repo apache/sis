@@ -23,8 +23,8 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.ProbeResult;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -47,8 +47,8 @@ public final class StoreProviderTest extends TestCase {
      */
     @Test
     public void testProbeContent() throws DataStoreException {
-        final StoreProvider p = new StoreProvider();
-        final StorageConnector c = new StorageConnector(StoreTest.testData());
+        final var p = new StoreProvider();
+        final var c = new StorageConnector(StoreTest.testData());
         c.setOption(OptionKey.GEOMETRY_LIBRARY, GeometryLibrary.ESRI);
         assertEquals(ProbeResult.SUPPORTED, p.probeContent(c));
     }

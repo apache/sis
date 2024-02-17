@@ -32,8 +32,8 @@ import org.apache.sis.storage.base.MemoryGridResource;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
@@ -113,7 +113,7 @@ public final class CoverageSubsetTest extends TestCase {
             final int dimension, final CoordinateReferenceSystem crs) throws DataStoreException
     {
         final GridGeometry domain = reduced.getGridGeometry();
-        assertEquals("Unexpected number of dimensions.", dimension, domain.getDimension());
+        assertEquals(dimension, domain.getDimension());
         assertEqualsIgnoreMetadata(crs, domain.getCoordinateReferenceSystem());
 
         final GridCoverage loaded = reduced.read(null);

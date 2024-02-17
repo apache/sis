@@ -19,8 +19,8 @@ package org.apache.sis.metadata.internal;
 import java.lang.reflect.Field;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -57,7 +57,7 @@ public final class AxisNamesTest extends TestCase {
     public void testConsistency() throws IllegalAccessException {
         for (final Field f : AxisNames.class.getFields()) {
             final String name = f.getName();
-            assertSame(name, f.get(null), AxisNames.toCamelCase(name));
+            assertSame(f.get(null), AxisNames.toCamelCase(name), name);
         }
     }
 }

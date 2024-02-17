@@ -22,11 +22,11 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.storage.DataStoreException;
 
 // Test dependencies
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
@@ -45,7 +45,7 @@ public final class TransformerTest extends TestCase {
     /**
      * Creates a {@link ReferencingFunctions} instance to use for all tests.
      */
-    @BeforeClass
+    @BeforeAll
     public static void createReferencingInstance() {
         caller = new ReferencingFunctions(null);
         caller.setLocale(new com.sun.star.lang.Locale("en", "US", null));
@@ -54,7 +54,7 @@ public final class TransformerTest extends TestCase {
     /**
      * Disposes the {@link ReferencingFunctions} instance after all tests completed.
      */
-    @AfterClass
+    @AfterAll
     public static void disposeReferencingInstance() {
         caller = null;
     }
@@ -69,8 +69,8 @@ public final class TransformerTest extends TestCase {
      * Asserts that the transformation result is equal to the expected result.
      */
     static void assertPointsEqual(final double[][] expected, final double[][] actual, final double tolerance) {
-        assertNotSame("transform", expected, actual);
-        assertEquals("transform.length", expected.length, actual.length);
+        assertNotSame(expected, actual);
+        assertEquals(expected.length, actual.length);
         for (int i=0; i<expected.length; i++) {
             assertArrayEquals(expected[i], actual[i], tolerance);
         }
@@ -93,10 +93,10 @@ public final class TransformerTest extends TestCase {
         final Transformer tr = new Transformer(caller, CommonCRS.WGS84.geographic(), "EPSG:4326", points);
         assumeTrue(tr.hasAreaOfInterest());     // False if there is no EPSG geodetic dataset installed.
         final GeographicBoundingBox bbox = tr.getAreaOfInterest();
-        assertEquals("eastBoundLongitude",  23, bbox.getEastBoundLongitude(), STRICT);
-        assertEquals("westBoundLongitude", -12, bbox.getWestBoundLongitude(), STRICT);
-        assertEquals("northBoundLatitude",  34, bbox.getNorthBoundLatitude(), STRICT);
-        assertEquals("southBoundLatitude",  27, bbox.getSouthBoundLatitude(), STRICT);
+        assertEquals( 23, bbox.getEastBoundLongitude());
+        assertEquals(-12, bbox.getWestBoundLongitude());
+        assertEquals( 34, bbox.getNorthBoundLatitude());
+        assertEquals( 27, bbox.getSouthBoundLatitude());
         assertPointsEqual(points, tr.transform(points), STRICT);
     }
 
@@ -124,10 +124,10 @@ public final class TransformerTest extends TestCase {
         final Transformer tr = new Transformer(caller, CommonCRS.WGS84.geographic3D(), "EPSG:4326", points);
         assumeTrue(tr.hasAreaOfInterest());     // False if there is no EPSG geodetic dataset installed.
         final GeographicBoundingBox bbox = tr.getAreaOfInterest();
-        assertEquals("eastBoundLongitude",  23, bbox.getEastBoundLongitude(), STRICT);
-        assertEquals("westBoundLongitude", -12, bbox.getWestBoundLongitude(), STRICT);
-        assertEquals("northBoundLatitude",  34, bbox.getNorthBoundLatitude(), STRICT);
-        assertEquals("southBoundLatitude",  27, bbox.getSouthBoundLatitude(), STRICT);
+        assertEquals( 23, bbox.getEastBoundLongitude());
+        assertEquals(-12, bbox.getWestBoundLongitude());
+        assertEquals( 34, bbox.getNorthBoundLatitude());
+        assertEquals( 27, bbox.getSouthBoundLatitude());
         assertPointsEqual(result, tr.transform(points), STRICT);
     }
 }

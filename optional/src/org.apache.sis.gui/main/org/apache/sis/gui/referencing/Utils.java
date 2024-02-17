@@ -66,7 +66,7 @@ final class Utils {
      */
     static ImmutableEnvelope toGeographic(final Class<?> caller, final String method, final Envelope areaOfInterest) {
         if (areaOfInterest != null) try {
-            final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox();
+            var bbox = new DefaultGeographicBoundingBox();
             bbox.setBounds(areaOfInterest);
             return new ImmutableEnvelope(bbox);
         } catch (TransformException e) {

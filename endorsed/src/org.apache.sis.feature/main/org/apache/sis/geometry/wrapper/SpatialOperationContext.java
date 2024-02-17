@@ -418,7 +418,7 @@ select: if (commonCRS == null) {
             if (CONTINUOUS_WRAPAROUND) {
                 p.parameter(Constants.CENTRAL_MERIDIAN).setValue(longitude);
             }
-            final DefaultConversion conversion = new DefaultConversion(name, method, null, p);
+            final var conversion = new DefaultConversion(name, method, null, p);
             return new DefaultProjectedCRS(name, baseCRS, conversion, cartCS);
         }
 

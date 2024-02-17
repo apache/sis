@@ -17,8 +17,8 @@
 package org.apache.sis.storage.base;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -43,7 +43,7 @@ public final class CodeTypeTest extends TestCase {
      * Asserts that {@link CodeType#guess(String)} returns the expected value.
      */
     private void verify(final String code) {
-        assertEquals(code, expected, CodeType.guess(code));
+        assertEquals(expected, CodeType.guess(code), code);
     }
 
     /**

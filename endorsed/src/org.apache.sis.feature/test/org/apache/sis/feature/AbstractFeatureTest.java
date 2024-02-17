@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 
 
@@ -114,15 +114,15 @@ public final class AbstractFeatureTest extends FeatureTestCase {
          */
         @Override
         public void setPropertyValue(final String name, Object value) {
-            final AbstractIdentifiedType type = getType().getProperty(name);
-            final boolean isMultiValued = isMultiValued(type);
+            final var property = getType().getProperty(name);
+            final boolean isMultiValued = isMultiValued(property);
             if (isMultiValued && !(value instanceof Collection<?>)) {
                 value = new ArrayList<>(PropertyView.singletonOrEmpty(value));
             }
             if (value != null) {
                 final Class<?> base;
-                if (type instanceof DefaultAttributeType<?>) {
-                    base = ((DefaultAttributeType<?>) type).getValueClass();
+                if (property instanceof DefaultAttributeType<?>) {
+                    base = ((DefaultAttributeType<?>) property).getValueClass();
                 } else {
                     base = FeatureType.class;
                 }
@@ -157,10 +157,10 @@ public final class AbstractFeatureTest extends FeatureTestCase {
      */
     @Override
     boolean assertSameProperty(final String name, final Property expected, final boolean modified) {
-        final Property actual = (Property) feature.getProperty(name);
-        assertSame("name", expected.getName(), actual.getName());
+        final var actual = (Property) feature.getProperty(name);
+        assertSame(expected.getName(), actual.getName(), "name");
         if (!modified) {
-            assertSame("value", expected.getValue(), actual.getValue());
+            assertSame(expected.getValue(), actual.getValue(), "value");
         }
         return actual == expected;
     }

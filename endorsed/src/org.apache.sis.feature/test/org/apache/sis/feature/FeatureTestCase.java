@@ -28,9 +28,9 @@ import org.opengis.metadata.quality.QuantitativeResult;
 import org.apache.sis.util.SimpleInternationalString;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
@@ -86,7 +86,7 @@ public abstract class FeatureTestCase extends TestCase {
      * @return {@code true} if the property is the expected instance, or {@code false} if it is another instance.
      */
     boolean assertSameProperty(final String name, final Property expected, final boolean modified) {
-        assertSame(name, expected, feature.getProperty(name));
+        assertSame(expected, feature.getProperty(name), name);
         return true;
     }
 
@@ -102,14 +102,14 @@ public abstract class FeatureTestCase extends TestCase {
              *   - Attribute value shall be the same as the one we got at the beginning of this method.
              *   - Attribute values (as a collection) is either empty or contains the same value.
              */
-            final AbstractAttribute<?> property = (AbstractAttribute<?>) feature.getProperty(name);
-            assertSame(name, feature.getType().getProperty(name), property.getType());
-            assertSame(name, value, property.getValue());
+            final var property = assertInstanceOf(AbstractAttribute.class, feature.getProperty(name));
+            assertSame(feature.getType().getProperty(name), property.getType(), name);
+            assertSame(value, property.getValue(), name);
             final Collection<?> values = property.getValues();
             if (value != null) {
-                assertSame(name, value, TestUtilities.getSingleton(values));
+                assertSame(value, TestUtilities.getSingleton(values), name);
             } else {
-                assertTrue(name, values.isEmpty());
+                assertTrue(values.isEmpty(), name);
             }
             /*
              * Invoking getProperty(name) twice should return the same Property instance at least with
@@ -130,9 +130,9 @@ public abstract class FeatureTestCase extends TestCase {
      * @param  newValue  the new value to set.
      */
     private void setAttributeValue(final String name, final Object oldValue, final Object newValue) {
-        assertEquals(name, oldValue, getAttributeValue(name));
+        assertEquals(oldValue, getAttributeValue(name), name);
         feature.setPropertyValue(name, newValue);
-        assertEquals(name, newValue, getAttributeValue(name));
+        assertEquals(newValue, getAttributeValue(name), name);
     }
 
     /**
@@ -148,7 +148,7 @@ public abstract class FeatureTestCase extends TestCase {
      */
     @Test
     public void testGetProperty() {
-        final DefaultFeatureType type = new DefaultFeatureType(
+        final var type = new DefaultFeatureType(
                 Map.of(DefaultFeatureType.NAME_KEY, "My shapefile"), false, null,
                 DefaultAttributeTypeTest.attribute("COMMUNE"),
                 DefaultAttributeTypeTest.attribute("REF_INSEE"),
@@ -159,13 +159,13 @@ public abstract class FeatureTestCase extends TestCase {
         feature.setPropertyValue("REF_INSEE",   "92007");
         feature.setPropertyValue("CODE_POSTAL", "92220");
 
-        assertEquals("CODE_POSTAL", "92220",   ((AbstractAttribute) feature.getProperty("CODE_POSTAL")).getValue());
-        assertEquals("REF_INSEE",   "92007",   ((AbstractAttribute) feature.getProperty("REF_INSEE"))  .getValue());
-        assertEquals("COMMUNE",     "Bagneux", ((AbstractAttribute) feature.getProperty("COMMUNE"))    .getValue());
+        assertEquals("92220",   ((AbstractAttribute) feature.getProperty("CODE_POSTAL")).getValue());
+        assertEquals("92007",   ((AbstractAttribute) feature.getProperty("REF_INSEE"))  .getValue());
+        assertEquals("Bagneux", ((AbstractAttribute) feature.getProperty("COMMUNE"))    .getValue());
 
-        assertEquals("CODE_POSTAL", "92220",   feature.getPropertyValue("CODE_POSTAL"));
-        assertEquals("REF_INSEE",   "92007",   feature.getPropertyValue("REF_INSEE"));
-        assertEquals("COMMUNE",     "Bagneux", feature.getPropertyValue("COMMUNE"));
+        assertEquals("92220",   feature.getPropertyValue("CODE_POSTAL"));
+        assertEquals("92007",   feature.getPropertyValue("REF_INSEE"));
+        assertEquals("Bagneux", feature.getPropertyValue("COMMUNE"));
     }
 
     /**
@@ -195,15 +195,9 @@ public abstract class FeatureTestCase extends TestCase {
          *   └────────────┴─────────┴──────────────┴───────────┘
          * Verify that attempt to set an illegal value fail.
          */
-        try {
-            feature.setPropertyValue("city", 2000);
-            fail("Shall not be allowed to set a value of the wrong type.");
-        } catch (ClassCastException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("city"));
-            assertTrue(message, message.contains("Integer"));
-        }
-        assertEquals("Property shall not have been modified.", "Atlantide", getAttributeValue("city"));
+        var exception = assertThrows(ClassCastException.class, () -> feature.setPropertyValue("city", 2000));
+        assertMessageContains(exception, "city", "Integer");
+        assertEquals("Atlantide", getAttributeValue("city"), "Property shall not have been modified.");
         /*
          * Before we set the population attribute, the feature should be considered invalid.
          * After we set it, the feature should be valid since all mandatory attributes are set.
@@ -248,21 +242,21 @@ public abstract class FeatureTestCase extends TestCase {
          * Set the attribute value on a property having [0 … ∞] multiplicity.
          * The feature implementation should put the value in a list.
          */
-        assertEquals("universities", List.of(), getAttributeValue("universities"));
+        assertEquals(List.of(), getAttributeValue("universities"));
         feature.setPropertyValue("universities", "University of arts");
-        assertEquals("universities", List.of("University of arts"), getAttributeValue("universities"));
+        assertEquals(List.of("University of arts"), getAttributeValue("universities"));
         /*
          * Switch to 'getProperty' mode only after we have set at least one value,
          * in order to test the conversion of existing values to property instances.
          */
         getValuesFromProperty = true;
-        final SimpleInternationalString region = new SimpleInternationalString("State of New York");
+        final var region = new SimpleInternationalString("State of New York");
         setAttributeValue("region", null, region);
         /*
          * Adds more universities.
          */
         @SuppressWarnings("unchecked")
-        final Collection<String> universities = (Collection<String>) feature.getPropertyValue("universities");
+        final var universities = (Collection<String>) feature.getPropertyValue("universities");
         assertTrue(universities.add("University of sciences"));
         assertTrue(universities.add("University of international development"));
         /*
@@ -270,15 +264,9 @@ public abstract class FeatureTestCase extends TestCase {
          * feature type overrides the region property with a restriction to InternationalString.
          * Verifiy that this restriction is checked.
          */
-        try {
-            feature.setPropertyValue("region", "State of New York");
-            fail("Shall not be allowed to set a value of the wrong type.");
-        } catch (ClassCastException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("region"));
-            assertTrue(message, message.contains("String"));
-        }
-        assertSame("region", region, getAttributeValue("region"));
+        var exception = assertThrows(ClassCastException.class, () -> feature.setPropertyValue("region", "State of New York"));
+        assertMessageContains(exception, "region", "String");
+        assertSame(region, getAttributeValue("region"));
         /*
          * Before we set the 'isGlobal' attribute, the feature should be considered invalid.
          * After we set it, the feature should be valid since all mandatory attributes are set.
@@ -304,21 +292,16 @@ public abstract class FeatureTestCase extends TestCase {
     @DependsOnMethod({"testSimpleValues", "testSimpleProperties"})
     public void testCustomAttribute() {
         feature = createFeature(DefaultFeatureTypeTest.city());
-        final AbstractAttribute<String> wrong = SingletonAttributeTest.parliament();
-        final CustomAttribute<String> city = new CustomAttribute<>(Features.cast(
-                (DefaultAttributeType<?>) feature.getType().getProperty("city"), String.class));
+        final var wrong  = SingletonAttributeTest.parliament();
+        final var city   = assertInstanceOf(DefaultAttributeType.class, feature.getType().getProperty("city"));
+        final var casted = new CustomAttribute<>(Features.cast(city, String.class));
 
-        feature.setProperty(city);
+        feature.setProperty(casted);
         setAttributeValue("city", "Utopia", "Atlantide");
-        try {
-            feature.setProperty(wrong);
-            fail("Shall not be allowed to set a property of the wrong type.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("parliament"));
-            assertTrue(message, message.contains("City"));
-        }
-        if (assertSameProperty("city", city, true)) {
+
+        var exception = assertThrows(IllegalArgumentException.class, () -> feature.setProperty(wrong));
+        assertMessageContains(exception, "parliament", "City");
+        if (assertSameProperty("city", casted, true)) {
             /*
              * The quality report is expected to contains a custom element.
              */
@@ -330,16 +313,14 @@ public abstract class FeatureTestCase extends TestCase {
                 if (identifier.equals("city")) {
                     numOccurrences++;
                     final Result result = TestUtilities.getSingleton(report.getResults());
-                    assertInstanceOf("result", QuantitativeResult.class, result);
+                    assertInstanceOf(QuantitativeResult.class, result);
 
                     @SuppressWarnings("deprecation")
                     final InternationalString error = ((QuantitativeResult) result).getErrorStatistic();
-                    assertEquals("quality.report.result.errorStatistic",
-                            CustomAttribute.ADDITIONAL_QUALITY_INFO,
-                            String.valueOf(error));
+                    assertEquals(CustomAttribute.ADDITIONAL_QUALITY_INFO, String.valueOf(error));
                 }
             }
-            assertEquals("Number of reports.", 1, numOccurrences);
+            assertEquals(1, numOccurrences, "Number of reports.");
         }
     }
 
@@ -357,8 +338,8 @@ public abstract class FeatureTestCase extends TestCase {
          * But the <String> parameterized type cannot be verified at runtime.
          * The best check we can have is Collection<?>, which does not allow addition of new values.
          */
-        Collection<?> values = (Collection<?>) feature.getPropertyValue("universities");
-        assertTrue("isEmpty", values.isEmpty());
+        var values = (Collection<?>) feature.getPropertyValue("universities");
+        assertTrue(values.isEmpty());
         // Cannot perform values.add("something") here.
 
         feature.setPropertyValue("universities", List.of("UCAR", "Marie-Curie"));
@@ -378,18 +359,18 @@ public abstract class FeatureTestCase extends TestCase {
         for (final Element report : quality.getReports()) {
             for (final Result result : report.getResults()) {
                 if (result instanceof ConformanceResult && !((ConformanceResult) result).pass()) {
-                    assertTrue("Too many reports", anomalyIndex < anomalousProperties.length);
+                    assertTrue(anomalyIndex < anomalousProperties.length, "Too many reports");
                     final String propertyName = anomalousProperties[anomalyIndex];
                     @SuppressWarnings("deprecation")
                     final String identifier   = String.valueOf(report.getMeasureIdentification());
                     final String explanation  = String.valueOf(((ConformanceResult) result).getExplanation());
-                    assertEquals("quality.report.measureIdentification", propertyName, identifier);
-                    assertTrue  ("quality.report.result.explanation", explanation.contains(propertyName));
+                    assertEquals(propertyName, identifier, "quality.report.measureIdentification");
+                    assertTrue(explanation.contains(propertyName), "quality.report.result.explanation");
                     anomalyIndex++;
                 }
             }
         }
-        assertEquals("Number of reports.", anomalousProperties.length, anomalyIndex);
+        assertEquals(anomalousProperties.length, anomalyIndex, "Number of reports.");
         return quality;
     }
 
@@ -406,14 +387,14 @@ public abstract class FeatureTestCase extends TestCase {
             throws CloneNotSupportedException
     {
         final AbstractFeature clone = cloneFeature();
-        assertNotSame("clone",      clone, feature);
-        assertTrue   ("equals",     clone.equals(feature));
-        assertTrue   ("hashCode",   clone.hashCode() == feature.hashCode());
+        assertNotSame(clone, feature);
+        assertTrue(clone.equals(feature));
+        assertEquals(clone.hashCode(), feature.hashCode());
         setAttributeValue(property, oldValue, newValue);
-        assertEquals (property,     oldValue, clone  .getPropertyValue(property));
-        assertEquals (property,     newValue, feature.getPropertyValue(property));
-        assertFalse  ("equals",     clone.equals(feature));
-        assertFalse  ("hashCode",   clone.hashCode() == feature.hashCode());
+        assertEquals(oldValue, clone  .getPropertyValue(property), property);
+        assertEquals(newValue, feature.getPropertyValue(property), property);
+        assertNotEquals(clone, feature);
+        assertNotEquals(clone.hashCode(), feature.hashCode());
     }
 
     /**
@@ -441,13 +422,13 @@ public abstract class FeatureTestCase extends TestCase {
          * the Features to be compared. The implementation shall be able to wrap or unwrap the values.
          */
         assertEquals("Tokyo", ((AbstractAttribute) clone.getProperty("city")).getValue());
-        assertEquals("hashCode", feature.hashCode(), clone.hashCode());
-        assertEquals("equals", feature, clone);
+        assertEquals(feature.hashCode(), clone.hashCode());
+        assertEquals(feature, clone);
         /*
          * For the other Feature instance to contain full Property object and test again.
          */
         assertEquals("Tokyo", ((AbstractAttribute) feature.getProperty("city")).getValue());
-        assertEquals("hashCode", feature.hashCode(), clone.hashCode());
-        assertEquals("equals", feature, clone);
+        assertEquals(feature.hashCode(), clone.hashCode());
+        assertEquals(feature, clone);
     }
 }

@@ -26,8 +26,8 @@ import java.awt.image.RenderedImage;
 import org.opengis.referencing.operation.MathTransform;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.image.processing.isoline.IsolinesTest;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -107,7 +107,7 @@ public final class ImageProcessorTest extends TestCase {
         do {
             processor.setExecutionMode(parallel ? ImageProcessor.Mode.SEQUENTIAL : ImageProcessor.Mode.PARALLEL);
             final Map<Double,Shape> r = getSingleton(processor.isolines(image, new double[][] {{0.5}}, null));
-            assertEquals(0.5, getSingleton(r.keySet()), STRICT);
+            assertEquals(0.5, getSingleton(r.keySet()));
             IsolinesTest.verifyIsolineFromMultiCells(getSingleton(r.values()));
         } while ((parallel = !parallel) == true);
     }

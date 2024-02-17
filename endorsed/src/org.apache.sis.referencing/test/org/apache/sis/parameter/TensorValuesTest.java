@@ -33,12 +33,13 @@ import static org.apache.sis.util.internal.Constants.NUM_ROW;
 import static org.apache.sis.util.internal.Constants.NUM_COL;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
@@ -86,8 +87,8 @@ public final class TensorValuesTest extends TestCase {
     private static void assertDescriptorEquals(final String name, final Number defaultValue,
             final GeneralParameterDescriptor actual)
     {
-        assertEquals(name, actual.getName().getCode());
-        assertEquals(name, defaultValue, ((ParameterDescriptor<?>) actual).getDefaultValue());
+        assertEquals(actual.getName().getCode(), name);
+        assertEquals(defaultValue, ((ParameterDescriptor<?>) actual).getDefaultValue(), name);
     }
 
     /**
@@ -98,8 +99,8 @@ public final class TensorValuesTest extends TestCase {
      * @param  actual  the actual parameter to verify.
      */
     private static void assertValueEquals(final String name, final Number value, final GeneralParameterValue actual) {
-        assertEquals(name, actual.getDescriptor().getName().getCode());
-        assertEquals(name, value, ((ParameterValue<?>) actual).getValue());
+        assertEquals(actual.getDescriptor().getName().getCode(), name);
+        assertEquals(value, ((ParameterValue<?>) actual).getValue(), name);
     }
 
     /**
@@ -118,7 +119,7 @@ public final class TensorValuesTest extends TestCase {
         assertDescriptorEquals( NUM_ROW,  N3, descriptors.get(0));
         assertDescriptorEquals( NUM_COL,  N3, descriptors.get(1));
         assertDescriptorEquals("elt_0_0", N1, descriptors.get(2));
-        assertEquals("size", 3, descriptors.size());
+        assertEquals(3, descriptors.size());
 
         group.parameter(NUM_ROW).setValue(2);
         group.parameter(NUM_COL).setValue(3);
@@ -131,7 +132,7 @@ public final class TensorValuesTest extends TestCase {
         assertDescriptorEquals("elt_1_0", N0, descriptors.get(5));
         assertDescriptorEquals("elt_1_1", N1, descriptors.get(6));
         assertDescriptorEquals("elt_1_2", N0, descriptors.get(7));
-        assertEquals("size", 8, descriptors.size());
+        assertEquals(8, descriptors.size());
     }
 
     /**
@@ -156,7 +157,7 @@ public final class TensorValuesTest extends TestCase {
         assertDescriptorEquals("C0",    N0, descriptors.get( 8));
         assertDescriptorEquals("C1",    N0, descriptors.get( 9));
         assertDescriptorEquals("C2",    N1, descriptors.get(10));
-        assertEquals("size", 11, descriptors.size());
+        assertEquals(11, descriptors.size());
     }
 
     /**
@@ -171,7 +172,7 @@ public final class TensorValuesTest extends TestCase {
         List<GeneralParameterValue> values = group.values();
         assertValueEquals(NUM_ROW, 2, values.get(0));
         assertValueEquals(NUM_COL, 3, values.get(1));
-        assertEquals("size", 2, values.size());
+        assertEquals(2, values.size());
         /*
          * Above list had no explicit parameters, since all of them had their default values.
          * Now set some parameters to different values. Those parameters should now appear in
@@ -186,7 +187,7 @@ public final class TensorValuesTest extends TestCase {
         assertValueEquals("elt_0_1", 8.0, values.get(2));
         assertValueEquals("elt_1_1", 7.0, values.get(3));
         assertValueEquals("elt_1_2", 6.0, values.get(4));
-        assertEquals("size", 5, values.size());
+        assertEquals(5, values.size());
     }
 
     /**
@@ -227,14 +228,8 @@ public final class TensorValuesTest extends TestCase {
          * anymore to get the descriptor in the row that we removed.
          */
         group.parameter(NUM_COL).setValue(2);
-        try {
-            d.descriptor("elt_2_2");
-            fail("elt_2_2 should not exist.");
-        } catch (ParameterNotFoundException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("elt_2_2"));
-            assertTrue(message, message.contains(GROUP_NAME));
-        }
+        var e = assertThrows(ParameterNotFoundException.class, () -> d.descriptor("elt_2_2"));
+        assertMessageContains(e, "elt_2_2", GROUP_NAME);
     }
 
     /**
@@ -270,14 +265,8 @@ public final class TensorValuesTest extends TestCase {
          * anymore to get the descriptor in the row that we removed.
          */
         group.parameter(NUM_COL).setValue(2);
-        try {
-            group.parameter("elt_2_2");
-            fail("elt_2_2 should not exist.");
-        } catch (ParameterNotFoundException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("elt_2_2"));
-            assertTrue(message, message.contains(GROUP_NAME));
-        }
+        var e = assertThrows(ParameterNotFoundException.class, () -> group.parameter("elt_2_2"));
+        assertMessageContains(e, "elt_2_2", GROUP_NAME);
     }
 
     /**

@@ -27,8 +27,9 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.OperationMethod;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
@@ -229,10 +230,10 @@ public final class ProvidersTest extends TestCase {
     public void testRedimension() {
         final Map<Class<?>,Boolean> redimensionables = new HashMap<>(100);
         for (final Class<?> type : methods()) {
-            assertNull(type.getName(), redimensionables.put(type, Boolean.FALSE));
+            assertNull(redimensionables.put(type, Boolean.FALSE), type.getName());
         }
         for (final Class<?> type : redimensionables()) {
-            assertEquals(type.getName(), Boolean.FALSE, redimensionables.put(type, Boolean.TRUE));
+            assertEquals(Boolean.FALSE, redimensionables.put(type, Boolean.TRUE), type.getName());
         }
         for (final OperationMethod method : ServiceLoader.load(OperationMethod.class)) {
             if (method instanceof ProviderMock) {
@@ -242,43 +243,42 @@ public final class ProvidersTest extends TestCase {
             final Integer sourceDimensions = provider.getSourceDimensions();
             final Integer targetDimensions = provider.getTargetDimensions();
             final Boolean isRedimensionable = redimensionables.get(provider.getClass());
-            assertNotNull(provider.getClass().getName(), isRedimensionable);
+            assertNotNull(isRedimensionable, provider.getClass().getName());
             if (isRedimensionable) {
                 assertNotNull(sourceDimensions);
                 assertNotNull(targetDimensions);
                 for (int newSource = 2; newSource <= 3; newSource++) {
                     for (int newTarget = 2; newTarget <= 3; newTarget++) {
                         final AbstractProvider redim = provider.redimension(newSource, newTarget);
-                        assertEquals("sourceDimensions", newSource, redim.getSourceDimensions().intValue());
-                        assertEquals("targetDimensions", newTarget, redim.getTargetDimensions().intValue());
+                        assertEquals(newSource, redim.getSourceDimensions().intValue());
+                        assertEquals(newTarget, redim.getTargetDimensions().intValue());
                         if (provider instanceof Affine) {
                             continue;
                         }
                         if (newSource == sourceDimensions && newTarget == targetDimensions) {
-                            assertSame("When asking the original number of dimensions, expected the original instance.", provider, redim);
+                            assertSame(provider, redim, "When asking the original number of dimensions, expected the original instance.");
                         } else {
-                            assertNotSame("When asking a different number of dimensions, expected a different instance.", provider, redim);
+                            assertNotSame(provider, redim, "When asking a different number of dimensions, expected a different instance.");
                         }
                         if (JDK9)       // Temporarily disables next line. Will be removed soon.
-                        assertSame("When asking the original number of dimensions, expected the original instance.",
-                                   provider, redim.redimension(sourceDimensions, targetDimensions));
+                        assertSame(provider, redim.redimension(sourceDimensions, targetDimensions),
+                                   "When asking the original number of dimensions, expected the original instance.");
                     }
                 }
             } else if (provider instanceof MapProjection) {
                 assertEquals(2, sourceDimensions.intValue());
                 assertEquals(2, targetDimensions.intValue());
                 final AbstractProvider proj3D = provider.redimension(sourceDimensions ^ 1, targetDimensions ^ 1);
-                assertNotSame("redimension(3,3) should return a new method.", provider, proj3D);
-                assertSame("redimension(2,2) should give back the original method.", provider,
-                        proj3D.redimension(sourceDimensions, targetDimensions));
-                assertSame("Value of redimension(3,3) should have been cached.", proj3D,
-                        ((MapProjection) provider).redimension(sourceDimensions ^ 1, targetDimensions ^ 1));
-            } else if (sourceDimensions != null && targetDimensions != null) try {
-                provider.redimension(sourceDimensions + 1, targetDimensions + 1);
-                fail("Type " + provider.getClass().getName() + " is not in our list of redimensionable methods.");
-            } catch (IllegalArgumentException e) {
-                final String message = e.getMessage();
-                assertTrue(message, message.contains(provider.getName().getCode()));
+                assertNotSame(provider, proj3D, "redimension(3,3) should return a new method.");
+                assertSame(provider, proj3D.redimension(sourceDimensions, targetDimensions),
+                           "redimension(2,2) should give back the original method.");
+                assertSame(proj3D, ((MapProjection) provider).redimension(sourceDimensions ^ 1, targetDimensions ^ 1),
+                           "Value of redimension(3,3) should have been cached.");
+            } else if (sourceDimensions != null && targetDimensions != null) {
+                var e = assertThrows(IllegalArgumentException.class,
+                        () -> provider.redimension(sourceDimensions + 1, targetDimensions + 1),
+                        () -> "Type " + provider.getClass().getName() + " is not in our list of redimensionable methods.");
+                assertMessageContains(e, provider.getName().getCode());
             }
         }
     }
@@ -288,8 +288,8 @@ public final class ProvidersTest extends TestCase {
      */
     @Test
     public void testDescription() {
-        assertFalse(((DefaultParameterDescriptor<Double>) SatelliteTracking.SATELLITE_ORBIT_INCLINATION).getDescription().length() == 0);
-        assertFalse(((DefaultParameterDescriptor<Double>) SatelliteTracking.SATELLITE_ORBITAL_PERIOD   ).getDescription().length() == 0);
-        assertFalse(((DefaultParameterDescriptor<Double>) SatelliteTracking.ASCENDING_NODE_PERIOD      ).getDescription().length() == 0);
+        assertNotEquals(0, ((DefaultParameterDescriptor<Double>) SatelliteTracking.SATELLITE_ORBIT_INCLINATION).getDescription().length());
+        assertNotEquals(0, ((DefaultParameterDescriptor<Double>) SatelliteTracking.SATELLITE_ORBITAL_PERIOD   ).getDescription().length());
+        assertNotEquals(0, ((DefaultParameterDescriptor<Double>) SatelliteTracking.ASCENDING_NODE_PERIOD      ).getDescription().length());
     }
 }

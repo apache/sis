@@ -19,8 +19,8 @@ package org.apache.sis.system;
 import java.lang.ref.ReferenceQueue;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -38,19 +38,22 @@ public final class ReferenceQueueConsumerTest extends TestCase {
 
     /**
      * Verifies that invoking {@link Thread#interrupt()} will cause {@link InterruptedException}
-     * to be thrown even if invoked <em>before</em> {@link ReferenceQueue#remove()} put the
-     * thread in a waiting state. This behavior is documented in {@link Object#wait()}, but
-     * the reference queue javadoc is silent on this topic.
+     * to be thrown even if invoked <em>before</em> {@link ReferenceQueue#remove()} puts the
+     * thread in a waiting state. This behavior is documented in {@link Object#wait()},
+     * but the reference queue javadoc is silent on this topic.
      *
      * <p>This method is not a test of the SIS library, but rather a verification of our JDK
      * library interpretation.</p>
      *
      * @throws InterruptedException this is the excepted exception.
      */
-    @Test(expected=InterruptedException.class)
+    @Test
     public void verifyInterruptAssumption() throws InterruptedException {
         final ReferenceQueue<Object> queue = new ReferenceQueue<>();
-        Thread.currentThread().interrupt();
-        assertNull(queue.remove(1000));
+        var e = assertThrows(InterruptedException.class, () -> {
+            Thread.currentThread().interrupt();
+            assertNull(queue.remove(1000));
+        });
+        assertNotNull(e);
     }
 }

@@ -25,8 +25,8 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
@@ -54,20 +54,20 @@ public final class CodeTest extends TestCase {
      */
     @Test
     public void testSimple() {
-        final SimpleCitation IOGP = new SimpleCitation("IOGP");
-        final ReferenceIdentifier id = new ImmutableIdentifier(IOGP, "EPSG", "4326");  // See above javadoc.
-        final Code value = new Code(id);
-        assertEquals("codeSpace", "EPSG", value.codeSpace);
-        assertEquals("code",      "4326", value.code);
+        final var IOGP  = new SimpleCitation("IOGP");
+        final var id    = new ImmutableIdentifier(IOGP, "EPSG", "4326");  // See above javadoc.
+        final var value = new Code(id);
+        assertEquals("EPSG", value.codeSpace);
+        assertEquals("4326", value.code);
         /*
          * Reverse operation. Note that the authority is lost since there is no room for that in a
          * <gml:identifier> element. Current implementation sets the authority to the code space.
          */
-        final ReferenceIdentifier actual = value.getIdentifier();
-        assertSame  ("authority",  Citations.EPSG, actual.getAuthority());
-        assertEquals("codeSpace", "EPSG", actual.getCodeSpace());
-        assertNull  ("version",           actual.getVersion());
-        assertEquals("code",      "4326", actual.getCode());
+        final var actual = value.getIdentifier();
+        assertSame  (Citations.EPSG, actual.getAuthority());
+        assertEquals("EPSG", actual.getCodeSpace());
+        assertNull  (        actual.getVersion());
+        assertEquals("4326", actual.getCode());
     }
 
     /**
@@ -78,20 +78,20 @@ public final class CodeTest extends TestCase {
     @Test
     @DependsOnMethod("testSimple")
     public void testWithVersion() {
-        final SimpleCitation IOGP = new SimpleCitation("IOGP");
-        final ReferenceIdentifier id = new ImmutableIdentifier(IOGP, "EPSG", "4326", "8.2", null);  // See above javadoc.
-        final Code value = new Code(id);
-        assertEquals("codeSpace", "EPSG:8.2", value.codeSpace);
-        assertEquals("code",      "4326",     value.code);
+        final var IOGP  = new SimpleCitation("IOGP");
+        final var id    = new ImmutableIdentifier(IOGP, "EPSG", "4326", "8.2", null);  // See above javadoc.
+        final var value = new Code(id);
+        assertEquals("EPSG:8.2", value.codeSpace);
+        assertEquals("4326",     value.code);
         /*
          * Reverse operation. Note that the authority is lost since there is no room for that in a
          * <gml:identifier> element. Current implementation sets the authority to the code space.
          */
-        final ReferenceIdentifier actual = value.getIdentifier();
-        assertSame  ("authority",  Citations.EPSG, actual.getAuthority());
-        assertEquals("codeSpace", "EPSG", actual.getCodeSpace());
-        assertEquals("version",   "8.2",  actual.getVersion());
-        assertEquals("code",      "4326", actual.getCode());
+        final var actual = value.getIdentifier();
+        assertSame  (Citations.EPSG, actual.getAuthority());
+        assertEquals("EPSG", actual.getCodeSpace());
+        assertEquals("8.2",  actual.getVersion());
+        assertEquals("4326", actual.getCode());
     }
 
     /**
@@ -100,11 +100,11 @@ public final class CodeTest extends TestCase {
     @Test
     @DependsOnMethod("testWithVersion")
     public void testForIdentifiedObject() {
-        final ReferenceIdentifier id = new ImmutableIdentifier(Citations.EPSG, "EPSG", "4326", "8.2", null);
-        final Code value = Code.forIdentifiedObject(GeographicCRS.class, Set.of(id));
+        final var id = new ImmutableIdentifier(Citations.EPSG, "EPSG", "4326", "8.2", null);
+        final var value = Code.forIdentifiedObject(GeographicCRS.class, Set.of(id));
         assertNotNull(value);
-        assertEquals("codeSpace", Constants.IOGP, value.codeSpace);
-        assertEquals("code", "urn:ogc:def:crs:EPSG:8.2:4326", value.code);
+        assertEquals(Constants.IOGP, value.codeSpace);
+        assertEquals("urn:ogc:def:crs:EPSG:8.2:4326", value.code);
     }
 
     /**
@@ -114,14 +114,14 @@ public final class CodeTest extends TestCase {
     @Test
     @DependsOnMethod("testForIdentifiedObject")
     public void testLegacyCodeSpace() {
-        final DefaultCitation authority = new DefaultCitation("EPSG");
+        final var authority = new DefaultCitation("EPSG");
         authority.getIdentifiers().add(new ImmutableIdentifier(null, "OGP", "EPSG"));
 
-        final ReferenceIdentifier id = new ImmutableIdentifier(authority, "EPSG", "4326", "8.2", null);
-        final Code value = Code.forIdentifiedObject(GeographicCRS.class, Set.of(id));
+        final var id = new ImmutableIdentifier(authority, "EPSG", "4326", "8.2", null);
+        final var value = Code.forIdentifiedObject(GeographicCRS.class, Set.of(id));
         assertNotNull(value);
-        assertEquals("codeSpace", "OGP", value.codeSpace);
-        assertEquals("code", "urn:ogc:def:crs:EPSG:8.2:4326", value.code);
+        assertEquals("OGP", value.codeSpace);
+        assertEquals("urn:ogc:def:crs:EPSG:8.2:4326", value.code);
     }
 
     /**
@@ -132,13 +132,13 @@ public final class CodeTest extends TestCase {
     @Test
     @DependsOnMethod("testForIdentifiedObject")
     public void testGetIdentifier() {
-        final Code value = new Code();
+        final var value = new Code();
         value.codeSpace = "OGP";
         value.code = "urn:ogc:def:crs:EPSG:8.2:4326";
-        final ReferenceIdentifier actual = value.getIdentifier();
-        assertSame  ("authority",  Citations.EPSG, actual.getAuthority());
-        assertEquals("codeSpace", "EPSG", actual.getCodeSpace());
-        assertEquals("version",   "8.2",  actual.getVersion());
-        assertEquals("code",      "4326", actual.getCode());
+        final var actual = value.getIdentifier();
+        assertSame  (Citations.EPSG, actual.getAuthority());
+        assertEquals("EPSG", actual.getCodeSpace());
+        assertEquals("8.2",  actual.getVersion());
+        assertEquals("4326", actual.getCode());
     }
 }

@@ -17,8 +17,8 @@
 package org.apache.sis.converter;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 
@@ -65,6 +65,6 @@ public final class ArrayConverterTest extends TestCase {
         final int[]    source   = {4, 8, -6};
         final double[] expected = {4.0, 8.0, -6.0};
         final double[] actual   = converter.apply(source);
-        assertArrayEquals(expected, actual, 0.0);
+        assertArrayEquals(expected, actual);
     }
 }

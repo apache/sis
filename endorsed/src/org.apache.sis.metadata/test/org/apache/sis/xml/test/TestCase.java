@@ -40,7 +40,7 @@ import org.apache.sis.xml.bind.cat.CodeListUID;
 import org.apache.sis.util.Version;
 
 // Test dependencies
-import org.junit.After;
+import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
@@ -171,7 +171,7 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      * This method is automatically invoked by JUnit after each test, but can also be invoked explicitly before
      * to create a new context. It is safe to invoke this method more than once.
      */
-    @After
+    @AfterEach
     public final void clearContext() {
         assertSame(context, Context.current(), "Unexpected context. Is this method invoked from the right thread?");
         if (context != null) {

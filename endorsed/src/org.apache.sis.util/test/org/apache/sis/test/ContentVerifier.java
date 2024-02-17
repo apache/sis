@@ -19,7 +19,7 @@ package org.apache.sis.test;
 import org.opengis.metadata.Metadata;
 
 // Test dependencies
-import static org.junit.Assume.assumeTrue;
+import static org.junit.jupiter.api.Assumptions.abort;
 
 
 /**
@@ -29,14 +29,14 @@ import static org.junit.Assume.assumeTrue;
 @SuppressWarnings("doclint:missing")
 public class ContentVerifier {
     public void addPropertyToIgnore(Class<?> type, String property) {
-        assumeTrue("This test requires GeoAPI 3.1.", false);
+        abort("This test requires GeoAPI 3.1.");
     }
 
     public void addMetadataToVerify(Metadata actual) {
-        assumeTrue("This test requires GeoAPI 3.1.", false);
+        abort("This test requires GeoAPI 3.1.");
     }
 
     public void assertMetadataEquals(final String path, final Object value, final Object... others) {
-        assumeTrue("This test requires GeoAPI 3.1.", false);
+        abort("This test requires GeoAPI 3.1.");
     }
 }

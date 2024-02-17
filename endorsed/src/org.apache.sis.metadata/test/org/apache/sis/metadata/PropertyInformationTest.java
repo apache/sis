@@ -30,9 +30,8 @@ import org.apache.sis.measure.ValueRange;
 import org.apache.sis.measure.Range;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
@@ -76,7 +75,7 @@ public final class PropertyInformationTest extends TestCase {
      * of the given element is {@link Citation}.
      */
     private static void assertParentIsCitation(final ExtendedElementInformation information) {
-        assertInstanceOf("Specific to SIS implementation.", Identifier.class, information);
+        assertInstanceOf(Identifier.class, information);    // Specific to SIS implementation.
         assertTitleEquals("authority", "ISO 19115", ((Identifier) information).getAuthority());
         assertEquals("CI_Citation", getSingleton(information.getParentEntity()));
     }
@@ -103,7 +102,7 @@ public final class PropertyInformationTest extends TestCase {
         assertEquals("Name by which the cited resource is known.", definition.toString(Locale.ENGLISH));
         // Test other locale here, if any.
 
-        assertInstanceOf("Specific to SIS implementation.", CheckedContainer.class, information);
+        assertInstanceOf(CheckedContainer.class, information);      // Specific to SIS implementation.
         assertEquals(InternationalString.class, ((CheckedContainer<?>) information).getElementType());
         assertEquals(Datatype.CHARACTER_STRING, information.getDataType());
         assertEquals(Obligation.MANDATORY, information.getObligation());
@@ -133,7 +132,7 @@ public final class PropertyInformationTest extends TestCase {
         assertEquals("Mode in which the resource is represented.", definition.toString(Locale.ENGLISH));
         // Test other locale here, if any.
 
-        assertInstanceOf("Specific to SIS implementation.", CheckedContainer.class, information);
+        assertInstanceOf(CheckedContainer.class, information);       // Specific to SIS implementation.
         assertEquals(PresentationForm.class, ((CheckedContainer<?>) information).getElementType());
         assertEquals(Datatype.CODE_LIST, information.getDataType());
         assertEquals(Obligation.OPTIONAL, information.getObligation());
@@ -158,9 +157,9 @@ public final class PropertyInformationTest extends TestCase {
         assertEquals("[0.0 … 100.0]", domainValue.toString());
         assertEquals("[0 … 100]", domainValue.toString(Locale.ENGLISH));
         assertEquals("[0 … 100]", domainValue.toString(Locale.FRENCH));
-        assertInstanceOf("Specific to SIS implementation.", Range.class, domainValue);
-        assertEquals("getMinValue()", Double.valueOf(  0), ((Range) domainValue).getMinValue());
-        assertEquals("getMaxValue()", Double.valueOf(100), ((Range) domainValue).getMaxValue());
+        var range = assertInstanceOf(Range.class, domainValue);      // Specific to SIS implementation.
+        assertEquals(Double.valueOf(  0), range.getMinValue());
+        assertEquals(Double.valueOf(100), range.getMaxValue());
     }
 
     /**

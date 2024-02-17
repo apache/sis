@@ -29,8 +29,8 @@ import java.util.stream.IntStream;
 import static java.lang.StrictMath.*;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -71,16 +71,16 @@ public final class IntegerListTest extends TestCase {
          * about 200 values.
          */
         list = new IntegerList(length / 2, maximalValue);
-        assertTrue("maximalValue()", list.maximalValue() >= maximalValue);
+        assertTrue(list.maximalValue() >= maximalValue);
         final List<Integer> copy = new ArrayList<>(length);
         for (int i=0; i<length; i++) {
-            assertEquals("size()", i, list.size());
+            assertEquals(i, list.size());
             final Integer value = nextInt(random, maximalValue);
-            assertTrue("add(Integer)", copy.add(value));
-            assertTrue("add(Integer)", list.add(value));
+            assertTrue(copy.add(value));
+            assertTrue(list.add(value));
         }
-        assertEquals("Comparison with reference implementation", copy, list);
-        assertEquals("hashCode()", copy.hashCode(), list.hashCode());
+        assertEquals(copy, list, "Comparison with reference implementation");
+        assertEquals(copy.hashCode(), list.hashCode());
         /*
          * Overwrite about 1/10 of the values in both the tested IntegerList and the
          * reference ArrayList. Then compare the IntegerList against the reference.
@@ -88,16 +88,16 @@ public final class IntegerListTest extends TestCase {
         for (int i=0; i<length; i += 8 + random.nextInt(5)) {
             final Integer value = nextInt(random, maximalValue);
             final Integer old = copy.set(i, value);
-            assertNotNull("set(Integer)", old);
-            assertEquals ("set(Integer)", old, list.set(i, value));
+            assertNotNull(old);
+            assertEquals (old, list.set(i, value));
         }
         for (int i=0; i<length; i++) {
             if (!copy.get(i).equals(list.get(i))) {
                 fail("Mismatched value at index " + i);
             }
         }
-        assertEquals("Comparison with reference implementation", copy, list);
-        assertEquals("hashCode()", copy.hashCode(), list.hashCode());
+        assertEquals(copy, list, "Comparison with reference implementation");
+        assertEquals(copy.hashCode(), list.hashCode());
         /*
          * Test the stream, using the ArrayList as a reference implementation. This will indirectly
          * use the PrimitiveSpliterator.forEachRemaining(Consumer<? super Integer>) method. A more
@@ -109,31 +109,31 @@ public final class IntegerListTest extends TestCase {
          * method is invoked indirectly by subList(…).clear(). Again, we use ArrayList as a reference.
          */
         final IntegerList clone = list.clone();
-        assertEquals("clone()", copy, clone);
-        assertEquals("remove(int)", copy.remove(100), clone.remove(100));
-        assertEquals("remove(int)", copy, clone);
+        assertEquals(copy, clone);
+        assertEquals(copy.remove(100), clone.remove(100));
+        assertEquals(copy, clone);
         copy .subList(128, 256).clear();
         clone.subList(128, 256).clear();
-        assertEquals("After removeRange(…)", copy, clone);
+        assertEquals(copy, clone);
         /*
          * Tests iterator on primitive integers, with random removal of some elements during traversal.
          */
         final PrimitiveIterator.OfInt it = clone.iterator();
         final Iterator<Integer> itRef = copy.iterator();
         while (itRef.hasNext()) {
-            assertTrue("hasNext()", it.hasNext());
+            assertTrue(it.hasNext());
             assertEquals(itRef.next().intValue(), it.nextInt());
             if (random.nextInt(10) == 0) {
                 itRef.remove();
                 it.remove();
             }
         }
-        assertFalse("hasNext()", it.hasNext());
-        assertEquals("After remove()", copy, clone);
+        assertFalse(it.hasNext());
+        assertEquals(copy, clone, "After remove()");
         /*
          * Verify that serialization and deserialization gives a new list with identical content.
          */
-        assertNotSame("Serialization", list, assertSerializedEquals(list));
+        assertNotSame(list, assertSerializedEquals(list));
     }
 
     /**
@@ -155,11 +155,11 @@ public final class IntegerListTest extends TestCase {
         final Set<Integer> set = new HashSet<>();
         list.fill(value);
         set.addAll(list);
-        assertEquals("fill(value)", Set.of(value), set);
+        assertEquals(Set.of(value), set, "fill(value)");
         list.fill(0);
         set.clear();
         set.addAll(list);
-        assertEquals("fill(0)", Set.of(0), set);
+        assertEquals(Set.of(0), set, "fill(0)");
     }
 
     /**
@@ -206,11 +206,11 @@ public final class IntegerListTest extends TestCase {
         testReadWrite(100);
         final int old100 = list.getInt(100);
         list.resize(101);
-        assertEquals("getInt(last)", old100, list.getInt(100));
+        assertEquals(old100, list.getInt(100), "getInt(last)");
         list.resize(200);
-        assertEquals("size()",              200, list.size());
-        assertEquals("getInt(existing)", old100, list.getInt(100));
-        assertEquals("getInt(new)",           0, list.getInt(101));
+        assertEquals(   200, list.size());
+        assertEquals(old100, list.getInt(100), "getInt(existing)");
+        assertEquals(     0, list.getInt(101), "getInt(new)");
         for (int i=101; i<200; i++) {
             assertEquals(0, list.getInt(i));
         }
@@ -248,7 +248,7 @@ public final class IntegerListTest extends TestCase {
 
             @Override
             public void accept(int value) {
-                assertEquals("Spliterator value differs from its original list", list.getInt(index++), value);
+                assertEquals(list.getInt(index++), value, "Spliterator value differs from its original list");
             }
         });
     }
@@ -277,12 +277,9 @@ public final class IntegerListTest extends TestCase {
 
         // Now, if we alter the list and then try to use previously created stream, we should get an error.
         list.add(0);
-        try {
-            values.next();
-            fail("Concurrent modification has not been detected.");
-        } catch (ConcurrentModificationException expected) {
-            // Expected behavior
-        }
+        var e = assertThrows(ConcurrentModificationException.class, () -> values.next(),
+                             "Concurrent modification has not been detected.");
+        assertNotNull(e);
     }
 
     /**

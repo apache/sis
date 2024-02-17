@@ -40,8 +40,8 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -49,6 +49,7 @@ import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.parameter.DefaultParameterDescriptorTest;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 // Specific to the main branch:
@@ -175,17 +176,17 @@ public final class DefaultConversionTest extends TestCase {
      */
     @SuppressWarnings("SuspiciousToArrayCall")
     private static void verifyProperties(final DefaultConversion op, final boolean swapSourceAxes) {
-        assertEquals("name",       "Paris to Greenwich", op.getName().getCode());
-        assertEquals("sourceCRS",  "NTF (Paris)",        op.getSourceCRS().getName().getCode());
-        assertEquals("targetCRS",  "Back to Greenwich",  op.getTargetCRS().getName().getCode());
-        assertEquals("method",     "Longitude rotation", op.getMethod().getName().getCode());
-        assertEquals("parameters", "Longitude rotation", op.getParameterDescriptors().getName().getCode());
+        assertEquals("Paris to Greenwich", op.getName().getCode());
+        assertEquals("NTF (Paris)",        op.getSourceCRS().getName().getCode());
+        assertEquals("Back to Greenwich",  op.getTargetCRS().getName().getCode());
+        assertEquals("Longitude rotation", op.getMethod().getName().getCode());
+        assertEquals("Longitude rotation", op.getParameterDescriptors().getName().getCode());
 
         final ParameterValueGroup parameters = op.getParameterValues();
         final ParameterValue<?>[] values = parameters.values().toArray(new ParameterValue<?>[1]);
-        assertEquals("parameters",    "Longitude rotation", parameters.getDescriptor().getName().getCode());
-        assertEquals("parameters[0]", "Longitude offset",    values[0].getDescriptor().getName().getCode());
-        assertEquals("parameters[0]", OFFSET, values[0].doubleValue(), STRICT);
+        assertEquals("Longitude rotation", parameters.getDescriptor().getName().getCode());
+        assertEquals("Longitude offset",    values[0].getDescriptor().getName().getCode());
+        assertEquals(OFFSET, values[0].doubleValue());
         assertEquals(1, values.length);
 
         final Matrix3 expected = new Matrix3();
@@ -236,10 +237,10 @@ public final class DefaultConversionTest extends TestCase {
          * By definition, defining conversions have no source and target CRS.
          * This make them different from "normal" conversions.
          */
-        assertNull("sourceCRS", definingConversion.getSourceCRS());
-        assertNull("targetCRS", definingConversion.getTargetCRS());
-        assertFalse(definingConversion.equals(reference));
-        assertFalse(reference.equals(definingConversion));
+        assertNull(definingConversion.getSourceCRS());
+        assertNull(definingConversion.getTargetCRS());
+        assertNotEquals(definingConversion, reference);
+        assertNotEquals(reference, definingConversion);
         /*
          * Now create a normal conversion from the defining one,
          * but add a swapping of (latitude, longitude) axes.
@@ -334,22 +335,16 @@ public final class DefaultConversionTest extends TestCase {
     @Test
     public void testDatumCheck() throws FactoryException {
         final DefaultConversion op = createLongitudeRotation(true);
-        try {
-            op.specialize(Conversion.class, HardCodedCRS.WGS84, HardCodedCRS.NTF_NORMALIZED_AXES, null);
-            fail("Should not have accepted to change the geodetic datum.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("sourceCRS"));
-            assertTrue(message, message.contains("Nouvelle Triangulation Française"));
-        }
-        try {
-            op.specialize(Conversion.class, HardCodedCRS.NTF_NORMALIZED_AXES, HardCodedCRS.WGS84, null);
-            fail("Should not have accepted to change the geodetic datum.");
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("targetCRS"));
-            assertTrue(message, message.contains("Nouvelle Triangulation Française"));
-        }
+        IllegalArgumentException e;
+        e = assertThrows(IllegalArgumentException.class,
+                () -> op.specialize(Conversion.class, HardCodedCRS.WGS84, HardCodedCRS.NTF_NORMALIZED_AXES, null),
+                "Should not have accepted to change the geodetic datum.");
+        assertMessageContains(e, "sourceCRS", "Nouvelle Triangulation Française");
+
+        e = assertThrows(IllegalArgumentException.class,
+                () -> op.specialize(Conversion.class, HardCodedCRS.NTF_NORMALIZED_AXES, HardCodedCRS.WGS84, null),
+                "Should not have accepted to change the geodetic datum.");
+        assertMessageContains(e, "targetCRS", "Nouvelle Triangulation Française");
     }
 
     /**

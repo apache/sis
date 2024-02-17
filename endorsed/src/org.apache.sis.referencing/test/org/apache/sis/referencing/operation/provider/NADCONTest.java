@@ -34,9 +34,8 @@ import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 // Specific to the main branch:
 import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
@@ -138,22 +137,22 @@ public final class NADCONTest extends DatumShiftTestCase {
             throws Exception
     {
         final LoadedGrid<Angle,Angle> grid = NADCON.getOrLoad(latitudeShifts, longitudeShifts);
-        assertInstanceOf("Should not be compressed.", LoadedGrid.Float.class, grid);
-        assertEquals("coordinateUnit",  Units.DEGREE, grid.getCoordinateUnit());
-        assertEquals("translationUnit", Units.DEGREE, grid.getTranslationUnit());
-        assertEquals("translationDimensions", 2, grid.getTranslationDimensions());
-        assertTrue  ("isCellValueRatio", grid.isCellValueRatio());
-        assertTrue  ("cellPrecision", grid.getCellPrecision() > 0);
+        assertInstanceOf(LoadedGrid.Float.class, grid, "Should not be compressed.");
+        assertEquals(Units.DEGREE, grid.getCoordinateUnit());
+        assertEquals(Units.DEGREE, grid.getTranslationUnit());
+        assertEquals(2, grid.getTranslationDimensions());
+        assertTrue  (grid.isCellValueRatio());
+        assertTrue  (grid.getCellPrecision() > 0);
         /*
          * Verify the envelope and the conversion between geographic coordinates and grid indices.
          * The cells are expected to have the same size (0.25°) in longitudes and latitudes.
          */
         final double cellSize = 0.25;
         final Envelope envelope = grid.getDomainOfValidity();
-        assertEquals("xmin", xmin, envelope.getMinimum(0), STRICT);
-        assertEquals("xmax", xmax, envelope.getMaximum(0), STRICT);
-        assertEquals("ymin", ymin, envelope.getMinimum(1), STRICT);
-        assertEquals("ymax", ymax, envelope.getMaximum(1), STRICT);
+        assertEquals(xmin, envelope.getMinimum(0), "xmin");
+        assertEquals(xmax, envelope.getMaximum(0), "xmax");
+        assertEquals(ymin, envelope.getMinimum(1), "ymin");
+        assertEquals(ymax, envelope.getMaximum(1), "ymax");
         assertMatrixEquals("coordinateToGrid",
                 new Matrix3(cellSize,  0,  xmin,
                             0,  cellSize,  ymin,
@@ -175,13 +174,13 @@ public final class NADCONTest extends DatumShiftTestCase {
         grid.interpolateInCell(indices[0], indices[1], vector);
         vector[0] *= cellSize * GridLoader.DEGREES_TO_SECONDS;
         vector[1] *= cellSize * GridLoader.DEGREES_TO_SECONDS;
-        assertArrayEquals("interpolateInCell", expected, vector, 0.5E-5);
+        assertArrayEquals(expected, vector, 0.5E-5);
 
         // Same test as above, but let DatumShiftGrid do the conversions for us.
         expected[0] /= GridLoader.DEGREES_TO_SECONDS;
         expected[1] /= GridLoader.DEGREES_TO_SECONDS;
-        assertArrayEquals("interpolateAt", expected, grid.interpolateAt(position), ANGULAR_TOLERANCE);
-        assertSame("Grid should be cached.", grid, NADCON.getOrLoad(latitudeShifts, longitudeShifts));
+        assertArrayEquals(expected, grid.interpolateAt(position), ANGULAR_TOLERANCE);
+        assertSame(grid, NADCON.getOrLoad(latitudeShifts, longitudeShifts), "Grid should be cached.");
     }
 
 

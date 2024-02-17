@@ -138,7 +138,7 @@ final class ResourceLineage {
      * Creates an ISO 19115 metadata object from the information collected in this class.
      */
     final DefaultSource build() {
-        final DefaultSource source = new DefaultSource();
+        final var source = new DefaultSource();
         source.setDescription(description);
         source.setSourceCitation(sourceCitation);
         source.setScope(scope);

@@ -28,8 +28,8 @@ import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -205,7 +205,7 @@ public final class GeohashReferenceSystemTest extends TestCase {
     public void testEncode() throws TransformException {
         final GeohashReferenceSystem.Coder coder = instance().createCoder();
         for (final Place place : PLACES) {
-            assertEquals(place.name, place.geohash, coder.encode(place.latitude, place.longitude));
+            assertEquals(place.geohash, coder.encode(place.latitude, place.longitude), place.name);
         }
     }
 
@@ -222,7 +222,7 @@ public final class GeohashReferenceSystemTest extends TestCase {
         for (final Place place : PLACES) {
             position.x = place.latitude;
             position.y = place.longitude;
-            assertEquals(place.name, place.geohash, coder.encode(position));
+            assertEquals(place.geohash, coder.encode(position), place.name);
         }
     }
 
@@ -246,7 +246,7 @@ public final class GeohashReferenceSystemTest extends TestCase {
     @DependsOnMethod("testDecode")
     public void testDecodeToCRS() throws TransformException {
         testDecode(new GeohashReferenceSystem(GeohashReferenceSystem.Format.BASE32,
-                        CommonCRS.WGS84.geographic()).createCoder(), 1, 0);
+                   CommonCRS.WGS84.geographic()).createCoder(), 1, 0);
     }
 
     /**
@@ -256,8 +256,8 @@ public final class GeohashReferenceSystemTest extends TestCase {
         for (final Place place : PLACES) {
             final AbstractLocation location = coder.decode(place.geohash);
             final DirectPosition result = location.getPosition().getDirectPosition();
-            assertEquals(place.name, place.longitude, result.getOrdinate(λi), TOLERANCE);
-            assertEquals(place.name, place.latitude,  result.getOrdinate(φi), TOLERANCE);
+            assertEquals(place.longitude, result.getOrdinate(λi), TOLERANCE, place.name);
+            assertEquals(place.latitude,  result.getOrdinate(φi), TOLERANCE, place.name);
         }
     }
 
@@ -269,12 +269,12 @@ public final class GeohashReferenceSystemTest extends TestCase {
     @Test
     public void verifyMetadata() throws GazetteerException {
         final GeohashReferenceSystem rs = instance();
-        assertEquals("theme", "Mapping",      rs.getTheme().toString(Locale.ENGLISH));
-        assertEquals("theme", "Cartographie", rs.getTheme().toString(Locale.FRENCH));
+        assertEquals("Mapping",      rs.getTheme().toString(Locale.ENGLISH));
+        assertEquals("Cartographie", rs.getTheme().toString(Locale.FRENCH));
 
         final AbstractLocationType type = TestUtilities.getSingleton(rs.getLocationTypes());
-        assertEquals("type", "Geohash", type.getName().toString(Locale.ENGLISH));
-        assertEquals("parent",   0, type.getParents().size());
-        assertEquals("children", 0, type.getChildren().size());
+        assertEquals("Geohash", type.getName().toString(Locale.ENGLISH));
+        assertEquals(0, type.getParents().size());
+        assertEquals(0, type.getChildren().size());
     }
 }

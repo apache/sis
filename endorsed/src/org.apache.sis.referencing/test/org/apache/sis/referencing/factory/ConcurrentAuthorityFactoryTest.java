@@ -25,9 +25,9 @@ import java.lang.reflect.Field;
 import org.opengis.util.FactoryException;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
@@ -79,7 +79,7 @@ public final class ConcurrentAuthorityFactoryTest extends TestCase {
 
         /** Invoked when a new factory needs to be created. */
         @Override protected AuthorityFactoryMock newDataAccess() {
-            assertFalse("Should be invoked outside synchronized block.", Thread.holdsLock(this));
+            assertFalse(Thread.holdsLock(this), "Should be invoked outside synchronized block.");
             final AuthorityFactoryMock factory = new AuthorityFactoryMock("Mock", null);
             assertTrue(allDAOs.add(factory));
             return factory;
@@ -105,45 +105,45 @@ public final class ConcurrentAuthorityFactoryTest extends TestCase {
          * Ask for one element, wait for the timeout and check that the DAO is disposed.
          */
         long workTime = System.nanoTime();
-        assertTrue  ("Should have initially no DAO.", factory.createdDAOs().isEmpty());
-        assertEquals("Should have initially no DAO.", 0, factory.countAvailableDataAccess());
+        assertTrue  (factory.createdDAOs().isEmpty(),       "Should have initially no DAO.");
+        assertEquals(0, factory.countAvailableDataAccess(), "Should have initially no DAO.");
         assertNotNull(factory.createObject("84"));
 
         List<AuthorityFactoryMock> createdDAOs = factory.createdDAOs();
-        assertEquals("Expected a new DAO.",         1, createdDAOs.size());
-        assertEquals("Expected one valid DAO.",     1, factory.countAvailableDataAccess());
-        assertFalse ("Should not be disposed yet.", createdDAOs.get(0).isClosed());
+        assertEquals(1, createdDAOs.size(),                 "Expected a new DAO.");
+        assertEquals(1, factory.countAvailableDataAccess(), "Expected one valid DAO.");
+        assertFalse (createdDAOs.get(0).isClosed(),         "Should not be disposed yet.");
 
         sleepWithoutExceedingTimeout(workTime, 2 * ConcurrentAuthorityFactory.TIMEOUT_RESOLUTION);
-        assertEquals("Expected no new DAO.",        createdDAOs, factory.createdDAOs());
-        assertEquals("Expected one valid DAO.",     1, factory.countAvailableDataAccess());
-        assertFalse ("Should not be disposed yet.", createdDAOs.get(0).isClosed());
+        assertEquals(createdDAOs, factory.createdDAOs(),    "Expected no new DAO.");
+        assertEquals(1, factory.countAvailableDataAccess(), "Expected one valid DAO.");
+        assertFalse (createdDAOs.get(0).isClosed(),         "Should not be disposed yet.");
 
         sleepUntilAfterTimeout(3 * ConcurrentAuthorityFactory.TIMEOUT_RESOLUTION, factory);
-        assertEquals("Expected no new DAO.",       createdDAOs, factory.createdDAOs());
-        assertEquals("Worker should be disposed.", 0, factory.countAvailableDataAccess());
-        assertTrue  ("Worker should be disposed.", createdDAOs.get(0).isClosed());
+        assertEquals(createdDAOs, factory.createdDAOs(),    "Expected no new DAO.");
+        assertEquals(0, factory.countAvailableDataAccess(), "Worker should be disposed.");
+        assertTrue  (createdDAOs.get(0).isClosed(),         "Worker should be disposed.");
         /*
          * Ask again for the same object and check that no new DAO
          * were created because the value was taken from the cache.
          */
         assertNotNull(factory.createObject("84"));
-        assertEquals("Expected no new DAO.",      createdDAOs, factory.createdDAOs());
-        assertEquals("Worker should be disposed.", 0, factory.countAvailableDataAccess());
+        assertEquals(createdDAOs, factory.createdDAOs(),    "Expected no new DAO.");
+        assertEquals(0, factory.countAvailableDataAccess(), "Worker should be disposed.");
         /*
          * Ask for one element and check that a new DAO is created.
          */
         workTime = System.nanoTime();
         assertNotNull(factory.createObject("4326"));
         createdDAOs = factory.createdDAOs();
-        assertEquals("Expected a new DAO.",         2, createdDAOs.size());
-        assertEquals("Expected one valid DAO.",     1, factory.countAvailableDataAccess());
-        assertFalse ("Should not be disposed yet.", createdDAOs.get(1).isClosed());
+        assertEquals(2, createdDAOs.size(),                 "Expected a new DAO.");
+        assertEquals(1, factory.countAvailableDataAccess(), "Expected one valid DAO.");
+        assertFalse (createdDAOs.get(1).isClosed(),         "Should not be disposed yet.");
 
         sleepWithoutExceedingTimeout(workTime, 2 * ConcurrentAuthorityFactory.TIMEOUT_RESOLUTION);
-        assertEquals("Expected no new DAO.",        createdDAOs, factory.createdDAOs());
-        assertEquals("Expected one valid DAO.",     1, factory.countAvailableDataAccess());
-        assertFalse ("Should not be disposed yet.", createdDAOs.get(1).isClosed());
+        assertEquals(createdDAOs, factory.createdDAOs(),    "Expected no new DAO.");
+        assertEquals(1, factory.countAvailableDataAccess(), "Expected one valid DAO.");
+        assertFalse (createdDAOs.get(1).isClosed(),         "Should not be disposed yet.");
         /*
          * Ask again for a new element before the timeout is elapsed and check
          * that the disposal of the Data Access Objects has been reported.
@@ -153,15 +153,15 @@ public final class ConcurrentAuthorityFactoryTest extends TestCase {
         sleepWithoutExceedingTimeout(workTime, ConcurrentAuthorityFactory.TIMEOUT_RESOLUTION);
         assertNotNull(factory.createObject("5714"));
         sleepWithoutExceedingTimeout(workTime, 2 * ConcurrentAuthorityFactory.TIMEOUT_RESOLUTION);
-        assertEquals("Expected one valid DAO.",     1, factory.countAvailableDataAccess());
-        assertFalse ("Should not be disposed yet.", createdDAOs.get(1).isClosed());
-        assertEquals("Expected no new DAO.",        createdDAOs, factory.createdDAOs());
+        assertEquals(1, factory.countAvailableDataAccess(), "Expected one valid DAO.");
+        assertFalse (createdDAOs.get(1).isClosed(),         "Should not be disposed yet.");
+        assertEquals(createdDAOs, factory.createdDAOs(),    "Expected no new DAO.");
 
         sleepUntilAfterTimeout(3 * ConcurrentAuthorityFactory.TIMEOUT_RESOLUTION, factory);
-        assertEquals("Expected no new DAO.",        createdDAOs, factory.createdDAOs());
-        assertEquals("Worker should be disposed.",  0, factory.countAvailableDataAccess());
-        assertTrue  ("Worker should be disposed.",  createdDAOs.get(1).isClosed());
-        assertTrue  ("Worker should be disposed.",  createdDAOs.get(0).isClosed());
+        assertEquals(createdDAOs, factory.createdDAOs(),    "Expected no new DAO.");
+        assertEquals(0, factory.countAvailableDataAccess(), "Worker should be disposed.");
+        assertTrue  (createdDAOs.get(1).isClosed(),         "Worker should be disposed.");
+        assertTrue  (createdDAOs.get(0).isClosed(),         "Worker should be disposed.");
     }
 
     /**
@@ -187,8 +187,7 @@ public final class ConcurrentAuthorityFactoryTest extends TestCase {
         Thread.sleep(TimeUnit.NANOSECONDS.toMillis(waitTime));
         int n = 3;
         while (factory.isCleanScheduled()) {
-            ConcurrentAuthorityFactory.LOGGER
-                    .warning("Execution of ConcurrentAuthorityFactory.disposeExpired() has been delayed.");
+            ConcurrentAuthorityFactory.LOGGER.warning("Execution of ConcurrentAuthorityFactory.disposeExpired() has been delayed.");
             Thread.sleep(TIMEOUT);
             System.gc();
             if (--n == 0) {

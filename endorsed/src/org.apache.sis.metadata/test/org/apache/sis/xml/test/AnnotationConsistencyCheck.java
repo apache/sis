@@ -30,7 +30,6 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementRef;
 import jakarta.xml.bind.annotation.XmlElementRefs;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import junit.framework.AssertionFailedError;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Obligation;
 import org.opengis.annotation.Specification;
@@ -41,7 +40,8 @@ import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.cat.CodeListUID;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.opentest4j.AssertionFailedError;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
@@ -248,12 +248,12 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
             case "SV_OperationMetadata":
             case "SV_OperationChainMetadata":
             case "SV_ServiceIdentification": {              // Historical reasons (other standard integrated into ISO 19115)
-                assertEquals("Unexpected @Specification value.", Specification.ISO_19115, uml.specification());
+                assertEquals(Specification.ISO_19115, uml.specification(), "Unexpected @Specification value.");
                 return Namespaces.SRV;
             }
             case "DQ_TemporalAccuracy":                     // Renamed DQ_TemporalQuality
             case "DQ_NonQuantitativeAttributeAccuracy": {   // Renamed DQ_NonQuantitativeAttributeCorrectness
-                assertEquals("Unexpected @Specification value.", Specification.ISO_19115, uml.specification());
+                assertEquals(Specification.ISO_19115, uml.specification(), "Unexpected @Specification value.");
                 return LegacyNamespaces.GMD;
             }
             case "role": {
@@ -299,14 +299,14 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
             }
         }
         if (identifier.startsWith("DQ_")) {
-            assertEquals("Unexpected @Specification value.", Specification.ISO_19115, uml.specification());
+            assertEquals(Specification.ISO_19115, uml.specification(), "Unexpected @Specification value.");
             return Namespaces.MDQ;
         }
         if (identifier.startsWith("DQM_")) {
             return Namespaces.DQM;
         }
         if (identifier.startsWith("QE_")) {
-            assertEquals("Unexpected @Specification value.", Specification.ISO_19115_2, uml.specification());
+            assertEquals(Specification.ISO_19115_2, uml.specification(), "Unexpected @Specification value.");
             switch (/*uml.version()*/ 0) {
                 case 0:    return Namespaces.MDQ;
                 case 2009: return LegacyNamespaces.GMI;
@@ -461,16 +461,16 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
      * @return the actual namespace (same as {@code namespace} if it was not {@value #DEFAULT}).
      */
     private String assertExpectedNamespace(String namespace, final Class<?> impl, final UML uml) {
-        assertNotNull("Missing namespace.", namespace);
-        assertFalse("Missing namespace.", namespace.trim().isEmpty());
+        assertNotNull(namespace, "Missing namespace.");
+        assertFalse(namespace.trim().isEmpty(), "Missing namespace.");
         /*
          * Get the namespace declared at the package level, and ensure the
          * given namespace is not redundant with that package-level namespace.
          */
         final XmlSchema schema = impl.getPackage().getAnnotation(XmlSchema.class);
-        assertNotNull("Missing @XmlSchema annotation in package-info.", schema);
+        assertNotNull(schema, "Missing @XmlSchema annotation in package-info.");
         final String schemaNamespace = schema.namespace();      // May be XMLConstants.NULL_NS_URI
-        assertFalse("Namespace declaration is redundant with package-info @XmlSchema.", namespace.equals(schemaNamespace));
+        assertFalse(namespace.equals(schemaNamespace), "Namespace declaration is redundant with package-info @XmlSchema.");
         /*
          * Resolve the namespace given in argument: using the class-level namespace if needed,
          * or the package-level namespace if the class-level one is not defined.
@@ -480,12 +480,12 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
             if (type == null || DEFAULT.equals(namespace = type.namespace())) {
                 namespace = schemaNamespace;
             }
-            assertFalse("No namespace defined.", XMLConstants.NULL_NS_URI.equals(namespace));
+            assertFalse(XMLConstants.NULL_NS_URI.equals(namespace), "No namespace defined.");
         }
         /*
          * Check that the namespace is declared in the package-level @XmlNs annotation.
          * We do not verify the validity of those @XmlNs annotations, since this is the
-         * purpose of the 'testPackageAnnotations()' method.
+         * purpose of the `testPackageAnnotations()` method.
          */
         boolean found = false;
         for (final XmlNs ns : schema.xmlns()) {
@@ -652,7 +652,7 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
             testingMethod = null;
             testingClass = type.getCanonicalName();
             UML uml = type.getAnnotation(UML.class);
-            assertNotNull("Missing @UML annotation.", uml);
+            assertNotNull(uml, "Missing @UML annotation.");
             if (!CodeList.class.isAssignableFrom(type)) {
                 for (final Method method : type.getDeclaredMethods()) {
                     if (isPublic(method)) {
@@ -660,7 +660,7 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
                         if (!isIgnored(method)) {
                             uml = method.getAnnotation(UML.class);
                             if (!method.isAnnotationPresent(Deprecated.class)) {
-                                assertNotNull("Missing @UML annotation.", uml);
+                                assertNotNull(uml, "Missing @UML annotation.");
                             }
                         }
                     }
@@ -688,7 +688,7 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
                 if (impl != null) {
                     testingClass = impl.getCanonicalName();
                     final Package p = impl.getPackage();
-                    assertNotNull("Missing package information.", p);
+                    assertNotNull(p, "Missing package information.");
                     packages.add(p);
                 }
             }
@@ -697,7 +697,7 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
             for (final XmlNs ns : p.getAnnotation(XmlSchema.class).xmlns()) {
                 testingClass = p.getName();
                 final String namespace = ns.namespaceURI();
-                assertEquals("Unexpected namespace prefix.", Namespaces.getPreferredPrefix(namespace, null), ns.prefix());
+                assertEquals(Namespaces.getPreferredPrefix(namespace, null), ns.prefix(), "Unexpected namespace prefix.");
             }
         }
     }
@@ -730,21 +730,21 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
             testingClass = type.getCanonicalName();
             /*
              * Get the implementation class, which is mandatory (otherwise the
-             * subclass shall not include the interface in the 'types' array).
+             * subclass shall not include the interface in the `types` array).
              */
             final Class<?> impl = getImplementation(type);
-            assertNotNull("No implementation found.", impl);
-            assertNotSame("No implementation found.", type, impl);
+            assertNotNull(impl, "No implementation found.");
+            assertNotSame(type, impl, "No implementation found.");
             testingClass = impl.getCanonicalName();
             /*
              * Compare the XmlRootElement with the UML annotation, if any. The UML annotation
-             * is mandatory in the default implementation of the 'testInterfaceAnnotations()'
+             * is mandatory in the default implementation of the `testInterfaceAnnotations()`
              * method, but we don't require the UML to be non-null here since this is not the
              * job of this test method. This is because subclasses may choose to override the
-             * 'testInterfaceAnnotations()' method.
+             * `testInterfaceAnnotations()` method.
              */
             final XmlRootElement root = impl.getAnnotation(XmlRootElement.class);
-            assertNotNull("Missing @XmlRootElement annotation.", root);
+            assertNotNull(root, "Missing @XmlRootElement annotation.");
             final UML uml = type.getAnnotation(UML.class);
             // More tests on development branch (removed on trunk because test depends on GeoAPI 3.1)
             /*
@@ -756,7 +756,7 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
              * Compare the XmlType annotation with the expected value.
              */
             final XmlType xmlType = impl.getAnnotation(XmlType.class);
-            assertNotNull("Missing @XmlType annotation.", xmlType);
+            assertNotNull(xmlType, "Missing @XmlType annotation.");
             // More tests on development branch (removed on trunk because test depends on GeoAPI 3.1)
         }
     }
@@ -784,7 +784,7 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
             final Class<?> impl = getImplementation(type);
             if (impl == null) {
                 /*
-                 * Implementation existence are tested by 'testImplementationAnnotations()'.
+                 * Implementation existence are tested by `testImplementationAnnotations()`.
                  * It is not the purpose of this test to verify again their existence.
                  */
                 continue;
@@ -835,7 +835,7 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
                      */
                     if (element == null) try {
                         element = impl.getDeclaredField(identifier).getAnnotation(XmlElement.class);
-                        assertNotNull("Missing @XmlElement annotation.", element);
+                        assertNotNull(element, "Missing @XmlElement annotation.");
                     } catch (NoSuchFieldException e) {
                         fail("Missing @XmlElement annotation.");
                         continue;   // As a metter of principle (should never reach this point).
@@ -843,12 +843,12 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
                 }
                 /*
                  * The UML annotation is mandatory in the default implementation of the
-                 * 'testInterfaceAnnotations()' method, but we don't require the UML to
+                 * `testInterfaceAnnotations()` method, but we don't require the UML to
                  * be non-null here since this is not the job of this test method. This
                  * is because subclasses may choose to override the above test method.
                  */
                 if (uml != null) {
-                    assertEquals("Wrong @XmlElement.name().", getExpectedXmlElementName(type, uml), element.name());
+                    assertEquals(getExpectedXmlElementName(type, uml), element.name(), "Wrong @XmlElement.name().");
                     // More tests on development branch (removed on trunk because test depends on GeoAPI 3.1)
                 }
                 /*
@@ -917,31 +917,32 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
                     fail(e.toString());
                     continue;
                 }
-                assertEquals("The setter method must be declared in the same class as the " +
-                             "getter method - not in a parent class, to avoid issues with JAXB.",
-                             getter.getDeclaringClass(), setter.getDeclaringClass());
-                assertEquals("The setter parameter type shall be the same as the getter return type.",
-                             getter.getReturnType(), TestUtilities.getSingleton(setter.getParameterTypes()));
+                assertEquals(getter.getDeclaringClass(), setter.getDeclaringClass(),
+                        "The setter method must be declared in the same class as the " +
+                        "getter method - not in a parent class, to avoid issues with JAXB.");
+                assertEquals(getter.getReturnType(), TestUtilities.getSingleton(setter.getParameterTypes()),
+                        "The setter parameter type shall be the same as the getter return type.");
                 element = getter.getAnnotation(XmlElement.class);
-                assertEquals("Expected @XmlElement XOR @XmlElementRef.", (element == null),
+                assertEquals((element == null),
                              getter.isAnnotationPresent(XmlElementRef.class) ||
-                             getter.isAnnotationPresent(XmlElementRefs.class));
+                             getter.isAnnotationPresent(XmlElementRefs.class),
+                             "Expected @XmlElement XOR @XmlElementRef.");
             }
             /*
              * If the annotation is @XmlElement, ensure that XmlElement.name() is equal
              * to the UML identifier. Then verify that the namespace is the expected one.
              */
             if (element != null) {
-                assertFalse("Expected @XmlElementRef.", wrapper.isInherited);
+                assertFalse(wrapper.isInherited, "Expected @XmlElementRef.");
                 final UML uml = type.getAnnotation(UML.class);
-                if (uml != null) {                  // 'assertNotNull' is 'testInterfaceAnnotations()' job.
-                    assertEquals("Wrong @XmlElement.", getExpectedXmlRootElementName(uml), element.name());
+                if (uml != null) {                  // `assertNotNull` is `testInterfaceAnnotations()` job.
+                    assertEquals(getExpectedXmlRootElementName(uml), element.name(), "Wrong @XmlElement.");
                 }
                 final String namespace = assertExpectedNamespace(element.namespace(), wrapper.type, uml);
                 if (!CodeList.class.isAssignableFrom(type)) {
                     final String expected = getNamespace(getImplementation(type));
-                    if (expected != null) {         // 'assertNotNull' is 'testImplementationAnnotations()' job.
-                        assertEquals("Inconsistent @XmlRootElement namespace.", expected, namespace);
+                    if (expected != null) {         // `assertNotNull` is `testImplementationAnnotations()` job.
+                        assertEquals(expected, namespace, "Inconsistent @XmlRootElement namespace.");
                     }
                 }
             }
@@ -964,7 +965,7 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
     }
 
     /**
-     * Unconditionally fails the test. This method is equivalent to JUnit {@link org.junit.Assert#fail(String)}
+     * Unconditionally fails the test. This method is equivalent to the JUnit {@code fail(String)} method
      * except that the error message contains the {@link #testingClass} and {@link #testingMethod}.
      *
      * @param  message  the failure message.
@@ -977,77 +978,77 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
     }
 
     /**
-     * Fails the test if the given condition is false. This method is equivalent to JUnit
-     * {@link org.junit.Assert#assertTrue(String, boolean)} except that the error message
-     * contains the {@link #testingClass} and {@link #testingMethod}.
+     * Fails the test if the given condition is false. This method is equivalent to the JUnit
+     * {@link assertTrue(boolean, String)} method except that the error message contains the
+     * {@link #testingClass} and {@link #testingMethod}.
      *
-     * @param  message    the message in case of failure.
      * @param  condition  the condition that must be {@code true}.
+     * @param  message    the message in case of failure.
      */
-    protected final void assertTrue(final String message, final boolean condition) {
+    protected final void assertTrue(final boolean condition, final String message) {
         if (!condition) throw new AssertionFailedError(location(message));
     }
 
     /**
-     * Fails the test if the given condition is true. This method is equivalent to JUnit
-     * {@link org.junit.Assert#assertFalse(String, boolean)} except that the error message
-     * contains the {@link #testingClass} and {@link #testingMethod}.
+     * Fails the test if the given condition is true. This method is equivalent to the JUnit
+     * {@code assertFalse(boolean, String)} method except that the error message contains the
+     * {@link #testingClass} and {@link #testingMethod}.
      *
-     * @param  message    the message in case of failure.
      * @param  condition  the condition that must be {@code false}.
+     * @param  message    the message in case of failure.
      */
-    protected final void assertFalse(final String message, final boolean condition) {
+    protected final void assertFalse(final boolean condition, final String message) {
         if (condition) throw new AssertionFailedError(location(message));
     }
 
     /**
-     * Fails the test if the given object is null. This method is equivalent to JUnit
-     * {@link org.junit.Assert#assertNotNull(String, Object)} except that the error
-     * message contains the {@link #testingClass} and {@link #testingMethod}.
+     * Fails the test if the given object is null. This method is equivalent to the JUnit
+     * {@code assertNotNull(Object, String)} method except that the error message contains
+     * the {@link #testingClass} and {@link #testingMethod}.
      *
-     * @param  message  the message in case of failure.
      * @param  obj      the object that must be non-null.
+     * @param  message  the message in case of failure.
      */
-    protected final void assertNotNull(final String message, final Object obj) {
+    protected final void assertNotNull(final Object obj, final String message) {
         if (obj == null) throw new AssertionFailedError(location(message));
     }
 
     /**
-     * Fails the test if the given objects are the same. This method is equivalent to JUnit
-     * {@link org.junit.Assert#assertNotSame(String, Object, Object)} except that the error
-     * message contains the {@link #testingClass} and {@link #testingMethod}.
+     * Fails the test if the given objects are the same. This method is equivalent to the JUnit
+     * {@code assertNotSame(Object, Object, String)} except that the error message contains the
+     * {@link #testingClass} and {@link #testingMethod}.
      *
-     * @param  message  the message in case of failure.
      * @param  o1       the first object (may be null).
      * @param  o2       the second object (may be null).
+     * @param  message  the message in case of failure.
      */
-    protected final void assertNotSame(final String message, final Object o1, final Object o2) {
+    protected final void assertNotSame(final Object o1, final Object o2, final String message) {
         if (o1 == o2) throw new AssertionFailedError(location(message));
     }
 
     /**
      * Fails the test if the given objects are not the same. This method is equivalent to JUnit
-     * {@link org.junit.Assert#assertSame(String, Object, Object)} except that the error message
-     * contains the {@link #testingClass} and {@link #testingMethod}.
+     * {@code assertSame(Object, Object, String)} method except that the error message contains
+     * the {@link #testingClass} and {@link #testingMethod}.
      *
-     * @param  message   the message in case of failure.
      * @param  expected  the first object (may be null).
      * @param  actual    the second object (may be null).
+     * @param  message   the message in case of failure.
      */
-    protected final void assertSame(final String message, final Object expected, final Object actual) {
+    protected final void assertSame(final Object expected, final Object actual, final String message) {
         if (expected != actual) throw new AssertionFailedError(location(message));
     }
 
     /**
      * Fails the test if the given objects are not equal. This method is equivalent to JUnit
-     * {@link org.junit.Assert#assertEquals(String, Object, Object)} except that the error
+     * {@code assertEquals(String, Object, Object)} except that the error
      * message contains the {@link #testingClass} and {@link #testingMethod}.
      *
-     * @param  message   the message in case of failure.
      * @param  expected  the first object (may be null).
      * @param  actual    the second object (may be null).
+     * @param  message   the message in case of failure.
      */
-    protected final void assertEquals(final String message, final Object expected, final Object actual) {
+    protected final void assertEquals(final Object expected, final Object actual, final String message) {
         if (!Objects.equals(expected, actual)) {
             throw new AssertionFailedError(location(message) + System.lineSeparator()
                         + "Expected " + expected + " but got " + actual);

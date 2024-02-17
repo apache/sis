@@ -21,8 +21,8 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.referencing.util.AxisDirections;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 
@@ -56,10 +56,10 @@ public final class DefaultSphericalCSTest extends TestCase {
     @Test
     public void testGeodetic() {
         final DefaultSphericalCS cs = HardCodedCS.SPHERICAL;
-        assertEquals("EPSG abbreviation for geocentric radius should be lower-case", "r", cs.getAxis(2).getAbbreviation());
+        assertEquals("r", cs.getAxis(2).getAbbreviation());     // EPSG abbreviation for geocentric radius should be lower-case
 
         final DefaultSphericalCS normalized = cs.forConvention(AxesConvention.DISPLAY_ORIENTED);
-        assertNotSame("Should create a new CoordinateSystem.", cs, normalized);
+        assertNotSame(cs, normalized, "Should create a new CoordinateSystem.");
         assertAxisDirectionsEqual("Normalized", normalized,
                 AxisDirection.EAST,
                 AxisDirection.NORTH,
@@ -88,10 +88,10 @@ public final class DefaultSphericalCSTest extends TestCase {
     @Test
     public void testEngineering() {
         final DefaultSphericalCS cs = HardCodedCS.SPHERICAL_ENGINEERING;
-        assertEquals("Abbreviation for distance should be lower-case", "r", cs.getAxis(0).getAbbreviation());
+        assertEquals("r", cs.getAxis(0).getAbbreviation());     // Abbreviation for distance should be lower-case
 
         final DefaultSphericalCS normalized = cs.forConvention(AxesConvention.NORMALIZED);
-        assertNotSame("Should create a new CoordinateSystem.", cs, normalized);
+        assertNotSame(cs, normalized);          // Should create a new CoordinateSystem.
         assertAxisDirectionsEqual("Normalized", normalized,
                 AxisDirections.COUNTER_CLOCKWISE,
                 AxisDirection.UP,

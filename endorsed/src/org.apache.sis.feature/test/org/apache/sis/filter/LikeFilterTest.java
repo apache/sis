@@ -17,12 +17,9 @@
 package org.apache.sis.filter;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-
-// Specific to the main branch:
-import org.apache.sis.feature.AbstractFeature;
 
 
 /**
@@ -65,8 +62,8 @@ public final class LikeFilterTest extends TestCase {
      */
     @Test
     public void testLike() {
-        final DefaultFilterFactory<AbstractFeature,Object,?> factory = DefaultFilterFactory.forFeatures();
-        final Expression<AbstractFeature, String> literal = factory.literal("Apache SIS");
+        final var factory = DefaultFilterFactory.forFeatures();
+        final var literal = factory.literal("Apache SIS");
 
         assertTrue (factory.like(literal, "Apache%").test(null));
         assertFalse(factory.like(literal, "Oracle%").test(null));

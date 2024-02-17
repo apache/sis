@@ -23,8 +23,8 @@ import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.util.Version;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
@@ -72,13 +72,13 @@ public final class DefaultRepresentativeFractionTest extends TestCase {
      */
     @Test
     public void testSetScale() {
-        final DefaultRepresentativeFraction fraction = new DefaultRepresentativeFraction();
-        assertEquals("Initial value", 0L, fraction.getDenominator());
-        assertTrue("Initial value", Double.isNaN(fraction.doubleValue()));
+        final var fraction = new DefaultRepresentativeFraction();
+        assertEquals(0L, fraction.getDenominator());
+        assertTrue(Double.isNaN(fraction.doubleValue()));
 
         fraction.setScale(0.25);
-        assertEquals("getDenominator()", 4L, fraction.getDenominator());
-        assertEquals("doubleValue()", 0.25, fraction.doubleValue(), 0.0);
+        assertEquals(4L, fraction.getDenominator());
+        assertEquals(0.25, fraction.doubleValue());
     }
 
     /**
@@ -89,7 +89,7 @@ public final class DefaultRepresentativeFractionTest extends TestCase {
      */
     @Test
     public void testMarshalling() throws JAXBException {
-        final DefaultRepresentativeFraction fraction = new DefaultRepresentativeFraction(8);
+        final var fraction = new DefaultRepresentativeFraction(8);
         fraction.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "scale");
         roundtrip(fraction,
                 "<mri:MD_RepresentativeFraction xmlns:mri=\"" + Namespaces.MRI + '"' +
@@ -121,15 +121,13 @@ public final class DefaultRepresentativeFractionTest extends TestCase {
      */
     @Test
     public void testFreeze() {
-        final DefaultRepresentativeFraction fraction = new DefaultRepresentativeFraction(1000);
-        final DefaultResolution resolution = new DefaultResolution(fraction);
+        final var fraction = new DefaultRepresentativeFraction(1000);
+        final var resolution = new DefaultResolution(fraction);
         resolution.transitionTo(DefaultResolution.State.FINAL);
         assertSame(fraction, resolution.getEquivalentScale());
-        try {
-            fraction.setDenominator(10);
-            fail("Shall not be allowed to modify an unmodifiable fraction.");
-        } catch (UnsupportedOperationException e) {
-            // This is the expected exception.
-        }
+
+        var e = assertThrows(UnsupportedOperationException.class, () -> fraction.setDenominator(10),
+                             "Shall not be allowed to modify an unmodifiable fraction.");
+        assertNotNull(e);
     }
 }

@@ -20,8 +20,9 @@ import java.util.Locale;
 import java.util.IllformedLocaleException;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -46,8 +47,8 @@ public final class LocalesTest extends TestCase {
     @Test
     public void testGetAvailableLanguages() {
         final Locale[] locales = Locales.ALL.getAvailableLanguages();
-        assertTrue ("Expected English locale.",         ArraysExt.contains(locales, Locale.ENGLISH));
-        assertFalse("US is a country, not a language.", ArraysExt.contains(locales, Locale.US));
+        assertTrue (ArraysExt.contains(locales, Locale.ENGLISH));
+        assertFalse(ArraysExt.contains(locales, Locale.US));        // US is a country, not a language.
     }
 
     /**
@@ -110,12 +111,7 @@ public final class LocalesTest extends TestCase {
      */
     @Test
     public void testParseInvalid() {
-        try {
-            Locales.parse("orange_APPLE");
-            fail("Shall not parse invalid locale.");
-        } catch (IllformedLocaleException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("APPLE"));
-        }
+        var e = assertThrows(IllformedLocaleException.class, () -> Locales.parse("orange_APPLE"));
+        assertMessageContains(e, "APPLE");
     }
 }

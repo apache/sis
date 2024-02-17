@@ -22,7 +22,7 @@ import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.citation.Citation;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;

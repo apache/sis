@@ -19,8 +19,8 @@ package org.apache.sis.index.tree;
 import java.lang.reflect.Field;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -53,10 +53,10 @@ public final class PointTreeNodeTest extends TestCase {
      */
     @Test
     public void testFactorX() {
-        assertEquals(+0.5, QuadTreeNode.factor(QuadTreeNode.NE, 0), STRICT);
-        assertEquals(-0.5, QuadTreeNode.factor(QuadTreeNode.NW, 0), STRICT);
-        assertEquals(+0.5, QuadTreeNode.factor(QuadTreeNode.SE, 0), STRICT);
-        assertEquals(-0.5, QuadTreeNode.factor(QuadTreeNode.SW, 0), STRICT);
+        assertEquals(+0.5, QuadTreeNode.factor(QuadTreeNode.NE, 0));
+        assertEquals(-0.5, QuadTreeNode.factor(QuadTreeNode.NW, 0));
+        assertEquals(+0.5, QuadTreeNode.factor(QuadTreeNode.SE, 0));
+        assertEquals(-0.5, QuadTreeNode.factor(QuadTreeNode.SW, 0));
     }
 
     /**
@@ -64,10 +64,10 @@ public final class PointTreeNodeTest extends TestCase {
      */
     @Test
     public void testFactorY() {
-        assertEquals(+0.5, QuadTreeNode.factor(QuadTreeNode.NE, 1), STRICT);
-        assertEquals(+0.5, QuadTreeNode.factor(QuadTreeNode.NW, 1), STRICT);
-        assertEquals(-0.5, QuadTreeNode.factor(QuadTreeNode.SE, 1), STRICT);
-        assertEquals(-0.5, QuadTreeNode.factor(QuadTreeNode.SW, 1), STRICT);
+        assertEquals(+0.5, QuadTreeNode.factor(QuadTreeNode.NE, 1));
+        assertEquals(+0.5, QuadTreeNode.factor(QuadTreeNode.NW, 1));
+        assertEquals(-0.5, QuadTreeNode.factor(QuadTreeNode.SE, 1));
+        assertEquals(-0.5, QuadTreeNode.factor(QuadTreeNode.SW, 1));
     }
 
     /**
@@ -89,7 +89,7 @@ public final class PointTreeNodeTest extends TestCase {
     public void testEnterQuadrant() {
         final double[] region = new double[] {200, 300, 100, 60};
         QuadTreeNode.enterQuadrant(region, QuadTreeNode.SE);
-        assertArrayEquals(new double[] {225, 285, 50, 30}, region, STRICT);
+        assertArrayEquals(new double[] {225, 285, 50, 30}, region);
     }
 
     /**

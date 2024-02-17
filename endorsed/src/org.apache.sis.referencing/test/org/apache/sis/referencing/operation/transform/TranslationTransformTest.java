@@ -24,13 +24,13 @@ import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.util.internal.DoubleDouble;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 
 // Specific to the main branch:
-import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
+import org.apache.sis.test.GeoapiAssert;
 
 
 /**
@@ -55,10 +55,10 @@ public final class TranslationTransformTest extends MathTransformTestCase {
     private void create(final int dimensions, final MatrixSIS matrix) {
         final Number[] elements = TranslationTransform.wrap(matrix.getElements());
         final TranslationTransform tr = new TranslationTransform(matrix.getNumRow(), elements);
-        assertEquals("sourceDimensions", dimensions, tr.getSourceDimensions());
-        assertEquals("targetDimensions", dimensions, tr.getTargetDimensions());
-        assertMatrixEquals("matrix", matrix, tr.getMatrix(), 0.0);
-        assertArrayEquals("elements", elements, getElementAsNumbers(tr));
+        assertEquals(dimensions, tr.getSourceDimensions());
+        assertEquals(dimensions, tr.getTargetDimensions());
+        GeoapiAssert.assertMatrixEquals("matrix", matrix, tr.getMatrix(), 0.0);
+        assertArrayEquals(elements, getElementAsNumbers(tr));
         transform = tr;
         validate();
     }
@@ -97,12 +97,12 @@ public final class TranslationTransformTest extends MathTransformTestCase {
         };
         final MatrixSIS matrix = Matrices.create(4, 4, elements);
         final TranslationTransform tr = new TranslationTransform(4, elements);
-        assertEquals("sourceDimensions", 3, tr.getSourceDimensions());
-        assertEquals("targetDimensions", 3, tr.getTargetDimensions());
-        assertMatrixEquals("matrix", matrix, tr.getMatrix(), 0.0);
+        assertEquals(3, tr.getSourceDimensions());
+        assertEquals(3, tr.getTargetDimensions());
+        GeoapiAssert.assertMatrixEquals("matrix", matrix, tr.getMatrix(), 0.0);
 
         replaceZeroByNull(elements, O);
-        assertArrayEquals("elements", elements, tr.getElementAsNumbers(false));
+        assertArrayEquals(elements, tr.getElementAsNumbers(false));
         transform = tr;
         validate();
     }

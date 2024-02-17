@@ -16,12 +16,11 @@
  */
 package org.apache.sis.geometry;
 
-import java.util.Arrays;
 import org.apache.sis.io.wkt.Formatter;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
@@ -50,8 +49,8 @@ public final class GeneralDirectPositionTest extends TestCase {
         final GeneralDirectPosition position = new GeneralDirectPosition(WGS84);
         position.setCoordinate(300, -100);
         assertTrue(position.normalize());
-        assertEquals(-90.0, position.getOrdinate(1), 0.0);
-        assertEquals(-60.0, position.getOrdinate(0), 0.0);
+        assertEquals(-90.0, position.getOrdinate(1));
+        assertEquals(-60.0, position.getOrdinate(0));
     }
 
     /**
@@ -96,9 +95,9 @@ public final class GeneralDirectPositionTest extends TestCase {
     public void testClone() {
         final GeneralDirectPosition p1 = new GeneralDirectPosition(10, 20, 30);
         final GeneralDirectPosition p2 = p1.clone();
-        assertEquals ("Expected the same CRS and coordinates.", p1, p2);
-        assertTrue   ("Expected the same coordinates.", Arrays.equals(p1.coordinates, p2.coordinates));
-        assertNotSame("The coordinates array should have been cloned.", p1.coordinates, p2.coordinates);
+        assertEquals(p1, p2);
+        assertArrayEquals(p1.coordinates, p2.coordinates);
+        assertNotSame    (p1.coordinates, p2.coordinates);
         validate(p2);
     }
 

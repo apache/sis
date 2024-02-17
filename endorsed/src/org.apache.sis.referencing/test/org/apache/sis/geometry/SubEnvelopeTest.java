@@ -19,8 +19,8 @@ package org.apache.sis.geometry;
 import static java.lang.Double.NaN;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.test.DependsOn;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
@@ -67,12 +67,12 @@ public final class SubEnvelopeTest extends GeneralEnvelopeTest {
     void verifyInvariants(final GeneralEnvelope envelope) {
         super.verifyInvariants(envelope);
         final double[] coordinates = envelope.coordinates;
-        assertEquals(1, coordinates[0], STRICT);
-        assertEquals(4, coordinates[1], STRICT);
-        assertEquals(5, coordinates[4], STRICT);
-        assertEquals(2, coordinates[5], STRICT);
-        assertEquals(7, coordinates[6], STRICT);
-        assertEquals(9, coordinates[9], STRICT);
+        assertEquals(1, coordinates[0]);
+        assertEquals(4, coordinates[1]);
+        assertEquals(5, coordinates[4]);
+        assertEquals(2, coordinates[5]);
+        assertEquals(7, coordinates[6]);
+        assertEquals(9, coordinates[9]);
     }
 
     /**
@@ -89,7 +89,7 @@ public final class SubEnvelopeTest extends GeneralEnvelopeTest {
     public void testSetToNaN() {
         final GeneralEnvelope e = create(-40, -20, +60, +30);
         e.setToNaN();
-        assertArrayEquals(new double[] {1, 4, NaN, NaN, 5, 2, 7, NaN, NaN, 9}, e.coordinates, STRICT);
+        assertArrayEquals(new double[] {1, 4, NaN, NaN, 5, 2, 7, NaN, NaN, 9}, e.coordinates);
         validate(e);
     }
 
@@ -118,8 +118,8 @@ public final class SubEnvelopeTest extends GeneralEnvelopeTest {
     public void testClone() {
         final GeneralEnvelope e1 = create(-40, -20, +60, +30);
         final GeneralEnvelope e2 = e1.clone();
-        assertArrayEquals(new double[] {1, 4, -40, -20, 5, 2, 7, +60, +30, 9}, e1.coordinates, STRICT);
-        assertArrayEquals(new double[] {      -40, -20,          +60, +30   }, e2.coordinates, STRICT);
+        assertArrayEquals(new double[] {1, 4, -40, -20, 5, 2, 7, +60, +30, 9}, e1.coordinates);
+        assertArrayEquals(new double[] {      -40, -20,          +60, +30   }, e2.coordinates);
         validate(e2);
     }
 }

@@ -33,18 +33,17 @@ import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.math.Vector;
 
 // Test dependencies
-import org.junit.Test;
-import org.junit.Rule;
-import org.junit.After;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
-import org.apache.sis.test.TestCase;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.apache.sis.test.LoggingWatcher;
+import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
-import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.filter.Expression;
 import org.apache.sis.pending.geoapi.filter.Literal;
 
@@ -104,7 +103,7 @@ public abstract class RegistryTestCase<G> extends TestCase {
      *
      * @see #assertNoUnexpectedLog()
      */
-    @Rule
+    @RegisterExtension
     public final LoggingWatcher loggings = new LoggingWatcher(Node.LOGGER);
 
     /**
@@ -126,13 +125,10 @@ public abstract class RegistryTestCase<G> extends TestCase {
      */
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void assertRequireArguments(final String functionName) {
-        try {
-            factory.function(functionName, new Expression[0]);
-            fail("Creation with no argument shall fail.");
-        } catch (IllegalArgumentException ex) {
-            final String message = ex.getMessage();
-            assertTrue(message, message.contains("parameters"));
-        }
+        var e = assertThrows(IllegalArgumentException.class,
+                () -> factory.function(functionName, new Expression[0]),
+                "Creation with no argument shall fail.");
+        assertMessageContains(e, "parameters");
     }
 
     /**
@@ -162,8 +158,8 @@ public abstract class RegistryTestCase<G> extends TestCase {
     private AbstractFeature createFeatureWithGeometry(final Class<?> type) {
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
         ftb.addAttribute(type).setName(P_NAME);
-        final DefaultFeatureType mockType = ftb.setName("Test").build();
-        final AbstractFeature feature = mockType.newInstance();
+        final var mockType = ftb.setName("Test").build();
+        final var feature = mockType.newInstance();
         feature.setPropertyValue(P_NAME, geometry);
         return feature;
     }
@@ -195,7 +191,7 @@ public abstract class RegistryTestCase<G> extends TestCase {
      * @param  y       expected second coordinate value.
      */
     private void assertPointEquals(final Object result, final CoordinateReferenceSystem crs, double x, double y) {
-        assertInstanceOf("Expected a point.", library.pointClass, result);
+        assertInstanceOf(library.pointClass, result);
         final GeometryWrapper wrapped = library.castOrWrap(result);
         if (supportCRS) {
             assertEquals(crs, wrapped.getCoordinateReferenceSystem());
@@ -215,7 +211,7 @@ public abstract class RegistryTestCase<G> extends TestCase {
     {
         final GeneralEnvelope env;
         if (isPolygon) {
-            assertInstanceOf("Expected a polygon.", library.polygonClass, result);
+            assertInstanceOf(library.polygonClass, result);
             final GeometryWrapper wrapped = library.castOrWrap(result);
             if (supportCRS) {
                 assertEquals(crs, wrapped.getCoordinateReferenceSystem());
@@ -242,7 +238,7 @@ public abstract class RegistryTestCase<G> extends TestCase {
      * @param  coordinates  expected (x,y) tuples.
      */
     private void assertPolylineEquals(final Object result, final CoordinateReferenceSystem crs, final double... coordinates) {
-        assertInstanceOf("Expected a line string.", library.polylineClass, result);
+        assertInstanceOf(library.polylineClass, result);
         final GeometryWrapper wrapped = library.castOrWrap(result);
         if (supportCRS) {
             assertEquals(crs, wrapped.getCoordinateReferenceSystem());
@@ -252,7 +248,7 @@ public abstract class RegistryTestCase<G> extends TestCase {
 
     /**
      * Tests SQL/MM {@link ST_Transform} function.
-     * The geometry to transform is obtained from a {@code Feature}.
+     * The geometry to transform is obtained from a feature instance.
      */
     @Test
     public void testTransform() {
@@ -266,21 +262,21 @@ public abstract class RegistryTestCase<G> extends TestCase {
          */
         geometry = library.createPoint(10, 30);
         setGeometryCRS(HardCodedCRS.WGS84);
-        AbstractFeature feature = createFeatureWithGeometry(library.pointClass);
+        var instance = createFeatureWithGeometry(library.pointClass);
         /*
          * Test transform function using the full CRS object, then using only EPSG code.
          */
-        final Expression<AbstractFeature,?> ref = factory.property(P_NAME, library.pointClass);
-        function = factory.function("ST_Transform", ref, factory.literal(HardCodedCRS.WGS84_LATITUDE_FIRST));
-        assertPointEquals(function.apply(feature), HardCodedCRS.WGS84_LATITUDE_FIRST, 30, 10);
+        final var reference = factory.property(P_NAME, library.pointClass);
+        function = factory.function("ST_Transform", reference, factory.literal(HardCodedCRS.WGS84_LATITUDE_FIRST));
+        assertPointEquals(function.apply(instance), HardCodedCRS.WGS84_LATITUDE_FIRST, 30, 10);
 
-        function = factory.function("ST_Transform", ref, factory.literal("EPSG:4326"));
-        assertPointEquals(function.apply(feature), CommonCRS.WGS84.geographic(), 30, 10);
+        function = factory.function("ST_Transform", reference, factory.literal("EPSG:4326"));
+        assertPointEquals(function.apply(instance), CommonCRS.WGS84.geographic(), 30, 10);
     }
 
     /**
      * Tests SQL/MM {@code ST_Buffer} function.
-     * The geometry is specified as a literal, so there is no need to build {@code Feature} instances.
+     * The geometry is specified as a literal, so there is no need to build feature instances.
      */
     @Test
     public void testBuffer() {
@@ -329,9 +325,9 @@ public abstract class RegistryTestCase<G> extends TestCase {
         assertEnvelopeEquals(result, false, null, 12, 3.3, 13.1, 5.7);
 
         // After testing literal data, try to extract data from a feature.
-        AbstractFeature feature = createFeatureWithGeometry(library.polylineClass);
+        AbstractFeature instance = createFeatureWithGeometry(library.polylineClass);
         function = factory.function("ST_Envelope", factory.property(P_NAME, library.polylineClass));
-        result = function.apply(feature);
+        result = function.apply(instance);
         assertEnvelopeEquals(result, false, null, 12, 3.3, 13.1, 5.7);
     }
 
@@ -347,15 +343,15 @@ public abstract class RegistryTestCase<G> extends TestCase {
         assertEquals(Boolean.FALSE, evaluate("ST_Intersects", point, geometry));
 
         // Border should intersect. Also use Feature instead of Literal as a source.
-        final AbstractFeature feature = createFeatureWithGeometry(library.polygonClass);
-        final Expression<AbstractFeature,?> ref = factory.property(P_NAME, library.polygonClass);
+        final AbstractFeature instance = createFeatureWithGeometry(library.polygonClass);
+        final var reference = factory.property(P_NAME, library.polygonClass);
         point = library.createPoint(0.2, 0.3);
-        function = factory.function("ST_Intersects", ref, factory.literal(point));
-        assertEquals(Boolean.TRUE, function.apply(feature));
+        function = factory.function("ST_Intersects", reference, factory.literal(point));
+        assertEquals(Boolean.TRUE, function.apply(instance));
 
         // Ensure switching argument order does not modify behavior.
-        function = factory.function("ST_Intersects", factory.literal(point), ref);
-        assertEquals(Boolean.TRUE, function.apply(feature));
+        function = factory.function("ST_Intersects", factory.literal(point), reference);
+        assertEquals(Boolean.TRUE, function.apply(instance));
     }
 
     /**
@@ -465,10 +461,10 @@ public abstract class RegistryTestCase<G> extends TestCase {
         /*
          * Optimization should evaluate the point immediately.
          */
-        final Expression<AbstractFeature,?> optimized = new Optimization().apply(function);
-        assertNotSame("Optimization should produce a new expression.", function, optimized);
-        assertInstanceOf("Expected immediate expression evaluation.", Literal.class, optimized);
-        assertPointEquals(((Literal) optimized).getValue(), HardCodedCRS.WGS84_LATITUDE_FIRST, 30, 10);
+        final var optimized = new Optimization().apply(function);
+        assertNotSame(function, optimized, "Optimization should produce a new expression.");
+        var literal = assertInstanceOf(Literal.class, optimized, "Expected immediate expression evaluation.");
+        assertPointEquals(literal.getValue(), HardCodedCRS.WGS84_LATITUDE_FIRST, 30, 10);
     }
 
     /**
@@ -484,21 +480,21 @@ public abstract class RegistryTestCase<G> extends TestCase {
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
         ftb.addAttribute(library.pointClass).setName(P_NAME).setCRS(HardCodedCRS.WGS84);
         optimization.setFeatureType(ftb.setName("Test").build());
-        final Expression<AbstractFeature,?> optimized = optimization.apply(function);
-        assertNotSame("Optimization should produce a new expression.", function, optimized);
+        final var optimized = optimization.apply(function);
+        assertNotSame(function, optimized, "Optimization should produce a new expression.");
         /*
          * Get the second parameter, which should be a literal, and get the point coordinates.
          * Verify that the order is swapped compared to the order at the beginning of this method.
          */
         final Object literal = optimized.getParameters().get(1).apply(null);
         final DirectPosition point = library.castOrWrap(literal).getCentroid();
-        assertArrayEquals(new double[] {30, 10}, point.getCoordinate(), STRICT);
+        assertArrayEquals(new double[] {30, 10}, point.getCoordinate());
     }
 
     /**
      * Executed after each test for verifying that no unexpected log message has been emitted.
      */
-    @After
+    @AfterEach
     public void assertNoUnexpectedLog() {
         loggings.assertNoUnexpectedLog();
     }

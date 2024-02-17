@@ -27,8 +27,9 @@ import java.nio.charset.StandardCharsets;
 import org.opengis.parameter.ParameterDescriptorGroup;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
@@ -207,13 +208,10 @@ public final class DataStoreProviderTest extends TestCase {
          * Attempt to read with `InputStream` should not be possible because
          * the connector does not know the original stream (we wrapped it).
          */
-        try {
-            verifyProbeWithInputStream(connector);
-            fail("Operation should not be allowed.");
-        } catch (ForwardOnlyStorageException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("InputStreamReader"));
-        }
+        var e = assertThrows(ForwardOnlyStorageException.class,
+                () -> verifyProbeWithInputStream(connector),
+                "Operation should not be allowed.");
+        assertMessageContains(e, "InputStreamReader");
     }
 
     /**

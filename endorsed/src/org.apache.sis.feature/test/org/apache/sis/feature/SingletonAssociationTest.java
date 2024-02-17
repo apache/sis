@@ -19,11 +19,12 @@ package org.apache.sis.feature;
 import java.util.Map;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
 /**
@@ -65,14 +66,8 @@ public final class SingletonAssociationTest extends TestCase {
         final var association  = twinTown();
         final var population   = association.getRole().getValueType().getProperty("population");
         final var otherFeature = new DefaultFeatureType(Map.of(DefaultFeatureType.NAME_KEY, "Population"), false, null, population).newInstance();
-        try {
-            association.setValue(otherFeature);
-        } catch (IllegalArgumentException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("twin town"));
-            assertTrue(message, message.contains("Population"));
-            assertTrue(message, message.contains("City"));
-        }
+        var e = assertThrows(IllegalArgumentException.class, () -> association.setValue(otherFeature));
+        assertMessageContains(e, "twin town", "Population", "City");
     }
 
     /**

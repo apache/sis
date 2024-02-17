@@ -23,8 +23,8 @@ import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.PropertyConsistencyCheck;
 
 // Test dependencies
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOn;
 
@@ -43,7 +43,7 @@ public final class AllMetadataTest extends PropertyConsistencyCheck {
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
      * do so, but should be considered as an implementation details (it should have been a private field).
      */
-    @Rule
+    @RegisterExtension
     public final LoggingWatcher loggings = new LoggingWatcher(Context.LOGGER);
 
     /**

@@ -155,7 +155,7 @@ public final class QualityParameter extends Parameter {
     @Override
     public synchronized ReferenceIdentifier getName() {
         if (name == null && code != null) {
-            final RS_Identifier id = new RS_Identifier(null, code, null);
+            final var id = new RS_Identifier(null, code, null);
             id.setDescription(definition);
             id.transitionTo(DefaultIdentifier.State.FINAL);
             name = id;

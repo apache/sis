@@ -30,10 +30,9 @@ import org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransfor
 import org.apache.sis.io.wkt.Convention;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
 import org.apache.sis.referencing.datum.HardCodedDatum;
@@ -149,7 +148,7 @@ public final class DefaultConcatenatedOperationTest extends TestCase {
     public void testXML() throws JAXBException {
         final DefaultConcatenatedOperation op = unmarshalFile(DefaultConcatenatedOperation.class, openTestFile());
         Validators.validate(op);
-        assertEquals("operations.size()", 2, op.getOperations().size());
+        assertEquals(2, op.getOperations().size());
         final CoordinateOperation step1 = op.getOperations().get(0);
         final CoordinateOperation step2 = op.getOperations().get(1);
         final CoordinateReferenceSystem sourceCRS = op.getSourceCRS();
@@ -160,11 +159,11 @@ public final class DefaultConcatenatedOperationTest extends TestCase {
         assertIdentifierEquals("targetCRS.identifier", "test", "test", null, "target",       getSingleton(targetCRS.getIdentifiers()));
         assertIdentifierEquals(    "step1.identifier", "test", "test", null, "step-1",       getSingleton(step1    .getIdentifiers()));
         assertIdentifierEquals(    "step2.identifier", "test", "test", null, "step-2",       getSingleton(step2    .getIdentifiers()));
-        assertInstanceOf("sourceCRS", GeodeticCRS.class, sourceCRS);
-        assertInstanceOf("targetCRS", GeodeticCRS.class, targetCRS);
-        assertSame("sourceCRS", step1.getSourceCRS(), sourceCRS);
-        assertSame("targetCRS", step2.getTargetCRS(), targetCRS);
-        assertSame("tmp CRS",   step1.getTargetCRS(), step2.getSourceCRS());
+        assertInstanceOf(GeodeticCRS.class, sourceCRS);
+        assertInstanceOf(GeodeticCRS.class, targetCRS);
+        assertSame(step1.getSourceCRS(), sourceCRS);
+        assertSame(step2.getTargetCRS(), targetCRS);
+        assertSame(step1.getTargetCRS(), step2.getSourceCRS());
         /*
          * Test marshalling and compare with the original file.
          */

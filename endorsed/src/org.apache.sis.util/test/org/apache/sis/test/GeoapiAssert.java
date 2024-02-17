@@ -25,8 +25,8 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.Static;
 
 // Test dependencies
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 
 /**
@@ -142,10 +142,10 @@ public final class GeoapiAssert extends Static {
         if (actual == null) {
             fail(concat(message, "Identifier is null"));
         } else {
-            if (!UNRESTRICTED.equals(authority)) assertAnyTitleEquals(message,                      authority, actual.getAuthority());
-            if (!UNRESTRICTED.equals(codeSpace)) assertEquals (concat(message, "Wrong code space"), codeSpace, actual.getCodeSpace());
-            if (!UNRESTRICTED.equals(version))   assertEquals (concat(message, "Wrong version"),    version,   actual.getVersion());
-            if (!UNRESTRICTED.equals(code))      assertEquals (concat(message, "Wrong code"),       code,      actual.getCode());
+            if (!UNRESTRICTED.equals(authority)) assertAnyTitleEquals(message, authority, actual.getAuthority());
+            if (!UNRESTRICTED.equals(codeSpace)) assertEquals(codeSpace, actual.getCodeSpace(), () -> concat(message, "Wrong code space"));
+            if (!UNRESTRICTED.equals(version))   assertEquals(version,   actual.getVersion(),   () -> concat(message, "Wrong version"));
+            if (!UNRESTRICTED.equals(code))      assertEquals(code,      actual.getCode(),      () -> concat(message, "Wrong code"));
         }
     }
 
@@ -159,10 +159,9 @@ public final class GeoapiAssert extends Static {
     public static void assertAxisDirectionsEqual(String message,
             final CoordinateSystem cs, final AxisDirection... expected)
     {
-        assertEquals(concat(message, "Wrong coordinate system dimension."), expected.length, cs.getDimension());
-        message = concat(message, "Wrong axis direction.");
+        assertEquals(expected.length, cs.getDimension(), () -> concat(message, "Wrong coordinate system dimension."));
         for (int i=0; i<expected.length; i++) {
-            assertEquals(message, expected[i], cs.getAxis(i).getDirection());
+            assertEquals(expected[i], cs.getAxis(i).getDirection(), () -> concat(message, "Wrong axis direction."));
         }
     }
 
@@ -180,8 +179,8 @@ public final class GeoapiAssert extends Static {
         }
         final int numRow = actual.getNumRow();
         final int numCol = actual.getNumCol();
-        assertEquals("numRow", expected.getNumRow(), numRow);
-        assertEquals("numCol", expected.getNumCol(), numCol);
+        assertEquals(expected.getNumRow(), numRow, "numRow");
+        assertEquals(expected.getNumCol(), numCol, "numCol");
         for (int j=0; j<numRow; j++) {
             for (int i=0; i<numCol; i++) {
                 final double e = expected.getElement(j,i);

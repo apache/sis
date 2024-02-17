@@ -22,8 +22,8 @@ import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.sql.util.SQLBuilder;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -104,10 +104,10 @@ public final class IdentifierGeneratorTest extends TestCase {
      * @param count The number of records to add (in addition of the "main" one).
      */
     private void addRecords(final String prefix, final int count) throws SQLException {
-        assertEquals("The very first record added should not have any suffix.", prefix, addRecord(prefix));
+        assertEquals(prefix, addRecord(prefix), "The very first record added should not have any suffix.");
         for (int i=1; i<=count; i++) {
-            assertEquals("Any record added after the first one should have a sequential number in suffix.",
-                    prefix + IdentifierGenerator.SEPARATOR + i, addRecord(prefix));
+            assertEquals(prefix + IdentifierGenerator.SEPARATOR + i, addRecord(prefix),
+                    "Any record added after the first one should have a sequential number in suffix.");
         }
     }
 
@@ -121,10 +121,10 @@ public final class IdentifierGeneratorTest extends TestCase {
                 "ID='" + prefix + IdentifierGenerator.SEPARATOR +  "32' OR " +
                 "ID='" + prefix + IdentifierGenerator.SEPARATOR + "125' OR " +
                 "ID='" + prefix + IdentifierGenerator.SEPARATOR + "224'"));
-        assertEquals("12 is before 4 in alphabetical order.",    prefix+"-12",  addRecord(prefix));
-        assertEquals("125 is next to 12 in alphabetical order.", prefix+"-125", addRecord(prefix));
-        assertEquals("224 is before 32 in alphabetical order.",  prefix+"-224", addRecord(prefix));
-        assertEquals("32 is before 4 in alphabetical order.",    prefix+"-32",  addRecord(prefix));
-        assertEquals("4 is last in alphabetical order.",         prefix+"-4",   addRecord(prefix));
+        assertEquals(prefix+"-12",  addRecord(prefix), "12 is before 4 in alphabetical order.");
+        assertEquals(prefix+"-125", addRecord(prefix), "125 is next to 12 in alphabetical order.");
+        assertEquals(prefix+"-224", addRecord(prefix), "224 is before 32 in alphabetical order.");
+        assertEquals(prefix+"-32",  addRecord(prefix), "32 is before 4 in alphabetical order.");
+        assertEquals(prefix+"-4",   addRecord(prefix), "4 is last in alphabetical order.");
     }
 }

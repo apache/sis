@@ -26,8 +26,8 @@ import org.apache.sis.referencing.ImmutableIdentifier;
 import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
@@ -123,12 +123,9 @@ public final class DefaultTemporalDatumTest extends TestCase {
         final DefaultTemporalDatum datum = unmarshalFile(DefaultTemporalDatum.class, openTestFile());
         assertIdentifierEquals("identifier", "Apache Spatial Information System", "SIS", null, "MJ",
                 getSingleton(datum.getIdentifiers()));
-        assertEquals("name", "Modified Julian",
-                datum.getName().getCode());
-        assertEquals("remarks", "Time measured as days since November 17, 1858 at 00:00 UTC.",
-                datum.getRemarks().toString());
-        assertEquals("scope", "History.",
-                datum.getScope().toString());
-        assertEquals("origin", new Date(ORIGIN), datum.getOrigin());
+        assertEquals("Modified Julian", datum.getName().getCode());
+        assertEquals("Time measured as days since November 17, 1858 at 00:00 UTC.", datum.getRemarks().toString());
+        assertEquals("History.", datum.getScope().toString());
+        assertEquals(new Date(ORIGIN), datum.getOrigin());
     }
 }

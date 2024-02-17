@@ -17,7 +17,7 @@
 package org.apache.sis.style.se1;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 // Specific to the main branch:

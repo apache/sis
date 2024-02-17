@@ -26,8 +26,8 @@ import org.opengis.metadata.content.CoverageDescription;
 import org.opengis.metadata.content.ImageDescription;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
@@ -57,7 +57,7 @@ public final class InformationMapTest extends TestCase {
                 Citation.class, KeyNamePolicy.JAVABEANS_PROPERTY);
         PropertyInformationTest.validateTitle(map.get("title"));
         PropertyInformationTest.validatePresentationForm(map.get("presentationForms"));
-        assertNull("Shall not exists.", map.get("dummy"));
+        assertNull(map.get("dummy"));
     }
 
     /**
@@ -84,12 +84,12 @@ public final class InformationMapTest extends TestCase {
         final Map<String,ExtendedElementInformation> descriptions = MetadataStandard.ISO_19115.asInformationMap(
                 ImageDescription.class, KeyNamePolicy.UML_IDENTIFIER);
 
-        assertEquals("Testing a property defined directly in the ImageDescription type.",
-                "Area of the dataset obscured by clouds, expressed as a percentage of the spatial extent.",
-                descriptions.get("cloudCoverPercentage").getDefinition().toString(Locale.ENGLISH));
+        // Testing a property defined directly in the ImageDescription type.
+        assertEquals("Area of the dataset obscured by clouds, expressed as a percentage of the spatial extent.",
+                     descriptions.get("cloudCoverPercentage").getDefinition().toString(Locale.ENGLISH));
 
-        assertEquals("Testing a property inherited from the CoverageDescription parent.",
-                "Description of the attribute described by the measurement value.",
-                descriptions.get("attributeDescription").getDefinition().toString(Locale.ENGLISH));
+        // Testing a property inherited from the CoverageDescription parent.
+        assertEquals("Description of the attribute described by the measurement value.",
+                     descriptions.get("attributeDescription").getDefinition().toString(Locale.ENGLISH));
     }
 }

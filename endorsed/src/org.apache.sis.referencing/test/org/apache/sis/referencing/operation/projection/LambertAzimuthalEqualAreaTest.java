@@ -30,8 +30,8 @@ import static org.apache.sis.referencing.util.Formulas.LINEAR_TOLERANCE;
 import static org.apache.sis.referencing.util.Formulas.ANGULAR_TOLERANCE;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -202,15 +202,15 @@ public final class LambertAzimuthalEqualAreaTest extends MapProjectionTestCase {
         point[0] = 180;
         point[1] = -45;
         transform.transform(point, 0, point, 0, 1);
-        assertEquals("E", NaN, point[0], tolerance);
-        assertEquals("N", NaN, point[1], tolerance);
+        assertEquals(NaN, point[0], tolerance, "E");
+        assertEquals(NaN, point[1], tolerance, "N");
 
         // Project the almost-antipode.
         point[0] = 180;
         point[1] = -44.999;
         transform.transform(point, 0, point, 0, 1);
-        assertEquals("E", 0, point[0], tolerance);
-        assertEquals("N", 2*SPHERE_RADIUS, point[1], 0.002*SPHERE_RADIUS);
+        assertEquals(0, point[0], tolerance, "E");
+        assertEquals(2*SPHERE_RADIUS, point[1], 0.002*SPHERE_RADIUS, "N");
     }
 
     /**
@@ -254,8 +254,8 @@ public final class LambertAzimuthalEqualAreaTest extends MapProjectionTestCase {
         isInverseTransformSupported = false;
         verifyTransform(point, expected);
         transform.inverse().transform(expected, 0, point, 0, 1);
-        assertEquals("λ",  0, point[0], 180);
-        assertEquals("φ", 90, point[1], ANGULAR_TOLERANCE);
+        assertEquals( 0, point[0], 180, "λ");
+        assertEquals(90, point[1], ANGULAR_TOLERANCE, "φ");
         /*
          * Same point as above (i.e. projection origin), but using a different longitude value.
          * Same expected result because longitude should have no effect at a pole.
@@ -264,8 +264,8 @@ public final class LambertAzimuthalEqualAreaTest extends MapProjectionTestCase {
         point[1] = 90;
         verifyTransform(point, expected);
         transform.inverse().transform(expected, 0, point, 0, 1);
-        assertEquals("λ", 45, point[0], 180);
-        assertEquals("φ", 90, point[1], ANGULAR_TOLERANCE);
+        assertEquals(45, point[0], 180, "λ");
+        assertEquals(90, point[1], ANGULAR_TOLERANCE, "φ");
         /*
          * Project a point on the equator, at 0° and at 180° longitude.
          * Result should be (0, √2) positive or negative depending on the longitude.
@@ -287,8 +287,8 @@ public final class LambertAzimuthalEqualAreaTest extends MapProjectionTestCase {
         point[0] =   0;
         point[1] = -90;
         transform.transform(point, 0, point, 0, 1);
-        assertEquals("E", NaN, point[0], tolerance);
-        assertEquals("N", NaN, point[1], tolerance);
+        assertEquals(NaN, point[0], tolerance, "E");
+        assertEquals(NaN, point[1], tolerance, "N");
     }
 
     /**

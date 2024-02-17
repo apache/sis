@@ -30,8 +30,8 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.base.MemoryFeatureSet;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
@@ -176,12 +176,12 @@ public final class JoinFeatureSetTest extends TestCase {
                 }
                 final AbstractFeature c1 = (AbstractFeature) f.getPropertyValue("s1");
                 final AbstractFeature c2 = (AbstractFeature) f.getPropertyValue("s2");
-                assertEquals("att1", att1, ((AbstractAttribute) c1.getProperty("att1")).getValue());
-                assertEquals("att2", join, ((AbstractAttribute) c1.getProperty("att2")).getValue());
-                assertEquals("att3", join, ((AbstractAttribute) c2.getProperty("att3")).getValue());
-                assertEquals("att4", att4, ((AbstractAttribute) c2.getProperty("att4")).getValue());
+                assertEquals(att1, ((AbstractAttribute) c1.getProperty("att1")).getValue());
+                assertEquals(join, ((AbstractAttribute) c1.getProperty("att2")).getValue());
+                assertEquals(join, ((AbstractAttribute) c2.getProperty("att3")).getValue());
+                assertEquals(att4, ((AbstractAttribute) c2.getProperty("att4")).getValue());
             }
-            assertEquals("Unexpected number of features.", 4, count);
+            assertEquals(4, count, "Unexpected number of features.");
         }
     }
 
@@ -225,36 +225,36 @@ public final class JoinFeatureSetTest extends TestCase {
                 if (c1 != null) {
                     switch ((String) ((AbstractAttribute) c1.getProperty("att1")).getValue()) {
                         case "str1": {
-                            assertEquals("att2",  1,  ((AbstractAttribute) c1.getProperty("att2")).getValue());
-                            assertEquals("att3",  1,  ((AbstractAttribute) c2.getProperty("att3")).getValue());
-                            assertEquals("att4", 10d, ((AbstractAttribute) c2.getProperty("att4")).getValue());
+                            assertEquals( 1,  ((AbstractAttribute) c1.getProperty("att2")).getValue());
+                            assertEquals( 1,  ((AbstractAttribute) c2.getProperty("att3")).getValue());
+                            assertEquals(10d, ((AbstractAttribute) c2.getProperty("att4")).getValue());
                             foundStr1++;
                             break;
                         }
                         case "str2": {
-                            assertEquals("att2", 2, ((AbstractAttribute) c1.getProperty("att2")).getValue());
-                            assertEquals("att3", 2, ((AbstractAttribute) c2.getProperty("att3")).getValue());
+                            assertEquals(2, ((AbstractAttribute) c1.getProperty("att2")).getValue());
+                            assertEquals(2, ((AbstractAttribute) c2.getProperty("att3")).getValue());
                             double att4 = (Double)  ((AbstractAttribute) c2.getProperty("att4")).getValue();
                             if (att4 == 20) foundStr20++;
                             if (att4 == 30) foundStr21++;
                             break;
                         }
                         case "str3": {
-                            assertEquals("att2",  3,  ((AbstractAttribute) c1.getProperty("att2")).getValue());
-                            assertEquals("att3",  3,  ((AbstractAttribute) c2.getProperty("att3")).getValue());
-                            assertEquals("att4", 40d, ((AbstractAttribute) c2.getProperty("att4")).getValue());
+                            assertEquals( 3,  ((AbstractAttribute) c1.getProperty("att2")).getValue());
+                            assertEquals( 3,  ((AbstractAttribute) c2.getProperty("att3")).getValue());
+                            assertEquals(40d, ((AbstractAttribute) c2.getProperty("att4")).getValue());
                             foundStr3++;
                             break;
                         }
                         case "str50": {
-                            assertEquals("att2", 50, ((AbstractAttribute) c1.getProperty("att2")).getValue());
-                            assertNull("right", c2);
+                            assertEquals(50, ((AbstractAttribute) c1.getProperty("att2")).getValue());
+                            assertNull(c2);
                             foundStr50++;
                             break;
                         }
                         case "str51": {
-                            assertEquals("att2", 51, ((AbstractAttribute) c1.getProperty("att2")).getValue());
-                            assertNull("right", c2);
+                            assertEquals(51, ((AbstractAttribute) c1.getProperty("att2")).getValue());
+                            assertNull(c2);
                             foundStr51++;
                             break;
                         }
@@ -283,15 +283,15 @@ public final class JoinFeatureSetTest extends TestCase {
                 }
                 count++;
             }
-            assertEquals("str1",  1,  foundStr1);
-            assertEquals("str2",  1,  foundStr20);
-            assertEquals("str2",  1,  foundStr21);
-            assertEquals("str3",  1,  foundStr3);
-            assertEquals("str50", nl, foundStr50);
-            assertEquals("str51", nl, foundStr51);
-            assertEquals("str60", nr, foundStr60);
-            assertEquals("str61", nr, foundStr61);
-            assertEquals("Unexpected number of features.", 6, count);
+            assertEquals(1,  foundStr1);
+            assertEquals(1,  foundStr20);
+            assertEquals(1,  foundStr21);
+            assertEquals(1,  foundStr3);
+            assertEquals(nl, foundStr50);
+            assertEquals(nl, foundStr51);
+            assertEquals(nr, foundStr60);
+            assertEquals(nr, foundStr61);
+            assertEquals(6, count, "Unexpected number of features.");
         }
     }
 

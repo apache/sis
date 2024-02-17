@@ -16,13 +16,11 @@
  */
 package org.apache.sis.filter;
 
-import java.util.List;
 import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -74,12 +72,12 @@ public final class TemporalFilterTest extends TestCase {
      * @param  name  expected filter name.
      */
     private void validate(final TemporalOperatorName name) {
-        assertInstanceOf("Expected SIS implementation.", TemporalFilter.class, filter);
-        assertEquals("name", name, filter.getOperatorType());
-        final List<Expression<AbstractFeature,?>> operands = filter.getExpressions();
+        assertInstanceOf(TemporalFilter.class, filter);
+        assertEquals(name, filter.getOperatorType());
+        final var operands = filter.getExpressions();
         assertEquals(2, operands.size());
-        assertSame("expression1", expression1, operands.get(0));
-        assertSame("expression2", expression2, operands.get(1));
+        assertSame(expression1, operands.get(0));
+        assertSame(expression2, operands.get(1));
         assertSerializedEquals(filter);
     }
 

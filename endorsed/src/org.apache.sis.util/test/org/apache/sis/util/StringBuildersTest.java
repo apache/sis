@@ -19,8 +19,8 @@ package org.apache.sis.util;
 import static org.apache.sis.util.StringBuilders.*;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 

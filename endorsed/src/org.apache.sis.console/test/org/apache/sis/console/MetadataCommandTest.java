@@ -19,14 +19,14 @@ package org.apache.sis.console;
 import java.net.URL;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 // Specific to the main branch:
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
 
 /**
@@ -48,7 +48,7 @@ public final class MetadataCommandTest extends TestCase {
      * @throws Exception if an error occurred while creating the command.
      */
     @Test
-    @Ignore("Requires GeoAPI 3.1")
+    @Disabled("Requires GeoAPI 3.1")
     public void testNetCDF() throws Exception {
         final URL url = new URL("Cube2D_geographic_packed.nc"); // TestData.NETCDF_2D_GEOGRAPHIC.location();
         var test = new MetadataCommand(0, new String[] {CommandRunner.TEST, url.toString()});
@@ -73,7 +73,7 @@ public final class MetadataCommandTest extends TestCase {
      * @throws Exception if an error occurred while creating the command.
      */
     @Test
-    @Ignore("Requires GeoAPI 3.1")
+    @Disabled("Requires GeoAPI 3.1")
     @DependsOnMethod("testNetCDF")
     public void testFormatXML() throws Exception {
         final URL url = new URL("Cube2D_geographic_packed.nc") ; // TestData.NETCDF_2D_GEOGRAPHIC.location();

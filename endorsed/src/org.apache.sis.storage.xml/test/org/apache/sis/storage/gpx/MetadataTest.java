@@ -21,15 +21,15 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.date;
 
 // Specific to the main branch:
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
 
 /**
@@ -55,11 +55,11 @@ public final class MetadataTest extends TestCase {
     public void testEqualsAndHashCode() throws URISyntaxException {
         final Metadata md1 = create();
         final Metadata md2 = create();
-        assertEquals("equals", md1, md2);
-        assertEquals("hashCode", md1.hashCode(), md2.hashCode());
+        assertEquals(md1, md2);
+        assertEquals(md1.hashCode(), md2.hashCode());
         md2.author.name = "someone else";
-        assertNotEquals("equals", md1, md2);
-        assertNotEquals("hashCode", md1.hashCode(), md2.hashCode());
+        assertNotEquals(md1, md2);
+        assertNotEquals(md1.hashCode(), md2.hashCode());
     }
 
     /**
@@ -69,7 +69,7 @@ public final class MetadataTest extends TestCase {
      */
     @Test
     @DependsOnMethod("testEqualsAndHashCode")
-    @Ignore("Can not execute this test on this branch because it depends on Citation.getOnlineResources() "
+    @Disabled("Can not execute this test on this branch because it depends on Citation.getOnlineResources() "
           + "and Identification.getExtents() methods, which are not present in GeoAPI 3.0 interfaces. "
           + "Despite this test failure, the copy constructor should nevertheless works in practice "
           + "if the Citation and Identification objects are instances of DefaultCitation or AbstractExtent "
@@ -77,8 +77,8 @@ public final class MetadataTest extends TestCase {
     public void testCopyConstructor() throws URISyntaxException {
         final Metadata md1 = create();
         final Metadata md2 = new Metadata(md1, null);
-        assertEquals("equals", md1, md2);
-        assertEquals("hashCode", md1.hashCode(), md2.hashCode());
+        assertEquals(md1, md2);
+        assertEquals(md1.hashCode(), md2.hashCode());
     }
 
     /**

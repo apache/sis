@@ -17,10 +17,11 @@
 package org.apache.sis.test.widget;
 
 import java.util.Enumeration;
+import java.util.function.Supplier;
 import javax.swing.tree.TreeNode;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -50,29 +51,30 @@ public final class SwingAssertions {
         }
         int n = 1;
         assertNotNull(actual);
-        assertEquals("isLeaf()",            expected.isLeaf(),            actual.isLeaf());
-        assertEquals("getAllowsChildren()", expected.getAllowsChildren(), actual.getAllowsChildren());
-        assertEquals("getChildCount()",     expected.getChildCount(),     actual.getChildCount());
+        assertEquals(expected.isLeaf(),            actual.isLeaf());
+        assertEquals(expected.getAllowsChildren(), actual.getAllowsChildren());
+        assertEquals(expected.getChildCount(),     actual.getChildCount());
         @SuppressWarnings("unchecked") final Enumeration<? extends TreeNode> ec = expected.children();
         @SuppressWarnings("unchecked") final Enumeration<? extends TreeNode> ac = actual  .children();
 
         int childIndex = 0;
         while (ec.hasMoreElements()) {
-            assertTrue("hasMoreElements()", ac.hasMoreElements());
+            assertTrue(ac.hasMoreElements());
             final TreeNode nextExpected = ec.nextElement();
             final TreeNode nextActual   = ac.nextElement();
-            final String message = "getChildAt(" + childIndex + ')';
-            assertSame(message, nextExpected, expected.getChildAt(childIndex));
-            assertSame(message, nextActual,   actual  .getChildAt(childIndex));
-            assertSame("getParent()", expected, nextExpected.getParent());
-            assertSame("getParent()", actual,   nextActual  .getParent());
-            assertSame("getIndex(TreeNode)", childIndex, expected.getIndex(nextExpected));
-            assertSame("getIndex(TreeNode)", childIndex, actual  .getIndex(nextActual));
+            final int ci = childIndex;  // For lambda expression.
+            final Supplier<String> message = () -> "getChildAt(" + ci + ')';
+            assertSame(nextExpected, expected.getChildAt(childIndex), message);
+            assertSame(nextActual,   actual  .getChildAt(childIndex), message);
+            assertSame(expected, nextExpected.getParent());
+            assertSame(actual,   nextActual  .getParent());
+            assertSame(childIndex, expected.getIndex(nextExpected));
+            assertSame(childIndex, actual  .getIndex(nextActual));
             n += assertTreeEquals(nextExpected, nextActual);
             childIndex++;
         }
-        assertFalse("hasMoreElements()", ac.hasMoreElements());
-        assertEquals("toString()", expected.toString(), actual.toString());
+        assertFalse(ac.hasMoreElements());
+        assertEquals(expected.toString(), actual.toString());
         return n;
     }
 }

@@ -21,11 +21,11 @@ import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.util.PositionalAccuracyConstant;
 
 // Test dependencies
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.junit.Assume.assumeFalse;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
@@ -45,7 +45,7 @@ public final class ReferencingFunctionsTest extends TestCase {
     /**
      * Creates a {@link ReferencingFunctions} instance to use for all tests.
      */
-    @BeforeClass
+    @BeforeAll
     public static void createReferencingInstance() {
         instance = new ReferencingFunctions(null);
         instance.setLocale(new com.sun.star.lang.Locale("en", "US", null));
@@ -54,7 +54,7 @@ public final class ReferencingFunctionsTest extends TestCase {
     /**
      * Disposes the {@link ReferencingFunctions} instance after all tests completed.
      */
-    @AfterClass
+    @AfterAll
     public static void disposeReferencingInstance() {
         instance = null;
     }
@@ -70,8 +70,8 @@ public final class ReferencingFunctionsTest extends TestCase {
      */
     @Test
     public void verifyNames() {
-        assertEquals("IMPLEMENTATION_NAME", ReferencingFunctions.class.getName(), ReferencingFunctions.IMPLEMENTATION_NAME);
-        assertTrue("SERVICE_NAME", ReferencingFunctions.IMPLEMENTATION_NAME.startsWith(ReferencingFunctions.SERVICE_NAME));
+        assertEquals(ReferencingFunctions.class.getName(), ReferencingFunctions.IMPLEMENTATION_NAME);
+        assertTrue(ReferencingFunctions.IMPLEMENTATION_NAME.startsWith(ReferencingFunctions.SERVICE_NAME));
     }
 
     /**
@@ -79,12 +79,11 @@ public final class ReferencingFunctionsTest extends TestCase {
      */
     @Test
     public void testGetName() {
-        assertEquals("Using a simple code.", "WGS 84", instance.getName("EPSG:4326"));
-        assertEquals("Using a URN.",         "WGS 84", instance.getName("urn:ogc:def:crs:epsg::4326"));
-        assertEquals("Using a HTTP code.",   "WGS 84", instance.getName("http://www.opengis.net/gml/srs/epsg.xml#4326"));
-        assertEquals("Cached value.",        "WGS 84", instance.getName("EPSG:4326"));
-        assertEquals("URN for a datum.", "World Geodetic System 1984",
-                instance.getName("urn:ogc:def:datum:epsg::6326"));
+        assertEquals("WGS 84", instance.getName("EPSG:4326"));
+        assertEquals("WGS 84", instance.getName("urn:ogc:def:crs:epsg::4326"));
+        assertEquals("WGS 84", instance.getName("http://www.opengis.net/gml/srs/epsg.xml#4326"));
+        assertEquals("WGS 84", instance.getName("EPSG:4326"));
+        assertEquals("World Geodetic System 1984", instance.getName("urn:ogc:def:datum:epsg::6326"));
     }
 
     /**
@@ -116,7 +115,7 @@ public final class ReferencingFunctionsTest extends TestCase {
     @Test
     public void testGetDomainOfValidity() {
         final String domain = instance.getDomainOfValidity("EPSG:4326");
-        assertTrue(domain, domain.contains("World"));
+        assertTrue(domain.contains("World"), domain);
     }
 
     /**
@@ -126,9 +125,9 @@ public final class ReferencingFunctionsTest extends TestCase {
     public void testGetGeographicArea() {
         final double[][] bbox = instance.getGeographicArea("EPSG:32620");     // UTM zone 20
         assumeFalse(bbox.length == 0);            // Empty if EPSG dataset is not installed.
-        assertEquals("bbox.length", 2, bbox.length);
-        assertArrayEquals("Upper left corner",  new double[] {84, -66}, bbox[0], STRICT);
-        assertArrayEquals("Lower right corner", new double[] { 0, -60}, bbox[1], STRICT);
+        assertEquals(2, bbox.length);
+        assertArrayEquals(new double[] {84, -66}, bbox[0]);
+        assertArrayEquals(new double[] { 0, -60}, bbox[1]);
     }
 
     /**
@@ -147,9 +146,8 @@ public final class ReferencingFunctionsTest extends TestCase {
             {41.837,  -87.685},     // Chicago
             {25.775,  -80.209},     // Miami
         });
-        assertTrue("Accuracy = " + accuracy,
-                accuracy > Formulas.LINEAR_TOLERANCE &&
-                accuracy <= PositionalAccuracyConstant.UNKNOWN_ACCURACY);
+        assertTrue(accuracy > Formulas.LINEAR_TOLERANCE &&
+                   accuracy <= PositionalAccuracyConstant.UNKNOWN_ACCURACY);
     }
 
     /**
@@ -199,9 +197,9 @@ public final class ReferencingFunctionsTest extends TestCase {
      */
     @Test
     public void testParseAngle() throws IllegalArgumentException {
-        assertEquals(43.50, singleton(instance.parseAngle(new String[][] {{"43°30'"}}, "D°MM.m'", "en")), STRICT);
-        assertEquals(43.50, singleton(instance.parseAngle(new String[][] {{"4330"}},   "DMM",     "en")), STRICT);
-        assertEquals(-3.25, singleton(instance.parseAngle(new String[][] {{"-3°15'"}}, "D°MM.m'", "en")), STRICT);
+        assertEquals(43.50, singleton(instance.parseAngle(new String[][] {{"43°30'"}}, "D°MM.m'", "en")));
+        assertEquals(43.50, singleton(instance.parseAngle(new String[][] {{"4330"}},   "DMM",     "en")));
+        assertEquals(-3.25, singleton(instance.parseAngle(new String[][] {{"-3°15'"}}, "D°MM.m'", "en")));
     }
 
     /**
@@ -220,8 +218,8 @@ public final class ReferencingFunctionsTest extends TestCase {
      * Ensures that the given array contains exactly one element and returns that element.
      */
     private static double singleton(final double[][] value) {
-        assertEquals("array length", 1, value.length);
-        assertEquals("array length", 1, value[0].length);
+        assertEquals(1, value.length);
+        assertEquals(1, value[0].length);
         return value[0][0];
     }
 
@@ -229,8 +227,8 @@ public final class ReferencingFunctionsTest extends TestCase {
      * Ensures that the given array contains exactly one element and returns that element.
      */
     private static String singleton(final String[][] value) {
-        assertEquals("array length", 1, value.length);
-        assertEquals("array length", 1, value[0].length);
+        assertEquals(1, value.length);
+        assertEquals(1, value[0].length);
         return value[0][0];
     }
 }

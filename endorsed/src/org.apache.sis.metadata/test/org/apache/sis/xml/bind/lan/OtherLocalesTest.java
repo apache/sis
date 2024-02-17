@@ -24,8 +24,8 @@ import java.nio.charset.Charset;
 import static java.util.Locale.*;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -67,25 +67,25 @@ public final class OtherLocalesTest extends TestCase {
          */
         assertNull(languages.put(ENGLISH, null));
         final Set<PT_Locale> otherLocales = OtherLocales.filter(languages);
-        assertEquals("size", 0, otherLocales.size());
+        assertEquals(0, otherLocales.size());
         /*
          * All elements after the first one in the 'language' list are "other locales".
          */
         assertNull(languages.put(FRENCH, null));
-        assertEquals("size", 1, otherLocales.size());
+        assertEquals(1, otherLocales.size());
         assertArrayEquals(new Locale[] {FRENCH}, toArray(otherLocales));
         /*
          * Adding to the "other locales" collection shall delegate to the 'languages' list.
          */
         assertTrue(otherLocales.add(new PT_Locale(JAPANESE)));
-        assertEquals("size", 2, otherLocales.size());
+        assertEquals(2, otherLocales.size());
         assertArrayEquals(new Locale[] {FRENCH, JAPANESE}, toArray(otherLocales));
         assertArrayEquals(new Locale[] {ENGLISH, FRENCH, JAPANESE}, languages.keySet().toArray());
         /*
          * Clearing the "other locales" list shall not remove the default locale.
          */
         otherLocales.clear();
-        assertEquals("size", 0, otherLocales.size());
+        assertEquals(0, otherLocales.size());
         assertArrayEquals(new Locale[] {ENGLISH}, languages.keySet().toArray());
         /*
          * The first 'add' operation on an empty 'languages' list generates a default locale.
@@ -94,7 +94,7 @@ public final class OtherLocalesTest extends TestCase {
         languages.clear();
         assertTrue(otherLocales.add(new PT_Locale(FRENCH)));
         assertArrayEquals(new Locale[] {FRENCH}, toArray(otherLocales));
-        assertEquals("size", 2, languages.size());
+        assertEquals(2, languages.size());
     }
 
     /**

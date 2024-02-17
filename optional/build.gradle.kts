@@ -70,11 +70,8 @@ dependencies {
     runtimeOnly   (drivers.derby.tools)
 
     // Test dependencies
-    testImplementation(tests.geoapi)
     testImplementation(tests.junit5)
-    testImplementation(tests.junit4)
-    testRuntimeOnly   (tests.junit)
-    testRuntimeOnly   (tests.junitLauncher)
+    testRuntimeOnly   (tests.jupiter)
 }
 
 /*
@@ -89,7 +86,7 @@ tasks.compileJava {
 tasks.compileTestJava {
     patchForTests(options.compilerArgs);
     srcDir.list().forEach {
-        addRead(options.compilerArgs, it, "org.apache.sis.test.optional,org.junit.jupiter.api,junit")
+        addRead(options.compilerArgs, it, "org.apache.sis.test.optional,org.junit.jupiter.api")
     }
 }
 

@@ -21,8 +21,8 @@ import static java.lang.Double.NaN;
 import static java.lang.Double.doubleToLongBits;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 
@@ -100,13 +100,13 @@ public final class AngleTest extends TestCase {
      */
     @Test
     public void testClamp() {
-        assertEquals( 45, Latitude.clamp( 45), STRICT);
-        assertEquals(-45, Latitude.clamp(-45), STRICT);
-        assertEquals( 90, Latitude.clamp( 95), STRICT);
-        assertEquals(-90, Latitude.clamp(-95), STRICT);
-        assertEquals(NaN, Latitude.clamp(NaN), STRICT);
-        assertEquals( 90, Latitude.clamp(Double.POSITIVE_INFINITY), STRICT);
-        assertEquals(-90, Latitude.clamp(Double.NEGATIVE_INFINITY), STRICT);
+        assertEquals( 45, Latitude.clamp( 45));
+        assertEquals(-45, Latitude.clamp(-45));
+        assertEquals( 90, Latitude.clamp( 95));
+        assertEquals(-90, Latitude.clamp(-95));
+        assertEquals(NaN, Latitude.clamp(NaN));
+        assertEquals( 90, Latitude.clamp(Double.POSITIVE_INFINITY));
+        assertEquals(-90, Latitude.clamp(Double.NEGATIVE_INFINITY));
         assertEquals(doubleToLongBits(+0.0), doubleToLongBits(Latitude.clamp(+0.0)));
         assertEquals(doubleToLongBits(-0.0), doubleToLongBits(Latitude.clamp(-0.0)));       // Sign shall be preserved.
     }
@@ -116,19 +116,19 @@ public final class AngleTest extends TestCase {
      */
     @Test
     public void testNormalize() {
-        assertEquals(  20, Longitude.normalize(  20), STRICT);
-        assertEquals( -20, Longitude.normalize( -20), STRICT);
-        assertEquals(  20, Longitude.normalize( 380), STRICT);
-        assertEquals( -20, Longitude.normalize( 340), STRICT);
-        assertEquals( 120, Longitude.normalize( 120), STRICT);
-        assertEquals(-120, Longitude.normalize(-120), STRICT);
-        assertEquals(-160, Longitude.normalize( 200), STRICT);
-        assertEquals( 160, Longitude.normalize(-200), STRICT);
-        assertEquals(-180, Longitude.normalize(-180), STRICT);
-        assertEquals(-180, Longitude.normalize( 180), STRICT);                      // Upper value shall be exclusive.
-        assertEquals(NaN,  Longitude.normalize( NaN), STRICT);
-        assertEquals(NaN,  Longitude.normalize(Double.POSITIVE_INFINITY), STRICT);
-        assertEquals(NaN,  Longitude.normalize(Double.NEGATIVE_INFINITY), STRICT);
+        assertEquals(  20, Longitude.normalize(  20));
+        assertEquals( -20, Longitude.normalize( -20));
+        assertEquals(  20, Longitude.normalize( 380));
+        assertEquals( -20, Longitude.normalize( 340));
+        assertEquals( 120, Longitude.normalize( 120));
+        assertEquals(-120, Longitude.normalize(-120));
+        assertEquals(-160, Longitude.normalize( 200));
+        assertEquals( 160, Longitude.normalize(-200));
+        assertEquals(-180, Longitude.normalize(-180));
+        assertEquals(-180, Longitude.normalize( 180));                      // Upper value shall be exclusive.
+        assertEquals(NaN,  Longitude.normalize( NaN));
+        assertEquals(NaN,  Longitude.normalize(Double.POSITIVE_INFINITY));
+        assertEquals(NaN,  Longitude.normalize(Double.NEGATIVE_INFINITY));
         assertEquals(doubleToLongBits(+0.0), doubleToLongBits(Longitude.normalize(+0.0)));
         assertEquals(doubleToLongBits(-0.0), doubleToLongBits(Longitude.normalize(-0.0)));  // Sign shall be preserved.
     }

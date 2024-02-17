@@ -24,10 +24,10 @@ import org.apache.sis.xml.bind.Context;
 import static org.apache.sis.xml.bind.gml.MeasureTest.UOM_URL;
 
 // Test dependencies
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
@@ -46,13 +46,13 @@ public final class DefaultResolutionTest extends TestCase {
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
      * do so, but should be considered as an implementation details (it should have been a private field).
      */
-    @Rule
+    @RegisterExtension
     public final LoggingWatcher loggings = new LoggingWatcher(Context.LOGGER);
 
     /**
      * Verifies that no unexpected warning has been emitted in any test defined in this class.
      */
-    @After
+    @AfterEach
     public void assertNoUnexpectedLog() {
         loggings.assertNoUnexpectedLog();
     }
@@ -70,9 +70,9 @@ public final class DefaultResolutionTest extends TestCase {
      */
     @Test
     public void testConstructor() {
-        final DefaultRepresentativeFraction scale = new DefaultRepresentativeFraction();
+        final var scale = new DefaultRepresentativeFraction();
         scale.setDenominator(100);
-        final DefaultResolution metadata = new DefaultResolution(scale);
+        final var metadata = new DefaultResolution(scale);
         assertSame(scale, metadata.getEquivalentScale());
     }
 
@@ -82,28 +82,28 @@ public final class DefaultResolutionTest extends TestCase {
      */
     @Test
     public void testSetExclusiveProperties() {
-        final DefaultResolution metadata = new DefaultResolution();
-        final DefaultRepresentativeFraction scale = new DefaultRepresentativeFraction();
+        final var metadata = new DefaultResolution();
+        final var scale = new DefaultRepresentativeFraction();
         scale.setDenominator(100);
 
         metadata.setDistance(2.0);
-        assertEquals("distance", Double.valueOf(2.0), metadata.getDistance());
-        assertNull("equivalentScale", metadata.getEquivalentScale());
+        assertEquals(Double.valueOf(2.0), metadata.getDistance());
+        assertNull(metadata.getEquivalentScale());
         loggings.assertNoUnexpectedLog();
 
         metadata.setEquivalentScale(scale);
-        assertSame("equivalentScale", scale, metadata.getEquivalentScale());
-        assertNull("distance", metadata.getDistance());
+        assertSame(scale, metadata.getEquivalentScale());
+        assertNull(metadata.getDistance());
         loggings.assertNextLogContains("distance", "equivalentScale");
         loggings.assertNoUnexpectedLog();
 
         metadata.setDistance(null); // Expected to be a no-op.
-        assertSame("equivalentScale", scale, metadata.getEquivalentScale());
-        assertNull("distance", metadata.getDistance());
+        assertSame(scale, metadata.getEquivalentScale());
+        assertNull(metadata.getDistance());
 
         metadata.setEquivalentScale(null);
-        assertNull("equivalentScale", metadata.getEquivalentScale());
-        assertNull("distance", metadata.getDistance());
+        assertNull(metadata.getEquivalentScale());
+        assertNull(metadata.getDistance());
     }
 
     /**
@@ -122,7 +122,7 @@ public final class DefaultResolutionTest extends TestCase {
      */
     @Test
     public void testXML() throws JAXBException {
-        final DefaultResolution resolution = new DefaultResolution();
+        final var resolution = new DefaultResolution();
         resolution.setDistance(1000.0);
         final String xml = marshal(resolution);
         assertXmlEquals(
@@ -153,7 +153,7 @@ public final class DefaultResolutionTest extends TestCase {
      */
     @Test
     public void testLegacyXML() throws JAXBException {
-        final DefaultResolution resolution = new DefaultResolution();
+        final var resolution = new DefaultResolution();
         resolution.setDistance(1000.0);
         final String xml = marshal(resolution, VERSION_2007);
         assertXmlEquals(

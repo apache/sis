@@ -27,8 +27,8 @@ import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -64,8 +64,8 @@ public final class BursaWolfParametersTest extends TestCase {
         bursaWolf.rZ = 0.554;
         bursaWolf.dS = 0.219;
         bursaWolf.verify(PrimeMeridianMock.GREENWICH);
-        assertFalse("isIdentity",    bursaWolf.isIdentity());
-        assertFalse("isTranslation", bursaWolf.isTranslation());
+        assertFalse(bursaWolf.isIdentity());
+        assertFalse(bursaWolf.isTranslation());
         return bursaWolf;
     }
 
@@ -84,8 +84,8 @@ public final class BursaWolfParametersTest extends TestCase {
         bursaWolf.rZ =    0.3898;
         bursaWolf.dS =   -0.3143;
         bursaWolf.verify(PrimeMeridianMock.GREENWICH);
-        assertFalse("isIdentity",    bursaWolf.isIdentity());
-        assertFalse("isTranslation", bursaWolf.isTranslation());
+        assertFalse(bursaWolf.isIdentity());
+        assertFalse(bursaWolf.isTranslation());
         return bursaWolf;
     }
 
@@ -100,8 +100,8 @@ public final class BursaWolfParametersTest extends TestCase {
         bursaWolf.tY =  -60;
         bursaWolf.tZ =  320;
         bursaWolf.verify(PrimeMeridianMock.GREENWICH);
-        assertFalse("isIdentity",    bursaWolf.isIdentity());
-        assertTrue ("isTranslation", bursaWolf.isTranslation());
+        assertFalse(bursaWolf.isIdentity());
+        assertTrue (bursaWolf.isTranslation());
         return bursaWolf;
     }
 
@@ -128,12 +128,12 @@ public final class BursaWolfParametersTest extends TestCase {
      */
     @Test
     public void testGetValues() {
-        assertArrayEquals("Translation only", new double[] {-168, -60, 320},
-                createNTF_to_WGS84().getValues(), STRICT);
-        assertArrayEquals("All 7 params", new double[] {-82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143},
-                createED87_to_WGS84().getValues(), STRICT);
-        assertArrayEquals("Mixed", new double[] {0, 0, 4.5, 0, 0, 0.554, 0.219},
-                createWGS72_to_WGS84().getValues(), STRICT);
+        assertArrayEquals(new double[] {-168, -60, 320},                    // Translation only.
+                createNTF_to_WGS84().getValues());
+        assertArrayEquals(new double[] {-82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143},  // All 7 params.
+                createED87_to_WGS84().getValues());
+        assertArrayEquals(new double[] {0, 0, 4.5, 0, 0, 0.554, 0.219},     // Mixed.
+                createWGS72_to_WGS84().getValues());
     }
 
     /**
@@ -142,12 +142,12 @@ public final class BursaWolfParametersTest extends TestCase {
     @Test
     @DependsOnMethod("testGetValues")
     public void testSetValues() {
-        final BursaWolfParameters actual =  createWGS72_to_WGS84();
+        final BursaWolfParameters actual   = createWGS72_to_WGS84();
         final BursaWolfParameters expected = createED87_to_WGS84();
         final double[] values = expected.getValues();
-        assertFalse("equals(Object) before to set the values.", actual.equals(expected));
+        assertNotEquals(expected, actual);
         actual.setValues(values);
-        assertArrayEquals("getValues() after setting the values.", values, actual.getValues(), STRICT);
+        assertArrayEquals(values, actual.getValues());
         // Cannot test assertEquals(expected, actual) because of different geographic extent.
     }
 

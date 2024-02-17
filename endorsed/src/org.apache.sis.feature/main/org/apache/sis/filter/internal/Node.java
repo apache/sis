@@ -347,7 +347,7 @@ public abstract class Node implements Serializable {
      */
     @Override
     public final String toString() {
-        final DefaultTreeTable table = new DefaultTreeTable(TableColumn.VALUE);
+        final var table = new DefaultTreeTable(TableColumn.VALUE);
         toTree(table.getRoot(), new IdentityHashMap<>());
         return table.toString();
     }

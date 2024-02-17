@@ -21,13 +21,18 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.logging.Handler;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.logging.LogRecord;
+import java.util.logging.ConsoleHandler;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import org.apache.sis.system.Loggers;
 import org.apache.sis.system.Modules;
 import org.apache.sis.io.TableAppender;
+import org.apache.sis.util.logging.Logging;
 
 // Test dependencies
-import org.junit.runner.Description;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
 
 /**
@@ -43,9 +48,43 @@ final class LogRecordCollector extends Handler {
     private static final String CLASSNAME_SUFFIX = "Test";
 
     /**
+     * The parent logger of all Apache SIS loggers.
+     * Needs to be retained by strong reference.
+     */
+    private static final Logger LOGGER = Logger.getLogger(Loggers.ROOT);
+
+    /**
      * The unique instance.
      */
     static final LogRecordCollector INSTANCE = new LogRecordCollector();
+
+    /**
+     * Sets the encoding of the console logging handler, if an encoding has been specified.
+     * Note that we look specifically for {@link ConsoleHandler}, we do not generalize to
+     * {@link StreamHandler} because the log files may not be intended for being show in
+     * the console.
+     *
+     * <p>In case of failure to use the given encoding, we will just print a short error
+     * message and left the encoding unchanged.</p>
+     */
+    static {
+        final String encoding = System.getProperty(TestConfiguration.OUTPUT_ENCODING_KEY);
+        if (encoding != null) try {
+            for (Logger logger=LOGGER; logger!=null; logger=logger.getParent()) {
+                for (final Handler handler : logger.getHandlers()) {
+                    if (handler instanceof ConsoleHandler) {
+                        handler.setEncoding(encoding);
+                    }
+                }
+                if (!logger.getUseParentHandlers()) {
+                    break;
+                }
+            }
+        } catch (UnsupportedEncodingException e) {
+            Logging.recoverableException(LOGGER, LogRecordCollector.class, "<clinit>", e);
+        }
+        LOGGER.addHandler(INSTANCE);
+    }
 
     /**
      * All log records collected during the test execution.
@@ -62,10 +101,10 @@ final class LogRecordCollector extends Handler {
     /**
      * The description of the test currently running.
      */
-    private Description currentTest;
+    private ExtensionContext currentTest;
 
     /**
-     * For the {@link TestCase} static initializer only.
+     * Creates a new log record collector.
      */
     private LogRecordCollector() {
         setLevel(Level.INFO);
@@ -74,7 +113,7 @@ final class LogRecordCollector extends Handler {
     /**
      * Sets the description of the tests which is currently running, or {@code null} if the test finished.
      */
-    final void setCurrentTest(final Description description) {
+    final void setCurrentTest(final ExtensionContext description) {
         synchronized (records) {
             currentTest = description;
         }
@@ -90,8 +129,8 @@ final class LogRecordCollector extends Handler {
             String cname;
             String method;
             if (currentTest != null) {
-                cname  = currentTest.getClassName();
-                method = currentTest.getMethodName();
+                cname  = currentTest.getRequiredTestClass().getCanonicalName();
+                method = currentTest.getRequiredTestMethod().getName();
             } else {
                 /*
                  * If the test does not extent TestCase, we are not notified about its execution.

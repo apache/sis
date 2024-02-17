@@ -30,17 +30,17 @@ import org.apache.sis.util.internal.Constants;
 import org.apache.sis.referencing.internal.EPSGFactoryProxy;
 import org.apache.sis.referencing.factory.CommonAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
-import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 
 // Test dependencies
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertNotDeepEquals;
 
 
@@ -54,13 +54,13 @@ public final class AuthorityFactoriesTest extends TestCase {
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
      * do so, but should be considered as an implementation details (it should have been a private field).
      */
-    @Rule
+    @RegisterExtension
     public final LoggingWatcher loggings = new LoggingWatcher(Loggers.CRS_FACTORY);
 
     /**
      * Verifies that no unexpected warning has been emitted in any test defined in this class.
      */
-    @After
+    @AfterEach
     public void assertNoUnexpectedLog() {
         loggings.assertNoUnexpectedLog();
     }
@@ -82,15 +82,15 @@ public final class AuthorityFactoriesTest extends TestCase {
         for (CRSAuthorityFactory factory : ServiceLoader.load(CRSAuthorityFactory.class, AuthorityFactories.class.getClassLoader())) {
             if (factory instanceof CommonAuthorityFactory) {
                 foundCommon = true;
-                assertTrue("Should not have found EPSGFactoryProxy after CommonAuthorityFactory.", foundProxy);
+                assertTrue(foundProxy, "Should not have found EPSGFactoryProxy after CommonAuthorityFactory.");
             }
             if (factory instanceof EPSGFactoryProxy) {
                 foundProxy = true;
-                assertFalse("Should not have found EPSGFactoryProxy after CommonAuthorityFactory.", foundCommon);
+                assertFalse(foundCommon, "Should not have found EPSGFactoryProxy after CommonAuthorityFactory.");
             }
         }
-        assertTrue("Factory not found.", foundCommon);
-        assertTrue("Factory not found.", foundProxy);
+        assertTrue(foundCommon, "Factory not found.");
+        assertTrue(foundProxy,  "Factory not found.");
     }
 
     /**
@@ -186,21 +186,16 @@ public final class AuthorityFactoriesTest extends TestCase {
         assertSame(expected, actual);
         assertSame(expected, factory.createObject("CRS:27"));
 
-        try {
-            factory.createCoordinateReferenceSystem("84");
-            fail("Should not work without authority.");
-        } catch (NoSuchAuthorityCodeException exception) {
-            // This is the expected exception.
-            assertEquals("84", exception.getAuthorityCode());
-        }
+        NoSuchAuthorityCodeException exception;
+        exception = assertThrows(NoSuchAuthorityCodeException.class,
+                () -> factory.createCoordinateReferenceSystem("84"),
+                "Should not work without authority.");
+        assertEquals("84", exception.getAuthorityCode());
 
-        try {
-            factory.createCoordinateReferenceSystem("FOO:84");
-            fail("Should not work with unknown authority.");
-        } catch (NoSuchAuthorityFactoryException exception) {
-            // This is the expected exception.
-            assertEquals("FOO", exception.getAuthority());
-        }
+        exception = assertThrows(NoSuchAuthorityCodeException.class,
+                () -> factory.createCoordinateReferenceSystem("FOO:84"),
+                "Should not work with unknown authority.");
+        assertEquals("FOO", exception.getAuthority());
     }
 
     /**
@@ -224,19 +219,16 @@ public final class AuthorityFactoriesTest extends TestCase {
         actual = factory.createCoordinateReferenceSystem("http://www.opengis.net/gml/srs/CRS.xml#84");
         assertSame(expected, actual);
 
-        try {
-            factory.createCoordinateReferenceSystem("http://www.dummy.net/gml/srs/CRS#84");
-            fail("Should not accept http://www.dummy.net");
-        } catch (NoSuchAuthorityCodeException e) {
-            assertNotNull(e.getMessage());
-        }
+        NoSuchAuthorityCodeException exception;
+        exception = assertThrows(NoSuchAuthorityCodeException.class,
+                () -> factory.createCoordinateReferenceSystem("http://www.dummy.net/gml/srs/CRS#84"),
+                "Should not accept http://www.dummy.net");
+        assertMessageContains(exception);
 
-        try {
-            factory.createCoordinateReferenceSystem("http://www.opengis.net/gml/dummy/CRS#84");
-            fail("Should not accept “dummy” as an authority");
-        } catch (NoSuchAuthorityCodeException e) {
-            assertNotNull(e.getMessage());
-        }
+        exception = assertThrows(NoSuchAuthorityCodeException.class,
+                () -> factory.createCoordinateReferenceSystem("http://www.opengis.net/gml/dummy/CRS#84"),
+                "Should not accept “dummy” as an authority");
+        assertMessageContains(exception);
     }
 
     /**
@@ -263,7 +255,7 @@ public final class AuthorityFactoriesTest extends TestCase {
         final CRSAuthorityFactory factory = AuthorityFactories.ALL;
         final IdentifiedObjectFinder finder = AuthorityFactories.ALL.newIdentifiedObjectFinder();
         final IdentifiedObject find = finder.findSingleton(HardCodedCRS.WGS84);
-        assertNotNull("With scan allowed, should find the CRS.", find);
+        assertNotNull(find, "With scan allowed, should find the CRS.");
         assertTrue(HardCodedCRS.WGS84.equals(find, ComparisonMode.DEBUG));
         assertSame(factory.createCoordinateReferenceSystem("CRS:84"), find);
     }

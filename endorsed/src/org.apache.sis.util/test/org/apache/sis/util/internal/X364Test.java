@@ -20,8 +20,8 @@ import static java.lang.String.valueOf;
 import static org.apache.sis.util.internal.X364.*;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 
@@ -46,7 +46,7 @@ public final class X364Test extends TestCase {
     public void testForColorName() {
         for (final X364 value : X364.values()) {
             if (value.color != null) {
-                assertSame(value.color, value.foreground(), X364.forColorName(value.color));
+                assertSame(value.foreground(), X364.forColorName(value.color), value.color);
             }
         }
     }

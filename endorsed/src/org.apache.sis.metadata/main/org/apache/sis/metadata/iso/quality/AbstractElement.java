@@ -171,7 +171,7 @@ public class AbstractElement extends ISOMetadata implements Element {
                 evaluationMethod = impl.getEvaluationMethod();
                 derivedElements  = copyCollection(impl.getDerivedElements(), Element.class);
                 if ((measureReference = impl.getMeasureReference()) == null) {
-                    DefaultMeasureReference candidate = new DefaultMeasureReference();
+                    final var candidate = new DefaultMeasureReference();
                     if (candidate.setLegacy(object)) measureReference = candidate;
                 }
             }

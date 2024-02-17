@@ -34,12 +34,13 @@ import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.ComparisonMode;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -90,33 +91,33 @@ public final class MetadataStandardTest extends TestCase {
     @Test
     public void testIsMetadata() {
         standard = MetadataStandard.ISO_19115;
-        assertFalse("isMetadata(String)",                 isMetadata(String.class));
-        assertTrue ("isMetadata(Citation)",               isMetadata(Citation.class));
-        assertTrue ("isMetadata(DefaultCitation)",        isMetadata(DefaultCitation.class));
-        assertFalse("isMetadata(IdentifiedObject)",       isMetadata(IdentifiedObject.class));
-        assertFalse("isMetadata(SimpleIdentifiedObject)", isMetadata(SimpleIdentifiedObject.class));
-        assertFalse("isMetadata(GeographicCRS)",          isMetadata(GeographicCRS.class));
-//      assertFalse("isMetadata(RectifiedGrid)",          isMetadata(RectifiedGrid.class));
-        assertFalse("isMetadata(Double)",                 isMetadata(Double.class));
-        assertFalse("isMetadata(double)",                 isMetadata(Double.TYPE));
+        assertFalse(isMetadata(String.class));
+        assertTrue (isMetadata(Citation.class));
+        assertTrue (isMetadata(DefaultCitation.class));
+        assertFalse(isMetadata(IdentifiedObject.class));
+        assertFalse(isMetadata(SimpleIdentifiedObject.class));
+        assertFalse(isMetadata(GeographicCRS.class));
+//      assertFalse(isMetadata(RectifiedGrid.class));
+        assertFalse(isMetadata(Double.class));
+        assertFalse(isMetadata(Double.TYPE));
 
         standard = MetadataStandard.ISO_19111;
-        assertFalse("isMetadata(String)",                 isMetadata(String.class));
-        assertTrue ("isMetadata(Citation)",               isMetadata(Citation.class));               // Dependency
-        assertTrue ("isMetadata(DefaultCitation)",        isMetadata(DefaultCitation.class));        // Dependency
-        assertTrue ("isMetadata(IdentifiedObject)",       isMetadata(IdentifiedObject.class));
-        assertTrue ("isMetadata(SimpleIdentifiedObject)", isMetadata(SimpleIdentifiedObject.class));
-        assertTrue ("isMetadata(GeographicCRS)",          isMetadata(GeographicCRS.class));
-//      assertFalse("isMetadata(RectifiedGrid)",          isMetadata(RectifiedGrid.class));
+        assertFalse(isMetadata(String.class));
+        assertTrue (isMetadata(Citation.class));               // Dependency
+        assertTrue (isMetadata(DefaultCitation.class));        // Dependency
+        assertTrue (isMetadata(IdentifiedObject.class));
+        assertTrue (isMetadata(SimpleIdentifiedObject.class));
+        assertTrue (isMetadata(GeographicCRS.class));
+//      assertFalse(isMetadata(RectifiedGrid.class));
 
         standard = MetadataStandard.ISO_19123;
-        assertFalse("isMetadata(String)",                 isMetadata(String.class));
-        assertTrue ("isMetadata(Citation)",               isMetadata(Citation.class));               // Transitive dependency
-        assertTrue ("isMetadata(DefaultCitation)",        isMetadata(DefaultCitation.class));        // Transivive dependency
-        assertTrue ("isMetadata(IdentifiedObject)",       isMetadata(IdentifiedObject.class));       // Dependency
-        assertTrue ("isMetadata(SimpleIdentifiedObject)", isMetadata(SimpleIdentifiedObject.class)); // Dependency
-        assertTrue ("isMetadata(GeographicCRS)",          isMetadata(GeographicCRS.class));          // Dependency
-//      assertTrue ("isMetadata(RectifiedGrid)",          isMetadata(RectifiedGrid.class));
+        assertFalse(isMetadata(String.class));
+        assertTrue (isMetadata(Citation.class));               // Transitive dependency
+        assertTrue (isMetadata(DefaultCitation.class));        // Transivive dependency
+        assertTrue (isMetadata(IdentifiedObject.class));       // Dependency
+        assertTrue (isMetadata(SimpleIdentifiedObject.class)); // Dependency
+        assertTrue (isMetadata(GeographicCRS.class));          // Dependency
+//      assertTrue (isMetadata(RectifiedGrid.class));
     }
 
     /**
@@ -133,18 +134,18 @@ public final class MetadataStandardTest extends TestCase {
     @DependsOnMethod("testIsMetadata")
     public void testGetInterface() {
         standard = MetadataStandard.ISO_19115;
-        assertEquals("getInterface(Citation)",               Citation.class,         getInterface(Citation.class));
-        assertEquals("getInterface(DefaultCitation)",        Citation.class,         getInterface(DefaultCitation.class));
-        assertEquals("getInterface(AbstractCompleteness)",   Completeness.class,     getInterface(AbstractCompleteness.class));
-        assertEquals("getInterface(GeographicExtent)",       GeographicExtent.class, getInterface(GeographicExtent.class));
+        assertEquals(Citation.class,         getInterface(Citation.class));
+        assertEquals(Citation.class,         getInterface(DefaultCitation.class));
+        assertEquals(Completeness.class,     getInterface(AbstractCompleteness.class));
+        assertEquals(GeographicExtent.class, getInterface(GeographicExtent.class));
 
         standard = MetadataStandard.ISO_19111;
-        assertEquals("getInterface(Citation)",               Citation.class,         getInterface(Citation.class));
-        assertEquals("getInterface(DefaultCitation)",        Citation.class,         getInterface(DefaultCitation.class));
-        assertEquals("getInterface(AbstractCompleteness)",   Completeness.class,     getInterface(AbstractCompleteness.class));
-        assertEquals("getInterface(IdentifiedObject)",       IdentifiedObject.class, getInterface(IdentifiedObject.class));
-        assertEquals("getInterface(SimpleIdentifiedObject)", IdentifiedObject.class, getInterface(SimpleIdentifiedObject.class));
-        assertEquals("getInterface(GeographicCRS)",          GeographicCRS.class,    getInterface(GeographicCRS.class));
+        assertEquals(Citation.class,         getInterface(Citation.class));
+        assertEquals(Citation.class,         getInterface(DefaultCitation.class));
+        assertEquals(Completeness.class,     getInterface(AbstractCompleteness.class));
+        assertEquals(IdentifiedObject.class, getInterface(IdentifiedObject.class));
+        assertEquals(IdentifiedObject.class, getInterface(SimpleIdentifiedObject.class));
+        assertEquals(GeographicCRS.class,    getInterface(GeographicCRS.class));
 
         // Verify that the cache has not been updated in inconsistent way.
         testIsMetadata();
@@ -165,14 +166,14 @@ public final class MetadataStandardTest extends TestCase {
     @DependsOnMethod("testGetInterface")
     public void testGetAccessor() {
         standard = MetadataStandard.ISO_19115;
-        assertEquals("getAccessor(DefaultCitation)",        Citation.class,         getAccessor(DefaultCitation.class, true));
-        assertEquals("getAccessor(AbstractCompleteness)",   Completeness.class,     getAccessor(AbstractCompleteness.class, true));
-        assertNull  ("getAccessor(SimpleIdentifiedObject)",                         getAccessor(SimpleIdentifiedObject.class, false));
+        assertEquals(Citation.class,         getAccessor(DefaultCitation.class, true));
+        assertEquals(Completeness.class,     getAccessor(AbstractCompleteness.class, true));
+        assertNull  (                        getAccessor(SimpleIdentifiedObject.class, false));
 
         standard = MetadataStandard.ISO_19111;
-        assertEquals("getAccessor(DefaultCitation)",        Citation.class,         getAccessor(DefaultCitation.class, true));
-        assertEquals("getAccessor(AbstractCompleteness)",   Completeness.class,     getAccessor(AbstractCompleteness.class, true));
-        assertEquals("getAccessor(SimpleIdentifiedObject)", IdentifiedObject.class, getAccessor(SimpleIdentifiedObject.class, true));
+        assertEquals(Citation.class,         getAccessor(DefaultCitation.class, true));
+        assertEquals(Completeness.class,     getAccessor(AbstractCompleteness.class, true));
+        assertEquals(IdentifiedObject.class, getAccessor(SimpleIdentifiedObject.class, true));
 
         // Verify that the cache has not been updated in inconsistent way.
         testGetInterface();
@@ -186,13 +187,8 @@ public final class MetadataStandardTest extends TestCase {
     @DependsOnMethod("testGetInterface")
     public void testGetWrongInterface() {
         standard = new MetadataStandard("SIS", "org.apache.sis.dummy.", (MetadataStandard[]) null);
-        try {
-            getInterface(DefaultCitation.class);
-            fail("No dummy interface expected.");
-        } catch (ClassCastException e) {
-            // This is the expected exception.
-            assertTrue(e.getMessage().contains("DefaultCitation"));
-        }
+        var e = assertThrows(ClassCastException.class, () -> getInterface(DefaultCitation.class));
+        assertMessageContains(e, "DefaultCitation");
     }
 
     /**
@@ -223,13 +219,15 @@ public final class MetadataStandardTest extends TestCase {
      * {@code platform.instrument} and {@code instrument.isMountedOn}.
      */
     static DefaultAcquisitionInformation createCyclicMetadata() {
-        final DefaultInstrument instrument = new DefaultInstrument();
+        final var instrument = new DefaultInstrument();
         instrument.setType(new SimpleInternationalString("An instrument type."));
-        final DefaultPlatform platform = new DefaultPlatform();
+
+        final var platform = new DefaultPlatform();
         platform.setDescription(new SimpleInternationalString("A platform."));
         instrument.setMountedOn(platform);
         platform.setInstruments(Set.of(instrument));
-        final DefaultAcquisitionInformation acquisition = new DefaultAcquisitionInformation();
+
+        final var acquisition = new DefaultAcquisitionInformation();
         acquisition.setPlatforms(Set.of(platform));
         return acquisition;
     }
@@ -244,12 +242,12 @@ public final class MetadataStandardTest extends TestCase {
     public void testEqualsOnCyclicMetadata() {
         final DefaultAcquisitionInformation p1 = createCyclicMetadata();
         final DefaultAcquisitionInformation p2 = createCyclicMetadata();
-        assertTrue("equals", p1.equals(p2));
+        assertTrue(p1.equals(p2));
 
-        final DefaultPlatform   platform   = (DefaultPlatform)   getSingleton(p2.getPlatforms());
-        final DefaultInstrument instrument = (DefaultInstrument) getSingleton(platform.getInstruments());
+        final var platform   = (DefaultPlatform)   getSingleton(p2.getPlatforms());
+        final var instrument = (DefaultInstrument) getSingleton(platform.getInstruments());
         instrument.setType(new SimpleInternationalString("Another instrument type."));
-        assertFalse("equals", p1.equals(p2));
+        assertNotEquals(p1, p2);
     }
 
     /**
@@ -260,11 +258,11 @@ public final class MetadataStandardTest extends TestCase {
     @Test
     @DependsOnMethod("testGetAccessor")
     public void testValueMap() {
-        final DefaultCitation instance = new DefaultCitation(HardCodedCitations.EPSG);
+        final var instance = new DefaultCitation(HardCodedCitations.EPSG);
         final Map<String,Object> map = MetadataStandard.ISO_19115.asValueMap(instance, null,
                 KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
-        assertFalse("The properties map shall not be empty.", map.isEmpty());
-        assertEquals("Unexpected number of properties.", 4, map.size());
+        assertFalse(map.isEmpty());
+        assertEquals(4, map.size());
         /*
          * Verify the set of keys in the ValueMap.
          *
@@ -274,20 +272,20 @@ public final class MetadataStandardTest extends TestCase {
          */
         final Set<String> keys = map.keySet();
         assertEquals("[title, identifiers, citedResponsibleParties, presentationForms]", keys.toString());
-        assertTrue  ("Shall exist and be defined.",   keys.contains("title"));
-        assertTrue  ("Shall exist and be defined.",   keys.contains("getTitle"));
-        assertTrue  ("Shall exist and be defined.",   keys.contains("identifier"));
-        assertTrue  ("Shall exist and be defined.",   keys.contains("identifiers"));
-        assertTrue  ("Shall exist and be defined.",   keys.contains("getIdentifiers"));
-        assertTrue  ("Shall exist and be defined.",   keys.contains("citedResponsibleParty"));
-        assertTrue  ("Shall exist and be defined.",   keys.contains("citedResponsibleParties"));
-        assertFalse ("Shall exist but be undefined.", keys.contains("ISBN"));
-        assertFalse ("Shall not exists.",             keys.contains("dummy"));
+        assertTrue  (keys.contains("title"));
+        assertTrue  (keys.contains("getTitle"));
+        assertTrue  (keys.contains("identifier"));
+        assertTrue  (keys.contains("identifiers"));
+        assertTrue  (keys.contains("getIdentifiers"));
+        assertTrue  (keys.contains("citedResponsibleParty"));
+        assertTrue  (keys.contains("citedResponsibleParties"));
+        assertFalse (keys.contains("ISBN"));
+        assertFalse (keys.contains("dummy"));
         /*
          * Verifies values.
          */
-        assertEquals("title", "EPSG Geodetic Parameter Dataset", map.get("title").toString());
-        assertEquals("title", "EPSG Geodetic Parameter Dataset", map.get("getTitle").toString());
+        assertEquals("EPSG Geodetic Parameter Dataset", map.get("title").toString());
+        assertEquals("EPSG Geodetic Parameter Dataset", map.get("getTitle").toString());
         assertEquals("EPSG", PropertyAccessorTest.getSingletonCode(map.get("identifiers")));
     }
 
@@ -304,8 +302,7 @@ public final class MetadataStandardTest extends TestCase {
         final Map<String,Object> map = standard.asValueMap(instance, null,
                 KeyNamePolicy.JAVABEANS_PROPERTY, ValueExistencePolicy.NON_EMPTY);
         assertFalse(map.isEmpty()); // Actually 'testValueMap()' job, but verified for safety.
-        assertEquals("hashCode()", new HashSet<>(map.values()).hashCode() + Citation.class.hashCode(),
-                standard.hashCode(instance));
+        assertEquals(new HashSet<>(map.values()).hashCode() + Citation.class.hashCode(), standard.hashCode(instance));
     }
 
     /**

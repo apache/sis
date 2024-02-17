@@ -25,10 +25,9 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.Transformation;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import static org.opengis.test.Assert.assertInstanceOf;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
@@ -79,16 +78,16 @@ public final class DefaultPassThroughOperationTest extends TestCase {
         assertIdentifierEquals("sourceCRS.identifier", "test", "test", null, "source",      getSingleton(sourceCRS.getIdentifiers()));
         assertIdentifierEquals("targetCRS.identifier", "test", "test", null, "target",      getSingleton(targetCRS.getIdentifiers()));
         assertIdentifierEquals("operation.identifier", "test", "test", null, "rotation",    getSingleton(operation.getIdentifiers()));
-        assertInstanceOf("sourceCRS",    CompoundCRS.class, sourceCRS);
-        assertInstanceOf("targetCRS",    CompoundCRS.class, targetCRS);
-        assertInstanceOf("operation", Transformation.class, operation);
+        assertInstanceOf(   CompoundCRS.class, sourceCRS);
+        assertInstanceOf(   CompoundCRS.class, targetCRS);
+        assertInstanceOf(Transformation.class, operation);
         final List<CoordinateReferenceSystem> srcComponents = ((CompoundCRS) sourceCRS).getComponents();
         final List<CoordinateReferenceSystem> tgtComponents = ((CompoundCRS) targetCRS).getComponents();
-        assertEquals("sourceCRS.components.size", 2, srcComponents.size());
-        assertEquals("targetCRS.components.size", 2, tgtComponents.size());
-        assertSame  ("sourceCRS.components[0]", operation.getSourceCRS(), srcComponents.get(0));
-        assertSame  ("targetCRS.components[0]", operation.getTargetCRS(), tgtComponents.get(0));
-        assertSame  ("targetCRS.components[1]", srcComponents.get(1),     tgtComponents.get(1));
+        assertEquals(2, srcComponents.size());
+        assertEquals(2, tgtComponents.size());
+        assertSame  (operation.getSourceCRS(), srcComponents.get(0));
+        assertSame  (operation.getTargetCRS(), tgtComponents.get(0));
+        assertSame  (srcComponents.get(1),     tgtComponents.get(1));
         /*
          * Test marshalling and compare with the original file.
          */

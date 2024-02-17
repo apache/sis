@@ -34,7 +34,7 @@ import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.referencing.datum.GeodeticDatumMock;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 
 
@@ -140,11 +140,11 @@ abstract class MapProjectionTestCase extends MathTransformTestCase {
         NormalizedProjection kernel = null;
         for (final MathTransform component : MathTransforms.getSteps(transform)) {
             if (component instanceof NormalizedProjection) {
-                assertNull("Found more than one kernel.", kernel);
+                assertNull(kernel, "Found more than one kernel.");
                 kernel = (NormalizedProjection) component;
             }
         }
-        assertNotNull("Kernel not found.", kernel);
+        assertNotNull(kernel);
         return kernel;
     }
 

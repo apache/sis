@@ -34,8 +34,8 @@ import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.event.StoreListeners;
 
 // Test dependencies
-import org.junit.AfterClass;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.AfterAll;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -175,7 +175,7 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      *
      * @throws IOException if an error occurred while closing a file.
      */
-    @AfterClass
+    @AfterAll
     public static void closeAllDecoders() throws IOException {
         final var ds = new DataStoreMock("lock");
         Throwable failure = null;
@@ -223,7 +223,7 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      * @throws IOException if an error occurred while reading the netCDF file.
      */
     protected final void assertAttributeEquals(final String expected, final String attributeName) throws IOException {
-        assertEquals(attributeName, expected, decoder.stringValue(attributeName));
+        assertEquals(expected, decoder.stringValue(attributeName), attributeName);
     }
 
     /**
@@ -235,7 +235,7 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      * @throws IOException if an error occurred while reading the netCDF file.
      */
     protected final void assertAttributeEquals(final Number expected, final String attributeName) throws IOException {
-        assertEquals(attributeName, expected, decoder.numericValue(attributeName));
+        assertEquals(expected, decoder.numericValue(attributeName), attributeName);
     }
 
     /**
@@ -247,6 +247,6 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      * @throws IOException if an error occurred while reading the netCDF file.
      */
     protected final void assertAttributeEquals(final Date expected, final String attributeName) throws IOException {
-        assertEquals(attributeName, expected, decoder.dateValue(attributeName));
+        assertEquals(expected, decoder.dateValue(attributeName), attributeName);
     }
 }

@@ -23,7 +23,7 @@ import javax.imageio.stream.IIOByteBuffer;
 import javax.imageio.stream.ImageInputStream;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -129,8 +129,8 @@ public class ImageInputStreamComparator implements ImageInputStream {
         actual  .readBytes(copy,   n);
         final int offset = dest.getOffset();
         final int length = dest.getLength();
-        assertEquals("offset", offset, copy.getOffset());
-        assertEquals("length", length, copy.getLength());
+        assertEquals(offset, copy.getOffset(), "offset");
+        assertEquals(length, copy.getLength(), "length");
         assertArrayEquals(Arrays.copyOfRange(dest.getData(), offset, offset + length),
                           Arrays.copyOfRange(copy.getData(), offset, offset + length));
     }
@@ -201,14 +201,14 @@ public class ImageInputStreamComparator implements ImageInputStream {
     @Override
     public float readFloat() throws IOException {
         final float r = expected.readFloat();
-        assertEquals(r, actual.readFloat(), 0f);
+        assertEquals(r, actual.readFloat());
         return r;
     }
 
     @Override
     public double readDouble() throws IOException {
         final double r = expected.readDouble();
-        assertEquals(r, actual.readDouble(), 0d);
+        assertEquals(r, actual.readDouble());
         return r;
     }
 
@@ -291,7 +291,7 @@ public class ImageInputStreamComparator implements ImageInputStream {
         actual  .readFully(copy, offset, length);
         final boolean subRange = (offset != 0) || (length != dest.length);
         assertArrayEquals(subRange ? Arrays.copyOfRange(dest, offset, offset + length) : dest,
-                          subRange ? Arrays.copyOfRange(copy, offset, offset + length) : copy, 0f);
+                          subRange ? Arrays.copyOfRange(copy, offset, offset + length) : copy);
     }
 
     @Override
@@ -301,7 +301,7 @@ public class ImageInputStreamComparator implements ImageInputStream {
         actual  .readFully(copy, offset, length);
         final boolean subRange = (offset != 0) || (length != dest.length);
         assertArrayEquals(subRange ? Arrays.copyOfRange(dest, offset, offset + length) : dest,
-                          subRange ? Arrays.copyOfRange(copy, offset, offset + length) : copy, 0d);
+                          subRange ? Arrays.copyOfRange(copy, offset, offset + length) : copy);
     }
 
     @Override

@@ -16,13 +16,9 @@
  */
 package org.apache.sis.filter;
 
-import javax.measure.Quantity;
-import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.GeographicCRS;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.DirectPosition2D;
@@ -33,9 +29,9 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.DisplayName;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
@@ -108,19 +104,17 @@ public abstract class BinarySpatialFilterTestCase<G> extends TestCase {
     }
 
     /**
-     * Tests {@link DefaultFilterFactory#bbox(Expression, Envelope)}
+     * Tests {@code bbox(Expression, Envelope)}.
      */
     @Test
     public void testBBOX() {
-        final Literal<AbstractFeature,G> right = literal(Polygon.RIGHT);
+        double x, y;
+        var geometry = literal(Polygon.RIGHT);
+        var filter = factory.bbox(geometry, new Envelope2D(null, x=1, y=1, 6-x, 6-y));
+        assertTrue(filter.test(null));
 
-        double x=1, y=1;
-        Filter<AbstractFeature> bbox = factory.bbox(right, new Envelope2D(null, x, y, 6-x, 6-y));
-        assertTrue(bbox.test(null));
-
-        x = -3; y = -2;
-        bbox = factory.bbox(right, new Envelope2D(null, x, y, 4-x, 1-y));
-        assertFalse(bbox.test(null));
+        filter = factory.bbox(geometry, new Envelope2D(null, x=-3, y=-2, 4-x, 1-y));
+        assertFalse(filter.test(null));
     }
 
     /**
@@ -128,193 +122,184 @@ public abstract class BinarySpatialFilterTestCase<G> extends TestCase {
      * If they are wrapped for internal purpose, the wrappers should not be publicly exposed.
      */
     @Test
-    public void bbox_preserve_expression_type() {
-        final Filter<AbstractFeature> bbox = factory.bbox(literal(Polygon.RIGHT), new Envelope2D(null, 0, 0, 1, 1));
-        final Expression<AbstractFeature,?> arg2 = bbox.getExpressions().get(1);
-        assertSame("The two ways to acquire the second argument return different values.", arg2, bbox.getExpressions().get(1));
-        assertInstanceOf("Second argument value should be an envelope.", Envelope.class,
-                         ((Literal<AbstractFeature,?>) arg2).getValue());
+    @DisplayName("BBOX preserve expression type")
+    public void testExpressionType() {
+        var geometry = literal(Polygon.RIGHT);
+        var filter   = factory.bbox(geometry, new Envelope2D(null, 0, 0, 1, 1));
+        var arg2     = assertInstanceOf(Literal.class, filter.getExpressions().get(1));
+        assertInstanceOf(Envelope.class, arg2.getValue(), "Second argument value should be an envelope.");
+        assertSame(arg2, filter.getExpressions().get(1), "The two ways to acquire the second argument return different values.");
     }
 
     /**
-     * Tests {@link DefaultFilterFactory#beyond(Expression, Expression, Quantity)}
+     * Tests {@code beyond(Expression, Expression, Quantity)}.
      */
     @Test
     public void testBeyond() {
-        final Literal<AbstractFeature,G> right = literal(Polygon.RIGHT);
-        final Length distance = Quantities.create(1.5, Units.METRE);
+        var geometry = literal(Polygon.RIGHT);
+        var distance = Quantities.create(1.5, Units.METRE);
+        var filter   = factory.beyond(geometry, literal(Polygon.DISTANCE_1), distance);
+        assertFalse(filter.test(null));
 
-        Filter<AbstractFeature> beyond = factory.beyond(right, literal(Polygon.DISTANCE_1), distance);
-        assertFalse(beyond.test(null));
-
-        beyond = factory.beyond(right, literal(Polygon.DISTANCE_3), distance);
-        assertTrue(beyond.test(null));
+        filter = factory.beyond(geometry, literal(Polygon.DISTANCE_3), distance);
+        assertTrue(filter.test(null));
     }
 
     /**
-     * Tests {@link DefaultFilterFactory#contains(Expression, Expression)}
+     * Tests {@code contains(Expression, Expression)}.
      */
     @Test
     public void testContains() {
-        final Literal<AbstractFeature,G> right = literal(Polygon.RIGHT);
+        var geometry = literal(Polygon.RIGHT);
+        var filter = factory.contains(literal(Polygon.CONTAINS), geometry);
+        assertTrue(filter.test(null));
 
-        Filter<AbstractFeature> contains = factory.contains(literal(Polygon.CONTAINS), right);
-        assertTrue(contains.test(null));
-
-        contains = factory.contains(literal(Polygon.DISTANCE_1), right);
-        assertFalse(contains.test(null));
+        filter = factory.contains(literal(Polygon.DISTANCE_1), geometry);
+        assertFalse(filter.test(null));
     }
 
     /**
-     * Tests {@link DefaultFilterFactory#crosses(Expression, Expression)}
+     * Tests {@code crosses(Expression, Expression)}.
      */
     @Test
     public void testCrosses() {
-        final Literal<AbstractFeature,G> right = literal(Polygon.RIGHT);
+        var geometry = literal(Polygon.RIGHT);
+        var filter = factory.crosses(literal(Polygon.CONTAINS), geometry);
+        assertFalse(filter.test(null));
 
-        Filter<AbstractFeature> crosses = factory.crosses(literal(Polygon.CONTAINS), right);
-        assertFalse(crosses.test(null));
+        filter = factory.crosses(literal(Polygon.CROSSES), geometry);
+        assertTrue(filter.test(null));
 
-        crosses = factory.crosses(literal(Polygon.CROSSES), right);
-        assertTrue(crosses.test(null));
-
-        crosses = factory.crosses(literal(Polygon.DISTANCE_1), right);
-        assertFalse(crosses.test(null));
+        filter = factory.crosses(literal(Polygon.DISTANCE_1), geometry);
+        assertFalse(filter.test(null));
     }
 
     /**
-     * Tests {@link DefaultFilterFactory#within(Expression, Expression, Quantity)}
+     * Tests {@code within(Expression, Expression, Quantity)}.
      */
     @Test
     public void testDWithin() {
-        final Literal<AbstractFeature,G> right = literal(Polygon.RIGHT);
-        final Length distance = Quantities.create(1.5, Units.METRE);
+        var geometry = literal(Polygon.RIGHT);
+        var distance = Quantities.create(1.5, Units.METRE);
+        var filter   = factory.within(geometry, literal(Polygon.DISTANCE_1), distance);
+        assertTrue(filter.test(null));
 
-        Filter<AbstractFeature> within = factory.within(right, literal(Polygon.DISTANCE_1), distance);
-        assertTrue(within.test(null));
-
-        within = factory.within(right, literal(Polygon.DISTANCE_3), distance);
-        assertFalse(within.test(null));
+        filter = factory.within(geometry, literal(Polygon.DISTANCE_3), distance);
+        assertFalse(filter.test(null));
     }
 
     /**
-     * Tests {@link DefaultFilterFactory#disjoint(Expression, Expression)}
+     * Tests {@code disjoint(Expression, Expression)}.
      */
     @Test
     public void testDisjoint() {
-        final Literal<AbstractFeature,G> right = literal(Polygon.RIGHT);
+        var geometry = literal(Polygon.RIGHT);
+        var filter = factory.disjoint(literal(Polygon.CONTAINS), geometry);
+        assertFalse(filter.test(null));
 
-        Filter<AbstractFeature> disjoint = factory.disjoint(literal(Polygon.CONTAINS), right);
-        assertFalse(disjoint.test(null));
+        filter = factory.disjoint(literal(Polygon.CROSSES), geometry);
+        assertFalse(filter.test(null));
 
-        disjoint = factory.disjoint(literal(Polygon.CROSSES), right);
-        assertFalse(disjoint.test(null));
-
-        disjoint = factory.disjoint(literal(Polygon.DISTANCE_1), right);
-        assertTrue(disjoint.test(null));
+        filter = factory.disjoint(literal(Polygon.DISTANCE_1), geometry);
+        assertTrue(filter.test(null));
     }
 
     /**
-     * Tests {@link DefaultFilterFactory#equals(Expression, Expression)}
+     * Tests {@code equals(Expression, Expression)}.
      */
     @Test
     public void testEquals() {
-        final Literal<AbstractFeature,G> right = literal(Polygon.RIGHT);
+        var geometry = literal(Polygon.RIGHT);
+        var filter = factory.equals(literal(Polygon.CONTAINS), geometry);
+        assertFalse(filter.test(null));
 
-        Filter<AbstractFeature> equal = factory.equals(literal(Polygon.CONTAINS), right);
-        assertFalse(equal.test(null));
+        filter = factory.equals(literal(Polygon.CROSSES), geometry);
+        assertFalse(filter.test(null));
 
-        equal = factory.equals(literal(Polygon.CROSSES), right);
-        assertFalse(equal.test(null));
-
-        equal = factory.equals(literal(Polygon.RIGHT), right);
-        assertTrue(equal.test(null));
+        filter = factory.equals(literal(Polygon.RIGHT), geometry);
+        assertTrue(filter.test(null));
     }
 
     /**
-     * Tests {@link DefaultFilterFactory#intersects(Expression, Expression)}
+     * Tests {@code intersects(Expression, Expression)}.
      */
     @Test
     public void testIntersect() {
-        final Literal<AbstractFeature,G> right = literal(Polygon.RIGHT);
+        var geometry = literal(Polygon.RIGHT);
+        var filter = factory.intersects(literal(Polygon.CONTAINS), geometry);
+        assertTrue(filter.test(null));
 
-        Filter<AbstractFeature> intersect = factory.intersects(literal(Polygon.CONTAINS), right);
-        assertTrue(intersect.test(null));
+        filter = factory.intersects(literal(Polygon.CROSSES), geometry);
+        assertTrue(filter.test(null));
 
-        intersect = factory.intersects(literal(Polygon.CROSSES), right);
-        assertTrue(intersect.test(null));
+        filter = factory.intersects(literal(Polygon.INTERSECT), geometry);
+        assertTrue(filter.test(null));
 
-        intersect = factory.intersects(literal(Polygon.INTERSECT), right);
-        assertTrue(intersect.test(null));
+        filter = factory.intersects(literal(Polygon.DISTANCE_1), geometry);
+        assertFalse(filter.test(null));
 
-        intersect = factory.intersects(literal(Polygon.DISTANCE_1), right);
-        assertFalse(intersect.test(null));
-
-        intersect = factory.intersects(literal(Polygon.DISTANCE_3), right);
-        assertFalse(intersect.test(null));
+        filter = factory.intersects(literal(Polygon.DISTANCE_3), geometry);
+        assertFalse(filter.test(null));
     }
 
     /**
-     * Tests {@link DefaultFilterFactory#overlaps(Expression, Expression)}
+     * Tests {@code overlaps(Expression, Expression)}.
      */
     @Test
     public void testOverlaps() {
-        final Literal<AbstractFeature,G> right = literal(Polygon.RIGHT);
+        var geometry = literal(Polygon.RIGHT);
+        var filter = factory.overlaps(literal(Polygon.CONTAINS), geometry);
+        assertFalse(filter.test(null));
 
-        Filter<AbstractFeature> overlaps = factory.overlaps(literal(Polygon.CONTAINS), right);
-        assertFalse(overlaps.test(null));
+        filter = factory.overlaps(literal(Polygon.DISTANCE_1), geometry);
+        assertFalse(filter.test(null));
 
-        overlaps = factory.overlaps(literal(Polygon.DISTANCE_1), right);
-        assertFalse(overlaps.test(null));
+        filter = factory.overlaps(literal(Polygon.CROSSES), geometry);
+        assertFalse(filter.test(null));
 
-        overlaps = factory.overlaps(literal(Polygon.CROSSES), right);
-        assertFalse(overlaps.test(null));
-
-        overlaps = factory.overlaps(literal(Polygon.INTERSECT), right);
-        assertTrue(overlaps.test(null));
+        filter = factory.overlaps(literal(Polygon.INTERSECT), geometry);
+        assertTrue(filter.test(null));
     }
 
     /**
-     * Tests {@link DefaultFilterFactory#touches(Expression, Expression)}
+     * Tests {@code touches(Expression, Expression)}.
      */
     @Test
     public void testTouches() {
-        final Literal<AbstractFeature,G> right = literal(Polygon.RIGHT);
+        var geometry = literal(Polygon.RIGHT);
+        var filter = factory.touches(literal(Polygon.CONTAINS), geometry);
+        assertFalse(filter.test(null));
 
-        Filter<AbstractFeature> touches = factory.touches(literal(Polygon.CONTAINS), right);
-        assertFalse(touches.test(null));
+        filter = factory.touches(literal(Polygon.CROSSES), geometry);
+        assertFalse(filter.test(null));
 
-        touches = factory.touches(literal(Polygon.CROSSES), right);
-        assertFalse(touches.test(null));
+        filter = factory.touches(literal(Polygon.DISTANCE_1), geometry);
+        assertFalse(filter.test(null));
 
-        touches = factory.touches(literal(Polygon.DISTANCE_1), right);
-        assertFalse(touches.test(null));
-
-        touches = factory.touches(literal(Polygon.TOUCHES), right);
-        assertTrue(touches.test(null));
+        filter = factory.touches(literal(Polygon.TOUCHES), geometry);
+        assertTrue(filter.test(null));
     }
 
     /**
-     * Tests {@link DefaultFilterFactory#within(Expression, Expression)}
+     * Tests {@code within(Expression, Expression)}.
      */
     @Test
     public void testWithin() {
-        final Literal<AbstractFeature,G> right = literal(Polygon.RIGHT);
+        var geometry = literal(Polygon.RIGHT);
+        var filter = factory.within(literal(Polygon.CONTAINS), geometry);
+        assertFalse(filter.test(null));
 
-        Filter<AbstractFeature> within = factory.within(literal(Polygon.CONTAINS), right);
-        assertFalse(within.test(null));
+        filter = factory.within(literal(Polygon.CROSSES), geometry);
+        assertFalse(filter.test(null));
 
-        within = factory.within(literal(Polygon.CROSSES), right);
-        assertFalse(within.test(null));
+        filter = factory.within(literal(Polygon.DISTANCE_1), geometry);
+        assertFalse(filter.test(null));
 
-        within = factory.within(literal(Polygon.DISTANCE_1), right);
-        assertFalse(within.test(null));
+        filter = factory.within(literal(Polygon.TOUCHES), geometry);
+        assertFalse(filter.test(null));
 
-        within = factory.within(literal(Polygon.TOUCHES), right);
-        assertFalse(within.test(null));
-
-        within = factory.within(right, literal(Polygon.CONTAINS) );
-        assertTrue(within.test(null));
+        filter = factory.within(geometry, literal(Polygon.CONTAINS) );
+        assertTrue(filter.test(null));
     }
 
     /**
@@ -323,18 +308,18 @@ public abstract class BinarySpatialFilterTestCase<G> extends TestCase {
      */
     @Test
     public void testWithReprojection() {
-        final CoordinateReferenceSystem crs = HardCodedConversions.ESRI();
-        final Literal<AbstractFeature,G> geom = literal(Polygon.TOUCHES);
-        library.castOrWrap(geom.getValue()).setCoordinateReferenceSystem(crs);
+        final var crs = HardCodedConversions.ESRI();
+        final var geometry = literal(Polygon.TOUCHES);
+        library.castOrWrap(geometry.getValue()).setCoordinateReferenceSystem(crs);
 
         // Initial verification without reprojection.
-        Envelope2D envelope = new Envelope2D(crs, 0, 0, 10, 10);
-        Filter<AbstractFeature> filter = factory.bbox(geom, envelope);
+        var envelope = new Envelope2D(crs, 0, 0, 10, 10);
+        var filter = factory.bbox(geometry, envelope);
         assertTrue(filter.test(null));
 
         // Ensure no error is raised, even if a reprojection is involved.
         envelope = new Envelope2D(HardCodedCRS.WGS84, -1.36308465, -5.98385631, 6.56E-5, 6.57E-5);
-        filter = factory.bbox(geom, envelope);
+        filter = factory.bbox(geometry, envelope);
         filter.test(null);
     }
 
@@ -343,9 +328,9 @@ public abstract class BinarySpatialFilterTestCase<G> extends TestCase {
      */
     @Test
     public void testSerialization() {
-        final Literal<AbstractFeature,G> right = literal(Polygon.RIGHT);
-        Filter<AbstractFeature> overlaps = factory.overlaps(literal(Polygon.CONTAINS), right);
-        assertSerializedEquals(overlaps);
+        var geometry = literal(Polygon.RIGHT);
+        var filter = factory.overlaps(literal(Polygon.CONTAINS), geometry);
+        assertSerializedEquals(filter);
     }
 
     /**
@@ -358,19 +343,19 @@ public abstract class BinarySpatialFilterTestCase<G> extends TestCase {
      */
     @Test
     public void testSpatialContextDoesNotDegenerateEnvelope() throws FactoryException, TransformException {
-        final GeographicCRS sourceCRS = HardCodedCRS.WGS84;
-        final Envelope e1 = new Envelope2D(sourceCRS, -180, -90, 360, 180);
-        final DistanceFilter<?> within = new DistanceFilter<>(DistanceOperatorName.WITHIN,
+        var sourceCRS = HardCodedCRS.WGS84;
+        var e1 = new Envelope2D(sourceCRS, -180, -90, 360, 180);
+        var filter = new DistanceFilter<>(DistanceOperatorName.WITHIN,
                 library, factory.literal(e1),
                 factory.literal(new DirectPosition2D(sourceCRS, 44, 2)),
                 Quantities.create(1.0, Units.METRE));
 
-        final GeneralEnvelope envInCtx = within.context.transform(within.expression1.apply(null)).getEnvelope();
-        final double xmin = envInCtx.getMinimum(0);
-        final double xmax = envInCtx.getMaximum(0);
-        assertNotEquals("Degenerated envelope.", xmin, xmax, 1000);
+        GeneralEnvelope envInCtx = filter.context.transform(filter.expression1.apply(null)).getEnvelope();
+        double xmin = envInCtx.getMinimum(0);
+        double xmax = envInCtx.getMaximum(0);
+        assertNotEquals(xmin, xmax, 1000, "Degenerated envelope.");
 
-        final double expected = sourceCRS.getDatum().getEllipsoid().getSemiMajorAxis() * (2*Math.PI);
+        double expected = sourceCRS.getDatum().getEllipsoid().getSemiMajorAxis() * (2*Math.PI);
         assertEquals(expected, xmax - xmin, expected / 1000);
     }
 }

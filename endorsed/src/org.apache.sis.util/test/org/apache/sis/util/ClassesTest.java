@@ -22,8 +22,8 @@ import java.lang.reflect.GenericDeclaration;
 import static org.apache.sis.util.Classes.*;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -129,16 +129,16 @@ public final class ClassesTest extends TestCase {
      */
     @Test
     public void testGetLeafInterfaces() {
-        assertArrayEquals("TreeSet class", new Class<?>[] {NavigableSet.class},
+        assertArrayEquals(new Class<?>[] {NavigableSet.class},
                 getLeafInterfaces(TreeSet.class, Collection.class));
 
-        assertArrayEquals("GeographicCRS", new Class<?>[] {GeographicCRS.class},
+        assertArrayEquals(new Class<?>[] {GeographicCRS.class},
                 getLeafInterfaces(T1.class, IdentifiedObject.class));
 
-        assertArrayEquals("Mixed types",   new Class<?>[] {GeographicCRS.class, CoordinateOperation.class},
+        assertArrayEquals(new Class<?>[] {GeographicCRS.class, CoordinateOperation.class},
                 getLeafInterfaces(T2.class, IdentifiedObject.class));
 
-        assertArrayEquals("Mixed types",   new Class<?>[] {Transformation.class, GeographicCRS.class},
+        assertArrayEquals(new Class<?>[] {Transformation.class, GeographicCRS.class},
                 getLeafInterfaces(T3.class, IdentifiedObject.class));
     }
 

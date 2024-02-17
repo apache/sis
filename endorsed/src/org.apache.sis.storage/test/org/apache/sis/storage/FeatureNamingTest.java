@@ -17,12 +17,12 @@
 package org.apache.sis.storage;
 
 import org.opengis.util.GenericName;
-import org.opengis.util.LocalName;
 import org.apache.sis.util.iso.Names;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
@@ -59,36 +59,26 @@ public final class FeatureNamingTest extends TestCase {
         final FeatureNaming<Integer> map = new FeatureNaming<>();
         map.add(store, A, 1);
         map.add(store, B, 2);
-        assertEquals("A", Integer.valueOf(1), map.get(store, "myNS:A"));
-        assertEquals("A", Integer.valueOf(1), map.get(store, "A"));
-        assertEquals("B", Integer.valueOf(2), map.get(store, "B"));
+        assertEquals(Integer.valueOf(1), map.get(store, "myNS:A"));
+        assertEquals(Integer.valueOf(1), map.get(store, "A"));
+        assertEquals(Integer.valueOf(2), map.get(store, "B"));
         /*
          * Above code tested normal usage. Now test error conditions.
          * First, searching a non-existent entry should raise an exception.
          */
-        try {
-            map.get(store, "C");
-            fail("Should not find a non-existent entry.");
-        } catch (IllegalNameException e) {
-            // This is the expected exception.
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("C"));
-            assertTrue(message, message.contains("testDataStore"));
-        }
+        IllegalNameException e;
+        e = assertThrows(IllegalNameException.class, () -> map.get(store, "C"),
+                         "Should not find a non-existent entry.");
+        assertMessageContains(e, "C", "testDataStore");
         /*
          * Attempt to overwrite an existing entry should raise an exception
          * without modifying the existing value.
          */
-        try {
-            map.add(store, B, 3);
-            fail("Should not overwrite an existing entry.");
-        } catch (IllegalNameException e) {
-            // This is the expected exception.
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("B"));
-        }
-        assertEquals("Existing value should not have been modified.",
-                     Integer.valueOf(2), map.get(store, "B"));
+        e = assertThrows(IllegalNameException.class, () -> map.add(store, B, 3),
+                         "Should not overwrite an existing entry.");
+        assertMessageContains(e, "B");
+        assertEquals(Integer.valueOf(2), map.get(store, "B"),
+                     "Existing value should not have been modified.");
     }
 
     /**
@@ -99,28 +89,21 @@ public final class FeatureNamingTest extends TestCase {
     @Test
     @DependsOnMethod("testSimple")
     public void testAmbiguity() throws IllegalNameException {
-        final DataStoreMock store = new DataStoreMock("testDataStore");
-        final FeatureNaming<Integer> map = new FeatureNaming<>();
+        final var store = new DataStoreMock("testDataStore");
+        final var map   = new FeatureNaming<Integer>();
         map.add(store, A, 1);
         map.add(store, B, 2);
         map.add(store, otherA, 3);
-        assertEquals("A",      Integer.valueOf(1), map.get(store, "myNS:A"));
-        assertEquals("B",      Integer.valueOf(2), map.get(store, "B"));
-        assertEquals("otherA", Integer.valueOf(3), map.get(store, "other:A"));
+        assertEquals(Integer.valueOf(1), map.get(store, "myNS:A"));
+        assertEquals(Integer.valueOf(2), map.get(store, "B"));
+        assertEquals(Integer.valueOf(3), map.get(store, "other:A"));
         /*
          * Attempt to query using only the "A" value was used to succeed in 'testSimple()' but
          * should now fail because this shortcut could apply to "other:A" as well as "myNS:A".
          */
-        try {
-            map.get(store, "A");
-            fail("Should not find an ambiguous entry.");
-        } catch (IllegalNameException e) {
-            // This is the expected exception.
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("myNS:A"));
-            assertTrue(message, message.contains("other:A"));
-            assertTrue(message, message.contains("testDataStore"));
-        }
+        var e = assertThrows(IllegalNameException.class, () -> map.get(store, "A"),
+                             "Should not find an ambiguous entry.");
+        assertMessageContains(e, "myNS:A", "other:A", "testDataStore");
     }
 
     /**
@@ -131,17 +114,17 @@ public final class FeatureNamingTest extends TestCase {
     @Test
     @DependsOnMethod("testAmbiguity")
     public void testQualifiedAndUnqualifiedName() throws IllegalNameException {
-        final DataStoreMock store = new DataStoreMock("testDataStore");
-        final LocalName local = Names.createLocalName(null, null, "A");
+        final var store = new DataStoreMock("testDataStore");
+        final var local = Names.createLocalName(null, null, "A");
         FeatureNaming<Integer> map = new FeatureNaming<>();
         map.add(store, local,  3);
         map.add(store, A,      2);
         map.add(store, B,      5);
         map.add(store, otherA, 7);
-        assertEquals("B",       Integer.valueOf(5), map.get(store, "B"));
-        assertEquals("A",       Integer.valueOf(3), map.get(store, "A"));
-        assertEquals("myNS:A",  Integer.valueOf(2), map.get(store, "myNS:A"));
-        assertEquals("other:A", Integer.valueOf(7), map.get(store, "other:A"));
+        assertEquals(Integer.valueOf(5), map.get(store, "B"));
+        assertEquals(Integer.valueOf(3), map.get(store, "A"));
+        assertEquals(Integer.valueOf(2), map.get(store, "myNS:A"));
+        assertEquals(Integer.valueOf(7), map.get(store, "other:A"));
         /*
          * Same tests, but with elements added in different order.
          */
@@ -150,10 +133,10 @@ public final class FeatureNamingTest extends TestCase {
         map.add(store, B,      5);
         map.add(store, A,      2);
         map.add(store, local,  3);
-        assertEquals("B",       Integer.valueOf(5), map.get(store, "B"));
-        assertEquals("A",       Integer.valueOf(3), map.get(store, "A"));
-        assertEquals("myNS:A",  Integer.valueOf(2), map.get(store, "myNS:A"));
-        assertEquals("other:A", Integer.valueOf(7), map.get(store, "other:A"));
+        assertEquals(Integer.valueOf(5), map.get(store, "B"));
+        assertEquals(Integer.valueOf(3), map.get(store, "A"));
+        assertEquals(Integer.valueOf(2), map.get(store, "myNS:A"));
+        assertEquals(Integer.valueOf(7), map.get(store, "other:A"));
     }
 
     /**
@@ -164,32 +147,26 @@ public final class FeatureNamingTest extends TestCase {
     @Test
     @DependsOnMethod("testAmbiguity")
     public void testRemove() throws IllegalNameException {
-        final DataStoreMock store = new DataStoreMock("testDataStore");
-        final FeatureNaming<Integer> map = new FeatureNaming<>();
+        final var store = new DataStoreMock("testDataStore");
+        final var map   = new FeatureNaming<Integer>();
         map.add(store, A, 1);
         map.add(store, B, 2);
         map.add(store, otherA, 3);
         /*
          * Verify that "myNS:A" exists before the removal, then does not exist anymore after the removal.
          */
-        assertEquals("otherA", Integer.valueOf(3), map.get(store, "other:A"));
-        assertEquals("myNS:A", Integer.valueOf(1), map.get(store, "myNS:A"));
-        assertTrue("remove", map.remove(store, A));
-        try {
-            map.get(store, "myNS:A");
-            fail("Should not find a non-existent entry.");
-        } catch (IllegalNameException e) {
-            // This is the expected exception.
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("myNS:A"));
-            assertTrue(message, message.contains("testDataStore"));
-        }
+        assertEquals(Integer.valueOf(3), map.get(store, "other:A"));
+        assertEquals(Integer.valueOf(1), map.get(store, "myNS:A"));
+        assertTrue(map.remove(store, A));
+        var e = assertThrows(IllegalNameException.class, () -> map.get(store, "myNS:A"),
+                             "Should not find a non-existent entry.");
+        assertMessageContains(e, "myNS:A", "testDataStore");
         /*
          * The "A" shortcut should not be ambiguous anymore at this point since we removed the other name
          * ("myNS:A") which was causing the ambiguity;
          */
-        assertEquals("A",      Integer.valueOf(3), map.get(store, "A"));
-        assertEquals("B",      Integer.valueOf(2), map.get(store, "B"));
-        assertEquals("otherA", Integer.valueOf(3), map.get(store, "other:A"));
+        assertEquals(Integer.valueOf(3), map.get(store, "A"));
+        assertEquals(Integer.valueOf(2), map.get(store, "B"));
+        assertEquals(Integer.valueOf(3), map.get(store, "other:A"));
     }
 }

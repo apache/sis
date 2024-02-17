@@ -27,7 +27,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 // Specific to the main branch:
 import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
@@ -70,7 +70,7 @@ final class TransformResultComparator implements MathTransform {
     @Override
     public int getSourceDimensions() {
         final int value = tested.getSourceDimensions();
-        assertEquals("sourceDimensions", reference.getSourceDimensions(), value);
+        assertEquals(reference.getSourceDimensions(), value);
         return value;
     }
 
@@ -81,7 +81,7 @@ final class TransformResultComparator implements MathTransform {
     @Override
     public int getTargetDimensions() {
         final int value = tested.getTargetDimensions();
-        assertEquals("targetDimensions", reference.getTargetDimensions(), value);
+        assertEquals(reference.getTargetDimensions(), value);
         return value;
     }
 
@@ -92,7 +92,7 @@ final class TransformResultComparator implements MathTransform {
     @Override
     public boolean isIdentity() {
         final boolean value = tested.isIdentity();
-        assertEquals("isIdentity", reference.isIdentity(), value);
+        assertEquals(reference.isIdentity(), value);
         return value;
     }
 
@@ -115,7 +115,7 @@ final class TransformResultComparator implements MathTransform {
     public DirectPosition transform(DirectPosition ptSrc, DirectPosition ptDst) throws TransformException {
         final double[] expected = reference.transform(ptSrc, ptDst).getCoordinate();
         final DirectPosition value = tested.transform(ptSrc, ptDst);
-        assertArrayEquals("transform(DirectPosition, …)", expected, value.getCoordinate(), tolerance);
+        assertArrayEquals(expected, value.getCoordinate(), tolerance);
         return value;
     }
 
@@ -128,8 +128,7 @@ final class TransformResultComparator implements MathTransform {
         final double[] expected = new double[numPts * reference.getTargetDimensions()];
         reference.transform(srcPts, srcOff, expected, 0, numPts);
         tested.transform(srcPts, srcOff, dstPts, dstOff, numPts);
-        assertArrayEquals("transform(double[], …, double[], …)", expected,
-                Arrays.copyOfRange(dstPts, dstOff, dstOff + numPts * tested.getTargetDimensions()), tolerance);
+        assertArrayEquals(expected, Arrays.copyOfRange(dstPts, dstOff, dstOff + numPts * tested.getTargetDimensions()), tolerance);
     }
 
     /**
@@ -141,8 +140,7 @@ final class TransformResultComparator implements MathTransform {
         final float[] expected = new float[numPts * reference.getTargetDimensions()];
         reference.transform(srcPts, srcOff, expected, 0, numPts);
         tested.transform(srcPts, srcOff, dstPts, dstOff, numPts);
-        assertArrayEquals("transform(float[], …, float[], …)", expected,
-                Arrays.copyOfRange(dstPts, dstOff, dstOff + numPts * tested.getTargetDimensions()), (float) tolerance);
+        assertArrayEquals(expected, Arrays.copyOfRange(dstPts, dstOff, dstOff + numPts * tested.getTargetDimensions()), (float) tolerance);
     }
 
     /**
@@ -154,8 +152,7 @@ final class TransformResultComparator implements MathTransform {
         final double[] expected = new double[numPts * reference.getTargetDimensions()];
         reference.transform(srcPts, srcOff, expected, 0, numPts);
         tested.transform(srcPts, srcOff, dstPts, dstOff, numPts);
-        assertArrayEquals("transform(float[], …, double[], …)", expected,
-                Arrays.copyOfRange(dstPts, dstOff, dstOff + numPts * tested.getTargetDimensions()), tolerance);
+        assertArrayEquals(expected, Arrays.copyOfRange(dstPts, dstOff, dstOff + numPts * tested.getTargetDimensions()), tolerance);
     }
 
     /**
@@ -167,8 +164,7 @@ final class TransformResultComparator implements MathTransform {
         final float[] expected = new float[numPts * reference.getTargetDimensions()];
         reference.transform(srcPts, srcOff, expected, 0, numPts);
         tested.transform(srcPts, srcOff, dstPts, dstOff, numPts);
-        assertArrayEquals("transform(double[], …, float[], …)", expected,
-                Arrays.copyOfRange(dstPts, dstOff, dstOff + numPts * tested.getTargetDimensions()), (float) tolerance);
+        assertArrayEquals(expected, Arrays.copyOfRange(dstPts, dstOff, dstOff + numPts * tested.getTargetDimensions()), (float) tolerance);
     }
 
     /**

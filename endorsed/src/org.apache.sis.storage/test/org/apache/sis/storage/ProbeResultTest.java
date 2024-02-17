@@ -19,8 +19,8 @@ package org.apache.sis.storage;
 import static org.apache.sis.storage.ProbeResult.*;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -42,9 +42,9 @@ public final class ProbeResultTest extends TestCase {
      */
     @Test
     public void testConstantSerialization() {
-        assertSame("SUPPORTED",           SUPPORTED,           assertSerializedEquals(SUPPORTED));
-        assertSame("UNSUPPORTED_STORAGE", UNSUPPORTED_STORAGE, assertSerializedEquals(UNSUPPORTED_STORAGE));
-        assertSame("INSUFFICIENT_BYTES",  INSUFFICIENT_BYTES,  assertSerializedEquals(INSUFFICIENT_BYTES));
-        assertSame("UNDETERMINED",        UNDETERMINED,        assertSerializedEquals(UNDETERMINED));
+        assertSame(SUPPORTED,           assertSerializedEquals(SUPPORTED));
+        assertSame(UNSUPPORTED_STORAGE, assertSerializedEquals(UNSUPPORTED_STORAGE));
+        assertSame(INSUFFICIENT_BYTES,  assertSerializedEquals(INSUFFICIENT_BYTES));
+        assertSame(UNDETERMINED,        assertSerializedEquals(UNDETERMINED));
     }
 }

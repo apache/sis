@@ -31,8 +31,9 @@ import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 
@@ -91,12 +92,12 @@ public final class GridCoverageBuilderTest extends TestCase {
          */
         {
             final GridCoverage coverage = builder.build();
-            assertEquals("numBands", numBands, coverage.getSampleDimensions().size());
+            assertEquals(numBands, coverage.getSampleDimensions().size());
             final GridGeometry gg = coverage.getGridGeometry();
-            assertFalse("isDefined(CRS)",         gg.isDefined(GridGeometry.CRS));
-            assertFalse("isDefined(ENVELOPE)",    gg.isDefined(GridGeometry.ENVELOPE));
-            assertFalse("isDefined(GRID_TO_CRS)", gg.isDefined(GridGeometry.GRID_TO_CRS));
-            assertTrue ("isDefined(EXTENT)",      gg.isDefined(GridGeometry.EXTENT));
+            assertFalse(gg.isDefined(GridGeometry.CRS));
+            assertFalse(gg.isDefined(GridGeometry.ENVELOPE));
+            assertFalse(gg.isDefined(GridGeometry.GRID_TO_CRS));
+            assertTrue (gg.isDefined(GridGeometry.EXTENT));
         }
         /*
          * Test creation with the sample dimensions specified. First, we try with a wrong
@@ -106,19 +107,16 @@ public final class GridCoverageBuilderTest extends TestCase {
          */
         {
             assertSame(builder, builder.setRanges(new SampleDimension.Builder().setName(0).build()));
-            try {
-                builder.build();
-                fail("Wrong number of sample dimensions, build() should fail.");
-            } catch (IllegalStateException ex) {
-                assertNotNull(ex.getMessage());
-            }
-            final SampleDimension[] ranges = new SampleDimension[numBands];
+            var e = assertThrows(IllegalStateException.class, () -> builder.build(),
+                        "Wrong number of sample dimensions, build() should fail.");
+            assertMessageContains(e);
+            final var ranges = new SampleDimension[numBands];
             for (int i=0; i<numBands; i++) {
                 ranges[i] = new SampleDimension.Builder().setName(i).build();
             }
             assertSame(builder, builder.setRanges(ranges));
             final GridCoverage coverage = builder.build();
-            assertArrayEquals("sampleDimensions", ranges, coverage.getSampleDimensions().toArray());
+            assertArrayEquals(ranges, coverage.getSampleDimensions().toArray());
         }
         /*
          * Test creation with grid extent and envelope specified. First, we try with a
@@ -127,8 +125,8 @@ public final class GridCoverageBuilderTest extends TestCase {
          */
         final GridCoverage coverage = testSetDomain(builder, 5, 8);
         final Matrix gridToCRS = MathTransforms.getMatrix(coverage.getGridGeometry().getGridToCRS(PixelInCell.CELL_CENTER));
-        assertEquals(2.0, gridToCRS.getElement(0, 0), STRICT);
-        assertEquals(0.5, gridToCRS.getElement(1, 1), STRICT);
+        assertEquals(2.0, gridToCRS.getElement(0, 0));
+        assertEquals(0.5, gridToCRS.getElement(1, 1));
         return coverage;
     }
 
@@ -165,13 +163,9 @@ public final class GridCoverageBuilderTest extends TestCase {
         final DataBuffer buffer = new DataBufferByte(new byte[] {1,2,3,4,5,6}, 6);
         final GridCoverageBuilder builder = new GridCoverageBuilder();
         assertSame(builder, builder.setValues(buffer, null));
-        try {
-            builder.build();
-            fail("Extent is undefined, build() should fail.");
-        } catch (IncompleteGridGeometryException ex) {
-            final String message = ex.getMessage();         // "No value for "size" property" but may be localized.
-            assertTrue(message, message.contains("size"));
-        }
+        var e = assertThrows(IncompleteGridGeometryException.class, () -> builder.build(),
+                             "Extent is undefined, build() should fail.");
+        assertMessageContains(e, "size");
         final GridCoverage coverage = testSetDomain(builder, 3, 2);
         assertSame(buffer, coverage.render(null).getTile(0,0).getDataBuffer());
     }

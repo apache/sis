@@ -24,8 +24,8 @@ import org.opengis.util.MemberName;
 import org.apache.sis.metadata.simple.SimpleAttributeType;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 
@@ -52,8 +52,8 @@ public final class DefaultRecordSchemaTest extends TestCase {
     @Test
     @SuppressWarnings("deprecation")
     public void testCreateRecordType() {
-        final DefaultRecordSchema schema = new DefaultRecordSchema(null, null, "MySchema");
-        final Map<CharSequence,Class<?>> fields = new LinkedHashMap<>(8);
+        final var schema = new DefaultRecordSchema(null, null, "MySchema");
+        final var fields = new LinkedHashMap<CharSequence,Class<?>>(8);
         assertNull(fields.put("city",       String.class));
         assertNull(fields.put("latitude",   Double.class));
         assertNull(fields.put("longitude",  Double.class));
@@ -62,8 +62,8 @@ public final class DefaultRecordSchemaTest extends TestCase {
         /*
          * Inspect properties.
          */
-        assertSame("container", schema, recordType.getContainer());
-        assertEquals("typeName", Names.createTypeName("MySchema", ":", "MyRecordType"), recordType.getTypeName());
+        assertSame(schema, recordType.getContainer());
+        assertEquals(Names.createTypeName("MySchema", ":", "MyRecordType"), recordType.getTypeName());
         int count = 0;
         for (final Map.Entry<MemberName,Type> entry : recordType.getMemberTypes().entrySet()) {
             final String   expectedName;

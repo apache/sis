@@ -19,8 +19,8 @@ package org.apache.sis.io;
 import java.io.IOException;
 
 // Test dependencies
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 
@@ -47,7 +47,7 @@ public class LineAppenderTest extends AppenderTestCase {
     /**
      * Creates and configure the {@link LineAppender} to test.
      */
-    @Before
+    @BeforeEach
     public void createLineAppender() {
         appender = new LineAppender(appender, " ", false);
     }

@@ -25,8 +25,8 @@ import org.apache.sis.metadata.internal.AxisNames;
 import org.apache.sis.math.MathFunctions;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
@@ -36,6 +36,7 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84_LATITUDE_FIRST;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 
 // Specific to the main branch:
 import static org.apache.sis.test.GeoapiAssert.PENDING_NEXT_GEOAPI_RELEASE;
@@ -120,20 +121,20 @@ public class GeneralEnvelopeTest extends TestCase {
         }
         final DirectPosition lower = test.getLowerCorner();
         final DirectPosition upper = test.getUpperCorner();
-        assertEquals("lower", xLower, lower.getOrdinate(0), STRICT);
-        assertEquals("upper", xUpper, upper.getOrdinate(0), STRICT);
-        assertEquals("xmin",  xmin,   test .getMinimum (0), STRICT);
-        assertEquals("xmax",  xmax,   test .getMaximum (0), STRICT);
-        assertEquals("ymin",  ymin,   test .getMinimum (1), STRICT);
-        assertEquals("ymax",  ymax,   test .getMaximum (1), STRICT);
-        assertEquals("ymin",  ymin,   lower.getOrdinate(1), STRICT);
-        assertEquals("ymax",  ymax,   upper.getOrdinate(1), STRICT);
+        assertEquals(xLower, lower.getOrdinate(0), "lower");
+        assertEquals(xUpper, upper.getOrdinate(0), "upper");
+        assertEquals(xmin,   test .getMinimum (0), "xmin");
+        assertEquals(xmax,   test .getMaximum (0), "xmax");
+        assertEquals(ymin,   test .getMinimum (1), "ymin");
+        assertEquals(ymax,   test .getMaximum (1), "ymax");
+        assertEquals(ymin,   lower.getOrdinate(1), "ymin");
+        assertEquals(ymax,   upper.getOrdinate(1), "ymax");
         if (test instanceof Envelope2D) {
             final Envelope2D ri = (Envelope2D) test;
-            assertEquals("xmin", xmin, ri.getMinX(), STRICT);
-            assertEquals("xmax", xmax, ri.getMaxX(), STRICT);
-            assertEquals("ymin", ymin, ri.getMinY(), STRICT);
-            assertEquals("ymax", ymax, ri.getMaxY(), STRICT);
+            assertEquals(xmin, ri.getMinX(), "xmin");
+            assertEquals(xmax, ri.getMaxX(), "xmax");
+            assertEquals(ymin, ri.getMinY(), "ymin");
+            assertEquals(ymax, ri.getMaxY(), "ymax");
         }
     }
 
@@ -148,23 +149,23 @@ public class GeneralEnvelopeTest extends TestCase {
         final Envelope2D r1 = new Envelope2D(e1);
         final Envelope2D r2 = new Envelope2D(e2);
         final Envelope2D ri = r1.createIntersection(r2);
-        assertFalse("isEmpty", r1.isEmpty());
+        assertFalse(r1.isEmpty(), "isEmpty");
         assertEnvelopeEquals(ri, xmin, ymin, xmax, ymax);
-        assertEquals("Interchanged arguments.", ri, r2.createIntersection(r1));
+        assertEquals(ri, r2.createIntersection(r1), "Interchanged arguments.");
 
         // Compares with GeneralEnvelope.
         final GeneralEnvelope ei = new GeneralEnvelope(e1);
         ei.intersect(e2);
-        assertFalse("isEmpty", e1.isEmpty());
+        assertFalse(e1.isEmpty(), "isEmpty");
         assertEnvelopeEquals(ei, xmin, ymin, xmax, ymax);
-        assertTrue("Using GeneralEnvelope.", ei.equals(ri, STRICT, false));
+        assertTrue(ei.equals(ri, STRICT, false), "Using GeneralEnvelope.");
 
         // Interchanges arguments.
         ei.setEnvelope(e2);
         ei.intersect(e1);
-        assertFalse("isEmpty", e1.isEmpty());
+        assertFalse(e1.isEmpty(), "isEmpty");
         assertEnvelopeEquals(ei, xmin, ymin, xmax, ymax);
-        assertTrue("Using GeneralEnvelope.", ei.equals(ri, STRICT, false));
+        assertTrue(ei.equals(ri, STRICT, false), "Using GeneralEnvelope.");
     }
 
     /**
@@ -185,14 +186,14 @@ public class GeneralEnvelopeTest extends TestCase {
         final Envelope2D r2 = new Envelope2D(e2);
         final Envelope2D ri = r1.createUnion(r2);
         assertEnvelopeEquals(ri, inf ? NaN : xmin, ymin, inf ? NaN : xmax, ymax);
-        assertEquals("Interchanged arguments.", ri, r2.createUnion(r1));
+        assertEquals(ri, r2.createUnion(r1), "Interchanged arguments.");
 
         // Compares with GeneralEnvelope.
         final GeneralEnvelope ei = new GeneralEnvelope(e1);
         ei.add(e2);
         assertEnvelopeEquals(ei, xmin, ymin, xmax, ymax);
         if (!inf) {
-            assertTrue("Using GeneralEnvelope.", ei.equals(ri, STRICT, false));
+            assertTrue(ei.equals(ri, STRICT, false), "Using GeneralEnvelope.");
         }
 
         // Interchanges arguments.
@@ -204,7 +205,7 @@ public class GeneralEnvelopeTest extends TestCase {
             assertEnvelopeEquals(ei, xmin, ymin, xmax, ymax);
         }
         if (!inf) {
-            assertTrue("Using GeneralEnvelope.", ei.equals(ri, STRICT, false));
+            assertTrue(ei.equals(ri, STRICT, false), "Using GeneralEnvelope.");
         }
     }
 
@@ -224,7 +225,7 @@ public class GeneralEnvelopeTest extends TestCase {
         final GeneralEnvelope ec = new GeneralEnvelope(e);
         ec.add(p);
         assertEnvelopeEquals(ec, xmin, ymin, xmax, ymax);
-        assertTrue("Using GeneralEnvelope.", ec.equals(r, STRICT, false));
+        assertTrue(ec.equals(r, STRICT, false), "Using GeneralEnvelope.");
     }
 
     /**
@@ -479,8 +480,8 @@ public class GeneralEnvelopeTest extends TestCase {
 
         e = create(0, 10, 360, 20);
         assertTrue(e.normalize());
-        assertTrue("Expect positive zero", MathFunctions.isPositiveZero(e.getLower(0)));
-        assertTrue("Expect negative zero", MathFunctions.isNegativeZero(e.getUpper(0)));
+        assertTrue(MathFunctions.isPositiveZero(e.getLower(0)), "Expect positive zero");
+        assertTrue(MathFunctions.isNegativeZero(e.getUpper(0)), "Expect negative zero");
         verifyInvariants(e);
     }
 
@@ -558,14 +559,10 @@ public class GeneralEnvelopeTest extends TestCase {
     public void testSetEnvelope() {
         final GeneralEnvelope e = create(2, -4, 3, -3);
         e.setEnvelope(3, -5, -8, 2);
-        try {
-            e.setEnvelope(1, -10, 2, -20);
-            fail("Invalid range shall not be allowed.");
-        } catch (IllegalArgumentException ex) {
-            // This is the expected exception.
-            final String message = ex.getMessage();
-            assertTrue(message, message.contains(AxisNames.GEODETIC_LATITUDE));
-        }
+        var ex = assertThrows(IllegalArgumentException.class,
+                () -> e.setEnvelope(1, -10, 2, -20),
+                "Invalid range shall not be allowed.");
+        assertMessageContains(ex, AxisNames.GEODETIC_LATITUDE);
         // Verify that the envelope still have the old values.
         assertEnvelopeEquals(e, 3, -5, -8, 2);
         verifyInvariants(e);
@@ -579,14 +576,10 @@ public class GeneralEnvelopeTest extends TestCase {
     public void testSetRange() {
         final GeneralEnvelope e = create(2, -4, 3, -3);
         e.setRange(1, -5, 2);
-        try {
-            e.setRange(1, -10, -20);
-            fail("Invalid range shall not be allowed.");
-        } catch (IllegalArgumentException ex) {
-            // This is the expected exception.
-            final String message = ex.getMessage();
-            assertTrue(message, message.contains(AxisNames.GEODETIC_LATITUDE));
-        }
+        var ex = assertThrows(IllegalArgumentException.class,
+                () -> e.setRange(1, -10, -20),
+                "Invalid range shall not be allowed.");
+        assertMessageContains(ex, AxisNames.GEODETIC_LATITUDE);
         // Verify that the envelope still have the old values.
         assertEnvelopeEquals(e, 2, -5, 3, 2);
         verifyInvariants(e);
@@ -606,22 +599,18 @@ public class GeneralEnvelopeTest extends TestCase {
          * invalid range.
          */
         e.setRange(1, -10, -20);
-        try {
-            e.setCoordinateReferenceSystem(WGS84);
-            fail("Invalid range shall not be allowed.");
-        } catch (IllegalStateException ex) {
-            // This is the expected exception.
-            final String message = ex.getMessage();
-            assertTrue(message, message.contains(AxisNames.GEODETIC_LATITUDE));
-        }
+        var ex = assertThrows(IllegalStateException.class,
+                () -> e.setCoordinateReferenceSystem(WGS84),
+                "Invalid range shall not be allowed.");
+        assertMessageContains(ex, AxisNames.GEODETIC_LATITUDE);
         /*
          * Verify that the envelope values are unchanged.
          * Then fix the range and try again to set the CRS.
          */
-        assertEquals(  2, e.getLower(0), STRICT);
-        assertEquals(-10, e.getLower(1), STRICT);
-        assertEquals(  3, e.getUpper(0), STRICT);
-        assertEquals(-20, e.getUpper(1), STRICT);
+        assertEquals(  2, e.getLower(0));
+        assertEquals(-10, e.getLower(1));
+        assertEquals(  3, e.getUpper(0));
+        assertEquals(-20, e.getUpper(1));
         e.setRange(1, -20, -10);
         e.setCoordinateReferenceSystem(WGS84);
         assertEnvelopeEquals(e, 2, -20, 3, -10);
@@ -636,10 +625,10 @@ public class GeneralEnvelopeTest extends TestCase {
         final GeneralEnvelope e = create(2, -4, 3, -3);
         e.getLowerCorner().setOrdinate(0,  1);
         e.getUpperCorner().setOrdinate(1, -1);
-        assertEquals( 1, e.getLower(0), STRICT);
-        assertEquals(-4, e.getLower(1), STRICT);
-        assertEquals( 3, e.getUpper(0), STRICT);
-        assertEquals(-1, e.getUpper(1), STRICT);
+        assertEquals( 1, e.getLower(0));
+        assertEquals(-4, e.getLower(1));
+        assertEquals( 3, e.getUpper(0));
+        assertEquals(-1, e.getUpper(1));
         verifyInvariants(e);
     }
 
@@ -681,8 +670,8 @@ public class GeneralEnvelopeTest extends TestCase {
 
         envelope.setTimeRange(Instant.parse("2015-04-10T06:00:00Z"),
                               Instant.parse("2018-12-29T12:00:00Z"));
-        assertArrayEquals(new double[] {-20, -30, 57122.25}, envelope.getLowerCorner().getCoordinate(), STRICT);
-        assertArrayEquals(new double[] { 25,  12, 58481.50}, envelope.getUpperCorner().getCoordinate(), STRICT);
+        assertArrayEquals(new double[] {-20, -30, 57122.25}, envelope.getLowerCorner().getCoordinate());
+        assertArrayEquals(new double[] { 25,  12, 58481.50}, envelope.getUpperCorner().getCoordinate());
     }
 
     /**
@@ -709,27 +698,27 @@ public class GeneralEnvelopeTest extends TestCase {
     public void testWktParsing() {
         GeneralEnvelope envelope = new GeneralEnvelope("BOX(-180 -90,180 90)");
         assertEquals(2, envelope.getDimension());
-        assertEquals(-180, envelope.getLower(0), STRICT);
-        assertEquals( 180, envelope.getUpper(0), STRICT);
-        assertEquals( -90, envelope.getLower(1), STRICT);
-        assertEquals(  90, envelope.getUpper(1), STRICT);
+        assertEquals(-180, envelope.getLower(0));
+        assertEquals( 180, envelope.getUpper(0));
+        assertEquals( -90, envelope.getLower(1));
+        assertEquals(  90, envelope.getUpper(1));
         validate(envelope);
 
         envelope = new GeneralEnvelope("BOX3D(-180 -90 10, 180 90 30)");
         assertEquals(3, envelope.getDimension());
-        assertEquals(-180, envelope.getLower(0), STRICT);
-        assertEquals( 180, envelope.getUpper(0), STRICT);
-        assertEquals( -90, envelope.getLower(1), STRICT);
-        assertEquals(  90, envelope.getUpper(1), STRICT);
-        assertEquals(  10, envelope.getLower(2), STRICT);
-        assertEquals(  30, envelope.getUpper(2), STRICT);
+        assertEquals(-180, envelope.getLower(0));
+        assertEquals( 180, envelope.getUpper(0));
+        assertEquals( -90, envelope.getLower(1));
+        assertEquals(  90, envelope.getUpper(1));
+        assertEquals(  10, envelope.getLower(2));
+        assertEquals(  30, envelope.getUpper(2));
         validate(envelope);
 
         envelope = new GeneralEnvelope("POLYGON((-80 -30,-100 40,80 40,100 -40,-80 -30))");
-        assertEquals(-100, envelope.getLower(0), STRICT);
-        assertEquals( 100, envelope.getUpper(0), STRICT);
-        assertEquals( -40, envelope.getLower(1), STRICT);
-        assertEquals(  40, envelope.getUpper(1), STRICT);
+        assertEquals(-100, envelope.getLower(0));
+        assertEquals( 100, envelope.getUpper(0));
+        assertEquals( -40, envelope.getLower(1));
+        assertEquals(  40, envelope.getUpper(1));
         validate(envelope);
 
         assertEquals("BOX(6 10, 6 10)",       new GeneralEnvelope("POINT(6 10)").toString());
@@ -793,7 +782,7 @@ public class GeneralEnvelopeTest extends TestCase {
         }
         assertFalse(e1.isAllNaN ());
         assertFalse(e1.isEmpty());
-        assertFalse(e1.getLowerCorner().equals(e1.getUpperCorner()));
+        assertNotEquals(e1.getLowerCorner(), e1.getUpperCorner());
         /*
          * Creates a new envelope initialized with the same
          * coordinate values. The two envelope shall be equal.
@@ -818,7 +807,7 @@ public class GeneralEnvelopeTest extends TestCase {
         assertFalse(e1.equals  (e2));
         assertTrue (e1.equals  (e2, EPS, true ));
         assertTrue (e1.equals  (e2, EPS, false));
-        assertFalse(e1.hashCode() == e2.hashCode());
+        assertNotEquals(e1.hashCode(), e2.hashCode());
         /*
          * Applies a greater offset. Should not be equal,
          * even when comparing with a tolerance value.
@@ -829,7 +818,7 @@ public class GeneralEnvelopeTest extends TestCase {
         assertFalse(e1.equals  (e2));
         assertFalse(e1.equals  (e2, EPS, true ));
         assertFalse(e1.equals  (e2, EPS, false));
-        assertFalse(e1.hashCode() == e2.hashCode());
+        assertNotEquals(e1.hashCode(), e2.hashCode());
     }
 
     /**
@@ -851,10 +840,10 @@ public class GeneralEnvelopeTest extends TestCase {
         e1.setRange(1, -20, +30);
         final GeneralEnvelope e2 = e1.clone();
         validate(e2);
-        assertNotSame("Expected a new instance.",           e1, e2);
-        assertEquals ("The two instances should be equal.", e1, e2);
+        assertNotSame(e1, e2);
+        assertEquals (e1, e2);
         e1.setRange(0, -40, +61);
-        assertFalse("Coordinates array should have been cloned.", e1.equals(e2));
+        assertNotEquals(e1, e2, "Coordinates array should have been cloned.");
         e2.setRange(0, -40, +61);
         assertEquals(e1, e2);
     }

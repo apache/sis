@@ -25,8 +25,8 @@ import java.io.InputStream;
 import java.nio.ByteBuffer;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 
@@ -128,8 +128,8 @@ public final class FileCacheByteChannelTest extends TestCase {
                 end   = t;
             }
             final int n = read(dst.limit(end).position(start));
-            assertEquals("Number of bytes", Math.min(end - start, n), n);
-            assertEquals("Buffer position", start + Math.max(n, 0), dst.flip().position(start).limit());
+            assertEquals(Math.min(end - start, n), n, "Number of bytes");
+            assertEquals(start + Math.max(n, 0), dst.flip().position(start).limit(), "Buffer position");
             return n >= 0;
         }
     }

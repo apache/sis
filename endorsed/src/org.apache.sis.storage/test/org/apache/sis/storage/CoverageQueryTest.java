@@ -25,8 +25,9 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 
@@ -149,12 +150,8 @@ public final class CoverageQueryTest extends TestCase {
     public void testInvalidName() throws DataStoreException {
         final Query query = new CoverageQuery();
         query.setProjection("Apple");
-        try {
-            resource.subset(query);
-            fail("Expected UnsupportedQueryException.");
-        } catch (UnsupportedQueryException e) {
-            assertTrue(e.getMessage().contains("Apple"));
-        }
+        var e = assertThrows(UnsupportedQueryException.class, () -> resource.subset(query));
+        assertMessageContains(e, "Apple");
     }
 
     /**

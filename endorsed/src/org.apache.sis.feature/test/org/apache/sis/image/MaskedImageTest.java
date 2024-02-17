@@ -34,8 +34,8 @@ import org.apache.sis.coverage.grid.j2d.TiledImage;
 import org.apache.sis.util.Debug;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.feature.Assertions.assertPixelsEqual;
 
@@ -169,8 +169,8 @@ public final class MaskedImageTest extends TestCase {
         final RenderedImage mask = processor.mask(sourceSubset, new Rectangle(0, 0, 2, 2), true);
 
         final Raster tile = mask.getTile(0, 0);
-        assertEquals("Tile width",  mask.getTileWidth(),  tile.getWidth());
-        assertEquals("Tile height", mask.getTileHeight(), tile.getHeight());
+        assertEquals(mask.getTileWidth(),  tile.getWidth());
+        assertEquals(mask.getTileHeight(), tile.getHeight());
 
         // Note: put 5 on pixels that should not be tested, so the test will fail if we do not test the right area
         final RenderedImage expected = monoTile(new int[] {
@@ -285,7 +285,7 @@ public final class MaskedImageTest extends TestCase {
      * Image size is {@value #WIDTH}×{@value #HEIGHT} pixels.
      */
     private static BufferedImage monoTile(final int[] pixels) {
-        assertEquals("Input raster must be " + WIDTH + "×" + HEIGHT, WIDTH*HEIGHT, pixels.length);
+        assertEquals(WIDTH*HEIGHT, pixels.length, "Input raster must be " + WIDTH + "×" + HEIGHT);
         final BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_BYTE_INDEXED, colorPalette());
         final WritableRaster raster = image.getRaster();
         raster.setPixels(0, 0, WIDTH, HEIGHT, pixels);

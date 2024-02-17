@@ -48,9 +48,8 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
@@ -281,7 +280,7 @@ public final class ResampledGridCoverageTest extends TestCase {
         GridGeometry gg = source.getGridGeometry();
         gg = new GridGeometry(null, CELL_CENTER, gg.getGridToCRS(CELL_CENTER), gg.getCoordinateReferenceSystem());
         final GridCoverage target = resample(source, gg);
-        assertSame("Identity transform should result in same coverage.", source, target);
+        assertSame(source, target, "Identity transform should result in same coverage.");
         assertContentEquals(source, target);
     }
 
@@ -299,7 +298,7 @@ public final class ResampledGridCoverageTest extends TestCase {
         GridGeometry gg = source.getGridGeometry();
         gg = new GridGeometry(null, CELL_CENTER, null, gg.getCoordinateReferenceSystem());
         final GridCoverage target = resample(source, gg);
-        assertSame("Identity transform should result in same coverage.", source, target);
+        assertSame(source, target, "Identity transform should result in same coverage.");
         assertContentEquals(source, target);
     }
 
@@ -316,7 +315,7 @@ public final class ResampledGridCoverageTest extends TestCase {
         final GridGeometry sourceGG = source.getGridGeometry();
         final GridGeometry targetGG = sourceGG.shiftGrid(-10, 15);
         final GridCoverage target   = processor.resample(source, targetGG);
-        assertInstanceOf("Expected fast path.", TranslatedGridCoverage.class, target);
+        assertInstanceOf(TranslatedGridCoverage.class, target, "Expected fast path.");
         assertSame(targetGG, target.getGridGeometry());
         assertEnvelopeEquals(sourceGG.getEnvelope(), targetGG.getEnvelope(), STRICT);
         /*
@@ -325,7 +324,7 @@ public final class ResampledGridCoverageTest extends TestCase {
          */
         final DirectPosition2D p = new DirectPosition2D(sourceGG.getCoordinateReferenceSystem(), 50, 30);
         assertArrayEquals(source.evaluator().apply(p),
-                          target.evaluator().apply(p), STRICT);
+                          target.evaluator().apply(p));
     }
 
     /**
@@ -361,8 +360,8 @@ public final class ResampledGridCoverageTest extends TestCase {
      * Unwraps the given image if it is an instance of {@link ReshapedImage}.
      */
     private static RenderedImage unwrap(final RenderedImage image) {
-        assertEquals("GridCoverage.render(null) should have their origin at (0,0).", 0, image.getMinX());
-        assertEquals("GridCoverage.render(null) should have their origin at (0,0).", 0, image.getMinY());
+        assertEquals(0, image.getMinX(), "GridCoverage.render(null) should have their origin at (0,0).");
+        assertEquals(0, image.getMinY(), "GridCoverage.render(null) should have their origin at (0,0).");
         return (image instanceof ReshapedImage) ? ((ReshapedImage) image).source : image;
     }
 
@@ -381,10 +380,10 @@ public final class ResampledGridCoverageTest extends TestCase {
         final RenderedImage sourceImage = source.render(null);
         final RenderedImage targetImage = result.render(null);
         assertEquals(target, result.getGridGeometry());
-        assertEquals("minX", 0, sourceImage.getMinX());                     // As per GridCoverage.render(…) contract.
-        assertEquals("minY", 0, sourceImage.getMinY());
-        assertEquals("minX", 0, targetImage.getMinX());
-        assertEquals("minY", 0, targetImage.getMinY());
+        assertEquals(0, sourceImage.getMinX());                     // As per GridCoverage.render(…) contract.
+        assertEquals(0, sourceImage.getMinY());
+        assertEquals(0, targetImage.getMinX());
+        assertEquals(0, targetImage.getMinY());
         assertPixelsEqual(sourceImage, new Rectangle( 0, QS, QS, QS),
                           targetImage, new Rectangle( 0,  0, QS, QS));      // Green should be top-left.
         assertPixelsEqual(sourceImage, new Rectangle( 0,  0, QS, QS),
@@ -502,7 +501,7 @@ public final class ResampledGridCoverageTest extends TestCase {
         final GridCoverage2D source = createCoverage2D();
         GridGeometry gg = new GridGeometry(null, CELL_CENTER, null, HardCodedConversions.mercator());
         final GridCoverage target = resample(source, gg);
-        assertTrue("GridExtent.startsAtZero", target.getGridGeometry().getExtent().startsAtZero());
+        assertTrue(target.getGridGeometry().getExtent().startsAtZero());
         /*
          * Mercator projection does not change pixel width, but change pixel height.
          */
@@ -537,12 +536,8 @@ public final class ResampledGridCoverageTest extends TestCase {
             final TransformSeparator separator = new TransformSeparator(nonSeparableG2C);
             separator.addSourceDimensions(0, 1);
             separator.addTargetDimensions(0, 1);
-            try {
-                final MathTransform separated = separator.separate();
-                fail("Test requires a non-separable transform, but separation succeed: " + separated);
-            } catch (FactoryException e) {
-                // Successful check.
-            }
+            assertNotNull(assertThrows(FactoryException.class, () -> separator.separate(),
+                    "Test requires a non-separable transform, but separation succeed."));
         }
         final GridGeometry targetGeom = new GridGeometry(
                 null,           // Let the resample operation compute the extent automatically.

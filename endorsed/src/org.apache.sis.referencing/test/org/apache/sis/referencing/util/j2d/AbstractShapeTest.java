@@ -20,8 +20,8 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Line2D;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 

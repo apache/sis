@@ -39,11 +39,10 @@ import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
@@ -51,6 +50,7 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.datum.HardCodedDatum;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 
 
@@ -65,13 +65,13 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
      * do so, but should be considered as an implementation details (it should have been a private field).
      */
-    @Rule
+    @RegisterExtension
     public final LoggingWatcher loggings = new LoggingWatcher(Loggers.CRS_FACTORY);
 
     /**
      * Verifies that no unexpected warning has been emitted in any test defined in this class.
      */
-    @After
+    @AfterEach
     public void assertNoUnexpectedLog() {
         loggings.assertNoUnexpectedLog();
     }
@@ -89,7 +89,7 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
      */
     @Test
     public void testAuthorityFactoryMock() throws FactoryException {
-        final AuthorityFactoryMock factory = new AuthorityFactoryMock("MOCK", null);
+        final var factory = new AuthorityFactoryMock("MOCK", null);
         final Class<?>[] types = {
             GeocentricCRS.class,
             GeographicCRS.class,
@@ -104,7 +104,7 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
         };
         for (final Class<?> type : types) {
             for (final String code : factory.getAuthorityCodes(type.asSubclass(IdentifiedObject.class))) {
-                assertInstanceOf(code, type, factory.createObject(code));
+                assertInstanceOf(type, factory.createObject(code), code);
             }
         }
     }
@@ -114,10 +114,10 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
      */
     @Test
     public void testGetCodeSpaces() {
-        final AuthorityFactoryMock mock1 = new AuthorityFactoryMock("MOCK1", "2.3");
-        final AuthorityFactoryMock mock2 = new AuthorityFactoryMock("MOCK2", null);
-        final AuthorityFactoryMock mock3 = new AuthorityFactoryMock("MOCK3", null);
-        final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(
+        final var mock1 = new AuthorityFactoryMock("MOCK1", "2.3");
+        final var mock2 = new AuthorityFactoryMock("MOCK2", null);
+        final var mock3 = new AuthorityFactoryMock("MOCK3", null);
+        final var factory = new MultiAuthoritiesFactory(
                 List.of(mock1, mock2), null,
                 List.of(mock1, mock3), null);
         assertSetEquals(List.of("MOCK1", "MOCK2", "MOCK3"), factory.getCodeSpaces());
@@ -130,34 +130,30 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
      */
     @Test
     public void testGetAuthorityFactory() throws NoSuchAuthorityFactoryException {
-        final AuthorityFactoryMock mock1 = new AuthorityFactoryMock("MOCK1", null);
-        final AuthorityFactoryMock mock2 = new AuthorityFactoryMock("MOCK2", "1.2");
-        final AuthorityFactoryMock mock3 = new AuthorityFactoryMock("MOCK1", "2.3");
-        final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(
+        final var mock1 = new AuthorityFactoryMock("MOCK1", null);
+        final var mock2 = new AuthorityFactoryMock("MOCK2", "1.2");
+        final var mock3 = new AuthorityFactoryMock("MOCK1", "2.3");
+        final var factory = new MultiAuthoritiesFactory(
                 List.of(mock1, mock2, mock3), null,
                 List.of(mock1, mock3), null);
 
-        assertSame("MOCK2", mock2, factory.getAuthorityFactory(  CRSAuthorityFactory.class, "mock2", null));
-        assertSame("MOCK1", mock1, factory.getAuthorityFactory(  CRSAuthorityFactory.class, "mock1", null));
-        assertSame("MOCK2", mock2, factory.getAuthorityFactory(  CRSAuthorityFactory.class, "mock2", "1.2"));
-        assertSame("MOCK3", mock3, factory.getAuthorityFactory(  CRSAuthorityFactory.class, "mock1", "2.3"));
-        assertSame("MOCK3", mock3, factory.getAuthorityFactory(DatumAuthorityFactory.class, "mock1", "2.3"));
-        assertSame("MOCK1", mock1, factory.getAuthorityFactory(DatumAuthorityFactory.class, "mock1", null));
-        try {
-            factory.getAuthorityFactory(DatumAuthorityFactory.class, "mock2", null);
-            fail("Should not have found a 'mock2' factory for datum objects.");
-        } catch (NoSuchAuthorityFactoryException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("MOCK2"));
-        }
-        try {
-            factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock1", "9.9");
-            fail("Should not have found a 'mock1' factory for the 9.9 version.");
-        } catch (NoSuchAuthorityFactoryException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("MOCK1"));
-            assertTrue(message, message.contains("9.9"));
-        }
+        assertSame(mock2, factory.getAuthorityFactory(  CRSAuthorityFactory.class, "mock2", null));
+        assertSame(mock1, factory.getAuthorityFactory(  CRSAuthorityFactory.class, "mock1", null));
+        assertSame(mock2, factory.getAuthorityFactory(  CRSAuthorityFactory.class, "mock2", "1.2"));
+        assertSame(mock3, factory.getAuthorityFactory(  CRSAuthorityFactory.class, "mock1", "2.3"));
+        assertSame(mock3, factory.getAuthorityFactory(DatumAuthorityFactory.class, "mock1", "2.3"));
+        assertSame(mock1, factory.getAuthorityFactory(DatumAuthorityFactory.class, "mock1", null));
+
+        NoSuchAuthorityFactoryException e;
+        e = assertThrows(NoSuchAuthorityFactoryException.class,
+                () -> factory.getAuthorityFactory(DatumAuthorityFactory.class, "mock2", null),
+                "Should not have found a 'mock2' factory for datum objects.");
+        assertMessageContains(e, "MOCK2");
+
+        e = assertThrows(NoSuchAuthorityFactoryException.class,
+                () -> factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock1", "9.9"),
+                "Should not have found a 'mock1' factory for the 9.9 version.");
+        assertMessageContains(e, "MOCK1", "9.9");
     }
 
     /**
@@ -169,29 +165,29 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
     @Test
     @DependsOnMethod("testGetAuthorityFactory")
     public void testConflict() throws NoSuchAuthorityFactoryException {
-        final AuthorityFactoryMock mock1 = new AuthorityFactoryMock("MOCK1", "2.3");
-        final AuthorityFactoryMock mock2 = new AuthorityFactoryMock("MOCK1", "2.3");
-        final AuthorityFactoryMock mock3 = new AuthorityFactoryMock("MOCK3", "1.2");
-        final AuthorityFactoryMock mock4 = new AuthorityFactoryMock("MOCK3", null);
-        final AuthorityFactoryMock mock5 = new AuthorityFactoryMock("MOCK5", null);
-        final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(
+        final var mock1 = new AuthorityFactoryMock("MOCK1", "2.3");
+        final var mock2 = new AuthorityFactoryMock("MOCK1", "2.3");
+        final var mock3 = new AuthorityFactoryMock("MOCK3", "1.2");
+        final var mock4 = new AuthorityFactoryMock("MOCK3", null);
+        final var mock5 = new AuthorityFactoryMock("MOCK5", null);
+        final var factory = new MultiAuthoritiesFactory(
                 List.of(mock1, mock2, mock3, mock4, mock5), null, null, null);
 
-        assertSame("MOCK1", mock1, factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock1", null));
-        assertSame("MOCK1", mock1, factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock1", "2.3"));
+        assertSame(mock1, factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock1", null));
+        assertSame(mock1, factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock1", "2.3"));
         loggings.assertNoUnexpectedLog();
 
-        assertSame("MOCK3", mock3, factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock3", null));
+        assertSame(mock3, factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock3", null));
         loggings.assertNextLogContains("CRSAuthorityFactory", "AuthorityFactoryMock", "MOCK1", "2.3");
         loggings.assertNoUnexpectedLog();
 
-        assertSame("MOCK5", mock5, factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock5", null));
+        assertSame(mock5, factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock5", null));
         loggings.assertNextLogContains("CRSAuthorityFactory", "AuthorityFactoryMock", "MOCK3");
         loggings.assertNoUnexpectedLog();
 
         // Ask again the same factories. No logging should be emitted now, because we already logged.
-        assertSame("MOCK3", mock3, factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock3", null));
-        assertSame("MOCK5", mock5, factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock5", null));
+        assertSame(mock3, factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock3", null));
+        assertSame(mock5, factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock5", null));
         loggings.assertNoUnexpectedLog();
     }
 
@@ -205,24 +201,22 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
     @DependsOnMethod("testGetAuthorityFactory")
     public void testCreateFromSimpleCodes() throws FactoryException {
         final Set<AuthorityFactoryMock> mock = Set.of(new AuthorityFactoryMock("MOCK", "2.3"));
-        final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
+        final var factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
 
-        assertSame("Straight",      HardCodedCRS  .WGS84_LATITUDE_FIRST, factory.createGeographicCRS("MOCK:4326"));
-        assertSame("With spaces",   HardCodedCRS  .WGS84,                factory.createGeographicCRS("  mock :  84 "));
-        assertSame("With version",  HardCodedDatum.WGS84,                factory.createGeodeticDatum("mock:2.3:6326"));
-        assertSame("Empty version", HardCodedDatum.GREENWICH,            factory.createPrimeMeridian(" MoCk :: 8901"));
-        assertSame("With spaces",   HardCodedCRS  .DEPTH,                factory.createVerticalCRS  (" MoCk : : 9905"));
-        assertSame("Version 0",     HardCodedDatum.SPHERE,               factory.createGeodeticDatum("MOCK: 0:6047"));
-        assertSame("With spaces",   Extents       .WORLD,                factory.createExtent       ("MOCK: 2.3 : 1262"));
-        assertSame("With spaces",   Units         .METRE,                factory.createUnit         (" MoCK : : 9001 "));
-        assertEquals("Greenwich",   factory.getDescriptionText("MOCK:8901").toString());
-        try {
-            factory.createGeodeticDatum("MOCK2:4326");
-            fail("Should not have found an object from a non-existent factory.");
-        } catch (NoSuchAuthorityFactoryException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("MOCK2"));
-        }
+        assertSame(HardCodedCRS  .WGS84_LATITUDE_FIRST, factory.createGeographicCRS("MOCK:4326"));
+        assertSame(HardCodedCRS  .WGS84,                factory.createGeographicCRS("  mock :  84 "));
+        assertSame(HardCodedDatum.WGS84,                factory.createGeodeticDatum("mock:2.3:6326"));
+        assertSame(HardCodedDatum.GREENWICH,            factory.createPrimeMeridian(" MoCk :: 8901"));
+        assertSame(HardCodedCRS  .DEPTH,                factory.createVerticalCRS  (" MoCk : : 9905"));
+        assertSame(HardCodedDatum.SPHERE,               factory.createGeodeticDatum("MOCK: 0:6047"));
+        assertSame(Extents       .WORLD,                factory.createExtent       ("MOCK: 2.3 : 1262"));
+        assertSame(Units         .METRE,                factory.createUnit         (" MoCK : : 9001 "));
+        assertEquals("Greenwich", factory.getDescriptionText("MOCK:8901").toString());
+
+        var e = assertThrows(NoSuchAuthorityFactoryException.class,
+                () -> factory.createGeodeticDatum("MOCK2:4326"),
+                "Should not have found an object from a non-existent factory.");
+        assertMessageContains(e, "MOCK2");
     }
 
     /**
@@ -235,23 +229,20 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
     @DependsOnMethod("testCreateFromSimpleCodes")
     public void testCreateFromURNs() throws FactoryException {
         final Set<AuthorityFactoryMock> mock = Set.of(new AuthorityFactoryMock("MOCK", "2.3"));
-        final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
+        final var factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
 
-        assertSame("Empty version", HardCodedCRS  .WGS84_LATITUDE_FIRST, factory.createGeographicCRS("urn:ogc:def:crs:MOCK::4326"));
-        assertSame("With spaces",   HardCodedCRS  .WGS84,                factory.createGeographicCRS(" urn : ogc  : def:crs :  mock : :  84 "));
-        assertSame("Mixed case",    HardCodedCRS  .DEPTH,                factory.createVerticalCRS  (" Urn : OGC : dEf : CRS : MoCk : : 9905"));
-        assertSame("With version",  HardCodedDatum.WGS84,                factory.createDatum        ("urn:ogc:def:datum:mock:2.3:6326"));
-        assertSame("Empty version", HardCodedDatum.GREENWICH,            factory.createObject       ("urn:ogc:def:meridian: MoCk :: 8901"));
-        assertSame("Version 0",     HardCodedDatum.SPHERE,               factory.createGeodeticDatum("urn:ogc:def:datum:MOCK: 0 :6047"));
-        assertSame("Upper case",    Units         .METRE,                factory.createUnit         ("URN:OGC:DEF:UOM:MOCK::9001"));
-        try {
-            factory.createGeographicCRS("urn:ogc:def:datum:MOCK::4326");
-            fail("Should create an object of the wrong type.");
-        } catch (NoSuchAuthorityCodeException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("datum"));
-            assertTrue(message, message.contains("GeographicCRS"));
-        }
+        assertSame(HardCodedCRS  .WGS84_LATITUDE_FIRST, factory.createGeographicCRS("urn:ogc:def:crs:MOCK::4326"));
+        assertSame(HardCodedCRS  .WGS84,                factory.createGeographicCRS(" urn : ogc  : def:crs :  mock : :  84 "));
+        assertSame(HardCodedCRS  .DEPTH,                factory.createVerticalCRS  (" Urn : OGC : dEf : CRS : MoCk : : 9905"));
+        assertSame(HardCodedDatum.WGS84,                factory.createDatum        ("urn:ogc:def:datum:mock:2.3:6326"));
+        assertSame(HardCodedDatum.GREENWICH,            factory.createObject       ("urn:ogc:def:meridian: MoCk :: 8901"));
+        assertSame(HardCodedDatum.SPHERE,               factory.createGeodeticDatum("urn:ogc:def:datum:MOCK: 0 :6047"));
+        assertSame(Units         .METRE,                factory.createUnit         ("URN:OGC:DEF:UOM:MOCK::9001"));
+
+        var e = assertThrows(NoSuchAuthorityCodeException.class,
+                () -> factory.createGeographicCRS("urn:ogc:def:datum:MOCK::4326"),
+                "Should not create an object of the wrong type.");
+        assertMessageContains(e, "datum", "GeographicCRS");
     }
 
     /**
@@ -264,20 +255,17 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
     @DependsOnMethod("testCreateFromURNs")
     public void testCreateFromHTTPs() throws FactoryException {
         final Set<AuthorityFactoryMock> mock = Set.of(new AuthorityFactoryMock("MOCK", "2.3"));
-        final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
+        final var factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
 
-        assertSame("HTTP",        HardCodedCRS.WGS84_LATITUDE_FIRST, factory.createGeographicCRS("http://www.opengis.net/def/crs/mock/0/4326"));
-        assertSame("GML",         HardCodedCRS.WGS84_LATITUDE_FIRST, factory.createObject       ("http://www.opengis.net/gml/srs/mock.xml#4326"));
-        assertSame("With spaces", HardCodedCRS.WGS84,                factory.createGeographicCRS("http://www.opengis.net/gml/srs/ mock.xml # 84 "));
-        assertSame("Mixed case",  HardCodedCRS.DEPTH,                factory.createVerticalCRS  ("HTTP://www.OpenGIS.net/GML/SRS/MoCk.xml#9905"));
-        try {
-            factory.createDatum("http://www.opengis.net/gml/srs/mock.xml#6326");
-            fail("Should create an object of the wrong type.");
-        } catch (NoSuchAuthorityCodeException e) {
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("crs"));
-            assertTrue(message, message.contains("Datum"));
-        }
+        assertSame(HardCodedCRS.WGS84_LATITUDE_FIRST, factory.createGeographicCRS("http://www.opengis.net/def/crs/mock/0/4326"));
+        assertSame(HardCodedCRS.WGS84_LATITUDE_FIRST, factory.createObject       ("http://www.opengis.net/gml/srs/mock.xml#4326"));
+        assertSame(HardCodedCRS.WGS84,                factory.createGeographicCRS("http://www.opengis.net/gml/srs/ mock.xml # 84 "));
+        assertSame(HardCodedCRS.DEPTH,                factory.createVerticalCRS  ("HTTP://www.OpenGIS.net/GML/SRS/MoCk.xml#9905"));
+
+        var e = assertThrows(NoSuchAuthorityCodeException.class,
+                () -> factory.createDatum("http://www.opengis.net/gml/srs/mock.xml#6326"),
+                "Should not create an object of the wrong type.");
+        assertMessageContains(e, "crs", "Datum");
     }
 
     /**
@@ -290,31 +278,28 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
     @DependsOnMethod("testCreateFromURNs")
     public void testCreateFromCombinedURNs() throws FactoryException {
         final Set<AuthorityFactoryMock> mock = Set.of(new AuthorityFactoryMock("MOCK", "2.3"));
-        final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
+        final var factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
         testCreateFromCombinedURIs(factory, "urn:ogc:def:crs, crs:MOCK::4326, crs:MOCK::5714");
         /*
          * Following are more unusual combinations described in OGC 07-092r1 (2007)
          * "Definition identifier URNs in OGC namespace".
          */
         SingleCRS crs = factory.createGeographicCRS("urn:ogc:def:crs, datum:MOCK::6326, cs:MOCK::6424");
-        assertSame("datum", HardCodedDatum.WGS84, crs.getDatum());
-        assertSame("cs", HardCodedCS.GEODETIC_2D, crs.getCoordinateSystem());
+        assertSame(HardCodedDatum.WGS84, crs.getDatum());
+        assertSame(HardCodedCS.GEODETIC_2D, crs.getCoordinateSystem());
         /*
          * Verify that invalid combined URIs are rejected.
          */
-        try {
-            factory.createObject("urn:ogc:def:cs, crs:MOCK::4326, crs:MOCK::5714");
-            fail("Shall not accept to create CoordinateSystem from combined URI.");
-        } catch (FactoryException e) {
-            String message = e.getMessage();
-            assertTrue(message, message.contains("CoordinateSystem"));
-        }
-        try {
-            factory.createObject("urn:ogc:def:crs, datum:MOCK::6326, cs:MOCK::6424, cs:MOCK::6422");
-            fail("Shall not accept to create combined URI with unexpected objects.");
-        } catch (FactoryException e) {
-            assertNotNull(e.getMessage());
-        }
+        FactoryException e;
+        e = assertThrows(FactoryException.class,
+                () -> factory.createObject("urn:ogc:def:cs, crs:MOCK::4326, crs:MOCK::5714"),
+                "Shall not accept to create CoordinateSystem from combined URI.");
+        assertMessageContains(e, "CoordinateSystem");
+
+        e = assertThrows(FactoryException.class,
+                () -> factory.createObject("urn:ogc:def:crs, datum:MOCK::6326, cs:MOCK::6424, cs:MOCK::6422"),
+                "Shall not accept to create combined URI with unexpected objects.");
+        assertMessageContains(e);
     }
 
     /**
@@ -327,7 +312,7 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
     @DependsOnMethod("testCreateFromHTTPs")
     public void testCreateFromCombinedHTTPs() throws FactoryException {
         final Set<AuthorityFactoryMock> mock = Set.of(new AuthorityFactoryMock("MOCK", "2.3"));
-        final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
+        final var factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
         testCreateFromCombinedURIs(factory, "http://www.opengis.net/def/crs-compound?"
                                         + "1=http://www.opengis.net/def/crs/MOCK/0/4326&"
                                         + "2=http://www.opengis.net/def/crs/MOCK/0/5714");
@@ -337,14 +322,12 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
         /*
          * Contrarily to URN, the HTTP form shall not accept Datum + CoordinateSystem combination.
          */
-        try {
-            factory.createObject("http://www.opengis.net/def/crs-compound?"
-                             + "1=http://www.opengis.net/def/datum/MOCK/0/6326&"
-                             + "2=http://www.opengis.net/def/cs/MOCK/0/6424");
-            fail("Shall not accept Datum + CoordinateSystem combination.");
-        } catch (FactoryException e) {
-            assertNotNull(e.getMessage());
-        }
+        var e = assertThrows(FactoryException.class,
+                () -> factory.createObject("http://www.opengis.net/def/crs-compound?"
+                                       + "1=http://www.opengis.net/def/datum/MOCK/0/6326&"
+                                       + "2=http://www.opengis.net/def/cs/MOCK/0/6424"),
+                "Shall not accept Datum + CoordinateSystem combination.");
+        assertMessageContains(e);
     }
 
     /**
@@ -354,9 +337,8 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
             throws FactoryException
     {
         CompoundCRS crs = factory.createCompoundCRS(heightOnWGS84);
-        assertArrayEquals("WGS 84 + MSL height", new SingleCRS[] {
-            HardCodedCRS.WGS84_LATITUDE_FIRST, HardCodedCRS.GRAVITY_RELATED_HEIGHT
-        }, crs.getComponents().toArray());
+        assertArrayEquals(new SingleCRS[] {HardCodedCRS.WGS84_LATITUDE_FIRST, HardCodedCRS.GRAVITY_RELATED_HEIGHT},
+                          crs.getComponents().toArray(), "WGS 84 + MSL height");
     }
 
     /**
@@ -369,16 +351,15 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
         final List<AuthorityFactoryMock> mock = List.of(
                 new AuthorityFactoryMock("MOCK", null),
                 new AuthorityFactoryMock("MOCK", "2.3"));
-        final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
+        final var factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
         final Set<String> codes = factory.getAuthorityCodes(CoordinateReferenceSystem.class);
 
-        assertTrue("MOCK:4979",   codes.contains("MOCK:4979"));     // A geocentric CRS.
-        assertTrue(" mock :: 84", codes.contains(" mock :: 84"));   // A geographic CRS.
-        assertTrue("http://www.opengis.net/gml/srs/mock.xml#4326",
-                codes.contains("http://www.opengis.net/gml/srs/mock.xml#4326"));
+        assertTrue(codes.contains("MOCK:4979"));     // A geocentric CRS.
+        assertTrue(codes.contains(" mock :: 84"));   // A geographic CRS.
+        assertTrue(codes.contains("http://www.opengis.net/gml/srs/mock.xml#4326"));
 
-        assertFalse("MOCK:6326", codes.contains("MOCK:6326"));      // A geodetic datum.
-        assertFalse("isEmpty()", codes.isEmpty());
+        assertFalse(codes.contains("MOCK:6326"));      // A geodetic datum.
+        assertFalse(codes.isEmpty());
         assertArrayEquals(new String[] {"MOCK:4979", "MOCK:84", "MOCK:4326", "MOCK:5714", "MOCK:9905"}, codes.toArray());
     }
 
@@ -392,7 +373,7 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
         final List<AuthorityFactoryMock> mock = List.of(
                 new AuthorityFactoryMock("MOCK", null),
                 new AuthorityFactoryMock("MOCK", "2.3"));
-        final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, null, null, mock);
+        final var factory = new MultiAuthoritiesFactory(mock, null, null, mock);
         /*
          * Our mock factory does not implement createFromCoordinateReferenceSystemCodes(String, String),
          * so we just test that we didn't got an exception and no message were logged.
@@ -416,7 +397,7 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
         final List<AuthorityFactoryMock> mock = List.of(
                 new AuthorityFactoryMock("MOCK", null),
                 new AuthorityFactoryMock("MOCK", "2.3"));
-        final MultiAuthoritiesFactory factory = new MultiAuthoritiesFactory(mock, null, mock, null);
+        final var factory = new MultiAuthoritiesFactory(mock, null, mock, null);
         final IdentifiedObjectFinder finder = factory.newIdentifiedObjectFinder();
         assertSame(HardCodedDatum.WGS72, finder.findSingleton(HardCodedDatum.WGS72));
     }

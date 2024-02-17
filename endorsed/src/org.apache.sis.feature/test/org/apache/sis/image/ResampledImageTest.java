@@ -36,8 +36,8 @@ import org.apache.sis.coverage.grid.j2d.RasterFactory;
 import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 
@@ -152,7 +152,7 @@ public final class ResampledImageTest extends TestCase {
         double[] tv = null;
         while (ps.next()) {
             Point p = ps.getPosition();
-            p = (Point) sourceToTarget.transform(p, p);
+            p = assertInstanceOf(Point.class, sourceToTarget.transform(p, p));
             pt.moveTo(p.x, p.y);
             sv = ps.getPixel(sv);
             tv = pt.getPixel(tv);
@@ -198,7 +198,7 @@ public final class ResampledImageTest extends TestCase {
              * Compare with actual interpolated values.
              */
             Point p = ps.getPosition();
-            p = (Point) sourceToTarget.transform(p, p);
+            p = assertInstanceOf(Point.class, sourceToTarget.transform(p, p));
             pt.moveTo(p.x + halfScale, p.y + halfScale);
             tv = pt.getPixel(tv);
             assertArrayEquals(sv, tv, tolerance);
@@ -270,8 +270,8 @@ public final class ResampledImageTest extends TestCase {
      */
     private float[] resampleSimpleImage(final int size) {
         source = RasterFactory.createGrayScaleImage(DataBuffer.TYPE_FLOAT, size, size, 1, 0, 0, 2);
-        final WritableRaster raster = ((BufferedImage) source).getRaster();
-        final float[] sourceValues = ((DataBufferFloat) raster.getDataBuffer()).getData();
+        final WritableRaster raster = assertInstanceOf(BufferedImage.class, source).getRaster();
+        final float[] sourceValues = assertInstanceOf(DataBufferFloat.class, raster.getDataBuffer()).getData();
         Arrays.fill(sourceValues, 1);
         final int clo = size/2 - size/4;
         final int cup = size/2 + size/4 + 1;
@@ -292,10 +292,10 @@ public final class ResampledImageTest extends TestCase {
                 ImageLayout.DEFAULT.createCompatibleSampleModel(source, bounds),
                 null, bounds, toSource, interpolation, null, null);
 
-        assertEquals("numXTiles", 1, target.getNumXTiles());
-        assertEquals("numYTiles", 1, target.getNumYTiles());
-        final DataBufferFloat data = (DataBufferFloat) target.getTile(0,0).getDataBuffer();
-        assertEquals("numBanks", 1, data.getNumBanks());
+        assertEquals(1, target.getNumXTiles());
+        assertEquals(1, target.getNumYTiles());
+        final DataBufferFloat data = assertInstanceOf(DataBufferFloat.class, target.getTile(0,0).getDataBuffer());
+        assertEquals(1, data.getNumBanks());
         return data.getData();
     }
 
@@ -315,7 +315,7 @@ public final class ResampledImageTest extends TestCase {
             1,1,1,1,1,1,1,1,1,
             1,1,1,1,1,1,1,1,1,
             1,1,1,1,1,1,1,1,1
-        }, resampleSimpleImage(3), (float) STRICT);
+        }, resampleSimpleImage(3));
     }
 
     /**
@@ -334,7 +334,7 @@ public final class ResampledImageTest extends TestCase {
             0.888888888f, 1f, 1.111111111f, 1.222222222f, 1.333333333f, 1.222222222f, 1.111111111f, 1f, 0.888888888f,
             1.000000000f, 1f, 1.000000000f, 1.000000000f, 1.000000000f, 1.000000000f, 1.000000000f, 1f, 1.000000000f,
             1.111111111f, 1f, 0.888888888f, 0.777777777f, 0.666666666f, 0.777777777f, 0.888888888f, 1f, 1.111111111f
-        }, resampleSimpleImage(3), (float) STRICT);
+        }, resampleSimpleImage(3));
     }
 
     /**
@@ -358,7 +358,7 @@ public final class ResampledImageTest extends TestCase {
         double[] actual = null;
         while (it.next()) {
             actual = it.getPixel(actual);
-            assertArrayEquals(actual, expected, STRICT);
+            assertArrayEquals(actual, expected);
         }
     }
 }

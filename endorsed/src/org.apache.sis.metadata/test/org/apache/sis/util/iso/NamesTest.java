@@ -27,8 +27,9 @@ import org.opengis.util.ScopedName;
 import org.apache.sis.util.UnknownNameException;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -55,11 +56,11 @@ public final class NamesTest extends TestCase {
     public void testCreateScopedName() {
         final LocalName scope = Names.createLocalName("Apache", null, "sis");
         final ScopedName name = Names.createScopedName(scope, null, "identifier");
-        assertSame  ("path()",      scope,                   name.path());
-        assertEquals("tail()",      "identifier",            name.tail().toString());
-        assertEquals("toString()",  "sis:identifier",        name.toString());
-        assertEquals("full",        "Apache:sis:identifier", name.toFullyQualifiedName().toString());
-        assertEquals("tail().full", "Apache:sis:identifier", name.tail().toFullyQualifiedName().toString());
+        assertSame  (scope,                   name.path());
+        assertEquals("identifier",            name.tail().toString());
+        assertEquals("sis:identifier",        name.toString());
+        assertEquals("Apache:sis:identifier", name.toFullyQualifiedName().toString());
+        assertEquals("Apache:sis:identifier", name.tail().toFullyQualifiedName().toString());
     }
 
     /**
@@ -86,12 +87,9 @@ public final class NamesTest extends TestCase {
         assertValueClassEquals(Random.class, type);
         assertValueClassEquals(DefaultNameFactoryTest.class,
                 new DefaultTypeName(type.scope(), DefaultNameFactoryTest.class.getName()));
-        try {
-            new DefaultTypeName(type.scope(), "org.apache.sis.Dummy");
-            fail("Expected UnknownNameException.");
-        } catch (UnknownNameException e) {
-            assertTrue(e.getMessage().contains("org.apache.sis.Dummy"));
-        }
+
+        var e = assertThrows(UnknownNameException.class, () -> new DefaultTypeName(type.scope(), "org.apache.sis.Dummy"));
+        assertMessageContains(e, "org.apache.sis.Dummy");
     }
 
     /**
@@ -106,12 +104,9 @@ public final class NamesTest extends TestCase {
         assertValueClassEquals(String.class,               type);
         assertValueClassEquals(Double.class,               new DefaultTypeName(type.scope(), "Real"));
         assertValueClassEquals(InternationalString.class,  new DefaultTypeName(type.scope(), "FreeText"));
-        try {
-            new DefaultTypeName(type.scope(), "Dummy");
-            fail("Expected UnknownNameException.");
-        } catch (UnknownNameException e) {
-            assertTrue(e.getMessage().contains("OGC:Dummy"));
-        }
+
+        var e = assertThrows(UnknownNameException.class, () -> new DefaultTypeName(type.scope(), "Dummy"));
+        assertMessageContains(e, "OGC:Dummy");
     }
 
     /**

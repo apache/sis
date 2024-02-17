@@ -25,9 +25,9 @@ import org.apache.sis.referencing.factory.TestFactorySource;
 import org.apache.sis.referencing.factory.sql.EPSGFactory;
 
 // Test dependencies
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
@@ -50,7 +50,7 @@ public final class ComparisonWithEPSG extends TestCase {
      *
      * @throws FactoryException if an error occurred while creating the factory.
      */
-    @BeforeClass
+    @BeforeAll
     public static void createFactory() throws FactoryException {
         TestFactorySource.createFactory();
     }
@@ -60,7 +60,7 @@ public final class ComparisonWithEPSG extends TestCase {
      *
      * @throws FactoryException if an error occurred while closing the connections.
      */
-    @AfterClass
+    @AfterAll
     public static void close() throws FactoryException {
         TestFactorySource.close();
     }

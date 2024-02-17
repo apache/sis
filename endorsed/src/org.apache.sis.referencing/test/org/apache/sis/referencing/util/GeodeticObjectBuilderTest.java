@@ -24,8 +24,8 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 // Specific to the main branch:
@@ -59,8 +59,8 @@ public final class GeodeticObjectBuilderTest extends TestCase {
         assertSame(b, b.changeConversion("Mercator (Spherical)", null));
         final ProjectedCRS crs = b.setNormalizedAxisOrder(true).createProjectedCRS();
         final ParameterValueGroup p = crs.getConversionFromBase().getParameterValues();
-        assertEquals(40,  p.parameter("Longitude of natural origin").doubleValue(), STRICT);
-        assertEquals(0.5, p.parameter("Scale factor at natural origin").doubleValue(), STRICT);
+        assertEquals(40,  p.parameter("Longitude of natural origin").doubleValue());
+        assertEquals(0.5, p.parameter("Scale factor at natural origin").doubleValue());
         assertAxisDirectionsEqual("baseCRS", crs.getBaseCRS().getCoordinateSystem(),
                                   AxisDirection.EAST, AxisDirection.NORTH);
     }

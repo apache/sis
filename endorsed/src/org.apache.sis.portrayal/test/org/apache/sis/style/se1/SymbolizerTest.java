@@ -19,7 +19,7 @@ package org.apache.sis.style.se1;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 // Specific to the main branch:

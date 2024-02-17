@@ -20,8 +20,8 @@ import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
 import static javax.imageio.plugins.tiff.BaselineTIFFTagSet.*;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 

@@ -23,8 +23,8 @@ import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -56,13 +56,13 @@ public final class WKTKeywordsTest extends TestCase {
             final String name = field.getName();
             final int modifiers = field.getModifiers();
             if (name.equals("TYPES")) {
-                assertFalse(name, Modifier.isPublic(modifiers));
+                assertFalse(Modifier.isPublic(modifiers), name);
                 continue;
             }
-            assertTrue(name, Modifier.isPublic(modifiers));
-            assertTrue(name, Modifier.isStatic(modifiers));
-            assertTrue(name, Modifier.isFinal (modifiers));
-            assertEquals("As a policy of WKTKeywords, constants value should be equal to field name.", name, field.get(null));
+            assertTrue(Modifier.isPublic(modifiers), name);
+            assertTrue(Modifier.isStatic(modifiers), name);
+            assertTrue(Modifier.isFinal (modifiers), name);
+            assertEquals(name, field.get(null), "As a policy of WKTKeywords, constants value should be equal to field name.");
         }
     }
 
@@ -87,13 +87,13 @@ public final class WKTKeywordsTest extends TestCase {
     @SafeVarargs
     private static <T> void verifyTypeHierarchy(final Class<T> base, final Class<? extends T>... subtypes) {
         final Set<String> all = Set.of(WKTKeywords.forType(base));
-        assertNotNull(base.getName(), all);
+        assertNotNull(all, base.getName());
         for (final Class<? extends T> subtype : subtypes) {
             final Set<String> specialized = Set.of(WKTKeywords.forType(subtype));
             final String name = subtype.getName();
-            assertNotNull(name, specialized);
-            assertTrue(name, all.size() > specialized.size());
-            assertTrue(name, all.containsAll(specialized));
+            assertNotNull(specialized, name);
+            assertTrue(all.size() > specialized.size(), name);
+            assertTrue(all.containsAll(specialized), name);
         }
     }
 }

@@ -24,8 +24,8 @@ import static org.apache.sis.referencing.operation.transform.AbstractMathTransfo
 import static org.apache.sis.referencing.operation.transform.AbstractMathTransform.MAXIMUM_BUFFER_SIZE;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -205,10 +205,12 @@ public final class AbstractMathTransformTest extends TestCase {
                     final boolean completed = (exception.getLastCompletedTransform() == tr);
                     final boolean expected  = MAXIMUM_BUFFER_SIZE/denominator < MAXIMUM_FAILURES;
                     final int count = tr.failures.size();
-                    assertEquals("The completion state during pass #" + p + " (having " + count +
-                                 " failures among " + numPts + " points = " + 100*count/numPts +
-                                 "%) doesn't match the expected one for a statistitical frequency of " +
-                                 100/denominator + "% of failures:", expected, completed);
+                    final int cp = p;
+                    assertEquals(expected, completed, () ->
+                            "The completion state during pass #" + cp + " (having " + count +
+                            " failures among " + numPts + " points = " + 100*count/numPts +
+                            "%) doesn't match the expected one for a statistitical frequency of " +
+                            100/denominator + "% of failures:");
                     /*
                      * TIP: if the above assertion fails, make sure that the frequencies declared
                      *      in the 'denominators' array are not too close to the cutoff frequency.
@@ -230,7 +232,7 @@ public final class AbstractMathTransformTest extends TestCase {
                  * none of them are. Verifies with RandomFailureTransform if the NaN state is the
                  * expected one.
                  */
-                assertFalse("TransformExceptions should have been recorded.", tr.failures.isEmpty());
+                assertFalse(tr.failures.isEmpty(), "TransformExceptions should have been recorded.");
                 for (int i=0; i<numPts; i++) {
                     final int dstOff = i * targetDimension;
                     final boolean failed = tr.failures.remove(i);
@@ -238,10 +240,10 @@ public final class AbstractMathTransformTest extends TestCase {
                     for (int j=dstOff + targetDimension; --j >= dstOff;) {
                         final boolean isNaN = targetIsDouble ? Double.isNaN(dblPts[j])
                                                              : Float .isNaN(fltPts[j]);
-                        assertEquals("Unexpected NaN state.", failed, isNaN);
+                        assertEquals(failed, isNaN);
                     }
                 }
-                assertTrue("Some TransformExceptions remainding.", tr.failures.isEmpty());
+                assertTrue(tr.failures.isEmpty());
             }
         }
         /*
@@ -250,7 +252,7 @@ public final class AbstractMathTransformTest extends TestCase {
          * of failures is close to the threshold. Our random generator is initialized with a
          * constant seed, so random fluctuation should not break this test.
          */
-        assertEquals("Count of completion.", 8, completedCount);
-        assertEquals("Count of abandons.",  12, abandonCount);
+        assertEquals(8, completedCount);
+        assertEquals(12, abandonCount);
     }
 }

@@ -23,8 +23,8 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.util.Formulas;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
@@ -72,12 +72,12 @@ public final class AlbersEqualAreaTest extends MapProjectionTestCase {
                 0,          // False easting
                 0);         // False northing
 
-        final double delta = toRadians(100.0 / 60) / 1852;                  // Approximately 100 metres.
+        final double delta = toRadians(100.0 / 60) / 1852;              // Approximately 100 metres.
         derivativeDeltas = new double[] {delta, delta};
         tolerance = Formulas.LINEAR_TOLERANCE;
         final AlbersEqualArea kernel = (AlbersEqualArea) getKernel();
-        assertTrue("isSpherical", isSpherical(kernel));
-        assertEquals("n", 0.6028370, kernel.nm, 0.5E-7);                    // Expected 'n' value from Snyder table 15.
+        assertTrue(isSpherical(kernel));
+        assertEquals(0.6028370, kernel.nm, 0.5E-7);                     // Expected 'n' value from Snyder table 15.
         /*
          * When stepping into the AlbersEqualArea.Sphere.transform(…) method with a debugger, the
          * expected value of 6370997*ρ/n is 6910941 (value taken from ρ column in Snyder table 15).
@@ -124,12 +124,12 @@ public final class AlbersEqualAreaTest extends MapProjectionTestCase {
         derivativeDeltas = new double[] {delta, delta};
         tolerance = Formulas.LINEAR_TOLERANCE;
         final AlbersEqualArea kernel = (AlbersEqualArea) getKernel();
-        assertFalse("isSpherical", isSpherical(kernel));
+        assertFalse(isSpherical(kernel));
         /*
          * Expected 'n' value from Snyder table 15. The division by (1-ℯ²) is because Apache SIS omits this factor
          * in its calculation of n (we rather take it in account in (de)normalization matrices and elsewhere).
          */
-        assertEquals("n", 0.6029035, kernel.nm / (1 - kernel.eccentricitySquared), 0.5E-7);
+        assertEquals(0.6029035, kernel.nm / (1 - kernel.eccentricitySquared), 0.5E-7);
         /*
          * When stepping into the AlbersEqualArea.Sphere.transform(…) method with a debugger, the expected
          * value of 6378206.4*ρ/(nm/(1-ℯ²)) is 6931335 (value taken from ρ column in Snyder table 15).

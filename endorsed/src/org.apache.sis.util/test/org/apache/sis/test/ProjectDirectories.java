@@ -23,7 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -64,7 +64,7 @@ public final class ProjectDirectories {
      */
     public ProjectDirectories(final Class<?> c) {
         final URL resource = c.getResource(c.getSimpleName() + ".class");
-        assertNotNull("Class not found.", resource);
+        assertNotNull(resource, "Class not found.");
         Path dir;
         try {
             dir = Path.of(resource.toURI()).getParent();
@@ -78,8 +78,8 @@ public final class ProjectDirectories {
         do {
             pkg = pkg.substring(0, s);
             s = pkg.lastIndexOf('.');
-            assertEquals ("Unexpected directory structure.", pkg.substring(s+1), dir.getFileName().toString());
-            assertNotNull("Unexpected directory structure.", dir = dir.getParent());
+            assertEquals (pkg.substring(s+1), dir.getFileName().toString(), "Unexpected directory structure.");
+            assertNotNull(dir = dir.getParent(), "Unexpected directory structure.");
         } while (s >= 0);
         classesRootDirectory = dir;
     }

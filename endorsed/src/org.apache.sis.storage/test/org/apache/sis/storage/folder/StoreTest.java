@@ -32,9 +32,9 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import org.apache.sis.test.TestCase;
 
 
@@ -58,7 +58,7 @@ public final class StoreTest extends TestCase {
      */
     private static Path testDirectory() throws URISyntaxException {
         final URL sample = StoreTest.class.getResource("test-data/README.txt");
-        assertNotNull("Test data not found", sample);
+        assertNotNull(sample, "Test data not found");
         assumeTrue(sample.getProtocol().equals("file"));
         return Path.of(sample.toURI()).getParent();
     }
@@ -75,7 +75,7 @@ public final class StoreTest extends TestCase {
         final Set<String> identifiers = new HashSet<>(List.of("EPSG:4326", "Sample 1", "Sample 2", "Sample 3", "data4"));
         final Path path = testDirectory();
         try (Store store = new Store(null, new StorageConnector(path), path, null)) {
-            assertEquals("Wrong number of data stores.", 4, store.components().size());
+            assertEquals(4, store.components().size(), "Wrong number of data stores.");
             verifyContent(store, identifiers);
         }
         if (!identifiers.isEmpty()) {
@@ -98,7 +98,7 @@ public final class StoreTest extends TestCase {
         params.parameter("location").setValue(testDirectory());
         params.parameter("format").setValue("XML");
         try (Store store = (Store) provider.open(params)) {
-            assertEquals("Expected one less data store.", 3, store.components().size());
+            assertEquals(3, store.components().size(), "Expected one less data store.");
             verifyContent(store, identifiers);
         }
         if (!identifiers.isEmpty()) {
@@ -112,10 +112,10 @@ public final class StoreTest extends TestCase {
      */
     private static void verifyContent(final Aggregate store, final Set<String> identifiers) throws DataStoreException {
         for (final Resource resource : store.components()) {
-            assertNotNull("resource", resource);
+            assertNotNull(resource);
             for (Identification info : resource.getMetadata().getIdentificationInfo()) {
                 final String id = Citations.getIdentifier(info.getCitation());
-                assertTrue(id, identifiers.remove(id));
+                assertTrue(identifiers.remove(id), id);
                 if (resource instanceof Aggregate) {
                     verifyContent((Aggregate) resource, identifiers);
                 }

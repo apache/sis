@@ -19,8 +19,8 @@ package org.apache.sis.coverage.grid.j2d;
 import java.awt.Dimension;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -42,7 +42,7 @@ public final class ImageLayoutTest extends TestCase {
     @Test
     public void testSuggestTileSize() {
         final Dimension size = ImageLayout.DEFAULT.suggestTileSize(367877, 5776326, true);
-        assertEquals("width",  511, size.width);
-        assertEquals("height", 246, size.height);
+        assertEquals(511, size.width);
+        assertEquals(246, size.height);
     }
 }

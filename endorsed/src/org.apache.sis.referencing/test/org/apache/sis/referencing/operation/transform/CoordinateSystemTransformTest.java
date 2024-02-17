@@ -30,10 +30,10 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArraysExt;
 
 // Test dependencies
-import org.junit.BeforeClass;
-import org.junit.AfterClass;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.referencing.cs.HardCodedCS;
@@ -74,7 +74,7 @@ public final class CoordinateSystemTransformTest extends TransformTestCase {
      * Creates the {@link MathTransformFactory} to be used for the tests.
      * We do not use the system-wide factory in order to have better tests isolation.
      */
-    @BeforeClass
+    @BeforeAll
     public static void createFactory() {
         factory = new DefaultMathTransformFactory();
         spherical = (SphericalCS) DefaultGeocentricCRS.castOrCopy(CommonCRS.WGS84.spherical())
@@ -85,7 +85,7 @@ public final class CoordinateSystemTransformTest extends TransformTestCase {
     /**
      * Disposes the {@link MathTransformFactory} used for the tests.
      */
-    @AfterClass
+    @AfterAll
     public static void disposeFactory() {
         spherical  = null;
         factory    = null;
@@ -130,7 +130,7 @@ public final class CoordinateSystemTransformTest extends TransformTestCase {
      */
     private static void assertMethodEquals(final String expected) {
         final OperationMethod method = lastMethod.get();
-        assertNotNull("lastMethod", method);
+        assertNotNull(method);
         assertEquals(expected, method.getName().getCode());
     }
 

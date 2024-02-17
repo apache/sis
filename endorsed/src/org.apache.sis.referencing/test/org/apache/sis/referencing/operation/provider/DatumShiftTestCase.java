@@ -22,8 +22,8 @@ import java.net.URISyntaxException;
 import org.apache.sis.referencing.operation.gridded.GridFile;
 
 // Test dependencies
-import static org.junit.Assert.*;
-import static org.junit.Assume.assumeFalse;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -53,7 +53,7 @@ public abstract class DatumShiftTestCase extends TestCase {
         if (file == null) {
             fail("Test file \"" + name + "\" not found.");
         } else {
-            assumeFalse("Cannot read grid data in a JAR file.", "jar".equals(file.getProtocol()));
+            assumeFalse("jar".equals(file.getProtocol()), "Cannot read grid data in a JAR file.");
         }
         return file;
     }
@@ -68,7 +68,7 @@ public abstract class DatumShiftTestCase extends TestCase {
     static GridFile getResource(final String name) throws URISyntaxException {
         final URL file = getResourceAsConvertibleURL(name);
         if (file == null) {
-            assumeFalse("Cannot read grid data in a JAR file.", "jar".equals(file.getProtocol()));
+            assumeFalse("jar".equals(file.getProtocol()), "Cannot read grid data in a JAR file.");
         }
         return new GridFile(file.toURI());
     }

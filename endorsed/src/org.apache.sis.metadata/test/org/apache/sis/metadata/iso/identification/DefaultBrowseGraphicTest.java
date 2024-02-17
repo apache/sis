@@ -32,8 +32,8 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.XML;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
@@ -248,7 +248,7 @@ public final class DefaultBrowseGraphicTest extends TestCase {
                 "</mcc:MD_BrowseGraphic>");
 
         assertEquals(URI.create("file:/catalog/image.png"), browse.getFileName());
-        assertFalse("Expected no warning.", listener.receivedWarning);
+        assertFalse(listener.receivedWarning, "Expected no warning.");
     }
 
     /**
@@ -286,7 +286,7 @@ public final class DefaultBrowseGraphicTest extends TestCase {
                 "</mcc:MD_BrowseGraphic>");
 
         assertEquals(URI.create("file:/catalog/image.png"), browse.getFileName());
-        assertTrue("Expected a warning.", listener.receivedWarning);
+        assertTrue(listener.receivedWarning, "Expected a warning.");
     }
 
     /**
@@ -304,7 +304,7 @@ public final class DefaultBrowseGraphicTest extends TestCase {
          */
         @Override
         public boolean isLoggable(final LogRecord warning) {
-            assertFalse("No other warning were expected.", receivedWarning);
+            assertFalse(receivedWarning, "No other warning were expected.");
             if (VERBOSE) {
                 /*
                  * In verbose mode, log the warning for allowing the developer to
@@ -312,8 +312,8 @@ public final class DefaultBrowseGraphicTest extends TestCase {
                  */
                 getLogger(warning.getLoggerName()).log(warning);
             }
-            assertArrayEquals("FileName shall have precedence over CharacterString.",
-                    new Object[] {"CharacterString", "FileName"}, warning.getParameters());
+            assertArrayEquals(new Object[] {"CharacterString", "FileName"}, warning.getParameters(),
+                              "FileName shall have precedence over CharacterString.");
             receivedWarning = true;
             return false;
         }

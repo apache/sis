@@ -36,7 +36,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.pending.jdk.JDK18;
 
 // Test dependencies
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.DisplayName;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;

@@ -20,8 +20,8 @@ import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -67,16 +67,16 @@ public final class IdentifierFilterTest extends TestCase {
      */
     @Test
     public void testEvaluate() {
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
-        ftb.addAttribute(String.class).setName("att").addRole(AttributeRole.IDENTIFIER_COMPONENT);
-        final AbstractFeature f1 = ftb.setName("Test 1").build().newInstance();
+        final var builder = new FeatureTypeBuilder();
+        builder.addAttribute(String.class).setName("att").addRole(AttributeRole.IDENTIFIER_COMPONENT);
+        final AbstractFeature f1 = builder.setName("Test 1").build().newInstance();
         f1.setPropertyValue("att", "123");
 
-        ftb.clear().addAttribute(Integer.class).setName("att").addRole(AttributeRole.IDENTIFIER_COMPONENT);
-        final AbstractFeature f2 = ftb.setName("Test 2").build().newInstance();
+        builder.clear().addAttribute(Integer.class).setName("att").addRole(AttributeRole.IDENTIFIER_COMPONENT);
+        final AbstractFeature f2 = builder.setName("Test 2").build().newInstance();
         f2.setPropertyValue("att", 123);
 
-        final AbstractFeature f3 = ftb.clear().setName("Test 3").build().newInstance();
+        final AbstractFeature f3 = builder.clear().setName("Test 3").build().newInstance();
 
         final Filter<AbstractFeature> id = factory.resourceId("123");
         assertEquals(AbstractFeature.class, id.getResourceClass());
@@ -90,9 +90,9 @@ public final class IdentifierFilterTest extends TestCase {
      */
     @Test
     public void testEvaluateCombined() {
-        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
-        ftb.addAttribute(String.class).setName("att").addRole(AttributeRole.IDENTIFIER_COMPONENT);
-        final DefaultFeatureType type = ftb.setName("Test").build();
+        final var builder = new FeatureTypeBuilder();
+        builder.addAttribute(String.class).setName("att").addRole(AttributeRole.IDENTIFIER_COMPONENT);
+        final DefaultFeatureType type = builder.setName("Test").build();
 
         final AbstractFeature f1 = type.newInstance(); f1.setPropertyValue("att", "123");
         final AbstractFeature f2 = type.newInstance(); f2.setPropertyValue("att", "abc");

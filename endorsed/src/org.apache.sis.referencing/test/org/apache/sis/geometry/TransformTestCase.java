@@ -34,8 +34,8 @@ import static org.apache.sis.referencing.util.Formulas.ANGULAR_TOLERANCE;
 import static org.apache.sis.referencing.util.Formulas.LINEAR_TOLERANCE;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -107,7 +107,7 @@ public abstract class TransformTestCase<G> extends TestCase {
          */
         final G rectλφ = createFromExtremums(sourceCRS, -20, -126, 40, -120);
         final G rectXY = transform(targetCRS, transform, rectλφ);
-        assertEquals("Conversion should produce the same result.", rectXY, transform(conversion, rectλφ));
+        assertEquals(rectXY, transform(conversion, rectλφ), "Conversion should produce the same result.");
         /*
          * Expected values are determined empirically by projecting many points.
          * Those values are the same as in EnvelopesTest.testTransform().
@@ -120,7 +120,7 @@ public abstract class TransformTestCase<G> extends TestCase {
          * Final envelope should be slightly bigger than the original.
          */
         final G rectBack = transform(sourceCRS, transform.inverse(), rectXY);
-        assertTrue("Transformed envelope should not be smaller than the original one.", contains(rectBack, rectλφ));
+        assertTrue(contains(rectBack, rectλφ), "Transformed envelope should not be smaller than the original one.");
         assertGeometryEquals(rectλφ, rectBack, 0.05, 1.0);
     }
 

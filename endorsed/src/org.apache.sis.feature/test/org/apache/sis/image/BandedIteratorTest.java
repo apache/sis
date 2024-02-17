@@ -23,7 +23,7 @@ import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -36,7 +36,7 @@ public final class BandedIteratorTest extends PixelIteratorTest {
      * Creates a new test case.
      */
     public BandedIteratorTest() {
-        super(DataBuffer.TYPE_FLOAT, null);
+        dataType = DataBuffer.TYPE_FLOAT;
         useBandedSampleModel = true;
     }
 
@@ -48,8 +48,8 @@ public final class BandedIteratorTest extends PixelIteratorTest {
         final int scanlineStride = PixelIterator.Builder.getScanlineStride(raster.getSampleModel());
         assertTrue(scanlineStride >= raster.getWidth());
         iterator = new BandedIterator(raster, isWritable ? raster : null, subArea, null, null, scanlineStride);
-        assertEquals("getIterationOrder()", SequenceType.LINEAR, iterator.getIterationOrder().get());
-        assertEquals("isWritable", isWritable, iterator.isWritable());
+        assertEquals(SequenceType.LINEAR, iterator.getIterationOrder().get());
+        assertEquals(isWritable, iterator.isWritable());
     }
 
     /**
@@ -60,7 +60,7 @@ public final class BandedIteratorTest extends PixelIteratorTest {
         final int scanlineStride = PixelIterator.Builder.getScanlineStride(image.getSampleModel());
         assertTrue(scanlineStride >= image.getTileWidth());
         iterator = new BandedIterator(image, isWritable ? image : null, subArea, null, null, scanlineStride);
-        assertEquals("isWritable", isWritable, iterator.isWritable());
+        assertEquals(isWritable, iterator.isWritable());
     }
 
     /**
@@ -72,6 +72,6 @@ public final class BandedIteratorTest extends PixelIteratorTest {
         final int scanlineStride = PixelIterator.Builder.getScanlineStride(image.getSampleModel());
         assertTrue(scanlineStride >= image.getTileWidth());
         iterator = new BandedIterator(image, isWritable ? image : null, null, window, null, scanlineStride);
-        assertEquals("isWritable", isWritable, iterator.isWritable());
+        assertEquals(isWritable, iterator.isWritable());
     }
 }

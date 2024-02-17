@@ -111,8 +111,8 @@ public class Store extends StaxDataStore implements FeatureSet {
         assert Thread.holdsLock(this);
         Format format = ((StoreProvider) provider).getFormat(listeners);
         if (version != null) {
-            final DefaultFormat df = new DefaultFormat(format);
-            final DefaultCitation citation = new DefaultCitation(df.getFormatSpecificationCitation());
+            final var df = new DefaultFormat(format);
+            final var citation = new DefaultCitation(df.getFormatSpecificationCitation());
             citation.setEdition(new SimpleInternationalString(version.toString()));
             df.setFormatSpecificationCitation(citation);
             format = df;

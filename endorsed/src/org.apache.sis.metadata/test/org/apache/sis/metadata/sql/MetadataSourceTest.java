@@ -28,8 +28,8 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestStep;
@@ -113,8 +113,8 @@ public final class MetadataSourceTest extends TestCase {
      * @param title         the expected format title.
      */
     private static void verify(final Format format, final String abbreviation, final String title) {
-        assertEquals("abbreviation", abbreviation, String.valueOf(format.getName()));
-        assertEquals("title", title, String.valueOf(format.getSpecification()));
+        assertEquals(abbreviation, String.valueOf(format.getName()), "abbreviation");
+        assertEquals(title, String.valueOf(format.getSpecification()), "title");
     }
 
     /**
@@ -125,9 +125,9 @@ public final class MetadataSourceTest extends TestCase {
      */
     @TestStep
     public static void testSearch(final MetadataSource source) throws MetadataStoreException {
-        final DefaultCitation specification = new DefaultCitation("PNG (Portable Network Graphics) Specification");
+        final var specification = new DefaultCitation("PNG (Portable Network Graphics) Specification");
         specification.setAlternateTitles(Set.of(new SimpleInternationalString("PNG")));
-        final DefaultFormat format = new DefaultFormat();
+        final var format = new DefaultFormat();
         format.setFormatSpecificationCitation(specification);
 
         assertEquals("PNG", source.search(format));
@@ -146,13 +146,10 @@ public final class MetadataSourceTest extends TestCase {
     public static void ensureReadOnly(final MetadataSource source) throws MetadataStoreException {
         final Citation c = source.lookup(Citation.class, "SIS");
         @SuppressWarnings("unchecked")                                  // Cheat or the purpose of this test.
-        final Collection<InternationalString> titles = (Collection<InternationalString>) c.getAlternateTitles();
-        final InternationalString more = new SimpleInternationalString("An open source project.");
-        try {
-            titles.add(more);
-            fail("Predefined metadata should be unmodifiable.");
-        } catch (UnsupportedOperationException e) {
-            // This is the expected exception.
-        }
+        var titles = (Collection<InternationalString>) c.getAlternateTitles();
+        var more = new SimpleInternationalString("An open source project.");
+        var e = assertThrows(UnsupportedOperationException.class, () -> titles.add(more),
+                             "Predefined metadata should be unmodifiable.");
+        assertNotNull(e);
     }
 }

@@ -30,8 +30,8 @@ import org.apache.sis.geometry.DirectPosition1D;
 import org.apache.sis.geometry.DirectPosition2D;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOnMethod;
@@ -67,14 +67,14 @@ public final class LinearTransformBuilderTest extends TestCase {
         assertNull(pos.put(new DirectPosition1D(2), new DirectPosition1D(3)));
         builder.setControlPoints(pos);
 
-        assertArrayEquals(new double[] {1}, builder.getControlPoint(new int[] {1}), STRICT);
-        assertArrayEquals(new double[] {3}, builder.getControlPoint(new int[] {2}), STRICT);
+        assertArrayEquals(new double[] {1}, builder.getControlPoint(new int[] {1}));
+        assertArrayEquals(new double[] {3}, builder.getControlPoint(new int[] {2}));
         assertNull(                         builder.getControlPoint(new int[] {3}));
 
         final Matrix m = builder.create(null).getMatrix();
-        assertEquals("m₀₀",  2, m.getElement(0, 0), STRICT);
-        assertEquals("m₀₁", -1, m.getElement(0, 1), STRICT);
-        assertArrayEquals("correlation", new double[] {1}, builder.correlation(), STRICT);
+        assertEquals( 2, m.getElement(0, 0), "m₀₀");
+        assertEquals(-1, m.getElement(0, 1), "m₀₁");
+        assertArrayEquals(new double[] {1}, builder.correlation());
     }
 
     /**
@@ -94,24 +94,24 @@ public final class LinearTransformBuilderTest extends TestCase {
         final LinearTransformBuilder builder = new LinearTransformBuilder();
         builder.setControlPoints(pos);
 
-        assertArrayEquals(new double[] {3, 2}, builder.getControlPoint(new int[] {1, 1}), STRICT);
-        assertArrayEquals(new double[] {3, 5}, builder.getControlPoint(new int[] {1, 2}), STRICT);
-        assertArrayEquals(new double[] {5, 5}, builder.getControlPoint(new int[] {2, 2}), STRICT);
+        assertArrayEquals(new double[] {3, 2}, builder.getControlPoint(new int[] {1, 1}));
+        assertArrayEquals(new double[] {3, 5}, builder.getControlPoint(new int[] {1, 2}));
+        assertArrayEquals(new double[] {5, 5}, builder.getControlPoint(new int[] {2, 2}));
         assertNull(                            builder.getControlPoint(new int[] {2, 1}));
 
         final Matrix m = builder.create(null).getMatrix();
 
         // First row (x)
-        assertEquals("m₀₀",  2, m.getElement(0, 0), STRICT);
-        assertEquals("m₀₁",  0, m.getElement(0, 1), STRICT);
-        assertEquals("m₀₂",  1, m.getElement(0, 2), STRICT);
+        assertEquals(2, m.getElement(0, 0), "m₀₀");
+        assertEquals(0, m.getElement(0, 1), "m₀₁");
+        assertEquals(1, m.getElement(0, 2), "m₀₂");
 
         // Second row (y)
-        assertEquals("m₁₀",  0, m.getElement(1, 0), STRICT);
-        assertEquals("m₁₁",  3, m.getElement(1, 1), STRICT);
-        assertEquals("m₁₂", -1, m.getElement(1, 2), STRICT);
+        assertEquals( 0, m.getElement(1, 0), "m₁₀");
+        assertEquals( 3, m.getElement(1, 1), "m₁₁");
+        assertEquals(-1, m.getElement(1, 2), "m₁₂");
 
-        assertArrayEquals("correlation", new double[] {1, 1}, builder.correlation(), STRICT);
+        assertArrayEquals(new double[] {1, 1}, builder.correlation());
     }
 
     /**
@@ -174,23 +174,23 @@ public final class LinearTransformBuilderTest extends TestCase {
     private void verify(final LinearTransformBuilder builder) throws FactoryException {
         final Matrix m = builder.create(null).getMatrix();
 
-        assertArrayEquals(new double[] {3, 9}, builder.getControlPoint(new int[] {0, 0}), STRICT);
-        assertArrayEquals(new double[] {4, 7}, builder.getControlPoint(new int[] {0, 1}), STRICT);
-        assertArrayEquals(new double[] {6, 6}, builder.getControlPoint(new int[] {0, 2}), STRICT);
-        assertArrayEquals(new double[] {4, 8}, builder.getControlPoint(new int[] {1, 0}), STRICT);
-        assertArrayEquals(new double[] {5, 4}, builder.getControlPoint(new int[] {1, 1}), STRICT);
-        assertArrayEquals(new double[] {8, 2}, builder.getControlPoint(new int[] {1, 2}), STRICT);
+        assertArrayEquals(new double[] {3, 9}, builder.getControlPoint(new int[] {0, 0}));
+        assertArrayEquals(new double[] {4, 7}, builder.getControlPoint(new int[] {0, 1}));
+        assertArrayEquals(new double[] {6, 6}, builder.getControlPoint(new int[] {0, 2}));
+        assertArrayEquals(new double[] {4, 8}, builder.getControlPoint(new int[] {1, 0}));
+        assertArrayEquals(new double[] {5, 4}, builder.getControlPoint(new int[] {1, 1}));
+        assertArrayEquals(new double[] {8, 2}, builder.getControlPoint(new int[] {1, 2}));
         /*
-         * Expect STRICT results because Apache SIS uses double-double arithmetic.
+         * Expect strict results (tolerance of 0) because Apache SIS uses double-double arithmetic.
          */
-        assertEquals("m₀₀",  16 / 12d, m.getElement(0, 0), STRICT);        // First row (x)
-        assertEquals("m₀₁",  21 / 12d, m.getElement(0, 1), STRICT);
-        assertEquals("m₀₂",  31 / 12d, m.getElement(0, 2), STRICT);
-        assertEquals("m₁₀", -32 / 12d, m.getElement(1, 0), STRICT);        // Second row (y)
-        assertEquals("m₁₁", -27 / 12d, m.getElement(1, 1), STRICT);
-        assertEquals("m₁₂", 115 / 12d, m.getElement(1, 2), STRICT);
+        assertEquals( 16 / 12d, m.getElement(0, 0), "m₀₀");        // First row (x)
+        assertEquals( 21 / 12d, m.getElement(0, 1), "m₀₁");
+        assertEquals( 31 / 12d, m.getElement(0, 2), "m₀₂");
+        assertEquals(-32 / 12d, m.getElement(1, 0), "m₁₀");        // Second row (y)
+        assertEquals(-27 / 12d, m.getElement(1, 1), "m₁₁");
+        assertEquals(115 / 12d, m.getElement(1, 2), "m₁₂");
 
-        assertArrayEquals("correlation", new double[] {0.9656, 0.9536}, builder.correlation(), 0.0001);
+        assertArrayEquals(new double[] {0.9656, 0.9536}, builder.correlation(), 0.0001);
     }
 
     /**
@@ -287,9 +287,9 @@ public final class LinearTransformBuilderTest extends TestCase {
         final LinearTransformBuilder builder = new LinearTransformBuilder();
         builder.setControlPoints(pos);
         final Matrix m = builder.create(null).getMatrix();
-        assertEquals("m₀₀", scale,  m.getElement(0, 0), scaleTolerance);
-        assertEquals("m₀₁", offset, m.getElement(0, 1), translationTolerance);
-        assertEquals("correlation", 1, StrictMath.abs(builder.correlation()[0]), scaleTolerance);
+        assertEquals(scale,  m.getElement(0, 0), scaleTolerance, "m₀₀");
+        assertEquals(offset, m.getElement(0, 1), translationTolerance, "m₀₁");
+        assertEquals(1, StrictMath.abs(builder.correlation()[0]), scaleTolerance);
     }
 
     /**
@@ -330,13 +330,13 @@ public final class LinearTransformBuilderTest extends TestCase {
         /*
          * Compare the coefficients with the reference implementation.
          */
-        assertEquals("m₀₀", ref.getScaleX(),     m.getElement(0, 0), scaleTolerance);
-        assertEquals("m₀₁", ref.getShearX(),     m.getElement(0, 1), scaleTolerance);
-        assertEquals("m₀₂", ref.getTranslateX(), m.getElement(0, 2), translationTolerance);
-        assertEquals("m₁₀", ref.getShearY(),     m.getElement(1, 0), scaleTolerance);
-        assertEquals("m₁₁", ref.getScaleY(),     m.getElement(1, 1), scaleTolerance);
-        assertEquals("m₁₂", ref.getTranslateY(), m.getElement(1, 2), translationTolerance);
-        assertArrayEquals("correlation", new double[] {1, 1}, builder.correlation(), scaleTolerance);
+        assertEquals(ref.getScaleX(),     m.getElement(0, 0), scaleTolerance,       "m₀₀");
+        assertEquals(ref.getShearX(),     m.getElement(0, 1), scaleTolerance,       "m₀₁");
+        assertEquals(ref.getTranslateX(), m.getElement(0, 2), translationTolerance, "m₀₂");
+        assertEquals(ref.getShearY(),     m.getElement(1, 0), scaleTolerance,       "m₁₀");
+        assertEquals(ref.getScaleY(),     m.getElement(1, 1), scaleTolerance,       "m₁₁");
+        assertEquals(ref.getTranslateY(), m.getElement(1, 2), translationTolerance, "m₁₂");
+        assertArrayEquals(new double[] {1, 1}, builder.correlation(), scaleTolerance);
     }
 
     /**
@@ -476,9 +476,9 @@ public final class LinearTransformBuilderTest extends TestCase {
         builder.addLinearizers(Map.of("x³ y²", tr), 1, 0);
         builder.addLinearizers(Map.of("identity", MathTransforms.identity(2)));
         final Matrix m = builder.create(null).getMatrix();
-        assertEquals("linearizer", "x³ y²", builder.linearizer().get().getKey());
-        assertNotSame("linearizer", tr, builder.linearizer().get());    // Not same because axes should have been swapped.
-        assertArrayEquals("correlations", new double[] {1, 1}, builder.correlation(), 1E-15);
+        assertEquals("x³ y²", builder.linearizer().get().getKey());
+        assertNotSame(tr, builder.linearizer().get());    // Not same because axes should have been swapped.
+        assertArrayEquals(new double[] {1, 1}, builder.correlation(), 1E-15);
         assertMatrixEquals("linear",
                 new Matrix3(2, 0, 3,
                             0, 1, 1,

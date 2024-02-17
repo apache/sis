@@ -19,8 +19,8 @@ package org.apache.sis.storage.landsat;
 import java.util.regex.Matcher;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -44,7 +44,7 @@ public final class MetadataReaderTest extends TestCase {
     @Test
     public void testCreditPattern() {
         final Matcher m = MetadataReader.CREDIT.matcher("Image courtesy of the U.S. Geological Survey");
-        assertTrue("matches", m.find());
-        assertEquals("end", 22, m.end());
+        assertTrue(m.find());
+        assertEquals(22, m.end());
     }
 }

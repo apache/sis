@@ -32,8 +32,8 @@ import org.apache.sis.util.Version;
 import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
@@ -122,14 +122,14 @@ public final class DefaultVerticalDatumTest extends TestCase {
          * Following attribute does not exist in GML 3.2, so it has been inferred.
          * Our datum name is "Mean Sea Level", which is mapped to the geoidal type.
          */
-        assertEquals("vertDatumType", VerticalDatumType.GEOIDAL, datum.getVerticalDatumType());
+        assertEquals(VerticalDatumType.GEOIDAL, datum.getVerticalDatumType());
         /*
          * Values in the following tests are specific to our XML file.
          * The actual texts in the EPSG database are more descriptive.
          */
-        assertEquals("remarks",          "Approximates geoid.",             datum.getRemarks().toString());
-        assertEquals("scope",            "Hydrography.",                    datum.getScope().toString());
-        assertEquals("anchorDefinition", "Averaged over a 19-year period.", datum.getAnchorPoint().toString());
+        assertEquals("Approximates geoid.",             datum.getRemarks().toString());
+        assertEquals("Hydrography.",                    datum.getScope().toString());
+        assertEquals("Averaged over a 19-year period.", datum.getAnchorPoint().toString());
         /*
          * Test marshalling and compare with the original file.
          */
@@ -154,14 +154,14 @@ public final class DefaultVerticalDatumTest extends TestCase {
         /*
          * Following attribute exists in GML 3.1 only.
          */
-        assertEquals("vertDatumType", VerticalDatumType.GEOIDAL, datum.getVerticalDatumType());
+        assertEquals(VerticalDatumType.GEOIDAL, datum.getVerticalDatumType());
         /*
          * The name, anchor definition and domain of validity are lost because
          * those property does not have the same XML element name (SIS-160).
          * Below is all we have.
          */
-        assertEquals("remarks", "Approximates geoid.", datum.getRemarks().toString());
-        assertEquals("scope",   "Hydrography.",        datum.getScope().toString());
+        assertEquals("Approximates geoid.", datum.getRemarks().toString());
+        assertEquals("Hydrography.",        datum.getScope().toString());
         /*
          * Test marshalling. We cannot yet compare with the original XML file
          * because of all the information lost. This may be fixed in a future

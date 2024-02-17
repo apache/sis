@@ -27,8 +27,8 @@ import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.iso.citation.DefaultTelephone;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
@@ -86,7 +86,7 @@ public final class MetadataWriterTest extends TestCase {
      * @throws Exception if an error occurred while writing or reading the database.
      */
     @Test
-    @org.junit.Ignore("Requires GeoAPI 3.1.")
+    @org.junit.jupiter.api.Disabled("Requires GeoAPI 3.1.")
     public void testPostgreSQL() throws Exception {
         try (final TestDatabase db = TestDatabase.createOnPostgreSQL("MetadataWriter", true)) {
             source = new MetadataWriter(MetadataStandard.ISO_19115, db.source, "MetadataWriter", null);
@@ -118,11 +118,11 @@ public final class MetadataWriterTest extends TestCase {
      * @throws MetadataStoreException if an error occurred while reading the database.
      */
     private void search() throws MetadataStoreException {
-        assertNull  ("ISO 19111", source.search(HardCodedCitations.ISO_19111));
+        assertNull  (             source.search(HardCodedCitations.ISO_19111));
         assertEquals("ISO 19115", source.search(HardCodedCitations.ISO_19115));
         assertEquals("EPSG",      source.search(HardCodedCitations.EPSG));
         assertEquals("SIS",       source.search(HardCodedCitations.SIS));
-        assertNull  ("ISO 19111", source.search(HardCodedCitations.ISO_19111));
+        assertNull  (             source.search(HardCodedCitations.ISO_19111));
         assertEquals("EPSG",      source.search(TestUtilities.getSingleton(
                 HardCodedCitations.EPSG.getCitedResponsibleParties())));
     }

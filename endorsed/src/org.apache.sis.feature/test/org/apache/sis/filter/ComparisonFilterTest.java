@@ -17,9 +17,8 @@
 package org.apache.sis.filter;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -73,9 +72,9 @@ public final class ComparisonFilterTest extends TestCase {
      */
     private boolean evaluate(final Filter<AbstractFeature> filter) {
         this.filter = filter;
-        assertInstanceOf("Expected SIS implementation.", ComparisonFilter.class, filter);
-        assertEquals("operatorType", expectedName, filter.getOperatorType());
-        assertSame("expression[0]", c10, filter.getExpressions().get(0));
+        assertInstanceOf(ComparisonFilter.class, filter);
+        assertEquals(expectedName, filter.getOperatorType());
+        assertSame(c10, filter.getExpressions().get(0));
         return filter.test(null);
     }
 
@@ -84,8 +83,8 @@ public final class ComparisonFilterTest extends TestCase {
      */
     private boolean evaluate(final BetweenComparisonOperator<AbstractFeature> filter) {
         this.filter = filter;
-        assertInstanceOf("Expected SIS implementation.", ComparisonFilter.Between.class, filter);
-        assertEquals("operatorType", expectedName, filter.getOperatorType());
+        assertInstanceOf(ComparisonFilter.Between.class, filter);
+        assertEquals(expectedName, filter.getOperatorType());
         return filter.test(null);
     }
 

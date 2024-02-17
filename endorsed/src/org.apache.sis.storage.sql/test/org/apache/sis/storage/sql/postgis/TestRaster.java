@@ -33,7 +33,7 @@ import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.io.stream.ChannelDataOutput;
 
 // Test dependencies
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 
 /**
@@ -108,8 +108,8 @@ enum TestRaster {
     final byte[] getEncoded() throws IOException {
         try (InputStream in = TestRaster.class.getResourceAsStream(filename)) {
             final byte[] buffer = new byte[length];
-            assertEquals("length", length, in.read(buffer));
-            assertEquals("EOF", -1, in.read());
+            assertEquals(length, in.read(buffer));
+            assertEquals(-1, in.read());
             return buffer;
         }
     }

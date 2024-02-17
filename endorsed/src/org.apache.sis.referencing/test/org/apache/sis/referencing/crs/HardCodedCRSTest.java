@@ -17,8 +17,8 @@
 package org.apache.sis.referencing.crs;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.ValidatorContainer;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
@@ -67,16 +67,16 @@ public final class HardCodedCRSTest extends TestCase {
      */
     @Test
     public void testDimensions() {
-        assertEquals("TIME",         1, TIME                .getCoordinateSystem().getDimension());
-        assertEquals("DEPTH",        1, DEPTH               .getCoordinateSystem().getDimension());
-        assertEquals("WGS84",        2, WGS84               .getCoordinateSystem().getDimension());
-        assertEquals("WGS84 (φ,λ)",  2, WGS84_LATITUDE_FIRST.getCoordinateSystem().getDimension());
-        assertEquals("WGS84_3D",     3, WGS84_3D            .getCoordinateSystem().getDimension());
-        assertEquals("CARTESIAN_2D", 2, CARTESIAN_2D        .getCoordinateSystem().getDimension());
-        assertEquals("CARTESIAN_3D", 3, CARTESIAN_3D        .getCoordinateSystem().getDimension());
-        assertEquals("GEOCENTRIC",   3, GEOCENTRIC          .getCoordinateSystem().getDimension());
-        assertEquals("SPHERICAL",    3, SPHERICAL           .getCoordinateSystem().getDimension());
-        assertEquals("GEOID_4D",     4, GEOID_4D            .getCoordinateSystem().getDimension());
+        assertEquals(1, TIME                .getCoordinateSystem().getDimension());
+        assertEquals(1, DEPTH               .getCoordinateSystem().getDimension());
+        assertEquals(2, WGS84               .getCoordinateSystem().getDimension());
+        assertEquals(2, WGS84_LATITUDE_FIRST.getCoordinateSystem().getDimension());
+        assertEquals(3, WGS84_3D            .getCoordinateSystem().getDimension());
+        assertEquals(2, CARTESIAN_2D        .getCoordinateSystem().getDimension());
+        assertEquals(3, CARTESIAN_3D        .getCoordinateSystem().getDimension());
+        assertEquals(3, GEOCENTRIC          .getCoordinateSystem().getDimension());
+        assertEquals(3, SPHERICAL           .getCoordinateSystem().getDimension());
+        assertEquals(4, GEOID_4D            .getCoordinateSystem().getDimension());
     }
 
     /**

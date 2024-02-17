@@ -44,8 +44,7 @@ import org.apache.sis.feature.internal.AttributeConvention;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;

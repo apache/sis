@@ -32,8 +32,8 @@ import org.apache.sis.measure.MeasurementRange;
 import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
@@ -90,13 +90,13 @@ public final class ExtentsTest extends TestCase {
         /*
          * The actual test. Arbitrarily compare the heights in metres, converting them if needed.
          */
-        final DefaultExtent extent = new DefaultExtent();
+        final var extent = new DefaultExtent();
         extent.setVerticalElements(extents);
         final MeasurementRange<Double> range = Extents.getVerticalRange(extent);
-        assertNotNull("getVerticalRange", range);
-        assertSame   ("unit",    unit,    range.unit());
-        assertEquals ("minimum", -300,    c.convert(range.getMinDouble()), 0.001);
-        assertEquals ("maximum", -91.44,  c.convert(range.getMaxDouble()), 0.001);
+        assertNotNull(range);
+        assertSame   (unit,   range.unit());
+        assertEquals (-300,   c.convert(range.getMinDouble()), 0.001);
+        assertEquals (-91.44, c.convert(range.getMaxDouble()), 0.001);
     }
 
     /**
@@ -104,9 +104,9 @@ public final class ExtentsTest extends TestCase {
      */
     @Test
     public void testGeographicIntersection() {
-        final GeographicBoundingBox b1 = new DefaultGeographicBoundingBox(10, 20, 30, 40);
-        final GeographicBoundingBox b2 = new DefaultGeographicBoundingBox(15, 25, 26, 32);
-        assertEquals("intersect",        new DefaultGeographicBoundingBox(15, 20, 30, 32), Extents.intersection(b1, b2));
+        final var b1 = new DefaultGeographicBoundingBox(10, 20, 30, 40);
+        final var b2 = new DefaultGeographicBoundingBox(15, 25, 26, 32);
+        assertEquals(  new DefaultGeographicBoundingBox(15, 20, 30, 32), Extents.intersection(b1, b2));
         assertSame(b1, Extents.intersection(b1, null));
         assertSame(b2, Extents.intersection(null, b2));
         assertNull(    Extents.intersection((GeographicBoundingBox) null, (GeographicBoundingBox) null));
@@ -122,9 +122,9 @@ public final class ExtentsTest extends TestCase {
      */
     @Test
     public void testVerticalIntersection() throws TransformException {
-        final VerticalExtent e1 = new DefaultVerticalExtent(10, 20, null);
-        final VerticalExtent e2 = new DefaultVerticalExtent(15, 25, null);
-        assertEquals("intersect", new DefaultVerticalExtent(15, 20, null), Extents.intersection(e1, e2));
+        final var e1 = new DefaultVerticalExtent(10, 20, null);
+        final var e2 = new DefaultVerticalExtent(15, 25, null);
+        assertEquals(  new DefaultVerticalExtent(15, 20, null), Extents.intersection(e1, e2));
         assertSame(e1, Extents.intersection(e1, null));
         assertSame(e2, Extents.intersection(null, e2));
         assertNull(    Extents.intersection((VerticalExtent) null, (VerticalExtent) null));
@@ -136,9 +136,9 @@ public final class ExtentsTest extends TestCase {
      */
     @Test
     public void testExtentIntersection() {
-        final Extent e1 = new DefaultExtent(null, new DefaultGeographicBoundingBox(10, 20, 30, 40), new DefaultVerticalExtent(10, 20, null), null);
-        final Extent e2 = new DefaultExtent(null, new DefaultGeographicBoundingBox(15, 25, 26, 32), new DefaultVerticalExtent(15, 25, null), null);
-        assertEquals(     new DefaultExtent(null, new DefaultGeographicBoundingBox(15, 20, 30, 32), new DefaultVerticalExtent(15, 20, null), null), Extents.intersection(e1, e2));
+        final var e1 = new DefaultExtent(null, new DefaultGeographicBoundingBox(10, 20, 30, 40), new DefaultVerticalExtent(10, 20, null), null);
+        final var e2 = new DefaultExtent(null, new DefaultGeographicBoundingBox(15, 25, 26, 32), new DefaultVerticalExtent(15, 25, null), null);
+        assertEquals(  new DefaultExtent(null, new DefaultGeographicBoundingBox(15, 20, 30, 32), new DefaultVerticalExtent(15, 20, null), null), Extents.intersection(e1, e2));
         assertSame(e1, Extents.intersection(e1, null));
         assertSame(e2, Extents.intersection(null, e2));
         assertNull(    Extents.intersection((Extent) null, (Extent) null));
@@ -154,7 +154,7 @@ public final class ExtentsTest extends TestCase {
          * Since we are using the GRS80 authalic sphere instead of WGS84, and since the nautical mile definition
          * itself is a little bit approximated, we add a slight empirical shift.
          */
-        final DefaultGeographicBoundingBox box = new DefaultGeographicBoundingBox(10, 10+MINUTE, 2.9685, 2.9685+MINUTE);
+        final var box = new DefaultGeographicBoundingBox(10, 10+MINUTE, 2.9685, 2.9685+MINUTE);
         assertEquals(NAUTICAL_MILE * NAUTICAL_MILE, Extents.area(box), 0.1);
         /*
          * Result should be much smaller near the poles.
@@ -199,14 +199,14 @@ public final class ExtentsTest extends TestCase {
     public static void testCentroid() {
         final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox(140, 160, 30, 50);
         DirectPosition pos = Extents.centroid(bbox);
-        assertEquals("longitude", 150, pos.getOrdinate(0), STRICT);
-        assertEquals("latitude",   40, pos.getOrdinate(1), STRICT);
+        assertEquals(150, pos.getOrdinate(0), "longitude");
+        assertEquals( 40, pos.getOrdinate(1), "latitude");
         /*
          * Test crossing anti-meridian.
          */
         bbox.setEastBoundLongitude(-160);
         pos = Extents.centroid(bbox);
-        assertEquals("longitude", 170, pos.getOrdinate(0), STRICT);
-        assertEquals("latitude",   40, pos.getOrdinate(1), STRICT);
+        assertEquals(170, pos.getOrdinate(0), "longitude");
+        assertEquals( 40, pos.getOrdinate(1), "latitude");
     }
 }

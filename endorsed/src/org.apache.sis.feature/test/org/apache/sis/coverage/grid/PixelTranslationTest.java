@@ -25,8 +25,8 @@ import org.apache.sis.referencing.operation.matrix.Matrix3;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 // Specific to the main branch:
@@ -82,7 +82,7 @@ public final class PixelTranslationTest extends TestCase {
          */
         final double[] coordinates = new double[] {0.5, 0.5, 0.5};
         gridToCRS.transform(coordinates, 0, coordinates, 0, 1);
-        assertArrayEquals(new double[3], coordinates, STRICT);
+        assertArrayEquals(new double[3], coordinates);
     }
 
     /**
@@ -113,8 +113,8 @@ public final class PixelTranslationTest extends TestCase {
         MathTransform previous = null;
         for (int dimension = 1; dimension <= 5; dimension++) {
             final MathTransform mt = centerToCorner(dimension);
-            assertNotSame("Transforms with different number of dimensions.", previous, mt);
-            assertSame("Transforms with same number of dimensions", mt, centerToCorner(dimension));
+            assertNotSame(previous, mt);                    // Transforms with different number of dimensions.
+            assertSame(mt, centerToCorner(dimension));      // Transforms with same number of dimensions.
             previous = mt;
         }
     }

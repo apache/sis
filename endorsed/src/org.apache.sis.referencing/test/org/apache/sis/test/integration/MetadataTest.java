@@ -65,10 +65,10 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.internal.Constants;
 
 // Test dependencies
-import org.junit.After;
-import org.junit.Rule;
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.DependsOn;
@@ -101,13 +101,13 @@ public final class MetadataTest extends TestCase {
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
      * do so, but should be considered as an implementation details (it should have been a private field).
      */
-    @Rule
+    @RegisterExtension
     public final LoggingWatcher loggings = new LoggingWatcher(Loggers.XML);
 
     /**
      * Verifies that no unexpected warning has been emitted in any test defined in this class.
      */
-    @After
+    @AfterEach
     public void assertNoUnexpectedLog() {
         loggings.assertNoUnexpectedLog();
     }
@@ -429,7 +429,7 @@ public final class MetadataTest extends TestCase {
      */
     private static void replace(final StringBuffer buffer, final String toSearch, final String replaceBy) {
         final int i = buffer.indexOf(toSearch);
-        assertTrue("String to replace not found.", i >= 0);
+        assertTrue(i >= 0, "String to replace not found.");
         buffer.replace(i, i + toSearch.length(), replaceBy);
     }
 

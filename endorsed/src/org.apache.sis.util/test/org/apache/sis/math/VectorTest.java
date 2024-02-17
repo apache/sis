@@ -19,9 +19,9 @@ package org.apache.sis.math;
 import org.apache.sis.measure.NumberRange;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
@@ -92,27 +92,19 @@ public final class VectorTest extends TestCase {
             final short expected = array[i];
             assertEquals(expected, vector.shortValue (i));
             assertEquals(expected, vector.intValue   (i));
-            assertEquals(expected, vector.floatValue (i), 0f);
-            assertEquals(expected, vector.doubleValue(i), STRICT);
+            assertEquals(expected, vector.floatValue (i));
+            assertEquals(expected, vector.doubleValue(i));
             assertEquals(Short.valueOf(expected), vector.get(i));
         }
         /*
          * Test exception for invalid index and for invalid narrowing cast.
          */
-        try {
-            vector.floatValue(array.length);
-            fail("Expected an IndexOutOfBoundsException");
-        } catch (IndexOutOfBoundsException e) {
-            // This is the expected exception.
-        }
-        try {
-            vector.byteValue(0);
-            fail("Expected an ArithmeticException");
-        } catch (ArithmeticException e) {
-            // This is the expected exception.
-            final String message = e.getMessage();
-            assertTrue(message, message.contains("byte"));
-        }
+        RuntimeException e;
+        e = assertThrows(IndexOutOfBoundsException.class, () -> vector.floatValue(array.length));
+        assertNotNull(e);
+
+        e = assertThrows(ArithmeticException.class, () -> vector.byteValue(0));
+        assertMessageContains(e, "byte");
         /*
          * Test subvector in the range [100:2:298].
          */
@@ -121,12 +113,8 @@ public final class VectorTest extends TestCase {
         for (int i=0; i<100; i++) {
             assertEquals(array[i*2 + 100], vector.shortValue(i));
         }
-        try {
-            vector.shortValue(100);
-            fail("Expected an IndexOutOfBoundsException");
-        } catch (IndexOutOfBoundsException e) {
-            // This is the expected exception.
-        }
+        e = assertThrows(IndexOutOfBoundsException.class, () -> vector.shortValue(100));
+        assertNotNull(e);
         /*
          * Test subvector at specific indices. The indices of picked values below and indices
          * in the sub-vector tested above. They may to the original array by `index*2 + 100`.
@@ -163,8 +151,8 @@ public final class VectorTest extends TestCase {
             final int expected = Byte.toUnsignedInt(array[i]);
             assertEquals(expected, vector.shortValue (i));
             assertEquals(expected, vector.intValue   (i));
-            assertEquals(expected, vector.floatValue (i), 0f);
-            assertEquals(expected, vector.doubleValue(i), STRICT);
+            assertEquals(expected, vector.floatValue (i));
+            assertEquals(expected, vector.doubleValue(i));
             assertEquals(Short.valueOf((short) expected), vector.get(i));       // See above comment.
         }
         /*
@@ -172,12 +160,8 @@ public final class VectorTest extends TestCase {
          */
         assertEquals(106, vector.byteValue (50));
         assertEquals(146, vector.shortValue(70));
-        try {
-            vector.byteValue(70);
-            fail("Expected an ArithmeticException");
-        } catch (ArithmeticException e) {
-            // This is the expected exception.
-        }
+        var e = assertThrows(ArithmeticException.class, () -> vector.byteValue(70));
+        assertNotNull(e);
         /*
          * Test writing.
          */
@@ -203,8 +187,8 @@ public final class VectorTest extends TestCase {
          * Tests element values.
          */
         for (int i=0; i<array.length; i++) {
-            assertEquals(array[i], vector.floatValue (i), 0f);
-            assertEquals(array[i], vector.doubleValue(i), STRICT);
+            assertEquals(array[i], vector.floatValue (i));
+            assertEquals(array[i], vector.doubleValue(i));
         }
     }
 
@@ -226,8 +210,8 @@ public final class VectorTest extends TestCase {
          * Test element values.
          */
         for (int i=0; i<array.length; i++) {
-            assertEquals(array[i], vector.floatValue (i), 0f);
-            assertEquals(array[i], vector.doubleValue(i), STRICT);
+            assertEquals(array[i], vector.floatValue (i));
+            assertEquals(array[i], vector.doubleValue(i));
         }
     }
 
@@ -261,15 +245,15 @@ public final class VectorTest extends TestCase {
         Vector v1 = Vector.create(array, false);
         Vector v2 = Vector.create(extra, false);
         Vector v3 = v1.concatenate(v2);
-        assertEquals("Length of V3 should be the sum of V1 and V2 length.", 60, v3.size());
-        assertEquals("Component type should be the common parent of V1 and V2.", Number.class, v3.getElementType());
-        assertEquals("Sample from V1.", Float  .valueOf(200), v3.get(20));
-        assertEquals("Sample from V2.", Integer.valueOf(500), v3.get(50));
+        assertEquals(60, v3.size(), "Length of V3 should be the sum of V1 and V2 length.");
+        assertEquals(Number.class, v3.getElementType(), "Component type should be the common parent of V1 and V2.");
+        assertEquals(Float  .valueOf(200), v3.get(20));
+        assertEquals(Integer.valueOf(500), v3.get(50));
         for (int i=0; i<60; i++) {
-            assertEquals(i*10, v3.floatValue(i), 0f);
+            assertEquals(i*10, v3.floatValue(i));
         }
-        assertSame("Should be able to restitute the original vector.", v1, v3.subList( 0, 40));
-        assertSame("Should be able to restitute the original vector.", v2, v3.subList(40, 60));
+        assertSame(v1, v3.subList( 0, 40), "Should be able to restitute the original vector.");
+        assertSame(v2, v3.subList(40, 60), "Should be able to restitute the original vector.");
         /*
          * Test concatenation of views at fixed indices.
          * Should be implemented as the concatenation of the indices arrays when possible.
@@ -279,7 +263,7 @@ public final class VectorTest extends TestCase {
         v1 = v1.pick(10, 25, 30);
         v3 = v1.concatenate(v2);
         assertEquals(expected, v3);
-        assertFalse("Expected concatenation of the indices.", v3 instanceof ConcatenatedVector);
+        assertFalse(v3 instanceof ConcatenatedVector, "Expected concatenation of the indices.");
     }
 
     /**
@@ -303,7 +287,7 @@ public final class VectorTest extends TestCase {
         assertEquals(  3, vector.size());
         assertEquals(100, vector.intValue(0));
         assertEquals( 80, vector.shortValue(1));
-        assertEquals(-20, vector.doubleValue(2), STRICT);
+        assertEquals(-20, vector.doubleValue(2));
     }
 
     /**
@@ -376,9 +360,9 @@ public final class VectorTest extends TestCase {
                 message = "Unsigned " + message;
             }
             final Number inc = vec.increment(0);
-            assertNotNull(message, inc);
-            assertEquals (message, 3, inc.doubleValue(), STRICT);
-            assertEquals (message, vec.getElementType(), inc.getClass());
+            assertNotNull(inc, message);
+            assertEquals(3, inc.doubleValue(), message);
+            assertEquals(vec.getElementType(), inc.getClass(), message);
         }
     }
 
@@ -421,33 +405,33 @@ public final class VectorTest extends TestCase {
              */
             NumberRange<?> range = vec.range();
             if (vec.isUnsigned()) {
-                assertEquals(message, 2, range.getMinDouble(), STRICT);
-                assertTrue  (message, range.getMaxDouble() > Byte.MAX_VALUE);
+                assertEquals(2, range.getMinDouble(), message);
+                assertTrue(range.getMaxDouble() > Byte.MAX_VALUE, message);
             } else {
-                assertEquals(message, -8, range.getMinDouble(), STRICT);
-                assertEquals(message,  9, range.getMaxDouble(), STRICT);
+                assertEquals(-8, range.getMinDouble(), message);
+                assertEquals( 9, range.getMaxDouble(), message);
             }
             /*
              * Verify the minimum and maximum values of the {2, 7} vector.
              */
             final Vector sub = vec.subSampling(1, 2, 2);
             range = sub.range();
-            assertEquals(message, 2, range.getMinDouble(), STRICT);
-            assertEquals(message, 7, range.getMaxDouble(), STRICT);
+            assertEquals(2, range.getMinDouble(), message);
+            assertEquals(7, range.getMaxDouble(), message);
             /*
              * Verify the minimum and maximum values of the {3, 9, 7} vector.
              */
             final Vector pick = vec.pick(0, 2, 3);
             range = pick.range();
-            assertEquals(message, 3, range.getMinDouble(), STRICT);
-            assertEquals(message, 9, range.getMaxDouble(), STRICT);
+            assertEquals(3, range.getMinDouble(), message);
+            assertEquals(9, range.getMaxDouble(), message);
             /*
              * Verify the minimum and maximum values of the {3, 9, 7, 2, 7} vector.
              */
             final Vector union = sub.concatenate(pick);
             range = union.range();
-            assertEquals(message, 2, range.getMinDouble(), STRICT);
-            assertEquals(message, 9, range.getMaxDouble(), STRICT);
+            assertEquals(2, range.getMinDouble(), message);
+            assertEquals(9, range.getMaxDouble(), message);
         }
     }
 
@@ -469,36 +453,36 @@ public final class VectorTest extends TestCase {
          */
         vec =  Vector.create(new double[] {30, 120, -50, -120}, false);
         assertNotSame(vec, compressed = vec.compress(0));
-        assertInstanceOf("vector.compress(0)", ArrayVector.class, compressed);
-        assertEquals("elementType", Byte.class, compressed.getElementType());
-        assertFalse("isUnsigned()", compressed.isUnsigned());
+        assertInstanceOf(ArrayVector.class, compressed);
+        assertEquals(Byte.class, compressed.getElementType());
+        assertFalse(compressed.isUnsigned());
         assertContentEquals(vec, compressed);
         /*
          * Values that can be compressed as unsigned bytes.
          */
         vec =  Vector.create(new float[] {30, 120, 250, 1}, false);
         assertNotSame(vec, compressed = vec.compress(0));
-        assertInstanceOf("vector.compress(0)", ArrayVector.class, compressed);
-        assertEquals("elementType", Byte.class, compressed.getElementType());
-        assertTrue("isUnsigned()", compressed.isUnsigned());
+        assertInstanceOf(ArrayVector.class, compressed);
+        assertEquals(Byte.class, compressed.getElementType());
+        assertTrue(compressed.isUnsigned());
         assertContentEquals(vec, compressed);
         /*
          * Values that can be compressed as signed shorts.
          */
         vec =  Vector.create(new long[] {32000, 120, -25000, 14}, false);
         assertNotSame(vec, compressed = vec.compress(0));
-        assertInstanceOf("vector.compress(0)", ArrayVector.class, compressed);
-        assertEquals("elementType", Short.class, compressed.getElementType());
-        assertFalse("isUnsigned()", compressed.isUnsigned());
+        assertInstanceOf(ArrayVector.class, compressed);
+        assertEquals(Short.class, compressed.getElementType());
+        assertFalse(compressed.isUnsigned());
         assertContentEquals(vec, compressed);
         /*
          * Values that can be compressed as unsigned unsigned shorts.
          */
         vec =  Vector.create(new float[] {3, 60000, 25, 4}, false);
         assertNotSame(vec, compressed = vec.compress(0));
-        assertInstanceOf("vector.compress(0)", ArrayVector.class, compressed);
-        assertEquals("elementType", Short.class, compressed.getElementType());
-        assertTrue("isUnsigned()", compressed.isUnsigned());
+        assertInstanceOf(ArrayVector.class, compressed);
+        assertEquals(Short.class, compressed.getElementType());
+        assertTrue(compressed.isUnsigned());
         assertContentEquals(vec, compressed);
         /*
          * Values that can be compressed in a PackedVector.
@@ -508,7 +492,7 @@ public final class VectorTest extends TestCase {
         vec =  Vector.create(new double[] {30, 27, 93, 72, -8, -3, 12, 4, 29, -5}, false);
         assertTrue(vec.size() >= PackedVector.MINIMAL_SIZE);
         assertNotSame(vec, compressed = vec.compress(0));
-        assertInstanceOf("vector.compress(0)", PackedVector.class, compressed);
+        assertInstanceOf(PackedVector.class, compressed);
         assertContentEquals(vec, compressed);
         /*
          * Vector that could be compressed in a PackedVector, but without advantage
@@ -517,9 +501,9 @@ public final class VectorTest extends TestCase {
         vec =  Vector.create(new double[] {200, 100, 20, 80, 180, 10, 11, 12}, false);
         assertTrue(vec.size() >= PackedVector.MINIMAL_SIZE);
         assertNotSame(vec, compressed = vec.compress(0));
-        assertInstanceOf("vector.compress(0)", ArrayVector.class, compressed);
-        assertEquals("elementType", Byte.class, compressed.getElementType());
-        assertTrue("isUnsigned()", compressed.isUnsigned());
+        assertInstanceOf(ArrayVector.class, compressed);
+        assertEquals(Byte.class, compressed.getElementType());
+        assertTrue(compressed.isUnsigned());
         assertContentEquals(vec, compressed);
         /*
          * Vector that can be compressed in a PackedVector as bytes with a factor of 20.
@@ -527,16 +511,16 @@ public final class VectorTest extends TestCase {
         vec =  Vector.create(new double[] {200, 100, 20, 80, 180, 2000, 500, 120}, false);
         assertTrue(vec.size() >= PackedVector.MINIMAL_SIZE);
         assertNotSame(vec, compressed = vec.compress(0));
-        assertInstanceOf("vector.compress(0)", PackedVector.class, compressed);
+        assertInstanceOf(PackedVector.class, compressed);
         assertContentEquals(vec, compressed);
         /*
          * Values that can be compressed as float types.
          */
         vec =  Vector.create(new double[] {3.10, 60.59, -25.32, 4.78}, false);
         assertNotSame(vec, compressed = vec.compress(0));
-        assertInstanceOf("vector.compress(0)", ArrayVector.class, compressed);
-        assertEquals("elementType", Float.class, compressed.getElementType());
-        assertFalse("isUnsigned()", compressed.isUnsigned());
+        assertInstanceOf(ArrayVector.class, compressed);
+        assertEquals(Float.class, compressed.getElementType());
+        assertFalse(compressed.isUnsigned());
         assertContentEquals(vec, compressed);
     }
 
@@ -546,9 +530,9 @@ public final class VectorTest extends TestCase {
      */
     private static void assertContentEquals(final Vector expected, final Vector actual) {
         final int length = expected.size();
-        assertEquals("size", length, actual.size());
+        assertEquals(length, actual.size());
         for (int i=0; i<length; i++) {
-            assertEquals("value", expected.doubleValue(i), actual.doubleValue(i), STRICT);
+            assertEquals(expected.doubleValue(i), actual.doubleValue(i));
         }
     }
 }

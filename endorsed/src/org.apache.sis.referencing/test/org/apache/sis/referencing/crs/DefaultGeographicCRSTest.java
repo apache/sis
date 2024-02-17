@@ -24,8 +24,8 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.io.wkt.Convention;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -62,19 +62,19 @@ public final class DefaultGeographicCRSTest extends TestCase {
     public void testShiftLongitudeRange() {
         final DefaultGeographicCRS crs = HardCodedCRS.WGS84_3D;
         CoordinateSystemAxis axis = crs.getCoordinateSystem().getAxis(0);
-        assertEquals("longitude.minimumValue", -180.0, axis.getMinimumValue(), STRICT);
-        assertEquals("longitude.maximumValue", +180.0, axis.getMaximumValue(), STRICT);
+        assertEquals(-180.0, axis.getMinimumValue());
+        assertEquals(+180.0, axis.getMaximumValue());
 
-        assertSame("Expected a no-op.", crs,  crs.forConvention(AxesConvention.RIGHT_HANDED));
+        assertSame(crs, crs.forConvention(AxesConvention.RIGHT_HANDED), "Expected a no-op.");
         final DefaultGeographicCRS shifted =  crs.forConvention(AxesConvention.POSITIVE_RANGE);
-        assertNotSame("Expected a new CRS.", crs, shifted);
+        assertNotSame(crs, shifted, "Expected a new CRS.");
         Validators.validate(shifted);
 
         axis = shifted.getCoordinateSystem().getAxis(0);
-        assertEquals("longitude.minimumValue",      0.0, axis.getMinimumValue(), STRICT);
-        assertEquals("longitude.maximumValue",    360.0, axis.getMaximumValue(), STRICT);
-        assertSame("Expected a no-op.",         shifted, shifted.forConvention(AxesConvention.POSITIVE_RANGE));
-        assertSame("Expected cached instance.", shifted, crs    .forConvention(AxesConvention.POSITIVE_RANGE));
+        assertEquals(  0.0, axis.getMinimumValue());
+        assertEquals(360.0, axis.getMaximumValue());
+        assertSame(shifted, shifted.forConvention(AxesConvention.POSITIVE_RANGE), "Expected a no-op.");
+        assertSame(shifted,     crs.forConvention(AxesConvention.POSITIVE_RANGE), "Expected cached instance.");
     }
 
     /**
@@ -101,41 +101,41 @@ public final class DefaultGeographicCRSTest extends TestCase {
     public void testIdentifiers() {
         GeographicCRS crs = CommonCRS.WGS72.geographic();
         ReferenceIdentifier identifier = getSingleton(crs.getIdentifiers());
-        assertEquals("codespace", "EPSG", identifier.getCodeSpace());
-        assertEquals("code",      "4322", identifier.getCode());
+        assertEquals("EPSG", identifier.getCodeSpace());
+        assertEquals("4322", identifier.getCode());
 
         crs = CommonCRS.WGS72.normalizedGeographic();
         assertTrue(crs.getIdentifiers().isEmpty());
 
         crs = CommonCRS.WGS84.geographic();
         identifier = getSingleton(crs.getIdentifiers());
-        assertEquals("codespace", "EPSG", identifier.getCodeSpace());
-        assertEquals("code",      "4326", identifier.getCode());
+        assertEquals("EPSG", identifier.getCodeSpace());
+        assertEquals("4326", identifier.getCode());
 
         crs = CommonCRS.WGS84.normalizedGeographic();
         identifier = getSingleton(crs.getIdentifiers());
-        assertEquals("codespace", "CRS", identifier.getCodeSpace());
-        assertEquals("code",      "84",  identifier.getCode());
+        assertEquals("CRS", identifier.getCodeSpace());
+        assertEquals("84",  identifier.getCode());
 
         crs = CommonCRS.NAD83.geographic();
         identifier = getSingleton(crs.getIdentifiers());
-        assertEquals("codespace", "EPSG", identifier.getCodeSpace());
-        assertEquals("code",      "4269", identifier.getCode());
+        assertEquals("EPSG", identifier.getCodeSpace());
+        assertEquals("4269", identifier.getCode());
 
         crs = CommonCRS.NAD83.normalizedGeographic();
         identifier = getSingleton(crs.getIdentifiers());
-        assertEquals("codespace", "CRS", identifier.getCodeSpace());
-        assertEquals("code",      "83",  identifier.getCode());
+        assertEquals("CRS", identifier.getCodeSpace());
+        assertEquals("83",  identifier.getCode());
 
         crs = CommonCRS.NAD27.geographic();
         identifier = getSingleton(crs.getIdentifiers());
-        assertEquals("codespace", "EPSG", identifier.getCodeSpace());
-        assertEquals("code",      "4267", identifier.getCode());
+        assertEquals("EPSG", identifier.getCodeSpace());
+        assertEquals("4267", identifier.getCode());
 
         crs = CommonCRS.NAD27.normalizedGeographic();
         identifier = getSingleton(crs.getIdentifiers());
-        assertEquals("codespace", "CRS", identifier.getCodeSpace());
-        assertEquals("code",      "27",  identifier.getCode());
+        assertEquals("CRS", identifier.getCodeSpace());
+        assertEquals("27",  identifier.getCode());
     }
 
     /**

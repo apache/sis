@@ -24,9 +24,8 @@ import java.awt.geom.QuadCurve2D;
 import java.awt.geom.CubicCurve2D;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
-import static org.opengis.test.Assert.assertInstanceOf;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 
@@ -66,9 +65,9 @@ public final class ShapeUtilitiesTest extends TestCase {
         assertPointEquals(164.2967949656081,  147.2610859066296, ShapeUtilities.intersectionPoint(  6, 259, 227, 103, 328, 254,  32,  61));
         assertPointEquals(206.18415613599478, 276.5596260282143, ShapeUtilities.intersectionPoint(549, 309, 158, 272, 495, 138, 174, 292));
 
-        assertNull("Segments do not intersect.", ShapeUtilities.intersectionPoint( 52, 61, 419, 209, 419, 130, 529, 303));
-        assertNull("Segments do not intersect.", ShapeUtilities.intersectionPoint( 53, 62, 222, 221, 494, 158, 382, 174));
-        assertNull("Segments do not intersect.", ShapeUtilities.intersectionPoint(566, 296, 386, 305, 553, 51, 408, 291));
+        assertNull(ShapeUtilities.intersectionPoint( 52, 61, 419, 209, 419, 130, 529, 303));
+        assertNull(ShapeUtilities.intersectionPoint( 53, 62, 222, 221, 494, 158, 382, 174));
+        assertNull(ShapeUtilities.intersectionPoint(566, 296, 386, 305, 553, 51, 408, 291));
     }
 
     /**
@@ -94,8 +93,8 @@ public final class ShapeUtilitiesTest extends TestCase {
         assertPointEquals(151.57330058770097, 162.19277228964654, ShapeUtilities.colinearPoint(187,  93, 123, 218, 204, 16, 155.309));
         assertPointEquals(568.6671514383643,  274.6199927862288,  ShapeUtilities.colinearPoint(232,  84, 587, 285, 469, 31, 263.219));
 
-        assertNull("No point at the given distance.", ShapeUtilities.colinearPoint(415, 112, 21,  269, 223, 270, 341.434));
-        assertNull("No point at the given distance.", ShapeUtilities.colinearPoint(353, 235, 233, 104, 423,  81, 558.129));
+        assertNull(ShapeUtilities.colinearPoint(415, 112, 21,  269, 223, 270, 341.434));
+        assertNull(ShapeUtilities.colinearPoint(353, 235, 233, 104, 423,  81, 558.129));
     }
 
     /**
@@ -223,27 +222,27 @@ public final class ShapeUtilitiesTest extends TestCase {
         path.moveTo(4, 5);
         path.lineTo(7, 9);
         Shape p = ShapeUtilities.toPrimitive(path);
-        assertInstanceOf("toPrimitive", Line2D.class, p);
-        assertEquals("P1", new Point2D.Double(4, 5), ((Line2D) p).getP1());
-        assertEquals("P2", new Point2D.Double(7, 9), ((Line2D) p).getP2());
+        var line = assertInstanceOf(Line2D.class, p);
+        assertEquals(new Point2D.Double(4, 5), line.getP1());
+        assertEquals(new Point2D.Double(7, 9), line.getP2());
 
         path.reset();
         path.moveTo(4, 5);
         path.quadTo(6, 7, 8, 5);
         p = ShapeUtilities.toPrimitive(path);
-        assertInstanceOf("toPrimitive", QuadCurve2D.class, p);
-        assertEquals("P1",     new Point2D.Double(4, 5), ((QuadCurve2D) p).getP1());
-        assertEquals("CtrlPt", new Point2D.Double(6, 7), ((QuadCurve2D) p).getCtrlPt());
-        assertEquals("P2",     new Point2D.Double(8, 5), ((QuadCurve2D) p).getP2());
+        var quad = assertInstanceOf(QuadCurve2D.class, p);
+        assertEquals(new Point2D.Double(4, 5), quad.getP1());
+        assertEquals(new Point2D.Double(6, 7), quad.getCtrlPt());
+        assertEquals(new Point2D.Double(8, 5), quad.getP2());
 
         path.reset();
         path.moveTo(4, 5);
         path.curveTo(6, 7, 8, 6, 9, 4);
         p = ShapeUtilities.toPrimitive(path);
-        assertInstanceOf("toPrimitive", CubicCurve2D.class, p);
-        assertEquals("P1",     new Point2D.Double(4, 5), ((CubicCurve2D) p).getP1());
-        assertEquals("CtrlP1", new Point2D.Double(6, 7), ((CubicCurve2D) p).getCtrlP1());
-        assertEquals("CtrlP2", new Point2D.Double(8, 6), ((CubicCurve2D) p).getCtrlP2());
-        assertEquals("P2",     new Point2D.Double(9, 4), ((CubicCurve2D) p).getP2());
+        var cubic = assertInstanceOf(CubicCurve2D.class, p);
+        assertEquals(new Point2D.Double(4, 5), cubic.getP1());
+        assertEquals(new Point2D.Double(6, 7), cubic.getCtrlP1());
+        assertEquals(new Point2D.Double(8, 6), cubic.getCtrlP2());
+        assertEquals(new Point2D.Double(9, 4), cubic.getP2());
     }
 }

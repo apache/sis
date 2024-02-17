@@ -22,8 +22,8 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.internal.Strings;
 
 // Test dependencies
-import org.junit.Test;
-import static org.junit.Assert.*;
+import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
@@ -52,11 +52,11 @@ public final class MonolineFormatterTest extends TestCase {
     @Test
     public void testlevelWidth() {
         final String severe = Level.SEVERE.getLocalizedName();
-        assertEquals(severe, severe.length(), MonolineFormatter.levelWidth(Level.SEVERE));
+        assertEquals(severe.length(), MonolineFormatter.levelWidth(Level.SEVERE), severe);
 
         final String warning = Level.WARNING.getLocalizedName();
-        assertEquals(warning, StrictMath.max(severe.length(), warning.length()),
-                MonolineFormatter.levelWidth(Level.WARNING));
+        assertEquals(StrictMath.max(severe.length(), warning.length()),
+                MonolineFormatter.levelWidth(Level.WARNING), warning);
     }
 
     /**
@@ -66,7 +66,7 @@ public final class MonolineFormatterTest extends TestCase {
     private static String localize(final Level level, final String expected) {
         final String levelToReplace = level.getName();
         final String levelLocalized = level.getLocalizedName();
-        assertTrue(expected, expected.startsWith(levelToReplace));
+        assertTrue(expected.startsWith(levelToReplace), expected);
         final int margin = MonolineFormatter.levelWidth(null);
         final StringBuilder buffer = new StringBuilder(expected.length() + 40)
                 .append(levelLocalized)
