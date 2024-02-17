@@ -22,7 +22,7 @@ import org.opengis.referencing.operation.TransformException;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.feature.Assertions.assertPathEquals;
+import static org.opengis.test.Assertions.assertPathEquals;
 
 
 /**
@@ -65,7 +65,7 @@ public final class FlatShapeTest extends TestCase {
 
         final Path2D.Double r = new Path2D.Double(Path2D.WIND_NON_ZERO);
         createReferenceShape(r, coordinates, closed);
-        assertPathEquals(r.getPathIterator(null), p.getPathIterator(null), STRICT);
+        assertPathEquals(r.getPathIterator(null), p.getPathIterator(null), STRICT, STRICT, null);
     }
 
     /**
@@ -105,7 +105,7 @@ public final class FlatShapeTest extends TestCase {
             createReferenceShape(r, coordinates[i], false);
         }
         final MultiPolylines p = new MultiPolylines(polylines);
-        assertPathEquals(r.getPathIterator(null), p.getPathIterator(null), STRICT);
+        assertPathEquals(r.getPathIterator(null), p.getPathIterator(null), STRICT, STRICT, null);
     }
 
     /**
@@ -128,6 +128,6 @@ public final class FlatShapeTest extends TestCase {
         createReferenceShape(r, new double[]{4,5, 6,3, 8,5, 3,8, 7,5, 9,3, -2,5}, true);
         createReferenceShape(r, new double[]{3,5, 6,1, -2,7}, false);
         createReferenceShape(r, new double[]{3,8, 10,4, 6,4}, true);
-        assertPathEquals(r.getPathIterator(null), b.build().getPathIterator(null), STRICT);
+        assertPathEquals(r.getPathIterator(null), b.build().getPathIterator(null), STRICT, STRICT, null);
     }
 }

@@ -36,8 +36,9 @@ import org.apache.sis.util.Debug;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestCase;
+import static org.opengis.test.Assertions.assertSampleValuesEqual;
 import static org.apache.sis.feature.Assertions.assertPixelsEqual;
+import org.apache.sis.test.TestCase;
 
 
 /**
@@ -88,7 +89,7 @@ public final class MaskedImageTest extends TestCase {
     public void noErrorOnEmptyMasks() {
         final BufferedImage source = monoTile();
         final RenderedImage masked = new MaskedImage(source, new Polygon(), true, new Number[] {127});
-        assertPixelsEqual(source, null, masked, null);
+        assertSampleValuesEqual(source, masked, STRICT, null);
         assertSame(source.getRaster(), masked.getTile(0,0));    // Optimization applied by MaskedImage.
     }
 
@@ -202,7 +203,7 @@ public final class MaskedImageTest extends TestCase {
                 3, 3, 3, 3, 2, 2, 2, 2,
                 3, 3, 3, 3, 2, 2, 2, 2
         });
-        assertPixelsEqual(expected, null, masked, null);
+        assertSampleValuesEqual(expected, masked, STRICT, null);
     }
 
     /**
@@ -221,7 +222,7 @@ public final class MaskedImageTest extends TestCase {
                 4, 4, 4, 4, 4, 4, 4, 4,
                 4, 4, 4, 4, 4, 4, 4, 4
         });
-        assertPixelsEqual(expected, null, masked, null);
+        assertSampleValuesEqual(expected, masked, STRICT, null);
     }
 
     /**
@@ -240,7 +241,7 @@ public final class MaskedImageTest extends TestCase {
                 3, 3, 3, 3, 2, 2, 2, 2,
                 3, 3, 3, 3, 2, 2, 2, 2
         });
-        assertPixelsEqual(expected, null, masked, null);
+        assertSampleValuesEqual(expected, masked, STRICT, null);
     }
 
     /**
@@ -259,7 +260,7 @@ public final class MaskedImageTest extends TestCase {
                 4, 4, 4, 4, 4, 4, 4, 4,
                 4, 4, 4, 4, 4, 4, 4, 4
         });
-        assertPixelsEqual(expected, null, masked, null);
+        assertSampleValuesEqual(expected, masked, STRICT, null);
     }
 
     /**

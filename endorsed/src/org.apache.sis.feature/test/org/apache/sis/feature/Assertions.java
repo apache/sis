@@ -20,7 +20,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
-import java.awt.geom.PathIterator;
 import org.apache.sis.image.PixelIterator;
 import org.apache.sis.util.Static;
 
@@ -169,39 +168,5 @@ public final class Assertions extends Static {
         return "Mismatched sample value at image coordinates (" + x + ", " + y + ") "
                 + "— matrix indices (" + i + ", " + j + ") band " + band
                 + ": expected " + expected + " but found " + actual;
-    }
-
-    /**
-     * Asserts that the path is equal to given reference.
-     *
-     * @param  expected   expected geometry outline.
-     * @param  actual     actual geometry outline.
-     * @param  tolerance  tolerance threshold for floating point value comparisons.
-     */
-    @SuppressWarnings("fallthrough")
-    public static void assertPathEquals(final PathIterator expected, final PathIterator actual, final double tolerance) {
-        assertEquals(expected.getWindingRule(), actual.getWindingRule(), "windingRule");
-        final double[] buffer = new double[6];
-        final double[] values = new double[6];
-        while (!expected.isDone()) {
-            assertFalse(actual.isDone(), "isDone");
-            final int type = expected.currentSegment(buffer);
-            assertEquals(type, actual.currentSegment(values), "currentSegment");
-            switch (type) {
-                case PathIterator.SEG_CUBICTO: assertEquals(buffer[4], values[4], tolerance, "x₃");
-                                               assertEquals(buffer[5], values[5], tolerance, "y₃");
-                case PathIterator.SEG_QUADTO:  assertEquals(buffer[2], values[2], tolerance, "x₂");
-                                               assertEquals(buffer[3], values[3], tolerance, "y₂");
-                case PathIterator.SEG_LINETO:  assertEquals(buffer[0], values[0], tolerance, "x₁");
-                                               assertEquals(buffer[1], values[1], tolerance, "y₁"); break;
-                case PathIterator.SEG_MOVETO:  assertEquals(buffer[0], values[0], tolerance, "x₀");
-                                               assertEquals(buffer[1], values[1], tolerance, "y₀");
-                case PathIterator.SEG_CLOSE:   break;
-                default: fail("Unexpected type: " + type);
-            }
-            expected.next();
-            actual.next();
-        }
-        assertTrue(actual.isDone(), "isDone");
     }
 }

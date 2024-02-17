@@ -57,6 +57,7 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.image.TiledImageMock;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
+import static org.opengis.test.Assertions.assertSampleValuesEqual;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 import static org.apache.sis.feature.Assertions.assertValuesEqual;
 import static org.apache.sis.feature.Assertions.assertPixelsEqual;
@@ -408,7 +409,7 @@ public final class ResampledGridCoverageTest extends TestCase {
                 new AxisDirection[] {AxisDirection.FUTURE, AxisDirection.EAST, AxisDirection.NORTH, AxisDirection.UP},
                 "Expected (t,λ,φ,H) axes.");
 
-        assertPixelsEqual(source.render(null), null, result.render(null), null);
+        assertSampleValuesEqual(source.render(null), result.render(null), STRICT, null);
     }
 
     /**
@@ -548,7 +549,7 @@ public final class ResampledGridCoverageTest extends TestCase {
          * Target image should be 6×6 pixels, like source image.
          */
         final GridCoverage result = resample(source, targetGeom);
-        assertPixelsEqual(source.render(null), null, result.render(null), null);
+        assertSampleValuesEqual(source.render(null), result.render(null), STRICT, null);
     }
 
     /**
@@ -564,7 +565,7 @@ public final class ResampledGridCoverageTest extends TestCase {
         final GridGeometry target4D = createGridGeometryND(HardCodedCRS.WGS84_4D, 0, 1, 2, 3, false);
         final GridCoverage result   = resample(source3D, target4D);
         assertEquals(target4D, result.getGridGeometry());
-        assertPixelsEqual(source3D.render(null), null, result.render(null), null);
+        assertSampleValuesEqual(source3D.render(null), result.render(null), STRICT, null);
     }
 
     /**
@@ -578,7 +579,7 @@ public final class ResampledGridCoverageTest extends TestCase {
         final GridCoverage source4D = createCoverageND(true);
         final GridCoverage result   = resample(source4D, target3D);
         assertEquals(target3D, result.getGridGeometry());
-        assertPixelsEqual(source4D.render(null), null, result.render(null), null);
+        assertSampleValuesEqual(source4D.render(null), result.render(null), STRICT, null);
     }
 
     /**
