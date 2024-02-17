@@ -77,7 +77,7 @@ public final class AbridgedMolodenskyTransformTest extends MathTransformTestCase
         for (int i=0; i<sources.length; i+=2) {
             transform.transform(sources, i, targets,  0, 1);        // Use the overridden method.
             transform.transform(sources, i, expected, 0, false);    // Use the MolodenskyTransform method.
-            assertCoordinateEquals("transform", expected, targets, 0, CalculationType.DIRECT_TRANSFORM);
+            assertCoordinateEquals(expected, targets, 0, CalculationType.DIRECT_TRANSFORM, "transform");
         }
     }
 
