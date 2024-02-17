@@ -27,7 +27,7 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.test.Assert.assertAxisDirectionsEqual;
+import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
 
 
 /**
@@ -60,7 +60,7 @@ public final class DefaultSphericalCSTest extends TestCase {
 
         final DefaultSphericalCS normalized = cs.forConvention(AxesConvention.DISPLAY_ORIENTED);
         assertNotSame(cs, normalized, "Should create a new CoordinateSystem.");
-        assertAxisDirectionsEqual("Normalized", normalized,
+        assertAxisDirectionsEqual(normalized,
                 AxisDirection.EAST,
                 AxisDirection.NORTH,
                 AxisDirection.UP);
@@ -92,7 +92,7 @@ public final class DefaultSphericalCSTest extends TestCase {
 
         final DefaultSphericalCS normalized = cs.forConvention(AxesConvention.NORMALIZED);
         assertNotSame(cs, normalized);          // Should create a new CoordinateSystem.
-        assertAxisDirectionsEqual("Normalized", normalized,
+        assertAxisDirectionsEqual(normalized,
                 AxisDirections.COUNTER_CLOCKWISE,
                 AxisDirection.UP,
                 AxisDirections.AWAY_FROM);

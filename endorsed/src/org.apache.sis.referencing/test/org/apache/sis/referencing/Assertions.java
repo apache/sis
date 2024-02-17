@@ -485,8 +485,8 @@ public final class Assertions extends Static {
                 WKT_FORMAT.setConvention(convention);
                 wkt = WKT_FORMAT.format(object);
             }
-            assertMultilinesEquals((object instanceof IdentifiedObject) ?
-                    ((IdentifiedObject) object).getName().getCode() : object.getClass().getSimpleName(), expected, wkt);
+            assertMultilinesEquals(expected, wkt, (object instanceof IdentifiedObject) ?
+                    ((IdentifiedObject) object).getName().getCode() : object.getClass().getSimpleName());
         }
     }
 

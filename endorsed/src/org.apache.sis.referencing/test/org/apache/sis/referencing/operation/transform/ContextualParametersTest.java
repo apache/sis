@@ -36,7 +36,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.test.Assert.assertMatrixEquals;
+import static org.opengis.test.Assertions.assertMatrixEquals;
 
 
 /**
@@ -116,19 +116,19 @@ public final class ContextualParametersTest extends TestCase {
         final Matrix product     = MathTransforms.getMatrix(p.completeTransform(
                 DefaultMathTransformFactoryTest.factory(), MathTransforms.identity(2)));
 
-        assertMatrixEquals("normalize", new Matrix3(
-                PI/180,  0,       toRadians(-12),
-                0,       PI/180,  0,
-                0,       0,       1), normalize, 1E-16);
+        assertMatrixEquals(new Matrix3(PI/180,  0,       toRadians(-12),
+                                       0,       PI/180,  0,
+                                       0,       0,       1),
+                normalize, 1E-16, "normalize");
 
-        assertMatrixEquals("denormalize", new Matrix3(
-                180/PI,  0,       18,
-                0,       180/PI,  0,
-                0,       0,       1), denormalize, STRICT);
+        assertMatrixEquals(new Matrix3(180/PI,  0,       18,
+                                       0,       180/PI,  0,
+                                       0,       0,       1),
+                denormalize, STRICT, "denormalize");
 
-        assertMatrixEquals("product", new Matrix3(
-                1, 0, 6,
-                0, 1, 0,
-                0, 0, 1), product, STRICT);
+        assertMatrixEquals(new Matrix3(1, 0, 6,
+                                       0, 1, 0,
+                                       0, 0, 1),
+                product, STRICT, "product");
     }
 }

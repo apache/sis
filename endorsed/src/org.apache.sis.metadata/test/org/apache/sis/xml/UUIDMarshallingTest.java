@@ -125,8 +125,8 @@ public final class UUIDMarshallingTest extends TestCase {
      */
     @Test
     public void testIdentification() throws JAXBException {
-        final Citation citation = (Citation) XML.unmarshal(IDENTIFIED_XML);
-        assertTitleEquals("Citation", "My data", citation);
+        final var citation = assertInstanceOf(Citation.class, XML.unmarshal(IDENTIFIED_XML));
+        assertTitleEquals("My data", citation, "citation");
         /*
          * Programmatic verification of the Series properties,
          * which is the main object of interest in this test.
@@ -176,8 +176,8 @@ public final class UUIDMarshallingTest extends TestCase {
      */
     @Test
     public void testReference() throws JAXBException {
-        final Citation citation = (Citation) XML.unmarshal(REFERENCED_XML_WITH_BODY);
-        assertTitleEquals("Citation.title", "My data", citation);
+        final var citation = assertInstanceOf(Citation.class, XML.unmarshal(REFERENCED_XML_WITH_BODY));
+        assertTitleEquals("My data", citation, "citation");
         /*
          * Programmatic verification of the Series properties,
          * which is the main object of interest in this test.
@@ -209,8 +209,8 @@ public final class UUIDMarshallingTest extends TestCase {
     @Test
     @DependsOnMethod("testReference")
     public void testReferenceInEmptyObject() throws JAXBException {
-        final Citation citation = (Citation) XML.unmarshal(REFERENCED_XML);
-        assertTitleEquals("Citation.title", "My data", citation);
+        final var citation = assertInstanceOf(Citation.class, XML.unmarshal(REFERENCED_XML));
+        assertTitleEquals("My data", citation, "citation");
         /*
          * Programmatic verification of the Series properties,
          * which is the main object of interest in this test.

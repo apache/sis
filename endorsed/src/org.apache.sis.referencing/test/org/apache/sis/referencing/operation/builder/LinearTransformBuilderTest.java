@@ -39,7 +39,7 @@ import org.apache.sis.referencing.operation.HardCodedConversions;
 import static org.apache.sis.test.Assertions.assertMapEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.test.Assert.assertMatrixEquals;
+import static org.opengis.test.Assertions.assertMatrixEquals;
 
 
 /**
@@ -61,7 +61,7 @@ public final class LinearTransformBuilderTest extends TestCase {
      */
     @Test
     public void testMinimalist1D() throws FactoryException {
-        final LinearTransformBuilder builder = new LinearTransformBuilder();
+        final var builder = new LinearTransformBuilder();
         final Map<DirectPosition1D,DirectPosition1D> pos = new HashMap<>(4);
         assertNull(pos.put(new DirectPosition1D(1), new DirectPosition1D(1)));
         assertNull(pos.put(new DirectPosition1D(2), new DirectPosition1D(3)));
@@ -91,7 +91,7 @@ public final class LinearTransformBuilderTest extends TestCase {
         assertNull(pos.put(new DirectPosition2D(1, 1), new DirectPosition2D(3, 2)));
         assertNull(pos.put(new DirectPosition2D(1, 2), new DirectPosition2D(3, 5)));
         assertNull(pos.put(new DirectPosition2D(2, 2), new DirectPosition2D(5, 5)));
-        final LinearTransformBuilder builder = new LinearTransformBuilder();
+        final var builder = new LinearTransformBuilder();
         builder.setControlPoints(pos);
 
         assertArrayEquals(new double[] {3, 2}, builder.getControlPoint(new int[] {1, 1}));
@@ -284,7 +284,7 @@ public final class LinearTransformBuilderTest extends TestCase {
         /*
          * Create the fitted transform to test.
          */
-        final LinearTransformBuilder builder = new LinearTransformBuilder();
+        final var builder = new LinearTransformBuilder();
         builder.setControlPoints(pos);
         final Matrix m = builder.create(null).getMatrix();
         assertEquals(scale,  m.getElement(0, 0), scaleTolerance, "m₀₀");
@@ -312,8 +312,8 @@ public final class LinearTransformBuilderTest extends TestCase {
                 rd.nextDouble() * 10 - 8);              // Center Y
         final Map<DirectPosition2D,DirectPosition2D> pos = new HashMap<>(numPts);
         for (int i=0; i<numPts; i++) {
-            final DirectPosition2D src = new DirectPosition2D(rd.nextDouble() * 100 - 50, rd.nextDouble() * 200 - 75);
-            final DirectPosition2D tgt = new DirectPosition2D();
+            final var src = new DirectPosition2D(rd.nextDouble() * 100 - 50, rd.nextDouble() * 200 - 75);
+            final var tgt = new DirectPosition2D();
             assertSame(tgt, ref.transform(src, tgt));
             if (addErrors) {
                 tgt.x += rd.nextDouble() * 10 - 5;
@@ -324,7 +324,7 @@ public final class LinearTransformBuilderTest extends TestCase {
         /*
          * Create the fitted transform to test.
          */
-        final LinearTransformBuilder builder = new LinearTransformBuilder();
+        final var builder = new LinearTransformBuilder();
         builder.setControlPoints(pos);
         final Matrix m = builder.create(null).getMatrix();
         /*
@@ -425,7 +425,7 @@ public final class LinearTransformBuilderTest extends TestCase {
      */
     @Test
     public void testSetPointsFromTransform() throws TransformException, FactoryException {
-        final LinearTransformBuilder builder = new LinearTransformBuilder(3, 5);
+        final var builder = new LinearTransformBuilder(3, 5);
         builder.setControlPoints(HardCodedConversions.mercator().getConversionFromBase().getMathTransform());
         assertPointEquals(builder, 0, 0,      0,      0);
         assertPointEquals(builder, 1, 0, 111319,      0);
@@ -434,11 +434,12 @@ public final class LinearTransformBuilderTest extends TestCase {
         assertPointEquals(builder, 2, 2, 222639, 221194);
         assertPointEquals(builder, 1, 3, 111319, 331877);
         assertPointEquals(builder, 1, 4, 111319, 442662);
-        final Matrix m = builder.create(null).getMatrix();
-        assertMatrixEquals("linear",
-                new Matrix3(111319, 0,   0,
-                            0, 110662, -62,
-                            0, 0, 1), m, 0.5);
+        final Matrix actual = builder.create(null).getMatrix();
+        final Matrix expected = new Matrix3(
+                111319, 0,   0,
+                0, 110662, -62,
+                0, 0, 1);
+        assertMatrixEquals(expected, actual, 0.5, "linear");
     }
 
     /**
@@ -459,7 +460,7 @@ public final class LinearTransformBuilderTest extends TestCase {
     public void testLinearizers() throws FactoryException {
         final int width  = 3;
         final int height = 4;
-        final LinearTransformBuilder builder = new LinearTransformBuilder(width, height);
+        final var builder = new LinearTransformBuilder(width, height);
         for (int y=0; y<height; y++) {
             final int[]    source = new int[2];
             final double[] target = new double[2];
@@ -471,7 +472,7 @@ public final class LinearTransformBuilderTest extends TestCase {
                 builder.setControlPoint(source, target);
             }
         }
-        final NonLinearTransform tr = new NonLinearTransform();
+        final var tr = new NonLinearTransform();
         builder.addLinearizers(Map.of("x² y³", tr));
         builder.addLinearizers(Map.of("x³ y²", tr), 1, 0);
         builder.addLinearizers(Map.of("identity", MathTransforms.identity(2)));
@@ -479,9 +480,9 @@ public final class LinearTransformBuilderTest extends TestCase {
         assertEquals("x³ y²", builder.linearizer().get().getKey());
         assertNotSame(tr, builder.linearizer().get());    // Not same because axes should have been swapped.
         assertArrayEquals(new double[] {1, 1}, builder.correlation(), 1E-15);
-        assertMatrixEquals("linear",
-                new Matrix3(2, 0, 3,
-                            0, 1, 1,
-                            0, 0, 1), m, 1E-15);
+        assertMatrixEquals(new Matrix3(2, 0, 3,
+                                       0, 1, 1,
+                                       0, 0, 1),
+                m, 1E-15, "linear");
     }
 }

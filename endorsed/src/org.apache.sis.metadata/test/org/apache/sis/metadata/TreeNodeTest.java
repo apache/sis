@@ -379,7 +379,7 @@ public final class TreeNodeTest extends TestCase {
         child = node.newChild();
         child.setValue(TableColumn.IDENTIFIER, "title");
         child.setValue(TableColumn.VALUE, "A new title");
-        assertTitleEquals("citation", "A new title", citation);
+        assertTitleEquals("A new title", citation, "citation");
         assertSame(citation.getTitle(), child.getValue(TableColumn.VALUE));
         /*
          * Try adding a new element in a collection.

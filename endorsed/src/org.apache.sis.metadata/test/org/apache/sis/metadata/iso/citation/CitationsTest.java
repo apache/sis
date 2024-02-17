@@ -177,7 +177,7 @@ public final class CitationsTest extends TestCase {
     @Test
     @DependsOnMethod("testGetIdentifier")
     public void testToCodeSpace() {
-        final SimpleCitation citation = new SimpleCitation(" Valid\u2060Id\u200Bentifier ");
+        final var citation = new SimpleCitation(" Valid\u2060Id\u200Bentifier ");
         assertEquals("ValidIdentifier", Citations.toCodeSpace(citation));
 
         assertNull(Citations.toCodeSpace(new SimpleCitation("Proj.4")),
@@ -206,18 +206,18 @@ public final class CitationsTest extends TestCase {
      */
     @Test
     public void testGetTitles() {
-        assertTitleEquals("SIS",       "Apache Spatial Information System",                      SIS);
-        assertTitleEquals("WMS",       "Web Map Server",                                         WMS);
-        assertTitleEquals("OGC",       "OGC Naming Authority",                                   OGC);
-        assertTitleEquals("EPSG",      "EPSG Geodetic Parameter Dataset",                        EPSG);
-        assertTitleEquals("ISBN",      "International Standard Book Number",                     ISBN);
-        assertTitleEquals("ISSN",      "International Standard Serial Number",                   ISSN);
-        assertTitleEquals("GEOTIFF",   "GeoTIFF Coverage Encoding Profile",                      GEOTIFF);
-        assertTitleEquals("NETCDF",    "NetCDF Classic and 64-bit Offset Format",                NETCDF);
-        assertTitleEquals("PROJ4",     "PROJ coordinate transformation software library",        PROJ4);
-        assertTitleEquals("S57",       "IHO transfer standard for digital hydrographic data",    S57);
-        assertTitleEquals("ISO_19115", "Geographic Information — Metadata Part 1: Fundamentals", ISO_19115.get(0));
-        assertTitleEquals("ISO_19115", "Geographic Information — Metadata Part 2: Extensions for imagery and gridded data", ISO_19115.get(1));
+        assertTitleEquals("Apache Spatial Information System",                      SIS, "SIS");
+        assertTitleEquals("Web Map Server",                                         WMS, "WMS");
+        assertTitleEquals("OGC Naming Authority",                                   OGC, "OGC");
+        assertTitleEquals("EPSG Geodetic Parameter Dataset",                        EPSG, "EPSG");
+        assertTitleEquals("International Standard Book Number",                     ISBN, "ISBN");
+        assertTitleEquals("International Standard Serial Number",                   ISSN, "ISSN");
+        assertTitleEquals("GeoTIFF Coverage Encoding Profile",                      GEOTIFF, "GEOTIFF");
+        assertTitleEquals("NetCDF Classic and 64-bit Offset Format",                NETCDF, "NETCDF");
+        assertTitleEquals("PROJ coordinate transformation software library",        PROJ4, "PROJ4");
+        assertTitleEquals("IHO transfer standard for digital hydrographic data",    S57, "S57");
+        assertTitleEquals("Geographic Information — Metadata Part 1: Fundamentals", ISO_19115.get(0), "ISO_19115");
+        assertTitleEquals("Geographic Information — Metadata Part 2: Extensions for imagery and gridded data", ISO_19115.get(1), "ISO_19115");
     }
 
     /**
@@ -287,9 +287,9 @@ public final class CitationsTest extends TestCase {
      */
     @Test
     public void testIdentifierMatches() {
-        final Identifier ogc = new DefaultIdentifier("OGC", "06-042", null);
-        final Identifier iso = new DefaultIdentifier("ISO", "19128", null);
-        final DefaultCitation citation = new DefaultCitation("Web Map Server");
+        final var ogc = new DefaultIdentifier("OGC", "06-042", null);
+        final var iso = new DefaultIdentifier("ISO", "19128", null);
+        final var citation = new DefaultCitation("Web Map Server");
         citation.setIdentifiers(List.of(ogc, iso, new DefaultIdentifier("Foo", "06-042", null)));
         assertTrue (/* With full identifier */ Citations.identifierMatches(citation, ogc, ogc.getCode()));
         assertTrue (/* With full identifier */ Citations.identifierMatches(citation, iso, iso.getCode()));

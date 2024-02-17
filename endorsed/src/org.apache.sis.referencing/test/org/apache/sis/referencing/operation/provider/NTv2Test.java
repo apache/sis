@@ -48,7 +48,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.referencing.operation.gridded.LoadedGridTest;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.test.Assert.assertMatrixEquals;
+import static org.opengis.test.Assertions.assertMatrixEquals;
 
 
 /**
@@ -142,11 +142,10 @@ public final class NTv2Test extends DatumShiftTestCase {
         assertEquals(xmax, envelope.getMaximum(0), "xmax");
         assertEquals(ymin, envelope.getMinimum(1), "ymin");
         assertEquals(ymax, envelope.getMaximum(1), "ymax");
-        assertMatrixEquals("coordinateToGrid",
-                new Matrix3(-cellSize,  0,  xmax,
-                            0,  +cellSize,  ymin,
-                            0,          0,    1),
-                grid.getCoordinateToGrid().inverse().getMatrix(), STRICT);
+        assertMatrixEquals(new Matrix3(-cellSize,  0,  xmax,
+                                       0,  +cellSize,  ymin,
+                                       0,          0,    1),
+                grid.getCoordinateToGrid().inverse().getMatrix(), STRICT, "coordinateToGrid");
         /*
          * Test the same point as FranceGeocentricInterpolationTest, which is itself derived from the
          * NTG_88 guidance note.  If we were using the official NTF_R93.gsb file, we would obtain after

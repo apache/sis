@@ -29,7 +29,7 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.test.Assert.assertAxisDirectionsEqual;
+import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
 
 
 /**
@@ -54,7 +54,7 @@ public final class DefaultPolarCSTest extends TestCase {
         final DefaultPolarCS cs = HardCodedCS.POLAR;
         final DefaultPolarCS normalized = cs.forConvention(AxesConvention.DISPLAY_ORIENTED);
         assertNotSame(cs, normalized);
-        assertAxisDirectionsEqual("Normalized", normalized,
+        assertAxisDirectionsEqual(normalized,
                 AxisDirections.AWAY_FROM,
                 AxisDirections.COUNTER_CLOCKWISE);
     }
@@ -74,14 +74,14 @@ public final class DefaultPolarCSTest extends TestCase {
                 radius);
 
         DefaultPolarCS normalized = cs.forConvention(AxesConvention.RIGHT_HANDED);
-        assertAxisDirectionsEqual("Right-handed", normalized,
+        assertAxisDirectionsEqual(normalized,
                 AxisDirections.CLOCKWISE,
                 AxisDirection.SOUTH);
         assertSame(cs, normalized);
 
         normalized = cs.forConvention(AxesConvention.NORMALIZED);
         assertNotSame(cs, normalized);
-        assertAxisDirectionsEqual("Normalized", normalized,
+        assertAxisDirectionsEqual(normalized,
                 AxisDirection.SOUTH,                            // Not modified to North because radius cannot be negative.
                 AxisDirections.COUNTER_CLOCKWISE);
     }

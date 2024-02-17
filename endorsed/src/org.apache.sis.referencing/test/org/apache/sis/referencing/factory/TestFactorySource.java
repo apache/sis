@@ -29,7 +29,7 @@ import org.apache.sis.referencing.factory.sql.EPSGFactory;
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.*;
-import static org.opengis.test.Assert.assertBetween;
+import static org.opengis.test.Assertions.assertBetween;
 
 
 /**
@@ -168,7 +168,7 @@ public final class TestFactorySource {
             factory = null;
             final int n = ((ConcurrentAuthorityFactory) af).countAvailableDataAccess();
             af.close();
-            assertBetween("Since we ran all tests sequentially, should have no more than 1 Data Access Object (DAO).", 0, 1, n);
+            assertBetween(0, 1, n, "Since we ran all tests sequentially, should have no more than 1 Data Access Object (DAO).");
         }
     }
 }

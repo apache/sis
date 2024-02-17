@@ -30,7 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.test.Assert.assertMatrixEquals;
+import static org.opengis.test.Assertions.assertMatrixEquals;
 
 
 /**
@@ -70,11 +70,11 @@ public final class PixelTranslationTest extends TestCase {
     @Test
     public void testTranslatePixelInCell() throws TransformException {
         final MathTransform gridToCRS = centerToCorner(3);
-        assertMatrixEquals("center → corner", new Matrix4(
-                1, 0, 0, -0.5,
-                0, 1, 0, -0.5,
-                0, 0, 1, -0.5,
-                0, 0, 0,  1), MathTransforms.getMatrix(gridToCRS), STRICT);
+        assertMatrixEquals(new Matrix4(1, 0, 0, -0.5,
+                                       0, 1, 0, -0.5,
+                                       0, 0, 1, -0.5,
+                                       0, 0, 0,  1),
+                MathTransforms.getMatrix(gridToCRS), STRICT, "center → corner");
         /*
          * Just for making clear what we explained in javadoc comment: the real world (0,0,0) coordinates was in the center
          * of cell (0,0,0). After we switched to "cell corner" convention, that center is (½,½,½) in grid coordinates but
@@ -92,17 +92,17 @@ public final class PixelTranslationTest extends TestCase {
     @Test
     public void testTranslatePixelOrientation() {
         MathTransform gridToCRS = centerToCorner2D();
-        assertMatrixEquals("center → corner", new Matrix3(
-                1, 0, -0.5,
-                0, 1, -0.5,
-                0, 0,  1), MathTransforms.getMatrix(gridToCRS), STRICT);
+        assertMatrixEquals(new Matrix3(1, 0, -0.5,
+                                       0, 1, -0.5,
+                                       0, 0,  1),
+                MathTransforms.getMatrix(gridToCRS), STRICT, "center → corner");
 
         gridToCRS = PixelTranslation.translate(MathTransforms.identity(3), PixelOrientation.LOWER_LEFT, PixelOrientation.CENTER, 1, 2);
-        assertMatrixEquals("corner → center", new Matrix4(
-                1, 0, 0,  0.0,
-                0, 1, 0, +0.5,
-                0, 0, 1, -0.5,
-                0, 0, 0,  1), MathTransforms.getMatrix(gridToCRS), STRICT);
+        assertMatrixEquals(new Matrix4(1, 0, 0,  0.0,
+                                       0, 1, 0, +0.5,
+                                       0, 0, 1, -0.5,
+                                       0, 0, 0,  1),
+                MathTransforms.getMatrix(gridToCRS), STRICT, "corner → center");
     }
 
     /**

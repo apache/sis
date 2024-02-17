@@ -62,7 +62,7 @@ import static org.apache.sis.feature.Assertions.assertValuesEqual;
 import static org.apache.sis.feature.Assertions.assertPixelsEqual;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.test.Assert.assertAxisDirectionsEqual;
+import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
 
 
 /**
@@ -404,9 +404,9 @@ public final class ResampledGridCoverageTest extends TestCase {
         final GridCoverage source = createCoverageND(true);
         final GridGeometry target = createGridGeometryND(HardCodedCRS.WGS84_4D_TIME_FIRST, 1, 2, 3, 0, false);
         final GridCoverage result = resample(source, target);
-        assertAxisDirectionsEqual("Expected (t,λ,φ,H) axes.",
-                result.getGridGeometry().getCoordinateReferenceSystem().getCoordinateSystem(),
-                AxisDirection.FUTURE, AxisDirection.EAST, AxisDirection.NORTH, AxisDirection.UP);
+        assertAxisDirectionsEqual(result.getGridGeometry().getCoordinateReferenceSystem().getCoordinateSystem(),
+                new AxisDirection[] {AxisDirection.FUTURE, AxisDirection.EAST, AxisDirection.NORTH, AxisDirection.UP},
+                "Expected (t,λ,φ,H) axes.");
 
         assertPixelsEqual(source.render(null), null, result.render(null), null);
     }

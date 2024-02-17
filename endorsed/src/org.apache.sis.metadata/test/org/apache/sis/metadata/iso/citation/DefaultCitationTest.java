@@ -87,8 +87,8 @@ public final class DefaultCitationTest extends TestUsingFile {
      * @return an arbitrary citation.
      */
     public static DefaultCitation create() {
-        final DefaultCitation citation = new DefaultCitation();
-        final DefaultInternationalString title = new DefaultInternationalString();
+        final var citation = new DefaultCitation();
+        final var title = new DefaultInternationalString();
         title.add(Locale.JAPANESE, "アンダーカレント");
         title.add(Locale.ENGLISH,  "Undercurrent");
         citation.setTitle(title);
@@ -115,7 +115,7 @@ public final class DefaultCitationTest extends TestUsingFile {
      */
     @Test
     public void testIdentifierMap() {
-        final DefaultCitation citation = new DefaultCitation();
+        final var citation = new DefaultCitation();
         final Collection<Identifier> identifiers = citation.getIdentifiers();
         final IdentifierMap identifierMap = citation.getIdentifierMap();
         assertTrue(identifiers.isEmpty(), "Expected an initially empty set of identifiers.");
@@ -167,7 +167,8 @@ public final class DefaultCitationTest extends TestUsingFile {
      */
     public void testCopy() {
         final DefaultCitation original = create();
-        final DefaultCitation clone = (DefaultCitation) new MetadataCopier(MetadataStandard.ISO_19115).copy(original);
+        final var clone = assertInstanceOf(DefaultCitation.class,
+                new MetadataCopier(MetadataStandard.ISO_19115).copy(original));
         assertCopy(original, clone);
     }
 
@@ -245,12 +246,12 @@ public final class DefaultCitationTest extends TestUsingFile {
      * @param  format  whether to use the 2007 or 2016 version of ISO 19115.
      */
     private void testMarshalling(final Format format) throws JAXBException {
-        final DefaultOnlineResource rs = new DefaultOnlineResource(URI.create("https://tools.ietf.org/html/rfc1149"));
+        final var rs = new DefaultOnlineResource(URI.create("https://tools.ietf.org/html/rfc1149"));
         rs.setName("IP over Avian Carriers");
         rs.setDescription(new SimpleInternationalString("High delay, low throughput, and low altitude service."));
         rs.setFunction(OnLineFunction.OFFLINE_ACCESS);
 
-        final DefaultContact contact = new DefaultContact(rs);
+        final var contact = new DefaultContact(rs);
         contact.setContactInstructions(new SimpleInternationalString("Send carrier pigeon."));
         contact.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "ip-protocol");
         final DefaultCitation c = new DefaultCitation("Fight against poverty");
@@ -306,7 +307,7 @@ public final class DefaultCitationTest extends TestUsingFile {
      * @param c  the citation.
      */
     public static void verifyUnmarshalledCitation(final Citation c) {
-        assertTitleEquals("title", "Fight against poverty", c);
+        assertTitleEquals("Fight against poverty", c, "citation");
 
         final CitationDate date = getSingleton(c.getDates());
         assertEquals(date.getDate(), TestUtilities.date("2015-10-17 00:00:00"));

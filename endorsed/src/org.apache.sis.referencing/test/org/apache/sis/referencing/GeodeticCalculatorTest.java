@@ -43,7 +43,7 @@ import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADI
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.opengis.test.Assert.assertBetween;
+import static org.opengis.test.Assertions.assertBetween;
 import org.apache.sis.test.OptionalTestData;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
@@ -53,7 +53,7 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.cs.AxisDirection;
-import static org.opengis.test.Assert.assertAxisDirectionsEqual;
+import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
 
 
 /**
@@ -235,8 +235,8 @@ public class GeodeticCalculatorTest extends TestCase {
     @DependsOnMethod("testGeodesicDistanceAndAzimuths")
     public void testUsingTransform() {
         final GeodeticCalculator c = create(true);
-        assertAxisDirectionsEqual("GeographicCRS", c.getGeographicCRS().getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
-        assertAxisDirectionsEqual("PositionCRS",     c.getPositionCRS().getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+        assertAxisDirectionsEqual(c.getGeographicCRS().getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
+        assertAxisDirectionsEqual(c.getPositionCRS().getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
         final double φ = -33.0;
         final double λ = -71.6;
         c.setStartPoint(new DirectPosition2D(λ, φ));
@@ -332,7 +332,7 @@ public class GeodeticCalculatorTest extends TestCase {
         for (final PathIterator it = geodeticCurve.getPathIterator(null, 1); !it.isDone(); it.next()) {
             it.currentSegment(coords);
             assertEquals(0, coords[0], tolerance, "φ");
-            assertBetween("λ", 12, 20, coords[1]);
+            assertBetween(12, 20, coords[1], "λ");
         }
     }
 

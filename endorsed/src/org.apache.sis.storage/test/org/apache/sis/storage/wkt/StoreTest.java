@@ -33,7 +33,7 @@ import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.test.Assert.assertAxisDirectionsEqual;
+import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
 
 
 /**
@@ -67,7 +67,7 @@ public final class StoreTest extends TestCase {
     private static void validate(final GeographicCRS crs) {
         assertEquals("NTF (Paris)", crs.getName().getCode());
         assertEquals("Nouvelle Triangulation Francaise (Paris)", crs.getDatum().getName().getCode());
-        assertAxisDirectionsEqual("EllipsoidalCS", crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
     }
 
     /**
