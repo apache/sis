@@ -275,7 +275,7 @@ public final class TransverseMercatorTest extends MapProjectionTestCase {
                     else if (longitude <= 66) tolerance = 0.1;
                     else                      tolerance = 0.7;
                     transform.transform(source, 0, source, 0, 1);
-                    assertCoordinateEquals(line, target, source, reader.getLineNumber(), CalculationType.DIRECT_TRANSFORM);
+                    assertCoordinateEquals(target, source, reader.getLineNumber(), CalculationType.DIRECT_TRANSFORM, line);
                 }
             }
         }

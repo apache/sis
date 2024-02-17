@@ -375,9 +375,8 @@ public final class ObliqueStereographicTest extends MapProjectionTestCase {
         final Matrix derivative = spherical.transform(srcPts, 0, null, 0, true);
 
         tolerance = 1E-12;
-        assertMatrixEquals("Spherical derivative", reference, derivative,
-                new Matrix2(tolerance, tolerance,
-                            tolerance, tolerance));
+        assertMatrixEquals(reference, derivative, new Matrix2(tolerance, tolerance, tolerance, tolerance),
+                           "Spherical derivative");
     }
 
     /**

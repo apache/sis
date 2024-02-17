@@ -224,8 +224,8 @@ public final class PassThroughTransformTest extends MathTransformTestCase {
         toleranceModifier = null;
         final double[] transformedData = new double[StrictMath.max(sourceDim, targetDim) * numPts];
         transform.transform(passthroughData, 0, transformedData, 0, numPts);
-        assertCoordinatesEqual("PassThroughTransform results do not match the results computed by this test.",
-                targetDim, expectedData, 0, transformedData, 0, numPts, CalculationType.DIRECT_TRANSFORM);
+        assertCoordinatesEqual(targetDim, expectedData, 0, transformedData, 0, numPts, CalculationType.DIRECT_TRANSFORM,
+                               "PassThroughTransform results do not match the results computed by this test.");
         /*
          * Test inverse transform.
          */
@@ -234,8 +234,8 @@ public final class PassThroughTransformTest extends MathTransformTestCase {
             toleranceModifier = ToleranceModifier.RELATIVE;
             Arrays.fill(transformedData, Double.NaN);
             transform.inverse().transform(expectedData, 0, transformedData, 0, numPts);
-            assertCoordinatesEqual("Inverse of PassThroughTransform do not give back the original data.",
-                    sourceDim, passthroughData, 0, transformedData, 0, numPts, CalculationType.INVERSE_TRANSFORM);
+            assertCoordinatesEqual(sourceDim, passthroughData, 0, transformedData, 0, numPts, CalculationType.INVERSE_TRANSFORM,
+                                   "Inverse of PassThroughTransform do not give back the original data.");
         }
         /*
          * Verify the consistency between different 'transform(…)' methods.
@@ -250,8 +250,8 @@ public final class PassThroughTransformTest extends MathTransformTestCase {
         if (transform instanceof LinearTransform) {
             tolerance         = 1E-4;
             toleranceModifier = ToleranceModifier.RELATIVE;
-            assertCoordinatesEqual("PassThroughTransform.transform(…) variants produce inconsistent results.",
-                    sourceDim, expectedData, 0, targetAsFloat, 0, numPts, CalculationType.DIRECT_TRANSFORM);
+            assertCoordinatesEqual(sourceDim, expectedData, 0, targetAsFloat, 0, numPts, CalculationType.DIRECT_TRANSFORM,
+                                   "PassThroughTransform.transform(…) variants produce inconsistent results.");
         }
     }
 
@@ -289,8 +289,8 @@ public final class PassThroughTransformTest extends MathTransformTestCase {
                 0, 0, 0, 1, 0, 0, 0,
                 0, 0, 0, 0, 0, 1, 0,
                 0, 0, 0, 0, 0, 0, 1});
-        assertMatrixEquals("Expected removal of dimensions 0 and 4 before pass-through",
-                           m, MathTransforms.getMatrix(steps.get(0)), null);
+        assertMatrixEquals(m, MathTransforms.getMatrix(steps.get(0)), null,
+                           "Expected removal of dimensions 0 and 4 before pass-through");
         /*
          * The number of pass-through dimensions have decreased from 2 to 1 on both sides of the sub-transform.
          */
@@ -307,8 +307,8 @@ public final class PassThroughTransformTest extends MathTransformTestCase {
                 0, 0, 0, 1, 0, 0,
                 0, 0, 0, 0, 1, 0,
                 0, 0, 0, 0, 0, 1});
-        assertMatrixEquals("Expected removal of dimensions 1 and 2 after pass-through",
-                           m, MathTransforms.getMatrix(steps.get(2)), null);
+        assertMatrixEquals(m, MathTransforms.getMatrix(steps.get(2)), null,
+                           "Expected removal of dimensions 1 and 2 after pass-through");
     }
 
     /**

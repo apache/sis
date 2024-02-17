@@ -135,8 +135,10 @@ public final class MolodenskyTransformTest extends MathTransformTestCase {
             }
             StatisticsFormat.getInstance().format(stats, TestCase.out);
         }
-        assertCoordinatesEqual("Comparison of Molodensky and geocentric translation", 3,
-                expected, 0, actual, 0, expected.length / 3, CalculationType.DIRECT_TRANSFORM);
+        assertCoordinatesEqual(3, expected, 0,
+                actual, 0, expected.length / 3,
+                CalculationType.DIRECT_TRANSFORM,
+                "Comparison of Molodensky and geocentric translation");
     }
 
     /**
