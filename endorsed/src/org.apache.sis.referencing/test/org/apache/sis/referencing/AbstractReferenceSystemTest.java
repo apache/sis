@@ -31,8 +31,6 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.mock.VerticalCRSMock;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -44,7 +42,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn(AbstractIdentifiedObjectTest.class)
 public final class AbstractReferenceSystemTest extends TestCase {
     /**
      * Creates a new test case.
@@ -78,7 +75,6 @@ public final class AbstractReferenceSystemTest extends TestCase {
      * Tests serialization.
      */
     @Test
-    @DependsOnMethod("testCreateFromMap")
     public void testSerialization() {
         final Map<String,Object> properties = new HashMap<>(8);
         assertNull(properties.put("code",       "4326"));
@@ -98,7 +94,6 @@ public final class AbstractReferenceSystemTest extends TestCase {
      * We test that the closing quote character is doubled and the optional information properly formatted.
      */
     @Test
-    @DependsOnMethod("testCreateFromMap")
     public void testWKT() {
         final Map<String,Object> properties = new HashMap<>(8);
         assertNull(properties.put(NAME_KEY, "My “object”."));

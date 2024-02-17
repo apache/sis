@@ -35,7 +35,6 @@ import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.test.TestUtilities.getSingleton;
@@ -53,7 +52,6 @@ import static org.apache.sis.metadata.Assertions.assertTitleEquals;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  */
-@DependsOn(org.apache.sis.xml.bind.lan.OtherLocalesTest.class)
 public final class DefaultMetadataTest extends TestCase {
     /**
      * Creates a new test case.

@@ -42,7 +42,6 @@ import org.apache.sis.xml.bind.cat.CodeListUID;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import org.opentest4j.AssertionFailedError;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 
@@ -720,7 +719,6 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
      * This method does not check the method annotations, since it is {@link #testMethodAnnotations()} job.
      */
     @Test
-    @DependsOnMethod("testInterfaceAnnotations")
     public void testImplementationAnnotations() {
         for (final Class<?> type : types) {
             if (CodeList.class.isAssignableFrom(type)) {
@@ -772,7 +770,6 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
      * </ul>
      */
     @Test
-    @DependsOnMethod("testImplementationAnnotations")
     public void testMethodAnnotations() {
         for (final Class<?> type : types) {
             if (CodeList.class.isAssignableFrom(type)) {

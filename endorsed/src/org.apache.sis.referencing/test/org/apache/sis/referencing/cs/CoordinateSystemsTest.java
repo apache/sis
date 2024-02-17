@@ -39,8 +39,6 @@ import static org.apache.sis.referencing.cs.CoordinateSystems.*;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 
@@ -53,10 +51,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn({
-    DirectionAlongMeridianTest.class,
-    NormalizerTest.class
-})
 public final class CoordinateSystemsTest extends TestCase {
     /**
      * Creates a new test case.
@@ -120,7 +114,6 @@ public final class CoordinateSystemsTest extends TestCase {
      * Tests {@link CoordinateSystems#angle(AxisDirection, AxisDirection)} using directions parsed from text.
      */
     @Test
-    @DependsOnMethod({"testParseAxisDirection", "testAngle"})
     public void testAngleAlongMeridians() {
         assertAngleEquals(false,   90.0, "West",                    "South");
         assertAngleEquals(false,  -90.0, "South",                   "West");
@@ -212,7 +205,6 @@ public final class CoordinateSystemsTest extends TestCase {
      * @throws IncommensurableException if a conversion between incompatible units was attempted.
      */
     @Test
-    @DependsOnMethod("testSwapAndScaleAxes2D")
     public void testSwapAndScaleAxes3D() throws IncommensurableException {
         final CoordinateSystem λφh = new DefaultEllipsoidalCS(Map.of(NAME_KEY, "(λ,φ,h)"),
                 HardCodedAxes.GEODETIC_LONGITUDE,
@@ -240,7 +232,6 @@ public final class CoordinateSystemsTest extends TestCase {
      * @throws IncommensurableException if a conversion between incompatible units was attempted.
      */
     @Test
-    @DependsOnMethod("testSwapAndScaleAxes3D")
     public void testSwapAndScaleAxes() throws IncommensurableException {
         final CoordinateSystem hxy = new DefaultCartesianCS(Map.of(NAME_KEY, "(h,x,y)"),
                 HardCodedAxes.HEIGHT_cm,
@@ -273,7 +264,6 @@ public final class CoordinateSystemsTest extends TestCase {
      * @throws IncommensurableException if a conversion between incompatible units was attempted.
      */
     @Test
-    @DependsOnMethod("testSwapAndScaleAxes")
     public void testScaleAndSwapAxesNonSquare() throws IncommensurableException {
         final var cs = new DefaultCartesianCS(Map.of(NAME_KEY, "Test"),
                 new DefaultCoordinateSystemAxis(getProperties(HardCodedAxes.SOUTHING), "y", AxisDirection.SOUTH, Units.CENTIMETRE),
@@ -324,7 +314,6 @@ public final class CoordinateSystemsTest extends TestCase {
      * with a change of coordinate system type.
      */
     @Test
-    @DependsOnMethod("testReplaceAxes")
     public void testReplaceAxesWithTypeChange() {
         final EllipsoidalCS    sourceCS = HardCodedCS.GEODETIC_3D;
         final VerticalCS       targetCS = HardCodedCS.ELLIPSOIDAL_HEIGHT;   // What we want to get.

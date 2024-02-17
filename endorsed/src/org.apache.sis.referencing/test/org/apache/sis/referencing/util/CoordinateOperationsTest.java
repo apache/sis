@@ -26,7 +26,6 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.cs.HardCodedAxes;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -59,7 +58,6 @@ public final class CoordinateOperationsTest extends TestCase {
      * Tests {@link CoordinateOperations#wrapAroundChanges(CoordinateReferenceSystem, CoordinateSystem)}.
      */
     @Test
-    @DependsOnMethod("testIsWrapAround")
     public void testWrapAroundChanges() {
         CoordinateReferenceSystem sourceCRS = HardCodedCRS.WGS84_3D;
         CoordinateSystem          targetCS = HardCodedCS.GEODETIC_2D;

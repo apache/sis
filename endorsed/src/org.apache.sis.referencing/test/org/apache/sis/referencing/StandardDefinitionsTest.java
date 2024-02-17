@@ -38,8 +38,6 @@ import org.apache.sis.referencing.datum.GeodeticDatumMock;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -52,10 +50,6 @@ import org.apache.sis.referencing.cs.HardCodedCS;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    org.apache.sis.referencing.crs.DefaultGeographicCRSTest.class,
-    org.apache.sis.referencing.operation.provider.TransverseMercatorTest.class
-})
 public final class StandardDefinitionsTest extends TestCase {
     /**
      * Creates a new test case.
@@ -76,7 +70,6 @@ public final class StandardDefinitionsTest extends TestCase {
      * Tests {@link StandardDefinitions#createCoordinateSystem(short, boolean)}.
      */
     @Test
-    @DependsOnMethod("testCreateAxis")
     public void testCreateCoordinateSystem() {
         CoordinateSystem cs = StandardDefinitions.createCoordinateSystem((short) 4400, true);
         assertInstanceOf(CartesianCS.class, cs);
@@ -92,7 +85,6 @@ public final class StandardDefinitionsTest extends TestCase {
      * for a Universal Transverse Mercator (UTM) projection.
      */
     @Test
-    @DependsOnMethod("testCreateGeographicCRS")
     public void testCreateUTM() {
         final ProjectedCRS crs = StandardDefinitions.createUniversal(32610, HardCodedCRS.WGS84, true, 15, -122, HardCodedCS.PROJECTED);
         assertEquals("WGS 84 / UTM zone 10N", crs.getName().getCode());
@@ -110,7 +102,6 @@ public final class StandardDefinitionsTest extends TestCase {
      * by laziness; we are more interested in the projection parameters.
      */
     @Test
-    @DependsOnMethod("testCreateGeographicCRS")
     public void testCreateUPS() {
         final ProjectedCRS crs = StandardDefinitions.createUniversal(5041, HardCodedCRS.WGS84, false, 90, -122, HardCodedCS.PROJECTED);
         assertEquals("WGS 84 / Universal Polar Stereographic North", crs.getName().getCode());
@@ -138,7 +129,6 @@ public final class StandardDefinitionsTest extends TestCase {
      * at fault.
      */
     @Test
-    @DependsOnMethod("testCreateAxis")
     public void testCreateGeographicCRS() {
         final PrimeMeridian pm = StandardDefinitions.primeMeridian();
         final EllipsoidalCS cs = (EllipsoidalCS) StandardDefinitions.createCoordinateSystem((short) 6422, true);
@@ -234,7 +224,6 @@ public final class StandardDefinitionsTest extends TestCase {
      * Tests the creation of vertical CRS.
      */
     @Test
-    @DependsOnMethod("testCreateAxis")
     public void testCreateVerticalCRS() {
         VerticalDatum datum;
         VerticalCRS crs;

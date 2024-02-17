@@ -34,7 +34,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 import static org.apache.sis.test.Assertions.assertMapEquals;
 
@@ -132,7 +131,6 @@ public final class LinearTransformBuilderTest extends TestCase {
      * @throws FactoryException if the transform cannot be created.
      */
     @Test
-    @DependsOnMethod("testExplicitSource2D")
     public void testImplicitSource2D() throws FactoryException {
         testSetAllPoints(new LinearTransformBuilder(2, 3));
         testSetEachPoint(new LinearTransformBuilder(2, 3));
@@ -199,7 +197,6 @@ public final class LinearTransformBuilderTest extends TestCase {
      * @throws FactoryException if the transform cannot be created.
      */
     @Test
-    @DependsOnMethod("testMinimalist1D")
     public void testExact1D() throws FactoryException {
         final Random rd = TestUtilities.createRandomNumberGenerator(-6080923837183751016L);
         for (int i=0; i<10; i++) {
@@ -217,7 +214,6 @@ public final class LinearTransformBuilderTest extends TestCase {
      * @throws FactoryException if the transform cannot be created.
      */
     @Test
-    @DependsOnMethod("testMinimalist2D")
     public void testExact2D() throws FactoryException {
         final Random rd = TestUtilities.createRandomNumberGenerator(41632405806929L);
         for (int i=0; i<10; i++) {
@@ -231,7 +227,6 @@ public final class LinearTransformBuilderTest extends TestCase {
      * @throws FactoryException if the transform cannot be created.
      */
     @Test
-    @DependsOnMethod("testExact1D")
     public void testNonExact1D() throws FactoryException {
         final Random rd = TestUtilities.createRandomNumberGenerator(8819436190826166876L);
         for (int i=0; i<4; i++) {
@@ -251,7 +246,6 @@ public final class LinearTransformBuilderTest extends TestCase {
      * @throws FactoryException if the transform cannot be created.
      */
     @Test
-    @DependsOnMethod("testExact2D")
     public void testNonExact2D() throws FactoryException {
         final Random rd = TestUtilities.createRandomNumberGenerator(270575025643864L);
         for (int i=0; i<4; i++) {

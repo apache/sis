@@ -20,7 +20,6 @@ package org.apache.sis.feature;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -30,7 +29,6 @@ import org.apache.sis.test.TestCase;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  */
-@DependsOn(SingletonAttributeTest.class)
 public final class FeaturesTest extends TestCase {
     /**
      * Creates a new test case.

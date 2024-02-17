@@ -33,8 +33,6 @@ import org.apache.sis.util.internal.UnmodifiableArrayList;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -43,9 +41,6 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
-})
 public final class OperationMethodSetTest extends TestCase {
     /**
      * Creates a new test case.
@@ -124,7 +119,6 @@ public final class OperationMethodSetTest extends TestCase {
      * Tests a non-empty set.
      */
     @Test
-    @DependsOnMethod("testEmpty")
     public void testMixedCases() {
         final DefaultOperationMethod merA = createMethod(CylindricalProjection.class, "Mercator (variant A)");
         final DefaultOperationMethod merB = createMethod(CylindricalProjection.class, "Mercator (variant B)");

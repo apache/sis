@@ -29,7 +29,6 @@ import org.apache.sis.metadata.xml.TestUsingFile;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -43,10 +42,6 @@ import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  */
-@DependsOn({
-    DefaultCoupledResourceTest.class,
-    org.apache.sis.metadata.iso.identification.DefaultDataIdentificationTest.class
-})
 public final class DefaultServiceIdentificationTest extends TestUsingFile {
     /**
      * Creates a new test case.

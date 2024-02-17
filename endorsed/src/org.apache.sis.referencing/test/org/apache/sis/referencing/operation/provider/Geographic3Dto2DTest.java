@@ -27,7 +27,6 @@ import org.apache.sis.parameter.Parameters;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 // Specific to the main branch:
@@ -39,7 +38,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(AffineTest.class)
 public final class Geographic3Dto2DTest extends TestCase {
     /**
      * Creates a new test case.

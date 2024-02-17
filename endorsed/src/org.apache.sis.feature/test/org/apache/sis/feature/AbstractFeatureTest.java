@@ -22,7 +22,6 @@ import java.util.Collection;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -34,10 +33,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    DenseFeatureTest.class,
-    SparseFeatureTest.class
-})
 public final class AbstractFeatureTest extends FeatureTestCase {
     /**
      * Creates a new test case.

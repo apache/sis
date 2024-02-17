@@ -25,7 +25,6 @@ import java.util.Random;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
@@ -36,10 +35,6 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    DenseFeatureTest.class,
-    CharacteristicMapTest.class
-})
 public final class FeatureFormatTest extends TestCase {
     /**
      * Creates a new test case.

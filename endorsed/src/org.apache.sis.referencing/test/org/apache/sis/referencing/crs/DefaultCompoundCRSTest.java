@@ -35,8 +35,6 @@ import org.apache.sis.io.wkt.Convention;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
 import org.apache.sis.referencing.cs.HardCodedAxes;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -52,11 +50,6 @@ import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    SubTypesTest.class,
-    DefaultGeographicCRSTest.class,
-    DefaultVerticalCRSTest.class
-})
 public final class DefaultCompoundCRSTest extends TestCase {
     /**
      * The vertical CRS arbitrarily chosen in this class for the tests.
@@ -267,7 +260,6 @@ public final class DefaultCompoundCRSTest extends TestCase {
      * Tests WKT 2 formatting.
      */
     @Test
-    @DependsOnMethod("testWKT1")
     public void testWKT2() {
         assertWktEquals(Convention.WKT2,
                 "COMPOUNDCRS[“WGS 84 + height + time”,\n" +
@@ -299,7 +291,6 @@ public final class DefaultCompoundCRSTest extends TestCase {
      * Tests WKT 2 "simplified" formatting.
      */
     @Test
-    @DependsOnMethod("testWKT2")
     public void testWKT2_Simplified() {
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "CompoundCRS[“WGS 84 + height + time”,\n" +

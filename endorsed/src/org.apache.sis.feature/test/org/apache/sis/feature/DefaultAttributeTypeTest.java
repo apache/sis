@@ -26,7 +26,6 @@ import org.opengis.util.InternationalString;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -166,7 +165,6 @@ public final class DefaultAttributeTypeTest extends TestCase {
      * Tests serialization.
      */
     @Test
-    @DependsOnMethod("testEquals")
     public void testSerialization() {
         final DefaultAttributeType<String> attribute = city();
         assertSerializedEquals(attribute);

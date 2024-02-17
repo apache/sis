@@ -29,7 +29,6 @@ import org.apache.sis.util.iso.DefaultNameFactory;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -117,7 +116,6 @@ public final class NamedIdentifierTest extends TestCase {
      * Tests the {@link NamedIdentifier#NamedIdentifier(Citation, CharSequence)} constructor.
      */
     @Test
-    @DependsOnMethod("testCreateFromCode")
     public void testCreateFromInternationalString() {
         final NamedIdentifier identifier = createI18N();
         Validators.validate((ReferenceIdentifier) identifier);
@@ -146,7 +144,6 @@ public final class NamedIdentifierTest extends TestCase {
      * Tests serialization.
      */
     @Test
-    @DependsOnMethod("testCreateFromInternationalString")
     public void testSerialization() {
         NamedIdentifier unserial = assertSerializedEquals(new NamedIdentifier(Citations.EPSG, "4326"));
         assertEquals("EPSG:4326", unserial.toInternationalString().toString(Locale.ENGLISH));

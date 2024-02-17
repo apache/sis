@@ -21,7 +21,6 @@ import java.io.IOException;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -29,10 +28,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-  org.apache.sis.util.CharSequencesTest.class,
-  org.apache.sis.util.internal.X364Test.class,
-  LineAppenderTest.class})
 public final class TableAppenderTest extends AppenderTestCase {
     /**
      * The table appender to test. May not be same instance as {@link #appender},

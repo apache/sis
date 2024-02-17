@@ -26,7 +26,6 @@ import javax.imageio.stream.ImageOutputStream;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -41,7 +40,6 @@ import org.apache.sis.test.DependsOn;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(ChannelDataOutputTest.class)
 public final class ChannelImageOutputStreamTest extends ChannelDataTestCase {
     /**
      * The implementation to test. This implementation will write data to {@link #testedStreamBackingArray}.

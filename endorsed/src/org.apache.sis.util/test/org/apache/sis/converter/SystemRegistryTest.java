@@ -30,7 +30,6 @@ import static org.apache.sis.converter.SystemRegistry.INSTANCE;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -42,7 +41,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(ConverterRegistryTest.class)
 public final class SystemRegistryTest extends TestCase {
     /**
      * Creates a new test case.

@@ -25,7 +25,6 @@ import org.apache.sis.util.Version;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
 
 // Specific to the main branch:
 import org.apache.sis.storage.netcdf.base.TestData;
@@ -36,10 +35,6 @@ import org.apache.sis.storage.netcdf.base.TestData;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    MetadataReaderTest.class,
-    NetcdfStoreProviderTest.class
-})
 public final class NetcdfStoreTest extends TestCase {
     /**
      * Creates a new test case.

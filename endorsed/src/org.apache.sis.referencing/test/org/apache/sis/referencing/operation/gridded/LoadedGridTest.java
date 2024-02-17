@@ -30,7 +30,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.DependsOnMethod;
 
 
 /**
@@ -138,7 +137,6 @@ public class LoadedGridTest extends TestCase {
      * @throws TransformException if an error occurred while transforming a coordinates.
      */
     @Test
-    @DependsOnMethod("testInterpolateAtIntegers")
     public void testInterpolateAtReals() throws TransformException {
         final Random random = TestUtilities.createRandomNumberGenerator();
         final Point2D.Float point = new Point2D.Float();
@@ -169,7 +167,6 @@ public class LoadedGridTest extends TestCase {
      * @throws TransformException if an error occurred while transforming a coordinates.
      */
     @Test
-    @DependsOnMethod("testInterpolateAtIntegers")
     public void testInterpolateAndDerivative() throws TransformException {
         final Random random = TestUtilities.createRandomNumberGenerator();
         final Point2D.Float point = new Point2D.Float();
@@ -207,7 +204,6 @@ public class LoadedGridTest extends TestCase {
      * @throws TransformException if an error occurred while transforming a coordinates.
      */
     @Test
-    @DependsOnMethod("testInterpolateAndDerivative")
     public void testExtrapolation() throws TransformException {
         final Random random = TestUtilities.createRandomNumberGenerator();
         final Point2D.Float point = new Point2D.Float();

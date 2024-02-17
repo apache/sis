@@ -24,8 +24,6 @@ import static org.apache.sis.util.CharSequences.*;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 
 
 /**
@@ -34,10 +32,6 @@ import org.apache.sis.test.DependsOnMethod;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  */
-@DependsOn({
-    ArraysExtTest.class,
-    CharactersTest.class
-})
 public final class CharSequencesTest extends TestCase {
     /**
      * Creates a new test case.
@@ -160,7 +154,6 @@ public final class CharSequencesTest extends TestCase {
      * Tests {@link CharSequences#split(CharSequence, char)}.
      */
     @Test
-    @DependsOnMethod("testIndexOfChar")
     public void testSplit() {
         assertArrayEquals(new String[] {"lundi", "mardi", "", "mercredi"}, split("lundi , mardi,,mercredi ", ','));
         assertArrayEquals(new String[] {"lundi", "mardi", "", "mercredi"}, split("lundi \n mardi\r\n\nmercredi ", '\n'));
@@ -172,7 +165,6 @@ public final class CharSequencesTest extends TestCase {
      * Tests the {@link CharSequences#splitOnEOL(CharSequence)} method.
      */
     @Test
-    @DependsOnMethod("testIndexOfChar")
     public void testSplitOnEOL() {
         final CharSequence[] splitted = splitOnEOL("\nOne\r\nTwo\rThree \rFour\n Five\n\r Six \n");
         assertArrayEquals(new String[] {"", "One", "Two", "Three ", "Four", " Five", "", " Six ", ""}, splitted);
@@ -184,7 +176,6 @@ public final class CharSequencesTest extends TestCase {
      * Tests {@link CharSequences#parseDoubles(CharSequence, char)}.
      */
     @Test
-    @DependsOnMethod("testSplit")
     public void testParseDoubles() {
         assertEquals(0, parseDoubles("", ',').length);
         assertArrayEquals(new double[] {5, 1.5, Double.NaN, -8}, parseDoubles("5 , 1.5,, -8 ", ','));
@@ -194,7 +185,6 @@ public final class CharSequencesTest extends TestCase {
      * Tests {@link CharSequences#parseFloats(CharSequence, char)}.
      */
     @Test
-    @DependsOnMethod("testSplit")
     public void testParseFloats() {
         assertEquals(0, parseFloats("", ',').length);
         assertArrayEquals(new float[] {5, 1.5f, Float.NaN, -8}, parseFloats("5 , 1.5,, -8 ", ','));
@@ -204,7 +194,6 @@ public final class CharSequencesTest extends TestCase {
      * Tests {@link CharSequences#parseLongs(CharSequence, char, int)}.
      */
     @Test
-    @DependsOnMethod("testSplit")
     public void testParseLongs() {
         assertEquals(0, parseLongs("", ',', 10).length);
         assertArrayEquals(new long[] {5, 2, -8}, parseLongs("5 , 2, -8 ", ',', 10));
@@ -214,7 +203,6 @@ public final class CharSequencesTest extends TestCase {
      * Tests {@link CharSequences#parseInts(CharSequence, char, int)}.
      */
     @Test
-    @DependsOnMethod("testSplit")
     public void testParseInts() {
         assertEquals(0, parseInts("", ',', 10).length);
         assertArrayEquals(new int[] {5, 2, -8}, parseInts("5 , 2, -8 ", ',', 10));
@@ -224,7 +212,6 @@ public final class CharSequencesTest extends TestCase {
      * Tests {@link CharSequences#parseShorts(CharSequence, char, int)}.
      */
     @Test
-    @DependsOnMethod("testSplit")
     public void testParseShorts() {
         assertEquals(0, parseShorts("", ',', 10).length);
         assertArrayEquals(new short[] {5, 2, -8}, parseShorts("5 , 2, -8 ", ',', 10));
@@ -234,7 +221,6 @@ public final class CharSequencesTest extends TestCase {
      * Tests {@link CharSequences#parseBytes(CharSequence, char, int)}.
      */
     @Test
-    @DependsOnMethod("testSplit")
     public void testParseBytes() {
         assertEquals(0, parseBytes("", ',', 10).length);
         assertArrayEquals(new byte[] {5, 2, -8}, parseBytes("5 , 2, -8 ", ',', 10));
@@ -301,7 +287,6 @@ public final class CharSequencesTest extends TestCase {
      * Tests the {@link CharSequences#camelCaseToSentence(CharSequence)} method.
      */
     @Test
-    @DependsOnMethod("testCamelCaseToWords")
     public void testCamelCaseToSentence() {
         assertEquals("Default locale", camelCaseToSentence("defaultLocale").toString());
         assertNull(camelCaseToSentence(null));

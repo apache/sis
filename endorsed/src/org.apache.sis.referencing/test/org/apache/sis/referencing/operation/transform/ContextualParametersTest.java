@@ -31,8 +31,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroupTest;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 // Specific to the main branch:
@@ -44,7 +42,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(DefaultParameterDescriptorGroupTest.class)
 public final class ContextualParametersTest extends TestCase {
     /**
      * Creates a new test case.
@@ -108,7 +105,6 @@ public final class ContextualParametersTest extends TestCase {
      * @throws FactoryException should never happen.
      */
     @Test
-    @DependsOnMethod("testSameTransform")
     public void testCompleteTransform() throws FactoryException {
         final ContextualParameters p = create(2, 2);
         final Matrix normalize   = p.normalizeGeographicInputs(12);

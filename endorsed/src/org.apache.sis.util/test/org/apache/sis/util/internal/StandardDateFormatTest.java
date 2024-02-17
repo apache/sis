@@ -26,7 +26,6 @@ import java.text.ParseException;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.date;
 
@@ -80,7 +79,6 @@ public final class StandardDateFormatTest extends TestCase {
      * @throws ParseException if an error occurred while parsing the date.
      */
     @Test
-    @DependsOnMethod("testToISO")
     public void testParse() throws ParseException {
         final long day = 1466985600000L;
         final StandardDateFormat f = new StandardDateFormat();
@@ -104,7 +102,6 @@ public final class StandardDateFormatTest extends TestCase {
      * Tests parsing a temporal object.
      */
     @Test
-    @DependsOnMethod("testParse")
     public void testParseBest() {
         final long day = 1466985600000L;
         assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60     )*1000),      StandardDateFormat.parseBest("2016-06-27T16:48Z"));
@@ -120,7 +117,6 @@ public final class StandardDateFormatTest extends TestCase {
      * Tests parsing a date as an instant, assuming UTC timezone if unspecified.
      */
     @Test
-    @DependsOnMethod("testParse")
     public void testParseInstant() {
         final long day = 1466985600000L;
         assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60     )*1000),      StandardDateFormat.parseInstantUTC("2016-06-27T16:48Z"));

@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 
@@ -138,7 +137,6 @@ public final class DefaultGeographicBoundingBoxTest extends TestCase {
      * Tests {@link DefaultGeographicBoundingBox#add(GeographicBoundingBox)}.
      */
     @Test
-    @DependsOnMethod("testNormalize")
     public void testAdd() {
         testOperation(true);
     }
@@ -147,7 +145,6 @@ public final class DefaultGeographicBoundingBoxTest extends TestCase {
      * Tests {@link DefaultGeographicBoundingBox#intersect(GeographicBoundingBox)}.
      */
     @Test
-    @DependsOnMethod("testNormalize")
     public void testIntersect() {
         testOperation(false);
     }

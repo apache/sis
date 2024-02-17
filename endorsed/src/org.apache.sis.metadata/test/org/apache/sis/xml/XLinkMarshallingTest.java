@@ -29,7 +29,6 @@ import org.apache.sis.util.ComparisonMode;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
@@ -40,7 +39,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({XLinkTest.class, NilReasonMarshallingTest.class})
 public final class XLinkMarshallingTest extends TestCase {
     /**
      * A XML with a {@code xlink:href} without element definition.

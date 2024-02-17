@@ -36,8 +36,6 @@ import static org.apache.sis.referencing.operation.projection.ConformalProjectio
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 
 // Specific to the main branch:
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -52,7 +50,6 @@ import static org.apache.sis.test.GeoapiAssert.PENDING_NEXT_GEOAPI_RELEASE;
  * @author  Simon Reynard (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  */
-@DependsOn(ConformalProjectionTest.class)
 public final class MercatorTest extends MapProjectionTestCase {
     /**
      * Creates a new test case.
@@ -86,7 +83,6 @@ public final class MercatorTest extends MapProjectionTestCase {
      * @see LambertConicConformalTest#testNormalizedWKT()
      */
     @Test
-    @DependsOnMethod("verifyDegreesToUnity")
     public void testNormalizedWKT() throws NoninvertibleTransformException {
         createNormalizedProjection(true);
         assertWktEquals("PARAM_MT[“Mercator (radians domain)”,\n" +
@@ -105,7 +101,6 @@ public final class MercatorTest extends MapProjectionTestCase {
      * @throws NoninvertibleTransformException if the transform cannot be inverted.
      */
     @Test
-    @DependsOnMethod("testNormalizedWKT")
     public void testCompleteWKT() throws FactoryException, NoninvertibleTransformException {
         createCompleteProjection(new Mercator1SP(),
                 WGS84_A,    // Semi-major axis length
@@ -173,7 +168,6 @@ public final class MercatorTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
-    @DependsOnMethod("testSpecialLatitudes")
     public void testDerivative() throws TransformException {
         if (transform == null) {                                // May have been initialized by 'testSphericalCase'.
             createNormalizedProjection(true);                   // Elliptical case
@@ -193,7 +187,6 @@ public final class MercatorTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a coordinate.
      */
     @Test
-    @DependsOnMethod({"testSpecialLatitudes", "testDerivative"})
     public void testMercator1SP() throws FactoryException, TransformException {
         createGeoApiTest(new Mercator1SP()).testMercator1SP();
     }
@@ -206,7 +199,6 @@ public final class MercatorTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a coordinate.
      */
     @Test
-    @DependsOnMethod("testMercator1SP")
     public void testMercator2SP() throws FactoryException, TransformException {
         createGeoApiTest(new Mercator2SP()).testMercator2SP();
     }
@@ -219,7 +211,6 @@ public final class MercatorTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a coordinate.
      */
     @Test
-    @DependsOnMethod("testMercator2SP")
     public void testRegionalMercator() throws FactoryException, TransformException {
         assumeTrue(PENDING_NEXT_GEOAPI_RELEASE);   // Test not available in GeoAPI 3.0
     }
@@ -232,7 +223,6 @@ public final class MercatorTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a coordinate.
      */
     @Test
-    @DependsOnMethod("testMercator1SP")
     public void testMercatorSpherical() throws FactoryException, TransformException {
         assumeTrue(PENDING_NEXT_GEOAPI_RELEASE);   // Test not available in GeoAPI 3.0
     }
@@ -245,7 +235,6 @@ public final class MercatorTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a coordinate.
      */
     @Test
-    @DependsOnMethod("testMercatorSpherical")
     public void testPseudoMercator() throws FactoryException, TransformException {
         createGeoApiTest(new PseudoMercator()).testPseudoMercator();
     }
@@ -258,7 +247,6 @@ public final class MercatorTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a coordinate.
      */
     @Test
-    @DependsOnMethod("testMercator1SP")
     public void testMiller() throws FactoryException, TransformException {
         createGeoApiTest(new MillerCylindrical()).testMiller();
     }
@@ -272,7 +260,6 @@ public final class MercatorTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a coordinate.
      */
     @Test
-    @DependsOnMethod("testMercatorSpherical")
     public void testAuthalicLatitudeConversion() throws FactoryException, TransformException {
         final double[] source = {-100.33333333333333, 24.381786944444446};
         final double[] target = {
@@ -293,7 +280,6 @@ public final class MercatorTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a coordinate.
      */
     @Test
-    @DependsOnMethod("testPseudoMercator")
     public void testMercatorAuxiliarySphere() throws FactoryException, TransformException {
         tolerance = Formulas.LINEAR_TOLERANCE;
         for (int type = 0; type <= AuthalicMercator.TYPE; type++) {
@@ -335,7 +321,6 @@ public final class MercatorTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a coordinate.
      */
     @Test
-    @DependsOnMethod({"testSpecialLatitudes", "testDerivative"})
     public void testSphericalCase() throws FactoryException, TransformException {
         createNormalizedProjection(false);          // Spherical case
         testSpecialLatitudes();
@@ -354,7 +339,6 @@ public final class MercatorTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a coordinate.
      */
     @Test
-    @DependsOnMethod("testSphericalCase")
     public void compareEllipticalWithSpherical() throws FactoryException, TransformException {
         createCompleteProjection(new Mercator1SP(),
                 6371007,    // Semi-major axis length

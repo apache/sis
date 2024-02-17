@@ -32,7 +32,6 @@ import org.apache.sis.storage.base.MemoryFeatureSet;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
 // Specific to the main branch:
@@ -303,7 +302,6 @@ public final class JoinFeatureSetTest extends TestCase {
      * @throws DataStoreException if an error occurred while creating the feature set.
      */
     @Test
-    @DependsOnMethod({"testInnerJoin", "testOuterLeft", "testOuterRight"})
     public void testParallelization() throws DataStoreException {
         parallel = true;
         testInnerJoin();

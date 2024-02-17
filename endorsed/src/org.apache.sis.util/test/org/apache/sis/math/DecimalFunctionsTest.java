@@ -25,8 +25,6 @@ import static org.apache.sis.math.DecimalFunctions.*;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 
 
@@ -35,7 +33,6 @@ import org.apache.sis.test.TestUtilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(org.apache.sis.util.internal.NumericsTest.class)
 public final class DecimalFunctionsTest extends TestCase {
     /**
      * Creates a new test case.
@@ -60,7 +57,6 @@ public final class DecimalFunctionsTest extends TestCase {
      * since the former will delegate to the latter in this test.
      */
     @Test
-    @DependsOnMethod("testConstants")
     public void testPow10() {
         for (int i=EXPONENT_FOR_ZERO; i<=EXPONENT_FOR_MAX; i++) { // Range of allowed exponents in base 10.
             assertEquals(parseDouble("1E"+i), pow10(i));
@@ -72,7 +68,6 @@ public final class DecimalFunctionsTest extends TestCase {
      * Tests {@link DecimalFunctions#floatToDouble(float)}.
      */
     @Test
-    @DependsOnMethod("testPow10")
     public void testFloatToDouble() {
         assertEquals(NaN,               floatToDouble(Float.NaN));
         assertEquals(POSITIVE_INFINITY, floatToDouble(Float.POSITIVE_INFINITY));
@@ -105,7 +100,6 @@ public final class DecimalFunctionsTest extends TestCase {
      * This method uses {@link BigDecimal} as the reference implementation.
      */
     @Test
-    @DependsOnMethod("testPow10")
     public void testDeltaForDoubleToDecimal() {
         assertEquals(0, deltaForDoubleToDecimal(0));
         assertEquals(0, deltaForDoubleToDecimal(1), 0);     // Δ=0 for ignoring the sign of ±0.
@@ -175,7 +169,6 @@ public final class DecimalFunctionsTest extends TestCase {
      * Tests {@link DecimalFunctions#fractionDigitsForDelta(double, boolean)}.
      */
     @Test
-    @DependsOnMethod("testPow10")
     public void testFractionDigitsForDelta() {
         assertEquals(3, fractionDigitsForDelta(0.001, true));
         assertEquals(3, fractionDigitsForDelta(0.009, true));
@@ -256,7 +249,6 @@ public final class DecimalFunctionsTest extends TestCase {
      * Tests {@link DecimalFunctions#fractionDigitsForValue(double, int)}.
      */
     @Test
-    @DependsOnMethod("testFractionDigitsForValue")
     public void testFractionDigitsForValue2() {
         assertEquals(-EXPONENT_FOR_ZERO, fractionDigitsForValue(0, 2));
         assertEquals(0, fractionDigitsForValue(POSITIVE_INFINITY,  2));

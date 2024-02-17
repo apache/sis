@@ -25,7 +25,6 @@ import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 
 // Specific to the main branch:
 import org.junit.jupiter.api.Disabled;
@@ -37,7 +36,6 @@ import org.junit.jupiter.api.Disabled;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(ProjectiveTransformTest.class)
 public final class LinearTransformTest extends ProjectiveTransformTest {
     /**
      * Creates a new test suite.

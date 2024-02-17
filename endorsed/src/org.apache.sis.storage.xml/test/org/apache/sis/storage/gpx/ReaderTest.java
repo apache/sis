@@ -36,8 +36,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.test.TestUtilities.getSingleton;
@@ -54,7 +52,6 @@ import org.apache.sis.feature.AbstractFeature;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(MetadataTest.class)
 public final class ReaderTest extends TestCase {
     /**
      * The provider shared by all data stores created in this test class.
@@ -227,7 +224,6 @@ public final class ReaderTest extends TestCase {
      * @throws DataStoreException if reader failed to be created or failed at reading.
      */
     @Test
-    @DependsOnMethod("testMetadata100")
     public void testWayPoint100() throws DataStoreException {
         try (Store reader = create(TestData.V1_0, TestData.WAYPOINT)) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
@@ -248,7 +244,6 @@ public final class ReaderTest extends TestCase {
      * @throws DataStoreException if reader failed to be created or failed at reading.
      */
     @Test
-    @DependsOnMethod("testMetadata110")
     public void testWayPoint110() throws DataStoreException {
         try (Store reader = create(TestData.V1_1, TestData.WAYPOINT)) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
@@ -269,7 +264,6 @@ public final class ReaderTest extends TestCase {
      * @throws DataStoreException if reader failed to be created or failed at reading.
      */
     @Test
-    @DependsOnMethod("testWayPoint100")
     public void testRoute100() throws DataStoreException {
         try (Store reader = create(TestData.V1_0, TestData.ROUTE)) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
@@ -289,7 +283,6 @@ public final class ReaderTest extends TestCase {
      * @throws DataStoreException if reader failed to be created or failed at reading.
      */
     @Test
-    @DependsOnMethod("testWayPoint110")
     public void testRoute110() throws DataStoreException {
         try (Store reader = create(TestData.V1_1, TestData.ROUTE)) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
@@ -376,7 +369,6 @@ public final class ReaderTest extends TestCase {
      * @throws DataStoreException if reader failed to be created or failed at reading.
      */
     @Test
-    @DependsOnMethod("testRoute100")
     public void testTrack100() throws DataStoreException {
         try (Store reader = create(TestData.V1_0, TestData.TRACK)) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
@@ -396,7 +388,6 @@ public final class ReaderTest extends TestCase {
      * @throws DataStoreException if reader failed to be created or failed at reading
      */
     @Test
-    @DependsOnMethod("testRoute110")
     public void testTrack110() throws DataStoreException {
         try (Store reader = create(TestData.V1_1, TestData.TRACK)) {
             verifyAlmostEmptyMetadata((Metadata) reader.getMetadata());
@@ -562,7 +553,6 @@ public final class ReaderTest extends TestCase {
      * @throws DataStoreException if reader failed to be created or failed at reading.
      */
     @Test
-    @DependsOnMethod("testRoute110")
     public void testRouteSkipMetadata() throws DataStoreException {
         try (Store reader = create(TestData.V1_1, TestData.ROUTE)) {
             verifyRoute110(reader);
@@ -588,7 +578,6 @@ public final class ReaderTest extends TestCase {
      * @throws DataStoreException if reader failed to be created or failed at reading.
      */
     @Test
-    @DependsOnMethod("testRouteSkipMetadata")
     public void testSequentialReads() throws DataStoreException {
         final Metadata md;
         try (Store reader = createFromURL()) {
@@ -616,7 +605,6 @@ public final class ReaderTest extends TestCase {
      * @throws DataStoreException if reader failed to be created or failed at reading.
      */
     @Test
-    @DependsOnMethod("testSequentialReads")
     public void testConcurrentReads() throws DataStoreException {
         try (Store reader = createFromURL()) {
             final Stream<AbstractFeature>   f1 = reader.features(false);

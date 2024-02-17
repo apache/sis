@@ -27,8 +27,6 @@ import org.apache.sis.io.wkt.Convention;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
@@ -43,10 +41,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    DefaultGeodeticCRSTest.class,
-    DefaultVerticalCRSTest.class
-})
 public final class DefaultGeographicCRSTest extends TestCase {
     /**
      * Creates a new test case.
@@ -158,7 +152,6 @@ public final class DefaultGeographicCRSTest extends TestCase {
      * Tests WKT 2 formatting.
      */
     @Test
-    @DependsOnMethod("testWKT1")
     public void testWKT2() {
         assertWktEquals(Convention.WKT2,
                 "GEODCRS[“WGS 84”,\n" +
@@ -183,7 +176,6 @@ public final class DefaultGeographicCRSTest extends TestCase {
      * @see #testWKT1_For3D()
      */
     @Test
-    @DependsOnMethod("testWKT2")
     public void testWKT2_For3D() {
         assertWktEquals(Convention.WKT2,
                 "GEODCRS[“WGS 84 (3D)”,\n" +
@@ -203,7 +195,6 @@ public final class DefaultGeographicCRSTest extends TestCase {
      * Tests WKT 2 simplified formatting.
      */
     @Test
-    @DependsOnMethod("testWKT2")
     public void testWKT2_Simplified() {
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "GeodeticCRS[“WGS 84”,\n" +
@@ -222,7 +213,6 @@ public final class DefaultGeographicCRSTest extends TestCase {
      * Tests WKT 2 internal formatting.
      */
     @Test
-    @DependsOnMethod("testWKT2")
     public void testWKT2_Internal() {
         assertWktEquals(Convention.INTERNAL,
                 "GeodeticCRS[“WGS 84”,\n" +
@@ -247,7 +237,6 @@ public final class DefaultGeographicCRSTest extends TestCase {
      * since EPSG defines (<var>latitude</var>, <var>longitude</var>) in grads.</p>
      */
     @Test
-    @DependsOnMethod("testWKT2")
     public void testWKT2_ForNonGreenwich() {
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "GeodeticCRS[“NTF (Paris)”,\n" +
@@ -268,7 +257,6 @@ public final class DefaultGeographicCRSTest extends TestCase {
      * since EPSG defines (<var>latitude</var>, <var>longitude</var>) in grads.</p>
      */
     @Test
-    @DependsOnMethod("testWKT2")
     public void testWKT1_ForNonGreenwich() {
         assertWktEquals(Convention.WKT1,
                 "GEOGCS[“NTF (Paris)”,\n" +
@@ -287,7 +275,6 @@ public final class DefaultGeographicCRSTest extends TestCase {
      * This is a violation of OGC 01-009 and ISO 19162 standards, but is required for compatibility with GDAL.
      */
     @Test
-    @DependsOnMethod("testWKT2_ForNonGreenwich")
     public void testWKT1_WithCommonUnits() {
         assertWktEquals(Convention.WKT1_COMMON_UNITS,
                 "GEOGCS[“NTF (Paris)”,\n" +
@@ -310,7 +297,6 @@ public final class DefaultGeographicCRSTest extends TestCase {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-317">SIS-317</a>
      */
     @Test
-    @DependsOnMethod("testWKT1")
     public void testWKT1_For3D() {
         assertWktEquals(Convention.WKT1,
                 "COMPD_CS[“WGS 84 (3D)”,\n" +

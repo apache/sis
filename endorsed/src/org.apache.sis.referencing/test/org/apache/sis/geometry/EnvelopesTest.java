@@ -44,8 +44,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.referencing.operation.HardCodedConversions;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 
@@ -57,10 +55,6 @@ import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
  */
-@DependsOn({
-    GeneralEnvelopeTest.class,
-    CurveExtremumTest.class
-})
 public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
     /**
      * Creates a new test case.
@@ -201,7 +195,6 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
      * @throws TransformException if an error occurred while transforming the envelope.
      */
     @Test
-    @DependsOnMethod("testAxisRangeChange")
     public void testAxisRangeChange3D() throws FactoryException, TransformException {
         testAxisRangeChange3D(HardCodedCRS.WGS84);
     }
@@ -215,7 +208,6 @@ public final class EnvelopesTest extends TransformTestCase<GeneralEnvelope> {
      * @throws TransformException if an error occurred while transforming the envelope.
      */
     @Test
-    @DependsOnMethod("testAxisRangeChange3D")
     public void testAxisRangeChangeWithDatumShift() throws FactoryException, TransformException {
         testAxisRangeChange3D(HardCodedCRS.SPHERE);
     }

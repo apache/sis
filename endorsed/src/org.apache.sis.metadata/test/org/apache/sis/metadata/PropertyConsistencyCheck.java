@@ -31,7 +31,6 @@ import org.apache.sis.metadata.internal.Dependencies;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.xml.test.AnnotationConsistencyCheck;
 
@@ -51,7 +50,6 @@ import org.apache.sis.xml.test.AnnotationConsistencyCheck;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(PropertyAccessorTest.class)
 public abstract class PropertyConsistencyCheck extends AnnotationConsistencyCheck {
     /**
      * The standard implemented by the metadata objects to test.

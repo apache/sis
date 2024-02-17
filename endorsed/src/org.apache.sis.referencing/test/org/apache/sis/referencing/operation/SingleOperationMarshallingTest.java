@@ -47,8 +47,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.opengis.test.Validators;
 import org.apache.sis.xml.bind.referencing.CC_OperationParameterGroupTest;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
@@ -64,11 +62,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    DefaultOperationMethodTest.class,
-    CC_OperationParameterGroupTest.class,
-    org.apache.sis.parameter.ParameterMarshallingTest.class
-})
 public final class SingleOperationMarshallingTest extends TestCase {
     /**
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
@@ -172,7 +165,6 @@ public final class SingleOperationMarshallingTest extends TestCase {
      * @throws JAXBException if an error occurred during marshalling or unmarshalling.
      */
     @Test
-    @DependsOnMethod("testOperationMethod")
     public void testConversionUnmarshalling() throws JAXBException {
         final DefaultConversion c = unmarshalFile(DefaultConversion.class, openTestFile(false));
         assertEquals("World Mercator", c.getName().getCode(), "name");
@@ -237,7 +229,6 @@ public final class SingleOperationMarshallingTest extends TestCase {
      * @throws JAXBException if an error occurred during marshalling or unmarshalling.
      */
     @Test
-    @DependsOnMethod("testConversionUnmarshalling")
     public void testTransformationUnmarshalling() throws JAXBException {
         final DefaultTransformation c = unmarshalFile(DefaultTransformation.class, openTestFile(true));
         assertEquals("NTF (Paris) to NTF (1)", c.getName().getCode(), "name");

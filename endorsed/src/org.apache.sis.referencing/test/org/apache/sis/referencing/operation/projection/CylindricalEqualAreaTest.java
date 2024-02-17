@@ -27,7 +27,6 @@ import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.apache.sis.test.DependsOnMethod;
 
 
 /**
@@ -91,7 +90,6 @@ public final class CylindricalEqualAreaTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
-    @DependsOnMethod("testEllipsoidal")
     public void testSpherical() throws FactoryException, TransformException {
         createCompleteProjection(new LambertCylindricalEqualArea(),
                 6371007,    // Semi-major axis length
@@ -123,7 +121,6 @@ public final class CylindricalEqualAreaTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
-    @DependsOnMethod("testSpherical")
     public void testSphericalWithConformalSphereRadius() throws FactoryException, TransformException {
         createCompleteProjection(new LambertCylindricalEqualAreaSpherical(),
                 WGS84_A,    // Semi-major axis length

@@ -28,8 +28,6 @@ import static org.apache.sis.referencing.operation.projection.NormalizedProjecti
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.referencing.TransformTestCase;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
 
 
@@ -38,7 +36,6 @@ import org.apache.sis.test.TestUtilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(NormalizedProjectionTest.class)
 public final class ConformalProjectionTest extends TransformTestCase {
     /**
      * Natural logarithm of the pseudo-infinity as returned by Mercator formulas in the spherical
@@ -97,7 +94,6 @@ public final class ConformalProjectionTest extends TransformTestCase {
      *   Inverse:  φ = φ(exp(-y))</pre>
      */
     @Test
-    @DependsOnMethod("verifyMath")
     public void verifyNorthingKnownValues() {
         verifyNorthingKnownValues(false);                       // Spherical case
         verifyNorthingKnownValues(true);                        // Ellipsoidal case
@@ -173,7 +169,6 @@ public final class ConformalProjectionTest extends TransformTestCase {
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
-    @DependsOnMethod("verifyNorthingKnownValues")
     public void test_dy_dφ() throws TransformException {
         test_dy_dφ(false);                                      // Spherical case
         test_dy_dφ(true);                                       // Ellipsoidal case
@@ -220,7 +215,6 @@ public final class ConformalProjectionTest extends TransformTestCase {
      * @throws ProjectionException if an error occurred while projecting a point.
      */
     @Test
-    @DependsOnMethod("verifyNorthingKnownValues")
     public void test_φ() throws ProjectionException {
         test_φ(false);                                          // Spherical case
         test_φ(true);                                           // Ellipsoidal case

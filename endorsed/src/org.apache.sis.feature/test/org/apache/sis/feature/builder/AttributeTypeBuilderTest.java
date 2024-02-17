@@ -29,8 +29,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 // Specific to the main branch:
@@ -46,7 +44,6 @@ import org.apache.sis.feature.DefaultAttributeType;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  */
-@DependsOn(CharacteristicTypeBuilderTest.class)
 public final class AttributeTypeBuilderTest extends TestCase {
     /**
      * Creates a new test case.
@@ -79,7 +76,6 @@ public final class AttributeTypeBuilderTest extends TestCase {
      * Test creation of a single attribute with more values than the minimal ones.
      */
     @Test
-    @DependsOnMethod("testInitialization")
     public void testBuilder() {
         final AttributeTypeBuilder<String> builder = new FeatureTypeBuilder().addAttribute(String.class);
         assertSame(builder, builder.setName        ("myScope", "myName"));
@@ -108,7 +104,6 @@ public final class AttributeTypeBuilderTest extends TestCase {
      * This implies the replacement of the builder by a new instance.
      */
     @Test
-    @DependsOnMethod("testBuilder")
     public void testSetValueClass() {
         final AttributeTypeBuilder<Float> builder = new FeatureTypeBuilder().addAttribute(Float.class);
         assertSame(builder, builder.setName        ("temperature"));
@@ -157,7 +152,6 @@ public final class AttributeTypeBuilderTest extends TestCase {
      * Tests {@link AttributeTypeBuilder#setValidValues(Object...)} and the corresponding getter method.
      */
     @Test
-    @DependsOnMethod("testBuilder")
     public void testSetValidValues() {
         final AttributeTypeBuilder<String> builder = new FeatureTypeBuilder().addAttribute(String.class);
         assertEquals(0, builder.getValidValues().length);
@@ -173,7 +167,6 @@ public final class AttributeTypeBuilderTest extends TestCase {
      * together with the corresponding getter methods.
      */
     @Test
-    @DependsOnMethod("testBuilder")
     public void testOtherCharacteristics() {
         final AttributeTypeBuilder<String> builder = new FeatureTypeBuilder().addAttribute(String.class);
         assertNull(builder.getMaximalLength());
@@ -197,7 +190,6 @@ public final class AttributeTypeBuilderTest extends TestCase {
      * Tests {@link AttributeTypeBuilder#getCharacteristic(String)}.
      */
     @Test
-    @DependsOnMethod("testOtherCharacteristics")
     public void testGetCharacteristics() {
         final AttributeTypeBuilder<String> builder = new FeatureTypeBuilder().addAttribute(String.class);
         final CharacteristicTypeBuilder<Float> a = builder.addCharacteristic(Float.class).setName("a", "temp");
@@ -216,7 +208,6 @@ public final class AttributeTypeBuilderTest extends TestCase {
      * Tests {@link AttributeTypeBuilder#roles()}.
      */
     @Test
-    @DependsOnMethod("testOtherCharacteristics")
     public void testRoles() {
         final AttributeTypeBuilder<Geometry> builder = new FeatureTypeBuilder().addAttribute(Geometry.class);
         final Set<AttributeRole> roles = builder.roles();

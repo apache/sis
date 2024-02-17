@@ -31,8 +31,6 @@ import org.apache.sis.util.Version;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.storage.netcdf.classic.ChannelDecoderTest;
-import org.apache.sis.test.DependsOn;
 
 // Specific to the main branch:
 import org.apache.sis.storage.netcdf.base.TestData;
@@ -43,9 +41,6 @@ import org.apache.sis.storage.netcdf.base.TestData;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    ChannelDecoderTest.class
-})
 public final class NetcdfStoreProviderTest extends TestCase {
     /**
      * Creates a new test case.

@@ -24,8 +24,6 @@ import org.apache.sis.metadata.iso.extent.DefaultExtent;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -35,7 +33,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(LocationTypeTest.class)
 public final class ReferencingByIdentifiersTest extends TestCase {
     /**
      * Creates a new test case.
@@ -77,7 +74,6 @@ public final class ReferencingByIdentifiersTest extends TestCase {
      * Tests serialization.
      */
     @Test
-    @DependsOnMethod("testEquals")
     public void testSerialization() {
         assertSerializedEquals(create(true));
     }

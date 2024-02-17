@@ -25,8 +25,6 @@ import org.apache.sis.util.iso.DefaultNameFactory;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -38,7 +36,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(DefaultAttributeTypeTest.class)
 public final class DefaultFeatureTypeTest extends TestCase {
     /**
      * Creates a new test case.
@@ -240,7 +237,6 @@ public final class DefaultFeatureTypeTest extends TestCase {
      * with a multiplicity different than [0 … 0] and [1 … 1].
      */
     @Test
-    @DependsOnMethod("testSimple")
     public void testComplex() {
         final var identification = new HashMap<String,Object>();
         final DefaultAttributeType<String>  city       = DefaultAttributeTypeTest.city(identification);
@@ -290,7 +286,6 @@ public final class DefaultFeatureTypeTest extends TestCase {
      * Ensures that we cannot use two properties with the same name.
      */
     @Test
-    @DependsOnMethod("testSimple")
     public void testNameCollision() {
         final var city       = new DefaultAttributeType<>(name("name"),       String.class,  1, 1, null);
         final var cityId     = new DefaultAttributeType<>(name("name"),       Integer.class, 1, 1, null);
@@ -306,7 +301,6 @@ public final class DefaultFeatureTypeTest extends TestCase {
      * of the form {@code "head:tip"}.
      */
     @Test
-    @DependsOnMethod("testNameCollision")
     public void testQualifiedNames() {
         final var factory = DefaultNameFactory.provider();
         final var city = new DefaultAttributeType<>(
@@ -344,7 +338,6 @@ public final class DefaultFeatureTypeTest extends TestCase {
      * Tests two names having the same tip, but where only one of the two names have a namespace.
      */
     @Test
-    @DependsOnMethod("testQualifiedNames")
     public void testQualifiedAndUnqualifiedNames() {
         final var factory = DefaultNameFactory.provider();
         final var a1 = new DefaultAttributeType<>(
@@ -387,7 +380,6 @@ public final class DefaultFeatureTypeTest extends TestCase {
      * <p>Current implementation performs its tests on the {@link #capital()} feature.</p>
      */
     @Test
-    @DependsOnMethod({"testComplex", "testEquals"})
     public void testInheritance() {
         final DefaultFeatureType city    = city();      // Tested by 'testSimple()'.
         final DefaultFeatureType capital = capital();
@@ -416,7 +408,6 @@ public final class DefaultFeatureTypeTest extends TestCase {
      * Tests the inheritance of 2 types having the same common parent.
      */
     @Test
-    @DependsOnMethod("testInheritance")
     public void testMultiInheritance() {
         final DefaultFeatureType metropolis   = metropolis();
         final DefaultFeatureType capital      = capital();      // Tested by 'testComplex()'.
@@ -456,7 +447,6 @@ public final class DefaultFeatureTypeTest extends TestCase {
      * Tests inheritance with a property that override another property with a more specific type.
      */
     @Test
-    @DependsOnMethod({"testMultiInheritance", "testNameCollision"})
     public void testPropertyOverride() {
         final DefaultFeatureType metropolis     = metropolis();
         final DefaultFeatureType universityCity = universityCity();
@@ -496,7 +486,6 @@ public final class DefaultFeatureTypeTest extends TestCase {
      * should be completely omitted.
      */
     @Test
-    @DependsOnMethod("testPropertyOverride")
     public void testPropertyDuplication() {
         DefaultFeatureType city = city();
         city = new DefaultFeatureType(name("New-City"),
@@ -510,7 +499,6 @@ public final class DefaultFeatureTypeTest extends TestCase {
      * Tests {@link DefaultFeatureType#equals(Object)}.
      */
     @Test
-    @DependsOnMethod("testSimple")
     public void testEquals() {
         final DefaultFeatureType city = city();
         assertTrue (city.equals(city()));
@@ -521,7 +509,6 @@ public final class DefaultFeatureTypeTest extends TestCase {
      * Tests serialization.
      */
     @Test
-    @DependsOnMethod({"testInheritance", "testEquals"})
     public void testSerialization() {
         assertPropertiesEquals(assertSerializedEquals(capital()), true, "city", "population", "parliament");
     }

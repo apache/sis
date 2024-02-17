@@ -26,7 +26,6 @@ import javax.imageio.stream.ImageOutputStream;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 
 
@@ -130,7 +129,6 @@ public final class ChannelDataOutputTest extends ChannelDataTestCase {
      * @throws IOException should never happen since we read and write in memory only.
      */
     @Test
-    @DependsOnMethod("testAllWriteMethods")
     public void testWriteAndSeek() throws IOException {
         initialize("testWriteAndSeek", STREAM_LENGTH, randomBufferCapacity());
         writeInStreams();
@@ -156,7 +154,6 @@ public final class ChannelDataOutputTest extends ChannelDataTestCase {
      * @throws IOException should never happen since we read and write in memory only.
      */
     @Test
-    @DependsOnMethod("testWriteAndSeek")
     public void testSeekAhead() throws IOException {
         testSeekAhead(true);
         testSeekAhead(false);
@@ -364,7 +361,6 @@ public final class ChannelDataOutputTest extends ChannelDataTestCase {
      * @throws IOException should never happen since we read and write in memory only.
      */
     @Test
-    @DependsOnMethod("testMarkAndReset")
     public void testFlushBefore() throws IOException {
         final int N = 50; // Number of long values to write.
         initialize("testFlushBefore", N*Long.BYTES, 200);

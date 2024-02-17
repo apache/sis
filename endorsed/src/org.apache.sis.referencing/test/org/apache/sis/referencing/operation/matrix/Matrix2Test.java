@@ -21,7 +21,6 @@ import static org.apache.sis.referencing.operation.matrix.Matrix2.SIZE;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -30,7 +29,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(SolverTest.class)
 public final class Matrix2Test extends MatrixTestCase {
     /**
      * Creates a new test case.

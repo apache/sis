@@ -23,7 +23,6 @@ import org.apache.sis.referencing.operation.provider.MapProjection;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Disabled;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -31,7 +30,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(NormalizedProjectionTest.class)
 public final class ModifiedAzimuthalEquidistantTest extends AzimuthalEquidistantTest {
     /**
      * Creates a new test case.

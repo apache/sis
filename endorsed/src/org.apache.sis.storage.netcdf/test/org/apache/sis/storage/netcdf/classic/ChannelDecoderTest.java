@@ -27,7 +27,6 @@ import org.apache.sis.setup.GeometryLibrary;
 
 // Test dependencies
 import org.apache.sis.storage.netcdf.base.DecoderTest;
-import org.apache.sis.test.DependsOn;
 
 // Specific to the main branch:
 import org.apache.sis.storage.netcdf.base.TestData;
@@ -39,7 +38,6 @@ import org.apache.sis.storage.netcdf.base.TestData;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(DecoderTest.class)
 public final class ChannelDecoderTest extends DecoderTest {
     /**
      * Creates a new test case.

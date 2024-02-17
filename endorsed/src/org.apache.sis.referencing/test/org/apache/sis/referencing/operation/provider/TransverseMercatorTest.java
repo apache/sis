@@ -22,7 +22,6 @@ import org.apache.sis.util.internal.Constants;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
 
@@ -70,10 +69,6 @@ public final class TransverseMercatorTest extends TestCase {
      * followed by {@link TransverseMercator.Zoner#zone(ParameterValueGroup)}.
      */
     @Test
-    @DependsOnMethod({
-        "testZone",
-        "testCentralMeridian"
-    })
     public void testSetParameters() {
         final ParameterValueGroup p = TransverseMercator.PARAMETERS.createValue();
         assertEquals("UTM zone 10N", TransverseMercator.Zoner.UTM.setParameters(p, 0, -122));

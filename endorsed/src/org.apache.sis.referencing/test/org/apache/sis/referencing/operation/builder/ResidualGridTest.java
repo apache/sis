@@ -24,7 +24,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
 // Specific to the main branch:
@@ -92,7 +91,6 @@ public final class ResidualGridTest extends TestCase {
      * @throws TransformException if an error occurred while transforming a coordinate.
      */
     @Test
-    @DependsOnMethod("testGetCellValue")
     public void testInterpolateAtExactLocation() throws TransformException {
         assertArrayEquals(new double[] {0, 2}, grid.interpolateAt(0, 0));
         assertArrayEquals(new double[] {1, 2}, grid.interpolateAt(1, 0));
@@ -108,7 +106,6 @@ public final class ResidualGridTest extends TestCase {
      * @throws TransformException if an error occurred while transforming a coordinate.
      */
     @Test
-    @DependsOnMethod("testInterpolateAtExactLocation")
     public void testInterpolateAtIntersection() throws TransformException {
         assertArrayEquals(new double[] {1,    2.25}, grid.interpolateAt(0.5, 0.5));
         assertArrayEquals(new double[] {1.5,  1.5 }, grid.interpolateAt(1.5, 0.5));
@@ -124,7 +121,6 @@ public final class ResidualGridTest extends TestCase {
      * @throws TransformException if an error occurred while transforming a coordinate.
      */
     @Test
-    @DependsOnMethod("testInterpolateAtIntersection")
     public void testInterpolateAt() throws TransformException {
         assertArrayEquals(new double[] {0.25,  2   }, grid.interpolateAt(0.25, 0   ));
         assertArrayEquals(new double[] {1.75,  1.25}, grid.interpolateAt(1.75, 0   ));
@@ -145,7 +141,6 @@ public final class ResidualGridTest extends TestCase {
      * (so the total increase is 3), and the <var>y</var> position is increased from (3-4) = -1.
      */
     @Test
-    @DependsOnMethod("testGetCellValue")
     public void testDerivativeInCell() {
         final Matrix expected = new Matrix2(3, 1, -1, 1);
         final Matrix actual = grid.derivativeInCell(0.5, 2.5);

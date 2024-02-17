@@ -27,8 +27,6 @@ import org.apache.sis.util.internal.DoubleDouble;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.TestCase.STRICT;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 
 // Specific to the main branch:
 import org.apache.sis.test.GeoapiAssert;
@@ -39,7 +37,6 @@ import org.apache.sis.test.GeoapiAssert;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(AbstractMathTransformTest.class)
 public final class TranslationTransformTest extends MathTransformTestCase {
     /**
      * Creates a new test case.
@@ -85,7 +82,6 @@ public final class TranslationTransformTest extends MathTransformTestCase {
      * Verifies that {@link TranslationTransform} stores the numbers with their extended precision.
      */
     @Test
-    @DependsOnMethod("testConstantDimension")
     public void testExtendedPrecision() {
         final Number O = 0;
         final Number l = 1;

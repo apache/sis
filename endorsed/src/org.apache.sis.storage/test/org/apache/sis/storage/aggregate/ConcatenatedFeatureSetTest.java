@@ -29,7 +29,6 @@ import org.apache.sis.storage.base.MemoryFeatureSet;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertContentInfoEquals;
 import static org.apache.sis.metadata.Assertions.assertFeatureSourceEquals;
@@ -86,7 +85,6 @@ public final class ConcatenatedFeatureSetTest extends TestCase {
      * @throws DataStoreException if an error occurred while concatenating the feature sets.
      */
     @Test
-    @DependsOnMethod("testSameType")
     public void testCommonSuperType() throws DataStoreException {
         /*
          * First, we prepare two types sharing a common ancestor. We'll create two types using same properties,
@@ -154,7 +152,6 @@ public final class ConcatenatedFeatureSetTest extends TestCase {
      * Creation of {@link ConcatenatedFeatureSet} is expected to fail.
      */
     @Test
-    @DependsOnMethod("testCommonSuperType")
     public void noCommonType() {
         final FeatureTypeBuilder builder = new FeatureTypeBuilder();
         builder.setName("super");

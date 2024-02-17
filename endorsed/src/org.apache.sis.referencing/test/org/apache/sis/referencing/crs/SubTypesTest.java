@@ -21,7 +21,6 @@ import java.util.Arrays;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -30,7 +29,6 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(AbstractCRSTest.class)
 public final class SubTypesTest extends TestCase {
     /**
      * Creates a new test case.

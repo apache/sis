@@ -23,7 +23,6 @@ import org.apache.sis.xml.bind.cat.CodeListUID;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
 
@@ -68,7 +67,6 @@ public final class MeasureTest extends TestCase {
      * @throws URISyntaxException if the URI used by the test is invalid.
      */
     @Test
-    @DependsOnMethod("testGetUOM")
     public void testSetUOM() throws URISyntaxException {
         final Measure measure = new Measure();
         measure.setUOM("http://www.isotc211.org/2005/resources/uom/gmxUom.xml#m");

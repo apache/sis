@@ -36,7 +36,6 @@ import org.apache.sis.referencing.crs.AbstractCRS;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -46,7 +45,6 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(CommonAuthorityFactoryTest.class)
 public final class AuthorityFactoryProxyTest extends TestCase {
     /**
      * Creates a new test case.

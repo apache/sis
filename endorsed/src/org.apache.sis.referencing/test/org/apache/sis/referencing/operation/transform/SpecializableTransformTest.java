@@ -27,7 +27,6 @@ import org.apache.sis.geometry.Envelope2D;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 
 
 /**
@@ -99,7 +98,6 @@ public final class SpecializableTransformTest extends MathTransformTestCase {
      * @throws TransformException if a transformation failed.
      */
     @Test
-    @DependsOnMethod("testTransform")
     public void testTransform2D() throws TransformException {
         verifyNonAmbiguousPoints(true);
     }

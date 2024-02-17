@@ -22,7 +22,6 @@ import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
 
@@ -105,7 +104,6 @@ public abstract class AppenderTestCase extends TestCase {
      * @throws IOException should never happen since the tests will write in a buffer.
      */
     @Test
-    @DependsOnMethod("testCharsWithLF")
     public void testSequencesWithLF() throws IOException {
         run("\n");
     }
@@ -117,7 +115,6 @@ public abstract class AppenderTestCase extends TestCase {
      * @throws IOException should never happen since the tests will write in a buffer.
      */
     @Test
-    @DependsOnMethod("testCharsWithLF")
     public void testCharsWithCR() throws IOException {
         useSingleChars();
         run("\r");
@@ -130,7 +127,6 @@ public abstract class AppenderTestCase extends TestCase {
      * @throws IOException should never happen since the tests will write in a buffer.
      */
     @Test
-    @DependsOnMethod("testCharsWithCR")
     public void testSequencesWithCR() throws IOException {
         run("\r");
     }
@@ -142,7 +138,6 @@ public abstract class AppenderTestCase extends TestCase {
      * @throws IOException should never happen since the tests will write in a buffer.
      */
     @Test
-    @DependsOnMethod("testCharsWithCR")
     public void testCharsWithCRLF() throws IOException {
         useSingleChars();
         run("\r\n");
@@ -155,7 +150,6 @@ public abstract class AppenderTestCase extends TestCase {
      * @throws IOException should never happen since the tests will write in a buffer.
      */
     @Test
-    @DependsOnMethod("testCharsWithCRLF")
     public void testSequencesWithCRLF() throws IOException {
         run("\r\n");
     }
@@ -167,7 +161,6 @@ public abstract class AppenderTestCase extends TestCase {
      * @throws IOException should never happen since the tests will write in a buffer.
      */
     @Test
-    @DependsOnMethod("testCharsWithLF")
     public void testCharsWithUnicode() throws IOException {
         useSingleChars();
         run("\u2028");
@@ -180,7 +173,6 @@ public abstract class AppenderTestCase extends TestCase {
      * @throws IOException should never happen since the tests will write in a buffer.
      */
     @Test
-    @DependsOnMethod("testCharsWithUnicode")
     public void testSequencesWithUnicode() throws IOException {
         run("\u2028");
     }

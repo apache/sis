@@ -21,7 +21,6 @@ import org.opengis.metadata.extent.GeographicDescription;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
@@ -175,7 +174,6 @@ public final class LocationTypeTest extends TestCase {
      * but without explicit declaration of property that can be inherited from the parent.
      */
     @Test
-    @DependsOnMethod("testExample")
     public void testInheritance() {
         verify(create(true));
     }
@@ -184,7 +182,6 @@ public final class LocationTypeTest extends TestCase {
      * Tests the creation of an unmodifiable snapshot.
      */
     @Test
-    @DependsOnMethod("testInheritance")
     public void testSnapshot() {
         verify(ModifiableLocationType.snapshot(null, create(true)).toArray(AbstractLocationType[]::new));
     }
@@ -193,7 +190,6 @@ public final class LocationTypeTest extends TestCase {
      * Tests the string representation of location type.
      */
     @Test
-    @DependsOnMethod("testInheritance")
     public void testToString() {
         verifyToString(create(true)[0]);
     }
@@ -220,7 +216,6 @@ public final class LocationTypeTest extends TestCase {
      * Tests the equality and hash code value computation.
      */
     @Test
-    @DependsOnMethod("testToString")                // Because in case of failure, JUnit invokes toString().
     public void testEquals() {
         final ModifiableLocationType t1 = create(false)[0];
         final ModifiableLocationType t2 = create(true )[0];
@@ -234,7 +229,6 @@ public final class LocationTypeTest extends TestCase {
      * Tests serialization.
      */
     @Test
-    @DependsOnMethod("testEquals")
     public void testSerialization() {
         assertSerializedEquals(ModifiableLocationType.snapshot(null, create(true)));
     }
@@ -244,7 +238,6 @@ public final class LocationTypeTest extends TestCase {
      * This method attempts to add "town" as a child of "street".
      */
     @Test
-    @DependsOnMethod("testToString")
     public void testCheckForCycles() {
         final ModifiableLocationType[] types  = create(true);
         final ModifiableLocationType   town   = types[1];

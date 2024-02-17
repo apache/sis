@@ -43,8 +43,6 @@ import org.apache.sis.util.internal.Constants;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.test.Assertions.assertMessageContains;
@@ -59,11 +57,6 @@ import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn({
-  org.apache.sis.referencing.crs.DefaultGeodeticCRSTest.class,
-  org.apache.sis.referencing.datum.DefaultVerticalDatumTest.class,
-  StandardDefinitionsTest.class
-})
 public final class CommonCRSTest extends TestCase {
     /**
      * Length of a day in milliseconds.
@@ -145,7 +138,6 @@ public final class CommonCRSTest extends TestCase {
      * Tests the {@link CommonCRS#normalizedGeographic()} method.
      */
     @Test
-    @DependsOnMethod("testGeographic")
     public void testNormalizedGeographic() {
         final GeographicCRS geographic = CommonCRS.WGS84.geographic();
         final GeographicCRS normalized = CommonCRS.WGS84.normalizedGeographic();
@@ -165,7 +157,6 @@ public final class CommonCRSTest extends TestCase {
      * Tests the {@link CommonCRS#geographic3D()} method.
      */
     @Test
-    @DependsOnMethod("testGeographic")
     public void testGeographic3D() {
         final GeographicCRS crs = CommonCRS.WGS72.geographic3D();
         Validators.validate(crs);
@@ -185,7 +176,6 @@ public final class CommonCRSTest extends TestCase {
      * Tests the {@link CommonCRS#geocentric()} method.
      */
     @Test
-    @DependsOnMethod("testGeographic3D")
     public void testGeocentric() {
         final GeocentricCRS crs = CommonCRS.WGS72.geocentric();
         Validators.validate(crs);
@@ -205,7 +195,6 @@ public final class CommonCRSTest extends TestCase {
      * Tests the {@link CommonCRS#spherical()} method.
      */
     @Test
-    @DependsOnMethod("testGeographic3D")
     public void testSpherical() {
         final GeocentricCRS crs = CommonCRS.ETRS89.spherical();
         Validators.validate(crs);
@@ -343,7 +332,6 @@ public final class CommonCRSTest extends TestCase {
      * Tests {@link CommonCRS#universal(double, double)} with Universal Transverse Mercator (UTM) projections.
      */
     @Test
-    @DependsOnMethod("testGeographic")
     public void testUTM() {
         final ProjectedCRS crs = CommonCRS.WGS72.universal(-45, -122);
         assertEquals("WGS 72 / UTM zone 10S", crs.getName().getCode());
@@ -361,7 +349,6 @@ public final class CommonCRSTest extends TestCase {
      * Tests {@link CommonCRS#universal(double, double)} with Universal Polar Stereographic (UPS) projections.
      */
     @Test
-    @DependsOnMethod("testGeographic")
     public void testUPS() {
         final ProjectedCRS crs = CommonCRS.WGS72.universal(-85, -122);
         assertEquals("WGS 72 / Universal Polar Stereographic South", crs.getName().getCode());
@@ -381,7 +368,6 @@ public final class CommonCRSTest extends TestCase {
      * @sinc 0.8
      */
     @Test
-    @DependsOnMethod("testGeographic")
     public void testForDatum() {
         assertSame(CommonCRS.WGS84, CommonCRS.forDatum(CommonCRS.WGS84.geographic()));
         assertSame(CommonCRS.WGS72, CommonCRS.forDatum(CommonCRS.WGS72.geographic()));

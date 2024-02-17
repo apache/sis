@@ -35,8 +35,6 @@ import org.apache.sis.util.ComparisonMode;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -48,10 +46,6 @@ import static org.apache.sis.test.Assertions.assertMessageContains;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn({
-    DefaultParameterDescriptorGroupTest.class,
-    DefaultParameterValueTest.class
-})
 public final class DefaultParameterValueGroupTest extends TestCase {
     /**
      * The descriptors of parameters to be tested by this class.
@@ -145,7 +139,6 @@ public final class DefaultParameterValueGroupTest extends TestCase {
      * Tests {@code DefaultParameterValueGroup.values().clear()}.
      */
     @Test
-    @DependsOnMethod("testParameter")
     public void testValuesClear() {
         final DefaultParameterValueGroup  group  = createGroup(10);
         final List<GeneralParameterValue> values = group.values();
@@ -177,7 +170,6 @@ public final class DefaultParameterValueGroupTest extends TestCase {
      * Tests {@code DefaultParameterValueGroup.values().set(…)}.
      */
     @Test
-    @DependsOnMethod("testValuesGet")
     public void testValuesSet() {
         final DefaultParameterValueGroup  group  = new DefaultParameterValueGroup(descriptor);
         final List<GeneralParameterValue> values = group.values();
@@ -199,7 +191,6 @@ public final class DefaultParameterValueGroupTest extends TestCase {
      * Tests {@code DefaultParameterValueGroup.values().contains(…)}.
      */
     @Test
-    @DependsOnMethod("testValuesAddAll")
     public void testValuesContains() {
         final GeneralParameterValue[] positives = createValues(+10);
         final GeneralParameterValue[] negatives = createValues(-10);
@@ -214,7 +205,6 @@ public final class DefaultParameterValueGroupTest extends TestCase {
      * Tests {@code DefaultParameterValueGroup.values().addAll(…)}.
      */
     @Test
-    @DependsOnMethod("testValuesAdd")
     public void testValuesAddAll() {
         final DefaultParameterValueGroup  group  = new DefaultParameterValueGroup(descriptor);
         final List<GeneralParameterValue> values = group.values();
@@ -232,7 +222,6 @@ public final class DefaultParameterValueGroupTest extends TestCase {
      * Tests {@code DefaultParameterValueGroup.values().addAll(…)} with subgroups.
      */
     @Test
-    @DependsOnMethod({"testValuesAddAll", "testAddGroup", "testEqualsAndHashCode"})
     public void testValuesAddAllWithSubgroups() {
         final DefaultParameterDescriptorGroup group, subGroup;
         final List<GeneralParameterDescriptor> descriptors = new ArrayList<>(descriptor.descriptors());
@@ -287,7 +276,6 @@ public final class DefaultParameterValueGroupTest extends TestCase {
      * Tests that attempts to add an invalid parameter cause an {@link InvalidParameterNameException} to be thrown.
      */
     @Test
-    @DependsOnMethod("testValuesAdd")
     public void testValuesAddWrongParameter() {
         final DefaultParameterValueGroup    group = createGroup(10);
         final List<GeneralParameterValue>  values = group.values();
@@ -352,7 +340,6 @@ public final class DefaultParameterValueGroupTest extends TestCase {
      * remove a mandatory parameter causes an {@link InvalidParameterCardinalityException} to be thrown.
      */
     @Test
-    @DependsOnMethod("testValuesAddAll")
     public void testValuesRemove() {
         final GeneralParameterValue[]  negatives = createValues(-10);
         final DefaultParameterValueGroup   group = createGroup(10);
@@ -389,7 +376,6 @@ public final class DefaultParameterValueGroupTest extends TestCase {
      * Tests {@link #equals(Object)} and {@link #hashCode()} methods.
      */
     @Test
-    @DependsOnMethod("testValuesAddAll")
     public void testEqualsAndHashCode() {
         final DefaultParameterValueGroup g1 = createGroup( 10);
         final DefaultParameterValueGroup g2 = createGroup(-10);
@@ -404,7 +390,6 @@ public final class DefaultParameterValueGroupTest extends TestCase {
      * Tests {@link DefaultParameterValueGroup#equals(Object, ComparisonMode)}.
      */
     @Test
-    @DependsOnMethod("testEqualsAndHashCode")
     public void testEqualsIgnoreMetadata() {
         final DefaultParameterValueGroup g1 = createGroup(10);
         final DefaultParameterValueGroup g2 = new DefaultParameterValueGroup(g1.getDescriptor());

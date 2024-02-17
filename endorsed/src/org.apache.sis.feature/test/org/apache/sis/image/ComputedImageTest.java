@@ -29,7 +29,6 @@ import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.feature.Assertions.assertValuesEqual;
 
@@ -39,7 +38,6 @@ import static org.apache.sis.feature.Assertions.assertValuesEqual;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(PlanarImageTest.class)
 public final class ComputedImageTest extends TestCase {
     /**
      * Size of tiles in this test. The width should be different than the height

@@ -71,7 +71,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.DocumentComparator;
 import org.apache.sis.xml.test.TestCase;
 
@@ -88,9 +87,6 @@ import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;
  *
  * @see org.apache.sis.metadata.iso.DefaultMetadataTest
  */
-@DependsOn({
-    MetadataVerticalTest.class
-})
 public final class MetadataTest extends TestCase {
     /**
      * The resource file which contains an XML representation of a {@link Metadata} object.

@@ -34,8 +34,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
@@ -52,7 +50,6 @@ import org.apache.sis.feature.AbstractFeature;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({MetadataTest.class, ReaderTest.class})
 public final class WriterTest extends TestCase {
     /**
      * The provider shared by all data stores created in this test class.
@@ -158,7 +155,6 @@ public final class WriterTest extends TestCase {
      * @throws Exception if an error occurred while writing the XML data.
      */
     @Test
-    @DependsOnMethod("testMetadata100")
     public void testWayPoints100() throws Exception {
         testFeatures(TestData.V1_0, Type.WAY_POINT, TestData.WAYPOINT);
     }
@@ -170,7 +166,6 @@ public final class WriterTest extends TestCase {
      * @throws Exception if an error occurred while writing the XML data.
      */
     @Test
-    @DependsOnMethod("testMetadata110")
     public void testWayPoints110() throws Exception {
         testFeatures(TestData.V1_1, Type.WAY_POINT, TestData.WAYPOINT);
     }
@@ -182,7 +177,6 @@ public final class WriterTest extends TestCase {
      * @throws Exception if an error occurred while writing the XML data.
      */
     @Test
-    @DependsOnMethod("testWayPoints100")
     public void testRoutes100() throws Exception {
         testFeatures(TestData.V1_0, Type.ROUTE, TestData.ROUTE);
     }
@@ -194,7 +188,6 @@ public final class WriterTest extends TestCase {
      * @throws Exception if an error occurred while writing the XML data.
      */
     @Test
-    @DependsOnMethod("testWayPoints110")
     public void testRoutes110() throws Exception {
         testFeatures(TestData.V1_1, Type.ROUTE, TestData.ROUTE);
     }
@@ -206,7 +199,6 @@ public final class WriterTest extends TestCase {
      * @throws Exception if an error occurred while writing the XML data.
      */
     @Test
-    @DependsOnMethod("testRoutes100")
     public void testTracks100() throws Exception {
         testFeatures(TestData.V1_0, Type.TRACK, TestData.TRACK);
     }
@@ -218,7 +210,6 @@ public final class WriterTest extends TestCase {
      * @throws Exception if an error occurred while writing the XML data.
      */
     @Test
-    @DependsOnMethod("testRoutes110")
     public void testTracks110() throws Exception {
         testFeatures(TestData.V1_1, Type.TRACK, TestData.TRACK);
     }
@@ -371,7 +362,6 @@ public final class WriterTest extends TestCase {
      *         the test data or performing data store operation.
      */
     @Test
-    @DependsOnMethod("testRoutes110")
     public void testInputReplacement() throws Exception {
         final StorageConnector connector = new StorageConnector(
                 TestUtilities.createTemporaryFile(TestData.V1_1.openStream(TestData.METADATA), ".xml"));

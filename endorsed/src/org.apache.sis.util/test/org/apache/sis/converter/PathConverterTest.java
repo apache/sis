@@ -31,7 +31,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.PlatformDependent;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -41,7 +40,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(StringConverterTest.class)
 public final class PathConverterTest extends TestCase {
     /**
      * Creates a new test case.

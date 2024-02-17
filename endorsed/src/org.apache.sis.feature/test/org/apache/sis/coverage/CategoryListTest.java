@@ -31,8 +31,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 
 
 /**
@@ -40,7 +38,6 @@ import org.apache.sis.test.DependsOnMethod;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn(CategoryTest.class)
 public final class CategoryListTest extends TestCase {
     /**
      * Creates a new test case.
@@ -203,7 +200,6 @@ public final class CategoryListTest extends TestCase {
      * Tests the {@link CategoryList#search(double)} method.
      */
     @Test
-    @DependsOnMethod("testBinarySearch")
     public void testSearch() {
         final Category[] categories = categories();
         final CategoryList list = CategoryList.create(categories.clone(), null);
@@ -251,7 +247,6 @@ public final class CategoryListTest extends TestCase {
      * @throws TransformException if an error occurred while transforming a value.
      */
     @Test
-    @DependsOnMethod("testSearch")
     public void testTransform() throws TransformException {
         final Random random = TestUtilities.createRandomNumberGenerator();
         final CategoryList list = CategoryList.create(categories(), null);
@@ -341,7 +336,6 @@ public final class CategoryListTest extends TestCase {
      * @throws TransformException if an error occurred while transforming a value.
      */
     @Test
-    @DependsOnMethod("testTransform")
     public void testInverseTransform() throws TransformException {
         final int background = 2;   // Value not used by `categories()`.
         final CategoryList list = createInverseTransform(background);
@@ -378,7 +372,6 @@ public final class CategoryListTest extends TestCase {
      * @throws TransformException if an error occurred while transforming a value.
      */
     @Test
-    @DependsOnMethod("testInverseTransform")
     public void testInverseTransformFailure() throws TransformException {
         final CategoryList list = createInverseTransform(null);
         var e = assertThrows(TransformException.class, () -> list.transform(MathFunctions.toNanFloat(4)));

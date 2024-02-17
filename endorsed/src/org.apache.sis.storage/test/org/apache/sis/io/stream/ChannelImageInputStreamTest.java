@@ -29,7 +29,6 @@ import javax.imageio.stream.ImageInputStream;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -38,7 +37,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(ChannelDataInputTest.class)
 public final class ChannelImageInputStreamTest extends ChannelDataTestCase {
     /**
      * The implementation to test.

@@ -33,8 +33,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;
 import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 
@@ -49,11 +47,6 @@ import org.apache.sis.referencing.datum.HardCodedDatum;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  */
-@DependsOn({
-    CoordinateDomainTest.class,
-    ContextualParametersTest.class,
-    EllipsoidToCentricTransformTest.class   // Used as a reference implementation
-})
 public final class MolodenskyTransformTest extends MathTransformTestCase {
     /**
      * Creates a new test case.
@@ -111,7 +104,6 @@ public final class MolodenskyTransformTest extends MathTransformTestCase {
      * @throws TransformException if the transformation failed.
      */
     @Test
-    @DependsOnMethod("testAbridgedMolodenskyDerivative")
     public void testMolodenskyDerivative() throws FactoryException, TransformException {
         create(false);
         verifyDerivative( 0,  0,  0);
@@ -132,7 +124,6 @@ public final class MolodenskyTransformTest extends MathTransformTestCase {
      * @throws TransformException if the transformation failed.
      */
     @Test
-    @DependsOnMethod("testAbridgedMolodenskyDerivative")
     public void testAbridgedMolodensky() throws FactoryException, TransformException {
         create(true);
         final double[] sample   = GeocentricTranslationTest.samplePoint(1);
@@ -162,7 +153,6 @@ public final class MolodenskyTransformTest extends MathTransformTestCase {
      * @throws TransformException if the transformation failed.
      */
     @Test
-    @DependsOnMethod({"testAbridgedMolodensky", "testMolodenskyDerivative"})
     public void testMolodensky() throws FactoryException, TransformException {
         create(false);
         final double[] sample   = GeocentricTranslationTest.samplePoint(1);
@@ -189,7 +179,6 @@ public final class MolodenskyTransformTest extends MathTransformTestCase {
      * @throws TransformException if transformation of a point failed.
      */
     @Test
-    @DependsOnMethod("testMolodensky")
     public void testFranceGeocentricInterpolationPoint() throws FactoryException, TransformException {
         transform = MolodenskyTransform.createGeodeticTransformation(
                 DefaultMathTransformFactory.provider(),
@@ -220,7 +209,6 @@ public final class MolodenskyTransformTest extends MathTransformTestCase {
      * @throws TransformException if a transformation failed.
      */
     @Test
-    @DependsOnMethod("testMolodensky")
     public void testRandomPoints() throws FactoryException, TransformException {
         create(false);
         tolerance  = Formulas.LINEAR_TOLERANCE * 3;     // To be converted in degrees by ToleranceModifier.GEOGRAPHIC
@@ -239,7 +227,6 @@ public final class MolodenskyTransformTest extends MathTransformTestCase {
      * @throws TransformException if a transformation failed.
      */
     @Test
-    @DependsOnMethod("testRandomPoints")
     public void testProvider() throws FactoryException, TransformException {
         final MathTransformFactory factory = new MathTransformFactoryMock(new Molodensky());
         final ParameterValueGroup parameters = factory.getDefaultParameters("Molodenski");

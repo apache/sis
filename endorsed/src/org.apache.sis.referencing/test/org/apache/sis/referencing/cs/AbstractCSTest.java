@@ -26,8 +26,6 @@ import org.apache.sis.util.resources.Vocabulary;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -37,11 +35,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    org.apache.sis.referencing.AbstractIdentifiedObjectTest.class,
-    DefaultCoordinateSystemAxisTest.class,
-    NormalizerTest.class
-})
 public final class AbstractCSTest extends TestCase {
     /**
      * Creates a new test case.
@@ -98,7 +91,6 @@ public final class AbstractCSTest extends TestCase {
      * with a {@link AxesConvention#NORMALIZED} argument.
      */
     @Test
-    @DependsOnMethod("testForRightHandedConvention")
     public void testForNormalizedConvention() {
         /*
          * Some expected axes, identical to the ones in HardCodedAxes except for name or units.

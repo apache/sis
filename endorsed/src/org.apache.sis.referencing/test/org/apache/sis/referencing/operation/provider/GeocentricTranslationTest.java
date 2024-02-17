@@ -37,8 +37,6 @@ import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -46,13 +44,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    AffineTest.class,
-    org.apache.sis.referencing.operation.transform.ProjectiveTransformTest.class,
-    org.apache.sis.referencing.operation.transform.ConcatenatedTransformTest.class,
-    org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransformTest.class,
-    org.apache.sis.referencing.datum.BursaWolfParametersTest.class
-})
 public final class GeocentricTranslationTest extends MathTransformTestCase {
     /**
      * Creates a new test case.
@@ -257,7 +248,6 @@ public final class GeocentricTranslationTest extends MathTransformTestCase {
      * @throws TransformException if transformation of a point failed.
      */
     @Test
-    @DependsOnMethod("testGeocentricDomain")
     public void testGeographicDomain() throws FactoryException, TransformException {
         create(new GeocentricTranslation3D());
         assertFalse(transform instanceof LinearTransform);
@@ -276,7 +266,6 @@ public final class GeocentricTranslationTest extends MathTransformTestCase {
      * @throws TransformException if transformation of a point failed.
      */
     @Test
-    @DependsOnMethod("testGeographicDomain")
     public void testRandomPoints() throws FactoryException, TransformException {
         testGeographicDomain();                     // For creating the transform.
         tolerance = Formulas.LINEAR_TOLERANCE;
@@ -293,7 +282,6 @@ public final class GeocentricTranslationTest extends MathTransformTestCase {
      * @throws FactoryException if an error occurred while creating the transform.
      */
     @Test
-    @DependsOnMethod("testWKT3D")
     public void testWKT2D() throws FactoryException {
         create(new GeocentricTranslation2D());
         verifyWKT2D();
@@ -327,7 +315,6 @@ public final class GeocentricTranslationTest extends MathTransformTestCase {
      * @throws FactoryException if an error occurred while creating the transform.
      */
     @Test
-    @DependsOnMethod("testGeographicDomain")
     public void testWKT3D() throws FactoryException {
         create(new GeocentricTranslation3D());
         assertWktEquals("CONCAT_MT[\n" +
@@ -386,7 +373,6 @@ public final class GeocentricTranslationTest extends MathTransformTestCase {
      * @throws FactoryException if an error occurred while creating the transform.
      */
     @Test
-    @DependsOnMethod("testWKT2D")
     public void testIntegration() throws FactoryException {
         transform = createDatumShiftForGeographic2D(DefaultMathTransformFactory.provider());
         verifyWKT2D();

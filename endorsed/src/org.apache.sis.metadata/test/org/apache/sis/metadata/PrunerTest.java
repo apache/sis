@@ -30,8 +30,6 @@ import static org.apache.sis.metadata.ValueExistencePolicy.isNullOrEmpty;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -40,7 +38,6 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(HashCodeTest.class)
 public final class PrunerTest extends TestCase {
     /**
      * The root metadata object being tested.
@@ -156,7 +153,6 @@ public final class PrunerTest extends TestCase {
      * In absence of safety guard against infinite recursivity, this test would produce {@link StackOverflowError}.
      */
     @Test
-    @DependsOnMethod("testIsEmpty")
     public void testIsEmptyOnCyclicMetadata() {
         assertTrue(metadata.isEmpty());
         createCyclicMetadata();
@@ -167,7 +163,6 @@ public final class PrunerTest extends TestCase {
      * Tests the {@link ModifiableMetadata#prune()} method.
      */
     @Test
-    @DependsOnMethod("testIsEmpty")
     public void testPrune() {
         metadata.setMetadataIdentifier(new SimpleIdentifier(null, "A file identifiers", false));
         identification.setCitation(new DefaultCitation("A citation title"));
@@ -204,7 +199,6 @@ public final class PrunerTest extends TestCase {
      * In absence of safety guard against infinite recursivity, this test would produce {@link StackOverflowError}.
      */
     @Test
-    @DependsOnMethod({"testPrune", "testIsEmptyOnCyclicMetadata"})
     public void testPruneOnCyclicMetadata() {
         createCyclicMetadata();
         assertEquals(1, metadata.getIdentificationInfo()    .size());

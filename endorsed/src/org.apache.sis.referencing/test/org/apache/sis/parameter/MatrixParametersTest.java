@@ -19,7 +19,6 @@ package org.apache.sis.parameter;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
@@ -30,7 +29,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(TensorParametersTest.class)
 public class MatrixParametersTest extends TensorParametersTest {
     /**
      * The expected parameter names according the EPSG convention for the matrix elements.

@@ -29,8 +29,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -39,7 +37,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(org.apache.sis.math.DecimalFunctionsTest.class)
 public final class DoubleDoubleTest extends TestCase {
     /**
      * Number of time to repeat arithmetic tests.
@@ -181,7 +178,6 @@ public final class DoubleDoubleTest extends TestCase {
      * Tests {@link DoubleDouble#add(DoubleDouble)}.
      */
     @Test
-    @DependsOnMethod("testSum")
     public void testAdd() {
         for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
             final DoubleDouble dd = nextRandomDD();
@@ -195,7 +191,6 @@ public final class DoubleDoubleTest extends TestCase {
      * Tests {@link DoubleDouble#multiply(DoubleDouble)}.
      */
     @Test
-    @DependsOnMethod("testProduct")
     public void testMultiply() {
         for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
             final DoubleDouble dd = nextRandomDD();
@@ -209,7 +204,6 @@ public final class DoubleDoubleTest extends TestCase {
      * Tests {@link DoubleDouble#divide(DoubleDouble)}.
      */
     @Test
-    @DependsOnMethod({"testMultiply", "testSum", "testQuickSum"})
     public void testDivide() {
         for (int i=0; i<NUMBER_OF_REPETITIONS; i++) {
             final DoubleDouble dd = nextRandomDD();
@@ -223,7 +217,6 @@ public final class DoubleDoubleTest extends TestCase {
      * Tests {@link DoubleDouble#ratio_1m_1p()}.
      */
     @Test
-    @DependsOnMethod("testDivide")
     public void testRatio_1m_1p() {
         final DoubleDouble t = DoubleDouble.of(0.25, false).ratio_1m_1p();
         assertEquals((1 - 0.25) / (1 + 0.25), t.doubleValue());
@@ -239,7 +232,6 @@ public final class DoubleDoubleTest extends TestCase {
      * </ul>
      */
     @Test
-    @DependsOnMethod({"testMultiply", "testDivide"})
     public void testSqrt() {
         final BigDecimal SQRT2 = new BigDecimal("1.414213562373095048801688724209698");
         DoubleDouble dd = DoubleDouble.of(2).sqrt();
@@ -269,7 +261,6 @@ public final class DoubleDoubleTest extends TestCase {
      * Tests the {@link DoubleDouble#series(double...)} method.
      */
     @Test
-    @DependsOnMethod({"testMultiply", "testAdd"})
     public void testSeries() {
         DoubleDouble t = DoubleDouble.of(2).series(1, 1./3, 1./9, 1./7, 1./13);     // Random coefficients.
         assertEquals(1 + 2./3 + 4./9 + 8./7 + 16./13, t.doubleValue());
@@ -344,7 +335,6 @@ public final class DoubleDoubleTest extends TestCase {
      * Tests {@link DoubleDouble#errorForWellKnownValue(double)}.
      */
     @Test
-    @DependsOnMethod("testArraysConsistency")
     public void testErrorForWellKnownValue() {
         for (final String text : PREDEFINED_VALUES) {
             final double     value         = Double.parseDouble(text);
@@ -369,7 +359,6 @@ public final class DoubleDoubleTest extends TestCase {
      * </ul>
      */
     @Test
-    @DependsOnMethod("testErrorForWellKnownValue")
     public void testPI() {
         assertEquals(1.224646799147353207E-16, DoubleDouble.errorForWellKnownValue(PI    ));
         assertEquals(2.449293598294706414E-16, DoubleDouble.errorForWellKnownValue(PI * 2));
@@ -389,7 +378,6 @@ public final class DoubleDoubleTest extends TestCase {
      * Tests the {@code DoubleDouble} constants.
      */
     @Test
-    @DependsOnMethod("testErrorForWellKnownValue")
     public void testConstants() {
         for (int i=0; ; i++) {
             final DoubleDouble dd;

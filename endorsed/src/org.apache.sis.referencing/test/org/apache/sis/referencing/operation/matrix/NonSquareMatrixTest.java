@@ -23,7 +23,6 @@ import static java.lang.Double.NaN;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
 
 // Specific to the main branch:
@@ -43,7 +42,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(SolverTest.class)
 public final class NonSquareMatrixTest extends MatrixTestCase {
     /**
      * Number of rows and columns, initialized by {@link #prepareNewMatrixSize(Random)}.

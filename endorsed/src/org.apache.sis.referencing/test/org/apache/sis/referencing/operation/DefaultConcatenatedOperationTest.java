@@ -33,7 +33,6 @@ import org.apache.sis.io.wkt.Convention;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -49,10 +48,6 @@ import static org.apache.sis.test.GeoapiAssert.assertIdentifierEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    DefaultTransformationTest.class,
-    SingleOperationMarshallingTest.class
-})
 public final class DefaultConcatenatedOperationTest extends TestCase {
     /**
      * Creates a new test case.

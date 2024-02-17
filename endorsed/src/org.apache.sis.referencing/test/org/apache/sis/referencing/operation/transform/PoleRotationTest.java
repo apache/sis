@@ -25,7 +25,6 @@ import org.apache.sis.parameter.Parameterized;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.apache.sis.test.DependsOnMethod;
 
 
 /**
@@ -112,7 +111,6 @@ public final class PoleRotationTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while transforming a point.
      */
     @Test
-    @DependsOnMethod("testRotateSouthPoleOnGreenwich")
     public void testRotateSouthPoleOnOtherLongitude() throws FactoryException, TransformException {
         transform = PoleRotation.rotateSouthPole(factory(), -70, 25, 0);
         final double[] coordinates = {      // (λ,φ) coordinates to convert.
@@ -139,7 +137,6 @@ public final class PoleRotationTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while transforming a point.
      */
     @Test
-    @DependsOnMethod("testRotateSouthPoleOnOtherLongitude")
     public void testRotateSouthPoleWithAngle() throws FactoryException, TransformException {
         transform = PoleRotation.rotateSouthPole(factory(), -50, 20, 10);
         final double[] coordinates = {      // (λ,φ) coordinates to convert.
@@ -166,7 +163,6 @@ public final class PoleRotationTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while transforming a point.
      */
     @Test
-    @DependsOnMethod("testRotateSouthPoleWithAngle")
     public void testRotateSouthToOppositeHemisphere() throws FactoryException, TransformException {
         transform = PoleRotation.rotateSouthPole(factory(), 50, 20, 10);
         final double[] coordinates = {      // (λ,φ) coordinates to convert.
@@ -219,7 +215,6 @@ public final class PoleRotationTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while transforming a point.
      */
     @Test
-    @DependsOnMethod("testRotateNorthPoleOnGreenwich")
     public void testRotateNorthPoleOnOtherLongitude() throws FactoryException, TransformException {
         transform = PoleRotation.rotateNorthPole(factory(), 70, 25, 0);
         final double[] coordinates = {      // (λ,φ) coordinates to convert.
@@ -254,7 +249,6 @@ public final class PoleRotationTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while transforming a point.
      */
     @Test
-    @DependsOnMethod("testRotateNorthPoleOnGreenwich")
     public void testRotateNorthPole() throws FactoryException, TransformException {
         transform = PoleRotation.rotateNorthPole(factory(), 70, 40, 10);
         final double[] coordinates = {      // (λ,φ) coordinates to convert.

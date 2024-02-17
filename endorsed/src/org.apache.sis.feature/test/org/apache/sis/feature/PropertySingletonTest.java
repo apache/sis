@@ -23,7 +23,6 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -77,7 +76,6 @@ public final class PropertySingletonTest extends TestCase {
      * Tests the addition, setting and removal of a single element.
      */
     @Test
-    @DependsOnMethod("testEmpty")
     public void testSingleton() {
         final Integer a1 = 1000;
         final Integer a2 = 2000;
@@ -100,7 +98,6 @@ public final class PropertySingletonTest extends TestCase {
      * Ensures that we cannot add more than 1 element.
      */
     @Test
-    @DependsOnMethod("testSingleton")
     public void testMaximumOccurrence() {
         final Integer a1 = 1000;
         final Integer a2 = 2000;
@@ -115,7 +112,6 @@ public final class PropertySingletonTest extends TestCase {
      * Tests {@code addAll(…)} and {@code removeAll(…)} methods.
      */
     @Test
-    @DependsOnMethod("testSingleton")
     public void testRemoveAll() {
         final Set<Integer> attributes = Set.of(1000);
         assertTrue (singleton.addAll(attributes));

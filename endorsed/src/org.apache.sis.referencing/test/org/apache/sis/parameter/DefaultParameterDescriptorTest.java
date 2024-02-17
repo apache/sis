@@ -33,8 +33,6 @@ import org.apache.sis.io.wkt.Convention;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
@@ -45,7 +43,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn(org.apache.sis.referencing.AbstractIdentifiedObjectTest.class)
 public final class DefaultParameterDescriptorTest extends TestCase {
     /**
      * Creates a new test case.
@@ -179,7 +176,6 @@ public final class DefaultParameterDescriptorTest extends TestCase {
      * with valid and invalid minimum and maximum values.
      */
     @Test
-    @DependsOnMethod("testOptionalInteger")
     @SuppressWarnings("UnnecessaryBoxing")
     public void testRangeValidation() {
         var e = assertThrows(IllegalArgumentException.class, () -> create("Test range", 20, 4, 12));
@@ -201,7 +197,6 @@ public final class DefaultParameterDescriptorTest extends TestCase {
      * Tests {@code DefaultParameterDescriptor} constructor with an invalid default value.
      */
     @Test
-    @DependsOnMethod("testRangeValidation")
     public void testDefaultValueValidation() {
         try {
             create("Test default", 4, 20, 3);
@@ -281,7 +276,6 @@ public final class DefaultParameterDescriptorTest extends TestCase {
      * Tests a descriptor for a parameter value of kind {@code double[]}.
      */
     @Test
-    @DependsOnMethod("testDoubleType")
     @SuppressWarnings("UnnecessaryBoxing")
     public void testArrayType() {
         final var descriptor = createForArray("Array param", 4, 9, Units.METRE);
@@ -327,7 +321,6 @@ public final class DefaultParameterDescriptorTest extends TestCase {
      * @see DefaultParameterDescriptorGroupTest#testIdentifiedParameterWKT()
      */
     @Test
-    @DependsOnMethod("testWKT")
     public void testIdentifiedParameterWKT() {
         final DefaultParameterDescriptor<Double> descriptor = createEPSG("A0", Constants.EPSG_A0);
         assertWktEquals("PARAMETER[“A0”, ID[“EPSG”, 8623, URI[“urn:ogc:def:parameter:EPSG::8623”]]]", descriptor);

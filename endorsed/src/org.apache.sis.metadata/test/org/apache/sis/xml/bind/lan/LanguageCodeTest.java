@@ -35,7 +35,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.mock.MetadataMock;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
@@ -189,7 +188,6 @@ public final class LanguageCodeTest extends TestCase {
      * @throws JAXBException if an error occurs while unmarshalling the language.
      */
     @Test
-    @DependsOnMethod("testMarshalLanguageCode")
     public void testLanguageCodeWithoutAttributes() throws JAXBException {
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final String xml = getMetadataXML(LANGUAGE_CODE_WITHOUT_ATTRIBUTE);

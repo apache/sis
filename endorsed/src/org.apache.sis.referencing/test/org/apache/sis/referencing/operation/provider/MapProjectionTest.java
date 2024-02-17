@@ -26,7 +26,6 @@ import static org.apache.sis.util.internal.Constants.*;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.referencing.Assertions.assertOgcIdentifierEquals;
 import static org.apache.sis.referencing.Assertions.assertEpsgIdentifierEquals;
@@ -65,7 +64,6 @@ public final class MapProjectionTest extends TestCase {
      * the math transforms are tested in the {@link org.apache.sis.referencing.operation.projection} package.</p>
      */
     @Test
-    @DependsOnMethod("testSemiAxes")
     public void testEquirectangular() {
         final Iterator<GeneralParameterDescriptor> it = Equirectangular.PARAMETERS.descriptors().iterator();
         assertParamEquals("Equidistant Cylindrical (Spherical)", "Equirectangular",    true,  Equirectangular.PARAMETERS);
@@ -84,7 +82,6 @@ public final class MapProjectionTest extends TestCase {
      * Verifies some {@link Mercator1SP} parameter descriptors.
      */
     @Test
-    @DependsOnMethod("testEquirectangular")
     public void testMercator1SP() {
         final Iterator<GeneralParameterDescriptor> it = Mercator1SP.PARAMETERS.descriptors().iterator();
         assertParamEquals("Mercator (variant A)",          "Mercator_1SP",       true, Mercator1SP.PARAMETERS);
@@ -103,7 +100,6 @@ public final class MapProjectionTest extends TestCase {
      * Verifies some {@link Mercator2SP} parameter descriptors.
      */
     @Test
-    @DependsOnMethod("testMercator1SP")
     public void testMercator2SP() {
         final Iterator<GeneralParameterDescriptor> it = Mercator2SP.PARAMETERS.descriptors().iterator();
         assertParamEquals("Mercator (variant B)",             "Mercator_2SP",        true,  Mercator2SP.PARAMETERS);

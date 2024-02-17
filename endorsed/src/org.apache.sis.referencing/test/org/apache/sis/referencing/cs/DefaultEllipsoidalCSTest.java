@@ -28,8 +28,6 @@ import org.apache.sis.referencing.GeodeticObjectVerifier;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.referencing.Assertions.assertAxisEquals;
 import static org.apache.sis.referencing.Assertions.assertEpsgIdentifierEquals;
@@ -41,7 +39,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn(AbstractCSTest.class)
 public final class DefaultEllipsoidalCSTest extends TestCase {
     /**
      * Creates a new test case.
@@ -85,7 +82,6 @@ public final class DefaultEllipsoidalCSTest extends TestCase {
      * Tests the {@link DefaultEllipsoidalCS#forConvention(AxesConvention)} method with grads units.
      */
     @Test
-    @DependsOnMethod("testShiftLongitudeRange")
     public void testShiftLongitudeRangeGrads() {
         final DefaultEllipsoidalCS cs = HardCodedCS.ELLIPSOIDAL_gon;
         CoordinateSystemAxis axis = cs.getAxis(0);

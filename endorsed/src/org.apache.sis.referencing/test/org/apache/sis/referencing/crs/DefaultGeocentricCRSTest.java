@@ -29,8 +29,6 @@ import org.apache.sis.measure.Units;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
@@ -40,9 +38,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    DefaultGeodeticCRSTest.class
-})
 public final class DefaultGeocentricCRSTest extends TestCase {
     /**
      * Creates a new test case.
@@ -112,7 +107,6 @@ public final class DefaultGeocentricCRSTest extends TestCase {
      * the coordinate system replacement documented in {@link #testWKT1()} preserves the axis units.
      */
     @Test
-    @DependsOnMethod("testWKT1")
     public void testWKT1_kilometres() {
         DefaultGeocentricCRS crs = HardCodedCRS.GEOCENTRIC;
         crs = new DefaultGeocentricCRS(IdentifiedObjects.getProperties(crs), crs.getDatum(),
@@ -138,7 +132,6 @@ public final class DefaultGeocentricCRSTest extends TestCase {
      * but the axis abbreviation, respectively ‘X’, 'Y' and ‘Z’, shall be given.”
      */
     @Test
-    @DependsOnMethod("testWKT1")
     public void testWKT2() {
         assertWktEquals(Convention.WKT2,
                 "GEODCRS[“Geocentric”,\n" +
@@ -157,7 +150,6 @@ public final class DefaultGeocentricCRSTest extends TestCase {
      * Tests WKT 2 simplified formatting.
      */
     @Test
-    @DependsOnMethod("testWKT2")
     public void testWKT2_Simplified() {
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "GeodeticCRS[“Geocentric”,\n" +
@@ -175,7 +167,6 @@ public final class DefaultGeocentricCRSTest extends TestCase {
      * Tests WKT 2 internal formatting.
      */
     @Test
-    @DependsOnMethod("testWKT2")
     public void testWKT2_Internal() {
         assertWktEquals(Convention.INTERNAL,
                 "GeodeticCRS[“Geocentric”,\n" +

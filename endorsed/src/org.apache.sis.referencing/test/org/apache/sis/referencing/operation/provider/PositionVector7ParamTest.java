@@ -30,8 +30,6 @@ import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -39,9 +37,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    GeocentricTranslationTest.class
-})
 public final class PositionVector7ParamTest extends MathTransformTestCase {
     /**
      * Creates a new test case.
@@ -134,7 +129,6 @@ public final class PositionVector7ParamTest extends MathTransformTestCase {
      * @throws TransformException if transformation of a point failed.
      */
     @Test
-    @DependsOnMethod("testGeocentricDomain")
     public void testGeographicDomain() throws FactoryException, TransformException {
         final double delta = toRadians(100.0 / 60) / 1852;      // Approximately 100 metres
         derivativeDeltas = new double[] {delta, delta, 100};    // (Δλ, Δφ, Δh)

@@ -20,7 +20,6 @@ package org.apache.sis.io.wkt;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -53,7 +52,6 @@ public final class ColorsTest extends TestCase {
      * Tests {@link Colors#setName(ElementKind, String)}.
      */
     @Test
-    @DependsOnMethod("testGetName")
     public void testSetName() {
         final Colors colors = new Colors(Colors.DEFAULT);
         assertEquals("green", colors.getName(ElementKind.METHOD));

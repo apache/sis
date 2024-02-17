@@ -25,7 +25,6 @@ import java.util.Collections;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
 
@@ -112,7 +111,6 @@ public final class CheckedArrayListTest extends TestCase {
      * Ensures that we cannot element of the wrong type in a sublist.
      */
     @Test
-    @DependsOnMethod("testAddWrongType")
     public void testAddWrongTypeToSublist() {
         final var list = new CheckedArrayList<>(String.class);
         assertTrue(list.add("One"));
@@ -126,7 +124,6 @@ public final class CheckedArrayListTest extends TestCase {
      * Tests {@link CheckedArrayList#castOrCopy(Collection, Class)}.
      */
     @Test
-    @DependsOnMethod("testAddAll")
     public void testCastOrCopy() {
         assertNull(CheckedArrayList.castOrCopy(null, String.class));
         final var fruits = List.of("Apple", "Orange", "Raisin");

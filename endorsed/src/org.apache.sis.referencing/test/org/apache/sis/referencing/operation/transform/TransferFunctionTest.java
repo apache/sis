@@ -26,8 +26,6 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 // Specific to the main branch:
@@ -39,7 +37,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(ExponentialTransform1DTest.class)
 public final class TransferFunctionTest extends TestCase {
     /**
      * Creates a new test case.
@@ -83,7 +80,6 @@ public final class TransferFunctionTest extends TestCase {
      * Tests the creation of a logarithmic transfer function.
      */
     @Test
-    @DependsOnMethod("testLinear")
     public void testLogarithmic() {
         final TransferFunction f = new TransferFunction();
         f.setType(TransferFunctionType.LOGARITHMIC);
@@ -108,7 +104,6 @@ public final class TransferFunctionTest extends TestCase {
      * Tests the creation of an exponential transfer function.
      */
     @Test
-    @DependsOnMethod("testLinear")
     public void testExponential() {
         final TransferFunction f = new TransferFunction();
         f.setType(TransferFunctionType.EXPONENTIAL);
@@ -133,7 +128,6 @@ public final class TransferFunctionTest extends TestCase {
      * Tests the creation of a concatenated transfer function.
      */
     @Test
-    @DependsOnMethod("testLogarithmic")
     public void testConcatenated() {
         final TransferFunction f = new TransferFunction();
         f.setType(TransferFunctionType.LOGARITHMIC);

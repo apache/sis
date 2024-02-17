@@ -21,8 +21,6 @@ import java.net.URL;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 // Specific to the main branch:
@@ -34,7 +32,6 @@ import org.junit.jupiter.api.Disabled;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(CommandRunnerTest.class)
 public final class MetadataCommandTest extends TestCase {
     /**
      * Creates a new test case.
@@ -74,7 +71,6 @@ public final class MetadataCommandTest extends TestCase {
      */
     @Test
     @Disabled("Requires GeoAPI 3.1")
-    @DependsOnMethod("testNetCDF")
     public void testFormatXML() throws Exception {
         final URL url = new URL("Cube2D_geographic_packed.nc") ; // TestData.NETCDF_2D_GEOGRAPHIC.location();
         var test = new MetadataCommand(0, new String[] {CommandRunner.TEST, url.toString(), "--format", "XML"});

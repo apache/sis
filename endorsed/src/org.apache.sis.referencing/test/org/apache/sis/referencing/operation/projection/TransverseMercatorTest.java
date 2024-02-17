@@ -34,8 +34,6 @@ import static org.apache.sis.referencing.operation.provider.TransverseMercator.L
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import org.apache.sis.test.OptionalTestData;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
@@ -44,7 +42,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(NormalizedProjectionTest.class)
 public final class TransverseMercatorTest extends MapProjectionTestCase {
     /**
      * Distance from central meridian, in degrees, at which errors are considered too important.
@@ -127,7 +124,6 @@ public final class TransverseMercatorTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a coordinate.
      */
     @Test
-    @DependsOnMethod("testTransverseMercator")
     public void testTransverseMercatorSouthOrientated() throws FactoryException, TransformException {
         new TransverseMercatorSouth();  // Test creation only, as GeoAPI 3.0 did not yet had the test method.
     }
@@ -141,7 +137,6 @@ public final class TransverseMercatorTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a coordinate.
      */
     @Test
-    @DependsOnMethod("testTransverseMercator")
     public void compareEllipticalWithSpherical() throws FactoryException, TransformException {
         createCompleteProjection(new org.apache.sis.referencing.operation.provider.TransverseMercator(),
                 6371007,    // Semi-major axis length
@@ -199,7 +194,6 @@ public final class TransverseMercatorTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a coordinate.
      */
     @Test
-    @DependsOnMethod("testTransverseMercator")
     public void testSerialization() throws FactoryException, TransformException {
         createNormalizedProjection(true, 40);
         /*

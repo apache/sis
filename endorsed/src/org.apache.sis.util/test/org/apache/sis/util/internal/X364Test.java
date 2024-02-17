@@ -23,7 +23,6 @@ import static org.apache.sis.util.internal.X364.*;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -31,7 +30,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(org.apache.sis.util.CharSequencesTest.class)
 public final class X364Test extends TestCase {
     /**
      * Creates a new test case.

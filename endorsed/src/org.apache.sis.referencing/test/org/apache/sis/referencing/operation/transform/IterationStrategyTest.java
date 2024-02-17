@@ -26,7 +26,6 @@ import static org.apache.sis.referencing.operation.transform.IterationStrategy.*
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOnMethod;
 
 
 /**
@@ -73,7 +72,6 @@ public final class IterationStrategyTest extends TestCase {
      * @throws TransformException Should never occur.
      */
     @Test
-    @DependsOnMethod("testSuggest")
     public void empiricalTest() throws TransformException {
         final int[] statistics = new int[4];
         /*

@@ -25,7 +25,6 @@ import org.apache.sis.util.SimpleInternationalString;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -37,7 +36,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(DefaultLocalNameTest.class)
 public final class DefaultScopedNameTest extends TestCase {
     /**
      * Creates a new test case.

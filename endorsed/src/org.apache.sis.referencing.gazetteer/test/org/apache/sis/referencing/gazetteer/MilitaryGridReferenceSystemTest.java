@@ -44,8 +44,6 @@ import static org.apache.sis.measure.Units.ARC_MINUTE;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 
@@ -55,7 +53,6 @@ import org.apache.sis.test.TestUtilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(ReferencingByIdentifiersTest.class)
 public final class MilitaryGridReferenceSystemTest extends TestCase {
     /**
      * Creates a new test case.
@@ -115,7 +112,6 @@ public final class MilitaryGridReferenceSystemTest extends TestCase {
      * {@link TransverseMercator.Zoner#isSvalbard(double)} are consistent with the latitude bands.
      */
     @Test
-    @DependsOnMethod("testLatitudeBand")
     public void verifyZonerConsistency() {
         for (double φ = TransverseMercator.Zoner.SOUTH_BOUNDS; φ < TransverseMercator.Zoner.NORTH_BOUNDS; φ++) {
             final String latitude = String.valueOf(φ);
@@ -135,7 +131,6 @@ public final class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws ReflectiveOperationException if this test method cannot access the table to verify.
      */
     @Test
-    @DependsOnMethod("verifyInvariants")
     public void verifyDecoderTables() throws TransformException, ReflectiveOperationException {
         final int              numBands   = 20;
         final double           zoneCentre = 3;
@@ -230,7 +225,6 @@ public final class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws TransformException if an error occurred while computing the MGRS label.
      */
     @Test
-    @DependsOnMethod({"verifyInvariants", "testLatitudeBand"})
     public void testEncodeUTM() throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         final DirectPosition2D position = new DirectPosition2D();
@@ -282,7 +276,6 @@ public final class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws TransformException if an error occurred while computing the coordinate.
      */
     @Test
-    @DependsOnMethod({"verifyInvariants", "verifyDecoderTables"})
     public void testDecodeUTM() throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         DirectPosition position;
@@ -321,7 +314,6 @@ public final class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws TransformException if an error occurred while computing the coordinate.
      */
     @Test
-    @DependsOnMethod("testDecodeUTM")
     public void testDecodeLimitCases() throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         DirectPosition position;
@@ -401,7 +393,6 @@ public final class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws TransformException if an error occurred while computing the MGRS label.
      */
     @Test
-    @DependsOnMethod("verifyInvariants")
     public void testEncodeUPS() throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         final DirectPosition2D position = new DirectPosition2D();
@@ -440,7 +431,6 @@ public final class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws TransformException if an error occurred while computing the coordinate.
      */
     @Test
-    @DependsOnMethod("verifyInvariants")
     public void testDecodeUPS() throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         DirectPosition position;
@@ -486,7 +476,6 @@ public final class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws TransformException if an error occurred while computing the MGRS label.
      */
     @Test
-    @DependsOnMethod("testEncodeUTM")
     public void testPrecision() throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         final DirectPosition2D position = new DirectPosition2D(CommonCRS.WGS84.universal(13, 103));
@@ -522,7 +511,6 @@ public final class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws TransformException if an error occurred while computing the MGRS label.
      */
     @Test
-    @DependsOnMethod("testPrecision")
     public void testAngularPrecision() throws IncommensurableException, TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         final DirectPosition2D position = new DirectPosition2D(CommonCRS.WGS84.universal(13, 103));
@@ -546,7 +534,6 @@ public final class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws TransformException if an error occurred while computing the MGRS label.
      */
     @Test
-    @DependsOnMethod("testPrecision")
     public void testSeparator() throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         final DirectPosition2D position = new DirectPosition2D(CommonCRS.WGS84.universal(13, 103));
@@ -571,7 +558,6 @@ public final class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws TransformException if an error occurred while computing the coordinate.
      */
     @Test
-    @DependsOnMethod("testDecodeUTM")
     public void testDecodeVariants() throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         coder.setSeparator(" / ");
@@ -609,7 +595,6 @@ public final class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws TransformException if an error occurred while computing the coordinate.
      */
     @Test
-    @DependsOnMethod("testDecodeUTM")
     public void testErrorDetection() throws TransformException {
         final MilitaryGridReferenceSystem.Coder coder = coder();
         GazetteerException e;
@@ -634,10 +619,6 @@ public final class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws TransformException if an error occurred while computing the coordinate.
      */
     @Test
-    @DependsOnMethod({
-        "testEncodeUTM", "testDecodeUTM",
-        "testEncodeUPS", "testDecodeUPS"
-    })
     public void verifyConsistency() throws TransformException {
         final Random random = TestUtilities.createRandomNumberGenerator();
         final MilitaryGridReferenceSystem.Coder coder = coder();
@@ -672,7 +653,6 @@ public final class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws TransformException if an error occurred while computing the coordinate.
      */
     @Test
-    @DependsOnMethod("testEncodeUTM")
     public void testIteratorNorthUTM() throws TransformException {
         /*
          * Following is the list of MGRS references that we expect to find in the above area of interest.
@@ -705,7 +685,6 @@ public final class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws TransformException if an error occurred while computing the coordinate.
      */
     @Test
-    @DependsOnMethod("testEncodeUTM")
     public void testIteratorSouthUTM() throws TransformException {
         testIterator(new Envelope2D(CommonCRS.defaultGeographic(), 5, -42, 8, 4), Arrays.asList(
             "31HFT", "31HGT", "32HKC", "32HLC", "32HMC", "32HNC", "32HPC", "32HQC", "33HTT", "33HUT",
@@ -724,7 +703,6 @@ public final class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws TransformException if an error occurred while computing the coordinate.
      */
     @Test
-    @DependsOnMethod("testEncodeUTM")
     public void testIteratorOverAntiMeridian() throws TransformException {
         final GeneralEnvelope areaOfInterest = new GeneralEnvelope(CommonCRS.defaultGeographic());
         areaOfInterest.setRange(0, 170, -175);
@@ -746,7 +724,6 @@ public final class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws TransformException if an error occurred while computing the coordinate.
      */
     @Test
-    @DependsOnMethod("testEncodeUPS")
     public void testIteratorNorthPole() throws TransformException {
         testIterator(new Envelope2D(CommonCRS.defaultGeographic(), -10, 85, 80, 5), Arrays.asList(
             "YZG", "ZAG", "ZBG", "ZCG",
@@ -766,7 +743,6 @@ public final class MilitaryGridReferenceSystemTest extends TestCase {
      * @throws TransformException if an error occurred while computing the coordinate.
      */
     @Test
-    @DependsOnMethod({"testEncodeUPS", "testEncodeUTM"})
     public void testIteratorSouthPole() throws TransformException {
         testIterator(new Envelope2D(CommonCRS.defaultGeographic(), -120, -83, 50, 5), Arrays.asList(
                    "AKR", "ALR", "APR",

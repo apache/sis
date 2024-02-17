@@ -41,7 +41,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.feature.Assertions.assertPixelsEqual;
@@ -231,7 +230,6 @@ public class GridCoverage2DTest extends TestCase {
      * This method tests a coordinate that would be outside the grid if wraparound was not applied.
      */
     @Test
-    @DependsOnMethod("testEvaluator")
     public void testEvaluatorWithWraparound() {
         final var gridToCRS = new Matrix3();
         gridToCRS.m00 = 100;        // Scale

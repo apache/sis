@@ -34,7 +34,6 @@ import org.apache.sis.xml.util.LegacyNamespaces;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
@@ -157,7 +156,6 @@ public final class CodeListMarshallingTest extends TestCase {
      * @throws JAXBException if an error occurred while marshalling the XML.
      */
     @Test
-    @DependsOnMethod("testLocalization")
     public void testLocalizationLegacyXML() throws JAXBException {
         testLocalization(true);
     }

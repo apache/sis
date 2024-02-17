@@ -37,7 +37,6 @@ import org.apache.sis.math.Fraction;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.opengis.test.Validators;
-import org.apache.sis.test.DependsOn;
 
 // Specific to the main branch:
 import org.junit.jupiter.api.Disabled;
@@ -56,7 +55,6 @@ import org.apache.sis.test.GeoapiAssert;
  * @author  Martin Desruisseaux (Geomatys)
  */
 @SuppressWarnings("doclint:missing")
-@DependsOn({AbstractMathTransformTest.class, ScaleTransformTest.class})
 public class ProjectiveTransformTest extends TransformTestCase {
     /**
      * The factory to use for creating linear transforms.

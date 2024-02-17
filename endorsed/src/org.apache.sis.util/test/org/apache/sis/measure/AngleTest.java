@@ -24,7 +24,6 @@ import static java.lang.Double.doubleToLongBits;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -32,7 +31,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  */
-@DependsOn(AngleFormatTest.class)
 public final class AngleTest extends TestCase {
     /**
      * Creates a new test case.

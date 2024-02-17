@@ -39,7 +39,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 
@@ -480,7 +479,6 @@ public class PixelIteratorTest extends TestCase {
      * Raster location and number of bands are different than other tests (each test uses arbitrary values).
      */
     @Test
-    @DependsOnMethod("testOnRaster")
     public void testRasterRewind() {
         xmin     = -3;
         ymin     = -5;
@@ -500,7 +498,6 @@ public class PixelIteratorTest extends TestCase {
      * Raster location and number of bands are different than other tests (each test uses arbitrary values).
      */
     @Test
-    @DependsOnMethod("testOnRaster")
     public void testOnRasterUpperLeft() {
         xmin     =  5;
         ymin     =  7;
@@ -519,7 +516,6 @@ public class PixelIteratorTest extends TestCase {
      * Raster location and number of bands are different than other tests (each test uses arbitrary values).
      */
     @Test
-    @DependsOnMethod("testOnRaster")
     public void testOnRasterUpperRight() {
         xmin     = 11;
         ymin     = 12;
@@ -538,7 +534,6 @@ public class PixelIteratorTest extends TestCase {
      * Raster location and number of bands are different than other tests (each test uses arbitrary values).
      */
     @Test
-    @DependsOnMethod("testOnRaster")
     public void testOnRasterLowerRight() {
         xmin     = -4;
         ymin     = -6;
@@ -557,7 +552,6 @@ public class PixelIteratorTest extends TestCase {
      * Raster location and number of bands are different than other tests (each test uses arbitrary values).
      */
     @Test
-    @DependsOnMethod("testOnRaster")
     public void testOnRasterLowerLeft() {
         xmin     =  6;
         ymin     =  7;
@@ -576,7 +570,6 @@ public class PixelIteratorTest extends TestCase {
      * This method tests also {@link PixelIterator#rewind()}.
      */
     @Test
-    @DependsOnMethod({"testOnRaster", "testRasterRewind"})
     public void testOnRasterSubArea() {
         xmin     =  5;
         ymin     =  7;
@@ -598,7 +591,6 @@ public class PixelIteratorTest extends TestCase {
      * This method tests also {@link PixelIterator#rewind()}.
      */
     @Test
-    @DependsOnMethod({"testOnRaster", "testRasterRewind"})
     public void testOnRasterFullArea() {
         xmin     =  7;
         ymin     =  9;
@@ -620,7 +612,6 @@ public class PixelIteratorTest extends TestCase {
      * This method tests also {@link PixelIterator#rewind()}.
      */
     @Test
-    @DependsOnMethod({"testOnRaster", "testRasterRewind"})
     public void testOnRasterEmptyArea() {
         xmin     = 6;
         ymin     = 5;
@@ -667,7 +658,6 @@ public class PixelIteratorTest extends TestCase {
      * This method tests also {@link PixelIterator#rewind()}.
      */
     @Test
-    @DependsOnMethod("testOnRaster")
     public void testOnImage() {
         width      =  24;
         height     =  15;
@@ -685,7 +675,6 @@ public class PixelIteratorTest extends TestCase {
      * This method tests also {@link PixelIterator#rewind()}.
      */
     @Test
-    @DependsOnMethod("testOnImage")
     public void testImageRewind() {
         xmin       =   1;
         ymin       =  -4;
@@ -709,7 +698,6 @@ public class PixelIteratorTest extends TestCase {
      * Image location and number of bands are different than other tests (each test uses arbitrary values).
      */
     @Test
-    @DependsOnMethod({"testOnImage", "testOnRasterUpperLeft"})
     public void testOnTileUpperLeft() {
         xmin       = -5;
         ymin       =  5;
@@ -733,7 +721,6 @@ public class PixelIteratorTest extends TestCase {
      * Image location and number of bands are different than other tests (each test uses arbitrary values).
      */
     @Test
-    @DependsOnMethod({"testOnImage", "testOnRasterUpperRight"})
     public void testOnTileUpperRight() {
         xmin       = 35;
         ymin       =  7;
@@ -757,7 +744,6 @@ public class PixelIteratorTest extends TestCase {
      * Image location and number of bands are different than other tests (each test uses arbitrary values).
      */
     @Test
-    @DependsOnMethod({"testOnImage", "testOnRasterLowerRight"})
     public void testOnTileLowerRight() {
         xmin       = 55;
         ymin       = -7;
@@ -782,7 +768,6 @@ public class PixelIteratorTest extends TestCase {
      * Image location and number of bands are different than other tests (each test uses arbitrary values).
      */
     @Test
-    @DependsOnMethod({"testOnImage", "testOnRasterLowerLeft"})
     public void testOnTileLowerLeft() {
         xmin       =   2;
         ymin       = -15;
@@ -805,7 +790,6 @@ public class PixelIteratorTest extends TestCase {
      * The sub-area is small enough for the iteration to happen in a single tile.
      */
     @Test
-    @DependsOnMethod({"testOnImage", "testOnRasterSubArea"})
     public void testOnTileSubArea() {
         xmin       = -5;
         ymin       =  7;
@@ -829,7 +813,6 @@ public class PixelIteratorTest extends TestCase {
      * The sub-area is large enough for covering more than one tile.
      */
     @Test
-    @DependsOnMethod("testOnTileUpperLeft")
     public void testOnImageUpperLeft() {
         xmin       = -5;
         ymin       =  5;
@@ -853,7 +836,6 @@ public class PixelIteratorTest extends TestCase {
      * The sub-area is large enough for covering more than one tile.
      */
     @Test
-    @DependsOnMethod("testOnTileUpperRight")
     public void testOnImageUpperRight() {
         xmin       = 20;
         ymin       =  0;
@@ -877,7 +859,6 @@ public class PixelIteratorTest extends TestCase {
      * The sub-area is large enough for covering more than one tile.
      */
     @Test
-    @DependsOnMethod("testOnTileLowerRight")
     public void testOnImageLowerRight() {
         xmin       = 30;
         ymin       =  1;
@@ -901,7 +882,6 @@ public class PixelIteratorTest extends TestCase {
      * The sub-area is large enough for covering more than one tile.
      */
     @Test
-    @DependsOnMethod("testOnTileLowerLeft")
     public void testOnImageLowerLeft() {
         xmin       = -2;
         ymin       = -7;
@@ -924,7 +904,6 @@ public class PixelIteratorTest extends TestCase {
      * The sub-area is large enough for covering more than one tile.
      */
     @Test
-    @DependsOnMethod("testOnTileSubArea")
     public void testOnImageSubArea() {
         xmin       =  -5;
         ymin       =   7;
@@ -946,7 +925,6 @@ public class PixelIteratorTest extends TestCase {
      * Tests iteration over a all the region of a tiled image.
      */
     @Test
-    @DependsOnMethod({"testOnImage", "testOnRasterFullArea"})
     public void testOnImageFullArea() {
         xmin       =  -5;
         ymin       =  -3;
@@ -968,7 +946,6 @@ public class PixelIteratorTest extends TestCase {
      * Tests iteration over a sub-area that do not intersect the image area.
      */
     @Test
-    @DependsOnMethod("testOnRasterEmptyArea")
     public void testOnImageEmptyArea() {
         xmin       = 5;
         ymin       = 6;
@@ -988,7 +965,6 @@ public class PixelIteratorTest extends TestCase {
      * an exception to be thrown.
      */
     @Test
-    @DependsOnMethod("testIllegalMoveOnRaster")
     public void testIllegalMoveOnImage() {
         xmin       =  0;
         ymin       =  0;
@@ -1007,7 +983,6 @@ public class PixelIteratorTest extends TestCase {
      * Verifies that invoking {@link PixelIterator#next()} after iteration end causes an exception to be thrown.
      */
     @Test
-    @DependsOnMethod("testOnImage")
     public void testIllegalNext() {
         xmin       = -1;
         ymin       =  3;
@@ -1092,7 +1067,6 @@ public class PixelIteratorTest extends TestCase {
      * Tests iteration after a call to {@link PixelIterator#moveTo(int, int)} in a raster.
      */
     @Test
-    @DependsOnMethod("testOnRaster")
     public void testMoveIntoRaster() {
         xmin     =  5;
         ymin     =  7;
@@ -1107,7 +1081,6 @@ public class PixelIteratorTest extends TestCase {
      * Tests iteration after a call to {@link PixelIterator#moveTo(int, int)} in a tiled image.
      */
     @Test
-    @DependsOnMethod({"testOnImage", "testMoveIntoRaster"})
     public void testMoveIntoImage() {
         xmin       =  -1;
         ymin       =   3;
@@ -1278,7 +1251,6 @@ public class PixelIteratorTest extends TestCase {
      * Tests {@link PixelIterator#createWindow(TransferType)} on a single tile.
      */
     @Test
-    @DependsOnMethod("testMoveIntoImage")
     public void testWindowOnTile() {
         xmin       =   1;
         ymin       =  -2;
@@ -1298,7 +1270,6 @@ public class PixelIteratorTest extends TestCase {
      * Tests {@link PixelIterator#createWindow(TransferType)} on a tiled image.
      */
     @Test
-    @DependsOnMethod("testWindowOnTile")
     public void testWindowOnImage() {
         xmin       =   1;
         ymin       =  -2;
@@ -1321,7 +1292,6 @@ public class PixelIteratorTest extends TestCase {
      * The destination image is the same as the source image.
      */
     @Test
-    @DependsOnMethod("testOnRasterSubArea")
     public void testOnWritableRaster() {
         isWritable = true;
         testOnRasterSubArea();
@@ -1332,7 +1302,6 @@ public class PixelIteratorTest extends TestCase {
      * The destination image is the same as the source image.
      */
     @Test
-    @DependsOnMethod({"testOnWritableRaster", "testOnTileSubArea"})
     public void testOnWritableTile() {
         isWritable = true;
         testOnTileSubArea();
@@ -1343,7 +1312,6 @@ public class PixelIteratorTest extends TestCase {
      * The destination image is the same as the source image.
      */
     @Test
-    @DependsOnMethod({"testOnWritableTile", "testOnImageSubArea"})
     public void testOnWritableImage() {
         isWritable = true;
         testOnImageSubArea();

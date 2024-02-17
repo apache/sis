@@ -23,8 +23,6 @@ import java.net.URISyntaxException;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.date;
 
@@ -38,7 +36,6 @@ import org.junit.jupiter.api.Disabled;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(TypesTest.class)
 public final class MetadataTest extends TestCase {
     /**
      * Creates a new test case.
@@ -68,7 +65,6 @@ public final class MetadataTest extends TestCase {
      * @throws URISyntaxException if a {@link Link} element is constructed with an invalid URI.
      */
     @Test
-    @DependsOnMethod("testEqualsAndHashCode")
     @Disabled("Can not execute this test on this branch because it depends on Citation.getOnlineResources() "
           + "and Identification.getExtents() methods, which are not present in GeoAPI 3.0 interfaces. "
           + "Despite this test failure, the copy constructor should nevertheless works in practice "

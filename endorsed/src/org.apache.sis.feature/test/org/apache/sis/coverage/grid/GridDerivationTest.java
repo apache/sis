@@ -45,8 +45,6 @@ import static org.apache.sis.coverage.grid.GridGeometryTest.assertExtentEquals;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
@@ -63,7 +61,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
  */
-@DependsOn(GridGeometryTest.class)
 public final class GridDerivationTest extends TestCase {
     /**
      * Creates a new test case.
@@ -154,7 +151,6 @@ public final class GridDerivationTest extends TestCase {
      * Tests {@link GridDerivation#subgrid(Envelope, double...)} with a non-linear "grid to CRS" transform.
      */
     @Test
-    @DependsOnMethod("testSubExtent")
     public void testSubExtentNonLinear() {
         final GridExtent extent = new GridExtent(
                 new DimensionNameType[] {
@@ -194,7 +190,6 @@ public final class GridDerivationTest extends TestCase {
      * @throws TransformException if an error occurred during computation.
      */
     @Test
-    @DependsOnMethod("testSubExtent")
     public void testSubgridFromEnvelope() throws TransformException {
         final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
         envelope.setRange(0, -70, +80);
@@ -249,7 +244,6 @@ public final class GridDerivationTest extends TestCase {
      * and tests the same request with only axis order flipped.
      */
     @Test
-    @DependsOnMethod("testSubgridFromEnvelope")
     public void testSubgridFromEnvelopeDifferentCRS() {
         final GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_LATITUDE_FIRST);
         envelope.setRange(0, -70, +80);
@@ -287,7 +281,6 @@ public final class GridDerivationTest extends TestCase {
      * than the source grid geometry. The additional dimensions should be ignored.
      */
     @Test
-    @DependsOnMethod("testSubgridFromEnvelope")
     public void testSubgridFromEnvelopeWithMoreDimensions() {
         GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84);
         envelope.setRange(0, -70, +80);
@@ -322,7 +315,6 @@ public final class GridDerivationTest extends TestCase {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-514">SIS-514</a>
      */
     @Test
-    @DependsOnMethod("testSubgridFromEnvelope")
     public void testSubgridFromEnvelopeWithLessDimensions() {
         GeneralEnvelope envelope = new GeneralEnvelope(HardCodedCRS.WGS84_WITH_TIME);
         envelope.setRange(0, -70, +80);

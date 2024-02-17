@@ -21,7 +21,6 @@ import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 
@@ -31,7 +30,6 @@ import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(EnvelopesTest.class)
 public final class EnvelopeReducerTest extends TestCase {
     /**
      * The envelopes on which to perform an operation.

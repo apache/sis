@@ -22,7 +22,6 @@ import org.apache.sis.storage.netcdf.base.Decoder;
 
 // Test dependencies
 import org.apache.sis.storage.netcdf.base.VariableTest;
-import org.apache.sis.test.DependsOn;
 
 // Specific to the main branch:
 import org.apache.sis.storage.netcdf.base.TestData;
@@ -35,7 +34,6 @@ import org.apache.sis.storage.netcdf.base.TestData;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({ChannelDecoderTest.class, VariableTest.class})
 public final class VariableInfoTest extends VariableTest {
     /**
      * Creates a new test.

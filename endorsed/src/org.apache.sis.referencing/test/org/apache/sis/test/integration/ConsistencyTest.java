@@ -44,7 +44,6 @@ import org.apache.sis.util.iso.DefaultNameSpace;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -60,10 +59,6 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    org.apache.sis.referencing.CRSTest.class,
-    org.apache.sis.io.wkt.WKTFormatTest.class
-})
 public final class ConsistencyTest extends TestCase {
     /**
      * Codes to exclude for now.

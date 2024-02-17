@@ -26,8 +26,6 @@ import org.opengis.metadata.maintenance.ScopeCode;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
@@ -38,10 +36,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    DefaultAttributeTypeTest.class,
-    PropertySingletonTest.class
-})
 public final class SingletonAttributeTest extends TestCase {
     /**
      * Creates a new test case.
@@ -96,7 +90,6 @@ public final class SingletonAttributeTest extends TestCase {
      * Tests {@link SingletonAttribute#quality()}.
      */
     @Test
-    @DependsOnMethod("testValue")
     @SuppressWarnings("unchecked")
     public void testQuality() {
         final AbstractAttribute<Integer> attribute = population();
@@ -137,7 +130,6 @@ public final class SingletonAttributeTest extends TestCase {
      * Tests attribute comparison.
      */
     @Test
-    @DependsOnMethod("testValue")
     @SuppressWarnings("ObjectEqualsNull")
     public void testEquals() {
         final AbstractAttribute<Integer> a1 = population();
@@ -163,7 +155,6 @@ public final class SingletonAttributeTest extends TestCase {
      * @throws CloneNotSupportedException should never happen.
      */
     @Test
-    @DependsOnMethod("testEquals")
     public void testClone() throws CloneNotSupportedException {
         final SingletonAttribute<Integer> a1 = population();
         final  AbstractAttribute<Integer> a2 = a1.clone();
@@ -175,7 +166,6 @@ public final class SingletonAttributeTest extends TestCase {
      * Tests serialization.
      */
     @Test
-    @DependsOnMethod("testEquals")
     public void testSerialization() {
         final AbstractAttribute<String> attribute = city();
         attribute.setValue("Atlantide");
@@ -186,7 +176,6 @@ public final class SingletonAttributeTest extends TestCase {
      * Tests {@link SingletonAttribute#toString()}.
      */
     @Test
-    @DependsOnMethod("testValue")
     public void testToString() {
         final AbstractAttribute<String> city = city();
         assertEquals("Attribute[“city” : String] = Utopia", city.toString());

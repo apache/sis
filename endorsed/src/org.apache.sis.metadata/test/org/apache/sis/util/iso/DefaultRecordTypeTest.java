@@ -26,8 +26,6 @@ import org.apache.sis.metadata.simple.SimpleAttributeType;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
@@ -38,7 +36,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(TypeNamesTest.class)
 public final class DefaultRecordTypeTest extends TestCase {
     /** Value of {@link DefaultRecordType#getContainer()}.  */ private DefaultRecordSchema container;
     /** Value of {@link DefaultRecordType#getTypeName()}.   */ private DefaultTypeName     recordTypeName;
@@ -103,7 +100,6 @@ public final class DefaultRecordTypeTest extends TestCase {
      * inconsistent arguments throw an exception.
      */
     @Test
-    @DependsOnMethod("testConstructor")
     public void testArgumentChecks() {
         init();
         final DefaultTypeName  correctRecordName      = recordTypeName;
@@ -140,7 +136,6 @@ public final class DefaultRecordTypeTest extends TestCase {
      * Tests serialization of a {@code RecordType}.
      */
     @Test
-    @DependsOnMethod("testConstructor")
     public void testSerialization() {
         init();
         synchronized (SerializableRecordSchema.class) {

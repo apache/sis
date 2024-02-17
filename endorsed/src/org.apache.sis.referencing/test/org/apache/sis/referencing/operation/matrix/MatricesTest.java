@@ -32,8 +32,6 @@ import org.apache.sis.util.iso.Types;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
@@ -47,14 +45,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  */
-@DependsOn({
-    Matrix1Test.class,
-    Matrix2Test.class,
-    Matrix3Test.class,
-    Matrix4Test.class,
-    GeneralMatrixTest.class,
-    NonSquareMatrixTest.class
-})
 public final class MatricesTest extends TestCase {
     /**
      * Creates a new test case.
@@ -112,7 +102,6 @@ public final class MatricesTest extends TestCase {
      * because this method will be the most frequently invoked one when building CRS.
      */
     @Test
-    @DependsOnMethod("testCreateTransformWithSameAxes")
     public void testCreateTransformWithDifferentAxes() {
         final MatrixSIS matrix = Matrices.createTransform(
                 new AxisDirection[] {NORTH, EAST, UP},
@@ -140,7 +129,6 @@ public final class MatricesTest extends TestCase {
      * because this method will be the most frequently invoked one when building CRS.
      */
     @Test
-    @DependsOnMethod("testCreateTransformWithDifferentAxes")
     public void testCreateTransformWithLessAxes() {
         final MatrixSIS matrix = Matrices.createTransform(
                 new AxisDirection[] {NORTH, EAST, UP},
@@ -166,7 +154,6 @@ public final class MatricesTest extends TestCase {
      * because this method will be the most frequently invoked one when building CRS.
      */
     @Test
-    @DependsOnMethod("testCreateTransformWithLessAxes")
     public void testCreateTransformWithRepeatedAxes() {
         final MatrixSIS matrix = Matrices.createTransform(
                 new AxisDirection[] {NORTH, EAST, UP},
@@ -292,7 +279,6 @@ public final class MatricesTest extends TestCase {
      * This method tests the example given in {@code Matrices.createTransform(…)} javadoc.
      */
     @Test
-    @DependsOnMethod({"testCreateTransformFromEnvelopes", "testCreateTransformWithLessAxes"})
     public void testCreateTransformFromEnvelopesAndAxes() {
         final Envelope srcEnvelope = new Envelope2D(null, -40, +20, 200, 100); // swapped (y,-x)
         final Envelope dstEnvelope = new Envelope2D(null, -10, -25, 300, 500);

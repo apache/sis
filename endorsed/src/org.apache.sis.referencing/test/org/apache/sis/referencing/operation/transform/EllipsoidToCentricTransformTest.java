@@ -34,8 +34,6 @@ import org.apache.sis.measure.Units;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
@@ -44,10 +42,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn({
-    CoordinateDomainTest.class,
-    ContextualParametersTest.class
-})
 public final class EllipsoidToCentricTransformTest extends MathTransformTestCase {
     /**
      * Creates a new test case.
@@ -128,10 +122,6 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
      * @throws TransformException if a conversion failed.
      */
     @Test
-    @DependsOnMethod({
-        "testGeographicToGeocentric",
-        "testGeocentricToGeographic"
-    })
     public void testRandomPoints() throws FactoryException, TransformException {
         final double delta = toRadians(100.0 / 60) / 1852;          // Approximately 100 metres
         derivativeDeltas  = new double[] {delta, delta, 100};       // (Δλ, Δφ, Δh)
@@ -208,7 +198,6 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
      * @throws TransformException should never happen.
      */
     @Test
-    @DependsOnMethod("testDerivativeOnSphere")
     public void testDerivative() throws FactoryException, TransformException {
         testDerivative(CommonCRS.WGS84.ellipsoid(), true);
         testDerivative(CommonCRS.WGS84.ellipsoid(), false);
@@ -223,7 +212,6 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
      * @throws TransformException if conversion of the sample point failed.
      */
     @Test
-    @DependsOnMethod("testRandomPoints")
     public void testSerialization() throws FactoryException, TransformException {
         createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
         transform = assertSerializedEquals(transform);

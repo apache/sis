@@ -33,7 +33,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Disabled;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
@@ -95,7 +94,6 @@ public final class ImmutableIdentifierTest extends TestCase {
      * Tests the constructor with the {@code "description"} attribute as a {@link SimpleInternationalString}.
      */
     @Test
-    @DependsOnMethod("testConstructorWithStringValues")
     public void testConstructorWithInternationalString() {
         final Map<String,Object> properties = properties();
         assertNotNull(properties.put("description", new SimpleInternationalString("Overwritten description")));
@@ -115,7 +113,6 @@ public final class ImmutableIdentifierTest extends TestCase {
      * Tests the constructor with the {@code "authority"} attribute as a {@link DefaultCitation}.
      */
     @Test
-    @DependsOnMethod("testConstructorWithStringValues")
     public void testConstructorWithCitation() {
         final Map<String,Object> properties = properties();
         assertNotNull(properties.put(AUTHORITY_KEY, new DefaultCitation("Another authority")));
@@ -137,7 +134,6 @@ public final class ImmutableIdentifierTest extends TestCase {
      * @see Citations#fromName(String)
      */
     @Test
-    @DependsOnMethod("testConstructorWithStringValues")
     public void testPredefinedCitation() {
         final Map<String,Object> properties = properties();
         assertNotNull(properties.put(AUTHORITY_KEY, Constants.EPSG));
@@ -157,7 +153,6 @@ public final class ImmutableIdentifierTest extends TestCase {
      * Tests the constructor with an argument of the wrong type.
      */
     @Test
-    @DependsOnMethod("testConstructorWithStringValues")
     public void testConstructorWithWrongType() {
         final Map<String,Object> properties = properties();
         assertNotNull(properties.put(AUTHORITY_KEY, Locale.CANADA));

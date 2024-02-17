@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 
@@ -33,7 +32,6 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn(AbstractDirectPositionTest.class)
 public final class GeneralDirectPositionTest extends TestCase {
     /**
      * Creates a new test case.

@@ -30,7 +30,6 @@ import org.apache.sis.referencing.factory.TestFactorySource;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -39,12 +38,6 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    org.apache.sis.referencing.CRSTest.class,
-    org.apache.sis.referencing.CommonCRSTest.class,
-    org.apache.sis.referencing.factory.sql.EPSGFactoryTest.class,
-    org.apache.sis.referencing.factory.MultiAuthoritiesFactoryTest.class
-})
 public final class CoordinateReferenceSystemTest extends TestCase {
     /**
      * Creates a new test case.

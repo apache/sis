@@ -25,7 +25,6 @@ import org.apache.sis.util.Version;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
@@ -108,7 +107,6 @@ public final class DefaultRepresentativeFractionTest extends TestCase {
      * @throws JAXBException if an error occurred during marshalling.
      */
     @Test
-    @DependsOnMethod("testMarshalling")
     public void testMarshallingLegacy() throws JAXBException {
         legacy = true;
         testMarshalling();

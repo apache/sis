@@ -57,8 +57,6 @@ import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
@@ -87,7 +85,6 @@ import org.apache.sis.metadata.iso.identification.DefaultAssociatedResource;
  * @author  Martin Desruisseaux (Geomatys)
  */
 @SuppressWarnings("OverlyStrongTypeCast")
-@DependsOn(PropertyInformationTest.class)
 public final class PropertyAccessorTest extends TestCase {
     /**
      * Creates a new test case.
@@ -207,7 +204,6 @@ public final class PropertyAccessorTest extends TestCase {
      * Such situation is usually temporary until the JAXB annotations are completed.
      */
     @Test
-    @DependsOnMethod("testConstructor")
     public void testConstructorWithInheritance() {
         assertMappingEquals(new PropertyAccessor(DataIdentification.class, DefaultDataIdentification.class, DefaultDataIdentification.class),
         //……Declaring type………………………Method………………………………………………………………………JavaBeans………………………………………………………UML identifier………………………………………Sentence……………………………………………………………Type………………………………………………………………
@@ -241,7 +237,6 @@ public final class PropertyAccessorTest extends TestCase {
      * This test may need to be updated if a future GeoAPI release modifies the {@link GeographicCRS} interface.
      */
     @Test
-    @DependsOnMethod("testConstructorWithInheritance")
     public void testConstructorWithCovariantReturnType() {
         final Class<?> type = GeographicCRS.class;
         assertMappingEquals(new PropertyAccessor(type, type, type),
@@ -261,7 +256,6 @@ public final class PropertyAccessorTest extends TestCase {
      * This method delegates to some {@link PropertyInformationTest} methods.
      */
     @Test
-    @DependsOnMethod("testConstructor")
     public void testInformation() {
         final PropertyAccessor accessor = createPropertyAccessor();
         PropertyInformationTest.validateTitle           (accessor.information(HardCodedCitations.ISO_19115, accessor.indexOf("title",            true)));
@@ -282,7 +276,6 @@ public final class PropertyAccessorTest extends TestCase {
      *     └─Presentation form…… Document digital</pre>
      */
     @Test
-    @DependsOnMethod("testConstructor")
     public void testGet() {
         final DefaultCitation  instance = HardCodedCitations.ISO_19111;
         final PropertyAccessor accessor = createPropertyAccessor();
@@ -317,7 +310,6 @@ public final class PropertyAccessorTest extends TestCase {
      *     └─ISBN…………………………… Some ISBN code</pre>
      */
     @Test
-    @DependsOnMethod("testGet")
     public void testSet() {
         final DefaultCitation  instance = new DefaultCitation();
         final PropertyAccessor accessor = createPropertyAccessor();
@@ -347,7 +339,6 @@ public final class PropertyAccessorTest extends TestCase {
      *     └─Title………………………… Some title</pre>
      */
     @Test
-    @DependsOnMethod("testSet")
     public void testSetNull() {
         final DefaultCitation  instance = new DefaultCitation("Some title");
         final PropertyAccessor accessor = createPropertyAccessor();
@@ -368,7 +359,6 @@ public final class PropertyAccessorTest extends TestCase {
      * but still be accepted by the map views.
      */
     @Test
-    @DependsOnMethod("testSet")
     public void testSetDeprecated() {
         final PropertyAccessor accessor = new PropertyAccessor(CoverageDescription.class,
                     DefaultCoverageDescription.class, DefaultCoverageDescription.class);
@@ -407,7 +397,6 @@ public final class PropertyAccessorTest extends TestCase {
      *     └─Title……………… Some title</pre>
      */
     @Test
-    @DependsOnMethod("testSet")
     public void testSetWithConversion() {
         final String           expected = "Some title";
         final DefaultCitation  instance = new DefaultCitation();
@@ -436,7 +425,6 @@ public final class PropertyAccessorTest extends TestCase {
      * @see #testSetInAppendMode()
      */
     @Test
-    @DependsOnMethod("testSet")
     public void testSetCollection() {
         final DefaultCitation instance = new DefaultCitation("Ignored title");
         final List<InternationalString> oldTitles = List.of(
@@ -472,7 +460,6 @@ public final class PropertyAccessorTest extends TestCase {
      *     └─Alternate title (2 of 2)…… Yet another title</pre>
      */
     @Test
-    @DependsOnMethod("testSet")
     public void testSetIntoCollection() {
         testSetIntoCollection(false);
     }
@@ -489,7 +476,6 @@ public final class PropertyAccessorTest extends TestCase {
      *     └─Alternate title (2 of 2)…… Yet another title</pre>
      */
     @Test
-    @DependsOnMethod("testSetIntoCollection")
     public void testSetIntoCollectionWithConversion() {
         testSetIntoCollection(true);
     }

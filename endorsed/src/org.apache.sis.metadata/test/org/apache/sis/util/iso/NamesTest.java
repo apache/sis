@@ -30,8 +30,6 @@ import org.apache.sis.util.UnknownNameException;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -40,7 +38,6 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(DefaultNameFactoryTest.class)
 public final class NamesTest extends TestCase {
     /**
      * Creates a new test case.
@@ -52,7 +49,6 @@ public final class NamesTest extends TestCase {
      * Tests {@link Names#createScopedName(GenericName, String, CharSequence)}.
      */
     @Test
-    @DependsOnMethod("testCreateLocalName")
     public void testCreateScopedName() {
         final LocalName scope = Names.createLocalName("Apache", null, "sis");
         final ScopedName name = Names.createScopedName(scope, null, "identifier");

@@ -28,7 +28,6 @@ import org.opengis.metadata.content.ImageDescription;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -39,7 +38,6 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({PropertyAccessorTest.class, PropertyInformationTest.class})
 public final class InformationMapTest extends TestCase {
     /**
      * Creates a new test case.

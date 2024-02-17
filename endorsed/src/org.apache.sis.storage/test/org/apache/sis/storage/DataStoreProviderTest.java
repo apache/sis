@@ -30,7 +30,6 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -40,7 +39,6 @@ import org.apache.sis.test.TestCase;
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(StorageConnectorTest.class)
 public final class DataStoreProviderTest extends TestCase {
     /**
      * A dummy provider instance to test. Only the

@@ -27,8 +27,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -39,7 +37,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(DefaultRecordSchemaTest.class)
 public final class DefaultRecordTest extends TestCase {
     /**
      * The record type to be shared by all tests.
@@ -137,7 +134,6 @@ public final class DefaultRecordTest extends TestCase {
      * Tests {@link DefaultRecord#toString()}.
      */
     @Test
-    @DependsOnMethod("testSetAll")
     public void testToString() {
         final DefaultRecord record = new DefaultRecord(recordType);
         record.setAll("Machu Picchu", -13.1639, -72.5468, null);
@@ -167,7 +163,6 @@ public final class DefaultRecordTest extends TestCase {
      * Tests serialization of a {@link DefaultRecord}.
      */
     @Test
-    @DependsOnMethod("testSetAll")
     public void testSerialization() {
         final var record = new DefaultRecord(recordType);
         record.setAll("Machu Picchu", -13.1639, -72.5468, null);
@@ -179,7 +174,6 @@ public final class DefaultRecordTest extends TestCase {
      * similar to {@link #testSetAll()}, {@link #testToString()} and {@link #testSerialization()}.
      */
     @Test
-    @DependsOnMethod({"testSetAll", "testToString", "testSerialization"})
     public void testPrimitiveType() {
         final var members = new LinkedHashMap<CharSequence,Class<?>>(8);
         assertNull(members.put("latitude",  Double.class));

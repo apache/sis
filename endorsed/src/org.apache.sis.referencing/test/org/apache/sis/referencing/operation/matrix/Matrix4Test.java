@@ -22,7 +22,6 @@ import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 
 // Specific to the main branch:
 import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
@@ -34,7 +33,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(SolverTest.class)
 public final class Matrix4Test extends MatrixTestCase {
     /**
      * Creates a new test case.

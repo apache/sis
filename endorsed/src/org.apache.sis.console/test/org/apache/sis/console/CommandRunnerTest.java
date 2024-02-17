@@ -25,7 +25,6 @@ import java.nio.charset.StandardCharsets;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.TestUtilities.getSingleton;
@@ -112,7 +111,6 @@ public final class CommandRunnerTest extends TestCase {
      * @throws InvalidOptionException should never happen.
      */
     @Test
-    @DependsOnMethod({"testLocale", "testTimeZone", "testEncoding"})
     public void testOptionMix() throws InvalidOptionException {
         final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST,
                 "--brief", "--locale", "ja", "--verbose", "--timezone", "JST");
@@ -130,7 +128,6 @@ public final class CommandRunnerTest extends TestCase {
      * @throws InvalidOptionException should never happen.
      */
     @Test
-    @DependsOnMethod("testLocale")
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testMissingOptionValue() throws InvalidOptionException {
         final CommandRunner c = new Dummy(EnumSet.allOf(Option.class), CommandRunner.TEST, "--brief"); // Should not comply.

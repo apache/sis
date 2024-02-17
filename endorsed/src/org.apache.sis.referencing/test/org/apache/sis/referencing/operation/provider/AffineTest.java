@@ -24,8 +24,6 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
@@ -35,7 +33,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(org.apache.sis.parameter.TensorValuesTest.class)
 public final class AffineTest extends TestCase {
     /**
      * Creates a new test case.
@@ -95,7 +92,6 @@ public final class AffineTest extends TestCase {
      * whether we comply with EPSG:9624 definition or not.
      */
     @Test
-    @DependsOnMethod("testParameters")
     public void testWKT() {
         final Matrix matrix = Matrices.createDiagonal(3, 3);
         assertWktEquals(

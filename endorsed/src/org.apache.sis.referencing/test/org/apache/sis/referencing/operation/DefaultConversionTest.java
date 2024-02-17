@@ -43,8 +43,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.datum.HardCodedDatum;
@@ -61,9 +59,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    DefaultTransformationTest.class     // Because similar to DefaultConversion but simpler.
-})
 public final class DefaultConversionTest extends TestCase {
     /**
      * The rotation from a CRS using the Paris prime meridian to a CRS using the Greenwich prime meridian,
@@ -225,7 +220,6 @@ public final class DefaultConversionTest extends TestCase {
      * @throws FactoryException if an error occurred while creating the conversion.
      */
     @Test
-    @DependsOnMethod("testConstruction")
     public void testDefiningConversion() throws FactoryException {
         final DefaultConversion reference = createLongitudeRotation(true);
         final DefaultConversion definingConversion = new DefaultConversion(
@@ -262,7 +256,6 @@ public final class DefaultConversionTest extends TestCase {
      * @throws FactoryException if an error occurred while creating the conversion.
      */
     @Test
-    @DependsOnMethod("testDefiningConversion")
     public void testSpecialize() throws FactoryException {
         DefaultConversion op = createLongitudeRotation(
                 createParisCRS(true,  HardCodedCS.GEODETIC_3D, false),
@@ -307,7 +300,6 @@ public final class DefaultConversionTest extends TestCase {
      * @throws FactoryException if an error occurred while creating the conversion.
      */
     @Test
-    @DependsOnMethod("testDefiningConversion")
     public void testWithInterpolationCRS() throws FactoryException {
         DefaultConversion op = createLongitudeRotation(HardCodedCRS.NTF_NORMALIZED_AXES,
                 createParisCRS(false, HardCodedCS.GEODETIC_2D, true), HardCodedCRS.TIME);
@@ -356,7 +348,6 @@ public final class DefaultConversionTest extends TestCase {
      * Tests serialization.
      */
     @Test
-    @DependsOnMethod("testConstruction")
     public void testSerialization() {
         verifyProperties(assertSerializedEquals(createLongitudeRotation(false)), false);
     }

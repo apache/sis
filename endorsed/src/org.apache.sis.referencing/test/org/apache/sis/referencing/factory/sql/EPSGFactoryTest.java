@@ -67,8 +67,6 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.LoggingWatcher;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import static org.apache.sis.test.Assertions.assertNotDeepEquals;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
 import static org.apache.sis.referencing.Assertions.assertAliasTipEquals;
@@ -83,10 +81,6 @@ import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Vadim Semenov
  */
-@DependsOn({
-    org.apache.sis.referencing.factory.AuthorityFactoryProxyTest.class,
-    org.apache.sis.referencing.factory.IdentifiedObjectFinderTest.class
-})
 public final class EPSGFactoryTest extends TestCase {
     /**
      * Creates a new test case.
@@ -156,7 +150,6 @@ public final class EPSGFactoryTest extends TestCase {
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    @DependsOnMethod("testWGS84")
     public void testGeographic2D() throws FactoryException {
         final EPSGFactory factory = TestFactorySource.factory;
         assumeTrue(factory != null);
@@ -177,7 +170,6 @@ public final class EPSGFactoryTest extends TestCase {
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    @DependsOnMethod("testGeographic2D")
     public void testGeographic3D() throws FactoryException {
         final EPSGFactory factory = TestFactorySource.factory;
         assumeTrue(factory != null);
@@ -212,7 +204,6 @@ public final class EPSGFactoryTest extends TestCase {
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    @DependsOnMethod("testGeographic2D")
     public void testProjected() throws FactoryException {
         final EPSGFactory factory = TestFactorySource.factory;
         assumeTrue(factory != null);
@@ -250,7 +241,6 @@ public final class EPSGFactoryTest extends TestCase {
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    @DependsOnMethod("testProjected")
     public void testProjectedNorthEast() throws FactoryException {
         final EPSGFactory factory = TestFactorySource.factory;
         assumeTrue(factory != null);
@@ -283,7 +273,6 @@ public final class EPSGFactoryTest extends TestCase {
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    @DependsOnMethod("testProjected")
     public void testProjectedWithSharedConversion() throws FactoryException {
         final EPSGFactory factory = TestFactorySource.factory;
         assumeTrue(factory != null);
@@ -320,7 +309,6 @@ public final class EPSGFactoryTest extends TestCase {
      * @see #testCreateByName()
      */
     @Test
-    @DependsOnMethod("testCreateByName")
     public void testProjectedByName() throws FactoryException {
         final EPSGFactory factory = TestFactorySource.factory;
         assumeTrue(factory != null);
@@ -421,7 +409,6 @@ public final class EPSGFactoryTest extends TestCase {
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    @DependsOnMethod({"testGeographic2D", "testVertical"})
     public void testCompound() throws FactoryException {
         final EPSGFactory factory = TestFactorySource.factory;
         assumeTrue(factory != null);
@@ -494,7 +481,6 @@ public final class EPSGFactoryTest extends TestCase {
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    @DependsOnMethod({"testGeographic2D", "testDeprecatedCoordinateSystems"})
     public void testDeprecatedGeographic() throws FactoryException {
         final EPSGFactory factory = TestFactorySource.factory;
         assumeTrue(factory != null);
@@ -516,7 +502,6 @@ public final class EPSGFactoryTest extends TestCase {
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    @DependsOnMethod({"testDeprecatedGeographic", "testDeprecatedCoordinateSystems"})
     public void testDeprecatedProjected() throws FactoryException {
         final EPSGFactory factory = TestFactorySource.factory;
         assumeTrue(factory != null);
@@ -762,7 +747,6 @@ public final class EPSGFactoryTest extends TestCase {
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    @DependsOnMethod("testProjectedWithSharedConversion")
     public void testConversion() throws FactoryException {
         final EPSGFactory factory = TestFactorySource.factory;
         assumeTrue(factory != null);
@@ -838,7 +822,6 @@ public final class EPSGFactoryTest extends TestCase {
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    @DependsOnMethod("testSimpleTransformation")
     public void testTransformation() throws FactoryException {
         final EPSGFactory factory = TestFactorySource.factory;
         assumeTrue(factory != null);
@@ -855,7 +838,6 @@ public final class EPSGFactoryTest extends TestCase {
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    @DependsOnMethod("testTransformation")
     public void testCreateFromCoordinateReferenceSystemCodes() throws FactoryException {
         final EPSGFactory factory = TestFactorySource.factory;
         assumeTrue(factory != null);
@@ -929,7 +911,6 @@ public final class EPSGFactoryTest extends TestCase {
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    @DependsOnMethod("testWGS84")
     public void testFindGeographic() throws FactoryException {
         final EPSGFactory factory = TestFactorySource.factory;
         assumeTrue(factory != null);
@@ -982,7 +963,6 @@ public final class EPSGFactoryTest extends TestCase {
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
-    @DependsOnMethod("testFindGeographic")
     public void testFindProjected() throws FactoryException {
         final EPSGFactory factory = TestFactorySource.factory;
         assumeTrue(factory != null);

@@ -41,8 +41,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
 
@@ -59,10 +57,6 @@ import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierE
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    CoordinateOperationRegistryTest.class,
-    CoordinateOperationFinderTest.class
-})
 public final class DefaultCoordinateOperationFactoryTest extends MathTransformTestCase {
     /**
      * The transformation factory to use for testing.
@@ -204,7 +198,6 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
-    @DependsOnMethod("testProjectionAndLongitudeRotation")
     public void testCompoundAndLongitudeRotation() throws ParseException, FactoryException, TransformException {
         final CoordinateReferenceSystem sourceCRS = parse(
                 "CompoundCRS[“NTF 4D”," +

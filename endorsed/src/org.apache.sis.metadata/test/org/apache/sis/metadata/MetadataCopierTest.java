@@ -31,7 +31,6 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.TestUtilities.getSingleton;
@@ -45,7 +44,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @see org.apache.sis.metadata.internal.MergerTest
  */
-@DependsOn(MetadataStandardTest.class)
 public final class MetadataCopierTest extends TestCase {
     /**
      * Creates a new test case.

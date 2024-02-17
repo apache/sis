@@ -23,7 +23,6 @@ import java.util.Locale;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
 
@@ -71,7 +70,6 @@ public final class StatisticsFormatTest extends TestCase {
      * This test uses the same numerical values as {@link #testFormattingWithoutHeader()}.
      */
     @Test
-    @DependsOnMethod("testFormattingWithoutHeader")
     public void testFormattingWithBorder() {
         final Statistics statistics = Statistics.forSeries("Temperature", "∂T/∂t", "∂²T/∂t²");
         statistics.accept(10);
@@ -101,7 +99,6 @@ public final class StatisticsFormatTest extends TestCase {
      * Tests the formatting of {@code Statistics} with customized number format.
      */
     @Test
-    @DependsOnMethod("testFormattingWithoutHeader")
     public void testFormattingPercent() {
         final Statistics statistics = new Statistics("Percent");
         statistics.accept(0.1);

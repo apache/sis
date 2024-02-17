@@ -28,7 +28,6 @@ import org.apache.sis.util.iso.DefaultNameFactory;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.bind.metadata.replace.ServiceParameterTest;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 // Specific to the main branch:
@@ -40,7 +39,6 @@ import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(ServiceParameterTest.class)
 public final class DefaultCoupledResourceTest extends TestCase {
     /**
      * Creates a new test case.

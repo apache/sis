@@ -22,7 +22,6 @@ import org.opengis.referencing.operation.TransformException;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 
 
@@ -101,7 +100,6 @@ public final class PolarToCartesianTest extends TransformTestCase {
      * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
-    @DependsOnMethod("testConversion")
     public void testCylindricalConversion() throws FactoryException, TransformException {
         transform = PolarToCartesian.INSTANCE.passthrough(DefaultMathTransformFactory.provider());
         tolerance = 1E-12;
@@ -116,7 +114,6 @@ public final class PolarToCartesianTest extends TransformTestCase {
      * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
-    @DependsOnMethod("testConversion")
     public void testDerivative() throws FactoryException, TransformException {
         transform = PolarToCartesian.INSTANCE.completeTransform(DefaultMathTransformFactory.provider());
         derivativeDeltas = new double[] {1E-6, 1E-6};
@@ -131,7 +128,6 @@ public final class PolarToCartesianTest extends TransformTestCase {
      * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
-    @DependsOnMethod("testDerivative")
     public void testCylindricalDerivative() throws FactoryException, TransformException {
         transform = PolarToCartesian.INSTANCE.passthrough(DefaultMathTransformFactory.provider());
         derivativeDeltas = new double[] {1E-6, 1E-6, 1E-6};
@@ -146,7 +142,6 @@ public final class PolarToCartesianTest extends TransformTestCase {
      * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
-    @DependsOnMethod("testDerivative")
     public void testConsistency() throws FactoryException, TransformException {
         transform = PolarToCartesian.INSTANCE.completeTransform(DefaultMathTransformFactory.provider());
         derivativeDeltas = new double[] {1E-6, 1E-6};
@@ -164,7 +159,6 @@ public final class PolarToCartesianTest extends TransformTestCase {
      * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
-    @DependsOnMethod("testCylindricalDerivative")
     public void testCylindricalConsistency() throws FactoryException, TransformException {
         transform = PolarToCartesian.INSTANCE.passthrough(DefaultMathTransformFactory.provider());
         derivativeDeltas = new double[] {1E-6, 1E-6, 1E-6};

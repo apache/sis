@@ -23,8 +23,6 @@ import org.apache.sis.feature.internal.AttributeConvention;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -34,7 +32,6 @@ import org.apache.sis.test.TestCase;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(LinkOperationTest.class)
 public final class StringJoinOperationTest extends TestCase {
     /**
      * Creates a new test case.
@@ -101,7 +98,6 @@ public final class StringJoinOperationTest extends TestCase {
      * This test does not use the {@code '\'} escape character.
      */
     @Test
-    @DependsOnMethod("testGetValue")
     public void testSetValue() {
         final DefaultFeatureType person = person();
         testSetValue(new DenseFeature (person));
@@ -123,7 +119,6 @@ public final class StringJoinOperationTest extends TestCase {
      * escape character.
      */
     @Test
-    @DependsOnMethod({"testGetValue", "testSetValue"})
     public void testEscapeCharacter() {
         final var feature = new DenseFeature(person());
         feature.setPropertyValue("name", "marc/emile\\julie");

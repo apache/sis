@@ -26,7 +26,6 @@ import org.apache.sis.xml.bind.Context;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
 
 // Specific to the main branch:
@@ -130,7 +129,6 @@ public final class DefaultContactTest extends TestCase implements Filter {
      * then query with both the new and the deprecated methods.
      */
     @Test
-    @DependsOnMethod("testSetPhones")
     public void testSetPhone() {
         testSetPhone(false);
     }
@@ -140,7 +138,6 @@ public final class DefaultContactTest extends TestCase implements Filter {
      * are using a SIS implementation of {@code Telephone}. This will test another code path.
      */
     @Test
-    @DependsOnMethod("testSetPhones")
     public void testSetNonSISPhone() {
         testSetPhone(true);
     }

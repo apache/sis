@@ -29,7 +29,6 @@ import org.apache.sis.storage.DataStoreException;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 // Specific to the main branch:
@@ -41,7 +40,6 @@ import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(StoreProviderTest.class)
 public final class StoreTest extends TestCase {
     /**
      * Creates a new test case.

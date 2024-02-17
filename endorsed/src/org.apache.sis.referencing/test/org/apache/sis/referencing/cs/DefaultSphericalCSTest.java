@@ -24,7 +24,6 @@ import org.apache.sis.referencing.util.AxisDirections;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
 
 // Specific to the main branch:
 import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
@@ -35,7 +34,6 @@ import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(AbstractCSTest.class)
 public final class DefaultSphericalCSTest extends TestCase {
     /**
      * Creates a new test case.

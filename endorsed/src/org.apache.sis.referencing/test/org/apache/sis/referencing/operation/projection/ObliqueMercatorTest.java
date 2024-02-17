@@ -26,7 +26,6 @@ import org.apache.sis.parameter.Parameters;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -35,7 +34,6 @@ import org.apache.sis.test.DependsOn;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  */
-@DependsOn(MercatorTest.class)
 public final class ObliqueMercatorTest extends MapProjectionTestCase {
     /**
      * Creates a new test case.

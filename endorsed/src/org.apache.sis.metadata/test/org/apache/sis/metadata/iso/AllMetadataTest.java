@@ -26,7 +26,6 @@ import org.apache.sis.metadata.PropertyConsistencyCheck;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.apache.sis.test.LoggingWatcher;
-import org.apache.sis.test.DependsOn;
 
 // Specific to the main branch:
 import org.opengis.util.CodeList;
@@ -37,7 +36,6 @@ import org.opengis.util.CodeList;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(org.apache.sis.metadata.PropertyAccessorTest.class)
 public final class AllMetadataTest extends PropertyConsistencyCheck {
     /**
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to

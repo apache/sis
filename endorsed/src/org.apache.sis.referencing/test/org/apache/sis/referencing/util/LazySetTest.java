@@ -22,7 +22,6 @@ import java.util.Iterator;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
 
@@ -69,7 +68,6 @@ public final class LazySetTest extends TestCase {
      * Tests {@link LazySet#size()} followed by {@link LazySet#isEmpty()}.
      */
     @Test
-    @DependsOnMethod("testIsEmptyAndSize")
     public void testSizeAndIsEmpty() {
         final LazySet<String> set = create();
         assertEquals(LABELS.length, set.size());
@@ -91,7 +89,6 @@ public final class LazySetTest extends TestCase {
      * Tests iteration using two iterators with interleaved calls to {@link Iterator#next()}.
      */
     @Test
-    @DependsOnMethod("testIteration")
     public void testInterleavedIteration() {
         final LazySet<String> set = create();
 

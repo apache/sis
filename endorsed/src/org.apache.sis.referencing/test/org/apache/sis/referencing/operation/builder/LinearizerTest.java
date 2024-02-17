@@ -27,7 +27,6 @@ import org.apache.sis.geometry.Envelope2D;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 
 // Specific to the main branch:
@@ -39,7 +38,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(LocalizationGridBuilderTest.class)
 public final class LinearizerTest extends TestCase {
     /**
      * Creates a new test case.

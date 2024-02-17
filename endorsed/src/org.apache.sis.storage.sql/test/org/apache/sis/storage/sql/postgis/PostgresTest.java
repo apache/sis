@@ -52,7 +52,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.storage.sql.SQLStoreTest;
 import org.apache.sis.storage.sql.feature.GeometryGetterTest;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.metadata.sql.TestDatabase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -67,7 +66,6 @@ import org.apache.sis.feature.AbstractFeature;
  * @author  Alexis Manin (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({RasterReaderTest.class, RasterWriterTest.class})
 public final class PostgresTest extends TestCase {
     /**
      * Creates a new test case.

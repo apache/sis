@@ -35,7 +35,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.referencing.TransformTestCase;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.referencing.cs.HardCodedCS;
 
 
@@ -44,10 +43,6 @@ import org.apache.sis.referencing.cs.HardCodedCS;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    SphericalToCartesianTest.class,
-    CartesianToSphericalTest.class
-})
 public final class CoordinateSystemTransformTest extends TransformTestCase {
     /**
      * A right-handed spherical coordinate system.

@@ -26,8 +26,6 @@ import static org.apache.sis.referencing.util.Formulas.JULIAN_YEAR_LENGTH;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.date;
 
@@ -40,7 +38,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(BursaWolfParametersTest.class)
 public final class TimeDependentBWPTest extends TestCase {
     /**
      * Creates a new test case.
@@ -98,7 +95,6 @@ public final class TimeDependentBWPTest extends TestCase {
      * @throws NoninvertibleMatrixException Should not happen.
      */
     @Test
-    @DependsOnMethod("testEpsgCalculation")
     public void testSetPositionVectorTransformation() throws NoninvertibleMatrixException {
         /*
          * The transformation that we are going to test use as input

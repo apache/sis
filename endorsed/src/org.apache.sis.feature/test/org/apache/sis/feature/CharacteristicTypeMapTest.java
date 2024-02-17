@@ -24,7 +24,6 @@ import static org.apache.sis.feature.DefaultAssociationRole.NAME_KEY;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -34,7 +33,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(DefaultAttributeTypeTest.class)
 public final class CharacteristicTypeMapTest extends TestCase {
     /**
      * Creates a new test case.

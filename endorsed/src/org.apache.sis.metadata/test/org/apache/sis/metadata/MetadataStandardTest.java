@@ -37,8 +37,6 @@ import org.apache.sis.util.ComparisonMode;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -60,12 +58,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    PropertyAccessorTest.class,
-    InformationMapTest.class,
-    NameMapTest.class,
-    TypeMapTest.class,
-    ValueMapTest.class})
 public final class MetadataStandardTest extends TestCase {
     /**
      * The standard being tested.
@@ -131,7 +123,6 @@ public final class MetadataStandardTest extends TestCase {
      * Tests {@link MetadataStandard#getInterface(Class)}.
      */
     @Test
-    @DependsOnMethod("testIsMetadata")
     public void testGetInterface() {
         standard = MetadataStandard.ISO_19115;
         assertEquals(Citation.class,         getInterface(Citation.class));
@@ -163,7 +154,6 @@ public final class MetadataStandardTest extends TestCase {
      * Tests {@link MetadataStandard#getAccessor(CacheKey, boolean)}.
      */
     @Test
-    @DependsOnMethod("testGetInterface")
     public void testGetAccessor() {
         standard = MetadataStandard.ISO_19115;
         assertEquals(Citation.class,         getAccessor(DefaultCitation.class, true));
@@ -184,7 +174,6 @@ public final class MetadataStandardTest extends TestCase {
      * A {@link ClassCastException} is expected.
      */
     @Test
-    @DependsOnMethod("testGetInterface")
     public void testGetWrongInterface() {
         standard = new MetadataStandard("SIS", "org.apache.sis.dummy.", (MetadataStandard[]) null);
         var e = assertThrows(ClassCastException.class, () -> getInterface(DefaultCitation.class));
@@ -195,7 +184,6 @@ public final class MetadataStandardTest extends TestCase {
      * Tests the {@link MetadataStandard#equals(Object, Object, ComparisonMode)} method.
      */
     @Test
-    @DependsOnMethod("testGetAccessor")
     public void testEquals() {
         standard = MetadataStandard.ISO_19115;
 
@@ -238,7 +226,6 @@ public final class MetadataStandardTest extends TestCase {
      * would produce {@link StackOverflowError}.
      */
     @Test
-    @DependsOnMethod("testEquals")
     public void testEqualsOnCyclicMetadata() {
         final DefaultAcquisitionInformation p1 = createCyclicMetadata();
         final DefaultAcquisitionInformation p2 = createCyclicMetadata();
@@ -256,7 +243,6 @@ public final class MetadataStandardTest extends TestCase {
      * {@code MetadataStandard} methods depend on it ({@code equals}, {@code hashCode}, {@code prune}, <i>etc.</i>).
      */
     @Test
-    @DependsOnMethod("testGetAccessor")
     public void testValueMap() {
         final var instance = new DefaultCitation(HardCodedCitations.EPSG);
         final Map<String,Object> map = MetadataStandard.ISO_19115.asValueMap(instance, null,
@@ -295,7 +281,6 @@ public final class MetadataStandardTest extends TestCase {
      * hash code values of all non-empty properties, plus the hash code of the interface.
      */
     @Test
-    @DependsOnMethod("testValueMap")
     public void testHashCode() {
         standard = MetadataStandard.ISO_19115;
         final DefaultCitation instance = HardCodedCitations.EPSG;
@@ -312,7 +297,6 @@ public final class MetadataStandardTest extends TestCase {
      * @see AbstractMetadataTest#testHashCodeOnCyclicMetadata()
      */
     @Test
-    @DependsOnMethod("testHashCode")
     public void testHashCodeOnCyclicMetadata() {
         standard = MetadataStandard.ISO_19115;
         final int code = standard.hashCode(createCyclicMetadata());

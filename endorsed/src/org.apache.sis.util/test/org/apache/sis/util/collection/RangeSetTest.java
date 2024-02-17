@@ -33,8 +33,6 @@ import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_SECOND;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.Performance;
 import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -46,7 +44,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  */
-@DependsOn(org.apache.sis.measure.RangeTest.class)
 public final class RangeSetTest extends TestCase {
     /**
      * Tolerance factor for comparison of floating point numbers.
@@ -345,7 +342,6 @@ public final class RangeSetTest extends TestCase {
      * resulting in 2 ranges.
      */
     @Test
-    @DependsOnMethod("testRangeOfIntegers")
     public void testRemoveRangeOfIntegers() {
         final RangeSet<Integer> ranges = RangeSet.create(Integer.class, true, false);
         assertFalse(ranges.remove(Integer.MIN_VALUE, Integer.MAX_VALUE), "Remove on empty collection should return false.");
@@ -417,7 +413,6 @@ public final class RangeSetTest extends TestCase {
      * This test uses more ranges than {@link #testRemoveRangeOfIntegers()} did.
      */
     @Test
-    @DependsOnMethod("testRemoveRangeOfIntegers")
     public void testRemoveRangeOfDoubles() {
         /*
          *                       A0   B0    Ai       Bi    An    Bn

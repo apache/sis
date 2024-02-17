@@ -34,7 +34,6 @@ import org.apache.sis.metadata.iso.extent.Extents;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
@@ -46,13 +45,6 @@ import static org.apache.sis.metadata.Assertions.assertTitleEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    org.apache.sis.metadata.ValueMapTest.class,
-    org.apache.sis.metadata.iso.citation.DefaultCitationTest.class,
-    org.apache.sis.metadata.iso.citation.DefaultCitationDateTest.class,
-    org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBoxTest.class,
-    DefaultKeywordsTest.class
-})
 public final class DefaultDataIdentificationTest extends TestCase {
     /**
      * Creates a new test case.

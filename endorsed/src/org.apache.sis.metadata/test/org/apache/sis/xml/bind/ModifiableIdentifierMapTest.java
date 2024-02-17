@@ -32,7 +32,6 @@ import static org.apache.sis.xml.IdentifierSpace.*;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -42,7 +41,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(IdentifierMapAdapterTest.class)
 public final class ModifiableIdentifierMapTest extends TestCase {
     /**
      * The HREF string to replace by {@link XLink#toString()}.

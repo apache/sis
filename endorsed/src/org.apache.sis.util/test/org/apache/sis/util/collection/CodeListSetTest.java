@@ -30,7 +30,6 @@ import static org.opengis.referencing.cs.AxisDirection.*;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOnMethod;
 
 
 /**
@@ -124,7 +123,6 @@ public final class CodeListSetTest extends TestCase {
      * Tests the {@link CodeListSet#remove(Object)} method.
      */
     @Test
-    @DependsOnMethod("testContains")
     public void testRemove() {
         final CodeListSet<AxisDirection> c = create(4);
         assertFalse(c.remove(null), "Should be null-safe.");
@@ -149,7 +147,6 @@ public final class CodeListSetTest extends TestCase {
      * Tests the {@link CodeListSet#containsAll(Collection)} method.
      */
     @Test
-    @DependsOnMethod("testRemove")
     public void testContainsAll() {
         final CodeListSet<AxisDirection> c = create(4);
         final CodeListSet<AxisDirection> o = create(4);
@@ -166,7 +163,6 @@ public final class CodeListSetTest extends TestCase {
      * Tests the {@link CodeListSet#removeAll(Collection)} method.
      */
     @Test
-    @DependsOnMethod("testToArray")
     public void testRemoveAll() {
         final CodeListSet<AxisDirection> c = create(4);
         final CodeListSet<AxisDirection> o = create(2);
@@ -183,7 +179,6 @@ public final class CodeListSetTest extends TestCase {
      * Tests the {@link CodeListSet#removeAll(Collection)} method.
      */
     @Test
-    @DependsOnMethod("testToArray")
     public void testRetainAll() {
         final CodeListSet<AxisDirection> c = create(4);
         final CodeListSet<AxisDirection> o = create(2);
@@ -201,7 +196,6 @@ public final class CodeListSetTest extends TestCase {
      * Tests the {@link CodeListSet#addAll(Collection)} method.
      */
     @Test
-    @DependsOnMethod("testToArray")
     public void testAddAll() {
         final CodeListSet<AxisDirection> c = create(1);
         final CodeListSet<AxisDirection> o = create(3);
@@ -216,7 +210,6 @@ public final class CodeListSetTest extends TestCase {
      * Tests the creation of a set filled with with all known values.
      */
     @Test
-    @DependsOnMethod("testContains")
     public void testFill() {
         final CodeListSet<AxisDirection> c = new CodeListSet<>(AxisDirection.class, true);
         assertTrue(c.size() >= 32, "Expect at least 32 elements as of GeoAPI 3.0.");

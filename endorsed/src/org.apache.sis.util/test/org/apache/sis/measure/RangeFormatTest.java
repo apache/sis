@@ -36,7 +36,6 @@ import static org.apache.sis.util.internal.StandardDateFormat.UTC;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -44,7 +43,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(MeasurementRangeTest.class)
 public final class RangeFormatTest extends TestCase {
     /**
      * The format being tested.

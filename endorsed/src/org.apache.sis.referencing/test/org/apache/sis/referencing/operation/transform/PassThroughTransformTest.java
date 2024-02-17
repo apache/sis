@@ -33,7 +33,6 @@ import org.apache.sis.util.ArraysExt;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.DependsOn;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 
 // Specific to the main branch:
@@ -45,11 +44,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn({
-    CoordinateDomainTest.class,
-    LinearTransformTest.class,
-    ExponentialTransform1DTest.class
-})
 public final class PassThroughTransformTest extends MathTransformTestCase {
     /**
      * The random number generator to be used in this test.

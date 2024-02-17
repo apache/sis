@@ -29,8 +29,6 @@ import static org.apache.sis.util.internal.Constants.NUM_COL;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.referencing.Assertions.assertEpsgIdentifierEquals;
@@ -42,11 +40,6 @@ import static org.apache.sis.referencing.Assertions.assertAliasTipEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    DefaultParameterDescriptorTest.class,
-    DefaultParameterValueTest.class,
-    ParametersTest.class
-})
 public class TensorParametersTest extends TestCase {
     /**
      * The parameters to use for testing purpose. Mostly identical to {@link TensorParameters#WKT1},
@@ -154,7 +147,6 @@ public class TensorParametersTest extends TestCase {
      * Tests {@link TensorParameters#getElementDescriptor(int[])}.
      */
     @Test
-    @DependsOnMethod("testIndicesToName")
     public void testGetElementDescriptor() {
         final Double N0 = 0.0;
         final Double N1 = 1.0;
@@ -175,7 +167,6 @@ public class TensorParametersTest extends TestCase {
     /**
      * Tests {@link TensorParameters#getElementDescriptor(int[])} with a value outside the cache capacity.
      */
-    @DependsOnMethod("testGetElementDescriptor")
     public void testGetElementDescriptorOutsideCache() {
         final int row = TensorParameters.CACHE_SIZE + 1;
         final int col = TensorParameters.CACHE_SIZE + 2;
@@ -212,7 +203,6 @@ public class TensorParametersTest extends TestCase {
      * Tests {@link TensorParameters#getAllDescriptors(int[])} for a 1×1, 2×3 and 3×3 matrices.
      */
     @Test
-    @DependsOnMethod("testGetElementDescriptor")
     public void testGetAllDescriptors() {
         final Double  N0 = 0.0;
         final Double  N1 = 1.0;
@@ -275,7 +265,6 @@ public class TensorParametersTest extends TestCase {
      * {@link TensorParameters#toMatrix(ParameterValueGroup)}.
      */
     @Test
-    @DependsOnMethod("testGetAllDescriptors")
     public void testMatrixConversion() {
         final int size = StrictMath.min(6, TensorParameters.CACHE_SIZE);
         final Random random = TestUtilities.createRandomNumberGenerator();
