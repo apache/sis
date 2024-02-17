@@ -36,8 +36,8 @@ import org.apache.sis.util.Debug;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestCase;
 import static org.apache.sis.feature.Assertions.assertPixelsEqual;
+import org.apache.sis.test.TestCase;
 
 
 /**
