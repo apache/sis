@@ -55,7 +55,7 @@ import static org.apache.sis.referencing.Assertions.assertWktEqualsRegex;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.test.Assert.assertAxisDirectionsEqual;
+import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
 
 
 /**
@@ -172,7 +172,7 @@ public final class CommonAuthorityFactoryTest extends TestCase {
         assertSame   (crs,  factory.createGeographicCRS("OGC:84"));         // Not in real use as far as I know.
         assertSame   (crs,  factory.createGeographicCRS("OGC:CRS84"));
         assertNotSame(crs,  factory.createGeographicCRS("CRS:83"));
-        assertAxisDirectionsEqual("CS", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
     }
 
     /**
@@ -188,7 +188,7 @@ public final class CommonAuthorityFactoryTest extends TestCase {
         assertSame   (crs,  factory.createGeographicCRS("CRS:CRS83"));
         assertNotSame(crs,  factory.createGeographicCRS("CRS:84"));
         assertNotDeepEquals(CommonCRS.WGS84.normalizedGeographic(), crs);
-        assertAxisDirectionsEqual("CS", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
     }
 
     /**
@@ -202,7 +202,7 @@ public final class CommonAuthorityFactoryTest extends TestCase {
         assertSame (crs,  factory.createVerticalCRS("88"));
         assertSame (crs,  factory.createVerticalCRS("CRS88"));
         assertSame (crs,  factory.createVerticalCRS("CRS:CRS 88"));
-        assertAxisDirectionsEqual("CS", crs.getCoordinateSystem(), AxisDirection.UP);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.UP);
     }
 
     /**
@@ -216,7 +216,7 @@ public final class CommonAuthorityFactoryTest extends TestCase {
         assertSame    (crs,  factory.createEngineeringCRS("1"));
         assertSame    (crs,  factory.createEngineeringCRS("CRS1"));
         assertSame    (crs,  factory.createEngineeringCRS("CRS:CRS 1"));
-        assertAxisDirectionsEqual("CS", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.SOUTH);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.SOUTH);
     }
 
     /**
@@ -243,7 +243,7 @@ public final class CommonAuthorityFactoryTest extends TestCase {
         assertEquals("32610", getSingleton(crs.getIdentifiers()).getCode());
         final ParameterValueGroup p = crs.getConversionFromBase().getParameterValues();
         assertEquals(TransverseMercator.NAME, crs.getConversionFromBase().getMethod().getName().getCode());
-        assertAxisDirectionsEqual("CS", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
         assertEquals(-123, p.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue());
         assertEquals(   0, p.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue());
         assertEquals(   0, p.parameter(Constants.FALSE_NORTHING)    .doubleValue());
@@ -286,7 +286,7 @@ public final class CommonAuthorityFactoryTest extends TestCase {
 
         final ParameterValueGroup p = crs.getConversionFromBase().getParameterValues();
         assertEquals(TransverseMercator.NAME, crs.getConversionFromBase().getMethod().getName().getCode());
-        assertAxisDirectionsEqual("CS", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
         assertEquals(-122, p.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue());
         assertEquals(  10, p.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue());
         assertEquals(   0, p.parameter(Constants.FALSE_NORTHING)    .doubleValue());
@@ -303,7 +303,7 @@ public final class CommonAuthorityFactoryTest extends TestCase {
     public void testAuto42003() throws FactoryException {
         final ProjectedCRS crs = factory.createProjectedCRS("AUTO:42003,9001,10,45");
         final ParameterValueGroup p = crs.getConversionFromBase().getParameterValues();
-        assertAxisDirectionsEqual("CS", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
         assertEquals(10, p.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue());
         assertEquals(45, p.parameter(Constants.LATITUDE_OF_ORIGIN).doubleValue());
     }
@@ -318,7 +318,7 @@ public final class CommonAuthorityFactoryTest extends TestCase {
     public void testAuto42004() throws FactoryException {
         final ProjectedCRS crs = factory.createProjectedCRS("AUTO2:42004,1,10,45");
         final ParameterValueGroup p = crs.getConversionFromBase().getParameterValues();
-        assertAxisDirectionsEqual("CS", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
         assertEquals(10, p.parameter(Constants.CENTRAL_MERIDIAN)   .doubleValue());
         assertEquals(45, p.parameter(Constants.STANDARD_PARALLEL_1).doubleValue());
         assertInstanceOf(LinearTransform.class, crs.getConversionFromBase().getMathTransform(),
@@ -336,7 +336,7 @@ public final class CommonAuthorityFactoryTest extends TestCase {
     public void testAuto42005() throws FactoryException {
         final ProjectedCRS crs = factory.createProjectedCRS("AUTO:42005,9001,10,45");
         final ParameterValueGroup p = crs.getConversionFromBase().getParameterValues();
-        assertAxisDirectionsEqual("CS", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
         assertEquals(10, p.parameter(Constants.CENTRAL_MERIDIAN)  .doubleValue());
     }
 

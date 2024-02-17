@@ -34,7 +34,7 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.test.Assert.assertIdentifierEquals;
+import static org.opengis.test.Assertions.assertIdentifierEquals;
 
 
 /**
@@ -121,8 +121,8 @@ public final class DefaultTemporalDatumTest extends TestCase {
     @Test
     public void testUnmarshalling() throws JAXBException {
         final DefaultTemporalDatum datum = unmarshalFile(DefaultTemporalDatum.class, openTestFile());
-        assertIdentifierEquals("identifier", "Apache Spatial Information System", "SIS", null, "MJ",
-                getSingleton(datum.getIdentifiers()));
+        assertIdentifierEquals("Apache Spatial Information System", "SIS", null, "MJ",
+                               getSingleton(datum.getIdentifiers()), "identifier");
         assertEquals("Modified Julian", datum.getName().getCode());
         assertEquals("Time measured as days since November 17, 1858 at 00:00 UTC.", datum.getRemarks().toString());
         assertEquals("History.", datum.getScope().toString());

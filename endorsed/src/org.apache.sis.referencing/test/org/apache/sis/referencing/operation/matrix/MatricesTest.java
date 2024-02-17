@@ -38,7 +38,7 @@ import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.test.Assert.assertMatrixEquals;
+import static org.opengis.test.Assertions.assertMatrixEquals;
 
 
 /**
@@ -123,12 +123,13 @@ public final class MatricesTest extends TestCase {
         assertFalse(matrix.isIdentity());
         assertEquals(4, matrix.getNumRow());
         assertEquals(4, matrix.getNumCol());
-        assertMatrixEquals("(N,E,U) → (W,U,S)", Matrices.create(4, 4, new double[] {
-             0,-1, 0, 0,
-             0, 0, 1, 0,
-            -1, 0, 0, 0,
-             0, 0, 0, 1
-        }), matrix, STRICT);
+        Matrix expected = Matrices.create(4, 4, new double[] {
+            0,-1, 0, 0,
+            0, 0, 1, 0,
+           -1, 0, 0, 0,
+            0, 0, 0, 1
+        });
+        assertMatrixEquals(expected, matrix, STRICT, "(N,E,U) → (W,U,S)");
     }
 
     /**
@@ -149,11 +150,12 @@ public final class MatricesTest extends TestCase {
         assertFalse (matrix.isIdentity());
         assertEquals(3, matrix.getNumRow());
         assertEquals(4, matrix.getNumCol());
-        assertMatrixEquals("(N,E,U) → (D,N)", Matrices.create(3, 4, new double[] {
+        Matrix expected = Matrices.create(3, 4, new double[] {
             0, 0,-1, 0,
             1, 0, 0, 0,
             0, 0, 0, 1
-        }), matrix, STRICT);
+        });
+        assertMatrixEquals(expected, matrix, STRICT, "(N,E,U) → (D,N)");
     }
 
     /**
@@ -174,11 +176,12 @@ public final class MatricesTest extends TestCase {
         assertFalse (matrix.isIdentity());
         assertEquals(3, matrix.getNumRow());
         assertEquals(4, matrix.getNumCol());
-        assertMatrixEquals("(N,E,U) → (D,D)", Matrices.create(3, 4, new double[] {
+        Matrix expected = Matrices.create(3, 4, new double[] {
             0, 0,-1, 0,
             0, 0,-1, 0,
             0, 0, 0, 1
-        }), matrix, STRICT);
+        });
+        assertMatrixEquals(expected, matrix, STRICT, "(N,E,U) → (D,D)");
     }
 
     /**
@@ -300,11 +303,12 @@ public final class MatricesTest extends TestCase {
         assertFalse(matrix.isIdentity());
         assertEquals(3, matrix.getNumRow());
         assertEquals(3, matrix.getNumCol());
-        assertMatrixEquals("(N,E) → (E,N)", Matrices.create(3, 3, new double[] {
+        Matrix expected = Matrices.create(3, 3, new double[] {
             0,   -3.0, 350,
             2.5,  0,    75,
             0,    0,     1
-        }), matrix, STRICT);
+        });
+        assertMatrixEquals(expected, matrix, STRICT, "(N,E) → (E,N)");
         /*
          * Test dropping a dimension.
          */
@@ -316,11 +320,12 @@ public final class MatricesTest extends TestCase {
                 dstEnvelope, new AxisDirection[] {EAST, NORTH});
         assertEquals(3, matrix.getNumRow());
         assertEquals(4, matrix.getNumCol());
-        assertMatrixEquals("(N,E,U) → (E,N)", Matrices.create(3, 4, new double[] {
+        expected = Matrices.create(3, 4, new double[] {
             0,   -3.0, 0, 350,
             2.5,  0,   0,  75,
             0,    0,   0,   1
-        }), matrix, STRICT);
+        });
+        assertMatrixEquals(expected, matrix, STRICT, "(N,E,U) → (E,N)");
     }
 
     /**
@@ -403,12 +408,13 @@ public final class MatricesTest extends TestCase {
             9, 8, 7, 6, 5,
             4, 3, 2, 1, -1
         });
-        // Matrix types are different in following test.
-        assertMatrixEquals("To square matrix", Matrices.create(3, 3, new double[] {
+        // Matrix type is different in the following test.
+        Matrix expected = Matrices.create(3, 3, new double[] {
             1, 2, 9,
             3, 4, 8,
             4, 3, -1
-        }), Matrices.resizeAffine(matrix, 3, 3), STRICT);
+        });
+        assertMatrixEquals(expected, Matrices.resizeAffine(matrix, 3, 3), STRICT, "To square matrix");
     }
 
     /**

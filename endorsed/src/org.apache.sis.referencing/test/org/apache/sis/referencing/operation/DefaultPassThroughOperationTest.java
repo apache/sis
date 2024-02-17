@@ -33,7 +33,7 @@ import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.test.Assert.assertIdentifierEquals;
+import static org.opengis.test.Assertions.assertIdentifierEquals;
 
 
 /**
@@ -74,10 +74,10 @@ public final class DefaultPassThroughOperationTest extends TestCase {
         final CoordinateReferenceSystem sourceCRS = toTest.getSourceCRS();
         final CoordinateReferenceSystem targetCRS = toTest.getTargetCRS();
         final CoordinateOperation       operation = toTest.getOperation();
-        assertIdentifierEquals(          "identifier", "test", "test", null, "passthrough", getSingleton(toTest   .getIdentifiers()));
-        assertIdentifierEquals("sourceCRS.identifier", "test", "test", null, "source",      getSingleton(sourceCRS.getIdentifiers()));
-        assertIdentifierEquals("targetCRS.identifier", "test", "test", null, "target",      getSingleton(targetCRS.getIdentifiers()));
-        assertIdentifierEquals("operation.identifier", "test", "test", null, "rotation",    getSingleton(operation.getIdentifiers()));
+        assertIdentifierEquals("test", "test", null, "passthrough", getSingleton(toTest   .getIdentifiers()),           "identifier");
+        assertIdentifierEquals("test", "test", null, "source",      getSingleton(sourceCRS.getIdentifiers()), "sourceCRS.identifier");
+        assertIdentifierEquals("test", "test", null, "target",      getSingleton(targetCRS.getIdentifiers()), "targetCRS.identifier");
+        assertIdentifierEquals("test", "test", null, "rotation",    getSingleton(operation.getIdentifiers()), "operation.identifier");
         assertInstanceOf(   CompoundCRS.class, sourceCRS);
         assertInstanceOf(   CompoundCRS.class, targetCRS);
         assertInstanceOf(Transformation.class, operation);

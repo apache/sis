@@ -33,7 +33,7 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.test.Assert.assertMatrixEquals;
+import static org.opengis.test.Assertions.assertMatrixEquals;
 
 
 /**
@@ -110,20 +110,18 @@ public final class WraparoundTransformTest extends TestCase {
          * WraparoundTransform outputs are in [−180 … 180] range, so we expect
          * a 180° shift for getting results in the [0 … 360]° range.
          */
-        assertMatrixEquals("denormalize", new Matrix3(
-                1,   0,    0,                           // Latitude (no wrap around)
-                0,   1,  180,                           // Longitude in [0 … 360] range.
-                0,   0,    1),
-                MathTransforms.getMatrix(steps.get(2)), STRICT);
+        assertMatrixEquals(new Matrix3(1,  0,    0,        // Latitude (no wrap around)
+                                       0,  1,  180,        // Longitude in [0 … 360] range.
+                                       0,  0,    1),
+                MathTransforms.getMatrix(steps.get(2)), STRICT, "denormalize");
         /*
          * The normalization is the inverse of above matrix.
          * But we expect the normalization matrix to be concatenated with the (3, 5) scale operation.
          */
-        assertMatrixEquals("normalize", new Matrix3(
-                3,  0,    0,                            // 3 is a factor in MathTransforms.scale(…).
-                0,  5, -180,                            // 5 is (idem).
-                0,  0,    1),
-                MathTransforms.getMatrix(steps.get(0)), STRICT);
+        assertMatrixEquals(new Matrix3(3,  0,    0,         // 3 is a factor in MathTransforms.scale(…).
+                                       0,  5, -180,         // 5 is (idem).
+                                       0,  0,    1),
+                MathTransforms.getMatrix(steps.get(0)), STRICT, "normalize");
         /*
          * Test transforming some points.
          */
@@ -168,21 +166,19 @@ public final class WraparoundTransformTest extends TestCase {
          * WraparoundTransform outputs are in [−180 … 180] range in longitude case,
          * so we expect a 180° shift for getting results in the [0 … 360]° range.
          */
-        assertMatrixEquals("denormalize", new Matrix4(
-                1,   0,   0,   0,                           // Longitude in [-180 … 180] range.
-                0,   1,   0,   0,                           // Latitude (no wrap around)
-                0,   0,   1, 183.5,                         // Day of year in [1 … 366] range.
-                0,   0,   0,   1),
-                MathTransforms.getMatrix(steps.get(3)), STRICT);
+        assertMatrixEquals(new Matrix4(1,   0,   0,   0,        // Longitude in [-180 … 180] range.
+                                       0,   1,   0,   0,        // Latitude (no wrap around)
+                                       0,   0,   1, 183.5,      // Day of year in [1 … 366] range.
+                                       0,   0,   0,   1),
+                MathTransforms.getMatrix(steps.get(3)), STRICT, "denormalize");
         /*
          * The normalization is the inverse of above matrix (when source and target axes have the same span).
          * But we expect the normalization matrix to be concatenated with the (3, 2, 5) scale operation.
          */
-        assertMatrixEquals("normalize", new Matrix4(
-                3,   0,   0,    0,                          // 3 is a factor in MathTransforms.scale(…).
-                0,   2,   0,    0,                          // 2 is (idem).
-                0,   0,   5, -183.5,                        // 5 is (idem).
-                0,   0,   0,    1),
-                MathTransforms.getMatrix(steps.get(0)), 1E-15);
+        assertMatrixEquals(new Matrix4(3,   0,   0,    0,       // 3 is a factor in MathTransforms.scale(…).
+                                       0,   2,   0,    0,       // 2 is (idem).
+                                       0,   0,   5, -183.5,     // 5 is (idem).
+                                       0,   0,   0,    1),
+                MathTransforms.getMatrix(steps.get(0)), 1E-15, "normalize");
     }
 }

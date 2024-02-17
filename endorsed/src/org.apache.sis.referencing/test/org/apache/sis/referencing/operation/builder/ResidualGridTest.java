@@ -28,7 +28,7 @@ import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.test.Assert.assertMatrixEquals;
+import static org.opengis.test.Assertions.assertMatrixEquals;
 
 
 /**
@@ -149,6 +149,6 @@ public final class ResidualGridTest extends TestCase {
     public void testDerivativeInCell() {
         final Matrix expected = new Matrix2(3, 1, -1, 1);
         final Matrix actual = grid.derivativeInCell(0.5, 2.5);
-        assertMatrixEquals("derivativeInCell", expected, actual, STRICT);
+        assertMatrixEquals(expected, actual, STRICT, "derivativeInCell");
     }
 }

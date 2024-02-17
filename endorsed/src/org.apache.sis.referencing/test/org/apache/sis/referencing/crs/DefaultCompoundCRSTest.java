@@ -44,7 +44,7 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.test.Assert.assertAxisDirectionsEqual;
+import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
 
 
 /**
@@ -131,8 +131,8 @@ public final class DefaultCompoundCRSTest extends TestCase {
          * We allow an ellipsoidal height if there is no horizontal CRS.
          * This is a departure from ISO 19111.
          */
-        final DefaultCompoundCRS crs = new DefaultCompoundCRS(properties, HardCodedCRS.ELLIPSOIDAL_HEIGHT, TIME);
-        assertAxisDirectionsEqual("CompoundCRS", crs.getCoordinateSystem(), AxisDirection.UP, AxisDirection.FUTURE);
+        final var crs = new DefaultCompoundCRS(properties, HardCodedCRS.ELLIPSOIDAL_HEIGHT, TIME);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.UP, AxisDirection.FUTURE);
     }
 
     /**
@@ -336,7 +336,7 @@ public final class DefaultCompoundCRSTest extends TestCase {
         final DefaultCompoundCRS crs = unmarshalFile(DefaultCompoundCRS.class, openTestFile());
         Validators.validate(crs);
         assertEpsgNameAndIdentifierEqual("JGD2011 + JGD2011 (vertical) height", 6697, crs);
-        assertAxisDirectionsEqual("coordinateSystem", crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
         /*
          * Shallow verification of the components.
          */

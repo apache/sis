@@ -32,7 +32,7 @@ import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.date;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.test.Assert.assertMatrixEquals;
+import static org.opengis.test.Assertions.assertMatrixEquals;
 
 
 /**
@@ -123,8 +123,8 @@ public final class TimeDependentBWPTest extends TestCase {
          * Now compare with the expected value given in the EPSG example. The 0.013 tolerance threshold
          * is for the X coordinate and has been determined empirically in testEpsgCalculation().
          */
-        assertMatrixEquals("toGDA94",    target, actual, 0.013);
-        assertMatrixEquals("toITRF2008", source, toITRF2008.multiply(target), 0.013);
+        assertMatrixEquals(target, actual, 0.013, "toGDA94");
+        assertMatrixEquals(source, toITRF2008.multiply(target), 0.013, "toITRF2008");
     }
 
     /**

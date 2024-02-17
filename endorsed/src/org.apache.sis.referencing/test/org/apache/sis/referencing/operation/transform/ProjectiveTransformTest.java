@@ -40,7 +40,8 @@ import org.apache.sis.test.DependsOn;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.junit.jupiter.api.Assertions.*;
-import org.opengis.test.Assert;
+import static org.apache.sis.test.TestCase.STRICT;
+import org.opengis.test.Assertions;
 import org.opengis.test.referencing.AffineTransformTest;
 
 
@@ -54,11 +55,6 @@ import org.opengis.test.referencing.AffineTransformTest;
  */
 @DependsOn({AbstractMathTransformTest.class, ScaleTransformTest.class})
 public class ProjectiveTransformTest extends AffineTransformTest {
-    /**
-     * Tolerance factor for strict comparisons.
-     */
-    private static final double STRICT = 0;
-
     /**
      * A math transform factory which delegates instantiations to the enclosing test class.
      * This is a workaround for RFE #4093999 ("Relax constraint on placement of this()/super()
@@ -173,8 +169,8 @@ public class ProjectiveTransformTest extends AffineTransformTest {
     public void testOptimizeConstant() throws FactoryException, TransformException {
         matrix = new Matrix2(0, 10, 0, 1);
         transform = mtFactory.createAffineTransform(matrix);
-        Assert.assertMatrixEquals("Transform shall use the given matrix unmodified.",
-                matrix, assertInstanceOf(LinearTransform.class, transform).getMatrix(), STRICT);
+        Assertions.assertMatrixEquals(matrix, assertInstanceOf(LinearTransform.class, transform).getMatrix(), STRICT,
+                                      "Transform shall use the given matrix unmodified.");
         verifyConsistency(1, 2, 3,   -3, -2, -1);
     }
 

@@ -29,7 +29,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.test.Assert.assertAxisDirectionsEqual;
+import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
 
 
 /**
@@ -61,7 +61,6 @@ public final class GeodeticObjectBuilderTest extends TestCase {
         final ParameterValueGroup p = crs.getConversionFromBase().getParameterValues();
         assertEquals(40,  p.parameter("Longitude of natural origin").doubleValue());
         assertEquals(0.5, p.parameter("Scale factor at natural origin").doubleValue());
-        assertAxisDirectionsEqual("baseCRS", crs.getBaseCRS().getCoordinateSystem(),
-                                  AxisDirection.EAST, AxisDirection.NORTH);
+        assertAxisDirectionsEqual(crs.getBaseCRS().getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
     }
 }

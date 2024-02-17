@@ -47,7 +47,7 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.test.Assert.assertMatrixEquals;
+import static org.opengis.test.Assertions.assertMatrixEquals;
 
 
 /**
@@ -235,11 +235,11 @@ public final class DefaultGeodeticDatumTest extends TestCase {
          * Following is an anti-regression test only (no authoritative values).
          * Verified only opportunistically.
          */
-        assertMatrixEquals("getPositionVectorTransformation", new Matrix4(
-                   1,   7.961E-7,  7.287E-7,   -82.981,
-           -7.961E-7,          1,  2.461E-6,   -99.719,
-           -7.287E-7,  -2.461E-6,         1,  -115.209,
-                   0,          0,         0,         1), m, 0.01);
+        assertMatrixEquals(new Matrix4(1,   7.961E-7,  7.287E-7,   -82.981,
+                               -7.961E-7,          1,  2.461E-6,   -99.719,
+                               -7.287E-7,  -2.461E-6,         1,  -115.209,
+                                       0,          0,         0,         1),
+                m, 0.01, "getPositionVectorTransformation");
     }
 
     /**

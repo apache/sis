@@ -36,7 +36,7 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.test.Assert.assertMatrixEquals;
+import static org.opengis.test.Assertions.assertMatrixEquals;
 
 
 /**
@@ -115,7 +115,7 @@ public final class DimensionalityReductionTest extends TestCase {
      */
     private static CoordinateReferenceSystem verifyGridToCRS(final GridGeometry test, final Matrix expected) {
         Matrix actual = MathTransforms.getMatrix(test.getGridToCRS(PixelInCell.CELL_CORNER));
-        assertMatrixEquals("gridToCRS", expected, actual, STRICT);
+        assertMatrixEquals(expected, actual, STRICT, "gridToCRS");
         return test.getCoordinateReferenceSystem();
     }
 
@@ -175,7 +175,7 @@ public final class DimensionalityReductionTest extends TestCase {
     public void testSelect() {
         var reduction = DimensionalityReduction.select2D(linearGrid());
         var gridToCRS = reduction.getReducedGridGeometry().getGridToCRS(PixelInCell.CELL_CORNER);
-        assertMatrixEquals("gridToCRS", withHorizontal(), MathTransforms.getMatrix(gridToCRS), STRICT);
+        assertMatrixEquals(withHorizontal(), MathTransforms.getMatrix(gridToCRS), STRICT, "gridToCRS");
         assertSame(HardCodedCRS.WGS84, reduction.getReducedGridGeometry().getCoordinateReferenceSystem());
 
         GridGeometry test = reduction.reverse(createGridGeometry(

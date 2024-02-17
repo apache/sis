@@ -36,7 +36,7 @@ import static org.apache.sis.referencing.operation.projection.ConformalProjectio
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.opengis.test.Assert.assertBetween;
+import static org.opengis.test.Assertions.assertBetween;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 
@@ -155,8 +155,8 @@ public final class MercatorTest extends MapProjectionTestCase {
         assertEquals(NEGATIVE_INFINITY, transform(-PI/2),           tolerance, "Forward 90°S");
         assertEquals(POSITIVE_INFINITY, transform(nextUp  ( PI/2)), tolerance, "Forward (90+ε)°N");
         assertEquals(NEGATIVE_INFINITY, transform(nextDown(-PI/2)), tolerance, "Forward (90+ε)°S");
-        assertBetween("Forward (90-ε)°N", +MIN_VALUE, +MAX_VALUE, transform(nextDown( PI/2)));
-        assertBetween("Forward (90-ε)°S", -MAX_VALUE, -MIN_VALUE, transform(nextUp  (-PI/2)));
+        assertBetween(+MIN_VALUE, +MAX_VALUE, transform(nextDown( PI/2)), "Forward (90-ε)°N");
+        assertBetween(-MAX_VALUE, -MIN_VALUE, transform(nextUp  (-PI/2)), "Forward (90-ε)°S");
 
         assertEquals(NaN,   inverseTransform(NaN),                tolerance, "Not a number");
         assertEquals(0,     inverseTransform(0),                  tolerance, "Inverse 0 m");

@@ -30,7 +30,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import static org.junit.jupiter.api.Assertions.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.test.Assert.assertMatrixEquals;
+import static org.opengis.test.Assertions.assertMatrixEquals;
 
 
 /**
@@ -103,7 +103,7 @@ final class TransformResultComparator implements MathTransform {
     @Override
     public Matrix derivative(DirectPosition point) throws MismatchedDimensionException, TransformException {
         final Matrix value = tested.derivative(point);
-        assertMatrixEquals("derivative", reference.derivative(point), value, tolerance);
+        assertMatrixEquals(reference.derivative(point), value, tolerance, "derivative");
         return value;
     }
 

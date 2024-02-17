@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.DependsOn;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
+import static org.apache.sis.test.TestCase.STRICT;
 
 
 /**
@@ -37,11 +38,6 @@ import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
  */
 @DependsOn({LinearTransformBuilderTest.class, ResidualGridTest.class})
 public final class LocalizationGridBuilderTest extends TransformTestCase {
-    /**
-     * For floating-point comparisons.
-     */
-    private static final double STRICT = 0;
-
     /**
      * Creates a new test case.
      */

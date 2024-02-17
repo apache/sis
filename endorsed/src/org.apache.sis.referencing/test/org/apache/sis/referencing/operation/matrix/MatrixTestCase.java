@@ -33,7 +33,7 @@ import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.test.Assert.assertMatrixEquals;
+import static org.opengis.test.Assertions.assertMatrixEquals;
 
 
 /**
@@ -563,7 +563,7 @@ public abstract class MatrixTestCase extends TestCase {
             at.translate(vector[0] = fma(random.nextDouble(), 50, -25),
                          vector[1] = fma(random.nextDouble(), 50, -25));
             matrix.translate(vector);
-            assertMatrixEquals("translate", AffineTransforms2D.toMatrix(at), matrix, TOLERANCE);
+            assertMatrixEquals(AffineTransforms2D.toMatrix(at), matrix, TOLERANCE, "translate");
             validateImplementation(matrix);
         }
     }
