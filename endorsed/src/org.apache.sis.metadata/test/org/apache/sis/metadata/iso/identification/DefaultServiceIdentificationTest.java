@@ -19,7 +19,6 @@ package org.apache.sis.metadata.iso.identification;
 import java.util.Set;
 import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
-import org.opengis.util.NameFactory;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
@@ -74,10 +73,10 @@ public final class DefaultServiceIdentificationTest extends TestUsingFile {
      * Creates the service identification to use for testing purpose.
      */
     private static DefaultServiceIdentification create() {
-        final NameFactory factory = DefaultNameFactory.provider();
-        final DefaultCoupledResource resource = DefaultCoupledResourceTest.create(factory);
+        final var factory  = DefaultNameFactory.provider();
+        final var resource = DefaultCoupledResourceTest.create(factory);
         resource.setResourceReferences(Set.of(new DefaultCitation("WMS specification")));
-        final DefaultServiceIdentification id = new DefaultServiceIdentification(
+        final var id = new DefaultServiceIdentification(
                 factory.createGenericName(null, "Web Map Server"),      // serviceType
                 NilReason.MISSING.createNilObject(Citation.class),      // citation
                 "A dummy service for testing purpose.");                // abstract
@@ -126,7 +125,7 @@ public final class DefaultServiceIdentificationTest extends TestUsingFile {
         final ServiceIdentification id = unmarshalFile(ServiceIdentification.class, openTestFile(Format.XML2016));
         verify(id);
         final CoupledResource resource = getSingleton(id.getCoupledResources());
-        assertTitleEquals("resourceReference", "WMS specification", getSingleton(resource.getResourceReferences()));
+        assertTitleEquals("WMS specification", getSingleton(resource.getResourceReferences()), "resourceReference");
     }
 
     /**

@@ -69,7 +69,7 @@ public final class DefaultIdentifierTest extends TestCase {
      */
     @Test
     public void testMarshal() throws JAXBException {
-        final DefaultIdentifier identifier = new DefaultIdentifier();
+        final var identifier = new DefaultIdentifier();
         identifier.setAuthority(new DefaultCitation("EPSG"));
         identifier.setCode("4326");
         assertXmlEquals(XML, marshal(identifier), "xmlns:*");
@@ -84,7 +84,7 @@ public final class DefaultIdentifierTest extends TestCase {
     public void testUnmarshall() throws JAXBException {
         final DefaultIdentifier identifier = unmarshal(DefaultIdentifier.class, XML);
         assertNull(identifier.getVersion());
-        assertTitleEquals("authority", "EPSG", identifier.getAuthority());
+        assertTitleEquals("EPSG", identifier.getAuthority(), "authority");
         assertEquals("4326", identifier.getCode());
     }
 }

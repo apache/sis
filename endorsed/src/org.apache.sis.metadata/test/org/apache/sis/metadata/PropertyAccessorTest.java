@@ -455,7 +455,7 @@ public final class PropertyAccessorTest extends TestCase {
         assertEquals(oldTitles, oldValue, "set(…, RETURN_PREVIOUS)");
         assertEquals(newTitles, newValue, "get(…)");
         assertSame  (newValue, instance.getAlternateTitles());
-        assertTitleEquals("title", "Ignored title", instance);
+        assertTitleEquals("Ignored title", instance, "citation");
     }
 
     /**
@@ -521,7 +521,7 @@ public final class PropertyAccessorTest extends TestCase {
         // Check final collection content.
         final List<InternationalString> expected = List.of(title1, title2);
         assertEquals(expected, accessor.get(index, instance));
-        assertTitleEquals("title", "Ignored title", instance);
+        assertTitleEquals("Ignored title", instance, "citation");
     }
 
     /**
@@ -567,17 +567,17 @@ public final class PropertyAccessorTest extends TestCase {
         assertEquals(Boolean.TRUE, changed, "set(…, APPEND)");
         assertEquals(merged, newValue, "get(…)");
         assertSame  (newValue, instance.getAlternateTitles());
-        assertTitleEquals("title", "Added title", instance);
+        assertTitleEquals("Added title", instance, "citation");
 
         // Test setting again the title to the same value.
         titleChanged = accessor.set(titleIndex, instance, "Added title", APPEND);
         assertEquals(Boolean.FALSE, titleChanged, "set(…, APPEND)");
-        assertTitleEquals("title", "Added title", instance);
+        assertTitleEquals("Added title", instance, "citation");
 
         // Test setting the title to a different value.
         titleChanged = accessor.set(titleIndex, instance, "Different title", APPEND);
         assertNull(titleChanged, "set(…, APPEND)");     // Operation shall be refused.
-        assertTitleEquals("title", "Added title", instance);
+        assertTitleEquals("Added title", instance, "citation");
     }
 
     /**

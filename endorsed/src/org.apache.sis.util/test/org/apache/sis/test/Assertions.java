@@ -136,7 +136,7 @@ public final class Assertions extends Static {
      * @param  actual    the actual string.
      */
     public static void assertMultilinesEquals(final CharSequence expected, final CharSequence actual) {
-        assertMultilinesEquals(null, expected, actual);
+        assertMultilinesEquals(expected, actual, null);
     }
 
     /**
@@ -144,11 +144,11 @@ public final class Assertions extends Static {
      * The comparisons is performed one a line-by-line basis. For each line, trailing
      * spaces (but not leading spaces) are ignored.
      *
-     * @param  message   the message to print in case of failure, or {@code null} if none.
      * @param  expected  the expected string.
      * @param  actual    the actual string.
+     * @param  message   the message to print in case of failure, or {@code null} if none.
      */
-    public static void assertMultilinesEquals(final String message, final CharSequence expected, final CharSequence actual) {
+    public static void assertMultilinesEquals(final CharSequence expected, final CharSequence actual, final String message) {
         final CharSequence[] expectedLines = CharSequences.splitOnEOL(expected);
         final CharSequence[] actualLines   = CharSequences.splitOnEOL(actual);
         final int length = StrictMath.min(expectedLines.length, actualLines.length);

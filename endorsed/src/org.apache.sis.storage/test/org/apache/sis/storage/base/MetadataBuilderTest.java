@@ -86,15 +86,15 @@ public final class MetadataBuilderTest extends TestCase {
      * @param notice  the copyright statement to parse.
      */
     private static void verifyCopyrightParsing(final String notice) {
-        final MetadataBuilder builder = new MetadataBuilder();
+        final var builder = new MetadataBuilder();
         builder.parseLegalNotice(notice);
-        final LegalConstraints constraints = (LegalConstraints) getSingleton(getSingleton(
-                builder.build().getIdentificationInfo()).getResourceConstraints());
+        final var constraints = assertInstanceOf(LegalConstraints.class,
+                getSingleton(getSingleton(builder.build().getIdentificationInfo()).getResourceConstraints()));
 
         assertEquals(Restriction.COPYRIGHT, getSingleton(constraints.getUseConstraints()));
         final Citation ref = getSingleton(constraints.getReferences());
-        assertTitleEquals("reference.title", notice, ref);
-        assertPartyNameEquals("reference.citedResponsibleParty", "John Smith", ref);
+        assertTitleEquals(notice, ref, "reference.title");
+        assertPartyNameEquals("John Smith", ref, "reference.citedResponsibleParty");
         assertEquals(date("1992-01-01 00:00:00"), getSingleton(ref.getDates()).getDate());
     }
 

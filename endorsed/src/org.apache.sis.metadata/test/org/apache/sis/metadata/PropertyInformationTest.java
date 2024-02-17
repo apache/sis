@@ -76,7 +76,7 @@ public final class PropertyInformationTest extends TestCase {
      */
     private static void assertParentIsCitation(final ExtendedElementInformation information) {
         assertInstanceOf(Identifier.class, information);    // Specific to SIS implementation.
-        assertTitleEquals("authority", "ISO 19115", ((Identifier) information).getAuthority());
+        assertTitleEquals("ISO 19115", ((Identifier) information).getAuthority(), "authority");
         assertEquals("CI_Citation", getSingleton(information.getParentEntity()));
     }
 
