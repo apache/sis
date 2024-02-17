@@ -43,6 +43,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+import static org.opengis.test.Assertions.assertSampleValuesEqual;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.feature.Assertions.assertPixelsEqual;
 
@@ -294,7 +295,7 @@ public class GridCoverage2DTest extends TestCase {
         assertEquals(2,         result.getMinY());
         assertEquals(GRID_SIZE, result.getWidth());
         assertEquals(GRID_SIZE, result.getHeight());
-        assertPixelsEqual(coverage.render(null), null, result, null);
+        assertSampleValuesEqual(coverage.render(null), result, STRICT, null);
     }
 
     /**
