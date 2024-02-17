@@ -27,8 +27,6 @@ import org.apache.sis.util.UnconvertibleObjectException;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
@@ -46,10 +44,6 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    StringConverterTest.class, FallbackConverterTest.class,
-    org.apache.sis.util.collection.TreeTableFormatTest.class
-})
 public final class ConverterRegistryTest extends TestCase {
     /**
      * The registry being tested.
@@ -281,7 +275,6 @@ public final class ConverterRegistryTest extends TestCase {
      * change, it is okay to update this test accordingly.</p>
      */
     @Test
-    @DependsOnMethod("testStringToMiscellaneous")
     public void testNumberToMiscellaneous() {
         assertAllConvertersAreRegistered();
         register(new StringConverter.Number().inverse());
@@ -352,7 +345,6 @@ public final class ConverterRegistryTest extends TestCase {
      * Tests automatic creation of a converter for an array of values.
      */
     @Test
-    @DependsOnMethod("testArrayOfWrapperTypes")
     public void testArrayOfPrimitiveTypes() {
         register(new NumberConverter<>(Float.class, Double.class));
         final ObjectConverter<?,?> converter = registry.find(float[].class, double[].class);

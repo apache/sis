@@ -30,8 +30,6 @@ import org.junit.jupiter.api.Test;
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;
 import org.apache.sis.referencing.operation.provider.NADCONTest;
 import org.apache.sis.referencing.operation.provider.NTv2Test;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -46,10 +44,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    NTv2Test.class,
-    NADCONTest.class
-})
 public final class InterpolatedTransformTest extends MathTransformTestCase {
     /**
      * Creates a new test case.
@@ -133,7 +127,6 @@ public final class InterpolatedTransformTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while transforming a coordinate.
      */
     @Test
-    @DependsOnMethod({"testForwardTransform", "testDerivative"})
     public void testInverseTransform() throws TransformException {
         isInverseTransformSupported = false;                                            // For focusing on a single aspect.
         final double[][] samplePoints = createSinusoidal(-20);
@@ -157,7 +150,6 @@ public final class InterpolatedTransformTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while transforming the coordinate.
      */
     @Test
-    @DependsOnMethod("testForwardTransform")
     public void testDerivative() throws TransformException {
         final double[][] samplePoints = createSinusoidal(-40);
         final double[] point = new double[SinusoidalShiftGrid.DIMENSION];                   // A single point from 'samplePoints'
@@ -191,7 +183,6 @@ public final class InterpolatedTransformTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while transforming the coordinate.
      */
     @Test
-    @DependsOnMethod("testDerivative")
     public void testExtrapolations() throws TransformException {
         createSinusoidal(-50);
         final double[] point = new double[SinusoidalShiftGrid.DIMENSION];

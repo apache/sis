@@ -23,7 +23,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.storage.gpx.TestData;
 import org.apache.sis.metadata.iso.extent.DefaultExtentTest;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -32,7 +31,6 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(CommandRunnerTest.class)
 public final class MimeTypeCommandTest extends TestCase {
     /**
      * Creates a new test case.

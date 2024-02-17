@@ -23,7 +23,6 @@ import org.apache.sis.xml.Namespaces;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
@@ -35,7 +34,6 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  * @author  Martin Desruisseaux
  * @author  Cullen Rombach (Image Matters)
  */
-@DependsOn(org.apache.sis.metadata.iso.citation.DefaultCitationTest.class)
 public final class DefaultIdentifierTest extends TestCase {
     /**
      * The expected XML representation for this test.

@@ -30,7 +30,6 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
 
@@ -67,7 +66,6 @@ public final class GeoKeysTest extends TestCase {
      * This method verifies only projection names and identifiers, not parameter names.
      */
     @Test
-    @DependsOnMethod("testName")
     public void verifyProjectionNames() {
         final MathTransformFactory factory = DefaultMathTransformFactory.provider();
         for (final OperationMethod method : factory.getAvailableMethods(SingleOperation.class)) {
@@ -94,7 +92,6 @@ public final class GeoKeysTest extends TestCase {
      * match the name of fields listed in {@link GeoKeys}.
      */
     @Test
-    @DependsOnMethod("testName")
     public void verifyParameterNames() {
         final MathTransformFactory factory = DefaultMathTransformFactory.provider();
         for (final OperationMethod method : factory.getAvailableMethods(SingleOperation.class)) {

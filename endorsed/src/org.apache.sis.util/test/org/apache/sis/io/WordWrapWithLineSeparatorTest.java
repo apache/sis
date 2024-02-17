@@ -18,7 +18,6 @@ package org.apache.sis.io;
 
 // Test dependencies
 import org.junit.jupiter.api.BeforeEach;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -29,7 +28,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(WordWrapTest.class)
 public final class WordWrapWithLineSeparatorTest extends WordWrapTest {
     /**
      * Creates a new test case.

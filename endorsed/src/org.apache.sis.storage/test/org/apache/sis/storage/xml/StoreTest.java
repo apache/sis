@@ -29,7 +29,6 @@ import org.apache.sis.xml.util.LegacyNamespaces;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -42,7 +41,6 @@ import java.nio.charset.StandardCharsets;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(org.apache.sis.storage.StorageConnectorTest.class)
 public final class StoreTest extends TestCase {
     /**
      * Creates a new test case.

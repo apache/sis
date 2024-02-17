@@ -41,8 +41,6 @@ import org.apache.sis.util.Utilities;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
@@ -54,10 +52,6 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-  StandardDefinitionsTest.class,
-  CommonCRSTest.class
-})
 public final class EPSGFactoryFallbackTest extends TestCase {
     /**
      * Creates a new test case.
@@ -241,7 +235,6 @@ public final class EPSGFactoryFallbackTest extends TestCase {
      * @throws FactoryException if a CRS cannot be constructed.
      */
     @Test
-    @DependsOnMethod({"testGetAuthorityCodes", "testCreateCRS"})
     public void compareAllCodes() throws FactoryException {
         final GeodeticAuthorityFactory EPSG = AuthorityFactories.EPSG();
         try {

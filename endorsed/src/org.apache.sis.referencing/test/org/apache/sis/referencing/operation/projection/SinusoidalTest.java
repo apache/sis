@@ -22,8 +22,6 @@ import org.apache.sis.referencing.util.Formulas;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -31,7 +29,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(MeridianArcTest.class)
 public final class SinusoidalTest extends MapProjectionTestCase {
     /**
      * Creates a new test case.
@@ -106,7 +103,6 @@ public final class SinusoidalTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
-    @DependsOnMethod("testInverseDerivative")
     public void testDerivativeOnSphere() throws FactoryException, TransformException {
         createProjection(false);
         final double delta = (1.0 / 60) / 1852;                 // Approximately 1 metre.
@@ -124,7 +120,6 @@ public final class SinusoidalTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
-    @DependsOnMethod("testInverseDerivative")
     public void testDerivativeOnEllipsoid() throws FactoryException, TransformException {
         createProjection(true);
         final double delta = (1.0 / 60) / 1852;                 // Approximately 1 metre.

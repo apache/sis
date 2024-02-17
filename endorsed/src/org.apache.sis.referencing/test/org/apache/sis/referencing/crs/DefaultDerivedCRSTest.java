@@ -36,8 +36,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.referencing.operation.DefaultConversionTest;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
@@ -53,10 +51,6 @@ import static org.opengis.test.Assertions.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    DefaultProjectedCRSTest.class,          // Has many similarities with DerivedCRS, but is simpler.
-    DefaultConversionTest.class
-})
 public final class DefaultDerivedCRSTest extends TestCase {
     /**
      * Creates a new test case.
@@ -165,7 +159,6 @@ public final class DefaultDerivedCRSTest extends TestCase {
      * it is easy to create and test.
      */
     @Test
-    @DependsOnMethod("testConstruction")
     public void testWKT1() {
         assertWktEquals(Convention.WKT1,
                 "FITTED_CS[“Back to Greenwich”,\n" +
@@ -195,7 +188,6 @@ public final class DefaultDerivedCRSTest extends TestCase {
      * it is easy to create and test.
      */
     @Test
-    @DependsOnMethod("testWKT1")
     public void testWKT2() {
         assertWktEquals(Convention.WKT2,
                 "GEODCRS[“Back to Greenwich”,\n" +
@@ -217,7 +209,6 @@ public final class DefaultDerivedCRSTest extends TestCase {
      * Tests the WKT 2 "simplified" formatting.
      */
     @Test
-    @DependsOnMethod("testWKT2")
     public void testWKT2_Simplified() {
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "GeodeticCRS[“Back to Greenwich”,\n" +

@@ -23,8 +23,6 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.referencing.Assertions.assertIsIdentity;
 import static org.apache.sis.referencing.Assertions.assertIsNotIdentity;
 
@@ -35,10 +33,6 @@ import static org.apache.sis.referencing.Assertions.assertIsNotIdentity;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    CoordinateDomainTest.class,
-    ProjectiveTransformTest.class
-})
 public final class CopyTransformTest extends MathTransformTestCase {
     /**
      * Creates a new test case.
@@ -118,7 +112,6 @@ public final class CopyTransformTest extends MathTransformTestCase {
      * @throws TransformException should never happen.
      */
     @Test
-    @DependsOnMethod("testConstantDimension")
     public void testDimensionReduction() throws TransformException {
         isInverseTransformSupported = false;
         create(3, 0, 1);
@@ -145,7 +138,6 @@ public final class CopyTransformTest extends MathTransformTestCase {
      * @throws TransformException should never happen.
      */
     @Test
-    @DependsOnMethod("testDimensionReduction")
     public void testDimensionAugmentation() throws TransformException {
         transform = new ProjectiveTransform(Matrices.create(4, 3, new double[] {
                 0, 1, 0,

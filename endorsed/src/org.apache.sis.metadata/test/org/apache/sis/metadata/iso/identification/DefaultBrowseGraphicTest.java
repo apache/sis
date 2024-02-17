@@ -34,7 +34,6 @@ import org.apache.sis.xml.XML;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
@@ -102,7 +101,6 @@ public final class DefaultBrowseGraphicTest extends TestCase {
      * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
      */
     @Test
-    @DependsOnMethod("testMimeFileType")
     public void testMimeFileType_Legacy() throws JAXBException {
         legacy = true;
         testMimeFileType();
@@ -132,7 +130,6 @@ public final class DefaultBrowseGraphicTest extends TestCase {
      * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
      */
     @Test
-    @DependsOnMethod("testFileName")
     public void testFileName_Legacy() throws JAXBException {
         legacy = true;
         testFileName();
@@ -144,7 +141,6 @@ public final class DefaultBrowseGraphicTest extends TestCase {
      * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
      */
     @Test
-    @DependsOnMethod("testFileName")
     public void testFileNameWithoutSrc() throws JAXBException {
         final DefaultBrowseGraphic browse = unmarshal(DefaultBrowseGraphic.class,
                 "<mcc:MD_BrowseGraphic xmlns:mcc=\"" + Namespaces.MCC + '"' +
@@ -164,7 +160,6 @@ public final class DefaultBrowseGraphicTest extends TestCase {
      * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
      */
     @Test
-    @DependsOnMethod({"testFileName", "testMimeFileType"})
     public void testFileNameAndType() throws JAXBException {
         final DefaultBrowseGraphic browse = new DefaultBrowseGraphic(URI.create("file:/catalog/image.png"));
         browse.setFileType("image/tiff");
@@ -187,7 +182,6 @@ public final class DefaultBrowseGraphicTest extends TestCase {
      * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
      */
     @Test
-    @DependsOnMethod({"testFileName_Legacy", "testMimeFileType_Legacy"})
     public void testFileNameAndType_Legacy() throws JAXBException {
         legacy = true;
         testFileNameAndType();
@@ -200,7 +194,6 @@ public final class DefaultBrowseGraphicTest extends TestCase {
      * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
      */
     @Test
-    @DependsOnMethod("testFileNameAndType")
     public void testStringSubstitution() throws JAXBException {
         final DefaultBrowseGraphic browse = new DefaultBrowseGraphic(URI.create("file:/catalog/image.png"));
         browse.setFileType("image/tiff");
@@ -234,7 +227,6 @@ public final class DefaultBrowseGraphicTest extends TestCase {
      * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
      */
     @Test
-    @DependsOnMethod("testStringSubstitution")
     public void testDuplicatedValues() throws JAXBException {
         final Warning listener = new Warning();
         final DefaultBrowseGraphic browse = listener.unmarshal(
@@ -258,7 +250,6 @@ public final class DefaultBrowseGraphicTest extends TestCase {
      * @throws JAXBException if an error occurred while (un)marshalling the {@code BrowseGraphic}.
      */
     @Test
-    @DependsOnMethod("testStringSubstitution")
     public void testWarnings() throws JAXBException {
         testWarnings("<gcx:FileName src=\"file:/catalog/image.png\">image.png</gcx:FileName>",
                      "<gco:CharacterString>file:/catalog/image2.png</gco:CharacterString>");

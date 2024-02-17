@@ -28,8 +28,6 @@ import org.apache.sis.storage.DataStoreException;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 
@@ -40,7 +38,6 @@ import org.apache.sis.test.TestUtilities;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(ChannelDataInputTest.class)
 public final class HyperRectangleReaderTest extends TestCase {
     /**
      * The hyper-cube dimensions.
@@ -204,7 +201,6 @@ public final class HyperRectangleReaderTest extends TestCase {
      * @throws DataStoreException should never happen.
      */
     @Test
-    @DependsOnMethod({"testSubRegion", "testSubSampling"})
     public void testRandom() throws IOException, DataStoreException {
         initialize(TestUtilities.createRandomNumberGenerator(), true);
         verifyRegionRead();
@@ -217,7 +213,6 @@ public final class HyperRectangleReaderTest extends TestCase {
      * @throws DataStoreException should never happen.
      */
     @Test
-    @DependsOnMethod("testRandom")
     public void testMemoryTransfer() throws IOException, DataStoreException {
         initialize(TestUtilities.createRandomNumberGenerator(), false);
         verifyRegionRead();

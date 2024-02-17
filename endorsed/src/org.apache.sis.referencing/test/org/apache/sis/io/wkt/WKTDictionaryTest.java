@@ -41,7 +41,6 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 import static org.apache.sis.test.Assertions.assertMessageContains;
@@ -56,7 +55,6 @@ import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(WKTFormatTest.class)
 public final class WKTDictionaryTest extends TestCase {
     /**
      * Creates a new test case.

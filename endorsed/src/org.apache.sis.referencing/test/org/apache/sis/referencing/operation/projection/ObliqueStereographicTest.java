@@ -31,8 +31,6 @@ import org.apache.sis.measure.Units;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.apache.sis.referencing.operation.matrix.Matrix2;
@@ -45,10 +43,6 @@ import org.apache.sis.referencing.operation.matrix.Matrix2;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Emmanuel Giasson (Thales)
  */
-@DependsOn({
-    InitializerTest.class,
-    NormalizedProjectionTest.class
-})
 public final class ObliqueStereographicTest extends MapProjectionTestCase {
     /**
      * Parameter values provided by the IOGP Report 373-07-02 –
@@ -237,7 +231,6 @@ public final class ObliqueStereographicTest extends MapProjectionTestCase {
      * @see org.opengis.test.referencing.ParameterizedTransformTest#testObliqueStereographic()
      */
     @Test
-    @DependsOnMethod({"testTransform", "testInverseTransform"})
     public void testObliqueStereographic() throws FactoryException, TransformException {
         createGeoApiTest(new org.apache.sis.referencing.operation.provider.ObliqueStereographic()).testObliqueStereographic();
     }
@@ -271,7 +264,6 @@ public final class ObliqueStereographicTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting the coordinate.
      */
     @Test
-    @DependsOnMethod("testTransform")
     public void testSphericalTransform() throws TransformException {
         final double[] srcPts = new double[] {λt, φt};  // in degrees
         final double[] dstPts = new double[2];
@@ -315,7 +307,6 @@ public final class ObliqueStereographicTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting the coordinate.
      */
     @Test
-    @DependsOnMethod("testInverseTransform")
     public void testSphericalInverseTransform() throws TransformException {
         final double[] srcPts = new double[] {Et, Nt};  // in metres
         final double[] dstPts = new double[2];
@@ -358,7 +349,6 @@ public final class ObliqueStereographicTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while computing the derivative.
      */
     @Test
-    @DependsOnMethod("testDerivative")
     public void testSphericalDerivative() throws TransformException {
         final double[] srcPts = new double[] {λt, φt};  // in degrees
         srcPts[0] = toRadians(srcPts[0]) - λ0;

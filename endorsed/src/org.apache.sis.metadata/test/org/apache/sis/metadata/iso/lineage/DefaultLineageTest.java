@@ -26,7 +26,6 @@ import org.apache.sis.metadata.iso.DefaultIdentifier;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
@@ -102,7 +101,6 @@ public final class DefaultLineageTest extends TestCase {
      * @throws JAXBException if an error occurred while marshalling the XML.
      */
     @Test
-    @DependsOnMethod("testSource")
     public void testLegacySource() throws JAXBException {
         String actual = marshal(create(false), VERSION_2007);
         assertXmlEquals(
@@ -129,7 +127,6 @@ public final class DefaultLineageTest extends TestCase {
      * @throws JAXBException if an error occurred while marshalling the XML.
      */
     @Test
-    @DependsOnMethod("testSource")
     public void testSourceImagery() throws JAXBException {
         String actual = marshal(create(true));
         assertXmlEquals(
@@ -164,7 +161,6 @@ public final class DefaultLineageTest extends TestCase {
      * @throws JAXBException if an error occurred while marshalling the XML.
      */
     @Test
-    @DependsOnMethod("testLegacySource")
     public void testLegacySourceImagery() throws JAXBException {
         String actual = marshal(create(true), VERSION_2007);
         assertXmlEquals(

@@ -23,8 +23,6 @@ import java.util.HashMap;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -34,7 +32,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(SingletonAttributeTest.class)
 public final class MultiValuedAttributeTest extends TestCase {
     /**
      * Creates a new test case.
@@ -87,7 +84,6 @@ public final class MultiValuedAttributeTest extends TestCase {
      * Tests getting and setting multiple attribute values.
      */
     @Test
-    @DependsOnMethod("testValue")
     public void testValues() {
         final AbstractAttribute<String> attribute = universities();
         final String[] values = {
@@ -107,7 +103,6 @@ public final class MultiValuedAttributeTest extends TestCase {
      * Tests initialization to the default value.
      */
     @Test
-    @DependsOnMethod("testValue")
     public void testDefaultValue() {
         final AbstractAttribute<String> attribute = new MultiValuedAttribute<>(DefaultAttributeTypeTest.city());
         assertEquals     (              "Utopia",  attribute.getValue());
@@ -126,7 +121,6 @@ public final class MultiValuedAttributeTest extends TestCase {
      * Tests attribute comparison.
      */
     @Test
-    @DependsOnMethod("testValue")
     @SuppressWarnings("ObjectEqualsNull")
     public void testEquals() {
         final AbstractAttribute<Integer> a1 = population();
@@ -141,7 +135,6 @@ public final class MultiValuedAttributeTest extends TestCase {
      * @throws CloneNotSupportedException should never happen.
      */
     @Test
-    @DependsOnMethod("testEquals")
     public void testClone() throws CloneNotSupportedException {
         final MultiValuedAttribute<Integer> a1 = population();
         final    AbstractAttribute<Integer> a2 = a1.clone();
@@ -153,7 +146,6 @@ public final class MultiValuedAttributeTest extends TestCase {
      * Tests serialization.
      */
     @Test
-    @DependsOnMethod("testEquals")
     public void testSerialization() {
         final AbstractAttribute<String> attribute = universities();
         attribute.setValue("University of international development");

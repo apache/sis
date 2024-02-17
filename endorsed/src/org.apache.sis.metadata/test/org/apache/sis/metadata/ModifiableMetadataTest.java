@@ -27,7 +27,6 @@ import org.apache.sis.util.collection.CodeListSet;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSetEquals;
@@ -39,7 +38,6 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(AbstractMetadataTest.class)
 public final class ModifiableMetadataTest extends TestCase {
     /**
      * An arbitrary metadata on which to perform the tests.

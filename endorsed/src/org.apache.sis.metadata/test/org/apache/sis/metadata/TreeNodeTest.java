@@ -37,8 +37,6 @@ import org.apache.sis.util.collection.TreeTable;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
@@ -57,7 +55,6 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(TreeNodeChildrenTest.class)
 public final class TreeNodeTest extends TestCase {
     /**
      * Creates a new test case.
@@ -148,7 +145,6 @@ public final class TreeNodeTest extends TestCase {
      * Those names shall <em>not</em> contain numbering like <q>(1 of 2)</q>.
      */
     @Test
-    @DependsOnMethod("testRootNode")            // Because tested more basic methods than 'getValue(TableColumn)'.
     public void testGetNameForSingleton() {
         final DefaultCitation citation = TreeNodeChildrenTest.metadataWithSingletonInCollections();
         assertColumnContentEquals(create(citation, Citation.class), TableColumn.NAME,
@@ -165,7 +161,6 @@ public final class TreeNodeTest extends TestCase {
      * Those names <em>shall</em> contain numbering like <q>(1 of 2)</q>.
      */
     @Test
-    @DependsOnMethod("testGetNameForSingleton")
     public void testGetNameForMultiOccurrences() {
         final DefaultCitation citation = TreeNodeChildrenTest.metadataWithMultiOccurrences();
         assertColumnContentEquals(create(citation, Citation.class), TableColumn.NAME,
@@ -209,7 +204,6 @@ public final class TreeNodeTest extends TestCase {
      * Tests {@link TreeNode#getName()} on a metadata with a deeper hierarchy.
      */
     @Test
-    @DependsOnMethod("testGetNameForMultiOccurrences")
     public void testGetNameForHierarchy() {
         assertCitationContentEquals(1, TableColumn.NAME,
             "Citation",
@@ -240,7 +234,6 @@ public final class TreeNodeTest extends TestCase {
      * The repetition of the same identifier means that they shall be part of a collection.
      */
     @Test
-    @DependsOnMethod("testGetNameForMultiOccurrences")     // Because similar to names, which were tested progressively.
     public void testGetIdentifier() {
         assertCitationContentEquals(1, TableColumn.IDENTIFIER,
             "CI_Citation",
@@ -268,7 +261,6 @@ public final class TreeNodeTest extends TestCase {
      * Tests {@link TreeNode#getIndex()} on a metadata with a hierarchy.
      */
     @Test
-    @DependsOnMethod("testGetIdentifier")
     public void testGetIndex() {
         final Integer ZERO = 0;
         final Integer ONE  = 1;
@@ -298,7 +290,6 @@ public final class TreeNodeTest extends TestCase {
      * Tests getting the value of {@link TableColumn#TYPE} on a metadata with a hierarchy.
      */
     @Test
-    @DependsOnMethod("testGetIdentifier")       // Because if identifiers are wrong, we are looking at wrong properties.
     public void testGetElementType() {
         assertCitationContentEquals(0, TableColumn.TYPE,
             Citation.class,
@@ -326,7 +317,6 @@ public final class TreeNodeTest extends TestCase {
      * Tests {@link TreeNode#getValue(TableColumn)} for the value column.
      */
     @Test
-    @DependsOnMethod("testGetIdentifier")       // Because if identifiers are wrong, we are looking at wrong properties.
     public void testGetValue() {
         assertCitationContentEquals(0, TableColumn.VALUE,
             null,                               // Citation
@@ -354,7 +344,6 @@ public final class TreeNodeTest extends TestCase {
      * Tests {@link TreeNode#newChild()}.
      */
     @Test
-    @DependsOnMethod("testGetValue")
     public void testNewChild() {
         final DefaultCitation citation = metadataWithHierarchy();
         final TreeNode node = create(citation, Citation.class);
@@ -438,7 +427,6 @@ public final class TreeNodeTest extends TestCase {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-298">SIS-298</a>
      */
     @Test
-    @DependsOnMethod({"testGetNameForHierarchy", "testGetIdentifier", "testGetIndex", "testGetElementType", "testGetValue"})
     public void testCompactPolicy() {
         valuePolicy = ValueExistencePolicy.COMPACT;
         testGetNameForHierarchy();

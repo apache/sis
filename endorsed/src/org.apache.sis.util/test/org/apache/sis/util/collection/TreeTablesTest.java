@@ -29,7 +29,6 @@ import static org.apache.sis.util.collection.TableColumn.*;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
 
@@ -38,9 +37,6 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    DefaultTreeTableTest.class
-})
 public final class TreeTablesTest extends TestCase {
     /**
      * Creates a new test case.

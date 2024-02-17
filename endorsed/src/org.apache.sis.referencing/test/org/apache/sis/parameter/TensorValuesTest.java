@@ -36,8 +36,6 @@ import static org.apache.sis.util.internal.Constants.NUM_COL;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -49,7 +47,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(MatrixParametersTest.class)
 public final class TensorValuesTest extends TestCase {
     /**
      * Creates a new test case.
@@ -139,7 +136,6 @@ public final class TensorValuesTest extends TestCase {
      * Tests {@link TensorValues#descriptors()} using alphanumeric (EPSG) contentions.
      */
     @Test
-    @DependsOnMethod("testDescriptors")
     public void testAlphaNumericDescriptors() {
         final Double  N0 = 0.0;
         final Double  N1 = 1.0;
@@ -164,7 +160,6 @@ public final class TensorValuesTest extends TestCase {
      * Tests {@link TensorValues#values()}.
      */
     @Test
-    @DependsOnMethod("testParameter")
     public void testValues() {
         final ParameterValueGroup group = createWKT1();
         group.parameter(NUM_ROW).setValue(2);
@@ -273,7 +268,6 @@ public final class TensorValuesTest extends TestCase {
      * Tests {@link TensorValues#clone()}.
      */
     @Test
-    @DependsOnMethod("testParameter")
     public void testClone() {
         final ParameterValueGroup group = createWKT1();
         group.parameter( NUM_ROW ).setValue(2);

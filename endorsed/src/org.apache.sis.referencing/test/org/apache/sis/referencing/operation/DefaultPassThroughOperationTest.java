@@ -28,7 +28,6 @@ import org.opengis.referencing.operation.Transformation;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -41,10 +40,6 @@ import static org.opengis.test.Assertions.assertIdentifierEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    DefaultTransformationTest.class,
-    SingleOperationMarshallingTest.class
-})
 public final class DefaultPassThroughOperationTest extends TestCase {
     /**
      * Creates a new test case.

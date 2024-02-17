@@ -34,8 +34,6 @@ import org.apache.sis.parameter.Parameters;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -52,7 +50,6 @@ import org.apache.sis.referencing.operation.provider.LambertConformalMichigan;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  */
-@DependsOn(ConformalProjectionTest.class)
 public final class LambertConicConformalTest extends MapProjectionTestCase {
     /**
      * Creates a new test case.
@@ -169,7 +166,6 @@ public final class LambertConicConformalTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
-    @DependsOnMethod("testSpecialLatitudes")
     public void testDerivative() throws TransformException {
         if (transform == null) {                                // May have been initialized by 'testSphericalCase'.
             createNormalizedProjection(true, 40);               // Elliptical case
@@ -192,7 +188,6 @@ public final class LambertConicConformalTest extends MapProjectionTestCase {
      * @see org.opengis.test.referencing.ParameterizedTransformTest#testLambertConicConformal1SP()
      */
     @Test
-    @DependsOnMethod({"testSpecialLatitudes", "testDerivative"})
     public void testLambertConicConformal1SP() throws FactoryException, TransformException {
         createGeoApiTest(new LambertConformal1SP()).testLambertConicConformal1SP();
     }
@@ -207,7 +202,6 @@ public final class LambertConicConformalTest extends MapProjectionTestCase {
      * @see org.opengis.test.referencing.ParameterizedTransformTest#testLambertConicConformal1SP()
      */
     @Test
-    @DependsOnMethod("testLambertConicConformal1SP")
     public void testLambertConicConformal2SP() throws FactoryException, TransformException {
         createGeoApiTest(new LambertConformal2SP()).testLambertConicConformal2SP();
     }
@@ -222,7 +216,6 @@ public final class LambertConicConformalTest extends MapProjectionTestCase {
      * @see org.opengis.test.referencing.ParameterizedTransformTest#testLambertConicConformal1SP()
      */
     @Test
-    @DependsOnMethod({"testLambertConicConformal2SP", "verifyBelgeConstant"})
     public void testLambertConicConformalBelgium() throws FactoryException, TransformException {
         createGeoApiTest(new LambertConformalBelgium()).testLambertConicConformalBelgium();
     }
@@ -237,7 +230,6 @@ public final class LambertConicConformalTest extends MapProjectionTestCase {
      * @see org.opengis.test.referencing.ParameterizedTransformTest#testLambertConicConformalMichigan()
      */
     @Test
-    @DependsOnMethod("testLambertConicConformal2SP")
     public void testLambertConicConformalMichigan() throws FactoryException, TransformException {
         createGeoApiTest(new LambertConformalMichigan()).testLambertConicConformalMichigan();
     }
@@ -249,7 +241,6 @@ public final class LambertConicConformalTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a coordinate.
      */
     @Test
-    @DependsOnMethod("testLambertConicConformal1SP")
     public void testLambertConicConformalWestOrientated() throws FactoryException, TransformException {
         createCompleteProjection(new LambertConformal1SP(),
                 WGS84_A,    // Semi-major axis length
@@ -316,7 +307,6 @@ public final class LambertConicConformalTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a coordinate.
      */
     @Test
-    @DependsOnMethod({"testSpecialLatitudes", "testDerivative"})
     public void testSphericalCase() throws FactoryException, TransformException {
         createNormalizedProjection(false, 40);                  // Spherical case
         testSpecialLatitudes();
@@ -335,7 +325,6 @@ public final class LambertConicConformalTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a coordinate.
      */
     @Test
-    @DependsOnMethod("testSphericalCase")
     public void compareEllipticalWithSpherical() throws FactoryException, TransformException {
         createCompleteProjection(new LambertConformal1SP(),
                 6371007,    // Semi-major axis length
@@ -359,7 +348,6 @@ public final class LambertConicConformalTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a coordinate.
      */
     @Test
-    @DependsOnMethod("testLambertConicConformal1SP")
     public void testSerialization() throws FactoryException, TransformException {
         createNormalizedProjection(true, 40);
         final double[] source = new double[] {

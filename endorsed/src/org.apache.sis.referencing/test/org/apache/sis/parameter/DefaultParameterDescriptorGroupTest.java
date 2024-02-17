@@ -29,8 +29,6 @@ import org.apache.sis.io.wkt.Convention;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -46,7 +44,6 @@ import org.opengis.parameter.ParameterDirection;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  */
-@DependsOn(DefaultParameterDescriptorTest.class)
 public final class DefaultParameterDescriptorGroupTest extends TestCase {
     /**
      * The default value used by the parameters in the {@link #M1_M1_O1_O2} descriptor.
@@ -195,7 +192,6 @@ public final class DefaultParameterDescriptorGroupTest extends TestCase {
      * @see DefaultParameterDescriptorTest#testIdentifiedParameterWKT()
      */
     @Test
-    @DependsOnMethod("testWKT")
     public void testIdentifiedParameterWKT() {
         /*
          * Test below is identical to DefaultParameterDescriptorTest.testIdentifiedParameterWKT(),

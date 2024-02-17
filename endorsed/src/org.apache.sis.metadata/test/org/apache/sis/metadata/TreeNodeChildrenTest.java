@@ -34,8 +34,6 @@ import org.apache.sis.util.collection.TreeTable;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 
@@ -55,7 +53,6 @@ import java.util.Set;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(PropertyAccessorTest.class)
 public final class TreeNodeChildrenTest extends TestCase {
     /**
      * Creates a new test case.
@@ -179,7 +176,6 @@ public final class TreeNodeChildrenTest extends TestCase {
      * values in collections.
      */
     @Test
-    @DependsOnMethod("testReadOnlyWithoutCollections")
     public void testReadOnlyWithSingletonInCollections() {
         final DefaultCitation  citation = metadataWithSingletonInCollections();
         final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
@@ -201,7 +197,6 @@ public final class TreeNodeChildrenTest extends TestCase {
      * than one values in collections.
      */
     @Test
-    @DependsOnMethod("testReadOnlyWithSingletonInCollections")
     public void testReadOnlyWithMultiOccurrences() {
         final DefaultCitation  citation = metadataWithMultiOccurrences();
         final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
@@ -224,7 +219,6 @@ public final class TreeNodeChildrenTest extends TestCase {
      * Tests a metadata that can be simplified by displaying a child property value directly as the parent value.
      */
     @Test
-    @DependsOnMethod("testReadOnlyWithoutCollections")
     public void testSimplifiable() {
         final DefaultCitation  citation = metadataSimplifiable();
         /*
@@ -252,7 +246,6 @@ public final class TreeNodeChildrenTest extends TestCase {
      * Tests the {@link TreeNodeChildren#add(TreeTable.Node)} method.
      */
     @Test
-    @DependsOnMethod("testReadOnlyWithMultiOccurrences")
     public void testAdd() {
         final DefaultCitation  citation = metadataWithMultiOccurrences();
         final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
@@ -303,7 +296,6 @@ public final class TreeNodeChildrenTest extends TestCase {
      * Tests the {@link Iterator#remove()} operation on a list of properties without collections.
      */
     @Test
-    @DependsOnMethod("testReadOnlyWithoutCollections")
     public void testRemoveWithoutCollections() {
         final DefaultCitation  citation = metadataWithoutCollections();
         final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
@@ -316,10 +308,6 @@ public final class TreeNodeChildrenTest extends TestCase {
      * collections containing only one element.
      */
     @Test
-    @DependsOnMethod({
-        "testRemoveWithoutCollections",
-        "testReadOnlyWithSingletonInCollections"
-    })
     public void testRemoveWithSingletonInCollections() {
         final DefaultCitation  citation = metadataWithSingletonInCollections();
         final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
@@ -332,10 +320,6 @@ public final class TreeNodeChildrenTest extends TestCase {
      * collections containing more than one element.
      */
     @Test
-    @DependsOnMethod({
-        "testRemoveWithSingletonInCollections",
-        "testReadOnlyWithMultiOccurrences"
-    })
     public void testRemoveWithMultiOccurrences() {
         final DefaultCitation  citation = metadataWithSingletonInCollections();
         final TreeNodeChildren children = create(citation, ValueExistencePolicy.NON_EMPTY);
@@ -362,7 +346,6 @@ public final class TreeNodeChildrenTest extends TestCase {
      * Tests the children list with the {@link ValueExistencePolicy#ALL}.
      */
     @Test
-    @DependsOnMethod("testReadOnlyWithMultiOccurrences")
     public void testShowAll() {
         final DefaultCitation  citation = metadataWithMultiOccurrences();
         final TreeNodeChildren children = create(citation, ValueExistencePolicy.ALL);

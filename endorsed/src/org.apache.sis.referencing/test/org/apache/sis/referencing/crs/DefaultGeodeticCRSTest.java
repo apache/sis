@@ -24,7 +24,6 @@ import org.apache.sis.referencing.GeodeticObjectVerifier;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
 
 
@@ -35,11 +34,6 @@ import org.apache.sis.xml.test.TestCase;
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    AbstractCRSTest.class,
-    org.apache.sis.referencing.cs.DefaultEllipsoidalCSTest.class,
-    org.apache.sis.referencing.datum.DefaultGeodeticDatumTest.class
-})
 public final class DefaultGeodeticCRSTest extends TestCase {
     /**
      * Creates a new test case.

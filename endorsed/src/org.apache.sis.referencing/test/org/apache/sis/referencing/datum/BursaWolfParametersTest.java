@@ -29,7 +29,6 @@ import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -140,7 +139,6 @@ public final class BursaWolfParametersTest extends TestCase {
      * Tests {@link BursaWolfParameters#setValues(double[])}.
      */
     @Test
-    @DependsOnMethod("testGetValues")
     public void testSetValues() {
         final BursaWolfParameters actual   = createWGS72_to_WGS84();
         final BursaWolfParameters expected = createED87_to_WGS84();
@@ -183,7 +181,6 @@ public final class BursaWolfParametersTest extends TestCase {
      * This is an internal consistency test.
      */
     @Test
-    @DependsOnMethod("testGetPositionVectorTransformation")
     public void testSetPositionVectorTransformation() {
         final BursaWolfParameters bursaWolf = createED87_to_WGS84();
         final Matrix matrix = bursaWolf.getPositionVectorTransformation(null);
@@ -201,7 +198,6 @@ public final class BursaWolfParametersTest extends TestCase {
      * @throws NoninvertibleMatrixException Should never happen.
      */
     @Test
-    @DependsOnMethod("testGetPositionVectorTransformation")
     public void testProductOfInverse() throws NoninvertibleMatrixException {
         final BursaWolfParameters bursaWolf = createED87_to_WGS84();
         final MatrixSIS toWGS84 = getPositionVectorTransformation(bursaWolf);
@@ -216,7 +212,6 @@ public final class BursaWolfParametersTest extends TestCase {
      * @throws NoninvertibleMatrixException Should never happen.
      */
     @Test
-    @DependsOnMethod("testProductOfInverse")
     public void testInvert() throws NoninvertibleMatrixException {
         final BursaWolfParameters bursaWolf = createED87_to_WGS84();
         final Matrix original = getPositionVectorTransformation(bursaWolf).inverse();
@@ -229,7 +224,6 @@ public final class BursaWolfParametersTest extends TestCase {
      * Tests the string representation of <cite>ED87 to WGS 84</cite> parameters (EPSG:1146).
      */
     @Test
-    @DependsOnMethod("testGetValues")
     public void testToString() {
         assertEquals("ToWGS84[-82.981, -99.719, -110.709, -0.5076, 0.1503, 0.3898, -0.3143]", createED87_to_WGS84().toString());
         assertEquals("ToWGS84[-168.0, -60.0, 320.0]", createNTF_to_WGS84().toString());

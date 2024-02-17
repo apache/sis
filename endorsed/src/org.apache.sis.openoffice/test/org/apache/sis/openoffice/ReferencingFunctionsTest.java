@@ -26,7 +26,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -35,7 +34,6 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn(TransformerTest.class)
 public final class ReferencingFunctionsTest extends TestCase {
     /**
      * The instance to use for testing purpose.

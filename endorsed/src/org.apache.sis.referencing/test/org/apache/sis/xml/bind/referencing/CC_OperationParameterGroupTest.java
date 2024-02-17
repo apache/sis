@@ -37,8 +37,6 @@ import static org.apache.sis.xml.bind.referencing.CC_GeneralOperationParameter.D
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
 
 
@@ -50,7 +48,6 @@ import org.apache.sis.xml.test.TestCase;
  *
  * @see <a href="http://issues.apache.org/jira/browse/SIS-290">SIS-290</a>
  */
-@DependsOn(CC_GeneralOperationParameterTest.class)
 public final class CC_OperationParameterGroupTest extends TestCase {
     /**
      * Creates a new test case.
@@ -137,7 +134,6 @@ public final class CC_OperationParameterGroupTest extends TestCase {
      * @throws JAXBException if this method failed to create test data.
      */
     @Test
-    @DependsOnMethod("testSubtitution")
     public void testMerge() throws JAXBException {
         final ParameterDescriptorGroup fromXML = unmarshal();
         final ParameterDescriptor<?>[] fromValues = create(null);
@@ -174,7 +170,6 @@ public final class CC_OperationParameterGroupTest extends TestCase {
      * @throws JAXBException if this method failed to create test data.
      */
     @Test
-    @DependsOnMethod("testMerge")
     public void testGroup() throws JAXBException {
         // From XML
         ParameterDescriptorGroup group = unmarshal();

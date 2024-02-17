@@ -27,7 +27,6 @@ import org.apache.sis.util.SimpleInternationalString;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
@@ -36,7 +35,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(PropertyAccessorTest.class)
 public final class NilReasonMapTest extends TestCase {
     /**
      * Creates a new test case.

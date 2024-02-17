@@ -22,7 +22,6 @@ import org.apache.sis.storage.netcdf.base.Decoder;
 
 // Test dependencies
 import org.apache.sis.storage.netcdf.base.VariableTest;
-import org.apache.sis.test.DependsOn;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.dataset.TestData;
@@ -35,7 +34,6 @@ import org.opengis.test.dataset.TestData;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({ChannelDecoderTest.class, VariableTest.class})
 public final class VariableInfoTest extends VariableTest {
     /**
      * Creates a new test.

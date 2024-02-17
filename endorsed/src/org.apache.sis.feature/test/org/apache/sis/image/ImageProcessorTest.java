@@ -29,7 +29,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.image.processing.isoline.IsolinesTest;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -39,7 +38,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(org.apache.sis.image.processing.isoline.IsolinesTest.class)
 public final class ImageProcessorTest extends TestCase {
     /**
      * The processor to test.

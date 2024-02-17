@@ -26,7 +26,6 @@ import org.apache.sis.util.ObjectConverter;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -38,7 +37,6 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(DerivedSetTest.class)
 public final class DerivedMapTest extends TestCase implements ObjectConverter<Integer,Integer> {
     /**
      * The value to replace by {@code null}.

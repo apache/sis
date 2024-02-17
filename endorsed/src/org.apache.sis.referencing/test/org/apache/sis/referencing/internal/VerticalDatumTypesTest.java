@@ -22,7 +22,6 @@ import org.apache.sis.util.ArraysExt;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
 
@@ -63,7 +62,6 @@ public final class VerticalDatumTypesTest extends TestCase {
      * first for ensuring {@link VerticalDatumTypes} class initialization prior this test.
      */
     @Test
-    @DependsOnMethod("testFromLegacy")
     public void testVerticalDatumTypes() {
         final VerticalDatumType[] types = VerticalDatumType.values();
         assertEquals(VerticalDatumType.OTHER_SURFACE, types[0]);

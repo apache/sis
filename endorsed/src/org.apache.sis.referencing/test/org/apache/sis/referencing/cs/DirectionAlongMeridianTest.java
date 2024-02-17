@@ -22,7 +22,6 @@ import org.apache.sis.io.wkt.Convention;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
@@ -32,7 +31,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  *
  * @author  Martin Desruisseaux (IRD)
  */
-@DependsOn(org.apache.sis.referencing.util.AxisDirectionsTest.class)
 public final class DirectionAlongMeridianTest extends TestCase {
     /**
      * Creates a new test case.

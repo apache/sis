@@ -24,7 +24,6 @@ import org.apache.sis.storage.DataStoreMock;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
 
@@ -108,7 +107,6 @@ public final class StoreListenersTest extends TestCase implements StoreListener<
      * Tests {@link StoreListeners#warning(String, Exception)} with a registered listener.
      */
     @Test
-    @DependsOnMethod("testAddAndRemoveStoreListener")
     public void testWarning() {
         final LogRecord record = new LogRecord(Level.WARNING, "The message");
         store.addListener(WarningEvent.class, this);
@@ -121,7 +119,6 @@ public final class StoreListenersTest extends TestCase implements StoreListener<
      * This method shall infer the source class name and source method name automatically.
      */
     @Test
-    @DependsOnMethod("testWarning")
     public void testWarningWithAutoSource() {
         store.addListener(WarningEvent.class, this);
         store.simulateWarning("The message");

@@ -21,7 +21,6 @@ import java.util.Map;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
 
@@ -89,7 +88,6 @@ public final class DefinitionURITest extends TestCase {
      * This is a URN with parameters defined in WMS specification.
      */
     @Test
-    @DependsOnMethod("testParse")
     public void testParseWithParameters() {
         final DefinitionURI parsed = DefinitionURI.parse("urn:ogc:def:crs:OGC:1.3:AUTO42003:1:-100:45");
         assertNotNull(parsed, "DefinitionURI");
@@ -108,7 +106,6 @@ public final class DefinitionURITest extends TestCase {
      * Tests {@link DefinitionURI#parse(String)} on {@code "http://www.opengis.net/def/crs/epsg/0/4326"}.
      */
     @Test
-    @DependsOnMethod("testParse")
     public void testParseHTTP() {
         final DefinitionURI parsed = DefinitionURI.parse("http://www.opengis.net/def/crs/epsg/0/4326");
         assertNotNull(parsed, "DefinitionURI");
@@ -126,7 +123,6 @@ public final class DefinitionURITest extends TestCase {
      * Tests {@link DefinitionURI#parse(String)} on {@code "http://www.opengis.net/gml/srs/epsg.xml#4326"}.
      */
     @Test
-    @DependsOnMethod("testParse")
     public void testParseGML() {
         final DefinitionURI parsed = DefinitionURI.parse("http://www.opengis.net/gml/srs/epsg.xml#4326");
         assertNotNull(parsed, "DefinitionURI");
@@ -152,7 +148,6 @@ public final class DefinitionURITest extends TestCase {
      * Example: {@code "urn:ogc:def:crs,crs:EPSG:6.3:27700,crs:EPSG:6.3:5701"}.
      */
     @Test
-    @DependsOnMethod("testParse")
     public void testCompoundURN() {
         DefinitionURI parsed = DefinitionURI.parse("urn:ogc:def:crs, crs :EPSG:9.1:27700, crs:EPSG: 9.1 :5701");
         assertNotNull(parsed.components, "components");
@@ -178,7 +173,6 @@ public final class DefinitionURITest extends TestCase {
      * Tests compound CRS in HTTP URL.
      */
     @Test
-    @DependsOnMethod("testParseHTTP")
     public void testCompoundHTTP() {
         DefinitionURI parsed = DefinitionURI.parse("http://www.opengis.net/def/crs-compound?"
                 + "1=http://www.opengis.net/def/crs/EPSG/9.1/27700&"

@@ -37,7 +37,6 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-4.0 branch:
@@ -51,7 +50,6 @@ import org.opengis.metadata.citation.Responsibility;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(PropertyAccessorTest.class)
 public final class TypeMapTest extends TestCase {
     /**
      * Creates a new test case.

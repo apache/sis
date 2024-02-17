@@ -26,8 +26,6 @@ import org.apache.sis.util.internal.DoubleDouble;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.TestCase.STRICT;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.Assertions;
@@ -38,7 +36,6 @@ import org.opengis.test.Assertions;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(AbstractMathTransformTest.class)
 public final class ScaleTransformTest extends MathTransformTestCase {
     /**
      * Creates a new test case.
@@ -89,7 +86,6 @@ public final class ScaleTransformTest extends MathTransformTestCase {
      * @throws TransformException should never happen.
      */
     @Test
-    @DependsOnMethod("testConstantDimension")
     public void testDimensionReduction() throws TransformException {
         isInverseTransformSupported = false;                            // Because matrix is not square.
         create(3, 2, Matrices.create(3, 4, new double[] {
@@ -109,7 +105,6 @@ public final class ScaleTransformTest extends MathTransformTestCase {
      * @throws TransformException should never happen.
      */
     @Test
-    @DependsOnMethod("testDimensionReduction")
     public void testDimensionAugmentation() throws TransformException {
         transform = new ProjectiveTransform(Matrices.create(4, 3, new double[] {
                 2, 0, 0,
@@ -126,7 +121,6 @@ public final class ScaleTransformTest extends MathTransformTestCase {
      * Verifies that {@link ScaleTransform} stores the numbers with their extended precision.
      */
     @Test
-    @DependsOnMethod("testConstantDimension")
     public void testExtendedPrecision() {
         final Number O = 0;
         final Number l = 1;

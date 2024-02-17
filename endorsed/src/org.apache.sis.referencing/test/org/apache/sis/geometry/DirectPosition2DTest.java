@@ -22,7 +22,6 @@ import org.opengis.geometry.DirectPosition;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -32,7 +31,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn(GeneralDirectPositionTest.class)
 public final class DirectPosition2DTest extends TestCase {
     /**
      * Creates a new test case.

@@ -27,8 +27,6 @@ import static org.apache.sis.referencing.operation.transform.AbstractMathTransfo
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 
 
 /**
@@ -36,7 +34,6 @@ import org.apache.sis.test.DependsOnMethod;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(IterationStrategyTest.class)
 public final class AbstractMathTransformTest extends TestCase {
     /**
      * Creates a new test case.
@@ -148,7 +145,6 @@ public final class AbstractMathTransformTest extends TestCase {
      * up to some frequency of errors. Untransformed coordinates are expected to be set to NaN.
      */
     @Test
-    @DependsOnMethod("testTransforms")
     public void testExceptionTolerance() {
         final int length = MAXIMUM_BUFFER_SIZE * 3 + 186;
         final double[] dblPts = new double[length];

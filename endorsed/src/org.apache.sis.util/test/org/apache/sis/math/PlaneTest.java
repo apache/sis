@@ -21,8 +21,6 @@ import java.util.Random;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -32,7 +30,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (MPO, IRD)
  */
-@DependsOn(org.apache.sis.util.internal.DoubleDoubleTest.class)
 public final class PlaneTest extends TestCase {
     /**
      * The Pearson coefficient computed by the last call to
@@ -100,7 +97,6 @@ public final class PlaneTest extends TestCase {
      * Tests {@link Plane#fit(double[], double[], double[])} with 4000 points.
      */
     @Test
-    @DependsOnMethod("testFit3Points")
     public void testFitManyPoints() {
         final Random  rd = new Random(7241997054993322309L);
         final double x[] = random(rd, 4000, 100, -25);
@@ -127,7 +123,6 @@ public final class PlaneTest extends TestCase {
      * {@link Plane#fit(double[], double[], double[])}.
      */
     @Test
-    @DependsOnMethod("testFitManyPoints")
     public void testFitGrid() {
         final int nx = 20;
         final int ny = 30;

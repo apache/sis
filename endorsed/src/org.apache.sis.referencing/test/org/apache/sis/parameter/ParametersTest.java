@@ -34,7 +34,6 @@ import org.apache.sis.measure.Units;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 
@@ -51,12 +50,6 @@ import org.opengis.metadata.Identifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    DefaultParameterDescriptorTest.class,
-    DefaultParameterDescriptorGroupTest.class,
-    DefaultParameterValueTest.class,
-    DefaultParameterValueGroupTest.class
-})
 public final class ParametersTest extends TestCase {
     /**
      * Creates a new test case.

@@ -22,7 +22,6 @@ import static java.lang.Double.NaN;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
-import org.apache.sis.test.DependsOn;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 
 
@@ -33,7 +32,6 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  */
-@DependsOn(GeneralEnvelopeTest.class)
 public final class SubEnvelopeTest extends GeneralEnvelopeTest {
     /**
      * Creates a new test case.

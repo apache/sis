@@ -24,7 +24,6 @@ import org.apache.sis.util.ArraysExt;
 
 // Test dependencies
 import org.apache.sis.storage.netcdf.base.GridTest;
-import org.apache.sis.test.DependsOn;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.dataset.TestData;
@@ -37,7 +36,6 @@ import org.opengis.test.dataset.TestData;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({VariableInfoTest.class, GridTest.class})
 public final class GridInfoTest extends GridTest {
     /**
      * Creates a new test.

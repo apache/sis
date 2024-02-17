@@ -23,7 +23,6 @@ import org.apache.sis.measure.Units;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
@@ -33,10 +32,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn({
-    org.apache.sis.referencing.util.FormulasTest.class,
-    org.apache.sis.xml.bind.referencing.SecondDefiningParameterTest.class
-})
 public final class DefaultEllipsoidTest extends TestCase {
     /**
      * Creates a new test case.

@@ -30,8 +30,6 @@ import org.apache.sis.util.Characters;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 
@@ -42,7 +40,6 @@ import static org.apache.sis.test.Assertions.assertMessageContains;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  */
-@DependsOn({SystemUnitTest.class, ConventionalUnitTest.class})
 public final class UnitFormatTest extends TestCase {
     /**
      * Creates a new test case.
@@ -173,7 +170,6 @@ public final class UnitFormatTest extends TestCase {
      * Tests the formatting of a dimension having rational powers.
      */
     @Test
-    @DependsOnMethod("verifyUnitConstants")
     public void testRationalPower() {
         assertEquals("T^(5⁄2)∕(M⋅L)", UnitDimensionTest.specificDetectivity().toString());
     }
@@ -461,7 +457,6 @@ public final class UnitFormatTest extends TestCase {
      * Note that the "da" prefix needs to be handled in a special way because it is the only two-letters long prefix.
      */
     @Test
-    @DependsOnMethod("testParseSymbol")
     public void testParsePrefix() {
         final UnitFormat f = new UnitFormat(Locale.UK);
         ConventionalUnitTest.verify(Units.JOULE,       f.parse("kJ"),   "kJ",   1E+3);
@@ -495,7 +490,6 @@ public final class UnitFormatTest extends TestCase {
      * Tests parsing of symbols composed of terms combined by arithmetic operations (e.g. "m/s").
      */
     @Test
-    @DependsOnMethod("testParsePrefix")
     public void testParseTerms() {
         final UnitFormat f = new UnitFormat(Locale.UK);
         assertSame(Units.SQUARE_METRE,      f.parse("m⋅m"));
@@ -527,7 +521,6 @@ public final class UnitFormatTest extends TestCase {
      * Tests parsing of symbols composed of terms combined by arithmetic operations (e.g. "m/s").
      */
     @Test
-    @DependsOnMethod("testParseTerms")
     public void testParseMultiplier() {
         final UnitFormat f = new UnitFormat(Locale.UK);
         assertSame(Units.MILLIMETRE, f.parse("m/1000"));
@@ -551,7 +544,6 @@ public final class UnitFormatTest extends TestCase {
      * @see ConventionalUnitTest#testKilogram()
      */
     @Test
-    @DependsOnMethod("testParseTerms")
     public void testParseKilogram() {
         final UnitFormat f = new UnitFormat(Locale.UK);
         /*
@@ -578,7 +570,6 @@ public final class UnitFormatTest extends TestCase {
      * However, some formats write it explicitly, as in {@code "m*s^-1"}.
      */
     @Test
-    @DependsOnMethod("testParseMultiplier")
     public void testParseExponentiation() {
         final UnitFormat f = new UnitFormat(Locale.UK);
         assertSame(Units.HERTZ,             f.parse("s^-1"));
@@ -591,7 +582,6 @@ public final class UnitFormatTest extends TestCase {
      * Tests parsing expressions containing parenthesis.
      */
     @Test
-    @DependsOnMethod("testParseMultiplier")
     public void testParseWithParenthesis() {
         final UnitFormat f = new UnitFormat(Locale.UK);
         assertSame(Units.PASCAL, f.parse("kg∕(m⋅s²)"));
@@ -605,7 +595,6 @@ public final class UnitFormatTest extends TestCase {
      * correctly where the unit symbol ends.
      */
     @Test
-    @DependsOnMethod("testParseSymbol")
     public void testParsePosition() {
         final UnitFormat f = new UnitFormat(Locale.UK);
         final ParsePosition pos = new ParsePosition(4);
@@ -650,7 +639,6 @@ public final class UnitFormatTest extends TestCase {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-378">SIS-378</a>
      */
     @Test
-    @DependsOnMethod({"testFormatScaled", "testParseMultiplier"})
     public void testParseAndFormat() {
         final UnitFormat f = new UnitFormat(Locale.UK);
         roundtrip(f, "K.m2.kg-1.s-1",    "K⋅m²∕(kg⋅s)");
@@ -719,7 +707,6 @@ public final class UnitFormatTest extends TestCase {
      * Tests parsing and formatting of custom symbol.
      */
     @Test
-    @DependsOnMethod({"testLabel", "testParseExponentiation"})
     public void testParseAndFormatLabel() {
         final Unit<Length> yard  = Units.METRE.multiply(0.9144);
         final Unit<?>      yard2 = yard.pow(2);

@@ -32,8 +32,6 @@ import org.apache.sis.referencing.CommonCRS;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -46,9 +44,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    org.apache.sis.referencing.CommonCRSTest.class
-})
 public final class ServicesForMetadataTest extends TestCase {
     /**
      * Creates a new test case.
@@ -161,7 +156,6 @@ public final class ServicesForMetadataTest extends TestCase {
      * @throws TransformException should never happen.
      */
     @Test
-    @DependsOnMethod({"testSetGeographicBoundsFrom4D", "testSetVerticalBoundsFromGeoid"})
     public void testSetSpatialTemporalBounds() throws TransformException {
         final DefaultSpatialTemporalExtent extent = new DefaultSpatialTemporalExtent();
         extent.setBounds(createEnvelope(HardCodedCRS.GEOID_3D));

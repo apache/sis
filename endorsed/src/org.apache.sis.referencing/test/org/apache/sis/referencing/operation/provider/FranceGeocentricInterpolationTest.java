@@ -32,7 +32,6 @@ import org.apache.sis.referencing.operation.gridded.CompressedGrid;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestStep;
 
 
@@ -231,7 +230,6 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
      * @throws Exception if an error occurred while loading or computing the grid, or while testing transformations.
      */
     @Test
-    @DependsOnMethod("testGrid")
     public void testGetOrLoad() throws Exception {
         final LoadedGrid<Angle,Length> grid = FranceGeocentricInterpolation.getOrLoad(
                 getResource(TEST_FILE), new double[] {

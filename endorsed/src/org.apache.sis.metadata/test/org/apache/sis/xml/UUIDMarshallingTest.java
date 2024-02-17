@@ -24,8 +24,6 @@ import org.opengis.metadata.citation.Citation;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
@@ -36,7 +34,6 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(NilReasonMarshallingTest.class)
 public final class UUIDMarshallingTest extends TestCase {
     /**
      * A random UUID for the tests in this class.
@@ -207,7 +204,6 @@ public final class UUIDMarshallingTest extends TestCase {
      * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
-    @DependsOnMethod("testReference")
     public void testReferenceInEmptyObject() throws JAXBException {
         final var citation = assertInstanceOf(Citation.class, XML.unmarshal(REFERENCED_XML));
         assertTitleEquals("My data", citation, "citation");

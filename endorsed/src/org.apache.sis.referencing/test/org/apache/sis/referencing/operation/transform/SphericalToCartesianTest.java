@@ -26,7 +26,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -136,7 +135,6 @@ public final class SphericalToCartesianTest extends TransformTestCase {
      * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
-    @DependsOnMethod({"testConversion", "testDerivative"})
     public void testConsistency() throws TransformException {
         derivativeDeltas = new double[] {1E-6, 1E-6, 1E-6};
         tolerance = 1E-7;
@@ -152,7 +150,6 @@ public final class SphericalToCartesianTest extends TransformTestCase {
      * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
-    @DependsOnMethod("testConversion")
     public void testConcatenation() throws TransformException {
         final double scale = 1000;
         transform = MathTransforms.concatenate(transform, MathTransforms.scale(scale, scale, scale));

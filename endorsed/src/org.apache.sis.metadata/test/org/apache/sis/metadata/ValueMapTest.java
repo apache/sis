@@ -32,8 +32,6 @@ import org.apache.sis.metadata.iso.citation.DefaultIndividual;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -50,7 +48,6 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
  *
  * @see MetadataStandardTest#testValueMap()
  */
-@DependsOn(PropertyAccessorTest.class)
 public final class ValueMapTest extends TestCase {
     /**
      * The citation instance created by {@link #createCitation()}.
@@ -137,7 +134,6 @@ public final class ValueMapTest extends TestCase {
      * That order shall be fixed by the {@code XmlType} annotation.
      */
     @Test
-    @DependsOnMethod("testGet")
     public void testEntrySet() {
         final Map<String,Object> map = createCitation();
         assertEquals(1, citation.getIdentifiers().size());
@@ -154,7 +150,6 @@ public final class ValueMapTest extends TestCase {
      * but asking for all non-null and non-nil entries including the empty collections.
      */
     @Test
-    @DependsOnMethod("testEntrySet")
     public void testEntrySetForNonNil() {
         final Map<String,Object> map = createCitation();
         final Map<String,Object> all = MetadataStandard.ISO_19115.asValueMap(citation,
@@ -184,7 +179,6 @@ public final class ValueMapTest extends TestCase {
      * but asking for all non-null entries including nil objects and the empty collections.
      */
     @Test
-    @DependsOnMethod("testEntrySet")
     public void testEntrySetForNonNull() {
         final Map<String,Object> map = createCitation();
         final Map<String,Object> all = MetadataStandard.ISO_19115.asValueMap(citation,
@@ -215,7 +209,6 @@ public final class ValueMapTest extends TestCase {
      * but asking for all entries including null and empty values.
      */
     @Test
-    @DependsOnMethod("testEntrySet")
     public void testEntrySetForAll() {
         final Map<String,Object> map = createCitation();
         final Map<String,Object> all = MetadataStandard.ISO_19115.asValueMap(citation,
@@ -249,7 +242,6 @@ public final class ValueMapTest extends TestCase {
      * That order shall be fixed by the {@code XmlType} annotation.
      */
     @Test
-    @DependsOnMethod("testEntrySet")
     public void testPutAndRemove() {
         final Map<String,Object> map = createCitation();
         /*

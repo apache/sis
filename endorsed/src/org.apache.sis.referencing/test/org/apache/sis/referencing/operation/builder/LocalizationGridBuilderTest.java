@@ -26,7 +26,6 @@ import org.apache.sis.geometry.Envelope2D;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.referencing.TransformTestCase;
-import org.apache.sis.test.DependsOn;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 import static org.apache.sis.test.TestCase.STRICT;
 
@@ -36,7 +35,6 @@ import static org.apache.sis.test.TestCase.STRICT;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({LinearTransformBuilderTest.class, ResidualGridTest.class})
 public final class LocalizationGridBuilderTest extends TransformTestCase {
     /**
      * Creates a new test case.

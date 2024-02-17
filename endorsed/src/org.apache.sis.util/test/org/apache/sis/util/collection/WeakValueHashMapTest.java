@@ -24,8 +24,6 @@ import java.util.Random;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestConfiguration;
 import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.Assertions.assertMapEquals;
@@ -38,7 +36,6 @@ import static org.apache.sis.test.TestUtilities.waitForGarbageCollection;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn(org.apache.sis.util.ArraysExtTest.class)
 public final class WeakValueHashMapTest extends TestCase {
     /**
      * The size of the test sets to be created.
@@ -103,7 +100,6 @@ public final class WeakValueHashMapTest extends TestCase {
      * @throws InterruptedException if the test has been interrupted.
      */
     @Test
-    @DependsOnMethod("testStrongReferences")
     public void testWeakReferences() throws InterruptedException {
         testWeakReferences(new WeakValueHashMap<>(Integer.class));
     }
@@ -180,7 +176,6 @@ public final class WeakValueHashMapTest extends TestCase {
      * Tests with array keys.
      */
     @Test
-    @DependsOnMethod("testStrongReferences")
     public void testWithArrayKeys() {
         final WeakValueHashMap<int[],IntObject> weakMap = new WeakValueHashMap<>(int[].class);
         final int[] k1 = new int[] {2, 5, 3};
@@ -201,7 +196,6 @@ public final class WeakValueHashMapTest extends TestCase {
      * but being different instances.
      */
     @Test
-    @DependsOnMethod("testStrongReferences")
     public void testIdentityComparisons() {
         final WeakValueHashMap<IntObject,IntObject> weakMap = new WeakValueHashMap<>(IntObject.class, true);
         final IntObject k1 = new IntObject(10);

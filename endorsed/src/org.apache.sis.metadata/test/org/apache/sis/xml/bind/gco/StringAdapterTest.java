@@ -24,7 +24,6 @@ import org.apache.sis.xml.bind.Context;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
 
@@ -55,7 +54,6 @@ public final class StringAdapterTest extends TestCase {
      * having localizations in different languages.
      */
     @Test
-    @DependsOnMethod("testToUnlocalizedString")
     public void testToLocalizedString() {
         final DefaultInternationalString i18n = new DefaultInternationalString();
         i18n.add(Locale.ENGLISH,  "A word");

@@ -35,8 +35,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.parameter.DefaultParameterDescriptorTest;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -48,9 +46,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    org.apache.sis.referencing.crs.DefaultGeocentricCRSTest.class
-})
 public final class DefaultTransformationTest extends TestCase {
     /**
      * Creates a new test case.
@@ -159,7 +154,6 @@ public final class DefaultTransformationTest extends TestCase {
      * Tests WKT formatting.
      */
     @Test
-    @DependsOnMethod("testConstruction")
     public void testWKT() {
         final DefaultTransformation op = createGeocentricTranslation();
         assertWktEquals(Convention.WKT2,
@@ -215,7 +209,6 @@ public final class DefaultTransformationTest extends TestCase {
      * Tests serialization.
      */
     @Test
-    @DependsOnMethod("testConstruction")
     public void testSerialization() {
         verifyProperties(assertSerializedEquals(createGeocentricTranslation()));
     }

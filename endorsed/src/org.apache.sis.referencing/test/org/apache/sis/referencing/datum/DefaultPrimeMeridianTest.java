@@ -34,8 +34,6 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
@@ -46,7 +44,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(org.apache.sis.referencing.AbstractIdentifiedObjectTest.class)
 public final class DefaultPrimeMeridianTest extends TestCase {
     /**
      * Creates a new test case.
@@ -80,7 +77,6 @@ public final class DefaultPrimeMeridianTest extends TestCase {
      * Tests WKT formatting of a prime meridian in grad units.
      */
     @Test
-    @DependsOnMethod("testToWKT")
     public void testWKT_inGrads() {
         final DefaultPrimeMeridian pm = HardCodedDatum.PARIS;
         assertWktEquals(Convention.WKT1, "PRIMEM[“Paris”, 2.33722917, AUTHORITY[“EPSG”, “8903”]]", pm);
@@ -94,7 +90,6 @@ public final class DefaultPrimeMeridianTest extends TestCase {
      * the formatter should convert them to a formattable unit like degrees.
      */
     @Test
-    @DependsOnMethod("testWKT_inGrads")
     public void testWKT_withUnformattableUnit() {
         final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(
                 Map.of(DefaultPrimeMeridian.NAME_KEY, "Test"),
@@ -141,7 +136,6 @@ public final class DefaultPrimeMeridianTest extends TestCase {
      * @throws JAXBException if an error occurred during marshalling.
      */
     @Test
-    @DependsOnMethod("testMarshall")
     public void testMarshallGML31() throws JAXBException {
         final DefaultPrimeMeridian pm = new DefaultPrimeMeridian(PrimeMeridianMock.GREENWICH);
         final MarshallerPool pool = getMarshallerPool();
@@ -169,7 +163,6 @@ public final class DefaultPrimeMeridianTest extends TestCase {
      * @throws JAXBException if an error occurred during unmarshalling.
      */
     @Test
-    @DependsOnMethod("testUnmarshall")
     public void testUnarshallGML31() throws JAXBException {
         final MarshallerPool pool = getMarshallerPool();
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
@@ -186,7 +179,6 @@ public final class DefaultPrimeMeridianTest extends TestCase {
      * @throws JAXBException if an error occurred during unmarshalling.
      */
     @Test
-    @DependsOnMethod({"testUnmarshall", "testMarshall", "testWKT_inGrads"})
     public void testParisMeridian() throws JAXBException {
         final DefaultPrimeMeridian pm = unmarshalFile(DefaultPrimeMeridian.class, openTestFile(false));
         assertIsParis(pm);

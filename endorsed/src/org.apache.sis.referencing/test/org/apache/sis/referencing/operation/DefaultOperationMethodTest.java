@@ -32,8 +32,6 @@ import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
@@ -45,11 +43,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    DefaultFormulaTest.class,
-    org.apache.sis.referencing.AbstractIdentifiedObjectTest.class,
-    org.apache.sis.parameter.DefaultParameterDescriptorGroupTest.class
-})
 public final class DefaultOperationMethodTest extends TestCase {
     /**
      * Creates a new test case.
@@ -123,7 +116,6 @@ public final class DefaultOperationMethodTest extends TestCase {
      * we do not bother specifying the parameters in the object created here.
      */
     @Test
-    @DependsOnMethod("testConstruction")
     public void testWKT() {
         final OperationMethod method = create("Mercator (variant A)", "9804", "EPSG guidance note #7-2");
         assertWktEquals("METHOD[“Mercator (variant A)”, ID[“EPSG”, 9804, URI[“urn:ogc:def:method:EPSG::9804”]]]", method);

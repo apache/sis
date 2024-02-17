@@ -24,7 +24,6 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -33,7 +32,6 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(UnmodifiableParameterValueTest.class)
 public final class UnmodifiableParameterValueGroupTest extends TestCase {
     /**
      * Creates a new test case.

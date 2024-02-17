@@ -34,7 +34,6 @@ import org.apache.sis.measure.Units;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import org.apache.sis.metadata.iso.citation.DefaultCitationTest;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
@@ -47,7 +46,6 @@ import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(TreeTableViewTest.class)
 public final class TreeTableFormatTest extends TestCase {
     /**
      * The formatter to use.

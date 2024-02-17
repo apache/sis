@@ -24,7 +24,6 @@ import org.apache.sis.math.Fraction;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
@@ -144,7 +143,6 @@ public final class LinearConverterTest extends TestCase {
      * This method indirectly tests {@link org.apache.sis.math.DecimalFunctions#floatToDouble(float)}.
      */
     @Test
-    @DependsOnMethod("testConvertDouble")
     public void testConvertFloat() {
         LinearConverter c = LinearConverter.offset(27315, 100);
         final Number n = c.convert(Float.valueOf(27.01f));
@@ -156,7 +154,6 @@ public final class LinearConverterTest extends TestCase {
      * Tests {@link LinearConverter#convert(Number)} with a value of type {@link BigDecimal}.
      */
     @Test
-    @DependsOnMethod("testConvertDouble")
     public void testConvertBigDecimal() {
         LinearConverter c = LinearConverter.offset(27315, 100);
         final Number n = c.convert(new BigDecimal("27.01"));
@@ -221,7 +218,6 @@ public final class LinearConverterTest extends TestCase {
      * Tests serialization of a {@link UnitConverter}.
      */
     @Test
-    @DependsOnMethod("testEquals")
     public void testSerialization() {
         LinearConverter c = LinearConverter.scale(254, 100);
         assertNotSame(c, assertSerializedEquals(c));

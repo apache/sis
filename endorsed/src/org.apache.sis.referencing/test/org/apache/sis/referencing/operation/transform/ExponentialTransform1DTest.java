@@ -23,8 +23,6 @@ import org.opengis.referencing.operation.TransformException;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.referencing.Assertions.assertIsNotIdentity;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -40,10 +38,6 @@ import org.opengis.test.ToleranceModifiers;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    CoordinateDomainTest.class,
-    LinearTransformTest.class
-})
 public final class ExponentialTransform1DTest extends MathTransformTestCase {
     /**
      * Arbitrary parameter of the exponential transform to be tested.
@@ -177,7 +171,6 @@ public final class ExponentialTransform1DTest extends MathTransformTestCase {
      * @throws TransformException should never happen.
      */
     @Test
-    @DependsOnMethod("testSingle")
     public void testSingleWithScale() throws TransformException {
         testSingle( 10, SCALE);  // Exponential transform in base 10
         testSingle(  E, SCALE);  // Exponential transform in base E
@@ -192,7 +185,6 @@ public final class ExponentialTransform1DTest extends MathTransformTestCase {
      * @throws TransformException should never happen.
      */
     @Test
-    @DependsOnMethod("testSingleWithScale")
     public void testAffinePreConcatenation() throws TransformException {
         testAffinePreConcatenation( 10);  // Affine + exponential transform in base 10
         testAffinePreConcatenation(  E);  // Affine + exponential transform in base E
@@ -205,7 +197,6 @@ public final class ExponentialTransform1DTest extends MathTransformTestCase {
      * @throws TransformException should never happen.
      */
     @Test
-    @DependsOnMethod("testSingleWithScale")
     public void testAffinePostConcatenation() throws TransformException {
         testAffinePostConcatenation( 10);  // Exponential transform in base 10  + affine
         testAffinePostConcatenation(  E);  // Exponential transform in base E   + affine
@@ -218,10 +209,6 @@ public final class ExponentialTransform1DTest extends MathTransformTestCase {
      * @throws TransformException should never happen.
      */
     @Test
-    @DependsOnMethod({
-        "testAffinePreConcatenation",
-        "testAffinePostConcatenation"
-    })
     public void testAffineConcatenations() throws TransformException {
         testAffineConcatenations( 10);  // Affine + exponential transform in base 10  + affine
         testAffineConcatenations(  E);  // Affine + exponential transform in base E   + affine

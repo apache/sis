@@ -24,8 +24,6 @@ import org.apache.sis.measure.Units;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -34,11 +32,6 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    org.apache.sis.referencing.BuilderTest.class,
-    DefaultParameterDescriptorTest.class,
-    DefaultParameterValueTest.class
-})
 public final class ParameterBuilderTest extends TestCase {
     /**
      * Creates a new test case.
@@ -78,7 +71,6 @@ public final class ParameterBuilderTest extends TestCase {
      * Tests the <q>Mercator (variant A)</q> example given in Javadoc.
      */
     @Test
-    @DependsOnMethod("testCreate")
     @SuppressWarnings("UnnecessaryBoxing")
     public void testMercatorProjection() {
         final ParameterBuilder builder = new ParameterBuilder();

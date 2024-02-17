@@ -24,8 +24,6 @@ import javax.measure.quantity.Volume;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -37,7 +35,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({SystemUnitTest.class, LinearConverterTest.class, PrefixesTest.class})
 public final class ConventionalUnitTest extends TestCase {
     /**
      * Creates a new test case.
@@ -105,7 +102,6 @@ public final class ConventionalUnitTest extends TestCase {
      * All those methods are implemented by calls to {@link SystemUnit#transform(UnitConverter)}.
      */
     @Test
-    @DependsOnMethod("verifyConstants")
     public void testTransformFundamentalUnit() {
         assertSame(Units.METRE,      Units.METRE.multiply(   1));
         assertSame(Units.KILOMETRE,  Units.METRE.multiply(1000));
@@ -130,7 +126,6 @@ public final class ConventionalUnitTest extends TestCase {
      * @see <a href="https://en.wikipedia.org/wiki/SI_derived_unit">Derived units on Wikipedia</a>
      */
     @Test
-    @DependsOnMethod({"testTransformFundamentalUnit", "testPower"})
     public void testTransformDerivedUnit() {
         assertSame(Units.METRES_PER_SECOND, Units.METRES_PER_SECOND.multiply(   1));
         verify    (Units.METRES_PER_SECOND, Units.METRES_PER_SECOND.multiply(1000), "km∕s", 1E+3);
@@ -148,7 +143,6 @@ public final class ConventionalUnitTest extends TestCase {
      * Both are implemented by calls to {@link ConventionalUnit#transform(UnitConverter)}.
      */
     @Test
-    @DependsOnMethod("testTransformDerivedUnit")
     public void testTransformConventionalUnit() {
         assertSame(Units.MILLIMETRE, Units.MILLIMETRE.multiply(   1));
         assertSame(Units.CENTIMETRE, Units.MILLIMETRE.multiply(  10));
@@ -274,7 +268,6 @@ public final class ConventionalUnitTest extends TestCase {
      * Tests conversion between litres and cubic metres.
      */
     @Test
-    @DependsOnMethod("testVolumeEquivalences")
     public void testVolumeConversions() {
         final Unit<Volume>  l  = Units.LITRE;
         final Unit<Volume> cl  = Units.LITRE.divide(100);

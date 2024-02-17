@@ -30,7 +30,6 @@ import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestStep;
 
@@ -43,7 +42,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(org.apache.sis.metadata.sql.util.ScriptRunnerTest.class)
 public final class MetadataSourceTest extends TestCase {
     /**
      * Creates a new test case.

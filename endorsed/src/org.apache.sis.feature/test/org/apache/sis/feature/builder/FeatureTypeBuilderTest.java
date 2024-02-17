@@ -31,8 +31,6 @@ import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.feature.DefaultFeatureTypeTest;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -49,7 +47,6 @@ import org.opengis.feature.Operation;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Michael Hausegger
  */
-@DependsOn(AttributeTypeBuilderTest.class)
 public final class FeatureTypeBuilderTest extends TestCase {
     /**
      * Creates a new test case.
@@ -107,7 +104,6 @@ public final class FeatureTypeBuilderTest extends TestCase {
      * Tests with the minimum number of parameters (no property and no super type).
      */
     @Test
-    @DependsOnMethod({"testSetAbstract", "testSetDeprecated", "testSetNameSpace"})
     public void testInitialization() {
         var builder = new FeatureTypeBuilder();
         var e = assertThrows(IllegalArgumentException.class, () -> builder.build(),
@@ -126,7 +122,6 @@ public final class FeatureTypeBuilderTest extends TestCase {
      * Tests {@link FeatureTypeBuilder#addAttribute(Class)}.
      */
     @Test
-    @DependsOnMethod("testInitialization")
     public void testAddAttribute() {
         final var builder = new FeatureTypeBuilder();
         assertSame(builder, builder.setName("myScope", "myName"));
@@ -189,7 +184,6 @@ public final class FeatureTypeBuilderTest extends TestCase {
      * and another property is the geometry.
      */
     @Test
-    @DependsOnMethod("testAddAttribute")
     public void testAddIdentifierAndGeometry() {
         final var builder = new FeatureTypeBuilder();
         assertSame(builder, builder.setName("scope", "test"));
@@ -225,7 +219,6 @@ public final class FeatureTypeBuilderTest extends TestCase {
      * the data file should use that name instead in the feature type.
      */
     @Test
-    @DependsOnMethod("testAddIdentifierAndGeometry")
     public void testAddAnonymousIdentifier() {
         final var builder = new FeatureTypeBuilder();
         assertSame(builder, builder.setName("City"));
@@ -248,7 +241,6 @@ public final class FeatureTypeBuilderTest extends TestCase {
      * the data file should use that name instead in the feature type.
      */
     @Test
-    @DependsOnMethod("testAddIdentifierAndGeometry")
     public void testAddAnonymousGeometry() {
         final var builder = new FeatureTypeBuilder();
         assertSame(builder, builder.setName("City"));
@@ -289,7 +281,6 @@ public final class FeatureTypeBuilderTest extends TestCase {
      * Tests creation of a builder from an existing feature type with some attributes having {@link AttributeRole}s.
      */
     @Test
-    @DependsOnMethod("testCreateFromTemplate")
     public void testCreateFromTemplateWithRoles() {
         var builder = new FeatureTypeBuilder().setName("City");
         builder.addAttribute(String  .class).setName("name").roles().add(AttributeRole.IDENTIFIER_COMPONENT);
@@ -324,7 +315,6 @@ public final class FeatureTypeBuilderTest extends TestCase {
      * See {@link AttributeTypeBuilder#build()} javadoc for a rational.
      */
     @Test
-    @DependsOnMethod("testAddAttribute")
     public void testBuildCache() {
         final var builder   = new FeatureTypeBuilder().setName("City");
         final var attribute = builder.addAttribute(String.class).setName("name").build();

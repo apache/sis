@@ -37,8 +37,6 @@ import static org.apache.sis.referencing.util.Formulas.LINEAR_TOLERANCE;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 
@@ -52,7 +50,6 @@ import org.apache.sis.referencing.operation.HardCodedConversions;
  *
  * @param <G>  the type of geometric objects, either {@link GeneralEnvelope} or {@link java.awt.geom.Rectangle2D}.
  */
-@DependsOn(CurveExtremumTest.class)
 public abstract class TransformTestCase<G> extends TestCase {
     /**
      * Creates an envelope or rectangle for the given CRS and coordinate values.
@@ -131,7 +128,6 @@ public abstract class TransformTestCase<G> extends TestCase {
      * @throws TransformException if an error occurred while transforming the envelope.
      */
     @Test
-    @DependsOnMethod("testTransform")
     public final void testTransformOverPole() throws FactoryException, TransformException {
         final ProjectedCRS    sourceCRS  = HardCodedConversions.createCRS(HardCodedConversions.POLAR_STEREOGRAPHIC);
         final GeographicCRS   targetCRS  = sourceCRS.getBaseCRS();
@@ -195,7 +191,6 @@ public abstract class TransformTestCase<G> extends TestCase {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-329">SIS-329</a>
      */
     @Test
-    @DependsOnMethod("testTransform")
     public final void testTransformNotOverPole() throws FactoryException, TransformException {
         final ProjectedCRS  sourceCRS  = CommonCRS.WGS84.universal(10, -3.5);
         final GeographicCRS targetCRS  = sourceCRS.getBaseCRS();
@@ -216,7 +211,6 @@ public abstract class TransformTestCase<G> extends TestCase {
      * @throws TransformException if an error occurred while transforming the envelope.
      */
     @Test
-    @DependsOnMethod("testTransform")
     public final void testTransformOverAntiMeridian() throws TransformException {
         final ProjectedCRS  sourceCRS  = HardCodedConversions.mercator();
         final GeographicCRS targetCRS  = sourceCRS.getBaseCRS();
@@ -238,7 +232,6 @@ public abstract class TransformTestCase<G> extends TestCase {
      * @throws TransformException if an error occurred while transforming the envelope.
      */
     @Test
-    @DependsOnMethod("testTransformOverAntiMeridian")
     public void testProjectionOutsideLongitudeRange() throws FactoryException, TransformException {
         final ProjectedCRS    sourceCRS  = HardCodedConversions.createCRS(HardCodedConversions.UTM);
         final GeographicCRS   targetCRS  = sourceCRS.getBaseCRS();

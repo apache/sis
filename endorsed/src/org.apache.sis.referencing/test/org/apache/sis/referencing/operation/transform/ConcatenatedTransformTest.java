@@ -30,7 +30,6 @@ import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.TestCase.STRICT;
-import org.apache.sis.test.DependsOn;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.Assertions;
@@ -42,7 +41,6 @@ import org.opengis.test.Assertions;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  */
-@DependsOn(ProjectiveTransformTest.class)
 public final class ConcatenatedTransformTest extends MathTransformTestCase {
     /**
      * Creates a new test case.

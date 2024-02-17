@@ -31,8 +31,6 @@ import javax.measure.quantity.Time;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMapEquals;
 import static org.apache.sis.test.Assertions.assertMessageContains;
@@ -44,7 +42,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(UnitDimensionTest.class)
 public final class SystemUnitTest extends TestCase {
     /**
      * Creates a new test case.
@@ -82,7 +79,6 @@ public final class SystemUnitTest extends TestCase {
      * Tests {@link SystemUnit#multiply(Unit)}.
      */
     @Test
-    @DependsOnMethod("testEqualsAndHashCode")
     public void testMultiply() {
         assertSame(Units.METRE,        Units.METRE.multiply(Units.UNITY));
         assertSame(Units.SQUARE_METRE, Units.METRE.multiply(Units.METRE));
@@ -99,7 +95,6 @@ public final class SystemUnitTest extends TestCase {
      * Tests {@link SystemUnit#divide(Unit)}.
      */
     @Test
-    @DependsOnMethod("testEqualsAndHashCode")
     public void testDivide() {
         assertSame(Units.METRE, Units.METRE.divide(Units.UNITY));
         assertSame(Units.METRE, Units.SQUARE_METRE.divide(Units.METRE));
@@ -112,7 +107,6 @@ public final class SystemUnitTest extends TestCase {
      * Tests {@link SystemUnit#pow(int)}.
      */
     @Test
-    @DependsOnMethod("testEqualsAndHashCode")
     public void testPow() {
         assertSame(Units.UNITY,        Units.UNITY.pow(4));
         assertSame(Units.SQUARE_METRE, Units.METRE.pow(2));
@@ -123,7 +117,6 @@ public final class SystemUnitTest extends TestCase {
      * Tests {@link SystemUnit#root(int)}.
      */
     @Test
-    @DependsOnMethod("testEqualsAndHashCode")
     public void testRoot() {
         assertSame(Units.UNITY, Units.UNITY.root(4));
         assertSame(Units.METRE, Units.SQUARE_METRE.root(2));
@@ -188,7 +181,6 @@ public final class SystemUnitTest extends TestCase {
      * Serializes some units, deserializes them and verifies that we get the same instance.
      */
     @Test
-    @DependsOnMethod("testEqualsAndHashCode")
     public void testSerialization() {
         assertSame(Units.METRE,  assertSerializedEquals(Units.METRE));
         assertSame(Units.SECOND, assertSerializedEquals(Units.SECOND));
@@ -214,7 +206,6 @@ public final class SystemUnitTest extends TestCase {
      * Tests {@link SystemUnit#getConverterTo(Unit)}.
      */
     @Test
-    @DependsOnMethod("testIsCompatible")
     public void testGetConverterTo() {
         assertTrue(Units.METRE .getConverterTo(Units.METRE ).isIdentity());
         assertTrue(Units.SECOND.getConverterTo(Units.SECOND).isIdentity());
@@ -229,7 +220,6 @@ public final class SystemUnitTest extends TestCase {
      */
     @Test
     @SuppressWarnings("unchecked")
-    @DependsOnMethod("testGetConverterTo")
     public void testIllegalGetConverterTo() {
         UnconvertibleException e;
         e = assertThrows(UnconvertibleException.class, () -> Units.METRE.getConverterTo((Unit) Units.SECOND));
@@ -248,7 +238,6 @@ public final class SystemUnitTest extends TestCase {
      * @throws IncommensurableException if two units were not expected to be considered incompatible.
      */
     @Test
-    @DependsOnMethod("testGetConverterTo")
     public void testGetConverterToAny() throws IncommensurableException {
         assertTrue(Units.METRE .getConverterToAny(Units.METRE ).isIdentity());
         assertTrue(Units.SECOND.getConverterToAny(Units.SECOND).isIdentity());
@@ -305,7 +294,6 @@ public final class SystemUnitTest extends TestCase {
      * Tests {@link SystemUnit#asType(Class)} for a quantity unknown to Apache SIS.
      */
     @Test
-    @DependsOnMethod({"testAsType", "testAlternate"})
     public void testAsTypeForNewQuantity() {
         /*
          * Tests with a new quantity type unknown to Apache SIS.

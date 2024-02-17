@@ -28,8 +28,6 @@ import org.apache.sis.referencing.internal.Resources;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -37,7 +35,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(NormalizedProjectionTest.class)
 public final class MeridianArcTest extends MapProjectionTestCase {
     /**
      * Creates a new test case.
@@ -194,7 +191,6 @@ public final class MeridianArcTest extends MapProjectionTestCase {
      * @throws TransformException if the iterative method does not converge.
      */
     @Test
-    @DependsOnMethod("compareWithReference")
     public void compareInverse() throws TransformException {
         final MeridianArcBased projection = create(true);
         final Random random = TestUtilities.createRandomNumberGenerator();
@@ -212,7 +208,6 @@ public final class MeridianArcTest extends MapProjectionTestCase {
      * @throws TransformException if an iteration does not converge.
      */
     @Test
-    @DependsOnMethod("compareInverse")
     public void testOnSphere() throws TransformException {
         verifyInDomain(false, 20);
     }
@@ -223,7 +218,6 @@ public final class MeridianArcTest extends MapProjectionTestCase {
      * @throws TransformException if an iteration does not converge.
      */
     @Test
-    @DependsOnMethod("testOnSphere")
     public void testOnEllipsoid() throws TransformException {
         verifyInDomain(true, 100);
     }

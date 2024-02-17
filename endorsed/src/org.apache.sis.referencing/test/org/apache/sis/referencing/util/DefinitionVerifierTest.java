@@ -29,8 +29,6 @@ import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 
@@ -40,7 +38,6 @@ import org.apache.sis.metadata.iso.citation.HardCodedCitations;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(org.apache.sis.referencing.CRSTest.class)
 public final class DefinitionVerifierTest extends TestCase {
     /**
      * Creates a new test case.
@@ -69,7 +66,6 @@ public final class DefinitionVerifierTest extends TestCase {
      * @throws FactoryException if an error occurred while querying the authority factory.
      */
     @Test
-    @DependsOnMethod("testConformCRS")
     public void testNormalizedCRS() throws FactoryException {
         final DefaultGeographicCRS crs = HardCodedCRS.WGS84;
         assertNull(DefinitionVerifier.withAuthority(crs, null, false, null), "No replacement without EPSG code.");
@@ -86,7 +82,6 @@ public final class DefinitionVerifierTest extends TestCase {
      * @throws FactoryException if an error occurred while querying the authority factory.
      */
     @Test
-    @DependsOnMethod("testNormalizedCRS")
     public void testDifferentAxisOrder() throws FactoryException {
         final Map<String,Object> properties = new HashMap<>(4);
         properties.put(DefaultGeographicCRS.NAME_KEY, "WGS 84");

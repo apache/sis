@@ -22,8 +22,6 @@ import org.apache.sis.referencing.util.Formulas;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -33,7 +31,6 @@ import org.apache.sis.test.DependsOn;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  */
-@DependsOn(MeridianArcTest.class)
 public final class PolyconicTest extends MapProjectionTestCase {
     /**
      * Creates a new test case.
@@ -116,7 +113,6 @@ public final class PolyconicTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
-    @DependsOnMethod("testInverseDerivative")
     public void testDerivativeOnSphere() throws FactoryException, TransformException {
         createProjection(false);
         final double delta = (1.0 / 60) / 1852;                 // Approximately 1 metre.
@@ -135,7 +131,6 @@ public final class PolyconicTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
-    @DependsOnMethod("testInverseDerivative")
     public void testDerivativeOnEllipsoid() throws FactoryException, TransformException {
         createProjection(true);
         final double delta = (1.0 / 60) / 1852;                 // Approximately 1 metre.
@@ -153,7 +148,6 @@ public final class PolyconicTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
-    @DependsOnMethod("testEllipsoidal")
     public void runGeoapiTest() throws FactoryException, TransformException {
         createGeoApiTest(new org.apache.sis.referencing.operation.provider.Polyconic()).testPolyconic();
     }

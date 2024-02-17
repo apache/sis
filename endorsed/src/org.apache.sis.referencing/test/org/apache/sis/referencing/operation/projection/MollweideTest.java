@@ -23,8 +23,6 @@ import org.apache.sis.referencing.util.Formulas;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -33,7 +31,6 @@ import org.apache.sis.test.DependsOn;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(NormalizedProjectionTest.class)
 public final class MollweideTest extends MapProjectionTestCase {
     /**
      * Creates a new test case.
@@ -92,7 +89,6 @@ public final class MollweideTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
-    @DependsOnMethod("testTransform")
     public void testOnAuthalicRadius() throws FactoryException, TransformException {
         createProjection(true);
         assertTrue(isInverseTransformSupported);
@@ -116,7 +112,6 @@ public final class MollweideTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
-    @DependsOnMethod("testTransform")
     public void testTransformOutsideDomain() throws FactoryException, TransformException {
         createProjection(false);
         final double[] in  = new double[] {-180.0001,     0.0};
@@ -141,7 +136,6 @@ public final class MollweideTest extends MapProjectionTestCase {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-428">SIS-428</a>
      */
     @Test
-    @DependsOnMethod("testTransform")
     public void testInverseDerivative() throws FactoryException, TransformException {
         createProjection(false);
         transform = transform.inverse();
@@ -159,7 +153,6 @@ public final class MollweideTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
-    @DependsOnMethod("testInverseDerivative")
     public void testDerivative() throws FactoryException, TransformException {
         createProjection(false);
         final double delta = (100.0 / 60) / 1852;               // Approximately 100 metres.

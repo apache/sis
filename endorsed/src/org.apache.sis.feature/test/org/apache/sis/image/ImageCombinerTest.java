@@ -27,7 +27,6 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import static org.apache.sis.feature.Assertions.assertValuesEqual;
 
 
@@ -37,7 +36,6 @@ import static org.apache.sis.feature.Assertions.assertValuesEqual;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Johann Sorel (Geomatys)
  */
-@DependsOn(ResampledImageTest.class)
 public final class ImageCombinerTest extends ImageTestCase {
     /**
      * The image to add to the {@link ImageCombiner}.

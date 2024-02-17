@@ -36,7 +36,6 @@ import org.apache.sis.storage.netcdf.base.TestCase;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.storage.netcdf.classic.ChannelDecoderTest;
-import org.apache.sis.test.DependsOn;
 import static org.apache.sis.test.TestUtilities.date;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -50,10 +49,6 @@ import org.opengis.test.dataset.TestData;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    ChannelDecoderTest.class,
-    org.apache.sis.storage.netcdf.classic.VariableInfoTest.class
-})
 public final class MetadataReaderTest extends TestCase {
     /**
      * Creates a new test case.

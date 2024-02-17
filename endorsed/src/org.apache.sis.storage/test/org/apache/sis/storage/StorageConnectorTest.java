@@ -38,8 +38,6 @@ import org.apache.sis.storage.internal.InputStreamAdapter;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 
@@ -50,7 +48,6 @@ import static org.apache.sis.test.Assertions.assertMessageContains;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  */
-@DependsOn(org.apache.sis.io.stream.ChannelImageInputStreamTest.class)
 public final class StorageConnectorTest extends TestCase {
     /**
      * Name of the test file, in the same directory as this {@code StorageConnectorTest} file.
@@ -219,7 +216,6 @@ public final class StorageConnectorTest extends TestCase {
      * @throws IOException if an error occurred while reading the test file.
      */
     @Test
-    @DependsOnMethod("testGetAsDataInputFromURL")
     public void testGetAsImageInputStream() throws DataStoreException, IOException {
         final StorageConnector connector = create(false);
         final ImageInputStream in = connector.getStorageAs(ImageInputStream.class);
@@ -235,7 +231,6 @@ public final class StorageConnectorTest extends TestCase {
      * @throws IOException if an error occurred while reading the test file.
      */
     @Test
-    @DependsOnMethod("testGetAsImageInputStream")
     public void testGetOriginalInputStream() throws DataStoreException, IOException {
         final StorageConnector connector = create(true);
         final InputStream in = connector.getStorageAs(InputStream.class);
@@ -270,7 +265,6 @@ public final class StorageConnectorTest extends TestCase {
      * @throws IOException if an error occurred while reading the test file.
      */
     @Test
-    @DependsOnMethod("testGetAsImageInputStream")
     public void testGetAsInputStream() throws DataStoreException, IOException {
         final StorageConnector connector = create(false);
         final InputStream in = connector.getStorageAs(InputStream.class);
@@ -294,7 +288,6 @@ public final class StorageConnectorTest extends TestCase {
      * @throws IOException if an error occurred while reading the test file.
      */
     @Test
-    @DependsOnMethod({"testGetAsInputStream", "testGetAsDataInputFromStream"})
     public void testGetAsReader() throws DataStoreException, IOException {
         final StorageConnector connector = create(true);
         final Reader in = connector.getStorageAs(Reader.class);
@@ -356,7 +349,6 @@ public final class StorageConnectorTest extends TestCase {
      * @throws IOException if an error occurred while reading the test file.
      */
     @Test
-    @DependsOnMethod("testGetAsDataInputFromURL")
     public void testGetAsByteBuffer() throws DataStoreException, IOException {
         final StorageConnector connector = create(false);
         final ByteBuffer buffer = connector.getStorageAs(ByteBuffer.class);
@@ -376,7 +368,6 @@ public final class StorageConnectorTest extends TestCase {
      * @throws IOException if an error occurred while reading the test file.
      */
     @Test
-    @DependsOnMethod("testGetAsDataInputFromStream")
     public void testGetAsTemporaryByteBuffer() throws DataStoreException, IOException {
         StorageConnector connector = create(true);
         final DataInput in = ImageIO.createImageInputStream(connector.getStorage());
@@ -429,7 +420,6 @@ public final class StorageConnectorTest extends TestCase {
      * @throws IOException if an error occurred while reading the test file.
      */
     @Test
-    @DependsOnMethod("testGetAsDataInputFromStream")
     public void testCloseAllExcept() throws DataStoreException, IOException {
         final StorageConnector connector = create(true);
         final ChannelDataInput input = connector.getStorageAs(ChannelDataInput.class);
@@ -446,7 +436,6 @@ public final class StorageConnectorTest extends TestCase {
      * @throws IOException if an error occurred while reading the test file.
      */
     @Test
-    @DependsOnMethod("testCloseAllExcept")
     public void testCommit() throws DataStoreException, IOException {
         final StorageConnector connector = create(false);
         final InputStream stream = connector.commit(InputStream.class, "Test");

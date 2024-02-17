@@ -35,8 +35,6 @@ import static org.apache.sis.metadata.iso.citation.Citations.*;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
@@ -48,7 +46,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(org.apache.sis.metadata.sql.MetadataSourceTest.class)
 public final class CitationsTest extends TestCase {
     /**
      * Creates a new test case.
@@ -146,7 +143,6 @@ public final class CitationsTest extends TestCase {
      * declared in the {@link Citations} class.
      */
     @Test
-    @DependsOnMethod("testGetIdentifier")
     public void testToCodeSpaceFromConstant() {
         assertEquals("SIS",         toCodeSpace(SIS));
         assertEquals("OGC",         toCodeSpace(WMS));
@@ -175,7 +171,6 @@ public final class CitationsTest extends TestCase {
      * </ul>
      */
     @Test
-    @DependsOnMethod("testGetIdentifier")
     public void testToCodeSpace() {
         final var citation = new SimpleCitation(" Valid\u2060Id\u200Bentifier ");
         assertEquals("ValidIdentifier", Citations.toCodeSpace(citation));
@@ -272,7 +267,6 @@ public final class CitationsTest extends TestCase {
      * @throws IllegalAccessException should never happen since we asked only for public fields.
      */
     @Test
-    @DependsOnMethod("testFromName")
     public void testSerialization() throws IllegalAccessException {
         for (final Field field : Citations.class.getDeclaredFields()) {
             if (CitationConstant.class.isAssignableFrom(field.getType())) {

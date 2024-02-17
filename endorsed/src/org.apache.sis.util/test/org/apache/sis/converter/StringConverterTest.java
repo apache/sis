@@ -41,7 +41,6 @@ import org.apache.sis.util.SimpleInternationalString;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -53,7 +52,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  * @author  Martin Desruisseaux (Geomatys)
  */
 @SuppressWarnings("UnnecessaryBoxing")
-@DependsOn(org.apache.sis.measure.AngleTest.class)
 public final class StringConverterTest extends TestCase {
     /**
      * Asserts that conversion of the given {@code source} value produces

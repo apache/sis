@@ -23,8 +23,6 @@ import java.net.URISyntaxException;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.date;
 
@@ -35,7 +33,6 @@ import static org.apache.sis.test.TestUtilities.date;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(TypesTest.class)
 public final class MetadataTest extends TestCase {
     /**
      * Creates a new test case.
@@ -65,7 +62,6 @@ public final class MetadataTest extends TestCase {
      * @throws URISyntaxException if a {@link Link} element is constructed with an invalid URI.
      */
     @Test
-    @DependsOnMethod("testEqualsAndHashCode")
     public void testCopyConstructor() throws URISyntaxException {
         final Metadata md1 = create();
         final Metadata md2 = new Metadata(md1, null);

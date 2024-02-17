@@ -24,7 +24,6 @@ import org.opengis.metadata.citation.Citation;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
@@ -84,7 +83,6 @@ public final class NilReasonMarshallingTest extends TestCase {
      * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
-    @DependsOnMethod("testMissing")
     public void testMissingDouble() throws JAXBException {
         final String expected =
                 "<mrc:MD_Band xmlns:mrc=\"" + Namespaces.MRC + '"' +
@@ -116,7 +114,6 @@ public final class NilReasonMarshallingTest extends TestCase {
      * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
-    @DependsOnMethod("testMissing")
     public void testOther() throws JAXBException {
         final String expected =
                 "<cit:CI_Citation xmlns:cit=\"" + Namespaces.CIT + '"' +
@@ -151,7 +148,6 @@ public final class NilReasonMarshallingTest extends TestCase {
      * @throws JAXBException if an error occurred during (un)marshalling.
      */
     @Test
-    @DependsOnMethod("testMissing")
     public void testURI() throws JAXBException {
         final String expected =
                 "<cit:CI_Citation xmlns:cit=\"" + Namespaces.CIT + '"' +

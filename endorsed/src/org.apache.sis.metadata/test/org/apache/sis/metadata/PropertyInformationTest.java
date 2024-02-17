@@ -33,7 +33,6 @@ import org.apache.sis.measure.Range;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
@@ -169,7 +168,6 @@ public final class PropertyInformationTest extends TestCase {
      * @throws NoSuchMethodException if the {@code getTitle()} or other method has not been found.
      */
     @Test
-    @DependsOnMethod({"testTitle", "testPresentationForm"})
     public void testToString() throws NoSuchMethodException {
         assertEquals("PropertyInformation[“CI_Citation:title” : Character string, mandatory, maxOccurs=1]",
                 create(InternationalString.class, "getTitle", "title").toString());

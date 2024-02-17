@@ -37,7 +37,6 @@ import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.test.Assertions.assertMessageContains;
@@ -165,7 +164,6 @@ public final class AuthorityFactoriesTest extends TestCase {
      * @throws FactoryException if a CRS creation failed.
      */
     @Test
-    @DependsOnMethod("testCRS84")
     public void testCreateCRS() throws FactoryException {
         final CRSAuthorityFactory factory = AuthorityFactories.ALL;
         final CRSAuthorityFactory wms = AuthorityFactories.ALL.getAuthorityFactory(CRSAuthorityFactory.class, Constants.OGC, null);

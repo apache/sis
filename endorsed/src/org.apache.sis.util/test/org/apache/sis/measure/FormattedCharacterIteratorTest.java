@@ -34,7 +34,6 @@ import static org.apache.sis.measure.AngleFormat.Field.*;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOnMethod;
 
 
 /**
@@ -105,7 +104,6 @@ public final class FormattedCharacterIteratorTest extends TestCase {
      * attributes are defined on sub-range of the degrees/minutes/seconds ones.
      */
     @Test
-    @DependsOnMethod("testNonOverlappingAttributes")
     public void testOverlappingAttributes() {
         testAttributes(new LatitudeString().iterator(true), true);
     }

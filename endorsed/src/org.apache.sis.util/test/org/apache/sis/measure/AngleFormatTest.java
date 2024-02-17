@@ -27,8 +27,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.test.TestUtilities.*;
 
 
@@ -37,10 +35,6 @@ import static org.apache.sis.test.TestUtilities.*;
  *
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  */
-@DependsOn({
-  FormattedCharacterIteratorTest.class,
-  org.apache.sis.math.MathFunctionsTest.class
-})
 public final class AngleFormatTest extends TestCase {
     /**
      * Creates a new test case.
@@ -136,7 +130,6 @@ public final class AngleFormatTest extends TestCase {
      * Tests with a minute fields.
      */
     @Test
-    @DependsOnMethod("testCanadaLocale")
     public void testDegreeMinutes() {
         final AngleFormat f = new AngleFormat("DD°MM.m", Locale.CANADA);
         assertEquals(1, f.getMinimumFractionDigits());
@@ -152,7 +145,6 @@ public final class AngleFormatTest extends TestCase {
      * Tests with a seconds fields.
      */
     @Test
-    @DependsOnMethod("testDegreeMinutes")
     public void testDegreeMinutesSeconds() {
         final AngleFormat f = new AngleFormat("DD°MM′SS.sss″", Locale.CANADA);
         assertEquals(3, f.getMinimumFractionDigits());
@@ -168,7 +160,6 @@ public final class AngleFormatTest extends TestCase {
      * Tests values that have to be rounded, especially the values near zero.
      */
     @Test
-    @DependsOnMethod("testDegreeMinutesSeconds")
     public void testRounding() {
         final AngleFormat f = new AngleFormat("DD°MM′SS.sss″", Locale.CANADA);
         assertEquals( "01°00′00.000″", f.format(new Angle(+(59 + (59.9999 / 60)) / 60)));
@@ -180,7 +171,6 @@ public final class AngleFormatTest extends TestCase {
      * Tests with optional minutes and seconds fields.
      */
     @Test
-    @DependsOnMethod("testDegreeMinutesSeconds")
     public void testOptionalFields() {
         final AngleFormat f = new AngleFormat(Locale.CANADA);
         assertEquals("D°?MM′?SS.################″?", f.toPattern());
@@ -199,7 +189,6 @@ public final class AngleFormatTest extends TestCase {
      * @throws ParseException if a string cannot be parsed.
      */
     @Test
-    @DependsOnMethod("testOptionalFields")
     public void testJavadocExamples() throws ParseException {
         final AngleFormat f = new AngleFormat(Locale.CANADA);
         testExample(f, "DD°MM′SS.#″",   "48°30′00″", "-12°31′52.5″", 0.000);
@@ -235,7 +224,6 @@ public final class AngleFormatTest extends TestCase {
      * Tests formatting the same value with different rounding modes.
      */
     @Test
-    @DependsOnMethod("testDegreeMinutesSeconds")
     public void testRoundingMode() {
         final AngleFormat f = new AngleFormat("DD°MM′SS″", Locale.CANADA);
         Angle angle = new Angle(12.515625);
@@ -257,7 +245,6 @@ public final class AngleFormatTest extends TestCase {
      * Tests with optional digits.
      */
     @Test
-    @DependsOnMethod("testDegreeMinutesSeconds")
     public void testOptionalFractionDigits() {
         final AngleFormat f = new AngleFormat("DD°MM′SS.s##″", Locale.CANADA);
         assertEquals(1, f.getMinimumFractionDigits());
@@ -282,7 +269,6 @@ public final class AngleFormatTest extends TestCase {
      * Tests the {@link AngleFormat#setMaximumWidth(int)} method.
      */
     @Test
-    @DependsOnMethod("testOptionalFractionDigits")
     public void testSetMaximumWidth() {
         final AngleFormat f = new AngleFormat("D°MM′SS.################″", Locale.CANADA);
         assertEquals("D°MM′SS.################″", f.toPattern());
@@ -390,7 +376,6 @@ public final class AngleFormatTest extends TestCase {
      * Tests the {@link AngleFormat#formatToCharacterIterator(Object)} method.
      */
     @Test
-    @DependsOnMethod("testFieldPosition")
     public void testFormatToCharacterIterator() {
         final Latitude latitude = new Latitude(FormattedCharacterIteratorTest.LATITUDE_VALUE);
         final AngleFormat f = new AngleFormat("DD°MM′SS.s″", Locale.CANADA);

@@ -31,7 +31,6 @@ import org.apache.sis.math.Vector;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 
 
@@ -156,7 +155,6 @@ public abstract class GeometriesTestCase extends TestCase {
      * Tests {@link GeometryWrapper#formatWKT(double)}.
      */
     @Test
-    @DependsOnMethod("testCreatePolyline")
     public void testFormatWKT() {
         geometry = factory.createPolyline(false, 2, Vector.create(new double[] {4,5, 7,9, 9,3, -1,-6}));
         createWrapper();

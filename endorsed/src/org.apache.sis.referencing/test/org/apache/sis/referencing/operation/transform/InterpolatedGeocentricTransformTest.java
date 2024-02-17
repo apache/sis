@@ -27,9 +27,6 @@ import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolati
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;
-import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 
 
@@ -38,10 +35,6 @@ import org.apache.sis.referencing.datum.HardCodedDatum;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    GeocentricTranslationTest.class,
-    FranceGeocentricInterpolationTest.class
-})
 public class InterpolatedGeocentricTransformTest extends MathTransformTestCase {
     /**
      * Creates a new test case.
@@ -107,7 +100,6 @@ public class InterpolatedGeocentricTransformTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while transforming the coordinate.
      */
     @Test
-    @DependsOnMethod("testForwardTransform")
     public void testInverseTransform() throws FactoryException, TransformException {
         createGeodeticTransformation();
         isInverseTransformSupported = false;
@@ -124,7 +116,6 @@ public class InterpolatedGeocentricTransformTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while transforming the coordinate.
      */
     @Test
-    @DependsOnMethod("testForwardTransform")
     public void testForwardDerivative() throws FactoryException, TransformException {
         createGeodeticTransformation();
         transform = transform.inverse();
@@ -142,7 +133,6 @@ public class InterpolatedGeocentricTransformTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while transforming the coordinate.
      */
     @Test
-    @DependsOnMethod("testInverseTransform")
     public void testInverseDerivative() throws FactoryException, TransformException {
         createGeodeticTransformation();
         final double delta = (100.0 / 60) / 1852;           // Approximately 100 metres.

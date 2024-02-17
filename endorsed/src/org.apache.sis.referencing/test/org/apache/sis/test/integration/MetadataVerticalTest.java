@@ -46,7 +46,6 @@ import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.apache.sis.test.LoggingWatcher;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -64,9 +63,6 @@ import static org.opengis.test.Assertions.assertIdentifierEquals;
  *
  * @see org.apache.sis.metadata.iso.DefaultMetadataTest
  */
-@DependsOn({
-    org.apache.sis.referencing.datum.DefaultVerticalDatumTest.class
-})
 public class MetadataVerticalTest extends TestCase {
     /**
      * Creates a new test case.

@@ -19,7 +19,6 @@ package org.apache.sis.metadata;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.toTreeStructure;
 
@@ -29,7 +28,6 @@ import static org.apache.sis.test.TestUtilities.toTreeStructure;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(MetadataStandardTest.class)
 public final class AbstractMetadataTest extends TestCase {
     /**
      * Creates a new test case.

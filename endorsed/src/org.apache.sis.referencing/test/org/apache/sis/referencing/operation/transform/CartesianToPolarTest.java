@@ -21,8 +21,6 @@ import org.opengis.referencing.operation.TransformException;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -34,7 +32,6 @@ import org.opengis.test.referencing.TransformTestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(PolarToCartesianTest.class)
 public final class CartesianToPolarTest extends TransformTestCase {
     /**
      * Creates a new test case.
@@ -63,7 +60,6 @@ public final class CartesianToPolarTest extends TransformTestCase {
      * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
-    @DependsOnMethod("testConversion")
     public void testCylindricalConversion() throws FactoryException, TransformException {
         transform = CartesianToPolar.INSTANCE.passthrough(DefaultMathTransformFactory.provider());
         tolerance = 1E-12;
@@ -78,7 +74,6 @@ public final class CartesianToPolarTest extends TransformTestCase {
      * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
-    @DependsOnMethod("testConversion")
     public void testDerivative() throws FactoryException, TransformException {
         transform = CartesianToPolar.INSTANCE.completeTransform(DefaultMathTransformFactory.provider());
         derivativeDeltas = new double[] {1E-6, 1E-6};
@@ -93,7 +88,6 @@ public final class CartesianToPolarTest extends TransformTestCase {
      * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
-    @DependsOnMethod("testDerivative")
     public void testCylindricalDerivative() throws FactoryException, TransformException {
         transform = CartesianToPolar.INSTANCE.passthrough(DefaultMathTransformFactory.provider());
         derivativeDeltas = new double[] {1E-6, 1E-6, 1E-6};
@@ -108,7 +102,6 @@ public final class CartesianToPolarTest extends TransformTestCase {
      * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
-    @DependsOnMethod("testDerivative")
     public void testConsistency() throws FactoryException, TransformException {
         transform = CartesianToPolar.INSTANCE.completeTransform(DefaultMathTransformFactory.provider());
         derivativeDeltas = new double[] {1E-6, 1E-6};
@@ -126,7 +119,6 @@ public final class CartesianToPolarTest extends TransformTestCase {
      * @throws TransformException if a coordinate cannot be transformed.
      */
     @Test
-    @DependsOnMethod("testCylindricalDerivative")
     public void testCylindricalConsistency() throws FactoryException, TransformException {
         transform = CartesianToPolar.INSTANCE.passthrough(DefaultMathTransformFactory.provider());
         derivativeDeltas = new double[] {1E-6, 1E-6, 1E-6};

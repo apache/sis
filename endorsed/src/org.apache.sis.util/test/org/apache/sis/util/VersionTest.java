@@ -19,7 +19,6 @@ package org.apache.sis.util;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -59,7 +58,6 @@ public final class VersionTest extends TestCase {
      * Tests a alpha-numeric version.
      */
     @Test
-    @DependsOnMethod("testNumeric")
     public void testAlphaNumeric() {
         final Version version = new Version("1.6.b2");
         assertEquals("1.6.b2", version.toString());
@@ -127,7 +125,6 @@ public final class VersionTest extends TestCase {
      * Tests the cached values of {@link Version#valueOf(int[])}.
      */
     @Test
-    @DependsOnMethod("testValueOf")
     public void testCachedValueOf() {
         for (int major=1; major<=2; major++) {
             final Version version = Version.valueOf(major);

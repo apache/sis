@@ -23,7 +23,6 @@ import org.apache.sis.util.iso.Names;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
 
@@ -87,7 +86,6 @@ public final class FeatureNamingTest extends TestCase {
      * @throws IllegalNameException if an unexpected error occurred while adding or getting an element.
      */
     @Test
-    @DependsOnMethod("testSimple")
     public void testAmbiguity() throws IllegalNameException {
         final var store = new DataStoreMock("testDataStore");
         final var map   = new FeatureNaming<Integer>();
@@ -112,7 +110,6 @@ public final class FeatureNamingTest extends TestCase {
      * @throws IllegalNameException if an unexpected error occurred while adding or getting an element.
      */
     @Test
-    @DependsOnMethod("testAmbiguity")
     public void testQualifiedAndUnqualifiedName() throws IllegalNameException {
         final var store = new DataStoreMock("testDataStore");
         final var local = Names.createLocalName(null, null, "A");
@@ -145,7 +142,6 @@ public final class FeatureNamingTest extends TestCase {
      * @throws IllegalNameException if an unexpected error occurred while adding or getting an element.
      */
     @Test
-    @DependsOnMethod("testAmbiguity")
     public void testRemove() throws IllegalNameException {
         final var store = new DataStoreMock("testDataStore");
         final var map   = new FeatureNaming<Integer>();

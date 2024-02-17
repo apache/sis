@@ -24,7 +24,6 @@ import org.apache.sis.util.internal.Strings;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
@@ -88,7 +87,6 @@ public final class MonolineFormatterTest extends TestCase {
      * Tests formatting of a multi-line message.
      */
     @Test
-    @DependsOnMethod("testlevelWidth")
     public void testMultilines() {
         final LogRecord record = new LogRecord(Level.INFO, "First line\n  Indented line\nLast line\n");
         final String formatted = formatter.format(record);
@@ -102,7 +100,6 @@ public final class MonolineFormatterTest extends TestCase {
      * Tests formatting a log record which contains an exception.
      */
     @Test
-    @DependsOnMethod("testlevelWidth")
     public void testException() {
         final LogRecord record = new LogRecord(Level.WARNING, "An exception occured.");
         final Exception exception = new Exception();

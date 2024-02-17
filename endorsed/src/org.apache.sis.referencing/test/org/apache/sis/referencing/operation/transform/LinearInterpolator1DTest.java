@@ -25,7 +25,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import org.apache.sis.test.DependsOnMethod;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.referencing.TransformTestCase;
@@ -239,7 +238,6 @@ public final class LinearInterpolator1DTest extends TransformTestCase {
      * @throws TransformException if an error occurred while testing a value.
      */
     @Test
-    @DependsOnMethod("testIndicesToIncreasingValues")
     public void testExtrapolations() throws TransformException {
         values = new double[] {5, 10, 100, 250};
         transform = LinearInterpolator1D.create(preimage, values);

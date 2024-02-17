@@ -36,8 +36,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.Performance;
 import static org.apache.sis.test.Assertions.assertMapEquals;
 
@@ -47,7 +45,6 @@ import static org.apache.sis.test.Assertions.assertMapEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(WeakValueHashMapTest.class)
 public final class CacheTest extends TestCase {
     /**
      * Creates a new test case.
@@ -76,7 +73,6 @@ public final class CacheTest extends TestCase {
      * @see WeakValueHashMapTest#testWeakReferences()
      */
     @Test
-    @DependsOnMethod("testStrongReferences")
     public void testWeakReferences() throws InterruptedException {
         WeakValueHashMapTest.testWeakReferences(new Cache<>(WeakValueHashMapTest.SAMPLE_SIZE, 0, false));
     }
@@ -110,7 +106,6 @@ public final class CacheTest extends TestCase {
      * @throws InterruptedException if the test has been interrupted.
      */
     @Test
-    @DependsOnMethod("testPutAndUnlock")
     public void testThreadBlocking() throws InterruptedException {
         final String    keyByMainThread =    "keyByMainThread";
         final String  valueByMainThread =  "valueByMainThread";
@@ -211,7 +206,6 @@ public final class CacheTest extends TestCase {
      */
     @Test
     @Performance
-    @DependsOnMethod("testThreadBlocking")
     public void stress() throws InterruptedException {
         final int count = 5000;
         final Cache<Integer,IntObject> cache = new Cache<>();

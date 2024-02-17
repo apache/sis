@@ -31,7 +31,6 @@ import org.apache.sis.util.SimpleInternationalString;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -186,7 +185,6 @@ public abstract class FeatureTestCase extends TestCase {
      * </ul>
      */
     @Test
-    @DependsOnMethod("testGetProperty")
     public final void testSimpleValues() {
         feature = createFeature(DefaultFeatureTypeTest.city());
         setAttributeValue("city", "Utopia", "Atlantide");
@@ -227,7 +225,6 @@ public abstract class FeatureTestCase extends TestCase {
      * previous value unchanged.
      */
     @Test
-    @DependsOnMethod("testSimpleValues")
     public void testSimpleProperties() {
         getValuesFromProperty = true;
         testSimpleValues();
@@ -238,7 +235,6 @@ public abstract class FeatureTestCase extends TestCase {
      * on a "complex" feature, involving multi-valued properties, inheritances and property overriding.
      */
     @Test
-    @DependsOnMethod({"testSimpleValues", "testSimpleProperties"})
     public void testComplexFeature() {
         feature = createFeature(DefaultFeatureTypeTest.worldMetropolis());
         setAttributeValue("city", "Utopia", "New York");
@@ -294,7 +290,6 @@ public abstract class FeatureTestCase extends TestCase {
      * Tests the possibility to plugin custom attributes via {@link AbstractFeature#setProperty(Property)}.
      */
     @Test
-    @DependsOnMethod({"testSimpleValues", "testSimpleProperties"})
     public void testCustomAttribute() {
         feature = createFeature(DefaultFeatureTypeTest.city());
         final var wrong  = SingletonAttributeTest.parliament();
@@ -333,7 +328,6 @@ public abstract class FeatureTestCase extends TestCase {
      * Tests addition of values in a multi-valued property.
      */
     @Test
-    @DependsOnMethod("testSimpleProperties")
     public void testAddToCollection() {
         feature = createFeature(new DefaultFeatureType(
                 Map.of(DefaultFeatureType.NAME_KEY, "City"),
@@ -416,7 +410,6 @@ public abstract class FeatureTestCase extends TestCase {
      * @throws CloneNotSupportedException Should never happen.
      */
     @Test
-    @DependsOnMethod("testSimpleProperties")
     public void testEquals() throws CloneNotSupportedException {
         feature = createFeature(DefaultFeatureTypeTest.city());
         feature.setPropertyValue("city", "Tokyo");

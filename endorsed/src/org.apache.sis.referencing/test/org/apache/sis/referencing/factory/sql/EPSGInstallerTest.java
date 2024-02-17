@@ -44,7 +44,6 @@ import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.LoggingWatcher;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.metadata.sql.TestDatabase;
 
@@ -65,7 +64,6 @@ import org.apache.sis.metadata.sql.TestDatabase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(EPSGFactoryTest.class)
 public final class EPSGInstallerTest extends TestCase {
     /**
      * A JUnit rule for listening to log events emitted during execution of tests.

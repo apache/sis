@@ -30,7 +30,6 @@ import static org.apache.sis.util.internal.Constants.OGC;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -40,10 +39,6 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    TypesTest.class,
-    DefaultNameFactoryTest.class
-})
 public final class TypeNamesTest extends TestCase {
     /**
      * Creates a new test case.

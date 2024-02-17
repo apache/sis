@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.image.TiledImageMock;
 import static org.apache.sis.feature.Assertions.assertValuesEqual;
 
@@ -36,7 +35,6 @@ import static org.apache.sis.feature.Assertions.assertValuesEqual;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(org.apache.sis.image.PlanarImageTest.class)
 public final class ReshapedImageTest extends TestCase {
     /**
      * Size of tiles used in this test.

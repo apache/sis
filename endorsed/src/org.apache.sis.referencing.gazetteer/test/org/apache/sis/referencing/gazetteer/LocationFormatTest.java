@@ -23,7 +23,6 @@ import org.apache.sis.referencing.CommonCRS;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
@@ -68,7 +67,6 @@ public final class LocationFormatTest extends TestCase {
      * Tests formatting of an instance having only projected coordinates.
      */
     @Test
-    @DependsOnMethod("testGeographic")
     public void testProjected() {
         final CoordinateReferenceSystem crs = CommonCRS.WGS84.universal(14, 9);
         final SimpleLocation loc = new SimpleLocation(null, "A location") {
@@ -97,7 +95,6 @@ public final class LocationFormatTest extends TestCase {
      * Tests formatting of an instance having geographic and projected coordinates.
      */
     @Test
-    @DependsOnMethod({"testGeographic", "testProjected"})
     public void testGeographicAndProjected() {
         final CoordinateReferenceSystem crs = CommonCRS.WGS84.universal(14, 9);
         final SimpleLocation.Projected loc = new SimpleLocation.Projected(null, "A location") {

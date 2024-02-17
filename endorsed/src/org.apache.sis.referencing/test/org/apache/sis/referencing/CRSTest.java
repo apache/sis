@@ -43,8 +43,6 @@ import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.apache.sis.test.LoggingWatcher;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -59,10 +57,6 @@ import static org.apache.sis.test.Assertions.assertMessageContains;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  */
-@DependsOn({
-    CommonCRSTest.class,
-    AuthorityFactoriesTest.class
-})
 public final class CRSTest extends TestCase {
     /**
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
@@ -139,7 +133,6 @@ public final class CRSTest extends TestCase {
      * @see EPSGFactoryFallbackTest#testCreateCRS()
      */
     @Test
-    @DependsOnMethod("testForEpsgCode")
     public void testForCrsCode() throws FactoryException {
         verifyForCode(CommonCRS.WGS84.normalizedGeographic(), "CRS:84");
         verifyForCode(CommonCRS.NAD83.normalizedGeographic(), "CRS:83");
@@ -325,7 +318,6 @@ public final class CRSTest extends TestCase {
      * Tests {@link CRS#getHorizontalComponent(CoordinateReferenceSystem)}.
      */
     @Test
-    @DependsOnMethod("testIsHorizontalCRS")
     public void testGetHorizontalComponent() {
         assertNull(CRS.getHorizontalComponent(HardCodedCRS.TIME));
         assertNull(CRS.getHorizontalComponent(HardCodedCRS.ELLIPSOIDAL_HEIGHT));

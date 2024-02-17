@@ -20,7 +20,6 @@ package org.apache.sis.converter;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOnMethod;
 
 
 /**
@@ -59,7 +58,6 @@ public final class ArrayConverterTest extends TestCase {
      * Tests conversions between wrapper classes.
      */
     @Test
-    @DependsOnMethod("testWrapperTypes")
     public void testPrimitiveTypes() {
         final ArrayConverter<int[], double[]> converter = create(int[].class, double[].class);
         final int[]    source   = {4, 8, -6};

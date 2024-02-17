@@ -24,8 +24,6 @@ import org.apache.sis.storage.DataStoreException;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -40,7 +38,6 @@ import org.opengis.test.dataset.TestData;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(VariableTest.class)
 public class GridTest extends TestCase {
     /**
      * Whether the {@code "runtime"} variable in {@link TestData#NETCDF_4D_PROJECTED} is used as a target dimension
@@ -93,7 +90,6 @@ public class GridTest extends TestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    @DependsOnMethod("testDimensions")
     public void testAxes2D() throws IOException, DataStoreException {
         final Axis[] axes = getSingleton(filter(selectDataset(TestData.NETCDF_2D_GEOGRAPHIC).getGridCandidates())).getAxes(decoder());
         assertEquals(2, axes.length);
@@ -117,7 +113,6 @@ public class GridTest extends TestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     @Test
-    @DependsOnMethod("testDimensions")
     public void testAxes4D() throws IOException, DataStoreException {
         final Axis[] axes = getSingleton(filter(selectDataset(TestData.NETCDF_4D_PROJECTED).getGridCandidates())).getAxes(decoder());
         assertEquals(includeRuntimeDimension ? 5 : 4, axes.length);

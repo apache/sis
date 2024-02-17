@@ -28,7 +28,6 @@ import org.opengis.util.FactoryException;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -37,7 +36,6 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(AuthorityFactoryProxyTest.class)
 public final class ConcurrentAuthorityFactoryTest extends TestCase {
     /**
      * The timeout used for this test.

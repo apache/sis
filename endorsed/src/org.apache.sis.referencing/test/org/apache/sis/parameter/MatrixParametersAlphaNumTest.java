@@ -19,7 +19,6 @@ package org.apache.sis.parameter;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -28,7 +27,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(MatrixParametersTest.class)
 public final class MatrixParametersAlphaNumTest extends MatrixParametersTest {
     /**
      * The expected parameter identifiers for the matrix elements, or 0 if none.

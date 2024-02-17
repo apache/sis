@@ -30,7 +30,6 @@ import org.apache.sis.pending.jdk.JDK19;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.Assertions.assertSetEquals;
@@ -41,7 +40,6 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(PointTreeNodeTest.class)
 public final class PointTreeTest extends TestCase {
     /**
      * Bounds of the region where to create points. Intentionally use asymmetric bounds

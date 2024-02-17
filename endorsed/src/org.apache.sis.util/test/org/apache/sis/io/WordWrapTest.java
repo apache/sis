@@ -24,7 +24,6 @@ import org.apache.sis.util.internal.X364;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -34,7 +33,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @see LineAppender#setMaximalLineLength(int)
  */
-@DependsOn(LineAppenderTest.class)
 public class WordWrapTest extends LineAppenderTest {
     /**
      * The line length used in the tests.

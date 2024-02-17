@@ -41,7 +41,6 @@ import org.apache.sis.math.StatisticsFormat;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 
@@ -175,7 +174,6 @@ public class CoverageReadConsistency extends TestCase {
      * @throws DataStoreException if an error occurred while using the resource.
      */
     @Test
-    @DependsOnMethod("testSubRegionAtOrigin")
     public void testSubRegionsAnywhere() throws DataStoreException {
         allowOffsets = true;
         readAndCompareRandomRegions("Subregions");
@@ -188,7 +186,6 @@ public class CoverageReadConsistency extends TestCase {
      * @throws DataStoreException if an error occurred while using the resource.
      */
     @Test
-    @DependsOnMethod("testSubRegionAtOrigin")
     public void testSubsamplingAtOrigin() throws DataStoreException {
         allowSubsampling = true;
         readAndCompareRandomRegions("Subsampling at (0,0)");
@@ -201,7 +198,6 @@ public class CoverageReadConsistency extends TestCase {
      * @throws DataStoreException if an error occurred while using the resource.
      */
     @Test
-    @DependsOnMethod({"testSubsamplingAtOrigin", "testSubRegionsAnywhere"})
     public void testSubsamplingAnywhere() throws DataStoreException {
         allowOffsets     = true;
         allowSubsampling = true;
@@ -214,7 +210,6 @@ public class CoverageReadConsistency extends TestCase {
      * @throws DataStoreException if an error occurred while using the resource.
      */
     @Test
-    @DependsOnMethod("testSubRegionAtOrigin")
     public void testBandSubsetAtOrigin() throws DataStoreException {
         allowBandSubset = true;
         readAndCompareRandomRegions("Bands at (0,0)");
@@ -226,7 +221,6 @@ public class CoverageReadConsistency extends TestCase {
      * @throws DataStoreException if an error occurred while using the resource.
      */
     @Test
-    @DependsOnMethod({"testBandSubsetAtOrigin", "testSubRegionsAnywhere"})
     public void testBandSubsetAnywhere() throws DataStoreException {
         allowOffsets    = true;
         allowBandSubset = true;
@@ -240,7 +234,6 @@ public class CoverageReadConsistency extends TestCase {
      * @throws DataStoreException if an error occurred while using the resource.
      */
     @Test
-    @DependsOnMethod({"testBandSubsetAnywhere", "testSubsamplingAnywhere"})
     public void testAllAnywhere() throws DataStoreException {
         allowOffsets     = true;
         allowBandSubset  = true;

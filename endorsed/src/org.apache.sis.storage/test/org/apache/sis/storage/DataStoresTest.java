@@ -32,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.storage.xml.StoreTest;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 
@@ -43,7 +42,6 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  */
-@DependsOn(StoreTest.class)
 public final class DataStoresTest extends TestCase {
     /**
      * Creates a new test case.
