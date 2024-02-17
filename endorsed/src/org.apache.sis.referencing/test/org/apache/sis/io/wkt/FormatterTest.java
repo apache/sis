@@ -24,7 +24,6 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.mock.VerticalCRSMock;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
@@ -35,7 +34,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({ConventionTest.class, SymbolsTest.class, ColorsTest.class})
 public final class FormatterTest extends TestCase {
     /**
      * Creates a new test case.

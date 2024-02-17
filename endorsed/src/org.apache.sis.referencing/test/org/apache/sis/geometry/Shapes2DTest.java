@@ -24,7 +24,6 @@ import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.TransformException;
 
 // Test dependencies
-import org.apache.sis.test.DependsOn;
 import static org.apache.sis.referencing.Assertions.assertRectangleEquals;
 
 
@@ -34,7 +33,6 @@ import static org.apache.sis.referencing.Assertions.assertRectangleEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn(CurveExtremumTest.class)
 public final class Shapes2DTest extends TransformTestCase<Rectangle2D> {
     /**
      * Creates a new test case.

@@ -45,7 +45,6 @@ import org.apache.sis.measure.Units;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.referencing.ObjectFactoryTest;
-import org.apache.sis.test.DependsOn;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 
@@ -56,11 +55,6 @@ import static org.apache.sis.test.Assertions.assertMessageContains;
  *
  * @author  Cédric Briançon (Geomatys)
  */
-@DependsOn({
-    org.apache.sis.referencing.crs.DefaultGeocentricCRSTest.class,
-    org.apache.sis.referencing.crs.DefaultGeographicCRSTest.class,
-    org.apache.sis.referencing.crs.DefaultProjectedCRSTest.class
-})
 public final class GeodeticObjectFactoryTest extends ObjectFactoryTest {
     /**
      * Creates a new test suite using the singleton factory instance.

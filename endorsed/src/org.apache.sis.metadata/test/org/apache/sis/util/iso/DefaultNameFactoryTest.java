@@ -25,7 +25,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.util.NameTest;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -34,7 +33,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({DefaultLocalNameTest.class, DefaultScopedNameTest.class})
 public final class DefaultNameFactoryTest extends NameTest {
     /**
      * The factory to test.

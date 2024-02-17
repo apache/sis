@@ -33,8 +33,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.xml.test.TestCase;
 
@@ -46,7 +44,6 @@ import org.apache.sis.xml.test.TestCase;
  *
  * @see <a href="http://issues.apache.org/jira/browse/SIS-290">SIS-290</a>
  */
-@DependsOn(org.apache.sis.parameter.DefaultParameterDescriptorTest.class)
 public final class CC_GeneralOperationParameterTest extends TestCase {
     /**
      * A JUnit rule for listening to log events emitted during execution of {@link #testGroupMergeBecauseExtraParameter()}.
@@ -155,7 +152,6 @@ public final class CC_GeneralOperationParameterTest extends TestCase {
      * @throws JAXBException if this method failed to create test data.
      */
     @Test
-    @DependsOnMethod("testParameterSubstitution")
     public void testParameterMerge() throws JAXBException {
         ParameterDescriptor<?> provided = unmarshal("Test parameter", null);
         ParameterDescriptor<?> complete = create("Test parameter", null, true, null);
@@ -188,7 +184,6 @@ public final class CC_GeneralOperationParameterTest extends TestCase {
      * @throws JAXBException if this method failed to create test data.
      */
     @Test
-    @DependsOnMethod("testParameterSubstitution")
     public void testGroupSubstitution() throws JAXBException {
         final Map<String,String> properties = new HashMap<>(4);
         assertNull(properties.put(DefaultParameterDescriptor.NAME_KEY, "Group"));
@@ -215,7 +210,6 @@ public final class CC_GeneralOperationParameterTest extends TestCase {
      * @throws JAXBException if this method failed to create test data.
      */
     @Test
-    @DependsOnMethod({"testGroupSubstitution", "testParameterMerge"})
     public void testGroupMergeBecauseDifferentProperties() throws JAXBException {
         final Map<String,String> properties = new HashMap<>(4);
         assertNull(properties.put(DefaultParameterDescriptor.NAME_KEY, "Group"));
@@ -256,7 +250,6 @@ public final class CC_GeneralOperationParameterTest extends TestCase {
      * @throws JAXBException if this method failed to create test data.
      */
     @Test
-    @DependsOnMethod("testGroupMergeBecauseDifferentProperties")
     public void testGroupMergeBecauseMissingParameter() throws JAXBException {
         final Map<String,String> properties = new HashMap<>(4);
         assertNull(properties.put(DefaultParameterDescriptor.NAME_KEY, "Group"));
@@ -298,7 +291,6 @@ public final class CC_GeneralOperationParameterTest extends TestCase {
      * @throws JAXBException if this method failed to create test data.
      */
     @Test
-    @DependsOnMethod("testGroupMergeBecauseDifferentProperties")
     public void testGroupMergeBecauseExtraParameter() throws JAXBException {
         final Map<String,String> properties = new HashMap<>(4);
         assertNull(properties.put(DefaultParameterDescriptor.NAME_KEY, "Group"));

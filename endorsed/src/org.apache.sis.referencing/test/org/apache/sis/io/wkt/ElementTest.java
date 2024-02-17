@@ -26,7 +26,6 @@ import org.apache.sis.util.CharSequences;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 
@@ -116,7 +115,6 @@ public final class ElementTest extends TestCase {
      * @throws ParseException if an error occurred during the parsing.
      */
     @Test
-    @DependsOnMethod("testPullString")
     public void testEnclosedQuotes() throws ParseException {
         Element element = parse("A[“text.”]");
         assertEquals("A", element.keyword);
@@ -143,7 +141,6 @@ public final class ElementTest extends TestCase {
      * @throws ParseException if an error occurred during the parsing.
      */
     @Test
-    @DependsOnMethod("testPullString")      // Because there is some common code in the Element class.
     public void testPullDouble() throws ParseException {
         Element element = parse("C[3.1, 4.2, 5.3E3, 6.4e3]");
         assertEquals("C", element.keyword);
@@ -160,7 +157,6 @@ public final class ElementTest extends TestCase {
      * @throws ParseException if an error occurred during the parsing.
      */
     @Test
-    @DependsOnMethod("testPullDouble")      // Because there is lot of common code in the Element class.
     public void testPullInteger() throws ParseException {
         final Element element = parse("B[3, 7, -5, 6]");
         assertEquals("B", element.keyword);
@@ -183,7 +179,6 @@ public final class ElementTest extends TestCase {
      * @throws ParseException if an error occurred during the parsing.
      */
     @Test
-    @DependsOnMethod("testPullDouble")      // Because there is lot of common code in the Element class.
     public void testPullDate() throws ParseException {
         Element element = parse("TimeOrigin[1858-11-17T00:00:00.0Z]");
         assertEquals("TimeOrigin", element.keyword);
@@ -197,7 +192,6 @@ public final class ElementTest extends TestCase {
      * @throws ParseException if an error occurred during the parsing.
      */
     @Test
-    @DependsOnMethod("testPullString")      // Because there is some common code in the Element class.
     public void testPullBoolean() throws ParseException {
         Element element = parse("ConformanceResult[true]");
         assertEquals("ConformanceResult", element.keyword);
@@ -222,7 +216,6 @@ public final class ElementTest extends TestCase {
      * @throws ParseException if an error occurred during the parsing.
      */
     @Test
-    @DependsOnMethod("testPullDate")
     public void testPullElement() throws ParseException {
         Element element = parse("TimeDatum[“Modified Julian”, TimeOrigin[1858-11-17T00:00:00.0Z]]");
         assertEquals("TimeDatum", element.keyword);
@@ -272,7 +265,6 @@ public final class ElementTest extends TestCase {
      * @throws ParseException if an error occurred during the parsing.
      */
     @Test
-    @DependsOnMethod({"testPullString", "testPullElement"})
     public void testFragments() throws ParseException {
         parser.fragments.put("MyFrag", new StoredTree(parse("Frag[“A”,“B”,“A”]"), new HashMap<>()));
         final Element element = parse("Foo[“C”,$MyFrag,“D”]");

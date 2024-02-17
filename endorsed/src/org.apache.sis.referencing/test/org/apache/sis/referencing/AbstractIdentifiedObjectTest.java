@@ -31,8 +31,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -47,10 +45,6 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn({
-    IdentifiedObjectsTest.class, NamedIdentifierTest.class,
-    org.apache.sis.xml.bind.referencing.CodeTest.class
-})
 public final class AbstractIdentifiedObjectTest extends TestCase {
     /**
      * Creates a new test case.
@@ -153,7 +147,6 @@ public final class AbstractIdentifiedObjectTest extends TestCase {
      * </ul>
      */
     @Test
-    @DependsOnMethod("testWithoutIdentifier")
     public void testWithSingleIdentifier() {
         final var identifier  = new ImmutableIdentifier(null, "EPSG", "7019");
         final var identifiers = Set.<ReferenceIdentifier>of(identifier);
@@ -170,7 +163,6 @@ public final class AbstractIdentifiedObjectTest extends TestCase {
      * than the one used by {@link #testWithSingleIdentifier()}.
      */
     @Test
-    @DependsOnMethod("testWithSingleIdentifier")
     public void testWithManyIdentifiers() {
         final var identifiers = new LinkedHashSet<ReferenceIdentifier>(4);
         assertTrue(identifiers.add(new NamedIdentifier(EPSG, "7019")));
@@ -188,7 +180,6 @@ public final class AbstractIdentifiedObjectTest extends TestCase {
      * insert between {@code "epsg-"} and the code.
      */
     @Test
-    @DependsOnMethod("testWithManyIdentifiers")
     public void testAsSubtype() {
         final var identifier  = new NamedIdentifier(EPSG, "7019");
         final var identifiers = Set.<ReferenceIdentifier>of(identifier);
@@ -204,7 +195,6 @@ public final class AbstractIdentifiedObjectTest extends TestCase {
      * The {@code getID()} method should detect the collision and select different identifier.
      */
     @Test
-    @DependsOnMethod("testWithManyIdentifiers")
     public void testIdentifierCollision() {
         final var properties = new HashMap<String,Object>(4);
         assertNull(properties.put("name", "GRS 1980"));
@@ -233,7 +223,6 @@ public final class AbstractIdentifiedObjectTest extends TestCase {
      * Tests serialization.
      */
     @Test
-    @DependsOnMethod("testWithoutIdentifier")
     public void testSerialization() {
         final var identifiers = Set.<ReferenceIdentifier>of();
         final var object = new AbstractIdentifiedObject(properties(identifiers));

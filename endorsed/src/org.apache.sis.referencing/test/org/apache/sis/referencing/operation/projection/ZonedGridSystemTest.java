@@ -30,7 +30,6 @@ import org.apache.sis.measure.Units;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -38,7 +37,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(TransverseMercatorTest.class)
 public final class ZonedGridSystemTest extends MapProjectionTestCase {
     /**
      * Creates a new test case.

@@ -30,7 +30,6 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -39,12 +38,6 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    org.apache.sis.referencing.operation.DefaultOperationMethodTest.class,
-    AffineTest.class,
-    LongitudeRotationTest.class,
-    MapProjectionTest.class
-})
 public final class ProvidersTest extends TestCase {
     /**
      * Returns all providers to test.

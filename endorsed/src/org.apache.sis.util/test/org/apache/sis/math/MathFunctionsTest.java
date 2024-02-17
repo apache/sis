@@ -27,8 +27,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 
 
 /**
@@ -37,10 +35,6 @@ import org.apache.sis.test.DependsOnMethod;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  */
-@DependsOn({
-    org.apache.sis.util.ArraysExtTest.class,
-    org.apache.sis.util.internal.NumericsTest.class
-})
 public final class MathFunctionsTest extends TestCase {
     /**
      * Small number for floating point comparisons.
@@ -89,7 +83,6 @@ public final class MathFunctionsTest extends TestCase {
      * Tests {@link MathFunctions#truncate(double)}.
      */
     @Test
-    @DependsOnMethod({"testIsPositiveZero", "testIsNegativeZero"})
     public void testTruncate() {
         assertEquals(+4.0, truncate(+4.9));
         assertEquals(-4.0, truncate(-4.9));
@@ -397,7 +390,6 @@ public final class MathFunctionsTest extends TestCase {
      * Tests the {@link MathFunctions#nextPrimeNumber(int)} method.
      */
     @Test
-    @DependsOnMethod("testPrimeNumberAt")
     public void testNextPrimeNumber() {
         assertEquals(151, nextPrimeNumber(151));
         assertEquals(157, nextPrimeNumber(152));
@@ -414,7 +406,6 @@ public final class MathFunctionsTest extends TestCase {
      * Tests the {@link MathFunctions#divisors(int)} method.
      */
     @Test
-    @DependsOnMethod("testPrimeNumberAt")
     public void testDivisors() {
         for (int i=0; i<10000; i++) {
             final int[] divisors = divisors(i);
@@ -452,7 +443,6 @@ public final class MathFunctionsTest extends TestCase {
      * Tests the {@link MathFunctions#commonDivisors(int[])} method.
      */
     @Test
-    @DependsOnMethod("testDivisors")
     public void testCommonDivisors() {
         assertArrayEquals(new int[] {1, 2, 4, 8}, commonDivisors(8));
         assertArrayEquals(new int[] {1, 5}, commonDivisors(2000, 15));

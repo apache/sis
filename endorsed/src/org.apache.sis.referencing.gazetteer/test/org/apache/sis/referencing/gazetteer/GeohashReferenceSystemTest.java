@@ -31,8 +31,6 @@ import org.apache.sis.measure.Units;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -46,7 +44,6 @@ import org.opengis.referencing.gazetteer.LocationType;
  * @author  Ross Laidlaw
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(ReferencingByIdentifiersTest.class)
 public final class GeohashReferenceSystemTest extends TestCase {
     /**
      * Tolerance factor for floating point comparison.
@@ -219,7 +216,6 @@ public final class GeohashReferenceSystemTest extends TestCase {
      * @throws TransformException if an exception occurred while formatting the geohash.
      */
     @Test
-    @DependsOnMethod("testEncode")
     public void testEncodePosition() throws TransformException {
         final GeohashReferenceSystem.Coder coder = instance().createCoder();
         final DirectPosition2D position = new DirectPosition2D(CommonCRS.WGS84.geographic());
@@ -247,7 +243,6 @@ public final class GeohashReferenceSystemTest extends TestCase {
      * @throws TransformException if an exception occurred while parsing the geohash.
      */
     @Test
-    @DependsOnMethod("testDecode")
     public void testDecodeToCRS() throws TransformException {
         testDecode(new GeohashReferenceSystem(GeohashReferenceSystem.Format.BASE32,
                    CommonCRS.WGS84.geographic()).createCoder(), 1, 0);

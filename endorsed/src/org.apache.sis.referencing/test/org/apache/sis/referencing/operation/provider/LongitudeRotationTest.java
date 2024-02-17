@@ -25,8 +25,6 @@ import org.apache.sis.measure.Units;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
@@ -39,7 +37,6 @@ import static org.opengis.test.Assertions.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(AffineTest.class)
 public final class LongitudeRotationTest extends TestCase {
     /**
      * Creates a new test case.
@@ -74,7 +71,6 @@ public final class LongitudeRotationTest extends TestCase {
      * since we want to make clear that Apache SIS implements longitude rotation by an affine transform.
      */
     @Test
-    @DependsOnMethod("testCreateMathTransform")
     public void testWKT() {
         final LongitudeRotation provider = new LongitudeRotation();
         final ParameterValueGroup p = provider.getParameters().createValue();

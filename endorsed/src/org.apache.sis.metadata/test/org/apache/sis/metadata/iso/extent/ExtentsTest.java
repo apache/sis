@@ -34,7 +34,6 @@ import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.mock.VerticalCRSMock;
@@ -48,7 +47,6 @@ import org.apache.sis.test.mock.VerticalCRSMock;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({DefaultGeographicBoundingBoxTest.class, DefaultExtentTest.class})
 public final class ExtentsTest extends TestCase {
     /**
      * One minute of angle, in degrees.

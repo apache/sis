@@ -22,8 +22,6 @@ import java.awt.geom.Rectangle2D;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
@@ -38,7 +36,6 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Ross Laidlaw
  */
-@DependsOn(AbstractEnvelopeTest.class)
 public final class Envelope2DTest extends TestCase {
     /**
      * Creates a new test case.
@@ -87,7 +84,6 @@ public final class Envelope2DTest extends TestCase {
      * The longitude range in this test is [155 … -150].
      */
     @Test
-    @DependsOnMethod("testToRectanglesOnSimpleEnvelope")
     public void testToRectanglesOverAntiMeridian() {
         final Envelope2D envelope = new Envelope2D(WGS84, 155, 0, -150 - 155, 50);
         final Rectangle2D[] rectangles = envelope.toRectangles();

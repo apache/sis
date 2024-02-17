@@ -33,8 +33,6 @@ import org.apache.sis.metadata.iso.acquisition.DefaultPlatform;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 // Specific to the main and geoapi-3.1 branches:
@@ -52,7 +50,6 @@ import org.opengis.metadata.citation.Individual;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(PropertyAccessorTest.class)
 public final class HashCodeTest extends TestCase {
     /**
      * Creates a new test case.
@@ -89,7 +86,6 @@ public final class HashCodeTest extends TestCase {
      * Tests hash code computation of an object containing another metadata object.
      */
     @Test
-    @DependsOnMethod("testSimple")
     public void testNested() {
         final var title    = new SimpleInternationalString("Some title");
         final var person   = new SimpleInternationalString("Illustre inconnu");
@@ -119,7 +115,6 @@ public final class HashCodeTest extends TestCase {
      * Tests hash code computation of an object graph containing a cycle.
      */
     @Test
-    @DependsOnMethod("testNested")
     public void testCycle() {
         /*
          * We will create a Platform and an Instrument, both of them with no other property than an identifier.

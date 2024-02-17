@@ -29,7 +29,6 @@ import org.opengis.util.InternationalString;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -88,7 +87,6 @@ public final class IndexedResourceBundleTest extends TestCase {
      * @throws IOException should never happen since this test writes only in memory.
      */
     @Test
-    @DependsOnMethod("testForLocale")
     public void testList() throws IOException {
         final StringBuilder buffer = new StringBuilder(4096);
         Errors.forLocale(Locale.ENGLISH).list(buffer);
@@ -103,7 +101,6 @@ public final class IndexedResourceBundleTest extends TestCase {
      * Tests the {@link IndexedResourceBundle#getKeys()} method.
      */
     @Test
-    @DependsOnMethod("testForLocale")
     public void testGetKeys() {
         testing = Errors.forLocale(Locale.ENGLISH);
         final Enumeration<String> e = testing.getKeys();
@@ -125,7 +122,6 @@ public final class IndexedResourceBundleTest extends TestCase {
      * Tests the {@link IndexedResourceBundle#getString(short)} method on different locales.
      */
     @Test
-    @DependsOnMethod("testForLocale")
     public void testGetString() {
         final Errors english = Errors.forLocale(Locale.ENGLISH);
         final Errors french  = Errors.forLocale(Locale.FRENCH);
@@ -139,7 +135,6 @@ public final class IndexedResourceBundleTest extends TestCase {
      * Tests the {@link IndexedResourceBundle#getString(String)} method on different locales.
      */
     @Test
-    @DependsOnMethod("testForLocale")
     public void testGetStringByName() {
         final Errors english = Errors.forLocale(Locale.ENGLISH);
         final Errors french  = Errors.forLocale(Locale.FRENCH);
@@ -153,7 +148,6 @@ public final class IndexedResourceBundleTest extends TestCase {
      * Tests the {@link IndexedResourceBundle#getString(short, Object)} method on different locales.
      */
     @Test
-    @DependsOnMethod("testGetString")
     public void testGetStringWithParameter() {
         testing = Errors.forLocale(Locale.ENGLISH);
         assertEquals("Argument ‘CRS’ shall not be null.", testing.getString(Errors.Keys.NullArgument_1, "CRS"));
@@ -167,7 +161,6 @@ public final class IndexedResourceBundleTest extends TestCase {
      * The intent is to test the code list localization.
      */
     @Test
-    @DependsOnMethod("testGetStringWithParameter")
     public void testGetStringWithCodeList() {
         testing = Errors.forLocale(Locale.ENGLISH);
         assertEquals("Argument ‘Series’ shall not be null.", testing.getString(Errors.Keys.NullArgument_1, ScopeCode.SERIES));
@@ -180,7 +173,6 @@ public final class IndexedResourceBundleTest extends TestCase {
      * Tests the formatting of an international string.
      */
     @Test
-    @DependsOnMethod("testForLocale")
     public void testFormatInternational() {
         InternationalString i18n = Errors.formatInternational(Errors.Keys.NullArgument_1);
         assertEquals("Argument ‘{0}’ shall not be null.",      i18n.toString(Locale.ROOT));
@@ -199,7 +191,6 @@ public final class IndexedResourceBundleTest extends TestCase {
      * Tests the {@link IndexedResourceBundle#getLogRecord(Level, short, Object)} method.
      */
     @Test
-    @DependsOnMethod("testForLocale")
     public void testGetLogRecord() {
         testing = Errors.forLocale(Locale.ENGLISH);
         final LogRecord record = testing.getLogRecord(Level.FINE, Errors.Keys.NullArgument_1, "CRS");

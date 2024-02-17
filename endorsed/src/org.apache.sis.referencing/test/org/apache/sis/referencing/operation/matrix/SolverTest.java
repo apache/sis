@@ -24,8 +24,6 @@ import static org.apache.sis.referencing.operation.matrix.MatrixTestCase.assertE
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 
@@ -49,7 +47,6 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(GeneralMatrixTest.class)                 // See class javadoc
 public final class SolverTest extends TestCase {
     /**
      * The tolerance threshold for this test case, which is {@value}. This value needs to be higher then the
@@ -130,7 +127,6 @@ public final class SolverTest extends TestCase {
      * @throws NoninvertibleMatrixException if an unexpected error occurred while inverting the matrix.
      */
     @Test
-    @DependsOnMethod("testSolve")
     public void testInverseWithNaN() throws NoninvertibleMatrixException {
         /*
          * Just for making sure that our matrix is correct.

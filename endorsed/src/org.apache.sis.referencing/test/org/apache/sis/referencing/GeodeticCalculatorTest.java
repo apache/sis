@@ -45,7 +45,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Assertions.assertBetween;
 import org.apache.sis.test.OptionalTestData;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.widget.VisualCheck;
@@ -149,7 +148,6 @@ public class GeodeticCalculatorTest extends TestCase {
      * Tests azimuths at poles.
      */
     @Test
-    @DependsOnMethod("testCardinalAzimuths")
     public void testAzimuthAtPoles() {
         final GeodeticCalculator c = create(false);
         final double tolerance = 0.2;
@@ -196,7 +194,6 @@ public class GeodeticCalculatorTest extends TestCase {
      * @see <a href="https://en.wikipedia.org/wiki/Great-circle_navigation#Example">Great-circle navigation on Wikipedia</a>
      */
     @Test
-    @DependsOnMethod({"testCardinalAzimuths", "testDistanceAtEquator"})
     public void testGeodesicDistanceAndAzimuths() {
         final GeodeticCalculator c = create(false);
         c.setStartGeographicPoint(-33.0, -71.6);            // Valparaíso
@@ -232,7 +229,6 @@ public class GeodeticCalculatorTest extends TestCase {
      * The coordinates are the same as {@link #testGeodesicDistanceAndAzimuths()}.
      */
     @Test
-    @DependsOnMethod("testGeodesicDistanceAndAzimuths")
     public void testUsingTransform() {
         final GeodeticCalculator c = create(true);
         assertAxisDirectionsEqual(c.getGeographicCRS().getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
@@ -269,7 +265,6 @@ public class GeodeticCalculatorTest extends TestCase {
      * Tests {@link GeodeticCalculator#createGeodesicCircle2D(double)}.
      */
     @Test
-    @DependsOnMethod("testUsingTransform")
     public void testGeodesicCircle2D() {
         final GeodeticCalculator c = create(true);
         c.setStartGeographicPoint(-33.0, -71.6);                // Valparaíso
@@ -292,7 +287,6 @@ public class GeodeticCalculatorTest extends TestCase {
      * so the end point needs to be shifted by 360°.
      */
     @Test
-    @DependsOnMethod("testUsingTransform")
     public void testGeodesicPath2D() {
         final GeodeticCalculator c = create(true);
         c.setStartGeographicPoint(-33.0, -71.6);                                        // Valparaíso

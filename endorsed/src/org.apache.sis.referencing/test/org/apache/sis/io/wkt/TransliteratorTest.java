@@ -25,7 +25,6 @@ import org.apache.sis.metadata.internal.AxisNames;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.mock.CoordinateSystemAxisMock;
 
@@ -60,7 +59,6 @@ public final class TransliteratorTest extends TestCase {
      * Tests {@link Transliterator#filter(String)}.
      */
     @Test
-    @DependsOnMethod("testSpacesConstant")
     public void testFilter() {
         final Transliterator t = Transliterator.DEFAULT;
         assertEquals("Nouvelle triangulation francaise", t.filter("Nouvelle\r\ntriangulation\nfrançaise"));

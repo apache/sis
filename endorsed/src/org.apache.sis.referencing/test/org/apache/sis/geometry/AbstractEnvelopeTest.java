@@ -26,8 +26,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.referencing.Assertions.assertContains;
 import static org.apache.sis.referencing.Assertions.assertDisjoint;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
@@ -39,7 +37,6 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn(GeneralDirectPositionTest.class)
 public final class AbstractEnvelopeTest extends TestCase {
     /**
      * Creates a new test case.
@@ -465,7 +462,6 @@ public final class AbstractEnvelopeTest extends TestCase {
      * Tests {@link AbstractEnvelope#toSimpleEnvelopes()} on a simple envelope having no wraparound axis.
      */
     @Test
-    @DependsOnMethod("testToSimpleEnvelopesOnEmptyEnvelope")
     public void testToSimpleEnvelopesOnSimpleEnvelope() {
         for (int type=0; type<LAST; type++) {
             if (type != RECTANGLE) {
@@ -481,7 +477,6 @@ public final class AbstractEnvelopeTest extends TestCase {
      * Tests {@link AbstractEnvelope#toSimpleEnvelopes()} on a simple envelope having no wraparound axis.
      */
     @Test
-    @DependsOnMethod("testToSimpleEnvelopesOnEmptyEnvelope")
     public void testToSimpleEnvelopesOverAntiMeridian() {
         for (int type=0; type<LAST; type++) {
             if (type != RECTANGLE) {

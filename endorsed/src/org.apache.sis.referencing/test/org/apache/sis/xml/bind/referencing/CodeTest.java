@@ -27,7 +27,6 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -76,7 +75,6 @@ public final class CodeTest extends TestCase {
      * for the same reason as {@link #testSimple()}.
      */
     @Test
-    @DependsOnMethod("testSimple")
     public void testWithVersion() {
         final var IOGP  = new SimpleCitation("IOGP");
         final var id    = new ImmutableIdentifier(IOGP, "EPSG", "4326", "8.2", null);  // See above javadoc.
@@ -98,7 +96,6 @@ public final class CodeTest extends TestCase {
      * Tests {@link Code#forIdentifiedObject(Class, Iterable)}.
      */
     @Test
-    @DependsOnMethod("testWithVersion")
     public void testForIdentifiedObject() {
         final var id = new ImmutableIdentifier(Citations.EPSG, "EPSG", "4326", "8.2", null);
         final var value = Code.forIdentifiedObject(GeographicCRS.class, Set.of(id));
@@ -112,7 +109,6 @@ public final class CodeTest extends TestCase {
      * (instead of "IOGP").
      */
     @Test
-    @DependsOnMethod("testForIdentifiedObject")
     public void testLegacyCodeSpace() {
         final var authority = new DefaultCitation("EPSG");
         authority.getIdentifiers().add(new ImmutableIdentifier(null, "OGP", "EPSG"));
@@ -130,7 +126,6 @@ public final class CodeTest extends TestCase {
      * of an object from the EPSG repository.
      */
     @Test
-    @DependsOnMethod("testForIdentifiedObject")
     public void testGetIdentifier() {
         final var value = new Code();
         value.codeSpace = "OGP";

@@ -22,7 +22,6 @@ import javax.measure.IncommensurableException;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
@@ -31,7 +30,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (IRD)
  */
-@DependsOn(NumberRangeTest.class)
 public final class MeasurementRangeTest extends TestCase {
     /**
      * Creates a new test case.

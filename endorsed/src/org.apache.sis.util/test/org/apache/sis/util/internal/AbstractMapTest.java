@@ -28,7 +28,6 @@ import java.util.NoSuchElementException;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
 
@@ -116,7 +115,6 @@ public final class AbstractMapTest extends TestCase {
      * This is a non-standard feature of our {@link AbstractMap}.
      */
     @Test
-    @DependsOnMethod("testReadOnly")
     public void testAddKey() {
         final Count map = new Count();
         assertEquals(3, map.size());
@@ -135,7 +133,6 @@ public final class AbstractMapTest extends TestCase {
      * This is a non-standard feature of our {@link AbstractMap}.
      */
     @Test
-    @DependsOnMethod("testReadOnly")
     public void testAddValue() {
         final Count map = new Count();
         assertEquals(3, map.size());

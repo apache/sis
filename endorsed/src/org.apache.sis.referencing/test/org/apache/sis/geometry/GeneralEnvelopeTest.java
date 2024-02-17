@@ -29,8 +29,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84_LATITUDE_FIRST;
@@ -48,7 +46,6 @@ import static org.apache.sis.test.Assertions.assertMessageContains;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)
  */
-@DependsOn(ArrayEnvelopeTest.class)
 public class GeneralEnvelopeTest extends TestCase {
     /**
      * Tolerance threshold for floating point comparisons.
@@ -586,7 +583,6 @@ public class GeneralEnvelopeTest extends TestCase {
      * Tests {@link GeneralEnvelope#setCoordinateReferenceSystem(CoordinateReferenceSystem)}.
      */
     @Test
-    @DependsOnMethod("testSetRange")
     public void testSetCoordinateReferenceSystem() {
         final GeneralEnvelope e = create(2, -4, 3, -3);
         e.setCoordinateReferenceSystem(null);
@@ -690,7 +686,6 @@ public class GeneralEnvelopeTest extends TestCase {
      * Tests the {@link GeneralEnvelope#GeneralEnvelope(CharSequence)} constructor.
      */
     @Test
-    @DependsOnMethod("testToString")
     @SuppressWarnings("ResultOfObjectAllocationIgnored")
     public void testWktParsing() {
         GeneralEnvelope envelope = new GeneralEnvelope("BOX(-180 -90,180 90)");

@@ -28,7 +28,6 @@ import org.apache.sis.metadata.xml.TestUsingFile;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.bind.lan.FreeTextMarshallingTest;
-import org.apache.sis.test.DependsOn;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
@@ -39,7 +38,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  */
-@DependsOn(FreeTextMarshallingTest.class)
 public final class AbstractPositionalAccuracyTest extends TestUsingFile {
     /**
      * Creates a new test case.

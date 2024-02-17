@@ -38,8 +38,6 @@ import static org.apache.sis.referencing.GeodeticObjectVerifier.*;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestStep;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -55,11 +53,6 @@ import static org.opengis.test.Assertions.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    DefaultPrimeMeridianTest.class,
-    DefaultEllipsoidTest.class,
-    BursaWolfParametersTest.class
-})
 public final class DefaultGeodeticDatumTest extends TestCase {
     /**
      * Creates a new test case.
@@ -143,7 +136,6 @@ public final class DefaultGeodeticDatumTest extends TestCase {
      * Tests {@link DefaultGeodeticDatum#getPositionVectorTransformation(GeodeticDatum, Extent)}.
      */
     @Test
-    @DependsOnMethod("testCreateAndSerialize")
     public void testGetPositionVectorTransformation() {
         final Map<String,Object> properties = new HashMap<>();
         assertNull(properties.put(DefaultGeodeticDatum.NAME_KEY, "Invalid dummy datum"));
@@ -209,7 +201,6 @@ public final class DefaultGeodeticDatumTest extends TestCase {
      * the matrix is associated with {@link PositionalAccuracyConstant#INDIRECT_SHIFT_APPLIED}.
      */
     @Test
-    @DependsOnMethod("testGetPositionVectorTransformation")
     public void testIndirectTransformation() {
         final Map<String,Object> properties = new HashMap<>();
         assertNull(properties.put(DefaultGeodeticDatum.NAME_KEY, "Invalid dummy datum"));
@@ -326,7 +317,6 @@ public final class DefaultGeodeticDatumTest extends TestCase {
      * @throws JAXBException if an error occurred during unmarshalling.
      */
     @Test
-    @DependsOnMethod("testToWKT")
     public void testUnmarshalledWKT() throws JAXBException {
         final DefaultGeodeticDatum datum = testUnmarshalling();
         assertWktEquals(Convention.WKT1,

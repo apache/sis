@@ -33,8 +33,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.referencing.cs.HardCodedAxes;
 import org.apache.sis.referencing.cs.HardCodedCS;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -43,7 +41,6 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(AxesMapperTest.class)
 public final class AxisDirectionsTest extends TestCase {
     /**
      * Creates a new test case.
@@ -107,7 +104,6 @@ public final class AxisDirectionsTest extends TestCase {
      * Tests {@link AxisDirections#isOpposite(AxisDirection)}.
      */
     @Test
-    @DependsOnMethod("testOpposite")
     public void testIsOpposite() {
         assertFalse(AxisDirections.isOpposite(NORTH ));
         assertTrue (AxisDirections.isOpposite(SOUTH ));
@@ -350,7 +346,6 @@ public final class AxisDirectionsTest extends TestCase {
      * Tests {@link AxisDirections#valueOf(String)} for directions like North-East and South-South-West.
      */
     @Test
-    @DependsOnMethod("testValueOfCardinalDirection")
     public void testValueOfInterCardinalDirection() {
         assertSame(NORTH_EAST,       AxisDirections.valueOf("North-East"));
         assertSame(SOUTH_SOUTH_WEST, AxisDirections.valueOf("South South West"));

@@ -30,7 +30,6 @@ import static org.apache.sis.metadata.internal.ImplementationHelper.ISO_NAMESPAC
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
@@ -59,7 +58,6 @@ public final class CharSequenceSubstitutionTest extends TestCase {
      * @throws JAXBException if the unmarshalling failed.
      */
     @Test
-    @DependsOnMethod("testAnchorForString")
     public void testLegacy() throws JAXBException {
         final String expected =
                 "<gmd:MD_ReferenceSystem xmlns:gmd=\""   + LegacyNamespaces.GMD + '"' +
@@ -91,7 +89,6 @@ public final class CharSequenceSubstitutionTest extends TestCase {
      * @throws JAXBException if the unmarshalling failed.
      */
     @Test
-    @DependsOnMethod("testAnchor")
     public void testAnchorForString() throws JAXBException {
         final String expected =
                 "<mcc:MD_Identifier xmlns:mcc=\""   + Namespaces.MCC + '"' +
@@ -188,7 +185,6 @@ public final class CharSequenceSubstitutionTest extends TestCase {
      * @throws JAXBException if the (un)marshalling failed.
      */
     @Test
-    @DependsOnMethod("testCodeList")
     public void testSensorCode() throws JAXBException {
         final String expected =
                 "<gmi:MI_Instrument xmlns:gmd=\"" + LegacyNamespaces.GMD + '"' +

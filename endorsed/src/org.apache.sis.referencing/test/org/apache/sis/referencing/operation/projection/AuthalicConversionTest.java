@@ -28,7 +28,6 @@ import static org.apache.sis.math.MathFunctions.atanh;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -36,7 +35,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(NormalizedProjectionTest.class)
 public final class AuthalicConversionTest extends MapProjectionTestCase {
     /**
      * Creates a new test case.

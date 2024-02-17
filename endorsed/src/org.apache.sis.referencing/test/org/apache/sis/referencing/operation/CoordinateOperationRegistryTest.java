@@ -42,8 +42,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -69,12 +67,6 @@ import org.opengis.metadata.Identifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    DefaultConversionTest.class,
-    DefaultTransformationTest.class,
-    DefaultPassThroughOperationTest.class,
-    DefaultConcatenatedOperationTest.class
-})
 public final class CoordinateOperationRegistryTest extends MathTransformTestCase {
     /**
      * The transformation factory to use for testing.
@@ -196,7 +188,6 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
-    @DependsOnMethod("testLongitudeRotationBetweenConformCRS")
     public void testLongitudeRotationBetweenNormalizedCRS() throws ParseException, FactoryException, TransformException {
         final CoordinateReferenceSystem sourceCRS = parse(
                 "GeodeticCRS[“NTF (Paris)”,\n" +
@@ -227,7 +218,6 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
-    @DependsOnMethod("testLongitudeRotationBetweenNormalizedCRS")
     public void testInverse() throws ParseException, FactoryException, TransformException {
         final CoordinateReferenceSystem targetCRS = parse(
                 "GeodeticCRS[“NTF (Paris)”,\n" +
@@ -259,7 +249,6 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
-    @DependsOnMethod("testLongitudeRotationBetweenConformCRS")
     public void testLongitudeRotationBetweenGeographic3D() throws ParseException, FactoryException, TransformException {
         final CoordinateReferenceSystem sourceCRS = parse(
                 "GeodeticCRS[“NTF (Paris)”,\n" +
@@ -293,7 +282,6 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
-    @DependsOnMethod({"testLongitudeRotationBetweenNormalizedCRS", "testLongitudeRotationBetweenGeographic3D"})
     public void testLongitudeRotationBetweenNormalizedGeographic3D() throws ParseException, FactoryException, TransformException {
         final CoordinateReferenceSystem sourceCRS = parse(
                 "GeodeticCRS[“NTF (Paris)”,\n" +

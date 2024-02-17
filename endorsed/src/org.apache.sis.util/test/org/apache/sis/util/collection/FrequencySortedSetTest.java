@@ -22,7 +22,6 @@ import java.util.Collections;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
 
@@ -57,7 +56,6 @@ public final class FrequencySortedSetTest extends TestCase {
      * Simple test with 2 elements.
      */
     @Test
-    @DependsOnMethod("testSimple")
     public void testTwoElements() {
         final FrequencySortedSet<Integer> set = new FrequencySortedSet<>(true);
         for (int i=0; i<10; i++) {
@@ -76,7 +74,6 @@ public final class FrequencySortedSetTest extends TestCase {
      * Tests creation of various subsets.
      */
     @Test
-    @DependsOnMethod("testTwoElements")
     public void testSubSet() {
         final FrequencySortedSet<Integer> set = new FrequencySortedSet<>();
         Collections.addAll(set, 2, 5, 3, 2, 4, 2, 3, 6, 2);

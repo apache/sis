@@ -28,7 +28,6 @@ import org.opengis.parameter.ParameterDescriptor;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
 
@@ -72,7 +71,6 @@ public final class NameMeaningTest extends TestCase {
      * Tests {@link NameMeaning#toURN(Class, String, String, String)}.
      */
     @Test
-    @DependsOnMethod("testToObjectType")
     public void testToURN() {
         assertEquals("urn:ogc:def:crs:EPSG::4326",    NameMeaning.toURN(GeodeticCRS.class,   "EPSG", null, "4326"));
         assertEquals("urn:ogc:def:crs:OGC:1.3:CRS84", NameMeaning.toURN(GeographicCRS.class, "CRS",  null,   "84"));

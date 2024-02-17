@@ -25,8 +25,6 @@ import org.apache.sis.referencing.util.Formulas;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -42,7 +40,6 @@ import org.opengis.test.CalculationType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(MolodenskyTransformTest.class)
 public final class AbridgedMolodenskyTransformTest extends MathTransformTestCase {
     /**
      * Creates a new test case.
@@ -109,7 +106,6 @@ public final class AbridgedMolodenskyTransformTest extends MathTransformTestCase
      * @throws TransformException if a transformation failed.
      */
     @Test
-    @DependsOnMethod("compareWithReferenceImplementation")
     public void testConsistency() throws FactoryException, TransformException {
         transform = create();
         validate();
@@ -134,7 +130,6 @@ public final class AbridgedMolodenskyTransformTest extends MathTransformTestCase
      * @throws TransformException if a transformation failed.
      */
     @Test
-    @DependsOnMethod("testConsistency")
     public void testSerialization() throws FactoryException, TransformException {
         transform = assertSerializedEquals(create());
         validate();

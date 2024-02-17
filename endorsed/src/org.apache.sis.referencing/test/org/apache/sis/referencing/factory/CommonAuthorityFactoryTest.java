@@ -46,8 +46,6 @@ import org.apache.sis.measure.Units;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 import static org.apache.sis.test.Assertions.assertNotDeepEquals;
@@ -63,7 +61,6 @@ import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn(org.apache.sis.referencing.CommonCRSTest.class)
 public final class CommonAuthorityFactoryTest extends TestCase {
     /**
      * The factory to test.
@@ -138,7 +135,6 @@ public final class CommonAuthorityFactoryTest extends TestCase {
      * @throws FactoryException if an error occurred while creating a CRS.
      */
     @Test
-    @DependsOnMethod({"testCRS84", "testAuto42001"})
     public void testDescription() throws FactoryException {
         assertEquals("WGS 84",                factory.getDescriptionText("CRS:84").toString());
         assertEquals("WGS 84 / Auto UTM",     factory.getDescriptionText("AUTO:42001").toString());
@@ -261,7 +257,6 @@ public final class CommonAuthorityFactoryTest extends TestCase {
      * @throws FactoryException if an error occurred while creating a CRS.
      */
     @Test
-    @DependsOnMethod("testAuto42001")
     public void testAuto42001_foot() throws FactoryException {
         final ProjectedCRS crs = factory.createProjectedCRS("AUTO2:42001, 0.3048, -123, 0");
         assertSame(crs, factory.createProjectedCRS("AUTO:42001,9002,-123,0"), "Legacy namespace.");
@@ -276,7 +271,6 @@ public final class CommonAuthorityFactoryTest extends TestCase {
      * @throws FactoryException if an error occurred while creating a CRS.
      */
     @Test
-    @DependsOnMethod("testAuto42001")
     public void testAuto42002() throws FactoryException {
         final ProjectedCRS crs = factory.createProjectedCRS("AUTO:42002,-122,10");
         assertSame(crs, factory.createProjectedCRS(" 42002, -122 , 10 "), "Omitting namespace.");
@@ -298,7 +292,6 @@ public final class CommonAuthorityFactoryTest extends TestCase {
      * @throws FactoryException if an error occurred while creating a CRS.
      */
     @Test
-    @DependsOnMethod("testAuto42001")
     @Disabled("Pending the port of Orthographic projection.")
     public void testAuto42003() throws FactoryException {
         final ProjectedCRS crs = factory.createProjectedCRS("AUTO:42003,9001,10,45");
@@ -314,7 +307,6 @@ public final class CommonAuthorityFactoryTest extends TestCase {
      * @throws FactoryException if an error occurred while creating a CRS.
      */
     @Test
-    @DependsOnMethod("testAuto42001")
     public void testAuto42004() throws FactoryException {
         final ProjectedCRS crs = factory.createProjectedCRS("AUTO2:42004,1,10,45");
         final ParameterValueGroup p = crs.getConversionFromBase().getParameterValues();
@@ -332,7 +324,6 @@ public final class CommonAuthorityFactoryTest extends TestCase {
      * @throws FactoryException if an error occurred while creating a CRS.
      */
     @Test
-    @DependsOnMethod("testAuto42001")
     public void testAuto42005() throws FactoryException {
         final ProjectedCRS crs = factory.createProjectedCRS("AUTO:42005,9001,10,45");
         final ParameterValueGroup p = crs.getConversionFromBase().getParameterValues();
@@ -350,7 +341,6 @@ public final class CommonAuthorityFactoryTest extends TestCase {
      * @throws NoninvertibleTransformException Should never happen.
      */
     @Test
-    @DependsOnMethod("testAuto42004")
     public void testUnits() throws FactoryException, NoninvertibleTransformException {
         AffineTransform tr1, tr2;
         tr1 = (AffineTransform) factory.createProjectedCRS("AUTO:42004,9001,0,35").getConversionFromBase().getMathTransform();
@@ -369,7 +359,6 @@ public final class CommonAuthorityFactoryTest extends TestCase {
      * @throws FactoryException if an error occurred while creating the CRS.
      */
     @Test
-    @DependsOnMethod("testCRS84")
     public void testWKT() throws FactoryException {
         final String WGS84 = "“WGS\\E\\s?(?:19)?\\Q84”";                // Accept "WGS 84" or "WGS 1984"
         GeographicCRS crs = factory.createGeographicCRS("CRS:84");

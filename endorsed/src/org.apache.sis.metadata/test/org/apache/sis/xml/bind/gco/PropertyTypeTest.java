@@ -26,8 +26,6 @@ import org.apache.sis.xml.ReferenceResolverMock;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.xml.test.TestCase;
 
 
@@ -36,7 +34,6 @@ import org.apache.sis.xml.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(org.apache.sis.xml.bind.IdentifierMapAdapterTest.class)
 public final class PropertyTypeTest extends TestCase {
     /**
      * The pseudo-metadata object to wrap for testing purpose.
@@ -95,7 +92,6 @@ public final class PropertyTypeTest extends TestCase {
      * @throws Exception if an error occurred during (un)marshalling.
      */
     @Test
-    @DependsOnMethod("testWithUUID")
     public void testWithDiscardedUUID() throws Exception {
         testWithUUID(false);
     }
@@ -107,7 +103,6 @@ public final class PropertyTypeTest extends TestCase {
      * @throws Exception if an error occurred during (un)marshalling.
      */
     @Test
-    @DependsOnMethod("testWithNoReference")
     public void testWithUUID() throws Exception {
         testWithUUID(true);
     }
@@ -151,7 +146,6 @@ public final class PropertyTypeTest extends TestCase {
      * @throws Exception if an error occurred during (un)marshalling.
      */
     @Test
-    @DependsOnMethod("testWithXLink")
     public void testWithInformativeXLink() throws Exception {
         testWithXLink(false);
     }
@@ -163,7 +157,6 @@ public final class PropertyTypeTest extends TestCase {
      * @throws Exception if an error occurred during (un)marshalling.
      */
     @Test
-    @DependsOnMethod("testWithNoReference")
     public void testWithXLink() throws Exception {
         testWithXLink(true);
     }

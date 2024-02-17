@@ -25,8 +25,6 @@ import org.apache.sis.referencing.util.Formulas;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestUtilities;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -41,7 +39,6 @@ import org.opengis.test.ToleranceModifier;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  */
-@DependsOn(CylindricalEqualAreaTest.class)
 public final class AlbersEqualAreaTest extends MapProjectionTestCase {
     /**
      * Creates a new test case.
@@ -111,7 +108,6 @@ public final class AlbersEqualAreaTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
-    @DependsOnMethod("testSphere")
     public void testEllipse() throws FactoryException, TransformException {
         createCompleteProjection(new org.apache.sis.referencing.operation.provider.AlbersEqualArea(),
                 CLARKE_A,   // Semi-major axis from Snyder table 15
@@ -164,7 +160,6 @@ public final class AlbersEqualAreaTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
-    @DependsOnMethod("testEllipse")
     public void compareWithPROJ() throws FactoryException, TransformException {
         toleranceModifier = ToleranceModifier.PROJECTION;
         tolerance = Formulas.LINEAR_TOLERANCE;
@@ -204,7 +199,6 @@ public final class AlbersEqualAreaTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
-    @DependsOnMethod("testEllipse")
     public void testSingularity() throws FactoryException, TransformException {
         createCompleteProjection(new org.apache.sis.referencing.operation.provider.AlbersEqualArea(),
                 WGS84_A,    // Semi-major axis length
@@ -235,7 +229,6 @@ public final class AlbersEqualAreaTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a point.
      */
     @Test
-    @DependsOnMethod("testEllipse")
     public void testRandomPoints() throws FactoryException, TransformException {
         createCompleteProjection(new org.apache.sis.referencing.operation.provider.AlbersEqualArea(),
                 WGS84_A,    // Semi-major axis length

@@ -24,7 +24,6 @@ import org.apache.sis.parameter.Parameters;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.apache.sis.test.DependsOn;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.FactoryException;
@@ -36,7 +35,6 @@ import org.opengis.util.FactoryException;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  */
-@DependsOn(NormalizedProjectionTest.class)
 public final class OrthographicTest extends MapProjectionTestCase {
     /**
      * Creates a new test case.

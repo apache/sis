@@ -35,8 +35,6 @@ import org.apache.sis.xml.util.LegacyNamespaces;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.mock.IdentifiedObjectMock;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
@@ -48,7 +46,6 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  */
-@DependsOn(DefaultNameFactoryTest.class)
 public final class NameMarshallingTest extends TestCase {
     /**
      * A poll of configured {@link Marshaller} and {@link Unmarshaller}, created when first needed.
@@ -117,7 +114,6 @@ public final class NameMarshallingTest extends TestCase {
      * @throws JAXBException if (un)marshalling failed.
      */
     @Test
-    @DependsOnMethod("testLocalName")
     public void testLocalNameWithAmp() throws JAXBException {
         final NameFactory factory = DefaultNameFactory.provider();
         final LocalName name = factory.createLocalName(null, "A name with & and > and <.");
@@ -140,7 +136,6 @@ public final class NameMarshallingTest extends TestCase {
      * @throws JAXBException if (un)marshalling failed.
      */
     @Test
-    @DependsOnMethod("testLocalName")
     public void testLocalNameWithScope() throws JAXBException {
         final NameFactory factory = DefaultNameFactory.provider();
         final NameSpace scope = factory.createNameSpace(factory.createLocalName(null, "A code space"), null);

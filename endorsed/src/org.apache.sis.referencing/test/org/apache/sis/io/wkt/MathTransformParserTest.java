@@ -28,8 +28,6 @@ import org.apache.sis.measure.Units;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -41,7 +39,6 @@ import static org.opengis.test.Assertions.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn(org.apache.sis.referencing.operation.transform.MathTransformsTest.class)
 public final class MathTransformParserTest extends TestCase {
     /**
      * The parser to use for the test.
@@ -128,7 +125,6 @@ public final class MathTransformParserTest extends TestCase {
      * @throws ParseException if an error occurred during the parsing.
      */
     @Test
-    @DependsOnMethod("testParamMT")
     public void testInverseMT() throws ParseException {
         final MathTransform tr = parse(
                 "INVERSE_MT["
@@ -155,7 +151,6 @@ public final class MathTransformParserTest extends TestCase {
      * @throws ParseException if an error occurred during the parsing.
      */
     @Test
-    @DependsOnMethod("testInverseMT")
     public void testConcatMT() throws ParseException {
         final MathTransform tr = parse(
                 "CONCAT_MT["

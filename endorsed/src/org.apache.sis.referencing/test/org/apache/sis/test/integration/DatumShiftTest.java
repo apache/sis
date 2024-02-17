@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test;
 import org.apache.sis.referencing.operation.provider.NTv2Test;
 import org.apache.sis.referencing.operation.provider.NADCONTest;
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolationTest;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assumptions.assumeDataExists;
 
@@ -37,11 +36,6 @@ import static org.apache.sis.test.Assumptions.assumeDataExists;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    NTv2Test.class,
-    NADCONTest.class,
-    FranceGeocentricInterpolationTest.class
-})
 public final class DatumShiftTest extends TestCase {
     /**
      * Creates a new test case.

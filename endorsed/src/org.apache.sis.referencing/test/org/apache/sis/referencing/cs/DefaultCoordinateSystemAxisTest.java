@@ -28,8 +28,6 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.referencing.cs.HardCodedAxes.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -41,10 +39,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn({
-    DirectionAlongMeridianTest.class,
-    org.apache.sis.referencing.AbstractIdentifiedObjectTest.class
-})
 public final class DefaultCoordinateSystemAxisTest extends TestCase {
     /**
      * Creates a new test case.
@@ -119,7 +113,6 @@ public final class DefaultCoordinateSystemAxisTest extends TestCase {
      * Tests the WKT of axis of the kind "South along 90°W".
      */
     @Test
-    @DependsOnMethod("testWKT")
     public void testMeridianWKT() {
         assertWktEquals("AXIS[“South along 90°W (x)”, south, MERIDIAN[-90.0, ANGLEUNIT[“degree”, 0.017453292519943295]], LENGTHUNIT[“metre”, 1]]",
                 new DefaultCoordinateSystemAxis(Map.of(DefaultCoordinateSystemAxis.NAME_KEY, "South along 90°W"),
@@ -144,7 +137,6 @@ public final class DefaultCoordinateSystemAxisTest extends TestCase {
      * Tests the comparison of some axis, ignoring metadata.
      */
     @Test
-    @DependsOnMethod("testIsHeuristicMatchForName")
     public void testEqualsIgnoreMetadata() {
         /*
          * Defines, only for the purpose of this test, axis constants identical to

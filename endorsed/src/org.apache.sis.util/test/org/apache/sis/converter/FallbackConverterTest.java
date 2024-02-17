@@ -24,7 +24,6 @@ import org.apache.sis.math.FunctionProperty;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
@@ -37,8 +36,6 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({StringConverterTest.class,
-    org.apache.sis.util.collection.TreeTableFormatTest.class})
 public final class FallbackConverterTest extends TestCase {
     /**
      * Conversions that are expected to be supported.

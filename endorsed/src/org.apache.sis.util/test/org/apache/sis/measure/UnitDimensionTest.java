@@ -27,7 +27,6 @@ import org.apache.sis.util.UnconvertibleObjectException;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.test.Assertions.assertMapEquals;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -62,7 +61,6 @@ public final class UnitDimensionTest extends TestCase {
      * Tests {@link UnitDimension#multiply(Dimension)}.
      */
     @Test
-    @DependsOnMethod("testEqualsAndHashCode")
     public void testMultiply() {
         assertSame(LENGTH, LENGTH.multiply(DIMENSIONLESS));
         assertSame(AREA,   LENGTH.multiply(LENGTH));
@@ -79,7 +77,6 @@ public final class UnitDimensionTest extends TestCase {
      * Tests {@link UnitDimension#divide(Dimension)}.
      */
     @Test
-    @DependsOnMethod("testEqualsAndHashCode")
     public void testDivide() {
         assertSame(LENGTH, LENGTH.divide(DIMENSIONLESS));
         assertSame(LENGTH, AREA  .divide(LENGTH));
@@ -92,7 +89,6 @@ public final class UnitDimensionTest extends TestCase {
      * Tests {@link UnitDimension#pow(int)}.
      */
     @Test
-    @DependsOnMethod("testEqualsAndHashCode")
     public void testPow() {
         assertSame(DIMENSIONLESS, DIMENSIONLESS.pow(4));
         assertSame(AREA,          LENGTH.pow(2));
@@ -103,7 +99,6 @@ public final class UnitDimensionTest extends TestCase {
      * Tests {@link UnitDimension#root(int)}.
      */
     @Test
-    @DependsOnMethod("testEqualsAndHashCode")
     public void testRoot() {
         assertSame(DIMENSIONLESS, DIMENSIONLESS.root(4));
         assertSame(LENGTH,        AREA.root(2));
@@ -121,7 +116,6 @@ public final class UnitDimensionTest extends TestCase {
      * Tests a dimension with rational power. This tests use the specific detectivity, which dimension is T^2.5 / (M⋅L).
      */
     @Test
-    @DependsOnMethod({"testMultiply", "testDivide", "testPow", "testRoot"})
     public void testRationalPower() {
         final Dimension dim = specificDetectivity();
         final Map<Dimension,Fraction> expected = new HashMap<>(4);
@@ -194,7 +188,6 @@ public final class UnitDimensionTest extends TestCase {
      * Serializes some dimensions, deserializes them and verifies that we get the same instance.
      */
     @Test
-    @DependsOnMethod("testEqualsAndHashCode")
     public void testSerialization() {
         assertSame(LENGTH,        assertSerializedEquals(LENGTH));
         assertSame(TIME,          assertSerializedEquals(TIME));

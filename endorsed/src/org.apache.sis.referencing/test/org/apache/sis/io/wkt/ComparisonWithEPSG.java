@@ -33,7 +33,6 @@ import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -41,7 +40,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(WKTParserTest.class)
 public final class ComparisonWithEPSG extends TestCase {
     /**
      * Creates a new test case.

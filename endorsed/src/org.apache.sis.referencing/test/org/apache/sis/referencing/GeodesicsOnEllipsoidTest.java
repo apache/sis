@@ -31,8 +31,6 @@ import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 
 
@@ -44,7 +42,6 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
  * @author  Matthieu Bastianelli (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(GeodeticCalculatorTest.class)
 public final class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {
     /**
      * The {@link GeodesicsOnEllipsoid} instance to be tested.
@@ -341,7 +338,6 @@ public final class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {
      * <p><b>Source:</b> Karney (2013), <u>Algorithms for geodesics</u> table 3.</p>
      */
     @Test
-    @DependsOnMethod("testComputeEndPoint")
     public void testComputeShortDistance() {
         createTracked();
         verifyParametersForWGS84();
@@ -383,7 +379,6 @@ public final class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {
      * @throws GeodeticException if the {@literal dα₁ ≪ α₁} check did not worked.
      */
     @Test
-    @DependsOnMethod("testComputeShortDistance")
     public void testComputeShorterDistance() throws GeodeticException {
         final GeodeticCalculator c = create(false);
         c.setStartGeographicPoint(-0.000014, -29.841548);
@@ -416,7 +411,6 @@ public final class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {
      * <p><b>Source:</b> Karney (2013), <u>Algorithms for geodesics</u> tables 4, 5 and 6.</p>
      */
     @Test
-    @DependsOnMethod("testComputeShortDistance")
     public void testComputeNearlyAntipodal() {
         createTracked();
         verifyParametersForWGS84();
@@ -492,7 +486,6 @@ public final class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {
      */
     @Test
     @Override
-    @DependsOnMethod({"testComputeEndPoint", "testComputeNearlyAntipodal"})
     public void testGeodesicDistanceAndAzimuths() {
         final GeodeticCalculator c = create(false);
         c.setStartGeographicPoint(-33.0, -71.6);            // Valparaíso

@@ -28,7 +28,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Assertions;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 
 
@@ -37,7 +36,6 @@ import org.apache.sis.referencing.operation.HardCodedConversions;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(LocalizationGridBuilderTest.class)
 public final class LinearizerTest extends TestCase {
     /**
      * Creates a new test case.

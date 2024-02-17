@@ -34,8 +34,6 @@ import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.test.Assertions.assertMessageContains;
@@ -47,7 +45,6 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(GeodeticObjectParserTest.class)
 public final class WKTFormatTest extends TestCase {
     /**
      * The instance to use for the test, or {@code null} if none.
@@ -110,7 +107,6 @@ public final class WKTFormatTest extends TestCase {
      * @throws ParseException if a parsing failed.
      */
     @Test
-    @DependsOnMethod("testConsistencyOfWKT1")
     public void testConsistencyOfWKT1_WithCommonUnits() throws ParseException {
         format = new WKTFormat();
         format.setConvention(Convention.WKT1_COMMON_UNITS);
@@ -127,7 +123,6 @@ public final class WKTFormatTest extends TestCase {
      * @throws ParseException if a parsing failed.
      */
     @Test
-    @DependsOnMethod("testConsistencyOfWKT1")
     public void testConsistencyOfWKT2() throws ParseException {
         format = new WKTFormat();
         format.setConvention(Convention.WKT2);
@@ -142,7 +137,6 @@ public final class WKTFormatTest extends TestCase {
      * @throws ParseException if a parsing failed.
      */
     @Test
-    @DependsOnMethod("testConsistencyOfWKT2")
     public void testConsistencyOfWKT2_Simplified() throws ParseException {
         format = new WKTFormat();
         format.setConvention(Convention.WKT2_SIMPLIFIED);
@@ -245,7 +239,6 @@ public final class WKTFormatTest extends TestCase {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-538">SIS-538</a>
      */
     @Test
-    @DependsOnMethod("testConsistencyOfWKT1")
     public void testConsistencyOfGeogTran() throws ParseException {
         final Symbols symbols = new Symbols(Symbols.SQUARE_BRACKETS);
         symbols.setPairedQuotes("“”", "\"\"");

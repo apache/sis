@@ -52,8 +52,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.image.TiledImageMock;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
@@ -76,7 +74,6 @@ import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
  * @author  Alexis Manin (Geomatys)
  * @author  Johann Sorel (Geomatys)
  */
-@DependsOn(org.apache.sis.image.ResampledImageTest.class)
 public final class ResampledGridCoverageTest extends TestCase {
     /**
      * The random number generator used for generating some grid coverage values.
@@ -293,7 +290,6 @@ public final class ResampledGridCoverageTest extends TestCase {
      * @throws TransformException if some coordinates cannot be transformed to the target grid geometry.
      */
     @Test
-    @DependsOnMethod("testExplicitIdentity")
     public void testImplicitIdentity() throws TransformException {
         final GridCoverage2D source = createCoverage2D();
         GridGeometry gg = source.getGridGeometry();
@@ -373,7 +369,6 @@ public final class ResampledGridCoverageTest extends TestCase {
      * @throws TransformException if some coordinates cannot be transformed to the target grid geometry.
      */
     @Test
-    @DependsOnMethod("testAxisSwap")
     public void testAxisSwapAndFlip() throws TransformException {
         final GridCoverage  source      = createCoverageND(false);
         final GridGeometry  target      = createGridGeometryND(CommonCRS.WGS84.geographic3D(), 1, 0, 2, 3, true);

@@ -22,7 +22,6 @@ import org.apache.sis.measure.NumberRange;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
 
@@ -219,7 +218,6 @@ public final class VectorTest extends TestCase {
      * Tests {@link Vector#reverse()}.
      */
     @Test
-    @DependsOnMethod("testDoubleArray")
     public void testReverse() {
         final double[] array    = {2, 3, 8};
         final double[] expected = {8, 3, 2};
@@ -231,7 +229,6 @@ public final class VectorTest extends TestCase {
      * Tests {@link Vector#concatenate(Vector)}.
      */
     @Test
-    @DependsOnMethod("testFloatArray")
     @SuppressWarnings("UnnecessaryBoxing")
     public void testConcatenate() {
         final float[] array = new float[40];
@@ -338,7 +335,6 @@ public final class VectorTest extends TestCase {
      * Tests {@link Vector#increment(double)}.
      */
     @Test
-    @DependsOnMethod({"testShortArray", "testFloatArray", "testDoubleArray"})
     public void testIncrement() {
         for (int type = 0; type <= 9; type++) {
             final Vector vec;
@@ -371,10 +367,6 @@ public final class VectorTest extends TestCase {
      * since it needs to test various combination of vectors and sub-vectors.
      */
     @Test
-    @DependsOnMethod({
-        "testSequenceOfBytes", "testSequenceOfFloats", "testShortArray", "testFloatArray",
-        "testDoubleArray", "testReverse", "testConcatenate", "testStringArray"
-    })
     public void testRange() {
         for (int type = 0; type <= 11; type++) {
             final Vector vec;
@@ -439,7 +431,6 @@ public final class VectorTest extends TestCase {
      * Tests {@link Vector#compress(double)}.
      */
     @Test
-    @DependsOnMethod({"testRange", "testIncrement"})
     public void testCompress() {
         /*
          * Values that can be not be compressed further. We use a byte[] array

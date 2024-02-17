@@ -21,7 +21,6 @@ import static org.apache.sis.util.Characters.*;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
 
@@ -66,7 +65,6 @@ public final class CharactersTest extends TestCase {
      * Tests the {@link Characters#isLineOrParagraphSeparator(int)} method.
      */
     @Test
-    @DependsOnMethod("testUnicodeSeparators")
     public void testLineOrParagraphSeparator() {
         assertFalse(isLineOrParagraphSeparator('z'));
         assertFalse(isLineOrParagraphSeparator('\t'));

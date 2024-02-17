@@ -27,8 +27,6 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 
 
@@ -37,7 +35,6 @@ import org.apache.sis.metadata.iso.citation.HardCodedCitations;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(PropertyAccessorTest.class)
 public final class SpecialCasesTest extends TestCase {
     /**
      * The accessor instance to be tested.
@@ -126,7 +123,6 @@ public final class SpecialCasesTest extends TestCase {
      * Tests {@link SpecialCases#set(int, Object, Object, int)} in {@code RETURN_PREVIOUS} mode.
      */
     @Test
-    @DependsOnMethod("testGet")
     public void testSet() {
         createBox();
         assertPreviousEquals("westBoundLongitude", new Longitude(-20), new Longitude(-15));
@@ -147,7 +143,6 @@ public final class SpecialCasesTest extends TestCase {
      * with {@link Double} values instead of {@link Longitude} or {@link Latitude}.
      */
     @Test
-    @DependsOnMethod("testSet")
     public void testSetAsPrimitive() {
         createBox();
         assertPreviousEquals("westBoundLongitude", new Longitude(-20), -14.0);
@@ -166,7 +161,6 @@ public final class SpecialCasesTest extends TestCase {
      * Tests {@link SpecialCases#set(int, Object, Object, int)} in {@code APPEND} mode.
      */
     @Test
-    @DependsOnMethod("testSet")
     public void testAppend() {
         createBox();
         assertAppendResultEquals("westBoundLongitude", null, new Longitude(-20));

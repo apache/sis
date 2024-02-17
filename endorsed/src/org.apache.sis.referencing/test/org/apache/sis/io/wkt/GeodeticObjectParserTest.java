@@ -48,8 +48,6 @@ import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_D
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
@@ -63,19 +61,6 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn({
-    MathTransformParserTest.class,
-    org.apache.sis.referencing.crs.DefaultGeocentricCRSTest.class,
-    org.apache.sis.referencing.crs.DefaultGeographicCRSTest.class,
-    org.apache.sis.referencing.crs.DefaultProjectedCRSTest.class,
-    org.apache.sis.referencing.crs.DefaultVerticalCRSTest.class,
-    org.apache.sis.referencing.crs.DefaultTemporalCRSTest.class,
-    org.apache.sis.referencing.crs.DefaultCompoundCRSTest.class,
-    org.apache.sis.referencing.crs.DefaultEngineeringCRSTest.class,
-    org.apache.sis.referencing.crs.DefaultImageCRSTest.class,
-    org.apache.sis.referencing.cs.DirectionAlongMeridianTest.class,
-    org.apache.sis.referencing.factory.GeodeticObjectFactoryTest.class
-})
 public final class GeodeticObjectParserTest extends TestCase {
     /**
      * The parser to use for the test.
@@ -256,7 +241,6 @@ public final class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
-    @DependsOnMethod({"testAxis", "testDatum"})
     public void testGeocentricCRS() throws ParseException {
         final GeocentricCRS crs = parse(GeocentricCRS.class,
                 "GEOCCS[“Geocentric”,\n" +
@@ -294,7 +278,6 @@ public final class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
-    @DependsOnMethod({"testAxis", "testDatum"})
     public void testGeographicCRS() throws ParseException {
         verifyGeographicCRS(0, parse(GeographicCRS.class,
                "GEOGCS[“WGS 84”,\n" +
@@ -312,7 +295,6 @@ public final class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
-    @DependsOnMethod("testGeographicCRS")
     public void testGeographicWithLatLonAxes() throws ParseException {
         verifyGeographicCRS(1, parse(GeographicCRS.class,
                "GEOGCS[“WGS 84”,\n" +
@@ -332,7 +314,6 @@ public final class GeodeticObjectParserTest extends TestCase {
      * @see #testGeographicWithImplicitAxesInSeconds()
      */
     @Test
-    @DependsOnMethod("testGeographicCRS")
     public void testGeographicWithImplicitAxes() throws ParseException {
         verifyGeographicCRS(0, parse(GeographicCRS.class,
                "GEOGCS[“WGS 84”,\n" +
@@ -350,7 +331,6 @@ public final class GeodeticObjectParserTest extends TestCase {
      * @see #testGeographicWithImplicitAxes()
      */
     @Test
-    @DependsOnMethod("testGeographicWithImplicitAxes")
     public void testGeographicWithImplicitAxesInSeconds() throws ParseException {
         final GeographicCRS crs = parse(GeographicCRS.class,
                 "GEOGCS[“NAD83 / NFIS Seconds”," +
@@ -397,7 +377,6 @@ public final class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
-    @DependsOnMethod("testGeographicWithLatLonAxes")
     public void testGeographicWithUnorderedAxes() throws ParseException {
         verifyGeographicCRS(1, parse(GeographicCRS.class,
                "GEOGCS[“WGS 84”,\n" +
@@ -416,7 +395,6 @@ public final class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
-    @DependsOnMethod("testGeographicCRS")
     public void testGeographicWithParisMeridian() throws ParseException {
         String wkt = "GEOGCS[“NTF (Paris)”,\n" +
                      "  DATUM[“Nouvelle Triangulation Française (Paris)”,\n" +
@@ -473,7 +451,6 @@ public final class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
-    @DependsOnMethod("testGeographicWithParisMeridian")
     public void testMismatchedAngularUnits() throws ParseException {
         String wkt = "GeodeticCRS[“NTF (Paris)”,\n" +
                      "  Datum[“Nouvelle Triangulation Française (Paris)”,\n" +
@@ -541,7 +518,6 @@ public final class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
-    @DependsOnMethod("testGeographicCRS")
     public void testProjectedCRS() throws ParseException {
         final ProjectedCRS crs = parse(ProjectedCRS.class,
                 "PROJCS[“Mercator test”,\n" +
@@ -590,7 +566,6 @@ public final class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
-    @DependsOnMethod("testProjectedCRS")
     public void testProjectedWithID() throws ParseException {
         final ProjectedCRS crs = parse(ProjectedCRS.class,
                "PROJCS[“OSGB 1936 / British National Grid”,\n" +
@@ -639,7 +614,6 @@ public final class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
-    @DependsOnMethod("testProjectedCRS")
     public void testProjectedWithFeetUnits() throws ParseException {
         final ProjectedCRS crs = parse(ProjectedCRS.class,
                "PROJCS[“TransverseMercator”,\n" +
@@ -685,7 +659,6 @@ public final class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
-    @DependsOnMethod({"testGeographicWithParisMeridian", "testProjectedCRS"})
     public void testProjectedWithGradUnits() throws ParseException {
         String wkt = "PROJCS[“NTF (Paris) / Lambert zone II”," +
                      "  GEOGCS[“NTF (Paris)”," +
@@ -734,7 +707,6 @@ public final class GeodeticObjectParserTest extends TestCase {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-310">SIS-310</a>
      */
     @Test
-    @DependsOnMethod("testProjectedWithGradUnits")
     public void testProjectedFromWKT2() throws ParseException {
         String wkt = "ProjectedCRS[“NTF (Paris) / Lambert zone II”,\n" +
                      "  BaseGeodCRS[“NTF (Paris)”,\n" +
@@ -833,7 +805,6 @@ public final class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
-    @DependsOnMethod("testProjectedCRS")
     public void testProjectedWithMissingName() throws ParseException {
         final ProjectedCRS crs = parse(ProjectedCRS.class,
                 "PROJCS[“FRANCE/NTF/Lambert III”," +
@@ -936,7 +907,6 @@ public final class GeodeticObjectParserTest extends TestCase {
      *         to South-Orientated failed.
      */
     @Test
-    @DependsOnMethod("testProjectedCRS")
     public void testMathTransform() throws ParseException, NoninvertibleTransformException {
         /*
          * Test "Transverse Mercator" (not south-oriented) with an axis oriented toward south.
@@ -1059,7 +1029,6 @@ public final class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
-    @DependsOnMethod("testGeographicCRS")
     public void testCompoundCRS() throws ParseException {
         final CompoundCRS crs = parse(CompoundCRS.class,
                 "COMPD_CS[“WGS 84 + height + time”,\n" +
@@ -1119,7 +1088,6 @@ public final class GeodeticObjectParserTest extends TestCase {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-317">SIS-317</a>
      */
     @Test
-    @DependsOnMethod("testCompoundCRS")
     public void testCompoundWKT1() throws ParseException {
         final GeographicCRS crs = parse(GeographicCRS.class,
                 "COMPD_CS[“WGS 84 (3D)”,\n" +
@@ -1151,7 +1119,6 @@ public final class GeodeticObjectParserTest extends TestCase {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-538">SIS-538</a>
      */
     @Test
-    @DependsOnMethod("testGeographicWithImplicitAxes")
     public void testGeogTran() throws ParseException {
         final CoordinateOperation op = parse(CoordinateOperation.class,
                 "GEOGTRAN[“Palestine_1923_to_WGS_84_1”,\n" +
@@ -1200,7 +1167,6 @@ public final class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
-    @DependsOnMethod("testGeographicWithImplicitAxes")
     public void testWarnings() throws ParseException {
         final GeographicCRS crs = parseIgnoreWarnings(GeographicCRS.class,
                "GEOGCS[“WGS 84”,\n" +

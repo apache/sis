@@ -21,7 +21,6 @@ import java.util.Random;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -31,7 +30,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (MPO, IRD)
  */
-@DependsOn(org.apache.sis.util.internal.DoubleDoubleTest.class)
 public final class LineTest extends TestCase {
     /**
      * Tolerance factor for comparisons for floating point values.

@@ -29,7 +29,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -294,7 +293,6 @@ public abstract class MatrixTestCase extends TestCase {
      * as the reference implementation.
      */
     @Test
-    @DependsOnMethod("testGetElements")
     public void testSetElement() {
         initialize(-8079924100564483073L);
         prepareNewMatrixSize(random);
@@ -325,7 +323,6 @@ public abstract class MatrixTestCase extends TestCase {
      * since {@code isIdentity()} delegates part of its work to {@code isAffine()}.</p>
      */
     @Test
-    @DependsOnMethod("testSetElement")
     public void testIsIdentity() {
         initialize(6173145457052452823L);
         prepareNewMatrixSize(random);
@@ -356,7 +353,6 @@ public abstract class MatrixTestCase extends TestCase {
      * Tests {@link MatrixSIS#clone()}, {@link MatrixSIS#equals(Object)} and {@link MatrixSIS#hashCode()}.
      */
     @Test
-    @DependsOnMethod("testSetElement")
     public void testCloneEquals() {
         initialize(-4572234104840706847L);
         prepareNewMatrixSize(random);
@@ -386,7 +382,6 @@ public abstract class MatrixTestCase extends TestCase {
      * Tests {@link MatrixSIS#transpose()}.
      */
     @Test
-    @DependsOnMethod("testGetElements")
     public void testTranspose() {
         initialize(585037875560696050L);
         prepareNewMatrixSize(random);
@@ -407,7 +402,6 @@ public abstract class MatrixTestCase extends TestCase {
      * Tests {@link MatrixSIS#normalizeColumns()}.
      */
     @Test
-    @DependsOnMethod("testGetElements")
     public void testNormalizeColumns() {
         initialize(1549772118153010333L);
         prepareNewMatrixSize(random);
@@ -613,7 +607,6 @@ public abstract class MatrixTestCase extends TestCase {
      * Tests {@link MatrixSIS#multiply(org.opengis.referencing.operation.Matrix)}.
      */
     @Test
-    @DependsOnMethod("testGetElements")
     public void testMultiply() {
         initialize(2478887638739725150L);
         for (int n=0; n<NUMBER_OF_REPETITIONS; n++) {
@@ -651,7 +644,6 @@ public abstract class MatrixTestCase extends TestCase {
      * @throws NoninvertibleMatrixException if the matrix cannot be inverted.
      */
     @Test
-    @DependsOnMethod("testMultiply")
     public void testSolve() throws NoninvertibleMatrixException {
         initialize(2108474073121762243L);
         for (int n=0; n<NUMBER_OF_REPETITIONS; n++) {
@@ -693,7 +685,6 @@ public abstract class MatrixTestCase extends TestCase {
      * @throws NoninvertibleMatrixException if the matrix cannot be inverted.
      */
     @Test
-    @DependsOnMethod("testSolve")
     public void testInverse() throws NoninvertibleMatrixException {
         initialize(-9063921123024549789L);
         for (int n=0; n<NUMBER_OF_REPETITIONS; n++) {

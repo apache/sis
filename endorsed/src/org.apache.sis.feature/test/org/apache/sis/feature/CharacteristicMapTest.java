@@ -23,8 +23,6 @@ import java.util.AbstractMap.SimpleEntry;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -38,7 +36,6 @@ import org.opengis.feature.Attribute;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(CharacteristicTypeMapTest.class)
 public final class CharacteristicMapTest extends TestCase {
     /**
      * Creates a new test case.
@@ -146,7 +143,6 @@ public final class CharacteristicMapTest extends TestCase {
      * Tests adding a characteristic indirectly with {@link CharacteristicMap#addValue(Attribute)}.
      */
     @Test
-    @DependsOnMethod("testPut")
     public void testAddValue() {
         final AbstractAttribute<?> temperature = temperature();
         final AbstractAttribute<?> units       = create(temperature, "units");
@@ -199,7 +195,6 @@ public final class CharacteristicMapTest extends TestCase {
      * Tests adding a characteristic indirectly with {@link CharacteristicMap#addKey(String)}.
      */
     @Test
-    @DependsOnMethod("testPut")
     public void testAddKey() {
         final Attribute<?> units, accuracy;
         final AbstractAttribute<?> temperature = temperature();
@@ -284,7 +279,6 @@ public final class CharacteristicMapTest extends TestCase {
      * Tests {@link CharacteristicMap#equals(Object)} and (opportunistically) {@link CharacteristicMap#clone()}
      */
     @Test
-    @DependsOnMethod("testAddKey")
     public void testEquals() {
         final AbstractAttribute<Float> t1 = temperature();
         final AbstractAttribute<Float> t2 = temperature();
@@ -310,7 +304,6 @@ public final class CharacteristicMapTest extends TestCase {
      * Tests the reconstruction of {@link CharacteristicTypeMap} after serialization.
      */
     @Test
-    @DependsOnMethod({"testEquals", "testAddValue"})            // Implementation of readObject use values().addAll(…).
     public void testSerialization() {
         final AbstractAttribute<Float> temperature = temperature();
         setAccuracy(temperature, true, 0.2f);

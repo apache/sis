@@ -31,7 +31,6 @@ import org.apache.sis.measure.Units;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.mock.VerticalCRSMock;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
@@ -141,7 +140,6 @@ public final class CoordinateFormatTest extends TestCase {
      * Tests formatting 2-dimensional projected coordinates.
      */
     @Test
-    @DependsOnMethod("testFormatUnknownCRS")
     public void testFormatProjected() {
         final CoordinateFormat format = new CoordinateFormat(Locale.US, null);
         format.setDefaultCRS(HardCodedConversions.mercator());
@@ -156,7 +154,6 @@ public final class CoordinateFormatTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
-    @DependsOnMethod("testParseUnknownCRS")
     public void testParseProjected() throws ParseException {
         final CoordinateFormat format = new CoordinateFormat(Locale.US, null);
         format.setDefaultCRS(HardCodedConversions.mercator());
@@ -170,7 +167,6 @@ public final class CoordinateFormatTest extends TestCase {
      * Tests formatting 4-dimensional geographic coordinates.
      */
     @Test
-    @DependsOnMethod("testFormatUnknownCRS")
     public void testFormatGeographic4D() {
         /*
          * For a 4-dimensional coordinate with a temporal CRS.
@@ -212,7 +208,6 @@ public final class CoordinateFormatTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
-    @DependsOnMethod("testParseUnknownCRS")
     public void testParseGeographic4D() throws ParseException {
         final CoordinateFormat format = new CoordinateFormat(Locale.FRANCE, TimeZone.getTimeZone("GMT+01:00"));
         format.applyPattern(Date.class, "dd-MM-yyyy HH:mm");

@@ -22,7 +22,6 @@ import java.util.Date;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
 import static org.apache.sis.test.TestUtilities.date;
 
 
@@ -33,7 +32,6 @@ import static org.apache.sis.test.TestUtilities.date;
  *
  * @author  Martin Desruisseaux (IRD)
  */
-@DependsOn(RangeTest.class)
 public final class DateRangeTest extends TestCase {
     /**
      * Creates a new test case.

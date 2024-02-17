@@ -20,7 +20,6 @@ import org.apache.sis.io.wkt.Convention;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
@@ -54,7 +53,6 @@ public final class DefaultVerticalCRSTest extends TestCase {
      * Tests WKT 2 formatting.
      */
     @Test
-    @DependsOnMethod("testWKT1")
     public void testWKT2() {
         assertWktEquals(Convention.WKT2,
                 "VERTCRS[“Depth”,\n" +
@@ -69,7 +67,6 @@ public final class DefaultVerticalCRSTest extends TestCase {
      * Tests WKT 2 "simplified" formatting.
      */
     @Test
-    @DependsOnMethod("testWKT2")
     public void testWKT2_Simplified() {
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
                 "VerticalCRS[“Depth”,\n" +

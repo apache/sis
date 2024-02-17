@@ -24,7 +24,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 
 
@@ -34,7 +33,6 @@ import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
  *
  * @author  Michael Hausegger
  */
-@DependsOn(AbstractEnvelopeTest.class)
 public final class ArrayEnvelopeTest extends TestCase {
     /**
      * Creates a new test case.

@@ -42,7 +42,6 @@ import org.apache.sis.geometry.DirectPosition2D;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 
 
@@ -54,13 +53,6 @@ import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
  * @author  Olivier Lhemann (OSDU)
  * @author  Michael Arneson (OSDU)
  */
-@DependsOn({
-    org.apache.sis.referencing.CRSTest.class,
-    org.apache.sis.referencing.CommonCRSTest.class,
-    org.apache.sis.referencing.datum.DefaultEllipsoidTest.class,
-    org.apache.sis.referencing.operation.DefaultCoordinateOperationFactoryTest.class,
-    org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransformTest.class
-})
 public final class CoordinateOperationTest extends MathTransformTestCase {
     /**
      * The transformation factory to use for testing.

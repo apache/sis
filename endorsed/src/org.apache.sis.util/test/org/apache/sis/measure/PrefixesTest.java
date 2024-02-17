@@ -23,8 +23,6 @@ import org.apache.sis.util.ArraysExt;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 
 
 /**
@@ -32,7 +30,6 @@ import org.apache.sis.test.DependsOnMethod;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(LinearConverterTest.class)
 public final class PrefixesTest extends TestCase {
     /**
      * Creates a new test case.
@@ -67,7 +64,6 @@ public final class PrefixesTest extends TestCase {
      * @throws ReflectiveOperationException if this test cannot access the private fields of {@link LinearConverter}.
      */
     @Test
-    @DependsOnMethod("testConverter")
     public void verifySymbolList() throws ReflectiveOperationException {
         Field f = Prefixes.class.getDeclaredField("ENUM");
         f.setAccessible(true);

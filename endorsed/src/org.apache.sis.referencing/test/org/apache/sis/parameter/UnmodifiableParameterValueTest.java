@@ -24,8 +24,6 @@ import org.apache.sis.util.ComparisonMode;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.TestUtilities.date;
 
@@ -35,7 +33,6 @@ import static org.apache.sis.test.TestUtilities.date;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(DefaultParameterValueTest.class)
 public final class UnmodifiableParameterValueTest extends TestCase {
     /**
      * Creates a new test case.
@@ -91,7 +88,6 @@ public final class UnmodifiableParameterValueTest extends TestCase {
      * Verifies that {@link UnmodifiableParameterValue#getValue()} can clone the value.
      */
     @Test
-    @DependsOnMethod("testCreate")
     public void testGetValue() {
         final ParameterValue<Date> modifiable = DefaultParameterDescriptorTest
                 .createSimpleOptional("Time reference", Date.class).createValue();

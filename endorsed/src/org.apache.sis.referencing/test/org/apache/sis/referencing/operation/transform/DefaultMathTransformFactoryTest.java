@@ -46,8 +46,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Disabled;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.test.Assertions.assertMessageContains;
@@ -62,10 +60,6 @@ import static org.opengis.test.Assertions.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    org.apache.sis.referencing.operation.provider.ProvidersTest.class,
-    OperationMethodSetTest.class
-})
 public final class DefaultMathTransformFactoryTest extends TestCase {
     /**
      * Creates a new test case.
@@ -139,7 +133,6 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
      * Tests non-existent operation method.
      */
     @Test
-    @DependsOnMethod("testGetOperationMethod")
     public void testNonExistentCode() {
         final DefaultMathTransformFactory factory = factory();
         var e = assertThrows(NoSuchIdentifierException.class, () -> factory.getOperationMethod("EPXX:9624"));
@@ -152,7 +145,6 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
      * @throws NoSuchIdentifierException if the operation was not found.
      */
     @Test
-    @DependsOnMethod("testGetOperationMethod")
     public void testGetAvailableMethods() throws NoSuchIdentifierException {
         final DefaultMathTransformFactory factory = factory();
         final Set<OperationMethod> transforms  = factory.getAvailableMethods(SingleOperation.class);

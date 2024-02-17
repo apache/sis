@@ -29,8 +29,6 @@ import org.apache.sis.measure.Units;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.test.Assertions.assertMessageContains;
@@ -44,10 +42,6 @@ import static org.apache.sis.referencing.Assertions.assertEpsgIdentifierEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn({
-    DirectionAlongMeridianTest.class,
-    AbstractCSTest.class
-})
 public final class DefaultCartesianCSTest extends TestCase {
     /**
      * Creates a new test case.
@@ -189,7 +183,6 @@ public final class DefaultCartesianCSTest extends TestCase {
      * {@link AxesConvention#DISPLAY_ORIENTED}.
      */
     @Test
-    @DependsOnMethod("testConstructor")
     public void testConventionalOrientation() {
         // -------------------------------- Axes to test ------ Expected axes --
         assertConventionallyOrientedEquals("East", "North",    "East", "North");

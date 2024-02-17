@@ -26,7 +26,6 @@ import org.apache.sis.parameter.Parameters;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.apache.sis.test.DependsOn;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.FactoryException;
@@ -41,7 +40,6 @@ import org.opengis.test.ToleranceModifier;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Emmanuel Giasson (Thales)
  */
-@DependsOn(MercatorTest.class)
 public final class ObliqueMercatorTest extends MapProjectionTestCase {
     /**
      * Creates a new test case.

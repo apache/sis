@@ -35,8 +35,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
@@ -53,10 +51,6 @@ import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-303">SIS-303</a>
  */
-@DependsOn({
-    org.apache.sis.referencing.CRSTest.class,
-    org.apache.sis.referencing.internal.ServicesForMetadataTest.class
-})
 public final class EllipsoidalHeightCombinerTest extends TestCase {
     /**
      * Creates a new test case.
@@ -125,7 +119,6 @@ public final class EllipsoidalHeightCombinerTest extends TestCase {
      * @throws FactoryException if a CRS cannot be created.
      */
     @Test
-    @DependsOnMethod("testGeographicCRS")
     public void testProjectedCRS() throws FactoryException {
         final EllipsoidalHeightCombiner services = create();
         final var factory = GeodeticObjectFactory.provider();

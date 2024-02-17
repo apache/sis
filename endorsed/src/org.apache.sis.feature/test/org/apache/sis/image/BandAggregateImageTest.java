@@ -36,7 +36,6 @@ import org.apache.sis.util.ArraysExt;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOnMethod;
 
 
 /**
@@ -91,7 +90,6 @@ public final class BandAggregateImageTest extends TestCase {
      * Sample values should not be copied unless forced to.
      */
     @Test
-    @DependsOnMethod("testForcedCopy")
     public void testUntiledImages() {
         final int width  = 3;
         final int height = 4;
@@ -156,7 +154,6 @@ public final class BandAggregateImageTest extends TestCase {
      * Bands may be copied or referenced, depending on the sample models.
      */
     @Test
-    @DependsOnMethod("testUntiledImages")
     public void testSimilarlyTiledImages() {
         do {
             testSimilarlyTiledImages(true,  true,  false);
@@ -170,7 +167,6 @@ public final class BandAggregateImageTest extends TestCase {
      * Tests write operations in the aggregation of two tiled images having the same tile matrix.
      */
     @Test
-    @DependsOnMethod("testSimilarlyTiledImages")
     public void testWriteOperation() {
         testSimilarlyTiledImages(true, true, WRITABLE);
         // Other modes are not supported by `TiledImageMock`.
@@ -304,7 +300,6 @@ public final class BandAggregateImageTest extends TestCase {
      * A copy of sample values cannot be avoided in this case.
      */
     @Test
-    @DependsOnMethod("testSimilarlyTiledImages")
     public void testImagesUsingSameExtentButDifferentTileSizes() {
         final int minX   = 3;
         final int minY   = 1;
@@ -353,7 +348,6 @@ public final class BandAggregateImageTest extends TestCase {
      * A copy of sample values cannot be avoided in this case, except on the second image.
      */
     @Test
-    @DependsOnMethod("testImagesUsingSameExtentButDifferentTileSizes")
     public void testImagesUsingDifferentExtentsAndDifferentTiling() {
         testHeterogeneous(false);
     }
@@ -362,7 +356,6 @@ public final class BandAggregateImageTest extends TestCase {
      * Tests {@link BandAggregateImage#prefetch(Rectangle)}.
      */
     @Test
-    @DependsOnMethod("testImagesUsingDifferentExtentsAndDifferentTiling")
     public void testPrefetch() {
         testHeterogeneous(true);
     }

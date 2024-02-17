@@ -40,7 +40,6 @@ import org.apache.sis.storage.DataStoreException;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.dataset.TestData;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -50,7 +49,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(VariableTest.class)
 public class FeatureSetTest extends TestCase {
     /**
      * Type of the features read from the netCDF file.

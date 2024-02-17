@@ -33,8 +33,6 @@ import org.apache.sis.parameter.Parameters;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -42,7 +40,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(NormalizedProjectionTest.class)
 public final class PolarStereographicTest extends MapProjectionTestCase {
     /**
      * Creates a new test case.
@@ -85,7 +82,6 @@ public final class PolarStereographicTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a coordinate.
      */
     @Test
-    @DependsOnMethod("testSphericalCaseSouth")
     public void testSphericalCaseNorth() throws FactoryException, TransformException {
         createNormalizedProjection(new PolarStereographicNorth());
         final double delta = toRadians(100.0 / 60) / 1852;                // Approximately 100 metres.
@@ -194,7 +190,6 @@ public final class PolarStereographicTest extends MapProjectionTestCase {
      * @throws TransformException if an error occurred while projecting a coordinate.
      */
     @Test
-    @DependsOnMethod({"testSphericalCaseSouth", "testSphericalCaseNorth"})
     public void compareEllipticalWithSpherical() throws FactoryException, TransformException {
         compareEllipticalWithSpherical(CoordinateDomain.GEOGRAPHIC_SOUTH_POLE, -90,  17326686);
         compareEllipticalWithSpherical(CoordinateDomain.GEOGRAPHIC_NORTH_POLE, +90, 970559366);

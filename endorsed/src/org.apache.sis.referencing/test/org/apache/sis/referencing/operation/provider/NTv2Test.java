@@ -44,7 +44,6 @@ import org.apache.sis.system.DataDirectory;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.referencing.operation.gridded.LoadedGridTest;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -60,7 +59,6 @@ import static org.opengis.test.Assertions.assertMatrixEquals;
  * @see GeocentricTranslationTest#testFranceGeocentricInterpolationPoint()
  * @see org.apache.sis.referencing.operation.transform.MolodenskyTransformTest#testFranceGeocentricInterpolationPoint()
  */
-@DependsOn(LoadedGridTest.class)
 public final class NTv2Test extends DatumShiftTestCase {
     /**
      * Name of the file containing a small extract of the "{@code NTF_R93.gsb}" file.

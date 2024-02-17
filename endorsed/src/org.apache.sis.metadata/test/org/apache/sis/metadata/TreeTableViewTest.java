@@ -34,8 +34,6 @@ import org.apache.sis.xml.NilReason;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 import static org.apache.sis.test.TestUtilities.toTreeStructure;
@@ -48,7 +46,6 @@ import static org.apache.sis.test.TestUtilities.formatMetadata;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(TreeNodeTest.class)
 public final class TreeTableViewTest extends TestCase {
     /**
      * Creates a new test case.
@@ -196,7 +193,6 @@ public final class TreeTableViewTest extends TestCase {
      * @throws Exception if an error occurred during the serialization process.
      */
     @Test
-    @DependsOnMethod("testToString")
     public void testSerialization() throws Exception {
         final Object original = create(ValueExistencePolicy.COMPACT);
         final Object deserialized;

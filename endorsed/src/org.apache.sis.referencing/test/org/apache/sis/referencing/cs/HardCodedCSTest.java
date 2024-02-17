@@ -21,7 +21,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
 import static org.apache.sis.referencing.cs.HardCodedCS.*;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -31,10 +30,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn({
-    DefaultCartesianCSTest.class,
-    DefaultEllipsoidalCSTest.class
-})
 public final class HardCodedCSTest extends TestCase {
     /**
      * Creates a new test case.

@@ -23,8 +23,6 @@ import java.util.Random;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestConfiguration;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 import static org.apache.sis.test.TestUtilities.waitForGarbageCollection;
@@ -36,7 +34,6 @@ import static org.apache.sis.test.TestUtilities.waitForGarbageCollection;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn(org.apache.sis.util.ArraysExtTest.class)
 public final class WeakHashSetTest extends TestCase {
     /**
      * The size of the test sets to be created.
@@ -102,7 +99,6 @@ public final class WeakHashSetTest extends TestCase {
      * @throws InterruptedException if the test has been interrupted.
      */
     @Test
-    @DependsOnMethod("testStrongReferences")
     public void testWeakReferences() throws InterruptedException {
         final var random = new Random();
         for (int pass=0; pass<NUM_RETRY; pass++) {
@@ -174,7 +170,6 @@ public final class WeakHashSetTest extends TestCase {
      * Tests with array elements.
      */
     @Test
-    @DependsOnMethod("testStrongReferences")
     public void testWithArrayElements() {
         final WeakHashSet<int[]> weakSet = new WeakHashSet<>(int[].class);
         final int[] array = new int[] {2, 5, 3};

@@ -33,8 +33,6 @@ import org.apache.sis.geometry.GeneralDirectPosition;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.TestCase.STRICT;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -46,7 +44,6 @@ import static org.opengis.test.Assertions.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(org.apache.sis.referencing.operation.matrix.MatricesTest.class)
 public final class MathTransformsTest extends TestCase {
     /**
      * Creates a new test case.
@@ -186,7 +183,6 @@ public final class MathTransformsTest extends TestCase {
      * @throws TransformException should never happen since this test uses a linear transform.
      */
     @Test
-    @DependsOnMethod("testGetMatrix")
     public void testTangentOfLinear() throws TransformException {
         /*
          * The random values in Matrix and DirectPosition below does not matter; we will just verify
@@ -217,7 +213,6 @@ public final class MathTransformsTest extends TestCase {
      * @throws TransformException if an error occurred while computing the derivative.
      */
     @Test
-    @DependsOnMethod("testTangentOfLinear")
     public void testTangent() throws TransformException {
         final DirectPosition pos = new GeneralDirectPosition(3, 1.5, 6);
         MathTransform tr = MathTransforms.linear(new Matrix4(

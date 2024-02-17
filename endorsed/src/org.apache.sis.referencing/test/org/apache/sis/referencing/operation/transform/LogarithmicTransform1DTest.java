@@ -23,8 +23,6 @@ import org.opengis.referencing.operation.TransformException;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.referencing.Assertions.assertIsNotIdentity;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -37,7 +35,6 @@ import org.opengis.test.ToleranceModifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(ExponentialTransform1DTest.class)
 public final class LogarithmicTransform1DTest extends MathTransformTestCase {
     /**
      * Arbitrary parameter of the logarithmic transform to be tested.
@@ -151,7 +148,6 @@ public final class LogarithmicTransform1DTest extends MathTransformTestCase {
      * @throws TransformException should never happen.
      */
     @Test
-    @DependsOnMethod("testSingle")
     public void testSingleWithOffset() throws TransformException {
         testSingle( 10, 0.25, LogarithmicTransform1D.class);         // Logarithmic transform in base 10
         testSingle(  E, 0.25, ConcatenatedTransformDirect1D.class);  // Logarithmic transform in base E
@@ -164,7 +160,6 @@ public final class LogarithmicTransform1DTest extends MathTransformTestCase {
      * @throws TransformException should never happen.
      */
     @Test
-    @DependsOnMethod("testSingleWithOffset")
     public void testAffinePreConcatenation() throws TransformException {
         testAffinePreConcatenation(10);   // Affine + logarithmic transform in base 10
         testAffinePreConcatenation(E);    // Affine + logarithmic transform in base E
@@ -177,7 +172,6 @@ public final class LogarithmicTransform1DTest extends MathTransformTestCase {
      * @throws TransformException should never happen.
      */
     @Test
-    @DependsOnMethod("testSingleWithOffset")
     public void testAffinePostConcatenation() throws TransformException {
         testAffinePostConcatenation(10);    // Logarithmic transform in base 10  + affine
         testAffinePostConcatenation(E);     // Logarithmic transform in base E   + affine
@@ -190,10 +184,6 @@ public final class LogarithmicTransform1DTest extends MathTransformTestCase {
      * @throws TransformException should never happen.
      */
     @Test
-    @DependsOnMethod({
-        "testAffinePreConcatenation",
-        "testAffinePostConcatenation"
-    })
     public void testAffineConcatenations() throws TransformException {
         testAffineConcatenations(10);   // Affine + logarithmic transform in base 10  + affine
         testAffineConcatenations(E);    // Affine + logarithmic transform in base E   + affine
@@ -206,7 +196,6 @@ public final class LogarithmicTransform1DTest extends MathTransformTestCase {
      * @throws TransformException should never happen.
      */
     @Test
-    @DependsOnMethod("testSingleWithOffset")
     public void testLogarithmicConcatenation() throws TransformException {
         transform = MathTransforms.concatenate(
                 LogarithmicTransform1D.create(8, C0),

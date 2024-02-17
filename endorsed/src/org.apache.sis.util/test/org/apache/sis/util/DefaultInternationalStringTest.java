@@ -23,7 +23,6 @@ import org.opengis.util.InternationalString;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
@@ -102,7 +101,6 @@ public final class DefaultInternationalStringTest extends TestCase {
      * Tests the {@link java.util.Formattable} interface implementation.
      */
     @Test
-    @DependsOnMethod("testEnglishAndFrench")
     public void testFormattable() {
         final DefaultInternationalString toTest = new DefaultInternationalString(MESSAGE);
         toTest.add(Locale.ENGLISH,       MESSAGE_en);

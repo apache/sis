@@ -21,7 +21,6 @@ import java.util.Map;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -30,10 +29,6 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    AbstractOperationTest.class,
-    DenseFeatureTest.class
-})
 public final class LinkOperationTest extends TestCase {
     /**
      * Creates a new test case.

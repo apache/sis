@@ -27,8 +27,6 @@ import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 
@@ -39,7 +37,6 @@ import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({CommonAuthorityFactoryTest.class, AuthorityFactoryProxyTest.class})
 public final class IdentifiedObjectFinderTest extends TestCase {
     /**
      * The factory to use for the test.
@@ -97,7 +94,6 @@ public final class IdentifiedObjectFinderTest extends TestCase {
      * @throws FactoryException if the creation of a CRS failed.
      */
     @Test
-    @DependsOnMethod("testFindSingleton")
     public void testFindOnCachingInstance() throws FactoryException {
         factory = new Cached(factory);
         testFindSingleton();

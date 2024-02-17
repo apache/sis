@@ -16,9 +16,6 @@
  */
 package org.apache.sis.feature;
 
-// Test dependencies
-import org.apache.sis.test.DependsOn;
-
 
 /**
  * Tests {@link SparseFeature}.
@@ -26,11 +23,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    DefaultFeatureTypeTest.class,
-    SingletonAttributeTest.class,
-    PropertySingletonTest.class
-})
 public final class SparseFeatureTest extends FeatureTestCase {
     /**
      * Creates a new test case.

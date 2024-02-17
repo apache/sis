@@ -42,8 +42,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.opengis.test.Validators;
 import org.apache.sis.test.LoggingWatcher;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.xml.test.TestCase;
 import org.apache.sis.referencing.cs.HardCodedCS;
@@ -59,10 +57,6 @@ import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    DefaultGeographicCRSTest.class,
-    org.apache.sis.referencing.operation.DefaultConversionTest.class
-})
 public final class DefaultProjectedCRSTest extends TestCase {
     /**
      * Creates a new test case.
@@ -154,7 +148,6 @@ public final class DefaultProjectedCRSTest extends TestCase {
      * @throws FactoryException if the CRS creation failed.
      */
     @Test
-    @DependsOnMethod("testConstructor")
     public void testWKT1() throws FactoryException {
         final ProjectedCRS crs = create(HardCodedCRS.NTF);
         assertWktEquals(Convention.WKT1,
@@ -185,7 +178,6 @@ public final class DefaultProjectedCRSTest extends TestCase {
      * @throws FactoryException if the CRS creation failed.
      */
     @Test
-    @DependsOnMethod("testWKT1")
     public void testWKT1_WithCommonUnits() throws FactoryException {
         final ProjectedCRS crs = create(HardCodedCRS.NTF);
         assertWktEquals(Convention.WKT1_COMMON_UNITS,
@@ -218,7 +210,6 @@ public final class DefaultProjectedCRSTest extends TestCase {
      * @throws FactoryException if the CRS creation failed.
      */
     @Test
-    @DependsOnMethod("testWKT1_WithCommonUnits")
     public void testWKT1_WithMixedUnits() throws FactoryException {
         final ProjectedCRS crs = create(HardCodedCRS.NTF_NORMALIZED_AXES);
         Validators.validate(crs);   // Opportunist check.
@@ -251,7 +242,6 @@ public final class DefaultProjectedCRSTest extends TestCase {
      * @throws FactoryException if the CRS creation failed.
      */
     @Test
-    @DependsOnMethod("testWKT1")
     public void testInternal() throws FactoryException {
         ProjectedCRS crs = create(HardCodedCRS.NTF);
         assertWktEquals(Convention.INTERNAL,
@@ -287,7 +277,6 @@ public final class DefaultProjectedCRSTest extends TestCase {
      * @throws FactoryException if the CRS creation failed.
      */
     @Test
-    @DependsOnMethod("testWKT1")
     public void testWKT2_Simplified() throws FactoryException {
         ProjectedCRS crs = create(HardCodedCRS.NTF);
         assertWktEquals(Convention.WKT2_SIMPLIFIED,
@@ -344,7 +333,6 @@ public final class DefaultProjectedCRSTest extends TestCase {
      * @throws FactoryException if the CRS creation failed.
      */
     @Test
-    @DependsOnMethod("testWKT1")
     public void testWKT2_WithMixedUnits() throws FactoryException {
         final ProjectedCRS crs = create(HardCodedCRS.NTF_NORMALIZED_AXES);
         assertWktEquals(Convention.WKT2,
@@ -399,7 +387,6 @@ public final class DefaultProjectedCRSTest extends TestCase {
      * @throws FactoryException if the CRS creation failed.
      */
     @Test
-    @DependsOnMethod("testWKT1")
     public void testWKT1_WithExplicitAxisLength() throws FactoryException {
         final ProjectedCRS crs = new GeodeticObjectBuilder()
                 .setConversionMethod("Mercator (variant A)")
@@ -442,7 +429,6 @@ public final class DefaultProjectedCRSTest extends TestCase {
      * @throws FactoryException if the CRS creation failed.
      */
     @Test
-    @DependsOnMethod("testWKT2_Simplified")
     public void testWKT2_ForEquirectangular() throws FactoryException {
         final ProjectedCRS crs = new GeodeticObjectBuilder()
                 .setConversionMethod("Equirectangular")

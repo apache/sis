@@ -26,7 +26,6 @@ import org.apache.sis.math.MathFunctions;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -34,10 +33,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-@DependsOn({
-    RangeTest.class,
-    org.apache.sis.util.NumbersTest.class
-})
 public final class NumberRangeTest extends TestCase {
     /**
      * Creates a new test case.

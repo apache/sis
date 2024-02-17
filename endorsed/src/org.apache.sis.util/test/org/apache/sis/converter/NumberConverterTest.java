@@ -25,7 +25,6 @@ import org.apache.sis.util.UnconvertibleObjectException;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -36,7 +35,6 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(SystemRegistryTest.class)
 @SuppressWarnings("UnnecessaryBoxing")
 public final class NumberConverterTest extends TestCase {
     /**

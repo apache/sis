@@ -36,8 +36,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 
@@ -50,10 +48,6 @@ import static org.opengis.test.Assertions.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    PassThroughTransformTest.class,
-    ConcatenatedTransformTest.class
-})
 public final class TransformSeparatorTest extends TestCase {
     /**
      * Creates a new test case.
@@ -282,7 +276,6 @@ public final class TransformSeparatorTest extends TestCase {
      * @throws FactoryException if an error occurred while creating a new transform.
      */
     @Test
-    @DependsOnMethod("testLinearTransform")
     public void testConcatenatedTransform() throws FactoryException {
         final MathTransformFactory factory = DefaultMathTransformFactory.provider();
         final TransformSeparator s = new TransformSeparator(EllipsoidToCentricTransform.createGeodeticConversion(
@@ -304,7 +297,6 @@ public final class TransformSeparatorTest extends TestCase {
      * @throws TransformException if an error occurred while transforming coordinates for comparison purpose.
      */
     @Test
-    @DependsOnMethod("testLinearTransform")
     public void testPassThroughTransform() throws FactoryException, TransformException {
         /*
          * This non-linear transform increase the number of dimensions from 2 to 3.
@@ -419,7 +411,6 @@ public final class TransformSeparatorTest extends TestCase {
      * @throws TransformException if an error occurred while transforming coordinates for comparison purpose.
      */
     @Test
-    @DependsOnMethod({"testConcatenatedTransform", "testPassThroughTransform"})
     public void testConcatenatedPassThroughTransform() throws FactoryException, TransformException {
         final MathTransform linear       = MathTransforms.scale(4, 1, 1, 1, 1, 6);
         final MathTransform nonLinear    = new PseudoTransform(3, 2);
@@ -456,7 +447,6 @@ public final class TransformSeparatorTest extends TestCase {
      * @throws TransformException if an error occurred while transforming coordinates for comparison purpose.
      */
     @Test
-    @DependsOnMethod("testConcatenatedPassThroughTransform")
     public void testNestedPassThroughTransform() throws FactoryException, TransformException {
         final MathTransform nonLinear    = new PseudoTransform(3, 2);
         final MathTransform passthrough1 = MathTransforms.passThrough(2, nonLinear, 1);
@@ -489,7 +479,6 @@ public final class TransformSeparatorTest extends TestCase {
      * @throws FactoryException if an error occurred while creating a new transform.
      */
     @Test
-    @DependsOnMethod("testLinearTransform")
     public void testTrimSourceDimensions() throws FactoryException {
         MathTransform tr = MathTransforms.linear(Matrices.create(3, 4, new double[] {
             0,   0.5, 0,  -90,

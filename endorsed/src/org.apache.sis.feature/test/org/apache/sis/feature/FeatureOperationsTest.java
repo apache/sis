@@ -30,8 +30,6 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.test.Assertions.assertSetEquals;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
@@ -48,7 +46,6 @@ import org.opengis.feature.PropertyType;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({LinkOperationTest.class, EnvelopeOperationTest.class})
 public final class FeatureOperationsTest extends TestCase {
     /**
      * Creates a new test case.
@@ -160,7 +157,6 @@ public final class FeatureOperationsTest extends TestCase {
      * @throws FactoryException if an error occurred while searching for the coordinate operations.
      */
     @Test
-    @DependsOnMethod("testConstruction")
     public void testDenseFeature() throws FactoryException {
         run(new DenseFeature(school(1)));
     }
@@ -171,7 +167,6 @@ public final class FeatureOperationsTest extends TestCase {
      * @throws FactoryException if an error occurred while searching for the coordinate operations.
      */
     @Test
-    @DependsOnMethod("testConstruction")
     public void testSparseFeature() throws FactoryException {
         run(new SparseFeature(school(2)));
     }

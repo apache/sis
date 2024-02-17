@@ -32,7 +32,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestCase;
 
@@ -157,7 +156,6 @@ public final class StatisticsCalculatorTest extends TestCase {
      * created by {@link #createImage()}, which produces a visible effect on minimum and maximum values.
      */
     @Test
-    @DependsOnMethod("testFilterNodataValues")
     public void testWithSampleFilters() {
         final ImageProcessor operations = new ImageProcessor();
         sampleFilters = new DoubleUnaryOperator[] {

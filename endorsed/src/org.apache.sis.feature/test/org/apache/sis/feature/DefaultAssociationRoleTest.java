@@ -25,8 +25,6 @@ import static org.apache.sis.feature.DefaultAssociationRole.NAME_KEY;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
@@ -41,7 +39,6 @@ import org.opengis.feature.FeatureType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(DefaultFeatureTypeTest.class)
 public final class DefaultAssociationRoleTest extends TestCase {
     /**
      * Creates a new test case.
@@ -150,7 +147,6 @@ public final class DefaultAssociationRoleTest extends TestCase {
      * loop if the implementation does not have proper guard against infinite recursivity.
      */
     @Test
-    @DependsOnMethod("testBidirectionalAssociation")
     public void testCyclicAssociation() {
         final NameFactory factory = DefaultNameFactory.provider();
         final GenericName nameOfA = factory.createTypeName(null, "A");

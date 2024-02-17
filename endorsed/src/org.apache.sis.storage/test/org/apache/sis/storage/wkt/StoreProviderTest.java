@@ -24,7 +24,6 @@ import org.apache.sis.storage.ProbeResult;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -33,7 +32,6 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(org.apache.sis.storage.StorageConnectorTest.class)
 public final class StoreProviderTest extends TestCase {
     /**
      * Creates a new test case.

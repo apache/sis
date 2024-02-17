@@ -64,8 +64,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.test.Assertions.assertMessageContains;
@@ -82,12 +80,6 @@ import org.opengis.test.Assertions;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    DefaultConversionTest.class,
-    DefaultTransformationTest.class,
-    DefaultPassThroughOperationTest.class,
-    DefaultConcatenatedOperationTest.class
-})
 public final class CoordinateOperationFinderTest extends MathTransformTestCase {
     /**
      * The transformation factory to use for testing.
@@ -210,7 +202,6 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
-    @DependsOnMethod("testIdentityTransform")
     public void testGeocentricTranslationInGeographic2D() throws ParseException, FactoryException, TransformException {
         /*
          * NAD27 (EPSG:4267) defined in WKT instead of relying on the CommonCRS.NAD27 constant in order to fix
@@ -242,7 +233,6 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
-    @DependsOnMethod("testGeocentricTranslationInGeographic2D")
     public void testGeocentricTranslationInGeographic3D() throws ParseException, FactoryException, TransformException {
         final GeographicCRS sourceCRS = (GeographicCRS) parse(
                 "GeodeticCRS[“NAD27”,\n" +
@@ -321,7 +311,6 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
-    @DependsOnMethod("testGeocentricTranslationInGeographic2D")
     public void testLongitudeRotation() throws ParseException, FactoryException, TransformException {
         final CoordinateReferenceSystem sourceCRS = parse(
                 "GeodeticCRS[“NTF (Paris)”, $NTF,\n" +
@@ -367,7 +356,6 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
-    @DependsOnMethod("testLongitudeRotation")
     public void testGeocentricTranslationInGeocentricDomain() throws ParseException, FactoryException, TransformException {
         final CoordinateReferenceSystem sourceCRS = parse(
                 "GeodeticCRS[“NTF (Paris)”, $NTF,\n" +
@@ -447,7 +435,6 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
-    @DependsOnMethod("testIdentityTransform")
     public void testGeographicToProjected() throws ParseException, FactoryException, TransformException {
         final CoordinateReferenceSystem sourceCRS = parse("$Sphere");
         final CoordinateReferenceSystem targetCRS = parse(
@@ -502,7 +489,6 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-364">SIS-364</a>
      */
     @Test
-    @DependsOnMethod("testGeographicToProjected")
     public void testPositionVectorTransformation() throws ParseException, FactoryException, TransformException {
         final CoordinateReferenceSystem sourceCRS = CommonCRS.WGS84.geographic();
         final CoordinateReferenceSystem targetCRS = parse(AGD66());
@@ -628,7 +614,6 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      * @throws FactoryException if an exception other than the expected one occurred.
      */
     @Test
-    @DependsOnMethod("testIdentityTransform")
     public void testIncompatibleVerticalCRS() throws FactoryException {
         final VerticalCRS sourceCRS = CommonCRS.Vertical.NAVD88.crs();
         final VerticalCRS targetCRS = CommonCRS.Vertical.MEAN_SEA_LEVEL.crs();
@@ -645,7 +630,6 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
-    @DependsOnMethod("testIdentityTransform")
     public void testTemporalConversion() throws FactoryException, TransformException {
         final TemporalCRS sourceCRS = CommonCRS.Temporal.UNIX.crs();
         final TemporalCRS targetCRS = CommonCRS.Temporal.MODIFIED_JULIAN.crs();
@@ -683,7 +667,6 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
-    @DependsOnMethod("testGeographic3D_to_2D")
     public void testGeographic4D_to_2D() throws FactoryException, TransformException {
         // NOTE: make sure that the 'sourceCRS' below is not equal to any other 'sourceCRS' created in this class.
         final CompoundCRS   sourceCRS = compound("Test4D", CommonCRS.WGS84.geographic3D(), CommonCRS.Temporal.UNIX.crs());
@@ -720,7 +703,6 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
-    @DependsOnMethod("testIdentityTransform")
     public void testGeographic3D_to_2D() throws FactoryException, TransformException {
         final GeographicCRS sourceCRS = CommonCRS.WGS84.geographic3D();
         final GeographicCRS targetCRS = CommonCRS.WGS84.geographic();
@@ -762,7 +744,6 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
-    @DependsOnMethod("testGeographic3D_to_2D")
     public void testGeographic2D_to_3D() throws FactoryException, TransformException {
         final GeographicCRS sourceCRS = CommonCRS.WGS84.geographic();
         final GeographicCRS targetCRS = CommonCRS.WGS84.geographic3D();
@@ -805,7 +786,6 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
-    @DependsOnMethod("testIdentityTransform")
     public void testGeographic3D_to_EllipsoidalHeight() throws FactoryException, TransformException {
         final CoordinateReferenceSystem sourceCRS = CommonCRS.WGS84.geographic3D();
         final CoordinateReferenceSystem targetCRS = HardCodedCRS.ELLIPSOIDAL_HEIGHT_cm;
@@ -843,7 +823,6 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
-    @DependsOnMethod("testGeographic3D_to_EllipsoidalHeight")
     public void testGeographic4D_to_EllipsoidalHeight() throws FactoryException, TransformException {
         // NOTE: make sure that the 'sourceCRS' below is not equal to any other 'sourceCRS' created in this class.
         final CompoundCRS sourceCRS = compound("Test4D", CommonCRS.WGS84.geographic3D(), CommonCRS.Temporal.JULIAN.crs());
@@ -898,7 +877,6 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
-    @DependsOnMethod("testTemporalConversion")
     public void testProjected4D_to_2D() throws ParseException, FactoryException, TransformException {
         final CoordinateReferenceSystem targetCRS = parse(
                 "ProjectedCRS[“WGS 84 / World Mercator”,\n" +
@@ -955,7 +933,6 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
-    @DependsOnMethod("testTemporalConversion")
     public void testGeographic3D_to_4D() throws FactoryException, TransformException {
         // NOTE: make sure that the 'sourceCRS' below is not equal to any other 'sourceCRS' created in this class.
         final CompoundCRS sourceCRS = compound("Test3D", CommonCRS.WGS84.geographic(),   CommonCRS.Temporal.UNIX.crs());
@@ -994,7 +971,6 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      * @throws TransformException if an error occurred while converting the test points.
      */
     @Test
-    @DependsOnMethod("testProjected4D_to_2D")
     public void testSpatioTemporalToDerived() throws FactoryException, TransformException {
         final Map<String,Object> properties = new HashMap<>();
         properties.put(DerivedCRS.NAME_KEY, "Display");

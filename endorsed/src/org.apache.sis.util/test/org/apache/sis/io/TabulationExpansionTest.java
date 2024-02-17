@@ -21,7 +21,6 @@ import java.io.IOException;
 // Test dependencies
 import org.junit.jupiter.api.BeforeEach;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 
 
 /**
@@ -31,7 +30,6 @@ import org.apache.sis.test.DependsOn;
  *
  * @see LineAppender#setTabulationExpanded(boolean)
  */
-@DependsOn(LineAppenderTest.class)
 public final class TabulationExpansionTest extends LineAppenderTest {
     /**
      * Creates a new test case.

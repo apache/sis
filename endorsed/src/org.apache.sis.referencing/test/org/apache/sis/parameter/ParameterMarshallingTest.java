@@ -42,8 +42,6 @@ import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.opengis.test.Validators;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
@@ -56,10 +54,6 @@ import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierE
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    DefaultParameterValueTest.class,
-    DefaultParameterValueGroupTest.class
-})
 public final class ParameterMarshallingTest extends TestCase {
     /**
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
@@ -192,7 +186,6 @@ public final class ParameterMarshallingTest extends TestCase {
      * @throws JAXBException if an error occurred during marshalling or unmarshalling.
      */
     @Test
-    @DependsOnMethod("testDescriptor")
     public void testStringValue() throws JAXBException {
         final DefaultParameterValue<String> parameter = create(String.class, null);
         parameter.setValue("A string value");
@@ -214,7 +207,6 @@ public final class ParameterMarshallingTest extends TestCase {
      * @throws URISyntaxException should never happen.
      */
     @Test
-    @DependsOnMethod("testStringValue")
     public void testURIValue() throws JAXBException, URISyntaxException {
         final DefaultParameterValue<URI> parameter = create(URI.class, null);
         parameter.setValue(new URI("http://www.opengis.org"));
@@ -235,7 +227,6 @@ public final class ParameterMarshallingTest extends TestCase {
      * @throws JAXBException if an error occurred during marshalling or unmarshalling.
      */
     @Test
-    @DependsOnMethod("testStringValue")
     public void testBooleanValue() throws JAXBException {
         final DefaultParameterValue<Boolean> parameter = create(Boolean.class, null);
         parameter.setValue(Boolean.TRUE);
@@ -256,7 +247,6 @@ public final class ParameterMarshallingTest extends TestCase {
      * @throws JAXBException if an error occurred during marshalling or unmarshalling.
      */
     @Test
-    @DependsOnMethod("testStringValue")
     public void testIntegerValue() throws JAXBException {
         final DefaultParameterValue<Integer> parameter = create(Integer.class, null);
         parameter.setValue(2000);
@@ -277,7 +267,6 @@ public final class ParameterMarshallingTest extends TestCase {
      * @throws JAXBException if an error occurred during marshalling or unmarshalling.
      */
     @Test
-    @DependsOnMethod("testStringValue")
     public void testIntegerValueList() throws JAXBException {
         final DefaultParameterValue<int[]> parameter = create(int[].class, null);
         parameter.setValue(new int[] {101, 105, 208});
@@ -298,7 +287,6 @@ public final class ParameterMarshallingTest extends TestCase {
      * @throws JAXBException if an error occurred during marshalling or unmarshalling.
      */
     @Test
-    @DependsOnMethod("testStringValue")
     public void testDoubleValue() throws JAXBException {
         final DefaultParameterValue<Double> parameter = create(Double.class,
                 new MeasurementRange<>(Double.class, null, false, null, false, Units.METRE));
@@ -320,7 +308,6 @@ public final class ParameterMarshallingTest extends TestCase {
      * @throws JAXBException if an error occurred during marshalling or unmarshalling.
      */
     @Test
-    @DependsOnMethod("testStringValue")
     public void testValueList() throws JAXBException {
         final DefaultParameterValue<double[]> parameter = create(double[].class,
                 new MeasurementRange<>(Double.class, null, false, null, false, Units.METRE));
@@ -342,7 +329,6 @@ public final class ParameterMarshallingTest extends TestCase {
      * @throws JAXBException if an error occurred during marshalling or unmarshalling.
      */
     @Test
-    @DependsOnMethod("testDoubleValue")
     public void testDescriptorGroup() throws JAXBException {
         // Test marshalling.
         assertMarshalEqualsFile(TestFile.DESCRIPTOR.openTestFile(),
@@ -421,7 +407,6 @@ public final class ParameterMarshallingTest extends TestCase {
      * @throws JAXBException if an error occurred during marshalling.
      */
     @Test
-    @DependsOnMethod("testDescriptorGroup")
     public void testValueGroupMmarshalling() throws JAXBException {
         assertMarshalEqualsFile(TestFile.VALUE.openTestFile(),
                 ParameterFormatTest.createMercatorParameters().createValue(),
@@ -435,7 +420,6 @@ public final class ParameterMarshallingTest extends TestCase {
      * @throws JAXBException if an error occurred during unmarshalling.
      */
     @Test
-    @DependsOnMethod("testDescriptorGroup")
     public void testValueGroupUnmarshalling() throws JAXBException {
         testValueGroupUnmarshalling(TestFile.VALUE);
     }
@@ -448,7 +432,6 @@ public final class ParameterMarshallingTest extends TestCase {
      * @throws JAXBException if an error occurred during unmarshalling.
      */
     @Test
-    @DependsOnMethod("testValueGroupUnmarshalling")
     public void testDuplicatedParametersUnmarshalling() throws JAXBException {
         testValueGroupUnmarshalling(TestFile.DUPLICATED);
         loggings.assertNextLogContains("EPSG::8801");

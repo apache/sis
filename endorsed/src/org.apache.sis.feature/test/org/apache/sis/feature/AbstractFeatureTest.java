@@ -22,7 +22,6 @@ import java.util.Collection;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.AttributeType;
@@ -40,10 +39,6 @@ import org.opengis.feature.PropertyType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    DenseFeatureTest.class,
-    SparseFeatureTest.class
-})
 public final class AbstractFeatureTest extends FeatureTestCase {
     /**
      * Creates a new test case.

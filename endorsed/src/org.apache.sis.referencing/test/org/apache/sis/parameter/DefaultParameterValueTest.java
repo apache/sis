@@ -31,8 +31,6 @@ import org.apache.sis.measure.Units;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.opengis.test.Validators.validate;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
@@ -45,7 +43,6 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
 @SuppressWarnings("UnnecessaryBoxing")
-@DependsOn(DefaultParameterDescriptorTest.class)
 public final class DefaultParameterValueTest extends TestCase {
     /**
      * Small tolerance factor for floating point comparisons resulting from some calculation.
@@ -174,7 +171,6 @@ public final class DefaultParameterValueTest extends TestCase {
      * This method tests also the usage of values of the wrong type.
      */
     @Test
-    @DependsOnMethod("testInteger")
     public void testBoundedInteger() {
         final Watcher<Integer> parameter = new Watcher<>(
                 DefaultParameterDescriptorTest.create("Bounded param", -30, +40, 15));
@@ -272,7 +268,6 @@ public final class DefaultParameterValueTest extends TestCase {
      * inside and outside that range. Tests also the usage of values of the wrong type.
      */
     @Test
-    @DependsOnMethod("testMeasure")
     public void testBoundedDouble() {
         final Watcher<Double> parameter = new Watcher<>(
                 DefaultParameterDescriptorTest.create("Bounded param", -30.0, +40.0, 15.0, null));
@@ -304,7 +299,6 @@ public final class DefaultParameterValueTest extends TestCase {
      * Tests a floating point parameter with a unit of measurement bounded by a minimum and maximum values.
      */
     @Test
-    @DependsOnMethod({"testMeasure", "testBoundedDouble"})
     public void testBoundedMeasure() {
         final Watcher<Double> parameter = new Watcher<>(
                 DefaultParameterDescriptorTest.create("Length measure", 4, 20, 12, Units.METRE));
@@ -434,7 +428,6 @@ public final class DefaultParameterValueTest extends TestCase {
      * Tests also unit conversions (degrees to radians in this case).
      */
     @Test
-    @DependsOnMethod({"testBoundedInteger", "testBoundedDouble"})
     public void testMany() {
         DefaultParameterValue<? extends Number> p;
         ParameterDescriptor<? extends Number> d;
@@ -539,7 +532,6 @@ public final class DefaultParameterValueTest extends TestCase {
      * the formatter should convert them to a formattable unit like degrees.
      */
     @Test
-    @DependsOnMethod("testWKT")
     public void testWKT_withUnformattableUnit() {
         final Unit<?> degreesAndMinutes = Units.valueOfEPSG(9111);
         DefaultParameterValue<Double> p = create("Angle", 10.3, degreesAndMinutes);
@@ -557,7 +549,6 @@ public final class DefaultParameterValueTest extends TestCase {
      * Tests WKT formatting of a parameter having an identifier.
      */
     @Test
-    @DependsOnMethod("testWKT")
     public void testIdentifiedParameterWKT() {
         final Watcher<Double> parameter = new Watcher<>(DefaultParameterDescriptorTest.createEPSG("A0", Constants.EPSG_A0));
         assertWktEquals(Convention.WKT2, "PARAMETER[“A0”, null, ID[“EPSG”, 8623]]", parameter);

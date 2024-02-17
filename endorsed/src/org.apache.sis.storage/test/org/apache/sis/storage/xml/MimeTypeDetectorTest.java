@@ -28,7 +28,6 @@ import org.apache.sis.metadata.xml.TestUsingFile;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.metadata.iso.extent.DefaultExtentTest;
-import org.apache.sis.test.DependsOnMethod;
 
 
 /**
@@ -98,7 +97,6 @@ public final class MimeTypeDetectorTest extends TestUsingFile {
      * @throws IOException if an error occurred while reading the bytes or characters.
      */
     @Test
-    @DependsOnMethod("testGMDFromString")
     public void testGMDFromInputStream() throws IOException {
         final String type;
         try (InputStream in = DefaultExtentTest.openTestFile(Format.XML2007)) {

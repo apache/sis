@@ -19,7 +19,6 @@ package org.apache.sis.util;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 
@@ -29,7 +28,6 @@ import static org.apache.sis.test.Assertions.assertMessageContains;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(org.apache.sis.util.resources.IndexedResourceBundleTest.class)
 public final class ArgumentChecksTest extends TestCase {
     /**
      * Creates a new test case.

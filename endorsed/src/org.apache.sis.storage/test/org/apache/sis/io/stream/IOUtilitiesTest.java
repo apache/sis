@@ -26,7 +26,6 @@ import java.io.IOException;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
 
@@ -70,7 +69,6 @@ public final class IOUtilitiesTest extends TestCase {
      * @throws MalformedURLException if a URL cannot be parsed.
      */
     @Test
-    @DependsOnMethod("testFilename")
     public void testExtension() throws URISyntaxException, MalformedURLException {
         final URI uri = new URI ("file:/Users/name/Map.png");
         assertEquals("png", IOUtilities.extension(         "/Users/name/Map.png"));
@@ -91,7 +89,6 @@ public final class IOUtilitiesTest extends TestCase {
      * @throws MalformedURLException if a URL cannot be parsed.
      */
     @Test
-    @DependsOnMethod({"testFilename", "testExtension"})
     public void testWithOpaqueURI() throws URISyntaxException, MalformedURLException {
         final URI uri = new URI("jar:file:/sis-storage-tests.jar!/org/apache/sis/Any.xml");
         assertTrue(uri.isOpaque()); // This test would be useless if this condition is false.
@@ -161,7 +158,6 @@ public final class IOUtilitiesTest extends TestCase {
      * @throws IOException if a URL cannot be parsed.
      */
     @Test
-    @DependsOnMethod("testToFileFromUTF8")
     public void testToFileOrURL() throws IOException {
         // Absolute file paths
         File expected = new File("/Users/name/Map.png");

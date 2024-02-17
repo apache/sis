@@ -37,7 +37,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
@@ -52,7 +51,6 @@ import org.opengis.feature.Feature;
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-411">SIS-411</a>
  */
-@DependsOn(WriterTest.class)
 public final class UpdaterTest extends TestCase {
     /**
      * The provider shared by all data stores created in this test class.

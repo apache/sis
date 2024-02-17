@@ -27,7 +27,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestCase;
 
 
@@ -107,7 +106,6 @@ public final class TransformerTest extends TestCase {
      * @throws DataStoreException if an error occurred while reading a data file.
      */
     @Test
-    @DependsOnMethod("testIdentity")
     public void test3D_to_2D() throws FactoryException, DataStoreException {
         final double[][] points = {
             new double[] {30,  20,  4},

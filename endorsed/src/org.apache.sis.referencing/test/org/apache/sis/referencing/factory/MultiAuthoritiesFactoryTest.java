@@ -44,8 +44,6 @@ import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.apache.sis.test.LoggingWatcher;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
@@ -59,7 +57,6 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(AuthorityFactoryProxyTest.class)
 public final class MultiAuthoritiesFactoryTest extends TestCase {
     /**
      * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
@@ -163,7 +160,6 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
      * @throws NoSuchAuthorityFactoryException if an authority is not recognized.
      */
     @Test
-    @DependsOnMethod("testGetAuthorityFactory")
     public void testConflict() throws NoSuchAuthorityFactoryException {
         final var mock1 = new AuthorityFactoryMock("MOCK1", "2.3");
         final var mock2 = new AuthorityFactoryMock("MOCK1", "2.3");
@@ -198,7 +194,6 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
      * @throws FactoryException if an authority or a code is not recognized.
      */
     @Test
-    @DependsOnMethod("testGetAuthorityFactory")
     public void testCreateFromSimpleCodes() throws FactoryException {
         final Set<AuthorityFactoryMock> mock = Set.of(new AuthorityFactoryMock("MOCK", "2.3"));
         final var factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
@@ -226,7 +221,6 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
      * @throws FactoryException if an authority or a code is not recognized.
      */
     @Test
-    @DependsOnMethod("testCreateFromSimpleCodes")
     public void testCreateFromURNs() throws FactoryException {
         final Set<AuthorityFactoryMock> mock = Set.of(new AuthorityFactoryMock("MOCK", "2.3"));
         final var factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
@@ -252,7 +246,6 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
      * @throws FactoryException if an authority or a code is not recognized.
      */
     @Test
-    @DependsOnMethod("testCreateFromURNs")
     public void testCreateFromHTTPs() throws FactoryException {
         final Set<AuthorityFactoryMock> mock = Set.of(new AuthorityFactoryMock("MOCK", "2.3"));
         final var factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
@@ -275,7 +268,6 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
      * @throws FactoryException if an authority or a code is not recognized.
      */
     @Test
-    @DependsOnMethod("testCreateFromURNs")
     public void testCreateFromCombinedURNs() throws FactoryException {
         final Set<AuthorityFactoryMock> mock = Set.of(new AuthorityFactoryMock("MOCK", "2.3"));
         final var factory = new MultiAuthoritiesFactory(mock, mock, mock, null);
@@ -309,7 +301,6 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
      * @throws FactoryException if an authority or a code is not recognized.
      */
     @Test
-    @DependsOnMethod("testCreateFromHTTPs")
     public void testCreateFromCombinedHTTPs() throws FactoryException {
         final Set<AuthorityFactoryMock> mock = Set.of(new AuthorityFactoryMock("MOCK", "2.3"));
         final var factory = new MultiAuthoritiesFactory(mock, mock, mock, null);

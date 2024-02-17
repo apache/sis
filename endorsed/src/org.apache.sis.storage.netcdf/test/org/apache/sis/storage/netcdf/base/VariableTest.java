@@ -29,7 +29,6 @@ import org.apache.sis.measure.Units;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOn;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.dataset.TestData;
@@ -43,7 +42,6 @@ import org.opengis.test.dataset.TestData;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(DecoderTest.class)
 public class VariableTest extends TestCase {
     /**
      * Expected number of columns per variables for the {@code expected} argument

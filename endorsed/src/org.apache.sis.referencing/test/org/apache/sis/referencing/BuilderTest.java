@@ -33,8 +33,6 @@ import org.apache.sis.util.iso.DefaultNameFactory;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -43,7 +41,6 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(AbstractIdentifiedObjectTest.class)
 public final class BuilderTest extends TestCase {
     /**
      * Creates a new test case.
@@ -155,7 +152,6 @@ public final class BuilderTest extends TestCase {
      * Tests {@link Builder#addName(Citation, CharSequence)} and {@link Builder#addName(CharSequence)} with codespace.
      */
     @Test
-    @DependsOnMethod({"testAddName", "testSetCodeSpace"})
     public void testAddNameWithScope() {
         final NameFactory factory = DefaultNameFactory.provider();
 
@@ -205,7 +201,6 @@ public final class BuilderTest extends TestCase {
      * Tests {@link Builder#addNamesAndIdentifiers(IdentifiedObject)}.
      */
     @Test
-    @DependsOnMethod({"testAddNameWithScope", "testAddIdentifiers"})
     public void testAddNamesAndIdentifiers() {
         final BuilderMock builder = createMercator(true, true);
         final var object = new AbstractIdentifiedObject(builder.properties);
@@ -238,7 +233,6 @@ public final class BuilderTest extends TestCase {
      * Tests {@link Builder#rename(Citation, CharSequence[])}.
      */
     @Test
-    @DependsOnMethod("testAddNamesAndIdentifiers")
     public void testRename() {
         final BuilderMock builder = createMercator(true, false);
 

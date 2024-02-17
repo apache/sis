@@ -26,7 +26,6 @@ import org.apache.sis.measure.Units;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import org.opengis.test.referencing.TransformTestCase;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.referencing.cs.HardCodedCS;
 
 
@@ -35,7 +34,6 @@ import org.apache.sis.referencing.cs.HardCodedCS;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(AffineTest.class)
 public final class GeographicOffsetsTest extends TransformTestCase {
     /**
      * Creates a new test case.

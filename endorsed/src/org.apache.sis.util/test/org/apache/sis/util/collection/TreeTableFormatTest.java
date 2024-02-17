@@ -27,8 +27,6 @@ import static org.apache.sis.util.collection.TableColumn.*;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.DependsOn;
-import org.apache.sis.test.DependsOnMethod;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
 
@@ -37,10 +35,6 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn({
-    DefaultTreeTableTest.class,
-    org.apache.sis.io.TableAppenderTest.class
-})
 public final class TreeTableFormatTest extends TestCase {
     /**
      * Creates a new test case.
@@ -76,7 +70,6 @@ public final class TreeTableFormatTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
-    @DependsOnMethod("testTreeFormat")
     public void testTreeParse() throws ParseException {
         final TreeTableFormat tf = new TreeTableFormat(null, null);
         tf.setVerticalLinePosition(0);
@@ -93,7 +86,6 @@ public final class TreeTableFormatTest extends TestCase {
      * Tests the formatting of a tree table.
      */
     @Test
-    @DependsOnMethod("testTreeFormat")
     public void testTreeTableFormat() {
         final TableColumn<Integer> valueA = new TableColumn<>(Integer.class, "value #1");
         final TableColumn<String>  valueB = new TableColumn<>(String .class, "value #2");
@@ -147,7 +139,6 @@ public final class TreeTableFormatTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
-    @DependsOnMethod("testTreeTableFormat")
     public void testTreeTableParse() throws ParseException {
         final TableColumn<Integer> valueA = new TableColumn<>(Integer.class, "value #1");
         final TableColumn<String>  valueB = new TableColumn<>(String .class, "value #2");
@@ -169,7 +160,6 @@ public final class TreeTableFormatTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
-    @DependsOnMethod("testTreeTableParse")
     public void testAlternativeColumnSeparatorPattern() throws ParseException {
         final TableColumn<Integer> valueA = new TableColumn<>(Integer.class, "value #1");
         final TableColumn<String>  valueB = new TableColumn<>(String .class, "value #2");
@@ -211,7 +201,6 @@ public final class TreeTableFormatTest extends TestCase {
      * Those types shall be handled in a special way.
      */
     @Test
-    @DependsOnMethod("testTreeTableFormat")
     public void testLocalizedFormat() {
         final Locale locale = Locale.getDefault();
         try {

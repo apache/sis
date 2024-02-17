@@ -48,7 +48,6 @@ import org.apache.sis.metadata.xml.TestUsingFile;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
@@ -235,7 +234,6 @@ public final class DefaultCitationTest extends TestUsingFile {
      * @throws JAXBException if an error occurred during marshalling.
      */
     @Test
-    @DependsOnMethod("testMarshalling")
     public void testMarshallingLegacy() throws JAXBException {
         testMarshalling(Format.XML2007);
     }
@@ -286,7 +284,6 @@ public final class DefaultCitationTest extends TestUsingFile {
      * @throws JAXBException if an error occurred during unmarshalling.
      */
     @Test
-    @DependsOnMethod("testUnmarshalling")
     public void testUnmarshallingLegacy() throws JAXBException {
         testUnmarshalling(Format.XML2007);
     }

@@ -21,8 +21,6 @@ import org.apache.sis.util.CharSequences;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -31,7 +29,6 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(CommandRunnerTest.class)
 public final class CRSCommandTest extends TestCase {
     /**
      * The Well Known Text for EPSG:4326 as a regular expression.
@@ -85,7 +82,6 @@ public final class CRSCommandTest extends TestCase {
      * @throws Exception if an error occurred while creating the command.
      */
     @Test
-    @DependsOnMethod("testCode")
     public void testURN() throws Exception {
         var test = new CRSCommand(0, new String[] {CommandRunner.TEST, "urn:ogc:def:crs:epsg::4326"});
         test.run();
@@ -99,7 +95,6 @@ public final class CRSCommandTest extends TestCase {
      * @throws Exception if an error occurred while creating the command.
      */
     @Test
-    @DependsOnMethod("testURN")
     public void testHTTP() throws Exception {
         var test = new CRSCommand(0, new String[] {CommandRunner.TEST, "http://www.opengis.net/gml/srs/epsg.xml#4326"});
         test.run();

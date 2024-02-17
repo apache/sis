@@ -25,7 +25,6 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.referencing.cs.HardCodedAxes;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 
 
@@ -34,7 +33,6 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(org.apache.sis.referencing.cs.AbstractCSTest.class)
 public final class AbstractCRSTest extends TestCase {
     /**
      * Creates a new test case.

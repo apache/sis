@@ -33,8 +33,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.DependsOnMethod;
-import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
@@ -44,7 +42,6 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@DependsOn(ParameterBuilderTest.class)
 public final class ParameterFormatTest extends TestCase {
     /**
      * The parameter descriptors used for all tests in this class.
@@ -150,7 +147,6 @@ public final class ParameterFormatTest extends TestCase {
      * </ul>
      */
     @Test
-    @DependsOnMethod("testFormatBriefDescriptors")
     public void testFormatBriefValues() {
         final ParameterFormat format = new ParameterFormat(null, null);
         format.setContentLevel(ParameterFormat.ContentLevel.BRIEF);
@@ -172,7 +168,6 @@ public final class ParameterFormatTest extends TestCase {
      * Tests formatting in a non-English locale.
      */
     @Test
-    @DependsOnMethod("testFormatBriefValues")
     public void testFormatLocalized() {
         final ParameterFormat format = new ParameterFormat(Locale.FRANCE, null);
         format.setContentLevel(ParameterFormat.ContentLevel.BRIEF);
@@ -290,7 +285,6 @@ public final class ParameterFormatTest extends TestCase {
      * Tests the effect of {@link ParameterFormat#setPreferredCodespaces(String[])}.
      */
     @Test
-    @DependsOnMethod({"testFormatNameSummary", "testFormatBriefValues"})
     public void testPreferredCodespaces() {
         final ParameterFormat format = new ParameterFormat(null, null);
         format.setContentLevel(ParameterFormat.ContentLevel.NAME_SUMMARY);
@@ -337,7 +331,6 @@ public final class ParameterFormatTest extends TestCase {
      * but SIS can handle arbitrary ranges ([0 … 2] in this test).
      */
     @Test
-    @DependsOnMethod("testFormatBriefDescriptors")
     public void testExtendedCardinality() {
         final ParameterFormat format = new ParameterFormat(null, null);
         format.setContentLevel(ParameterFormat.ContentLevel.BRIEF);
@@ -361,7 +354,6 @@ public final class ParameterFormatTest extends TestCase {
      * but SIS can handle arbitrary number of occurrences (2 in this test).
      */
     @Test
-    @DependsOnMethod("testExtendedCardinality")
     public void testMultiOccurrence() {
         final ParameterValueGroup group = DefaultParameterDescriptorGroupTest.M1_M1_O1_O2.createValue();
         group.parameter("Mandatory 2").setValue(20);
