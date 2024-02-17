@@ -68,8 +68,8 @@ public final class DataIdentificationTest extends TestCase {
                 "</fra:FRA_DataIdentification>";
 
         final DataIdentification id = unmarshal(DataIdentification.class, xml);
-        assertTitleEquals("citation", "Main documentation.", id.getCitation());
-        assertTitleEquals("relatedCitations", "Related documentation.", getSingleton(id.getRelatedCitations()));
+        assertTitleEquals("Main documentation.", id.getCitation(), "citation");
+        assertTitleEquals("Related documentation.", getSingleton(id.getRelatedCitations()), "relatedCitations");
 
         final String actual = marshal(id, VERSION_2007);
         assertXmlEquals(xml, actual, "xmlns:*");

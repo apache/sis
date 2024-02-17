@@ -63,16 +63,18 @@ public final class Geographic3Dto2DTest extends TestCase {
          * This conversion from grad to degrees is specific to Apache SIS and may be revised in
          * future version. See org.apache.sis.referencing.operation package javadoc.
          */
-        assertInstanceOf(LinearTransform.class, mt, "Shall be an affine transform.");
-        assertMatrixEquals("Expected a Geographic 3D to 2D conversion.", Matrices.create(3, 4, new double[] {
-                1, 0, 0, 0,
-                0, 1, 0, 0,
-                0, 0, 0, 1}), ((LinearTransform) mt).getMatrix(), STRICT);
-        assertMatrixEquals("Expected a Geographic 2D to 3D conversion.", Matrices.create(4, 3, new double[] {
-                1, 0, 0,
-                0, 1, 0,
-                0, 0, 0,
-                0, 0, 1}), ((LinearTransform) mt.inverse()).getMatrix(), STRICT);
+        final var linear = assertInstanceOf(LinearTransform.class, mt, "Shall be an affine transform.");
+        assertMatrixEquals(Matrices.create(3, 4, new double[] {
+                    1, 0, 0, 0,
+                    0, 1, 0, 0,
+                    0, 0, 0, 1
+                }), linear.getMatrix(), STRICT, "Expected a Geographic 3D to 2D conversion.");
+        assertMatrixEquals(Matrices.create(4, 3, new double[] {
+                    1, 0, 0,
+                    0, 1, 0,
+                    0, 0, 0,
+                    0, 0, 1
+                }), linear.inverse().getMatrix(), STRICT, "Expected a Geographic 2D to 3D conversion.");
     }
 
     /**

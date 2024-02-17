@@ -110,10 +110,12 @@ public final class EllipsoidalHeightCombinerTest extends TestCase {
         final Object[] components = CRS.getSingleComponents(compound).toArray();
         assertEquals(2, components.length);
         assertEqualsIgnoreMetadata(temporal, components[0]);
-        assertInstanceOf(GeographicCRS.class, components[1], "Shall be a three-dimensional geographic CRS.");
-        assertAxisDirectionsEqual("Shall be a three-dimensional geographic CRS.",
-                ((CoordinateReferenceSystem) components[1]).getCoordinateSystem(),
-                AxisDirection.UP, AxisDirection.NORTH, AxisDirection.EAST);
+
+        final String message = "Shall be a three-dimensional geographic CRS.";
+        var c = assertInstanceOf(GeographicCRS.class, components[1], message);
+        assertAxisDirectionsEqual(c.getCoordinateSystem(), new AxisDirection[] {
+                    AxisDirection.UP, AxisDirection.NORTH, AxisDirection.EAST
+                }, message);
     }
 
     /**
@@ -155,10 +157,12 @@ public final class EllipsoidalHeightCombinerTest extends TestCase {
         final Object[] components = CRS.getSingleComponents(compound).toArray();
         assertEquals(2, components.length);
         assertEqualsIgnoreMetadata(temporal, components[0]);
-        assertInstanceOf(ProjectedCRS.class, components[1], "Shall be a three-dimensional projected CRS.");
-        assertAxisDirectionsEqual("Shall be a three-dimensional projected CRS.",
-                ((CoordinateReferenceSystem) components[1]).getCoordinateSystem(),
-                AxisDirection.UP, AxisDirection.EAST, AxisDirection.NORTH);
+
+        final String message = "Shall be a three-dimensional projected CRS.";
+        var c = assertInstanceOf(ProjectedCRS.class, components[1], message);
+        assertAxisDirectionsEqual(c.getCoordinateSystem(), new AxisDirection[] {
+                    AxisDirection.UP, AxisDirection.EAST, AxisDirection.NORTH
+                }, message);
     }
 
     /**

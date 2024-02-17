@@ -170,7 +170,8 @@ public final class DefaultDataIdentificationTest extends TestCase {
         final DefaultDataIdentification info = create();
         final Map<String,Object> map = info.asMap();
         assertEquals("Global 5.0 x 2.5 degree model data", map.get("abstract").toString());
-        assertTitleEquals("title", "Sea Surface Temperature Analysis Model", (Citation) map.get("citation"));
+        assertTitleEquals("Sea Surface Temperature Analysis Model",
+                assertInstanceOf(Citation.class, map.get("citation")), "citation");
         assertEquals(Set.of(SpatialRepresentationType.GRID), map.get("spatialRepresentationType"));
 
         final Locale[] locales = {Locale.US, Locale.FRENCH};

@@ -141,7 +141,7 @@ public final class EPSGFactoryTest extends TestCase {
         final GeographicCRS crs = factory.createGeographicCRS("EPSG:4326");
         assertEpsgNameAndIdentifierEqual("WGS 84", 4326, crs);
         assertEpsgNameAndIdentifierEqual("World Geodetic System 1984", 6326, crs.getDatum());
-        assertAxisDirectionsEqual("EPSG:6422", crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
 
         final BursaWolfParameters[] bwp = ((DefaultGeodeticDatum) crs.getDatum()).getBursaWolfParameters();
         assertEquals(0, bwp.length, "Expected no Bursa-Wolf parameters.");
@@ -163,7 +163,7 @@ public final class EPSGFactoryTest extends TestCase {
         final GeographicCRS crs = factory.createGeographicCRS("4274");
         assertEpsgNameAndIdentifierEqual("Datum 73", 4274, crs);
         assertEpsgNameAndIdentifierEqual("Datum 73", 6274, crs.getDatum());
-        assertAxisDirectionsEqual("EPSG::6422", crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
 
         final BursaWolfParameters[] bwp = ((DefaultGeodeticDatum) crs.getDatum()).getBursaWolfParameters();
         assertTrue(bwp.length >= 1, "Expected a transformation to WGS84.");
@@ -184,8 +184,7 @@ public final class EPSGFactoryTest extends TestCase {
         final GeographicCRS crs = factory.createGeographicCRS("EPSG::4993");
         assertEpsgNameAndIdentifierEqual("Lao 1997", 4993, crs);
         assertEpsgNameAndIdentifierEqual("Lao National Datum 1997", 6678, crs.getDatum());
-        assertAxisDirectionsEqual("EPSG::6423", crs.getCoordinateSystem(),
-                AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
 
         assertSame(crs, factory.createCoordinateReferenceSystem("4993"), "CRS shall be cached.");
     }
@@ -202,8 +201,7 @@ public final class EPSGFactoryTest extends TestCase {
         final GeocentricCRS crs = factory.createGeocentricCRS("epsg:4915");
         assertEpsgNameAndIdentifierEqual("ITRF93", 4915, crs);
         assertEpsgNameAndIdentifierEqual("International Terrestrial Reference Frame 1993", 6652, crs.getDatum());
-        assertAxisDirectionsEqual("EPSG::6500", crs.getCoordinateSystem(),
-                AxisDirection.GEOCENTRIC_X, AxisDirection.GEOCENTRIC_Y, AxisDirection.GEOCENTRIC_Z);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.GEOCENTRIC_X, AxisDirection.GEOCENTRIC_Y, AxisDirection.GEOCENTRIC_Z);
 
         assertSame(crs, factory.createCoordinateReferenceSystem("4915"), "CRS shall be cached.");
     }
@@ -224,7 +222,7 @@ public final class EPSGFactoryTest extends TestCase {
         assertEpsgNameAndIdentifierEqual("North American Datum 1927 (1976)", 6608, crs.getDatum());
         assertEpsgNameAndIdentifierEqual("Transverse Mercator", 9807, crs.getConversionFromBase().getMethod());
         assertEpsgNameAndIdentifierEqual("UTM zone 15N", 16015, crs.getConversionFromBase());
-        assertAxisDirectionsEqual("EPSG::4400", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
         verifyTransverseMercatorParmeters(crs.getConversionFromBase().getParameterValues(), -93);
 
         assertSame(crs, factory.createCoordinateReferenceSystem("2027"), "CRS shall be cached.");
@@ -263,7 +261,7 @@ public final class EPSGFactoryTest extends TestCase {
         assertEpsgNameAndIdentifierEqual("Beijing 1954", 6214, crs.getDatum());
         assertEpsgNameAndIdentifierEqual("Transverse Mercator", 9807, crs.getConversionFromBase().getMethod());
         assertEpsgNameAndIdentifierEqual("Gauss-Kruger CM 135E", 16323, crs.getConversionFromBase());
-        assertAxisDirectionsEqual("EPSG::4530", crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
 
         final ParameterValueGroup parameters = crs.getConversionFromBase().getParameterValues();
         assertEquals("Transverse Mercator", parameters.getDescriptor().getName().getCode());
@@ -295,7 +293,7 @@ public final class EPSGFactoryTest extends TestCase {
         assertEpsgNameAndIdentifierEqual("World Geodetic System 1972", 6322, crs.getDatum());
         assertEpsgNameAndIdentifierEqual("Transverse Mercator", 9807, crs.getConversionFromBase().getMethod());
         assertEpsgNameAndIdentifierEqual("UTM zone 10N", 16010, crs.getConversionFromBase());
-        assertAxisDirectionsEqual("EPSG::4400", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
         verifyTransverseMercatorParmeters(crs.getConversionFromBase().getParameterValues(), -123);
 
         final ProjectedCRS variant = factory.createProjectedCRS("32410");
@@ -331,7 +329,7 @@ public final class EPSGFactoryTest extends TestCase {
         assertEpsgNameAndIdentifierEqual("NTF (Paris)", 4807, crs.getBaseCRS());
         assertEpsgNameAndIdentifierEqual("Lambert Conic Conformal (1SP)", 9801, crs.getConversionFromBase().getMethod());
         assertEpsgNameAndIdentifierEqual("Lambert zone I", 18081, crs.getConversionFromBase());
-        assertAxisDirectionsEqual("EPSG::4499", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
         assertSame(crs, factory.createProjectedCRS("27571"));
         /*
          * Gets the CRS using 'createObject'. It will require more SQL
@@ -379,7 +377,7 @@ public final class EPSGFactoryTest extends TestCase {
         assertEpsgNameAndIdentifierEqual("WGS 84", 4326, crs.getBaseCRS());
         assertEpsgNameAndIdentifierEqual("Popular Visualisation Pseudo Mercator", 1024, crs.getConversionFromBase().getMethod());
         assertEpsgNameAndIdentifierEqual("Popular Visualisation Pseudo-Mercator", 3856, crs.getConversionFromBase());
-        assertAxisDirectionsEqual("EPSG::4499", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
 
         assertSame(crs, factory.createCoordinateReferenceSystem("3857"), "CRS shall be cached.");
     }
@@ -396,7 +394,7 @@ public final class EPSGFactoryTest extends TestCase {
         final EngineeringCRS crs = factory.createEngineeringCRS("EPSG:5801");
         assertEpsgNameAndIdentifierEqual("Barcelona Grid B1", 5801, crs);
         assertEpsgNameAndIdentifierEqual("Barcelona", 9301, crs.getDatum());
-        assertAxisDirectionsEqual("EPSG::4500", crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
         assertSame(crs, factory.createCoordinateReferenceSystem("5801"), "CRS shall be cached.");
     }
 
@@ -413,7 +411,7 @@ public final class EPSGFactoryTest extends TestCase {
         assertEpsgNameAndIdentifierEqual("Black Sea height", 5735, crs);
         assertEpsgNameAndIdentifierEqual("Black Sea", 5134, crs.getDatum());
         assertSame(crs, factory.createCoordinateReferenceSystem("5735"), "CRS shall be cached.");
-        assertAxisDirectionsEqual("EPSG::6499", crs.getCoordinateSystem(), AxisDirection.UP);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.UP);
     }
 
     /**
@@ -435,7 +433,7 @@ public final class EPSGFactoryTest extends TestCase {
         assertEpsgNameAndIdentifierEqual("NTF (Paris)",      4807, components.get(0));
         assertEpsgNameAndIdentifierEqual("NGF-IGN69 height", 5720, components.get(1));
 
-        assertAxisDirectionsEqual("(no EPSG code)", crs.getCoordinateSystem(),
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(),
                 AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
 
         final GeographicBoundingBox bbox = CRS.getGeographicBoundingBox(crs);
@@ -503,7 +501,7 @@ public final class EPSGFactoryTest extends TestCase {
 
         final GeographicCRS crs = factory.createGeographicCRS("63266405");
         assertEpsgNameAndIdentifierEqual("WGS 84 (deg)", 63266405, crs);
-        assertAxisDirectionsEqual(null, crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
         assertSame(crs, factory.createCoordinateReferenceSystem("63266405"), "CRS shall be cached.");
 
         loggings.skipNextLogIfContains("EPSG:6405");                 // Coordinate System 6405 is no longer supported by EPSG
@@ -526,7 +524,7 @@ public final class EPSGFactoryTest extends TestCase {
         final ProjectedCRS crs = factory.createProjectedCRS("3786");
         assertEpsgNameAndIdentifierEqual("World Equidistant Cylindrical (Sphere)", 3786, crs);
         assertEpsgNameAndIdentifierEqual("Equidistant Cylindrical (Spherical)", 9823, crs.getConversionFromBase().getMethod());
-        assertAxisDirectionsEqual("EPSG::4499", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
 
         loggings.assertNextLogContains("EPSG:9823",  "1029");    // Operation method 9823 has been replaced by 1029
         loggings.assertNextLogContains("EPSG:19968", "4086");    // Coordinate Operation 19968 has been replaced by 4086

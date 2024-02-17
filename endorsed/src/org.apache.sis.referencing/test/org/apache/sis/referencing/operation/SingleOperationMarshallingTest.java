@@ -156,7 +156,7 @@ public final class SingleOperationMarshallingTest extends TestCase {
      * Verifies the unmarshalled parameter descriptors.
      */
     private static void verifyMethod(final OperationMethod method) {
-        assertIdentifierEquals("name", null, null, null, "Mercator (1SP)", method.getName());
+        assertIdentifierEquals(null, null, null, "Mercator (1SP)", method.getName(), "name");
         assertEquals("See EPSG guide.", method.getFormula().getFormula().toString(), "formula");
         final ParameterDescriptorGroup parameters = method.getParameters();
         assertEquals("Mercator (1SP)", parameters.getName().getCode(), "parameters.name");
@@ -278,10 +278,10 @@ public final class SingleOperationMarshallingTest extends TestCase {
         assertEquals("4275", getSingleton(targetCRS.getIdentifiers()).getCode(), "targetCRS.identifier");
 
         final var tr = assertInstanceOf(LinearTransform.class, c.getMathTransform());
-        assertMatrixEquals("mathTransform.matrix",
-                new Matrix3(1, 0, 0,
-                            0, 1, 2.33722917,
-                            0, 0, 1), tr.getMatrix(), STRICT);
+        assertMatrixEquals(new Matrix3(1, 0, 0,
+                                       0, 1, 2.33722917,
+                                       0, 0, 1),
+                tr.getMatrix(), STRICT, "mathTransform.matrix");
         /*
          * Validate object, then discard warnings caused by duplicated identifiers.
          * Those duplications are intentional, see comment in `Transformation.xml`.

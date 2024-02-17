@@ -70,6 +70,7 @@ import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSetEquals;
+import static org.apache.sis.test.TestCase.STRICT;
 
 // Specific to the main branch:
 import org.apache.sis.test.GeoapiAssert;
@@ -88,11 +89,6 @@ import org.apache.sis.test.GeoapiAssert;
     DefaultConcatenatedOperationTest.class
 })
 public final class CoordinateOperationFinderTest extends MathTransformTestCase {
-    /**
-     * Tolerance threshold for strict comparisons of floating point numbers.
-     */
-    private static final double STRICT = 0;
-
     /**
      * The transformation factory to use for testing.
      */
@@ -170,8 +166,9 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      * Verifies that the current transform is a linear transform with a matrix equals to the given one.
      */
     private void assertMatrixEquals(final Matrix expected) {
-        GeoapiAssert.assertMatrixEquals("transform.matrix", expected,
-                assertInstanceOf(LinearTransform.class, transform).getMatrix(), STRICT);
+        GeoapiAssert.assertMatrixEquals(expected,
+                assertInstanceOf(LinearTransform.class, transform).getMatrix(),
+                STRICT, "transform.matrix");
     }
 
     /**
@@ -971,16 +968,16 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         assertEquals("CompoundCRS[“Test3D”] ⟶ CompoundCRS[“Test4D”]", operation.getName().getCode());
 
         transform = operation.getMathTransform();
-        assertInstanceOf(LinearTransform.class, transform);
-        assertEquals(3, transform.getSourceDimensions());
-        assertEquals(4, transform.getTargetDimensions());
-        GeoapiAssert.assertMatrixEquals("transform.matrix", Matrices.create(5, 4, new double[] {
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 0, 0,
-            0, 0, 1./(24*60*60), 40587,
-            0, 0, 0, 1
-        }), ((LinearTransform) transform).getMatrix(), 1E-12);
+        final var linear = assertInstanceOf(LinearTransform.class, transform);
+        assertEquals(3, linear.getSourceDimensions());
+        assertEquals(4, linear.getTargetDimensions());
+        GeoapiAssert.assertMatrixEquals(Matrices.create(5, 4, new double[] {
+                    1, 0, 0, 0,
+                    0, 1, 0, 0,
+                    0, 0, 0, 0,
+                    0, 0, 1./(24*60*60), 40587,
+                    0, 0, 0, 1
+                }), linear.getMatrix(), 1E-12, "transform.matrix");
 
         tolerance = 2E-12;
         verifyTransform(new double[] {

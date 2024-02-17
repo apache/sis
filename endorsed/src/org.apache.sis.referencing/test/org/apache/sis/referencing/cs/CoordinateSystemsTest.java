@@ -201,8 +201,8 @@ public final class CoordinateSystemsTest extends TestCase {
                 0, 0, 1});
         assertTrue(swapAndScaleAxes(λφ, λφ).isIdentity());
         assertTrue(swapAndScaleAxes(φλ, φλ).isIdentity());
-        assertMatrixEquals("(λ,φ) → (φ,λ)", expected, swapAndScaleAxes(λφ, φλ), STRICT);
-        assertMatrixEquals("(φ,λ) → (λ,φ)", expected, swapAndScaleAxes(φλ, λφ), STRICT);
+        assertMatrixEquals(expected, swapAndScaleAxes(λφ, φλ), STRICT, "(λ,φ) → (φ,λ)");
+        assertMatrixEquals(expected, swapAndScaleAxes(φλ, λφ), STRICT, "(φ,λ) → (λ,φ)");
     }
 
     /**
@@ -229,8 +229,8 @@ public final class CoordinateSystemsTest extends TestCase {
                 0, 0, 0, 1});
         assertTrue(swapAndScaleAxes(λφh, λφh).isIdentity());
         assertTrue(swapAndScaleAxes(φλh, φλh).isIdentity());
-        assertMatrixEquals("(λ,φ,h) → (φ,λ,h)", expected, swapAndScaleAxes(λφh, φλh), STRICT);
-        assertMatrixEquals("(φ,λ,h) → (λ,φ,h)", expected, swapAndScaleAxes(φλh, λφh), STRICT);
+        assertMatrixEquals(expected, swapAndScaleAxes(λφh, φλh), STRICT, "(λ,φ,h) → (φ,λ,h)");
+        assertMatrixEquals(expected, swapAndScaleAxes(φλh, λφh), STRICT, "(φ,λ,h) → (λ,φ,h)");
     }
 
     /**
@@ -252,17 +252,19 @@ public final class CoordinateSystemsTest extends TestCase {
                 HardCodedAxes.DEPTH);
         assertTrue(swapAndScaleAxes(hxy, hxy).isIdentity());
         assertTrue(swapAndScaleAxes(yxh, yxh).isIdentity());
-        assertMatrixEquals("(h,x,y) → (y,x,h)", Matrices.create(4, 4, new double[] {
-                0,    0,   -1,    0,
-                0,    1,    0,    0,
-               -0.01, 0,    0,    0,
-                0,    0,    0,    1}), swapAndScaleAxes(hxy, yxh), STRICT);
+        assertMatrixEquals(Matrices.create(4, 4, new double[] {
+                    0,    0,   -1,    0,
+                    0,    1,    0,    0,
+                   -0.01, 0,    0,    0,
+                    0,    0,    0,    1
+                }), swapAndScaleAxes(hxy, yxh), STRICT, "(h,x,y) → (y,x,h)");
 
-        assertMatrixEquals("(y,x,h) → (h,x,y)", Matrices.create(4, 4, new double[] {
-                0,    0, -100,    0,
-                0,    1,    0,    0,
-               -1,    0,    0,    0,
-                0,    0,    0,    1}), swapAndScaleAxes(yxh, hxy), STRICT);
+        assertMatrixEquals(Matrices.create(4, 4, new double[] {
+                    0,    0, -100,    0,
+                    0,    1,    0,    0,
+                   -1,    0,    0,    0,
+                    0,    0,    0,    1
+                }), swapAndScaleAxes(yxh, hxy), STRICT, "(y,x,h) → (h,x,y)");
     }
 
     /**
@@ -278,18 +280,18 @@ public final class CoordinateSystemsTest extends TestCase {
                 new DefaultCoordinateSystemAxis(getProperties(HardCodedAxes.EASTING),  "x", AxisDirection.EAST,  Units.MILLIMETRE));
 
         Matrix matrix = swapAndScaleAxes(HardCodedCS.CARTESIAN_2D, cs);
-        assertMatrixEquals("(x,y) → (y,x)", Matrices.create(3, 3, new double[] {
-                0,  -100,    0,
-                1000,  0,    0,
-                0,     0,    1
-        }), matrix, STRICT);
+        assertMatrixEquals(Matrices.create(3, 3, new double[] {
+                    0,  -100,    0,
+                    1000,  0,    0,
+                    0,     0,    1
+                }), matrix, STRICT, "(x,y) → (y,x)");
 
         matrix = swapAndScaleAxes(HardCodedCS.CARTESIAN_3D, cs);
-        assertMatrixEquals("(x,y,z) → (y,x)", Matrices.create(3, 4, new double[] {
-                0,  -100,   0,   0,
-                1000,  0,   0,   0,
-                0,     0,   0,   1
-        }), matrix, STRICT);
+        assertMatrixEquals(Matrices.create(3, 4, new double[] {
+                    0,  -100,   0,   0,
+                    1000,  0,   0,   0,
+                    0,     0,   0,   1
+                }), matrix, STRICT, "(x,y,z) → (y,x)");
     }
 
     /**

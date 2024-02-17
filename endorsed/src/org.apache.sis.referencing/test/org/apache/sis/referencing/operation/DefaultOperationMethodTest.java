@@ -80,7 +80,7 @@ public final class DefaultOperationMethodTest extends TestCase {
          * The parameter group for a Mercator projection is actually not empty, but it is not the purpose of
          * this class to test DefaultParameterDescriptorGroup. So we use an empty group of parameters here.
          */
-        final ParameterDescriptorGroup pg = new DefaultParameterDescriptorGroup(properties, 1, 1, parameters);
+        final var pg = new DefaultParameterDescriptorGroup(properties, 1, 1, parameters);
         /*
          * NAME_KEY share the same Identifier instance for saving a little bit of memory.
          * Then define the other properties to be given to OperationMethod.
@@ -98,7 +98,7 @@ public final class DefaultOperationMethodTest extends TestCase {
     public void testConstruction() {
         final OperationMethod method = create("Mercator (variant A)", "9804", "EPSG guidance note #7-2");
         assertEpsgNameAndIdentifierEqual("Mercator (variant A)", 9804, method);
-        assertTitleEquals("formula", "EPSG guidance note #7-2", method.getFormula().getCitation());
+        assertTitleEquals("EPSG guidance note #7-2", method.getFormula().getCitation(), "formula");
     }
 
     /**

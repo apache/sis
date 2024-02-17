@@ -250,8 +250,8 @@ public final class WKTDictionaryTest extends TestCase {
      */
     private static void verifyCRS(final ProjectedCRS crs, final String name, final double φ0) {
         assertEquals(name, crs.getName().getCode(), "name");
-        assertAxisDirectionsEqual(name, crs.getCoordinateSystem(),
-                                  AxisDirection.EAST, AxisDirection.NORTH);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(),
+                new AxisDirection[] {AxisDirection.EAST, AxisDirection.NORTH}, name);
         assertEquals(φ0, crs.getConversionFromBase().getParameterValues()
                             .parameter("Latitude of natural origin").doubleValue(), "φ0");
     }
@@ -264,8 +264,8 @@ public final class WKTDictionaryTest extends TestCase {
      */
     private static void verifyCRS(final GeographicCRS crs, final String name) {
         assertEquals(name, crs.getName().getCode(), "name");
-        assertAxisDirectionsEqual(name, crs.getCoordinateSystem(),
-                                  AxisDirection.NORTH, AxisDirection.EAST);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(),
+                new AxisDirection[] {AxisDirection.NORTH, AxisDirection.EAST}, name);
     }
 
     /**

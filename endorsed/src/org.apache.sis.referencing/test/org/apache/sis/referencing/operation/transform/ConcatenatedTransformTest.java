@@ -29,6 +29,7 @@ import org.apache.sis.referencing.operation.matrix.Matrix4;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.TestCase.STRICT;
 import org.apache.sis.test.DependsOn;
 
 // Specific to the main branch:
@@ -43,11 +44,6 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  */
 @DependsOn(ProjectiveTransformTest.class)
 public final class ConcatenatedTransformTest extends MathTransformTestCase {
-    /**
-     * Tolerance factor for strict equalities.
-     */
-    private static final double STRICT = 0;
-
     /**
      * Creates a new test case.
      */
@@ -185,10 +181,11 @@ public final class ConcatenatedTransformTest extends MathTransformTestCase {
          * Dropping a dimension is not a problem.
          */
         final MathTransform c = MathTransforms.concatenate(tr1, tr2.inverse());
-        assertMatrixEquals("Forward", Matrices.create(3, 4, new double[] {
-            4, 0, 0, 0,     // scale = 8/2
-            0, 2, 0, 0,     // scale = 6/3
-            0, 0, 0, 1}), MathTransforms.getMatrix(c), STRICT);
+        assertMatrixEquals(Matrices.create(3, 4, new double[] {
+                    4, 0, 0, 0,     // scale = 8/2
+                    0, 2, 0, 0,     // scale = 6/3
+                    0, 0, 0, 1
+                }), MathTransforms.getMatrix(c), STRICT, "Forward");
         /*
          * Following test is the interesting part. By inverting the transform, we ask for a conversion
          * from 2D points to 3D points. Without contextual information we would not know which value to
@@ -196,11 +193,12 @@ public final class ConcatenatedTransformTest extends MathTransformTestCase {
          * this concatenation was built from a transform which was putting value 5 in third dimension,
          * we can complete the matrix as below with value 10 in third dimension.
          */
-        assertMatrixEquals("Inverse", Matrices.create(4, 3, new double[] {
-            0.25, 0,    0,
-            0,    0.5,  0,
-            0,    0,   10,   // Having value 10 instead of NaN is the main purpose of this test.
-            0,    0,    1}), MathTransforms.getMatrix(c.inverse()), STRICT);
+        assertMatrixEquals(Matrices.create(4, 3, new double[] {
+                    0.25, 0,    0,
+                    0,    0.5,  0,
+                    0,    0,   10,   // Having value 10 instead of NaN is the main purpose of this test.
+                    0,    0,    1
+                }), MathTransforms.getMatrix(c.inverse()), STRICT, "Inverse");
     }
 
     /**
@@ -218,6 +216,6 @@ public final class ConcatenatedTransformTest extends MathTransformTestCase {
         final MathTransform tr2 = MathTransforms.linear(new Matrix2(-1, 0, 0, 1));
         final MathTransform c   = MathTransforms.concatenate(tr1, tr2);
         final Matrix m          = ((LinearTransform) c).getMatrix();
-        assertMatrixEquals("Concatenate", new Matrix2(-4.9E-324, 5387, 0, 1), m, STRICT);
+        assertMatrixEquals(new Matrix2(-4.9E-324, 5387, 0, 1), m, STRICT, "Concatenate");
     }
 }

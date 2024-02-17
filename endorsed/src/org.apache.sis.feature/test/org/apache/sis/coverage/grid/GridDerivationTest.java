@@ -44,7 +44,6 @@ import static org.apache.sis.coverage.grid.GridGeometryTest.assertExtentEquals;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.opengis.test.Assert.assertBetween;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.DependsOnMethod;
@@ -53,6 +52,7 @@ import org.apache.sis.referencing.operation.HardCodedConversions;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 
 // Specific to the main branch:
+import static org.apache.sis.test.GeoapiAssert.assertBetween;
 import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 
 
@@ -135,10 +135,10 @@ public final class GridDerivationTest extends TestCase {
         extent = tg.getExtent();
         GridExtentTest.assertExtentEquals(extent, 0,  40, 110);
         GridExtentTest.assertExtentEquals(extent, 1,  -3,  27);               // NEAREST grid rounding mode.
-        assertMatrixEquals("gridToCRS", new Matrix3(
-                100,    0, 200,
-                  0, -300, 600,
-                  0,    0,   1), MathTransforms.getMatrix(tg.getGridToCRS(PixelInCell.CELL_CORNER)), STRICT);
+        assertMatrixEquals(new Matrix3(100,    0, 200,
+                                         0, -300, 600,
+                                         0,    0,   1),
+                MathTransforms.getMatrix(tg.getGridToCRS(PixelInCell.CELL_CORNER)), STRICT, "gridToCRS");
         /*
          * The envelope is the intersection of the envelopes of `query` and `base` grid geometries, documented above.
          * That intersection should be approximately the same or smaller. Note that without the clipping documented in
@@ -218,10 +218,10 @@ public final class GridDerivationTest extends TestCase {
         grid = grid.derive().subgrid(envelope, 1, 2).build();
         assertExtentEquals(new long[] {94, 40}, new long[] {95, 119}, grid.getExtent());
         assertEnvelopeEquals(envelope, grid.getEnvelope(), STRICT);
-        assertMatrixEquals("gridToCRS", new Matrix3(
-                0, 1,  -90,
-                2, 0, -180,
-                0, 0,    1), MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CORNER)), STRICT);
+        assertMatrixEquals(new Matrix3(0, 1,  -90,
+                                       2, 0, -180,
+                                       0, 0,    1),
+                MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CORNER)), STRICT, "gridToCRS");
         /*
          * A sub-region again but with a requested resolution which is not a divisor of the actual resolution.
          * It will force GridGeometry to adjust the translation term to compensate. We verify that the adustment
@@ -231,10 +231,10 @@ public final class GridDerivationTest extends TestCase {
         assertExtentEquals(new long[] {94, 13}, new long[] {95, 39}, grid.getExtent());
         assertEnvelopeEquals(envelope, grid.getEnvelope(), STRICT);
         MathTransform cornerToCRS = grid.getGridToCRS(PixelInCell.CELL_CORNER);
-        assertMatrixEquals("gridToCRS", new Matrix3(
-                0, 3,  -89,
-                2, 0, -180,
-                0, 0,    1), MathTransforms.getMatrix(cornerToCRS), STRICT);
+        assertMatrixEquals(new Matrix3(0, 3,  -89,
+                                       2, 0, -180,
+                                       0, 0,    1),
+                MathTransforms.getMatrix(cornerToCRS), STRICT, "gridToCRS");
 
         DirectPosition2D src = new DirectPosition2D();
         DirectPosition2D tgt = new DirectPosition2D();
@@ -310,8 +310,9 @@ public final class GridDerivationTest extends TestCase {
          */
         assertExtentEquals(new long[] {60, 12}, new long[] {199, 39}, derivation.getIntersection());
         assertExtentEquals(new long[] {15,  3}, new long[] { 49,  9}, grid.getExtent());
-        assertMatrixEquals("gridToCRS", new Matrix3(2, 0, -69, 0, 1, 5.5, 0, 0, 1),
-                MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CENTER)), STRICT);
+        assertMatrixEquals(new Matrix3(2, 0, -69, 0, 1, 5.5, 0, 0, 1),
+                MathTransforms.getMatrix(grid.getGridToCRS(PixelInCell.CELL_CENTER)),
+                STRICT, "gridToCRS");
     }
 
     /**
@@ -435,10 +436,11 @@ public final class GridDerivationTest extends TestCase {
         extent = tg.getExtent();
         GridExtentTest.assertExtentEquals(extent, 0, 100, 149);
         GridExtentTest.assertExtentEquals(extent, 1,  -3,  27);
-        assertMatrixEquals("gridToCRS", new Matrix3(
-                 78,    0, 200,
-                  0, -294, 528,
-                  0,    0,   1), MathTransforms.getMatrix(tg.getGridToCRS(PixelInCell.CELL_CORNER)), STRICT);
+        assertMatrixEquals(new Matrix3(78,    0, 200,
+                                        0, -294, 528,
+                                        0,    0,   1),
+                MathTransforms.getMatrix(tg.getGridToCRS(PixelInCell.CELL_CORNER)),
+                STRICT, "gridToCRS");
 
         GeneralEnvelope expected = new GeneralEnvelope(2);
         expected.setRange(0,  8000, 11900);
@@ -462,10 +464,10 @@ public final class GridDerivationTest extends TestCase {
          */
         assertArrayEquals(new int[] {15,  84}, change.getSubsampling());
         assertArrayEquals(new int[] { 0, -70}, change.getSubsamplingOffsets());
-        assertMatrixEquals("gridToCRS", new Matrix3(
-                 30,   0, 200,
-                  0, -84, 570,
-                  0,   0,   1), toCRS, STRICT);
+        assertMatrixEquals(new Matrix3(30,   0, 200,
+                                        0, -84, 570,
+                                        0,   0,   1),
+                toCRS, STRICT, "gridToCRS");
     }
 
     /**
@@ -479,10 +481,10 @@ public final class GridDerivationTest extends TestCase {
         GridGeometry   result = change.build();
         Matrix         toCRS  = MathTransforms.getMatrix(result.getGridToCRS(PixelInCell.CELL_CENTER));
         assertArrayEquals(new double[] {10, 40}, result.getResolution(false));
-        assertMatrixEquals("gridToCRS", new Matrix3(
-                 10,   0, 205,
-                  0, -40, 480,      // Note the negative sign, preserved from base grid geometry.
-                  0,   0,   1), toCRS, STRICT);
+        assertMatrixEquals(new Matrix3(10,   0, 205,
+                                        0, -40, 480,      // Note the negative sign, preserved from base grid geometry.
+                                        0,   0,   1),
+                toCRS, STRICT, "gridToCRS");
     }
 
     /**
@@ -562,10 +564,10 @@ public final class GridDerivationTest extends TestCase {
                 .build();
 
         assertEquals(expectedResult, fromWrapAround, "Slice with wrap-around");
-        assertBetween("Wrapped Y coordinate",
-                      base.envelope.getMinimum(1),
+        assertBetween(base.envelope.getMinimum(1),
                       base.envelope.getMaximum(1),
-                      fromWrapAround.envelope.getMedian(1));
+                      fromWrapAround.envelope.getMedian(1),
+                      "Wrapped Y coordinate");
     }
 
     /**

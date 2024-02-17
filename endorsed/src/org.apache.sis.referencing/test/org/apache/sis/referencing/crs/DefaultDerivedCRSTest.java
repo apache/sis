@@ -149,10 +149,10 @@ public final class DefaultDerivedCRSTest extends TestCase {
         final Conversion conversion = crs.getConversionFromBase();
         assertSame(crs.getBaseCRS(), conversion.getSourceCRS());
         assertSame(crs,              conversion.getTargetCRS());
-        assertMatrixEquals("Longitude rotation", new Matrix3(
-                0, 1, 0,
-                1, 0, 2.33722917,
-                0, 0, 1), MathTransforms.getMatrix(conversion.getMathTransform()), STRICT);
+        assertMatrixEquals(new Matrix3(0, 1, 0,
+                                       1, 0, 2.33722917,
+                                       0, 0, 1),
+                MathTransforms.getMatrix(conversion.getMathTransform()), STRICT, "Longitude rotation");
     }
 
     /**
@@ -246,8 +246,8 @@ public final class DefaultDerivedCRSTest extends TestCase {
         final DefaultDerivedCRS crs = unmarshalFile(DefaultDerivedCRS.class, openTestFile());
         Validators.validate(crs);
         assertEpsgNameAndIdentifierEqual("WGS 84", 4979, crs.getBaseCRS());
-        assertAxisDirectionsEqual("baseCRS", crs.getBaseCRS().getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
-        assertAxisDirectionsEqual("coordinateSystem", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH, AxisDirection.UP);
+        assertAxisDirectionsEqual(crs.getBaseCRS().getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH, AxisDirection.UP);
 
         final Conversion conversion = crs.getConversionFromBase();
         final ParameterValueGroup pg = conversion.getParameterValues();

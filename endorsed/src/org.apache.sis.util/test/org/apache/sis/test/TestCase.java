@@ -70,7 +70,7 @@ public abstract class TestCase {
     /**
      * Tolerance threshold for strict comparisons of floating point numbers.
      */
-    protected static final double STRICT = 0;
+    public static final double STRICT = 0;
 
     /**
      * The seed for the random number generator created by {@link TestUtilities#createRandomNumberGenerator()},

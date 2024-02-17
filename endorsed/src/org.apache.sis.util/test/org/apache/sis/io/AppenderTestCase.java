@@ -74,7 +74,7 @@ public abstract class AppenderTestCase extends TestCase {
     final void assertOutputEquals(final String expected) throws IOException {
         IO.flush(appender);
         final String actual = buffer.toString();
-        assertMultilinesEquals("Ignoring line separators.", expected, actual);
+        assertMultilinesEquals(expected, actual, "Ignoring line separators.");
         assertEquals(expected, actual, "Checking line separators.");
     }
 

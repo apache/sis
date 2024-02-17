@@ -166,14 +166,14 @@ public final class ConverterRegistryTest extends TestCase {
         assertNoConverterForTarget  (Cloneable   .class);
         assertIdentityForTarget     (Comparable  .class);
         assertIdentityForTarget     (Serializable.class);
-        assertMultilinesEquals("After StringConverter.Short",
-            "ConverterRegistry\n" +
-            "  ├─Short         ← String\n" +
-            "  ├─Number        ← String\n" +                // Same instance as above, applied to Number target.
-            "  │   └─Short     ← String\n" +
-            "  ├─Object        ← String\n" +
-            "  ├─Comparable    ← String\n" +
-            "  └─Serializable  ← String\n", registry.toString());
+        assertMultilinesEquals("ConverterRegistry\n"
+                             + "  ├─Short         ← String\n"
+                             + "  ├─Number        ← String\n"   // Same instance as above, applied to Number target.
+                             + "  │   └─Short     ← String\n"
+                             + "  ├─Object        ← String\n"
+                             + "  ├─Comparable    ← String\n"
+                             + "  └─Serializable  ← String\n",
+                registry.toString(), "After StringConverter.Short");
         /*
          * Adds String ← Long
          * Expected side-effect: creation of FallbackConverter[String ← Number]
@@ -186,20 +186,20 @@ public final class ConverterRegistryTest extends TestCase {
         assertNoConverterForTarget  (Cloneable   .class);
         assertIdentityForTarget     (Comparable  .class);
         assertIdentityForTarget     (Serializable.class);
-        assertFallbackEquals        (Number      .class,
-                "Number    ← String\n" +
-                "  ├─Short ← String\n" +
-                "  └─Long  ← String\n");
-        assertMultilinesEquals("After StringConverter.Long",
-            "ConverterRegistry\n" +
-            "  ├─Short         ← String\n" +
-            "  ├─Object        ← String\n" +
-            "  ├─Comparable    ← String\n" +
-            "  ├─Serializable  ← String\n" +
-            "  ├─Long          ← String\n" +
-            "  └─Number        ← String\n" +                // The FallbackConverter, which replaced the previous.
-            "      ├─Short     ← String\n" +
-            "      └─Long      ← String\n", registry.toString());
+        assertFallbackEquals(Number.class,
+                               "Number    ← String\n" +
+                               "  ├─Short ← String\n" +
+                               "  └─Long  ← String\n");
+        assertMultilinesEquals("ConverterRegistry\n"
+                             + "  ├─Short         ← String\n"
+                             + "  ├─Object        ← String\n"
+                             + "  ├─Comparable    ← String\n"
+                             + "  ├─Serializable  ← String\n"
+                             + "  ├─Long          ← String\n"
+                             + "  └─Number        ← String\n"   // The FallbackConverter, which replaced the previous.
+                             + "      ├─Short     ← String\n"
+                             + "      └─Long      ← String\n",
+                registry.toString(), "After StringConverter.Long");
         /*
          * Adds String ← Boolean
          * Expected side-effect: none since Boolean is not a Number
@@ -212,17 +212,17 @@ public final class ConverterRegistryTest extends TestCase {
         assertNoConverterForTarget  (Cloneable   .class);
         assertIdentityForTarget     (Comparable  .class);
         assertIdentityForTarget     (Serializable.class);
-        assertMultilinesEquals("After StringConverter.Boolean",
-            "ConverterRegistry\n" +
-            "  ├─Short         ← String\n" +
-            "  ├─Object        ← String\n" +
-            "  ├─Comparable    ← String\n" +
-            "  ├─Serializable  ← String\n" +
-            "  ├─Long          ← String\n" +
-            "  ├─Number        ← String\n" +
-            "  │   ├─Short     ← String\n" +
-            "  │   └─Long      ← String\n" +
-            "  └─Boolean       ← String\n", registry.toString());
+        assertMultilinesEquals("ConverterRegistry\n"
+                             + "  ├─Short         ← String\n"
+                             + "  ├─Object        ← String\n"
+                             + "  ├─Comparable    ← String\n"
+                             + "  ├─Serializable  ← String\n"
+                             + "  ├─Long          ← String\n"
+                             + "  ├─Number        ← String\n"
+                             + "  │   ├─Short     ← String\n"
+                             + "  │   └─Long      ← String\n"
+                             + "  └─Boolean       ← String\n",
+                registry.toString(), "After StringConverter.Boolean");
         /*
          * Adds String ← Number
          * Expected side-effect: replacement of the FallbackConverter
@@ -234,15 +234,15 @@ public final class ConverterRegistryTest extends TestCase {
         assertNoConverterForTarget  (Cloneable   .class);
         assertIdentityForTarget     (Comparable  .class);
         assertIdentityForTarget     (Serializable.class);
-        assertMultilinesEquals("After StringConverter.Number",
-            "ConverterRegistry\n" +
-            "  ├─Short         ← String\n" +
-            "  ├─Object        ← String\n" +
-            "  ├─Comparable    ← String\n" +
-            "  ├─Serializable  ← String\n" +
-            "  ├─Long          ← String\n" +
-            "  ├─Boolean       ← String\n" +
-            "  └─Number        ← String\n", registry.toString());       // Replaced the FallbackConverter.
+        assertMultilinesEquals("ConverterRegistry\n"
+                             + "  ├─Short         ← String\n"
+                             + "  ├─Object        ← String\n"
+                             + "  ├─Comparable    ← String\n"
+                             + "  ├─Serializable  ← String\n"
+                             + "  ├─Long          ← String\n"
+                             + "  ├─Boolean       ← String\n"
+                             + "  └─Number        ← String\n",     // Replaced the FallbackConverter.
+                registry.toString(), "After StringConverter.Number");
         /*
          * Adds String ← Float
          * Expected side-effect: none
@@ -255,16 +255,16 @@ public final class ConverterRegistryTest extends TestCase {
         assertNoConverterForTarget  (Cloneable   .class);
         assertIdentityForTarget     (Comparable  .class);
         assertIdentityForTarget     (Serializable.class);
-        assertMultilinesEquals("After StringConverter.Float",
-            "ConverterRegistry\n" +
-            "  ├─Short         ← String\n" +
-            "  ├─Object        ← String\n" +
-            "  ├─Comparable    ← String\n" +
-            "  ├─Serializable  ← String\n" +
-            "  ├─Long          ← String\n" +
-            "  ├─Boolean       ← String\n" +
-            "  ├─Number        ← String\n" +
-            "  └─Float         ← String\n", registry.toString());
+        assertMultilinesEquals("ConverterRegistry\n"
+                             + "  ├─Short         ← String\n"
+                             + "  ├─Object        ← String\n"
+                             + "  ├─Comparable    ← String\n"
+                             + "  ├─Serializable  ← String\n"
+                             + "  ├─Long          ← String\n"
+                             + "  ├─Boolean       ← String\n"
+                             + "  ├─Number        ← String\n"
+                             + "  └─Float         ← String\n",
+                registry.toString(), "After StringConverter.Float");
         /*
          * Final check.
          */
@@ -291,13 +291,13 @@ public final class ConverterRegistryTest extends TestCase {
         assertNoConverterForTarget  (Comparable  .class);
         assertIdentityForTarget     (Serializable.class);
         assertSameConverterForTarget(CharSequence.class);
-        assertMultilinesEquals("After ObjectToString.Number",
-            "ConverterRegistry\n" +
-            "  ├─String        ← Number\n" +
-            "  ├─CharSequence  ← Number\n" +
-            "  │   └─String    ← Number\n" +
-            "  ├─Object        ← Number\n" +
-            "  └─Serializable  ← Number\n", registry.toString());
+        assertMultilinesEquals("ConverterRegistry\n"
+                             + "  ├─String        ← Number\n"
+                             + "  ├─CharSequence  ← Number\n"
+                             + "  │   └─String    ← Number\n"
+                             + "  ├─Object        ← Number\n"
+                             + "  └─Serializable  ← Number\n",
+                registry.toString(), "After ObjectToString.Number");
         /*
          * Adds String ← Number
          * Expected side-effect: none
@@ -305,14 +305,14 @@ public final class ConverterRegistryTest extends TestCase {
         assertAllConvertersAreRegistered();
         register(new StringConverter.Number());
         assertSameConverterForTarget(Number.class);
-        assertMultilinesEquals("After StringConverter.Number",
-            "ConverterRegistry\n" +
-            "  ├─String        ← Number\n" +
-            "  ├─CharSequence  ← Number\n" +
-            "  │   └─String    ← Number\n" +
-            "  ├─Object        ← Number\n" +
-            "  ├─Serializable  ← Number\n" +
-            "  └─Number        ← String\n", registry.toString());
+        assertMultilinesEquals("ConverterRegistry\n"
+                             + "  ├─String        ← Number\n"
+                             + "  ├─CharSequence  ← Number\n"
+                             + "  │   └─String    ← Number\n"
+                             + "  ├─Object        ← Number\n"
+                             + "  ├─Serializable  ← Number\n"
+                             + "  └─Number        ← String\n",
+                registry.toString(), "After StringConverter.Number");
         /*
          * Adds Number ← Float
          * Expected side-effect: none
@@ -320,15 +320,15 @@ public final class ConverterRegistryTest extends TestCase {
         assertAllConvertersAreRegistered();
         register(new NumberConverter<>(Number.class, Float.class));
         assertSameConverterForTarget(Float.class);
-        assertMultilinesEquals("After NumberConverter.Float",
-            "ConverterRegistry\n" +
-            "  ├─String        ← Number\n" +
-            "  ├─CharSequence  ← Number\n" +
-            "  │   └─String    ← Number\n" +
-            "  ├─Object        ← Number\n" +
-            "  ├─Serializable  ← Number\n" +
-            "  ├─Number        ← String\n" +
-            "  └─Float         ← Number\n", registry.toString());
+        assertMultilinesEquals("ConverterRegistry\n"
+                             + "  ├─String        ← Number\n"
+                             + "  ├─CharSequence  ← Number\n"
+                             + "  │   └─String    ← Number\n"
+                             + "  ├─Object        ← Number\n"
+                             + "  ├─Serializable  ← Number\n"
+                             + "  ├─Number        ← String\n"
+                             + "  └─Float         ← Number\n",
+                registry.toString(), "After NumberConverter.Float");
         /*
          * Final check.
          */

@@ -59,12 +59,11 @@ public final class NilReasonMarshallingTest extends TestCase {
                 "</cit:CI_Citation>";
 
         final Citation citation = unmarshal(Citation.class, expected);
-        assertTitleEquals("citation", "A title", citation);
+        assertTitleEquals("A title", citation, "citation");
 
         final Series series = citation.getSeries();
-        assertInstanceOf(NilObject.class, series, "Should have instantiated a proxy.");
-
-        final NilReason reason = ((NilObject) series).getNilReason();
+        final NilObject nil = assertInstanceOf(NilObject.class, series, "Should have instantiated a proxy.");
+        final NilReason reason = nil.getNilReason();
         assertSame(NilReason.MISSING, reason, "nilReason");
         assertNull(reason.getOtherExplanation(), "NilReason.explanation");
         assertNull(reason.getURI(), "NilReason.URI");
@@ -129,7 +128,7 @@ public final class NilReasonMarshallingTest extends TestCase {
                 "</cit:CI_Citation>";
 
         final Citation citation = unmarshal(Citation.class, expected);
-        assertTitleEquals("citation", "A title", citation);
+        assertTitleEquals("A title", citation, "citation");
 
         final Series series = citation.getSeries();
         assertInstanceOf(NilObject.class, series, "Should have instantiated a proxy.");
@@ -164,7 +163,7 @@ public final class NilReasonMarshallingTest extends TestCase {
                 "</cit:CI_Citation>";
 
         final Citation citation = unmarshal(Citation.class, expected);
-        assertTitleEquals("citation", "A title", citation);
+        assertTitleEquals("A title", citation, "citation");
 
         final Series series = citation.getSeries();
         assertInstanceOf(NilObject.class, series, "Should have instantiated a proxy.");

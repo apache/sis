@@ -61,11 +61,12 @@ public final class LongitudeRotationTest extends TestCase {
          * This conversion from grad to degrees is specific to Apache SIS and may be revised in
          * future version. See org.apache.sis.referencing.operation package javadoc.
          */
-        assertInstanceOf(LinearTransform.class, mt, "Shall be an affine transform.");
-        assertMatrixEquals("Expected a longitude rotation",
-                new Matrix3(1, 0, 2.33722917,
-                            0, 1, 0,
-                            0, 0, 1), ((LinearTransform) mt).getMatrix(), 1E-16);
+        var linear = assertInstanceOf(LinearTransform.class, mt, "Shall be an affine transform.");
+        assertMatrixEquals(new Matrix3(1, 0, 2.33722917,
+                                       0, 1, 0,
+                                       0, 0, 1),
+                linear.getMatrix(),
+                1E-16, "Expected a longitude rotation");
     }
 
     /**

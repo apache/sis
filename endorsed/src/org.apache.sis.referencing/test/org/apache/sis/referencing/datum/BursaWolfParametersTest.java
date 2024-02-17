@@ -119,7 +119,7 @@ public final class BursaWolfParametersTest extends TestCase {
                    0,         0,         0,  1);
 
         final MatrixSIS matrix = MatrixSIS.castOrCopy(p.getPositionVectorTransformation(null));
-        assertMatrixEquals("getPositionVectorTransformation", expected, matrix, p.isTranslation() ? 0 : 1E-14);
+        assertMatrixEquals(expected, matrix, p.isTranslation() ? STRICT : 1E-14, "getPositionVectorTransformation");
         return matrix;
     }
 
@@ -165,17 +165,17 @@ public final class BursaWolfParametersTest extends TestCase {
         final MatrixSIS toWGS72 = toWGS84.inverse();
         final MatrixSIS source  = Matrices.create(4, 1, new double[] {3657660.66, 255768.55, 5201382.11, 1});
         final MatrixSIS target  = Matrices.create(4, 1, new double[] {3657660.78, 255778.43, 5201387.75, 1});
-        assertMatrixEquals("toWGS84", target, toWGS84.multiply(source), 0.01);
-        assertMatrixEquals("toWGS72", source, toWGS72.multiply(target), 0.01);
+        assertMatrixEquals(target, toWGS84.multiply(source), 0.01, "toWGS84");
+        assertMatrixEquals(source, toWGS72.multiply(target), 0.01, "toWGS72");
         /*
          * Tests the optimized path for translation-only parameters.
          * Matrices having only translation terms are much easier to predict.
          */
-        assertMatrixEquals("Translation only", new Matrix4(
-                1, 0, 0, -168,
-                0, 1, 0,  -60,
-                0, 0, 1,  320,
-                0, 0, 0,    1), getPositionVectorTransformation(createNTF_to_WGS84()), 0);
+        assertMatrixEquals(new Matrix4(1, 0, 0, -168,
+                                       0, 1, 0,  -60,
+                                       0, 0, 1,  320,
+                                       0, 0, 0,    1),
+                getPositionVectorTransformation(createNTF_to_WGS84()), STRICT, "Translation only");
     }
 
     /**
@@ -222,7 +222,7 @@ public final class BursaWolfParametersTest extends TestCase {
         final Matrix original = getPositionVectorTransformation(bursaWolf).inverse();
         bursaWolf.invert();
         final Matrix inverse = getPositionVectorTransformation(bursaWolf);
-        assertMatrixEquals("invert", original, inverse, 0.001);
+        assertMatrixEquals(original, inverse, 0.001, "invert");
     }
 
     /**

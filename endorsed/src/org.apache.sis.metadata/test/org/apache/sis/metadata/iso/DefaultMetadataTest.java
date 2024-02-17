@@ -88,7 +88,7 @@ public final class DefaultMetadataTest extends TestCase {
     @Test
     @SuppressWarnings("deprecation")
     public void testFileIdentifier() {
-        final DefaultMetadata metadata = new DefaultMetadata();
+        final var metadata = new DefaultMetadata();
         assertNull(metadata.getFileIdentifier());
         metadata.setFileIdentifier("Apache SIS/Metadata test");
         assertEquals("Apache SIS/Metadata test", metadata.getMetadataIdentifier().getCode());
@@ -103,7 +103,7 @@ public final class DefaultMetadataTest extends TestCase {
     @Test
     @SuppressWarnings("deprecation")
     public void testLocales() {
-        final DefaultMetadata metadata = new DefaultMetadata();
+        final var metadata = new DefaultMetadata();
         assertNull(metadata.getLanguage());
         /*
          * Set the default language, which shall be the first entry in the collection.
@@ -151,13 +151,13 @@ public final class DefaultMetadataTest extends TestCase {
     @Test
     @SuppressWarnings("deprecation")
     public void testParentIdentifier() {
-        final DefaultMetadata metadata = new DefaultMetadata();
+        final var metadata = new DefaultMetadata();
         assertNull(metadata.getParentIdentifier());
         metadata.setParentIdentifier("ParentID");
         assertEquals("ParentID", metadata.getParentIdentifier());
 
-        DefaultCitation c = (DefaultCitation) metadata.getParentMetadata();
-        assertTitleEquals("parentMetadata", "ParentID", c);
+        var c = assertInstanceOf(DefaultCitation.class, metadata.getParentMetadata());
+        assertTitleEquals("ParentID", c, "parentMetadata");
         c.setTitle(new SimpleInternationalString("New parent"));
         assertEquals("New parent", metadata.getParentIdentifier());
     }
@@ -170,9 +170,9 @@ public final class DefaultMetadataTest extends TestCase {
     @Test
     @SuppressWarnings("deprecation")
     public void testHierarchyLevels() {
-        final String[]    names  = new String[] {"Bridges", "Golden Gate Bridge"};
-        final ScopeCode[] levels = new ScopeCode[] {ScopeCode.FEATURE_TYPE, ScopeCode.FEATURE};
-        final DefaultMetadata metadata = new DefaultMetadata();
+        final var names    = new String[] {"Bridges", "Golden Gate Bridge"};
+        final var levels   = new ScopeCode[] {ScopeCode.FEATURE_TYPE, ScopeCode.FEATURE};
+        final var metadata = new DefaultMetadata();
         assertTrue(metadata.getHierarchyLevelNames().isEmpty());
         assertTrue(metadata.getHierarchyLevels().isEmpty());
         /*
@@ -199,7 +199,7 @@ public final class DefaultMetadataTest extends TestCase {
          */
         it.remove();
         assertFalse(it.hasNext());
-        final DefaultMetadataScope c = new DefaultMetadataScope(
+        final var c = new DefaultMetadataScope(
                 levels[1] = ScopeCode.ATTRIBUTE_TYPE,
                 names [1] = "Clearance");
         assertTrue(scopes.add(c));
@@ -224,13 +224,13 @@ public final class DefaultMetadataTest extends TestCase {
     @Test
     @SuppressWarnings("deprecation")
     public void testDateStamp() {
-        final DefaultMetadata metadata = new DefaultMetadata();
+        final var metadata = new DefaultMetadata();
         assertNull(metadata.getDateStamp());
         /*
          * Verifies that the deprecated method get its value from the CitationDate objects.
          */
         Date creation = date("2014-10-07 00:00:00");
-        final DefaultCitationDate[] dates = new DefaultCitationDate[] {
+        final var dates = new DefaultCitationDate[] {
                 new DefaultCitationDate(date("2014-10-09 00:00:00"), DateType.valueOf("LAST_UPDATE")),
                 new DefaultCitationDate(creation, DateType.CREATION)
         };
@@ -254,7 +254,7 @@ public final class DefaultMetadataTest extends TestCase {
     @Test
     @SuppressWarnings("deprecation")
     public void testMetadataStandard() {
-        final DefaultMetadata metadata = new DefaultMetadata();
+        final var metadata = new DefaultMetadata();
         assertNull(metadata.getMetadataStandardName());
         assertNull(metadata.getMetadataStandardVersion());
 
@@ -265,7 +265,7 @@ public final class DefaultMetadataTest extends TestCase {
         assertEquals(name,    metadata.getMetadataStandardName());
         assertEquals(version, metadata.getMetadataStandardVersion());
         final Citation standard = getSingleton(metadata.getMetadataStandards());
-        assertTitleEquals("standard", name, standard);
+        assertTitleEquals(name, standard, "standard");
         assertEquals(version, standard.getEdition().toString());
     }
 
@@ -277,7 +277,7 @@ public final class DefaultMetadataTest extends TestCase {
     @Test
     @SuppressWarnings("deprecation")
     public void testDataSetUri() throws URISyntaxException {
-        final DefaultMetadata metadata = new DefaultMetadata();
+        final var metadata = new DefaultMetadata();
         metadata.setDataSetUri("file:/tmp/myfile.txt");
         assertEquals("file:/tmp/myfile.txt", metadata.getDataSetUri());
     }

@@ -77,12 +77,12 @@ public final class ImmutableIdentifierTest extends TestCase {
     @Test
     public void testConstructorWithStringValues() {
         final Map<String,Object> properties = properties();
-        final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
+        final var identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
 
         assertEquals     ("This is a code",         identifier.getCode());
         assertNull       (                          identifier.getCodeSpace());
-        assertTitleEquals(AUTHORITY_KEY, "This is an authority", identifier.getAuthority());
+        assertTitleEquals("This is an authority",   identifier.getAuthority(), AUTHORITY_KEY);
         assertEquals     ("This is a version",      identifier.getVersion());
         assertEquals     ("There is a description", identifier.getDescription().toString(Locale.ENGLISH));
         assertEquals     ("Voici une description",  identifier.getDescription().toString(Locale.FRENCH));
@@ -99,12 +99,12 @@ public final class ImmutableIdentifierTest extends TestCase {
     public void testConstructorWithInternationalString() {
         final Map<String,Object> properties = properties();
         assertNotNull(properties.put("description", new SimpleInternationalString("Overwritten description")));
-        final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
+        final var identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
 
         assertEquals     ("This is a code",          identifier.getCode());
         assertNull       (                           identifier.getCodeSpace());
-        assertTitleEquals(AUTHORITY_KEY, "This is an authority", identifier.getAuthority());
+        assertTitleEquals("This is an authority",    identifier.getAuthority(), AUTHORITY_KEY);
         assertEquals     ("This is a version",       identifier.getVersion());
         assertEquals     ("Overwritten description", identifier.getDescription().toString(Locale.ENGLISH));
         assertEquals     ("Voici une description",   identifier.getDescription().toString(Locale.FRENCH));
@@ -119,12 +119,12 @@ public final class ImmutableIdentifierTest extends TestCase {
     public void testConstructorWithCitation() {
         final Map<String,Object> properties = properties();
         assertNotNull(properties.put(AUTHORITY_KEY, new DefaultCitation("Another authority")));
-        final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
+        final var identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
 
         assertEquals     ("This is a code",         identifier.getCode());
         assertNull       (                          identifier.getCodeSpace());
-        assertTitleEquals(AUTHORITY_KEY, "Another authority", identifier.getAuthority());
+        assertTitleEquals("Another authority",      identifier.getAuthority(), AUTHORITY_KEY);
         assertEquals     ("This is a version",      identifier.getVersion());
         assertEquals     ("There is a description", identifier.getDescription().toString(Locale.ENGLISH));
         assertEquals     ("Voici une description",  identifier.getDescription().toString(Locale.FRENCH));
@@ -141,7 +141,7 @@ public final class ImmutableIdentifierTest extends TestCase {
     public void testPredefinedCitation() {
         final Map<String,Object> properties = properties();
         assertNotNull(properties.put(AUTHORITY_KEY, Constants.EPSG));
-        final ImmutableIdentifier identifier = new ImmutableIdentifier(properties);
+        final var identifier = new ImmutableIdentifier(properties);
         Validators.validate(identifier);
 
         assertEquals("This is a code",         identifier.getCode());
@@ -173,7 +173,7 @@ public final class ImmutableIdentifierTest extends TestCase {
     @Test
     @Disabled("To be replaced by GML")
     public void testMarshal() throws JAXBException {
-        final ImmutableIdentifier identifier = new ImmutableIdentifier(new DefaultCitation("EPSG"), null, "4326");
+        final var identifier = new ImmutableIdentifier(new DefaultCitation("EPSG"), null, "4326");
         assertXmlEquals(
                 "<gmd:RS_Identifier xmlns:gmd=\"" + LegacyNamespaces.GMD + "\" " +
                                "xmlns:gco=\"" + LegacyNamespaces.GCO + "\">\n" +
@@ -196,7 +196,7 @@ public final class ImmutableIdentifierTest extends TestCase {
      */
     @Test
     public void testWKT() {
-        ImmutableIdentifier id = new ImmutableIdentifier(Citations.EPSG, "EPSG", "4326", "8.2", null);
+        var id = new ImmutableIdentifier(Citations.EPSG, "EPSG", "4326", "8.2", null);
         assertWktEquals(Convention.WKT2_SIMPLIFIED, "Id[“EPSG”, 4326, “8.2”]", id);
         assertWktEquals(Convention.WKT2, "ID[“EPSG”, 4326, “8.2”]", id);
         assertWktEquals(Convention.WKT1, "AUTHORITY[“EPSG”, “4326”]", id);

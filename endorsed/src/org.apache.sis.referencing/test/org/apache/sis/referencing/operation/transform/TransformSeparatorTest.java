@@ -65,7 +65,7 @@ public final class TransformSeparatorTest extends TestCase {
      * Verifies that the given transform is a linear transform equals to the given matrix.
      */
     private static void assertTransformEquals(final Matrix expected, final MathTransform tr) {
-        assertMatrixEquals("transform", expected, assertInstanceOf(LinearTransform.class, tr).getMatrix(), STRICT);
+        assertMatrixEquals(expected, assertInstanceOf(LinearTransform.class, tr).getMatrix(), STRICT, "transform");
     }
 
     /**
@@ -427,12 +427,14 @@ public final class TransformSeparatorTest extends TestCase {
         final MathTransform concatenated = new ConcatenatedTransform(linear, passthrough);      // Bypass 'tryOptimized' method.
         final TransformSeparator sep = new TransformSeparator(concatenated);
         sep.addSourceDimensionRange(0, 2);
-        assertMatrixEquals("Leading passthrough dimensions", new Matrix3(4, 0, 0, 0, 1, 0, 0,  0, 1),
-                           MathTransforms.getMatrix(sep.separate()), STRICT);
+        assertMatrixEquals(new Matrix3(4, 0, 0, 0, 1, 0, 0,  0, 1),
+                           MathTransforms.getMatrix(sep.separate()),
+                           STRICT, "Leading passthrough dimensions");
         sep.clear();
         sep.addSourceDimensionRange(5, 6);
-        assertMatrixEquals("Trailing passthrough dimensions", new Matrix2(6, 0, 0, 1),
-                           MathTransforms.getMatrix(sep.separate()), STRICT);
+        assertMatrixEquals(new Matrix2(6, 0, 0, 1),
+                           MathTransforms.getMatrix(sep.separate()),
+                           STRICT, "Trailing passthrough dimensions");
         sep.clear();
         sep.addSourceDimensionRange(2, 5);
         assertSame(nonLinear, sep.separate());
@@ -464,12 +466,14 @@ public final class TransformSeparatorTest extends TestCase {
         sep.addSourceDimensionRange(3, 7);
         MathTransform mt = sep.separate();
         var concat = assertInstanceOf(ConcatenatedTransform.class, mt);
-        assertMatrixEquals("Leading passthrough dimensions", Matrices.create(5, 5, new double[] {
-            3, 0, 0, 0, 0,
-            0, 2, 0, 0, 0,
-            0, 0, 1, 0, 0,
-            0, 0, 0, 1, 0,
-            0, 0, 0, 0, 1}), MathTransforms.getMatrix(concat.transform1), STRICT);
+        assertMatrixEquals(Matrices.create(5, 5, new double[] {
+                    3, 0, 0, 0, 0,
+                    0, 2, 0, 0, 0,
+                    0, 0, 1, 0, 0,
+                    0, 0, 0, 1, 0,
+                    0, 0, 0, 0, 1
+                }), MathTransforms.getMatrix(concat.transform1),
+                STRICT, "Leading passthrough dimensions");
 
         mt = ((ConcatenatedTransform) mt).transform2;
         assertInstanceOf(PassThroughTransform.class, mt);
@@ -511,7 +515,7 @@ public final class TransformSeparatorTest extends TestCase {
         assertNotEquals(tr, reduced);
         assertArrayEquals(new int[] {0, 1}, s.getSourceDimensions());
         assertArrayEquals(new int[] {0, 1}, s.getTargetDimensions());
-        assertMatrixEquals("separate()", expected, MathTransforms.getMatrix(reduced), STRICT);
+        assertMatrixEquals(expected, MathTransforms.getMatrix(reduced), STRICT, "separate()");
         /*
          * Trim the first dimension.
          */
@@ -525,9 +529,9 @@ public final class TransformSeparatorTest extends TestCase {
         assertNotEquals(tr, reduced);
         assertArrayEquals(new int[] {1, 2}, s.getSourceDimensions());
         assertArrayEquals(new int[] {0, 1}, s.getTargetDimensions());
-        assertMatrixEquals("separate()", new Matrix3(
-            0,   0.5, -90,
-            0.5, 0,  -180,
-            0,   0,     1), MathTransforms.getMatrix(reduced), STRICT);
+        assertMatrixEquals(new Matrix3(0,   0.5, -90,
+                                       0.5, 0,  -180,
+                                       0,   0,     1),
+                MathTransforms.getMatrix(reduced), STRICT, "separate()");
     }
 }

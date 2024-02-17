@@ -161,7 +161,7 @@ public final class DefaultEngineeringCRSTest extends TestCase {
         assertInstanceOf(CartesianCS.class, cs);
         assertEquals("Cartesian 2D", cs.getName().getCode());
         assertEquals(2, cs.getDimension());
-        assertAxisDirectionsEqual("cartesianCS", cs, AxisDirection.EAST, AxisDirection.NORTH);
+        assertAxisDirectionsEqual(cs, AxisDirection.EAST, AxisDirection.NORTH);
 
         assertEquals("x", cs.getAxis(0).getName().getCode());
         assertEquals("y", cs.getAxis(1).getName().getCode());
@@ -228,7 +228,7 @@ public final class DefaultEngineeringCRSTest extends TestCase {
         assertInstanceOf(SphericalCS.class, cs);
         assertEquals("Spherical", cs.getName().getCode());
         assertEquals(3, cs.getDimension());
-        assertAxisDirectionsEqual("cartesianCS", cs, AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
+        assertAxisDirectionsEqual(cs, AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
 
         assertEquals("Spherical latitude",  cs.getAxis(0).getName().getCode());
         assertEquals("Spherical longitude", cs.getAxis(1).getName().getCode());

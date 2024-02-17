@@ -85,29 +85,31 @@ public final class Matrix4Test extends MatrixTestCase {
      */
     @Test
     public void testMultiplyWithNaN() {
-        final Matrix4 m1 = new Matrix4(
+        final var m1 = new Matrix4(
                 0.5,  0,    0,   -179.5,
                 0,    0.25, 0,    -89.5,
                 0,    0,  NaN,  20989.0,
                 0,    0,    0,      1);
 
-        final Matrix4 m2 = new Matrix4(
+        final var m2 = new Matrix4(
                 4,  0,  0,      0,
                 0,  6,  0,      0,
                 0,  0,  1,  18262.5,
                 0,  0,  0,      1);
 
-        assertMatrixEquals("Multiplication with NaN", new Matrix4(
+        var expected = new Matrix4(
                 2.0,  0,      0,   -718.0,
                 0,    1.5,    0,   -537.0,
                 0,    0,    NaN,  39251.5,
-                0,    0,      0,      1), m2.multiply(m1), STRICT);
+                0,    0,      0,      1);
+        assertMatrixEquals(expected, m2.multiply(m1), STRICT, "Multiplication with NaN");
 
-        assertMatrixEquals("Multiplication with NaN", new Matrix4(
+        expected = new Matrix4(
                 2.0,  0,      0,  -179.5,
                 0,    1.5,    0,   -89.5,
                 0,    0,    NaN,     NaN,
-                0,    0,      0,     1), m1.multiply(m2), STRICT);
+                0,    0,      0,     1);
+        assertMatrixEquals(expected, m1.multiply(m2), STRICT, "Multiplication with NaN");
     }
 
     /**

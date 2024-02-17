@@ -67,7 +67,7 @@ public final class StoreTest extends TestCase {
     private static void validate(final GeographicCRS crs) {
         assertEquals("NTF (Paris)", crs.getName().getCode());
         assertEquals("Nouvelle Triangulation Francaise (Paris)", crs.getDatum().getName().getCode());
-        assertAxisDirectionsEqual("EllipsoidalCS", crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
     }
 
     /**

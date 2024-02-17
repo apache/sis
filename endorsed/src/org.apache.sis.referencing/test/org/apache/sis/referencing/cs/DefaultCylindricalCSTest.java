@@ -54,7 +54,7 @@ public final class DefaultCylindricalCSTest extends TestCase {
         final DefaultCylindricalCS cs = HardCodedCS.CYLINDRICAL;
         final DefaultCylindricalCS normalized = cs.forConvention(AxesConvention.DISPLAY_ORIENTED);
         assertNotSame(cs, normalized);
-        assertAxisDirectionsEqual("Normalized", normalized,
+        assertAxisDirectionsEqual(normalized,
                 AxisDirections.AWAY_FROM,
                 AxisDirections.COUNTER_CLOCKWISE,
                 AxisDirection.UP);
@@ -77,14 +77,14 @@ public final class DefaultCylindricalCSTest extends TestCase {
 
         DefaultCylindricalCS normalized = cs.forConvention(AxesConvention.RIGHT_HANDED);
         assertNotSame(cs, normalized);
-        assertAxisDirectionsEqual("Right-handed", normalized,
+        assertAxisDirectionsEqual(normalized,
                 AxisDirections.CLOCKWISE,                       // Interchanged (r,θ) order for making right handed.
                 AxisDirection.SOUTH,
                 AxisDirection.UP);
 
         normalized = cs.forConvention(AxesConvention.NORMALIZED);
         assertNotSame(cs, normalized);
-        assertAxisDirectionsEqual("Normalized", normalized,
+        assertAxisDirectionsEqual(normalized,
                 AxisDirection.SOUTH,                            // Not modified to North because radius cannot be negative.
                 AxisDirections.COUNTER_CLOCKWISE,
                 AxisDirection.UP);

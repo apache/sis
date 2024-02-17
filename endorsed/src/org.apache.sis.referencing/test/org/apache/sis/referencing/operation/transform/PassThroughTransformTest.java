@@ -276,8 +276,8 @@ public final class PassThroughTransformTest extends MathTransformTestCase {
                 0, 0, 0, 1, 0, 0, 0,
                 0, 0, 0, 0, 0, 1, 0,
                 0, 0, 0, 0, 0, 0, 1});
-        assertMatrixEquals("Expected removal of dimensions 0 and 4 before pass-through",
-                           m, MathTransforms.getMatrix(steps.get(0)), 0);
+        assertMatrixEquals(m, MathTransforms.getMatrix(steps.get(0)), 0,
+                "Expected removal of dimensions 0 and 4 before pass-through");
         /*
          * The number of pass-through dimensions have decreased from 2 to 1 on both sides of the sub-transform.
          */
@@ -294,8 +294,8 @@ public final class PassThroughTransformTest extends MathTransformTestCase {
                 0, 0, 0, 1, 0, 0,
                 0, 0, 0, 0, 1, 0,
                 0, 0, 0, 0, 0, 1});
-        assertMatrixEquals("Expected removal of dimensions 1 and 2 after pass-through",
-                           m, MathTransforms.getMatrix(steps.get(2)), 0);
+        assertMatrixEquals(m, MathTransforms.getMatrix(steps.get(2)), 0,
+                "Expected removal of dimensions 1 and 2 after pass-through");
     }
 
     /**

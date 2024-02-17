@@ -23,7 +23,6 @@ import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.geometry.GeneralEnvelope;
@@ -416,28 +415,27 @@ public final class GridExtentTest extends TestCase {
          * No axis flip.
          * Verification:  y  =  2 × −25 + 40  =  −10  (the minimum value declared in envelope).
          */
-        assertMatrixEquals("cornerToCRS", new Matrix3(
-                0.5,  0,   50,
-                0,    2,   40,
-                0,    0,    1), extent.cornerToCRS(aoi, 0, null), STRICT);
+        assertMatrixEquals(new Matrix3(0.5,  0,   50,
+                                       0,    2,   40,
+                                       0,    0,    1),
+                extent.cornerToCRS(aoi, 0, null), STRICT, "cornerToCRS");
         /*
          * Y axis flip.
          * Verification:  y  =  −2 × −25 + 20  =  70  (the maximum value declared in envelope).
          */
-        assertMatrixEquals("cornerToCRS", new Matrix3(
-                0.5,  0,   50,
-                0,   -2,   20,
-                0,    0,    1), extent.cornerToCRS(aoi, 2, null), STRICT);
+        assertMatrixEquals(new Matrix3(0.5,  0,   50,
+                                       0,   -2,   20,
+                                       0,    0,    1),
+                extent.cornerToCRS(aoi, 2, null), STRICT, "cornerToCRS");
         /*
          * Swap axis order. The {1,0} indices apply to grid dimensions, not to CRS dimensions.
          * Verification:  x  =  0.375 × −25 + 49.375  =  40  (the minimum value declared in envelope).
          *                y  =  2.667 × −20 + 43.333  ≈ −10  (idem).
          */
-        assertMatrixEquals("cornerToCRS", new Matrix3(
-                0,                   0.375,   49.375,
-                2.6666666666666667,  0,       43.333333333333333,
-                0,                   0,        1),
-                extent.cornerToCRS(aoi, 0, new int[] {1,0}), 1E-15);
+        assertMatrixEquals(new Matrix3(0,                   0.375,   49.375,
+                                       2.6666666666666667,  0,       43.333333333333333,
+                                       0,                   0,        1),
+                extent.cornerToCRS(aoi, 0, new int[] {1,0}), 1E-15, "cornerToCRS");
     }
 
     /**
@@ -458,8 +456,7 @@ public final class GridExtentTest extends TestCase {
                 new double[] { 0,  0, 741},
                 new double[] {14, 10, 742}), envelope);
 
-        final CoordinateSystem cs = envelope.getCoordinateReferenceSystem().getCoordinateSystem();
-        assertAxisDirectionsEqual("toEnvelope", cs,
+        assertAxisDirectionsEqual(envelope.getCoordinateReferenceSystem().getCoordinateSystem(),
                 AxisDirection.COLUMN_POSITIVE,
                 AxisDirection.ROW_POSITIVE,
                 AxisDirection.FUTURE);
@@ -489,8 +486,7 @@ public final class GridExtentTest extends TestCase {
                 new double[] {200, -500, -50, 5},
                 new double[] {800, -100, -40, 7}), envelope);
 
-        final CoordinateSystem cs = envelope.getCoordinateReferenceSystem().getCoordinateSystem();
-        assertAxisDirectionsEqual("toEnvelope", cs,
+        assertAxisDirectionsEqual(envelope.getCoordinateReferenceSystem().getCoordinateSystem(),
                 AxisDirection.COLUMN_POSITIVE,
                 AxisDirection.ROW_NEGATIVE,
                 AxisDirection.DOWN,

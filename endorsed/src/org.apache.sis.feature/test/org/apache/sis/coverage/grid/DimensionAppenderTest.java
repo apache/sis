@@ -77,7 +77,7 @@ public final class DimensionAppenderTest extends TestCase {
      */
     private static void assertGridGeometryEquals(final GridCoverage actual, final Matrix gridToCRS, final long... gridIndices) {
         final GridGeometry gg = actual.getGridGeometry();
-        assertMatrixEquals("gridToCRS", gridToCRS, MathTransforms.getMatrix(gg.getGridToCRS(PixelInCell.CELL_CORNER)), STRICT);
+        assertMatrixEquals(gridToCRS, MathTransforms.getMatrix(gg.getGridToCRS(PixelInCell.CELL_CORNER)), STRICT, "gridToCRS");
         assertArrayEquals(gridIndices, gg.getExtent().getLow().getCoordinateValues());
     }
 

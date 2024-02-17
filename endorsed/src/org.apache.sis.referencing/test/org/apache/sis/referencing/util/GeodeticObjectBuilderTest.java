@@ -61,7 +61,6 @@ public final class GeodeticObjectBuilderTest extends TestCase {
         final ParameterValueGroup p = crs.getConversionFromBase().getParameterValues();
         assertEquals(40,  p.parameter("Longitude of natural origin").doubleValue());
         assertEquals(0.5, p.parameter("Scale factor at natural origin").doubleValue());
-        assertAxisDirectionsEqual("baseCRS", crs.getBaseCRS().getCoordinateSystem(),
-                                  AxisDirection.EAST, AxisDirection.NORTH);
+        assertAxisDirectionsEqual(crs.getBaseCRS().getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
     }
 }

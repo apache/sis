@@ -32,6 +32,7 @@ import org.apache.sis.geometry.GeneralDirectPosition;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.TestCase.STRICT;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 import org.apache.sis.test.TestCase;
@@ -101,8 +102,8 @@ public final class MathTransformsTest extends TestCase {
         final Matrix4 swap  = new Matrix4();                    // Swaps two dimensions.
         final List<MathTransform> steps = MathTransforms.getSteps(createConcatenateAndPassThrough(scale, swap));
         assertEquals(3, steps.size());
-        assertMatrixEquals("Step 1", scale, MathTransforms.getMatrix(steps.get(0)), STRICT);
-        assertMatrixEquals("Step 3", swap,  MathTransforms.getMatrix(steps.get(2)), STRICT);
+        assertMatrixEquals(scale, MathTransforms.getMatrix(steps.get(0)), STRICT, "Step 1");
+        assertMatrixEquals(swap,  MathTransforms.getMatrix(steps.get(2)), STRICT, "Step 3");
         assertInstanceOf(PassThroughTransform.class, steps.get(1));
     }
 
@@ -126,7 +127,7 @@ public final class MathTransformsTest extends TestCase {
             7,  0, -9,
             0,  0,  1));
         final MathTransform r = MathTransforms.compound(t1, t2, t3);
-        assertMatrixEquals("compound", Matrices.create(7, 7, new double[] {
+        assertMatrixEquals(Matrices.create(7, 7, new double[] {
             3,  0,  0,  0,  0,  0, -1,
             0,  0,  8,  0,  0,  0,  9,
             0,  5,  0,  0,  0,  0, -7,
@@ -134,7 +135,7 @@ public final class MathTransformsTest extends TestCase {
             0,  0,  0,  0,  0, -5, -3,
             0,  0,  0,  0,  7,  0, -9,
             0,  0,  0,  0,  0,  0,  1
-        }), MathTransforms.getMatrix(r), STRICT);
+        }), MathTransforms.getMatrix(r), STRICT, "compound");
     }
 
     /**
@@ -164,11 +165,12 @@ public final class MathTransformsTest extends TestCase {
         // In the following position, only 1.5 matter because only dimension 1 is non-linear.
         final DirectPosition pos = new GeneralDirectPosition(3, 1.5, 6);
         final Matrix affine = MathTransforms.getMatrix(tr, pos);
-        assertMatrixEquals("Affine approximation", new Matrix4(
-            5,  0,  0,  9,
-            0,  8,  0, -2,      // Non-linear transform shall be the only one with different coefficients.
-            0,  0,  2, -7,
-            0,  0,  0,  1), affine, STRICT);
+        final Matrix result = new Matrix4(
+                5,  0,  0,  9,
+                0,  8,  0, -2,      // Non-linear transform shall be the only one with different coefficients.
+                0,  0,  2, -7,
+                0,  0,  0,  1);
+        assertMatrixEquals(result, affine, STRICT, "Affine approximation");
         /*
          * Transformation using above approximation shall produce the same result as the original
          * transform if we do the comparison at the position where the approximation has been computed.
@@ -206,7 +208,7 @@ public final class MathTransformsTest extends TestCase {
         transform = new MathTransformWrapper(transform);
         final LinearTransform result = MathTransforms.tangent(transform, tangentPoint);
         assertNotSame(transform, result);
-        assertMatrixEquals("tangent", expected, result.getMatrix(), STRICT);
+        assertMatrixEquals(expected, result.getMatrix(), STRICT, "tangent");
     }
 
     /**

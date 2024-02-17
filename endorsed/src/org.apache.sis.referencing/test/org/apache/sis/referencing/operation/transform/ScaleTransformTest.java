@@ -25,6 +25,7 @@ import org.apache.sis.util.internal.DoubleDouble;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.TestCase.STRICT;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.DependsOn;
 
@@ -57,7 +58,7 @@ public final class ScaleTransformTest extends MathTransformTestCase {
         final ScaleTransform tr = new ScaleTransform(matrix.getNumRow(), matrix.getNumCol(), elements);
         assertEquals(sourceDimensions, tr.getSourceDimensions());
         assertEquals(targetDimensions, tr.getTargetDimensions());
-        GeoapiAssert.assertMatrixEquals("matrix", matrix, tr.getMatrix(), 0.0);
+        GeoapiAssert.assertMatrixEquals(matrix, tr.getMatrix(), STRICT, "matrix");
         assertArrayEquals(elements, TranslationTransformTest.getElementAsNumbers(tr));
         transform = tr;
         validate();
@@ -140,7 +141,7 @@ public final class ScaleTransformTest extends MathTransformTestCase {
         final ScaleTransform tr = new ScaleTransform(4, 4, elements);
         assertEquals(3, tr.getSourceDimensions());
         assertEquals(3, tr.getTargetDimensions());
-        GeoapiAssert.assertMatrixEquals("matrix", matrix, tr.getMatrix(), 0.0);
+        GeoapiAssert.assertMatrixEquals(matrix, tr.getMatrix(), STRICT, "matrix");
 
         TranslationTransformTest.replaceZeroByNull(elements, O);
         assertArrayEquals(elements, tr.getElementAsNumbers(false));

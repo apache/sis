@@ -177,7 +177,7 @@ public final class CommonCRSTest extends TestCase {
         final String name = cs.getName().getCode();
         assertTrue(name.startsWith("Ellipsoidal 3D"), name);
         assertEquals(3, cs.getDimension(), "dimension");
-        assertAxisDirectionsEqual(name, cs, AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
+        assertAxisDirectionsEqual(cs, AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
         assertSame(crs, CommonCRS.WGS72.geographic3D(), "Cached value");
     }
 
@@ -197,8 +197,7 @@ public final class CommonCRSTest extends TestCase {
         final String name = cs.getName().getCode();
         assertTrue(name.startsWith("Cartesian 3D"), name);
         assertEquals(3, cs.getDimension(), "dimension");
-        assertAxisDirectionsEqual(name, cs, AxisDirection.GEOCENTRIC_X,
-                AxisDirection.GEOCENTRIC_Y, AxisDirection.GEOCENTRIC_Z);
+        assertAxisDirectionsEqual(cs, AxisDirection.GEOCENTRIC_X, AxisDirection.GEOCENTRIC_Y, AxisDirection.GEOCENTRIC_Z);
         assertSame(crs, CommonCRS.WGS72.geocentric(), "Cached value");
     }
 
@@ -218,7 +217,7 @@ public final class CommonCRSTest extends TestCase {
         final String name = cs.getName().getCode();
         assertTrue(name.startsWith("Spherical"), name);
         assertEquals(3, cs.getDimension(), "dimension");
-        assertAxisDirectionsEqual(name, cs, AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
+        assertAxisDirectionsEqual(cs, AxisDirection.NORTH, AxisDirection.EAST, AxisDirection.UP);
         assertSame(crs, CommonCRS.ETRS89.spherical(), "Cached value");
     }
 

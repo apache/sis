@@ -154,11 +154,11 @@ public final class DefaultConcatenatedOperationTest extends TestCase {
         final CoordinateReferenceSystem sourceCRS = op.getSourceCRS();
         final CoordinateReferenceSystem targetCRS = op.getTargetCRS();
 
-        assertIdentifierEquals(          "identifier", "test", "test", null, "concatenated", getSingleton(op       .getIdentifiers()));
-        assertIdentifierEquals("sourceCRS.identifier", "test", "test", null, "source",       getSingleton(sourceCRS.getIdentifiers()));
-        assertIdentifierEquals("targetCRS.identifier", "test", "test", null, "target",       getSingleton(targetCRS.getIdentifiers()));
-        assertIdentifierEquals(    "step1.identifier", "test", "test", null, "step-1",       getSingleton(step1    .getIdentifiers()));
-        assertIdentifierEquals(    "step2.identifier", "test", "test", null, "step-2",       getSingleton(step2    .getIdentifiers()));
+        assertIdentifierEquals("test", "test", null, "concatenated", getSingleton(op       .getIdentifiers()),           "identifier");
+        assertIdentifierEquals("test", "test", null, "source",       getSingleton(sourceCRS.getIdentifiers()), "sourceCRS.identifier");
+        assertIdentifierEquals("test", "test", null, "target",       getSingleton(targetCRS.getIdentifiers()), "targetCRS.identifier");
+        assertIdentifierEquals("test", "test", null, "step-1",       getSingleton(step1    .getIdentifiers()),     "step1.identifier");
+        assertIdentifierEquals("test", "test", null, "step-2",       getSingleton(step2    .getIdentifiers()),     "step2.identifier");
         assertInstanceOf(GeodeticCRS.class, sourceCRS);
         assertInstanceOf(GeodeticCRS.class, targetCRS);
         assertSame(step1.getSourceCRS(), sourceCRS);

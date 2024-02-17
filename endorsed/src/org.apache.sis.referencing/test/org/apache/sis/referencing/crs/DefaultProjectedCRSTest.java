@@ -484,8 +484,8 @@ public final class DefaultProjectedCRSTest extends TestCase {
         assertEpsgNameAndIdentifierEqual("NTF (Paris) / Lambert zone II", 27572, crs);
         assertEpsgNameAndIdentifierEqual("NTF (Paris)", 4807, crs.getBaseCRS());
         assertEquals("Large and medium scale topographic mapping and engineering survey.", crs.getScope().toString());
-        assertAxisDirectionsEqual("baseCRS", crs.getBaseCRS().getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
-        assertAxisDirectionsEqual("coordinateSystem", crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
+        assertAxisDirectionsEqual(crs.getBaseCRS().getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
+        assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
 
         final Projection conversion = crs.getConversionFromBase();
         assertEpsgNameAndIdentifierEqual("Lambert zone II", 18082, conversion);

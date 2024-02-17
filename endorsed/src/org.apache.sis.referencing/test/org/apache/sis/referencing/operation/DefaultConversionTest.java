@@ -195,8 +195,8 @@ public final class DefaultConversionTest extends TestCase {
             expected.m00 = expected.m11 = 0;
             expected.m01 = expected.m10 = 1;
         }
-        assertMatrixEquals("Longitude rotation of a two-dimensional CRS", expected,
-                MathTransforms.getMatrix(op.getMathTransform()), STRICT);
+        assertMatrixEquals(expected, MathTransforms.getMatrix(op.getMathTransform()), STRICT,
+                           "Longitude rotation of a two-dimensional CRS");
     }
 
     /**
@@ -267,11 +267,12 @@ public final class DefaultConversionTest extends TestCase {
         DefaultConversion op = createLongitudeRotation(
                 createParisCRS(true,  HardCodedCS.GEODETIC_3D, false),
                 createParisCRS(false, HardCodedCS.GEODETIC_3D, true), null);
-        assertMatrixEquals("Longitude rotation of a three-dimensional CRS", new Matrix4(
-                1, 0, 0, OFFSET,
-                0, 1, 0, 0,
-                0, 0, 1, 0,
-                0, 0, 0, 1), MathTransforms.getMatrix(op.getMathTransform()), STRICT);
+        assertMatrixEquals(new Matrix4(1, 0, 0, OFFSET,
+                                       0, 1, 0, 0,
+                                       0, 0, 1, 0,
+                                       0, 0, 0, 1),
+                MathTransforms.getMatrix(op.getMathTransform()), STRICT,
+                "Longitude rotation of a three-dimensional CRS");
         /*
          * When asking for a "specialization" with the same properties,
          * we should get the existing instance since no change is needed.
@@ -282,10 +283,12 @@ public final class DefaultConversionTest extends TestCase {
          */
         op = op.specialize(DefaultConversion.class, op.getSourceCRS(),
                 changeCS(op.getTargetCRS(), HardCodedCS.GEODETIC_φλ), null);
-        assertMatrixEquals("Longitude rotation of a two-dimensional CRS", Matrices.create(3, 4, new double[] {
-                0, 1, 0, 0,
-                1, 0, 0, OFFSET,
-                0, 0, 0, 1}), MathTransforms.getMatrix(op.getMathTransform()), STRICT);
+        assertMatrixEquals(Matrices.create(3, 4, new double[] {
+                    0, 1, 0, 0,
+                    1, 0, 0, OFFSET,
+                    0, 0, 0, 1
+                }), MathTransforms.getMatrix(op.getMathTransform()), STRICT,
+                "Longitude rotation of a two-dimensional CRS");
     }
 
 
@@ -308,11 +311,12 @@ public final class DefaultConversionTest extends TestCase {
     public void testWithInterpolationCRS() throws FactoryException {
         DefaultConversion op = createLongitudeRotation(HardCodedCRS.NTF_NORMALIZED_AXES,
                 createParisCRS(false, HardCodedCS.GEODETIC_2D, true), HardCodedCRS.TIME);
-        assertMatrixEquals("Longitude rotation of a time-varying CRS", new Matrix4(
-                1, 0, 0, 0,
-                0, 1, 0, OFFSET,
-                0, 0, 1, 0,
-                0, 0, 0, 1), MathTransforms.getMatrix(op.getMathTransform()), STRICT);
+        assertMatrixEquals(new Matrix4(1, 0, 0, 0,
+                                       0, 1, 0, OFFSET,
+                                       0, 0, 1, 0,
+                                       0, 0, 0, 1),
+                MathTransforms.getMatrix(op.getMathTransform()), STRICT,
+                "Longitude rotation of a time-varying CRS");
 
         op = op.specialize(
                 DefaultConversion.class,    // In normal use, this would be 'Conversion.class'.
@@ -320,11 +324,12 @@ public final class DefaultConversionTest extends TestCase {
                 changeCS(op.getTargetCRS(), HardCodedCS.GEODETIC_φλ),   // Swap axis order.
                 null);
 
-        assertMatrixEquals("Longitude rotation of a time-varying CRS", new Matrix4(
-                1, 0, 0, 0,
-                0, 0, 1, 0,
-                0, 1, 0, OFFSET,
-                0, 0, 0, 1), MathTransforms.getMatrix(op.getMathTransform()), STRICT);
+        assertMatrixEquals(new Matrix4(1, 0, 0, 0,
+                                       0, 0, 1, 0,
+                                       0, 1, 0, OFFSET,
+                                       0, 0, 0, 1),
+                MathTransforms.getMatrix(op.getMathTransform()), STRICT,
+                "Longitude rotation of a time-varying CRS");
     }
 
     /**

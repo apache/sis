@@ -159,7 +159,7 @@ public final class DefaultImageCRSTest extends TestCase {
         assertEquals(cartesian, cs instanceof CartesianCS);
         assertEquals("Grid", cs.getName().getCode());
         assertEquals(2, cs.getDimension());
-        assertAxisDirectionsEqual("cartesianCS", cs, AxisDirection.COLUMN_POSITIVE, AxisDirection.ROW_POSITIVE);
+        assertAxisDirectionsEqual(cs, AxisDirection.COLUMN_POSITIVE, AxisDirection.ROW_POSITIVE);
 
         assertEquals("Column", cs.getAxis(0).getName().getCode());
         assertEquals("Row",    cs.getAxis(1).getName().getCode());

@@ -29,6 +29,7 @@ import static java.lang.StrictMath.*;
 import net.sf.geographiclib.Geodesic;
 import net.sf.geographiclib.GeodesicData;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.util.Formulas;
@@ -43,13 +44,15 @@ import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADI
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.opengis.test.Assert.assertBetween;
 import org.apache.sis.test.OptionalTestData;
 import org.apache.sis.test.DependsOnMethod;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.widget.VisualCheck;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+
+import static org.apache.sis.test.GeoapiAssert.assertBetween;
+import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
 
 
 /**
@@ -231,6 +234,8 @@ public class GeodeticCalculatorTest extends TestCase {
     @DependsOnMethod("testGeodesicDistanceAndAzimuths")
     public void testUsingTransform() {
         final GeodeticCalculator c = create(true);
+        assertAxisDirectionsEqual(c.getGeographicCRS().getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
+        assertAxisDirectionsEqual(c.getPositionCRS().getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
         final double φ = -33.0;
         final double λ = -71.6;
         c.setStartPoint(new DirectPosition2D(λ, φ));
@@ -326,7 +331,7 @@ public class GeodeticCalculatorTest extends TestCase {
         for (final PathIterator it = geodeticCurve.getPathIterator(null, 1); !it.isDone(); it.next()) {
             it.currentSegment(coords);
             assertEquals(0, coords[0], tolerance, "φ");
-            assertBetween("λ", 12, 20, coords[1]);
+            assertBetween(12, 20, coords[1], "λ");
         }
     }
 

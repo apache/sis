@@ -563,7 +563,7 @@ public abstract class MatrixTestCase extends TestCase {
             at.translate(vector[0] = fma(random.nextDouble(), 50, -25),
                          vector[1] = fma(random.nextDouble(), 50, -25));
             matrix.translate(vector);
-            assertMatrixEquals("translate", AffineTransforms2D.toMatrix(at), matrix, TOLERANCE);
+            assertMatrixEquals(AffineTransforms2D.toMatrix(at), matrix, TOLERANCE, "translate");
             validateImplementation(matrix);
         }
     }

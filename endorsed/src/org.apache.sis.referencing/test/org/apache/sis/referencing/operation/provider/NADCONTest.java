@@ -153,11 +153,10 @@ public final class NADCONTest extends DatumShiftTestCase {
         assertEquals(xmax, envelope.getMaximum(0), "xmax");
         assertEquals(ymin, envelope.getMinimum(1), "ymin");
         assertEquals(ymax, envelope.getMaximum(1), "ymax");
-        assertMatrixEquals("coordinateToGrid",
-                new Matrix3(cellSize,  0,  xmin,
-                            0,  cellSize,  ymin,
-                            0,         0,    1),
-                grid.getCoordinateToGrid().inverse().getMatrix(), STRICT);
+        assertMatrixEquals(new Matrix3(cellSize,  0,  xmin,
+                                       0,  cellSize,  ymin,
+                                       0,         0,    1),
+                grid.getCoordinateToGrid().inverse().getMatrix(), STRICT, "coordinateToGrid");
         /*
          * Test the Meades Ranch station. If we were using the complete Conus files, we would obtain
          * after conversion the grid indices listed on the left side. But since we are using a sub-set

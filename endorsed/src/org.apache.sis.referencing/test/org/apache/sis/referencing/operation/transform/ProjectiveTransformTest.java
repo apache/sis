@@ -42,6 +42,7 @@ import org.apache.sis.test.DependsOn;
 // Specific to the main branch:
 import org.junit.jupiter.api.Disabled;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.test.TestCase.STRICT;
 import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.GeoapiAssert;
 
@@ -66,11 +67,6 @@ public class ProjectiveTransformTest extends TransformTestCase {
      * The matrix for the tested transform.
      */
     private Matrix matrix;
-
-    /**
-     * Tolerance factor for strict comparisons.
-     */
-    private static final double STRICT = 0;
 
     /**
      * A math transform factory which delegates instantiations to the enclosing test class.
@@ -246,8 +242,8 @@ public class ProjectiveTransformTest extends TransformTestCase {
     public void testOptimizeConstant() throws FactoryException, TransformException {
         matrix = new Matrix2(0, 10, 0, 1);
         transform = mtFactory.createAffineTransform(matrix);
-        GeoapiAssert.assertMatrixEquals("Transform shall use the given matrix unmodified.",
-                matrix, assertInstanceOf(LinearTransform.class, transform).getMatrix(), STRICT);
+        GeoapiAssert.assertMatrixEquals(matrix, assertInstanceOf(LinearTransform.class, transform).getMatrix(), STRICT,
+                                      "Transform shall use the given matrix unmodified.");
     }
 
     /**

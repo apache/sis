@@ -60,21 +60,20 @@ public final class LinearizerTest extends TestCase {
     @Test
     public void testApproximate() throws TransformException, FactoryException {
         // Same set of points than `LinearTransformBuilderTest.testSetPointsFromTransform()`.
-        final LinearTransformBuilder points = new LinearTransformBuilder(3, 5);
+        final var points = new LinearTransformBuilder(3, 5);
         points.setControlPoints(HardCodedConversions.mercator().getConversionFromBase().getMathTransform());
 
         // Non-linear transform producing the same values as the set of points;
-        final LocalizationGridBuilder builder = new LocalizationGridBuilder(points);
+        final var builder = new LocalizationGridBuilder(points);
         final MathTransform transform = builder.create(null);
         assertFalse(transform instanceof LinearTransform);
 
         // Linear approximation by Least Square Root method.
-        final LinearTransform linear = LinearTransformBuilder.approximate(transform, new Envelope2D(null, 0, 0, 3, 5));
-        assertMatrixEquals("linear",
-                new Matrix3(111319, 0,   0,
-                            0, 110662, -62,
-                            0, 0, 1), linear.getMatrix(), 0.5);
-
+        LinearTransform linear = LinearTransformBuilder.approximate(transform, new Envelope2D(null, 0, 0, 3, 5));
+        var expected = new Matrix3(111319, 0,   0,
+                                   0, 110662, -62,
+                                   0, 0, 1);
+        assertMatrixEquals(expected, linear.getMatrix(), 0.5, "linear");
         assertSame(points.create(null), linear, "Should have extracted the existing instance instead of computing a new one.");
     }
 }

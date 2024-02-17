@@ -58,14 +58,13 @@ public final class Assertions extends Static {
     /**
      * Asserts that the English title of the given citation is equal to the expected string.
      *
-     * @param message   the message to report in case of test failure.
      * @param expected  the expected English title.
      * @param citation  the citation to test.
-     *
+     * @param message   the message to report in case of test failure.
      *
      * @see #assertAnyTitleEquals(String, String, Citation)
      */
-    public static void assertTitleEquals(final String message, final String expected, final Citation citation) {
+    public static void assertTitleEquals(final String expected, final Citation citation, final String message) {
         assertNotNull(citation, message);
         final InternationalString title = citation.getTitle();
         assertNotNull(title, message);
@@ -76,11 +75,11 @@ public final class Assertions extends Static {
      * Asserts that the given citation has only one responsible party,
      * and its English name is equal to the expected string.
      *
-     * @param message   the message to report in case of test failure.
      * @param expected  the expected English responsibly party name.
      * @param citation  the citation to test.
+     * @param message   the message to report in case of test failure.
      */
-    public static void assertPartyNameEquals(final String message, final String expected, final Citation citation) {
+    public static void assertPartyNameEquals(final String expected, final Citation citation, final String message) {
         assertNotNull(citation, message);
         final DefaultResponsibility r = (DefaultResponsibility) getSingleton(citation.getCitedResponsibleParties());
         final InternationalString name = getSingleton(r.getParties()).getName();

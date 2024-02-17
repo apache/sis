@@ -103,7 +103,7 @@ final class TransformResultComparator implements MathTransform {
     @Override
     public Matrix derivative(DirectPosition point) throws MismatchedDimensionException, TransformException {
         final Matrix value = tested.derivative(point);
-        assertMatrixEquals("derivative", reference.derivative(point), value, tolerance);
+        assertMatrixEquals(reference.derivative(point), value, tolerance, "derivative");
         return value;
     }
 

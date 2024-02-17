@@ -110,17 +110,19 @@ public final class NonSquareMatrixTest extends MatrixTestCase {
             0, 0, 1
         });
         MatrixSIS inverse = m.inverse();
-        assertMatrixEquals("Inverse of non-square matrix.", new NonSquareMatrix(3, 5, new Number[] {
-            0.5, 0,   0,    0,   0,
-            0,   0,   0.25, 0,   0,
-            0,   0,   0,    0,   1}), inverse, STRICT);
+        assertMatrixEquals(new NonSquareMatrix(3, 5, new Number[] {
+                    0.5, 0,   0,    0,   0,
+                    0,   0,   0.25, 0,   0,
+                    0,   0,   0,    0,   1}),
+                inverse, STRICT, "Inverse of non-square matrix.");
 
-        assertMatrixEquals("Back to original.", new NonSquareMatrix(5, 3, new Number[] {
-            2, 0, 0,
-            0, 0, NaN,
-            0, 4, 0,
-            0, 0, NaN,
-            0, 0, 1}), inverse.inverse(), STRICT);
+        assertMatrixEquals(new NonSquareMatrix(5, 3, new Number[] {
+                    2, 0, 0,
+                    0, 0, NaN,
+                    0, 4, 0,
+                    0, 0, NaN,
+                    0, 0, 1}),
+                inverse.inverse(), STRICT, "Back to original.");
         /*
          * Change the [0 0 3] row into [1 0 3]. The NonSquareMarix class should no longer omit that row.
          * As a consequence, the matrix cannot be inverted anymore.

@@ -142,8 +142,9 @@ public class MetadataVerticalTest extends TestCase {
          *   </gmd:MD_ReferenceSystem>
          * </gmd:referenceSystemInfo>
          */
-        assertIdentifierEquals("referenceSystemInfo", null, "EPSG", null, "World Geodetic System 84",
-                getSingleton(metadata.getReferenceSystemInfo()).getName());
+        assertIdentifierEquals(null, "EPSG", null, "World Geodetic System 84",
+                getSingleton(metadata.getReferenceSystemInfo()).getName(),
+                "referenceSystemInfo");
         /*
          * <gmd:identificationInfo>
          *   <gmd:MD_DataIdentification>
@@ -209,8 +210,8 @@ public class MetadataVerticalTest extends TestCase {
      * @param  object  the object to verify.
      */
     private static void verifyIdentifiers(final String code, final IdentifiedObject object) {
-        assertIdentifierEquals("identifier", "Apache Spatial Information System", "SIS",
-                null, code, getSingleton(object.getIdentifiers()));
-        assertIdentifierEquals("name", null, null, null, "Depth", object.getName());
+        assertIdentifierEquals("Apache Spatial Information System", "SIS",
+                null, code, getSingleton(object.getIdentifiers()), "identifier");
+        assertIdentifierEquals(null, null, null, "Depth", object.getName(), "name");
     }
 }
