@@ -22,6 +22,8 @@ import org.apache.sis.util.SimpleInternationalString;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.apache.sis.test.FailureDetailsReporter;
 import org.opengis.test.util.NameTest;
 
 
@@ -31,6 +33,7 @@ import org.opengis.test.util.NameTest;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@ExtendWith(FailureDetailsReporter.class)
 public final class DefaultNameFactoryTest extends NameTest {
     /**
      * Creates a new test suite using the singleton factory instance.

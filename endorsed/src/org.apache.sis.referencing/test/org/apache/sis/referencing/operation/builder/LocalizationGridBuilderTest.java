@@ -25,6 +25,8 @@ import org.apache.sis.geometry.Envelope2D;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.apache.sis.test.FailureDetailsReporter;
 import org.opengis.test.referencing.TransformTestCase;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 import static org.apache.sis.test.TestCase.STRICT;
@@ -35,6 +37,7 @@ import static org.apache.sis.test.TestCase.STRICT;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@ExtendWith(FailureDetailsReporter.class)
 public final class LocalizationGridBuilderTest extends TransformTestCase {
     /**
      * Creates a new test case.

@@ -35,6 +35,8 @@ import org.apache.sis.math.Fraction;
 // Test dependencies
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.apache.sis.test.FailureDetailsReporter;
 import org.opengis.test.Validators;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -52,6 +54,7 @@ import org.opengis.test.referencing.AffineTransformTest;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@ExtendWith(FailureDetailsReporter.class)
 public class ProjectiveTransformTest extends AffineTransformTest {
     /**
      * A math transform factory which delegates instantiations to the enclosing test class.

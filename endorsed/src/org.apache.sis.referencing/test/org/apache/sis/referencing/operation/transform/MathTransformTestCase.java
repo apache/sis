@@ -38,9 +38,11 @@ import org.apache.sis.referencing.operation.matrix.MatrixTestCase;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
-import org.opengis.test.Validators;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.apache.sis.test.FailureDetailsReporter;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.referencing.Assertions;
+import org.opengis.test.Validators;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.Factory;
@@ -80,6 +82,7 @@ import org.opengis.test.referencing.TransformTestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@ExtendWith(FailureDetailsReporter.class)
 public abstract class MathTransformTestCase extends TransformTestCase {
     /**
      * The number of coordinates to use for stressing the math transform. We use a number that

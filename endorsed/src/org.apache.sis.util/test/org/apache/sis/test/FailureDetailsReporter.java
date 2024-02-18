@@ -16,8 +16,9 @@
  */
 package org.apache.sis.test;
 
-import java.io.PrintWriter;
+import java.io.PrintStream;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -59,27 +60,29 @@ public final class FailureDetailsReporter implements BeforeEachCallback, AfterEa
      */
     @Override
     public final void afterEach(final ExtensionContext description) {
-        if (TestCase.VERBOSE) {
-            TestCase.flushOutput();
-        }
+        boolean flush = TestCase.VERBOSE;
         LogRecordCollector.INSTANCE.setCurrentTest(null);
         if (description.getExecutionException().isPresent()) {
-            description.getTestMethod().ifPresent((methodName) -> {
+            description.getTestMethod().ifPresent((method) -> {
                 final Long seed = TestUtilities.randomSeed.get();
                 if (seed != null) {
-                    final PrintWriter out = TestCase.out;
+                    @SuppressWarnings("UseOfSystemOutOrSystemErr")
+                    final PrintStream out = System.err;           // Same as logging console handler.
                     out.print("Random number generator for ");
                     out.print(description.getTestClass().map(Class::getCanonicalName).orElse("<?>"));
                     out.print('.');
-                    out.print(methodName);
+                    out.print(method.getName());
                     out.print("() was created with seed ");
                     out.print(seed);
                     out.println('.');
                 }
-                TestCase.flushOutput();
             });
+            flush = true;
         }
         TestUtilities.randomSeed.remove();
+        if (flush) {
+            TestCase.flushOutput();
+        }
     }
 
     /**
@@ -89,11 +92,12 @@ public final class FailureDetailsReporter implements BeforeEachCallback, AfterEa
      * @param  description  description of the test container.
      */
     @Override
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public final void afterAll(final ExtensionContext description) {
         try {
-            LogRecordCollector.INSTANCE.report(TestCase.out);
+            LogRecordCollector.INSTANCE.report(System.err);     // Same stream as logging console handler.
         } catch (IOException e) {
-            throw new AssertionError(e);        // Should never happen.
+            throw new UncheckedIOException(e);                  // Should never happen.
         }
         TestCase.flushOutput();
     }
