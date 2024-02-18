@@ -59,9 +59,9 @@ import static org.apache.sis.referencing.util.Formulas.ANGULAR_TOLERANCE;
 import static org.apache.sis.referencing.util.PositionalAccuracyConstant.DATUM_SHIFT_APPLIED;
 
 // Test dependencies
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.referencing.cs.HardCodedCS;
@@ -80,30 +80,17 @@ import org.opengis.test.Assertions;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class CoordinateOperationFinderTest extends MathTransformTestCase {
     /**
      * The transformation factory to use for testing.
      */
-    private static DefaultCoordinateOperationFactory factory;
+    private final DefaultCoordinateOperationFactory factory;
 
     /**
      * The parser to use for WKT strings used in this test.
      */
-    private static WKTFormat parser;
-
-    /**
-     * The instance on which to execute the tests.
-     */
-    private CoordinateOperationFinder finder;
-
-    /**
-     * Creates a new test case.
-     *
-     * @throws FactoryException if an error occurred while initializing the finder to test.
-     */
-    public CoordinateOperationFinderTest() throws FactoryException {
-        finder = new CoordinateOperationFinder(null, factory, null);
-    }
+    private final WKTFormat parser;
 
     /**
      * Creates a new {@link DefaultCoordinateOperationFactory} to use for testing purpose.
@@ -111,8 +98,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      *
      * @throws ParseException if an error occurred while preparing the WKT parser.
      */
-    @BeforeAll
-    public static void createFactory() throws ParseException {
+    public CoordinateOperationFinderTest() throws ParseException {
         factory = new DefaultCoordinateOperationFactory();
         parser  = new WKTFormat();
         /*
@@ -139,18 +125,30 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
     }
 
     /**
-     * Disposes the factory created by {@link #createFactory()} after all tests have been executed.
+     * Resets all fields that may be modified by test methods in this class.
+     * This is needed because we reuse the same instance for all methods,
+     * in order to reuse the factory and parser created in the constructor.
      */
-    @AfterAll
-    public static void disposeFactory() {
-        factory = null;
-        parser  = null;
+    @Override
+    @BeforeEach
+    public void reset() {
+        super.reset();
+        isInverseTransformSupported = true;
+    }
+
+    /**
+     * Returns the instance on which to execute the tests.
+     *
+     * @throws FactoryException if an error occurred while initializing the finder to test.
+     */
+    private CoordinateOperationFinder finder() throws FactoryException {
+        return new CoordinateOperationFinder(null, factory, null);
     }
 
     /**
      * Returns the CRS for the given Well Known Text.
      */
-    private static CoordinateReferenceSystem parse(final String wkt) throws ParseException {
+    private CoordinateReferenceSystem parse(final String wkt) throws ParseException {
         return (CoordinateReferenceSystem) parser.parseObject(wkt);
     }
 
@@ -184,13 +182,12 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      * Implementation of {@link #testIdentityTransform()} using the given CRS.
      */
     private void testIdentityTransform(final CoordinateReferenceSystem crs) throws FactoryException {
-        final CoordinateOperation operation = finder.createOperation(crs, crs);
+        final CoordinateOperation operation = finder().createOperation(crs, crs);
         assertSame(crs, operation.getSourceCRS());
         assertSame(crs, operation.getTargetCRS());
         assertTrue(operation.getMathTransform().isIdentity());
         assertTrue(operation.getCoordinateOperationAccuracy().isEmpty());
         assertInstanceOf(Conversion.class, operation);
-        finder = new CoordinateOperationFinder(null, factory, null);        // Reset for next call.
     }
 
     /**
@@ -263,7 +260,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
             final GeographicCRS sourceCRS, final GeographicCRS targetCRS)
             throws ParseException, FactoryException, TransformException
     {
-        final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = finder().createOperation(sourceCRS, targetCRS);
         assertSame(sourceCRS, operation.getSourceCRS());
         assertSame(targetCRS, operation.getTargetCRS());
         assertFalse(operation.getMathTransform().isIdentity());
@@ -322,7 +319,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
                 "  Id[“EPSG”, “4807”]]");
 
         final GeographicCRS       targetCRS = CommonCRS.WGS84.geographic();
-        final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = finder().createOperation(sourceCRS, targetCRS);
 
         assertSame(sourceCRS, operation.getSourceCRS());
         assertSame(targetCRS, operation.getTargetCRS());
@@ -367,7 +364,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
                 "    Unit[“kilometre”, 1000]]");
 
         final GeocentricCRS       targetCRS = CommonCRS.WGS84.geocentric();
-        final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = finder().createOperation(sourceCRS, targetCRS);
 
         assertSame(sourceCRS, operation.getSourceCRS());
         assertSame(targetCRS, operation.getTargetCRS());
@@ -420,7 +417,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
                                           final CoordinateReferenceSystem targetCRS)
             throws FactoryException
     {
-        final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = finder().createOperation(sourceCRS, targetCRS);
         assertSame(sourceCRS, operation.getSourceCRS());
         assertSame(targetCRS, operation.getTargetCRS());
         assertEquals("Geocentric conversion", operation.getName().getCode());
@@ -450,7 +447,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
                 "    Axis[“y”, NORTH],\n" +
                 "    Unit[“US survey foot”, 0.304800609601219]]");
 
-        final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = finder().createOperation(sourceCRS, targetCRS);
         assertSame(sourceCRS, operation.getSourceCRS());
         assertSame(targetCRS, operation.getTargetCRS());
         assertEquals("TM", operation.getName().getCode());
@@ -492,7 +489,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
     public void testPositionVectorTransformation() throws ParseException, FactoryException, TransformException {
         final CoordinateReferenceSystem sourceCRS = CommonCRS.WGS84.geographic();
         final CoordinateReferenceSystem targetCRS = parse(AGD66());
-        final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = finder().createOperation(sourceCRS, targetCRS);
         transform  = operation.getMathTransform();
         tolerance  = LINEAR_TOLERANCE;
         λDimension = new int[] {0};
@@ -589,7 +586,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
          * If no datum shift is applied, the point will be at 191 metres from
          * expected value.
          */
-        final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = finder().createOperation(sourceCRS, targetCRS);
         tolerance = LINEAR_TOLERANCE;
         transform = operation.getMathTransform();
         verifyTransform(new double[] {926713.702, 7348947.026},
@@ -617,7 +614,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
     public void testIncompatibleVerticalCRS() throws FactoryException {
         final VerticalCRS sourceCRS = CommonCRS.Vertical.NAVD88.crs();
         final VerticalCRS targetCRS = CommonCRS.Vertical.MEAN_SEA_LEVEL.crs();
-        var e = assertThrows(OperationNotFoundException.class, () -> finder.createOperation(sourceCRS, targetCRS));
+        var e = assertThrows(OperationNotFoundException.class, () -> finder().createOperation(sourceCRS, targetCRS));
         assertMessageContains(e, "North American Vertical Datum", "Mean Sea Level");
     }
 
@@ -633,7 +630,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
     public void testTemporalConversion() throws FactoryException, TransformException {
         final TemporalCRS sourceCRS = CommonCRS.Temporal.UNIX.crs();
         final TemporalCRS targetCRS = CommonCRS.Temporal.MODIFIED_JULIAN.crs();
-        final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = finder().createOperation(sourceCRS, targetCRS);
         assertSame(sourceCRS, operation.getSourceCRS());
         assertSame(targetCRS, operation.getTargetCRS());
         assertEquals("Axis changes", operation.getName().getCode());
@@ -671,7 +668,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         // NOTE: make sure that the 'sourceCRS' below is not equal to any other 'sourceCRS' created in this class.
         final CompoundCRS   sourceCRS = compound("Test4D", CommonCRS.WGS84.geographic3D(), CommonCRS.Temporal.UNIX.crs());
         final GeographicCRS targetCRS = CommonCRS.WGS84.geographic();
-        final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = finder().createOperation(sourceCRS, targetCRS);
         assertSame(sourceCRS, operation.getSourceCRS());
         assertSame(targetCRS, operation.getTargetCRS());
 
@@ -706,7 +703,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
     public void testGeographic3D_to_2D() throws FactoryException, TransformException {
         final GeographicCRS sourceCRS = CommonCRS.WGS84.geographic3D();
         final GeographicCRS targetCRS = CommonCRS.WGS84.geographic();
-        final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = finder().createOperation(sourceCRS, targetCRS);
         assertSame(sourceCRS, operation.getSourceCRS());
         assertSame(targetCRS, operation.getTargetCRS());
         assertEquals("Axis changes", operation.getName().getCode());
@@ -747,7 +744,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
     public void testGeographic2D_to_3D() throws FactoryException, TransformException {
         final GeographicCRS sourceCRS = CommonCRS.WGS84.geographic();
         final GeographicCRS targetCRS = CommonCRS.WGS84.geographic3D();
-        final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = finder().createOperation(sourceCRS, targetCRS);
         assertSame(sourceCRS, operation.getSourceCRS());
         assertSame(targetCRS, operation.getTargetCRS());
         assertEquals("Axis changes", operation.getName().getCode());
@@ -789,7 +786,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
     public void testGeographic3D_to_EllipsoidalHeight() throws FactoryException, TransformException {
         final CoordinateReferenceSystem sourceCRS = CommonCRS.WGS84.geographic3D();
         final CoordinateReferenceSystem targetCRS = HardCodedCRS.ELLIPSOIDAL_HEIGHT_cm;
-        final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = finder().createOperation(sourceCRS, targetCRS);
         assertSame(sourceCRS, operation.getSourceCRS());
         assertSame(targetCRS, operation.getTargetCRS());
         assertEquals("Axis changes", operation.getName().getCode());
@@ -827,7 +824,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         // NOTE: make sure that the 'sourceCRS' below is not equal to any other 'sourceCRS' created in this class.
         final CompoundCRS sourceCRS = compound("Test4D", CommonCRS.WGS84.geographic3D(), CommonCRS.Temporal.JULIAN.crs());
         final VerticalCRS targetCRS = CommonCRS.Vertical.ELLIPSOIDAL.crs();
-        final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = finder().createOperation(sourceCRS, targetCRS);
         assertSame(sourceCRS, operation.getSourceCRS());
         assertSame(targetCRS, operation.getTargetCRS());
         assertEquals("Axis changes", operation.getName().getCode());
@@ -895,7 +892,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         sourceCRS = compound("Mercator 3D", sourceCRS, CommonCRS.Vertical.MEAN_SEA_LEVEL.crs());
         sourceCRS = compound("Mercator 4D", sourceCRS, CommonCRS.Temporal.MODIFIED_JULIAN.crs());
 
-        final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = finder().createOperation(sourceCRS, targetCRS);
         assertSame(sourceCRS, operation.getSourceCRS());
         assertSame(targetCRS, operation.getTargetCRS());
 
@@ -937,7 +934,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         // NOTE: make sure that the 'sourceCRS' below is not equal to any other 'sourceCRS' created in this class.
         final CompoundCRS sourceCRS = compound("Test3D", CommonCRS.WGS84.geographic(),   CommonCRS.Temporal.UNIX.crs());
         final CompoundCRS targetCRS = compound("Test4D", CommonCRS.WGS84.geographic3D(), CommonCRS.Temporal.MODIFIED_JULIAN.crs());
-        final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = finder().createOperation(sourceCRS, targetCRS);
         assertSame(sourceCRS, operation.getSourceCRS());
         assertSame(targetCRS, operation.getTargetCRS());
         assertInstanceOf(ConcatenatedOperation.class, operation);
@@ -986,7 +983,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
                     0,   0,   1
                 })), HardCodedCS.DISPLAY);
 
-        final CoordinateOperation operation = finder.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = finder().createOperation(sourceCRS, targetCRS);
         assertSame(sourceCRS, operation.getSourceCRS());
         assertSame(targetCRS, operation.getTargetCRS());
 
@@ -1010,6 +1007,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
     public void testEngineeringCRS() throws FactoryException {
         final DefaultEngineeringCRS sourceCRS = createEngineering("Screen display", AxisDirection.DISPLAY_DOWN);
         final DefaultEngineeringCRS targetCRS = createEngineering("Another device", AxisDirection.DISPLAY_DOWN);
+        final CoordinateOperationFinder finder = finder();
         var e = assertThrows(OperationNotFoundException.class, () -> finder.createOperation(sourceCRS, targetCRS),
                 "Should not create operation between CRS of different datum.");
         assertMessageContains(e, "A test CRS");

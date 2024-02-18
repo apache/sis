@@ -23,13 +23,11 @@ import org.opengis.util.RecordType;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
-import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
 /**
@@ -37,40 +35,29 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class DefaultRecordTest extends TestCase {
+    /**
+     * The record schema for the record types to create.
+     */
+    private final SerializableRecordSchema schema;
+
     /**
      * The record type to be shared by all tests.
      */
-    private static RecordType recordType;
+    private final RecordType recordType;
 
     /**
      * Creates the {@link DefaultRecordType} to be used by all tests in this class.
      */
-    @BeforeAll
-    public static void createRecordType() {
-        final var schema = new SerializableRecordSchema("MySchema");
+    public DefaultRecordTest() {
         final var members = new LinkedHashMap<CharSequence,Class<?>>(8);
         assertNull(members.put("city",       String.class));
         assertNull(members.put("latitude",   Double.class));
         assertNull(members.put("longitude",  Double.class));
         assertNull(members.put("population", Integer.class));
+        schema     = new SerializableRecordSchema("MySchema");
         recordType = schema.createRecordType("MyRecordType", members);
-        SerializableRecordSchema.INSTANCE = schema;
-    }
-
-    /**
-     * Clears the {@link DefaultRecordType} used by the tests.
-     */
-    @AfterAll
-    public static void clearRecordType() {
-        SerializableRecordSchema.INSTANCE = null;
-        recordType = null;
-    }
-
-    /**
-     * Creates a new test case.
-     */
-    public DefaultRecordTest() {
     }
 
     /**
@@ -166,7 +153,7 @@ public final class DefaultRecordTest extends TestCase {
     public void testSerialization() {
         final var record = new DefaultRecord(recordType);
         record.setAll("Machu Picchu", -13.1639, -72.5468, null);
-        assertNotSame(record, assertSerializedEquals(record));
+        assertNotSame(record, schema.testSerialization(record));
     }
 
     /**
@@ -178,8 +165,7 @@ public final class DefaultRecordTest extends TestCase {
         final var members = new LinkedHashMap<CharSequence,Class<?>>(8);
         assertNull(members.put("latitude",  Double.class));
         assertNull(members.put("longitude", Double.class));
-        final DefaultRecord record = new DefaultRecord(
-                SerializableRecordSchema.INSTANCE.createRecordType("MyRecordType", members));
+        final var record = new DefaultRecord(schema.createRecordType("MyRecordType", members));
         /*
          * As a side effect of the fact that DefaultRecord uses an array of primitive type,
          * initial values should be zero instead of null. We use this trick as a way to
@@ -197,6 +183,6 @@ public final class DefaultRecordTest extends TestCase {
                 "    longitude : -72.5468\n" +
                 "}\n",
                 record.toString());
-        assertNotSame(record, assertSerializedEquals(record));
+        assertNotSame(record, schema.testSerialization(record));
     }
 }

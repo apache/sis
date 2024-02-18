@@ -16,7 +16,6 @@
  */
 package org.apache.sis.xml.bind.gml;
 
-import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -31,9 +30,8 @@ import org.apache.sis.xml.util.XmlUtilities;
 import org.apache.sis.pending.temporal.DefaultTemporalFactory;
 
 // Test dependencies
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
@@ -50,16 +48,24 @@ import org.opengis.temporal.Instant;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class TimePeriodTest extends TestCase {
     /**
-     * A poll of configured {@link Marshaller} and {@link Unmarshaller}, created when first needed.
+     * A poll of configured {@link Marshaller} and {@link Unmarshaller}.
      */
-    private static MarshallerPool pool;
+    private final MarshallerPool pool;
 
     /**
-     * Creates a new test case.
+     * Creates the XML (un)marshaller pool to be shared by all test methods.
+     * The (un)marshallers locale and timezone will be set to fixed values.
+     *
+     * @throws JAXBException if an error occurred while creating the pool.
      */
-    public TimePeriodTest() {
+    public TimePeriodTest() throws JAXBException {
+        final var properties = new HashMap<String,Object>(4);
+        assertNull(properties.put(XML.LOCALE, Locale.FRANCE));
+        assertNull(properties.put(XML.TIMEZONE, "CET"));
+        pool = new MarshallerPool(JAXBContext.newInstance(TimeInstant.class, TimePeriod.class), properties);
     }
 
     /**
@@ -75,31 +81,6 @@ public final class TimePeriodTest extends TestCase {
      */
     private static Instant instant(final String date) {
         return DefaultTemporalFactory.provider().createInstant(date(date));
-    }
-
-    /**
-     * Creates the XML (un)marshaller pool to be shared by all test methods.
-     * The (un)marshallers locale and timezone will be set to fixed values.
-     *
-     * @throws JAXBException if an error occurred while creating the pool.
-     *
-     * @see #disposeMarshallerPool()
-     */
-    @BeforeAll
-    public static void createMarshallerPool() throws JAXBException {
-        final Map<String,Object> properties = new HashMap<>(4);
-        assertNull(properties.put(XML.LOCALE, Locale.FRANCE));
-        assertNull(properties.put(XML.TIMEZONE, "CET"));
-        pool = new MarshallerPool(JAXBContext.newInstance(TimeInstant.class, TimePeriod.class), properties);
-    }
-
-    /**
-     * Invoked by JUnit after the execution of every tests in order to dispose
-     * the {@link MarshallerPool} instance used internally by this class.
-     */
-    @AfterAll
-    public static void disposeMarshallerPool() {
-        pool = null;
     }
 
     /**

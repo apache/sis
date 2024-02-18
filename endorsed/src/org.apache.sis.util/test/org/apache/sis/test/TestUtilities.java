@@ -93,6 +93,13 @@ public final class TestUtilities extends Static {
     public static final ThreadGroup THREADS = new ThreadGroup("SIS-Tests");
 
     /**
+     * The seed for the random number generator created by {@link #createRandomNumberGenerator()}, or null if none.
+     * This information is used for printing the seed in case of test failure, in order to allow the developer to
+     * reproduce the failure.
+     */
+    static final ThreadLocal<Long> randomSeed = new ThreadLocal<>();
+
+    /**
      * Do not allow instantiation of this class.
      */
     private TestUtilities() {
@@ -170,10 +177,8 @@ public final class TestUtilities extends Static {
      * @return a new random number generator initialized with a random seed.
      */
     public static Random createRandomNumberGenerator() {
-        long seed;
-        do seed = StrictMath.round(StrictMath.random() * (1L << 48));
-        while (seed == 0); // 0 is a sentinel value for "no generator".
-        TestCase.randomSeed = seed;
+        final long seed = StrictMath.round(StrictMath.random() * (1L << 48));
+        randomSeed.set(seed);
         return new Random(seed);
     }
 
@@ -196,7 +201,7 @@ public final class TestUtilities extends Static {
      */
     @Debug
     public static Random createRandomNumberGenerator(final long seed) {
-        TestCase.randomSeed = seed;
+        randomSeed.set(seed);
         return new Random(seed);
     }
 

@@ -27,9 +27,11 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.RasterLoadingStrategy;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.internal.StandardDateFormat;
 import org.apache.sis.util.internal.Numerics;
@@ -40,6 +42,7 @@ import org.apache.sis.math.StatisticsFormat;
 // Test dependencies
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
@@ -57,19 +60,28 @@ import org.apache.sis.test.TestCase;
  * we consider that the code reading the full extent is usually simpler than the code reading
  * a subset of data.
  *
- * <p>This class is not thread-safe. Only one instance should exist in the JVM at a given time
- * (because of the use of static fields).</p>
+ * <p>This class is not thread-safe. However, instances of this class can be reused for many test methods.</p>
+ *
+ * @param  <S> the data store class to test.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public class CoverageReadConsistency extends TestCase {
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public abstract class CoverageReadConsistency<S extends DataStore> extends TestCase {
     /**
      * A constant for identifying the codes working on two dimensional slices.
      */
     private static final int BIDIMENSIONAL = 2;
 
     /**
-     * The resource to test.
+     * The data store to test. It will be closed after all tests finished.
+     *
+     * @see #closeFile()
+     */
+    protected final S store;
+
+    /**
+     * The resource to test. May be the same instance as {@link #store}.
      */
     private final GridCoverageResource resource;
 
@@ -117,19 +129,20 @@ public class CoverageReadConsistency extends TestCase {
      * Statistics about execution time.
      * Created only in benchmark mode.
      */
-    private static List<Statistics> statistics;
+    private List<Statistics> statistics;
 
     /**
      * Creates a new tester. This constructor reads immediately the coverage at full extent and full resolution.
      * That full coverage will be used as a reference for verifying the pixel values read in sub-domains.
      * Any mismatch in pixel values will cause immediate test failure.
      *
-     * @param  tested  the resource to test.
+     * @param  store  the data store to test.
      * @throws DataStoreException if the full coverage cannot be read.
      */
-    public CoverageReadConsistency(final GridCoverageResource tested) throws DataStoreException {
-        resource       = tested;
-        full           = tested.read(null, null);
+    public CoverageReadConsistency(final S store) throws DataStoreException {
+        this.store     = store;
+        resource       = resource();
+        full           = resource.read(null, null);
         random         = TestUtilities.createRandomNumberGenerator();
         numIterations  = 100;
         failOnMismatch = true;
@@ -140,20 +153,37 @@ public class CoverageReadConsistency extends TestCase {
      * This tester may be used for benchmarking instead of JUnit tests.
      * Mismatched pixel values will be reported in statistics instead of causing test failure.
      *
+     * @param  store      the data store to close after all tests are completed.
      * @param  tested     the resource to test.
      * @param  reference  full coverage read from the {@code resource}, or {@code null} if none.
      * @param  seed       seed for random number generator. Used for reproducible "random" values.
      * @param  readCount  number of read operations to perform.
      */
-    public CoverageReadConsistency(final GridCoverageResource tested, final GridCoverage reference,
-                                   final long seed, final int readCount)
+    public CoverageReadConsistency(final S store, final GridCoverageResource tested,
+                final GridCoverage reference, final long seed, final int readCount)
     {
+        this.store     = store;
         resource       = tested;
         full           = reference;
         random         = TestUtilities.createRandomNumberGenerator(seed);
         numIterations  = readCount;
         failOnMismatch = false;
     }
+
+    /**
+     * Returns the resource to read from the {@linkplain #store}.
+     * This method shall not use any other field and shall not invoke any other method,
+     * because this method is invoked during object construction.
+     *
+     * <p>This method is a work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors")
+     * and will be removed (replaced by constructor argument) in a future version.</p>
+     *
+     * @return the resource to test.
+     * @throws DataStoreException if an error occurred while reading the resource.
+     */
+    @Workaround(library="JDK", version="1.7")
+    protected abstract GridCoverageResource resource() throws DataStoreException;
 
     /**
      * Tests reading in random sub-regions starting at coordinates (0,0).
@@ -164,6 +194,9 @@ public class CoverageReadConsistency extends TestCase {
      */
     @Test
     public void testSubRegionAtOrigin() throws DataStoreException {
+        allowOffsets     = false;
+        allowBandSubset  = false;
+        allowSubsampling = false;
         readAndCompareRandomRegions("Subregions at (0,0)");
     }
 
@@ -175,7 +208,9 @@ public class CoverageReadConsistency extends TestCase {
      */
     @Test
     public void testSubRegionsAnywhere() throws DataStoreException {
-        allowOffsets = true;
+        allowOffsets     = true;
+        allowBandSubset  = false;
+        allowSubsampling = false;
         readAndCompareRandomRegions("Subregions");
     }
 
@@ -187,6 +222,8 @@ public class CoverageReadConsistency extends TestCase {
      */
     @Test
     public void testSubsamplingAtOrigin() throws DataStoreException {
+        allowOffsets     = false;
+        allowBandSubset  = false;
         allowSubsampling = true;
         readAndCompareRandomRegions("Subsampling at (0,0)");
     }
@@ -200,6 +237,7 @@ public class CoverageReadConsistency extends TestCase {
     @Test
     public void testSubsamplingAnywhere() throws DataStoreException {
         allowOffsets     = true;
+        allowBandSubset  = false;
         allowSubsampling = true;
         readAndCompareRandomRegions("Subsampling");
     }
@@ -211,7 +249,9 @@ public class CoverageReadConsistency extends TestCase {
      */
     @Test
     public void testBandSubsetAtOrigin() throws DataStoreException {
-        allowBandSubset = true;
+        allowOffsets     = false;
+        allowBandSubset  = true;
+        allowSubsampling = false;
         readAndCompareRandomRegions("Bands at (0,0)");
     }
 
@@ -222,8 +262,9 @@ public class CoverageReadConsistency extends TestCase {
      */
     @Test
     public void testBandSubsetAnywhere() throws DataStoreException {
-        allowOffsets    = true;
-        allowBandSubset = true;
+        allowOffsets     = true;
+        allowBandSubset  = true;
+        allowSubsampling = false;
         readAndCompareRandomRegions("Bands");
     }
 
@@ -435,7 +476,7 @@ nextSlice:  for (;;) {
      */
     @AfterAll
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
-    public static void printDurations() {
+    public void printDurations() {
         if (statistics != null) {
             // It is too late for using `TestCase.out`.
             System.out.print(StatisticsFormat.getInstance().format(statistics.toArray(Statistics[]::new)));
@@ -541,5 +582,15 @@ nextSlice:  for (;;) {
                 }
             }
         }
+    }
+
+    /**
+     * Closes the resource used by all tests.
+     *
+     * @throws DataStoreException if an error occurred while closing the resource.
+     */
+    @AfterAll
+    public void closeFile() throws DataStoreException {
+        store.close();
     }
 }

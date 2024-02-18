@@ -18,12 +18,12 @@ package org.apache.sis.storage.image;
 
 import java.net.URL;
 import java.io.IOException;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.StorageConnector;
 
 // Test dependencies
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.storage.test.CoverageReadConsistency;
 
@@ -37,45 +37,34 @@ import org.apache.sis.storage.test.CoverageReadConsistency;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class SelfConsistencyTest extends CoverageReadConsistency {
-    /**
-     * The store used for the test, opened only once.
-     */
-    private static WorldFileStore store;
-
+public final class SelfConsistencyTest extends CoverageReadConsistency<WorldFileStore> {
     /**
      * Opens the test file to be used for all tests.
      *
      * @throws IOException if an error occurred while opening the file.
      * @throws DataStoreException if an error occurred while reading the file.
      */
-    @BeforeAll
-    public static void openFile() throws IOException, DataStoreException {
+    public SelfConsistencyTest() throws IOException, DataStoreException {
+        super(openFile());
+    }
+
+    /**
+     * Work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
+     */
+    @Workaround(library="JDK", version="1.7")
+    private static WorldFileStore openFile() throws IOException, DataStoreException {
         final URL url = WorldFileStoreTest.class.getResource("gradient.png");
         assertNotNull(url, "Test file not found.");
-        store = new WorldFileStore(null, new StorageConnector(url));
+        return new WorldFileStore(null, new StorageConnector(url));
     }
 
     /**
-     * Closes the test file used by all tests.
-     *
-     * @throws DataStoreException if an error occurred while closing the file.
+     * Work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
      */
-    @AfterAll
-    public static void closeFile() throws DataStoreException {
-        final WorldFileStore s = store;
-        if (s != null) {
-            store = null;       // Clear first in case of failure.
-            s.close();
-        }
-    }
-
-    /**
-     * Creates a new test case.
-     *
-     * @throws DataStoreException if an error occurred while fetching the first image.
-     */
-    public SelfConsistencyTest() throws DataStoreException {
-        super(store.components().iterator().next());
+    @Override
+    protected GridCoverageResource resource() throws DataStoreException {
+        return store.components().iterator().next();
     }
 }

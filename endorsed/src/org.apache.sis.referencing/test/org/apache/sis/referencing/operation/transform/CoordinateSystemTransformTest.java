@@ -30,9 +30,9 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArraysExt;
 
 // Test dependencies
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.referencing.cs.HardCodedCS;
@@ -43,34 +43,28 @@ import org.apache.sis.referencing.cs.HardCodedCS;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class CoordinateSystemTransformTest extends TransformTestCase {
     /**
      * A right-handed spherical coordinate system.
      */
-    private static SphericalCS spherical;
+    private final SphericalCS spherical;
 
     /**
      * The factory to use for creating the affine transforms and concatenated transforms.
      */
-    private static MathTransformFactory factory;
+    private final MathTransformFactory factory;
 
     /**
      * The operation method used.
      */
-    private static ThreadLocal<OperationMethod> lastMethod;
-
-    /**
-     * Creates a new test case.
-     */
-    public CoordinateSystemTransformTest() {
-    }
+    private final ThreadLocal<OperationMethod> lastMethod;
 
     /**
      * Creates the {@link MathTransformFactory} to be used for the tests.
      * We do not use the system-wide factory in order to have better tests isolation.
      */
-    @BeforeAll
-    public static void createFactory() {
+    public CoordinateSystemTransformTest() {
         factory = new DefaultMathTransformFactory();
         spherical = (SphericalCS) DefaultGeocentricCRS.castOrCopy(CommonCRS.WGS84.spherical())
                             .forConvention(AxesConvention.RIGHT_HANDED).getCoordinateSystem();
@@ -78,13 +72,15 @@ public final class CoordinateSystemTransformTest extends TransformTestCase {
     }
 
     /**
-     * Disposes the {@link MathTransformFactory} used for the tests.
+     * Resets all fields that may be modified by test methods in this class.
+     * This is needed because we reuse the same instance for all methods,
+     * in order to reuse the factory and parser created in the constructor.
      */
-    @AfterAll
-    public static void disposeFactory() {
-        spherical  = null;
-        factory    = null;
-        lastMethod = null;
+    @BeforeEach
+    public void reset() {
+        transform = null;
+        lastMethod.remove();
+        tolerance = 0;
     }
 
     /**
@@ -123,7 +119,7 @@ public final class CoordinateSystemTransformTest extends TransformTestCase {
     /**
      * Verifies that {@link #lastMethod} has the expected value.
      */
-    private static void assertMethodEquals(final String expected) {
+    private void assertMethodEquals(final String expected) {
         final OperationMethod method = lastMethod.get();
         assertNotNull(method);
         assertEquals(expected, method.getName().getCode());
@@ -139,7 +135,6 @@ public final class CoordinateSystemTransformTest extends TransformTestCase {
     @Test
     public void testSphericalToSpherical() throws FactoryException, TransformException {
         createTransform(HardCodedCS.SPHERICAL, spherical);
-        tolerance = 0;
         final double[][] data = SphericalToCartesianTest.testData();
         final double[] source = data[0];
         final double[] target = data[1];

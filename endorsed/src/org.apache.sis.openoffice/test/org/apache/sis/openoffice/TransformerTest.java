@@ -22,9 +22,8 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.storage.DataStoreException;
 
 // Test dependencies
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import org.apache.sis.test.TestCase;
@@ -35,33 +34,19 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class TransformerTest extends TestCase {
     /**
      * The instance to use for testing purpose.
      */
-    private static ReferencingFunctions caller;
+    private final ReferencingFunctions caller;
 
     /**
      * Creates a {@link ReferencingFunctions} instance to use for all tests.
      */
-    @BeforeAll
-    public static void createReferencingInstance() {
+    public TransformerTest() {
         caller = new ReferencingFunctions(null);
         caller.setLocale(new com.sun.star.lang.Locale("en", "US", null));
-    }
-
-    /**
-     * Disposes the {@link ReferencingFunctions} instance after all tests completed.
-     */
-    @AfterAll
-    public static void disposeReferencingInstance() {
-        caller = null;
-    }
-
-    /**
-     * Creates a new test case.
-     */
-    public TransformerTest() {
     }
 
     /**

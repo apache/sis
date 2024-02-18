@@ -25,14 +25,11 @@ import org.apache.sis.referencing.factory.TestFactorySource;
 import org.apache.sis.referencing.factory.sql.EPSGFactory;
 
 // Test dependencies
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import org.apache.sis.test.TestCase;
+import org.junit.jupiter.api.TestInstance;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.apache.sis.test.TestCase;
 
 
 /**
@@ -40,21 +37,20 @@ import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class ComparisonWithEPSG extends TestCase {
     /**
-     * Creates a new test case.
+     * The source of the EPSG factory.
      */
-    public ComparisonWithEPSG() {
-    }
+    private final TestFactorySource dataEPSG;
 
     /**
      * Creates the factory to use for all tests in this class.
      *
      * @throws FactoryException if an error occurred while creating the factory.
      */
-    @BeforeAll
-    public static void createFactory() throws FactoryException {
-        TestFactorySource.createFactory();
+    public ComparisonWithEPSG() throws FactoryException {
+        dataEPSG = new TestFactorySource();
     }
 
     /**
@@ -63,8 +59,8 @@ public final class ComparisonWithEPSG extends TestCase {
      * @throws FactoryException if an error occurred while closing the connections.
      */
     @AfterAll
-    public static void close() throws FactoryException {
-        TestFactorySource.close();
+    public void close() throws FactoryException {
+        dataEPSG.close();
     }
 
     /**
@@ -157,10 +153,9 @@ public final class ComparisonWithEPSG extends TestCase {
      * Compares a projected CRS parsed from a WKT with a the CRS built from EPSG database.
      * The latter is taken as the reference.
      */
-    private static void compare(final String wkt, final int epsg) throws FactoryException {
+    private void compare(final String wkt, final int epsg) throws FactoryException {
         final CoordinateReferenceSystem crs = CRS.fromWKT(wkt);
-        final EPSGFactory factory = TestFactorySource.factory;
-        assumeTrue(factory != null);
+        final EPSGFactory factory = dataEPSG.factory();
         final CoordinateReferenceSystem reference = factory.createProjectedCRS(Integer.toString(epsg));
         assertEqualsIgnoreMetadata(reference, crs);
     }
@@ -175,8 +170,7 @@ public final class ComparisonWithEPSG extends TestCase {
      */
     @Test
     public void testCoordinateOperation() throws FactoryException, ParseException {
-        final EPSGFactory factory = TestFactorySource.factory;
-        assumeTrue(factory != null);
+        final EPSGFactory factory = dataEPSG.factory();
         CoordinateOperation opFromCode = factory.createCoordinateOperation("5630");
         String wkt = opFromCode.toWKT();
         WKTFormat parser = new WKTFormat();

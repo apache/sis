@@ -29,9 +29,8 @@ import static org.apache.sis.metadata.iso.citation.Citations.OGC;
 import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
 
 // Test dependencies
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
@@ -42,17 +41,12 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class ParameterFormatTest extends TestCase {
     /**
      * The parameter descriptors used for all tests in this class.
      */
-    private static ParameterDescriptorGroup descriptor;
-
-    /**
-     * Creates a new test case.
-     */
-    public ParameterFormatTest() {
-    }
+    private final ParameterDescriptorGroup descriptor;
 
     /**
      * Creates the parameter descriptors to be used by all tests in this class. This method creates
@@ -60,8 +54,7 @@ public final class ParameterFormatTest extends TestCase {
      * with arbitrary non-zero default values. Those default values are not part of EPSG definitions.
      * They are added here only for testing purpose.
      */
-    @BeforeAll
-    public static void createParameterDescriptor() {
+    public ParameterFormatTest() {
         descriptor = createMercatorParameters();
     }
 
@@ -89,20 +82,12 @@ public final class ParameterFormatTest extends TestCase {
     }
 
     /**
-     * Forgets the parameter descriptors after all tests are done.
-     */
-    @AfterAll
-    public static void clearParameterDescriptor() {
-        descriptor = null;
-    }
-
-    /**
      * Creates parameter values with some arbitrary values different than the default values.
      * This method intentionally leaves {@code "central_meridian"} (a mandatory parameter) and
      * {@code "false_easting"} (an optional parameter) undefined, in order to test whether the
      * formatter fallback on default values.
      */
-    private static ParameterValueGroup createParameterValues() {
+    private ParameterValueGroup createParameterValues() {
         final ParameterValueGroup group = descriptor.createValue();
         group.parameter("latitude_of_origin").setValue(20);
         group.parameter("scale_factor").setValue(0.997);

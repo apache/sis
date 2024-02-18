@@ -18,6 +18,7 @@ package org.apache.sis.util.iso;
 
 import java.io.Serializable;
 import java.io.ObjectStreamException;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
 /**
@@ -31,7 +32,7 @@ final class SerializableRecordSchema extends DefaultRecordSchema implements Seri
     /**
      * The unique instance for the shema.
      */
-    static DefaultRecordSchema INSTANCE;
+    private static DefaultRecordSchema INSTANCE;
 
     /**
      * Construct a new record schema.
@@ -56,6 +57,23 @@ final class SerializableRecordSchema extends DefaultRecordSchema implements Seri
     private static final class Proxy implements Serializable {
         Object readResolve() throws ObjectStreamException {
             return INSTANCE;
+        }
+    }
+
+    /**
+     * Tests serialization of a {@code Record} or {@code RecordType}.
+     *
+     * @param  record the object to serialize.
+     * @return the deserialized object.
+     */
+    final Object testSerialization(final Object record) {
+        synchronized (SerializableRecordSchema.class) {
+            try {
+                INSTANCE = this;
+                return assertSerializedEquals(record);
+            } finally {
+                INSTANCE = null;
+            }
         }
     }
 }

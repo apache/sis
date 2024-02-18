@@ -71,6 +71,13 @@ import org.opengis.test.referencing.TransformTestCase;
  *   <li>{@link #verifyTransform(double[], double[])}   — from GeoAPI and Apache SIS</li>
  * </ul>
  *
+ * <h2>Life cycle</h2>
+ * GeoAPI tests have a state. Therefor, a new instance of {@code MathTransformTestCase} should be created
+ * for each test method to execute. However, it may be costly if the constructor requires large resources
+ * (e.g., a connection to an EPSG database). For making easier to reuse the same {@code TestCase} instance,
+ * a {@link #reset()} method is provided. Subclasses are responsible to override that method with the
+ * {@link org.junit.jupiter.api.BeforeEach} annotation if they want per-class life cycle.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  */
 public abstract class MathTransformTestCase extends TransformTestCase {
@@ -124,14 +131,32 @@ public abstract class MathTransformTestCase extends TransformTestCase {
         /*
          * Use 'zTolerance' threshold instead of 'tolerance' when comparing vertical coordinate values.
          */
-        toleranceModifier = (final double[] tolerance, final DirectPosition coordinate, final CalculationType mode) -> {
+        toleranceModifier = (final double[] tolerances, final DirectPosition coordinates, final CalculationType mode) -> {
             if (mode != CalculationType.IDENTITY) {
                 final int i = forComparison(zDimension, mode);
-                if (i >= 0 && i < tolerance.length) {
-                    tolerance[i] = zTolerance;
+                if (i >= 0 && i < tolerances.length) {
+                    tolerances[i] = zTolerance;
                 }
             }
         };
+    }
+
+    /**
+     * Resets all fields that may be modified by test methods in this class.
+     * This is needed if the subclass reuses the same {@code TestCase} instance for all test methods.
+     *
+     * <p>The default implementation of this method does not reset the {@code isFooSupported} Boolean flags,
+     * on the assumption that subclasses do not modify them. Subclasses are responsible for restoring these
+     * flags if needed.</p>
+     */
+    protected void reset() {
+        transform  = null;
+        λDimension = null;
+        zDimension = null;
+        zTolerance = 0;
+        tolerance  = 0;
+        derivativeDeltas = null;
+        configurationTip = null;
     }
 
     /**

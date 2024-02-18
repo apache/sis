@@ -24,6 +24,7 @@ import java.io.UnsupportedEncodingException;
 import org.apache.sis.util.logging.MonolineFormatter;
 
 // Test dependencies
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 
@@ -47,6 +48,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
  * @author  Martin Desruisseaux (Geomatys)
  */
 @ExtendWith(FailureDetailsReporter.class)
+@TestInstance(TestInstance.Lifecycle.PER_METHOD)
 public abstract class TestCase {
     /**
      * A flag for code that are pending future SIS development before to be enabled.
@@ -71,13 +73,6 @@ public abstract class TestCase {
      * Tolerance threshold for strict comparisons of floating point numbers.
      */
     public static final double STRICT = 0;
-
-    /**
-     * The seed for the random number generator created by {@link TestUtilities#createRandomNumberGenerator()},
-     * or 0 if none. This information is used for printing the seed in case of test failure, in order to allow
-     * the developer to reproduce the failure.
-     */
-    static long randomSeed;
 
     /**
      * The output writer where to print debugging information (never {@code null}).

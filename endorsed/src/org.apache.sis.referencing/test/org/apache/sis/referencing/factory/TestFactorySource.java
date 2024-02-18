@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.factory;
 
-import java.util.Map;
 import java.util.HashMap;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.opengis.util.FactoryException;
@@ -38,22 +37,26 @@ import static org.opengis.test.Assertions.assertBetween;
  * Use this class as below:
  *
  * {@snippet lang="java" :
- *     @BeforeAll
- *     public static void createFactory() throws FactoryException {
- *         TestFactorySource.createFactory();
- *     }
+ *     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+ *     public class MyTest {
+ *         private final TestFactorySource dataEPSG;
  *
- *     @AfterAll
- *     public static void close() throws FactoryException {
- *         TestFactorySource.close();
- *     }
+ *         public MyTest() throws FactoryException {
+ *             dataEPSG = new TestFactorySource();
+ *         }
  *
- *     @Test
- *     public void testFoo() {
- *         assumeNotNull(TestFactorySource.factory);
- *         // Test can happen now.
+ *         @AfterAll
+ *         public void close() throws FactoryException {
+ *             dataEPSG.close();
+ *         }
+ *
+ *         @Test
+ *         public void testFoo() {
+ *             final EPSGFactory factory = dataEPSG.factory();
+ *             // Test can happen now.
+ *         }
  *     }
- * }
+ *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -79,12 +82,8 @@ public final class TestFactorySource {
 
     /**
      * The factory instance to use for the tests, or {@code null} if not available.
-     * This field is set by {@link #createFactory()} and cleared by {@link #close()}.
-     * Test classes using this field shall declare their own {@code createFactory()}
-     * and {@code close()} methods delegating their work to the corresponding methods
-     * in this {@code TestFactorySource} class.
      */
-    public static EPSGFactory factory;
+    private final EPSGFactory factory;
 
     /**
      * {@code true} if we failed to create the {@link #factory}.
@@ -92,17 +91,11 @@ public final class TestFactorySource {
     private static boolean isUnavailable;
 
     /**
-     * Do not allow instantiation of this class.
-     */
-    private TestFactorySource() {
-    }
-
-    /**
      * Returns the system-wide EPSG factory, or interrupts the tests with JUnit {@code Assumptions}
      * if the EPSG factory is not available. Note that this method breaks isolation between tests.
      * For more isolated tests, use {@link #createFactory()} and {@link #close()} instead.
      *
-     * @return the system-wide EPSG factory.
+     * @return the system-wide EPSG factory. Never null if this method returns.
      * @throws FactoryException if an error occurred while fetching the factory.
      */
     public static synchronized EPSGFactory getSharedFactory() throws FactoryException {
@@ -125,36 +118,50 @@ public final class TestFactorySource {
      *
      * @throws FactoryException if an error occurred while creating the factory.
      */
-    public static synchronized void createFactory() throws FactoryException {
-        if (!isUnavailable) {
-            EPSGFactory af = factory;
-            if (af == null) {
+    public TestFactorySource() throws FactoryException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        EPSGFactory factory = null;
+        synchronized (TestFactorySource.class) {
+            if (!isUnavailable) {
                 final GeodeticObjectFactory f = GeodeticObjectFactory.provider();
-                final Map<String,Object> properties = new HashMap<>(6);
+                final var properties = new HashMap<String,Object>(6);
                 assertNull(properties.put("datumFactory", f));
                 assertNull(properties.put("csFactory", f));
                 assertNull(properties.put("crsFactory", f));
+                boolean success = false;
                 try {
-                    af = new EPSGFactory(properties);
-                    assertEquals(0, ((ConcurrentAuthorityFactory) af).countAvailableDataAccess(),
+                    factory = new EPSGFactory(properties);
+                    assertEquals(0, ((ConcurrentAuthorityFactory) factory).countAvailableDataAccess(),
                                  "Expected no Data Access Object (DAO) before the first test is run.");
                     /*
                      * Above method call may fail if no data source has been specified.
                      * Following method call may fail if a data source has been specified,
                      * but the database does not contain the required tables.
                      */
-                    assertNotNull(af.createUnit(String.valueOf(Constants.EPSG_METRE)));
-                    factory = af;                                                           // Must be last.
+                    assertNotNull(factory.createUnit(String.valueOf(Constants.EPSG_METRE)));
+                    success = true;
                 } catch (UnavailableFactoryException e) {
                     isUnavailable = true;
                     GeodeticAuthorityFactory.LOGGER.warning(e.toString());
                 } finally {
-                    if (factory != af) {
-                        af.close();
+                    if (!success && factory != null) {
+                        factory.close();
+                        factory = null;
                     }
                 }
             }
+            this.factory = factory;
         }
+    }
+
+    /**
+     * Returns the factory, or interrupt the test with a JUnit {@code Assumptions} if there is no factory available.
+     *
+     * @return the factory (never null if this method returns).
+     */
+    public EPSGFactory factory() {
+        assumeTrue(factory != null, "No connection to EPSG dataset.");
+        return factory;
     }
 
     /**
@@ -162,12 +169,10 @@ public final class TestFactorySource {
      *
      * @throws FactoryException if an error occurred while closing the connections.
      */
-    public static synchronized void close() throws FactoryException {
-        final EPSGFactory af = factory;
-        if (af != null) {
-            factory = null;
-            final int n = ((ConcurrentAuthorityFactory) af).countAvailableDataAccess();
-            af.close();
+    public void close() throws FactoryException {
+        if (factory != null) {
+            final int n = ((ConcurrentAuthorityFactory) factory).countAvailableDataAccess();
+            factory.close();
             assertBetween(0, 1, n, "Since we ran all tests sequentially, should have no more than 1 Data Access Object (DAO).");
         }
     }

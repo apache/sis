@@ -27,7 +27,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 
@@ -37,22 +36,17 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  * @author  Martin Desruisseaux (Geomatys)
  */
 public final class DefaultRecordTypeTest extends TestCase {
-    /** Value of {@link DefaultRecordType#getContainer()}.  */ private DefaultRecordSchema container;
-    /** Value of {@link DefaultRecordType#getTypeName()}.   */ private DefaultTypeName     recordTypeName;
-    /** Value of {@link DefaultRecordType#getMembers()}.    */ private DefaultMemberName   fieldName;
-    /** Value of {@link DefaultRecordType#getFieldTypes()}. */ private DefaultTypeName     fieldTypeName;
+    /** Value of {@link DefaultRecordType#getContainer()}. */
+    private final SerializableRecordSchema container;
+
+    /** Value of {@link DefaultRecordType#getTypeName()}.   */ private DefaultTypeName   recordTypeName;
+    /** Value of {@link DefaultRecordType#getMembers()}.    */ private DefaultMemberName fieldName;
+    /** Value of {@link DefaultRecordType#getFieldTypes()}. */ private DefaultTypeName   fieldTypeName;
 
     /**
      * Creates a new test case.
      */
     public DefaultRecordTypeTest() {
-    }
-
-    /**
-     * Initializes the private fields.
-     * This method shall be invoked only once per test.
-     */
-    private void init() {
         final DefaultNameSpace recordNamespace;
         final DefaultNameSpace fieldNamespace;
 
@@ -80,7 +74,6 @@ public final class DefaultRecordTypeTest extends TestCase {
     @Test
     @SuppressWarnings("deprecation")
     public void testConstructor() {
-        init();
         final DefaultRecordType type = create();
         assertEquals(1, type.size());
         assertEquals(Integer.TYPE, type.baseValueClass());
@@ -101,7 +94,6 @@ public final class DefaultRecordTypeTest extends TestCase {
      */
     @Test
     public void testArgumentChecks() {
-        init();
         final DefaultTypeName  correctRecordName      = recordTypeName;
         final NameSpace        correctMemberNamespace = fieldName.scope();
         final DefaultNameSpace wrongNamespace         = new DefaultNameSpace(null, "WrongNameSpace", ":", ":");
@@ -137,14 +129,6 @@ public final class DefaultRecordTypeTest extends TestCase {
      */
     @Test
     public void testSerialization() {
-        init();
-        synchronized (SerializableRecordSchema.class) {
-            try {
-                SerializableRecordSchema.INSTANCE = container;
-                assertSerializedEquals(create());
-            } finally {
-                SerializableRecordSchema.INSTANCE = null;
-            }
-        }
+        container.testSerialization(create());
     }
 }

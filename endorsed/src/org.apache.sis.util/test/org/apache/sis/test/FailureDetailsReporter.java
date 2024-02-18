@@ -65,8 +65,8 @@ public final class FailureDetailsReporter implements BeforeEachCallback, AfterEa
         LogRecordCollector.INSTANCE.setCurrentTest(null);
         if (description.getExecutionException().isPresent()) {
             description.getTestMethod().ifPresent((methodName) -> {
-                final long seed = TestCase.randomSeed;
-                if (seed != 0) {
+                final Long seed = TestUtilities.randomSeed.get();
+                if (seed != null) {
                     final PrintWriter out = TestCase.out;
                     out.print("Random number generator for ");
                     out.print(description.getTestClass().map(Class::getCanonicalName).orElse("<?>"));
@@ -79,7 +79,7 @@ public final class FailureDetailsReporter implements BeforeEachCallback, AfterEa
                 TestCase.flushOutput();
             });
         }
-        TestCase.randomSeed = 0;
+        TestUtilities.randomSeed.remove();
     }
 
     /**

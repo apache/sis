@@ -30,13 +30,12 @@ import java.util.Map;
 import jakarta.json.JsonObject;
 import jakarta.json.bind.Jsonb;
 import jakarta.json.bind.JsonbBuilder;
-import jakarta.json.bind.JsonbConfig;
 import org.eclipse.yasson.YassonConfig;
 
 // Test dependencies
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 
 
@@ -45,13 +44,13 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author Johann Sorel (Geomatys)
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class BindingTest {
 
-    private static final JsonbConfig CONFIG = new YassonConfig().withFormatting(true);
-
-    private static Jsonb jsonb;
+    private final Jsonb jsonb;
 
     public BindingTest() {
+        jsonb = JsonbBuilder.create(new YassonConfig().withFormatting(true));
     }
 
     public static String readResource(String path) throws IOException {
@@ -80,13 +79,8 @@ public class BindingTest {
         assertEquals(formattedJson, jsonb.toJson(candidate));
     }
 
-    @BeforeAll
-    public static void beforeClass() {
-        jsonb = JsonbBuilder.create(CONFIG);
-    }
-
     @AfterAll
-    public static void afterClass() throws Exception {
+    public void afterClass() throws Exception {
         jsonb.close();
     }
 
