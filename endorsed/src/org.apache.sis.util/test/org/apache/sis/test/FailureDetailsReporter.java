@@ -17,9 +17,6 @@
 package org.apache.sis.test;
 
 import java.io.PrintStream;
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -32,7 +29,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class FailureDetailsReporter implements BeforeEachCallback, AfterEachCallback, AfterAllCallback {
+public final class FailureDetailsReporter implements BeforeEachCallback, AfterEachCallback {
     /**
      * Creates a new reporter.
      */
@@ -83,22 +80,5 @@ public final class FailureDetailsReporter implements BeforeEachCallback, AfterEa
         if (flush) {
             TestCase.flushOutput();
         }
-    }
-
-    /**
-     * If some tests in the class emitted unexpected log records,
-     * prints a table showing which tests caused logging.
-     *
-     * @param  description  description of the test container.
-     */
-    @Override
-    @SuppressWarnings("UseOfSystemOutOrSystemErr")
-    public final void afterAll(final ExtensionContext description) {
-        try {
-            LogRecordCollector.INSTANCE.report(System.err);     // Same stream as logging console handler.
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);                  // Should never happen.
-        }
-        TestCase.flushOutput();
     }
 }
