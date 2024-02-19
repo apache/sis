@@ -19,11 +19,13 @@ package org.apache.sis.test;
 import java.util.Queue;
 import java.util.LinkedList;
 import java.util.ConcurrentModificationException;
+import java.util.Objects;
 import java.util.logging.Filter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
+import org.apache.sis.pending.jdk.JDK16;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,8 +39,11 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  * For using, create a rule in the JUnit test class like below:
  *
  * {@snippet lang="java" :
- *     @RegisterExtension
- *     public final LoggingWatcher loggings = new LoggingWatcher(Logger.getLogger(Loggers.XML));
+ *     @ResourceLock(LoggingWatcher.LOCK)
+ *     public MyTest {
+ *         @RegisterExtension
+ *         public final LoggingWatcher loggings = new LoggingWatcher(Logger.getLogger(Loggers.XML));
+ *         }
  *     }
  *
  * Recommended but not mandatory, ensure that there is no unexpected logging in any tests:
@@ -58,9 +63,38 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  *     loggings.assertNoUnexpectedLog();
  *     }
  *
+ * <h2>Multi-threading</h2>
+ * By default, {@code LoggingWatcher} handles only the log records emitted by the same thread as the one
+ * that constructed this watcher. If tests are running in parallel, log records emitted by other threads
+ * will not interfere. For disabling this filtering (which is necessary if the test starts many threads),
+ * invoke {@link #setMultiThread()}.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  */
 public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallback, Filter {
+    /**
+     * Name of the lock to use in a JUnit {@code ResourceLock} annotation.
+     * Tests that are executed in a single thread can be run in parallel
+     * and should be declared with the following annotation:
+     *
+     * {@snippet lang="java" :
+     *     @ResourceLock(value=LoggingWatcher.LOCK, mode=ResourceAccessMode.READ)
+     *     public class MyTest {
+     *         }
+     *     }
+     *
+     * Tests that may start worker threads shall be executed in isolation with other tests
+     * that may do logging. These tests should have the following annotations:
+     *
+     * {@snippet lang="java" :
+     *     @ResourceLock(value=LoggingWatcher.LOCK, mode=ResourceAccessMode.READ_WRITE)
+     *     @Execution(ExecutionMode.SAME_THREAD)
+     *     public class MyTest {
+     *         }
+     *     }
+     */
+    public static final String LOCK = "Logging";
+
     /**
      * The logged messages.
      */
@@ -78,12 +112,32 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
     private final SimpleFormatter formatter = new SimpleFormatter();
 
     /**
+     * Identifier of the thread to watch.
+     */
+    private final long threadId = Thread.currentThread().getId();
+
+    /**
+     * Whether the test will be multi-threaded. If this flag is set to {@code true},
+     * then this {@code LoggingWatcher} will intercept all logs, not only the ones
+     * produced by the thread that initialized this instance.
+     *
+     * @see #setMultiThread()
+     */
+    private boolean isMultiThread;
+
+    /**
+     * All filters registered on the logger. This is a singleton containing only {@code this},
+     * unless many tests are running in parallel with their own {@code LoggingWatcher}.
+     */
+    private Queue<Filter> allFilters;
+
+    /**
      * Creates a new watcher for the given logger.
      *
      * @param logger  the logger to watch.
      */
     public LoggingWatcher(final Logger logger) {
-        this.logger = logger;
+        this.logger = Objects.requireNonNull(logger);
     }
 
     /**
@@ -93,6 +147,26 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
      */
     public LoggingWatcher(final String logger) {
         this.logger = Logger.getLogger(logger);
+    }
+
+    /**
+     * Notifies that the test will be multi-threaded. If this method is invoked,
+     * then this {@code LoggingWatcher} will intercept all logs, not only the ones
+     * produced by the thread that initialized this instance.
+     *
+     * <p>If this method is invoked, then the caller is responsible to ensure that
+     * no there test running in parallel may do logging. It can be done with JUnit
+     * {@code Execution} and {@code ResourceLock} annotations. Example:</p>
+     *
+     * {@snippet lang="java" :
+     *     @ResourceLock(value=LoggingWatcher.LOCK, mode=ResourceAccessMode.READ_WRITE)
+     *     @Execution(value=ExecutionMode.SAME_THREAD, reason="For verification of logs emitted by worker threads.")
+     *     public class MyTest extends TestCase {
+     *     }
+     *     }
+     */
+    final void setMultiThread() {
+        isMultiThread = true;
     }
 
     /**
@@ -106,8 +180,21 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
      */
     @Override
     public final void beforeEach(final ExtensionContext description) {
-        assertNull(logger.getFilter());
-        logger.setFilter(this);
+        synchronized (logger) {
+            assertNull(allFilters);
+            final Filter current = logger.getFilter();
+            if (current instanceof LoggingWatcher) {
+                allFilters = ((LoggingWatcher) current).allFilters;
+                assertNotNull(allFilters);
+            } else {
+                allFilters = new LinkedList<>();
+                if (current != null) {
+                    allFilters.add(current);
+                }
+                logger.setFilter(this);
+            }
+            allFilters.add(this);
+        }
     }
 
     /**
@@ -118,7 +205,11 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
      */
     @Override
     public final void afterEach(final ExtensionContext description) {
-        logger.setFilter(null);
+        synchronized (logger) {
+            assertTrue(allFilters.remove(this));
+            logger.setFilter(allFilters.peek());
+            allFilters = null;
+        }
     }
 
     /**
@@ -130,8 +221,29 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
      */
     @Override
     public final boolean isLoggable(final LogRecord record) {
+        /*
+         * In the simple mono-thread case, everything use fields of `this`.
+         * However, if many tests are running in parallel, we need to check
+         * which `LoggingWatcher` should take the given log record.
+         */
+        LoggingWatcher owner = this;
+        synchronized (logger) {
+            for (final Filter filter : allFilters) {
+                if (filter instanceof LoggingWatcher) {
+                    final var w = (LoggingWatcher) filter;
+                    if (w.isMultiThread || JDK16.isSameThread(record, w.threadId)) {
+                        owner = w;
+                        break;
+                    }
+                } else if (!filter.isLoggable(record)) {
+                    return false;
+                }
+            }
+        }
         if (record.getLevel().intValue() >= Level.INFO.intValue()) {
-            messages.add(formatter.formatMessage(record));
+            synchronized (owner) {
+                owner.messages.add(owner.formatter.formatMessage(record));
+            }
         }
         return TestCase.VERBOSE;
     }
@@ -145,7 +257,7 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
      *                   if that log message has been emitted.
      */
     @SuppressWarnings("StringEquality")
-    public void skipNextLogIfContains(final String... keywords) {
+    public synchronized void skipNextLogIfContains(final String... keywords) {
         final String message = messages.peek();
         if (message != null) {
             for (final String word : keywords) {
@@ -166,7 +278,7 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
      * @param  keywords  the keywords that are expected to exist in the next log message.
      *         May be an empty array for requesting only the existence of a log with any message.
      */
-    public void assertNextLogContains(final String... keywords) {
+    public synchronized void assertNextLogContains(final String... keywords) {
         if (messages.isEmpty()) {
             fail("Expected a logging messages but got no more.");
         }
@@ -181,7 +293,7 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
     /**
      * Verifies that there is no more log message.
      */
-    public void assertNoUnexpectedLog() {
+    public synchronized void assertNoUnexpectedLog() {
         final String message = messages.peek();
         if (message != null) {
             fail("Unexpected logging message: " + message);
@@ -191,7 +303,7 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
     /**
      * Discards all logging messages.
      */
-    public void clear() {
+    public synchronized void clear() {
         messages.clear();
     }
 }

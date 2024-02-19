@@ -33,11 +33,8 @@ import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import org.apache.sis.test.TestCase;
-import org.apache.sis.test.LoggingWatcher;
+import org.apache.sis.test.TestCaseWithLogs;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertNotDeepEquals;
@@ -48,26 +45,12 @@ import static org.apache.sis.test.Assertions.assertNotDeepEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class AuthorityFactoriesTest extends TestCase {
-    /**
-     * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
-     * do so, but should be considered as an implementation details (it should have been a private field).
-     */
-    @RegisterExtension
-    public final LoggingWatcher loggings = new LoggingWatcher(Loggers.CRS_FACTORY);
-
-    /**
-     * Verifies that no unexpected warning has been emitted in any test defined in this class.
-     */
-    @AfterEach
-    public void assertNoUnexpectedLog() {
-        loggings.assertNoUnexpectedLog();
-    }
-
+public final class AuthorityFactoriesTest extends TestCaseWithLogs {
     /**
      * Creates a new test case.
      */
     public AuthorityFactoriesTest() {
+        super(Loggers.CRS_FACTORY);
     }
 
     /**
@@ -90,6 +73,7 @@ public final class AuthorityFactoriesTest extends TestCase {
         }
         assertTrue(foundCommon, "Factory not found.");
         assertTrue(foundProxy,  "Factory not found.");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -102,6 +86,7 @@ public final class AuthorityFactoriesTest extends TestCase {
         final CRSAuthorityFactory factory = AuthorityFactories.ALL;
         assertEquals("WGS 84", factory.getDescriptionText("EPSG:4326").toString());
         assertEquals("WGS 84", factory.getDescriptionText("urn:ogc:def:crs:epsg::4326").toString());
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -127,6 +112,7 @@ public final class AuthorityFactoriesTest extends TestCase {
         assertSame(crs, CRS.forCode("OGC:CRS84"));
 
         assertNotDeepEquals(crs, CRS.forCode("CRS:83"));
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -194,6 +180,7 @@ public final class AuthorityFactoriesTest extends TestCase {
                 () -> factory.createCoordinateReferenceSystem("FOO:84"),
                 "Should not work with unknown authority.");
         assertEquals("FOO", exception.getAuthority());
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -227,6 +214,7 @@ public final class AuthorityFactoriesTest extends TestCase {
                 () -> factory.createCoordinateReferenceSystem("http://www.opengis.net/gml/dummy/CRS#84"),
                 "Should not accept “dummy” as an authority");
         assertMessageContains(exception);
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -241,6 +229,7 @@ public final class AuthorityFactoriesTest extends TestCase {
         assertFalse(codes.isEmpty());
         assertTrue(codes.contains("CRS:84"));
         assertTrue(codes.contains("AUTO:42001") || codes.contains("AUTO2:42001"));
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -256,5 +245,6 @@ public final class AuthorityFactoriesTest extends TestCase {
         assertNotNull(find, "With scan allowed, should find the CRS.");
         assertTrue(HardCodedCRS.WGS84.equals(find, ComparisonMode.DEBUG));
         assertSame(factory.createCoordinateReferenceSystem("CRS:84"), find);
+        loggings.assertNoUnexpectedLog();
     }
 }

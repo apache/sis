@@ -38,13 +38,10 @@ import org.apache.sis.util.internal.Constants;
 import org.apache.sis.metadata.sql.util.Reflection;
 
 // Test dependencies
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.LoggingWatcher;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestCaseWithLogs;
 import org.apache.sis.metadata.sql.TestDatabase;
 
 
@@ -64,29 +61,12 @@ import org.apache.sis.metadata.sql.TestDatabase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class EPSGInstallerTest extends TestCase {
-    /**
-     * A JUnit rule for listening to log events emitted during execution of tests.
-     * This rule is used by tests that verifies the log message content.
-     *
-     * <p>This field is public because JUnit requires us to do so, but should be considered
-     * as an implementation details (it should have been a private field).</p>
-     */
-    @RegisterExtension
-    public final LoggingWatcher loggings = new LoggingWatcher(Loggers.CRS_FACTORY);
-
-    /**
-     * Verifies that no unexpected warning has been emitted in any test defined in this class.
-     */
-    @AfterEach
-    public void assertNoUnexpectedLog() {
-        loggings.assertNoUnexpectedLog();
-    }
-
+public final class EPSGInstallerTest extends TestCaseWithLogs {
     /**
      * Creates a new test case.
      */
     public EPSGInstallerTest() {
+        super(Loggers.CRS_FACTORY);
     }
 
     /**
@@ -113,6 +93,8 @@ public final class EPSGInstallerTest extends TestCase {
         assertTrue(Pattern.matches(EPSGInstaller.REPLACE_STATEMENT,
                 "UPDATE epsg.\"Coordinate Axis\"\n" +
                 "SET coord_axis_orientation = replace(coord_axis_orientation, CHR(182), CHR(10))"));
+
+        loggings.assertNoUnexpectedLog();
     }
 
     /**

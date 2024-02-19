@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Date;
+import java.util.logging.Logger;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
@@ -43,6 +44,10 @@ import org.apache.sis.util.Version;
 import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.parallel.ResourceAccessMode;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.apache.sis.test.LoggingWatcher;
 
 
 /**
@@ -63,6 +68,36 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  * @see DocumentComparator
  */
 public abstract class TestCase extends org.apache.sis.test.TestCase {
+    /**
+     * Base class of (un)marshalling tests that may emit logs.
+     */
+    @ResourceLock(value=LoggingWatcher.LOCK, mode=ResourceAccessMode.READ)
+    public static abstract class WithLogs extends TestCase {
+        /**
+         * A JUnit extension for listening to log events.
+         */
+        @RegisterExtension
+        public final LoggingWatcher loggings;
+
+        /**
+         * Creates a new test case which will listen to logs emitted by the given logger.
+         *
+         * @param  logger  the logger to listen to.
+         */
+        protected WithLogs(final Logger logger) {
+            loggings = new LoggingWatcher(logger);
+        }
+
+        /**
+         * Creates a new test case which will listen to logs emitted by the logger of the given name.
+         *
+         * @param logger  name of the logger to listen.
+         */
+        protected WithLogs(final String logger) {
+            loggings = new LoggingWatcher(logger);
+        }
+    }
+
     /**
      * A dummy URL to not try to load. This URL is handled in a special way by the unmarshallers created
      * by {@link #getMarshallerPool()}: they will not try to download the document at this address.

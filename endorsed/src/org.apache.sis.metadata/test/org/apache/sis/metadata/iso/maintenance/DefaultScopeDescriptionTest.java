@@ -20,11 +20,8 @@ import org.apache.sis.xml.bind.Context;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import org.apache.sis.test.LoggingWatcher;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestCaseWithLogs;
 
 // Specific to the geoapi-4.0 branch:
 import org.apache.sis.util.SimpleInternationalString;
@@ -35,26 +32,12 @@ import org.apache.sis.util.SimpleInternationalString;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class DefaultScopeDescriptionTest extends TestCase {
-    /**
-     * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
-     * do so, but should be considered as an implementation details (it should have been a private field).
-     */
-    @RegisterExtension
-    public final LoggingWatcher loggings = new LoggingWatcher(Context.LOGGER);
-
-    /**
-     * Verifies that no unexpected warning has been emitted in any test defined in this class.
-     */
-    @AfterEach
-    public void assertNoUnexpectedLog() {
-        loggings.assertNoUnexpectedLog();
-    }
-
+public final class DefaultScopeDescriptionTest extends TestCaseWithLogs {
     /**
      * Creates a new test case.
      */
     public DefaultScopeDescriptionTest() {
+        super(Context.LOGGER);
     }
 
     /**
@@ -81,5 +64,6 @@ public final class DefaultScopeDescriptionTest extends TestCase {
         metadata.setOther(null);
         assertNull(metadata.getOther());
         assertNull(metadata.getDataset());
+        loggings.assertNoUnexpectedLog();
     }
 }

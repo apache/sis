@@ -25,10 +25,7 @@ import static org.apache.sis.xml.bind.gml.MeasureTest.UOM_URL;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
@@ -39,26 +36,12 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  */
-public final class DefaultResolutionTest extends TestCase {
-    /**
-     * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
-     * do so, but should be considered as an implementation details (it should have been a private field).
-     */
-    @RegisterExtension
-    public final LoggingWatcher loggings = new LoggingWatcher(Context.LOGGER);
-
-    /**
-     * Verifies that no unexpected warning has been emitted in any test defined in this class.
-     */
-    @AfterEach
-    public void assertNoUnexpectedLog() {
-        loggings.assertNoUnexpectedLog();
-    }
-
+public final class DefaultResolutionTest extends TestCase.WithLogs {
     /**
      * Creates a new test case.
      */
     public DefaultResolutionTest() {
+        super(Context.LOGGER);
     }
 
     /**
@@ -72,6 +55,7 @@ public final class DefaultResolutionTest extends TestCase {
         scale.setDenominator(100);
         final var metadata = new DefaultResolution(scale);
         assertSame(scale, metadata.getEquivalentScale());
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -102,6 +86,7 @@ public final class DefaultResolutionTest extends TestCase {
         metadata.setEquivalentScale(null);
         assertNull(metadata.getEquivalentScale());
         assertNull(metadata.getDistance());
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -132,6 +117,7 @@ public final class DefaultResolutionTest extends TestCase {
                 "</mri:MD_Resolution>", xml, "xmlns:*");
 
         assertEquals(resolution, unmarshal(DefaultResolution.class, xml));
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -163,5 +149,6 @@ public final class DefaultResolutionTest extends TestCase {
                 "</gmd:MD_Resolution>", xml, "xmlns:*");
 
         assertEquals(resolution, unmarshal(DefaultResolution.class, xml));
+        loggings.assertNoUnexpectedLog();
     }
 }
