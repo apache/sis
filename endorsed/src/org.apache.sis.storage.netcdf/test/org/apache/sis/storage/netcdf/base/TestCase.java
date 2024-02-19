@@ -17,7 +17,6 @@
 package org.apache.sis.storage.netcdf.base;
 
 import java.util.Date;
-import java.util.Map;
 import java.util.EnumMap;
 import java.util.Iterator;
 import java.io.IOException;
@@ -35,6 +34,8 @@ import org.apache.sis.storage.event.StoreListeners;
 
 // Test dependencies
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -45,10 +46,11 @@ import org.opengis.test.dataset.TestData;
  * Base class of netCDF tests. The base class uses the UCAR decoder, which is taken as a reference implementation.
  * Subclasses testing Apache SIS implementation needs to override the {@link #createDecoder(TestData)}.
  *
- * <p>This class is <strong>not</strong> thread safe - do not run subclasses in parallel.</p>
+ * <p>Subclasses must ensure that they do not hold any state, or that they clear the state after each test.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class TestCase extends org.apache.sis.test.TestCase {
     /**
      * The {@code searchPath} argument value to be given to the {@link Decoder#setSearchPath(String[])}
@@ -58,15 +60,17 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
 
     /**
      * The decoders cached by {@link #selectDataset(TestData)}.
-     * The map is non-empty only during the execution of a single test class.
      *
      * @see #closeAllDecoders()
      */
-    private static final Map<TestData,Decoder> DECODERS = new EnumMap<>(TestData.class);
+    private final EnumMap<TestData,Decoder> decoders;
 
     /**
      * The decoder to test, which is set by {@link #selectDataset(TestData)}.
      * This field must be set before any {@code assert} method is invoked.
+     *
+     * @see #decoder()
+     * @see #reset()
      */
     private Decoder decoder;
 
@@ -74,6 +78,7 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      * Creates a new test case.
      */
     protected TestCase() {
+        decoders = new EnumMap<>(TestData.class);
     }
 
     /**
@@ -153,12 +158,12 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      * @throws DataStoreException if a logical error occurred.
      */
     protected final Decoder selectDataset(final TestData name) throws IOException, DataStoreException {
-        synchronized (DECODERS) {               // Paranoiac safety, but should not be used in multi-threads environment.
-            decoder = DECODERS.get(name);
+        synchronized (decoders) {               // Paranoiac safety, but should not be used in multi-threads environment.
+            decoder = decoders.get(name);
             if (decoder == null) {
                 decoder = createDecoder(name);
                 assertNotNull(decoder);
-                assertNull(DECODERS.put(name, decoder));
+                assertNull(decoders.put(name, decoder));
             }
             decoder.setSearchPath(GLOBAL);
             return decoder;                     // Reminder: Decoder instances are not thread-safe.
@@ -169,7 +174,18 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      * Returns the decoder being tested.
      */
     final Decoder decoder() {
+        assertNotNull(decoder);
         return decoder;
+    }
+
+    /**
+     * Forgets (but do not close) the decoder used by the current test.
+     * This method makes {@code this} instance ready for another test
+     * method reusing the decoders that are already opened.
+     */
+    @AfterEach
+    public void reset() {
+        decoder = null;
     }
 
     /**
@@ -179,15 +195,15 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      * @throws IOException if an error occurred while closing a file.
      */
     @AfterAll
-    public static void closeAllDecoders() throws IOException {
+    public void closeAllDecoders() throws IOException {
         final var ds = new DataStoreMock("lock");
         Throwable failure = null;
-        synchronized (DECODERS) {               // Paranoiac safety.
-            final Iterator<Decoder> it = DECODERS.values().iterator();
+        synchronized (decoders) {               // Paranoiac safety.
+            final Iterator<Decoder> it = decoders.values().iterator();
             while (it.hasNext()) {
-                final Decoder decoder = it.next();
+                final Decoder d = it.next();
                 try {
-                    decoder.close(ds);
+                    d.close(ds);
                 } catch (Throwable e) {
                     if (failure == null) {
                         failure = e;
@@ -197,7 +213,7 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
                 }
                 it.remove();
             }
-            assertTrue(DECODERS.isEmpty());
+            assertTrue(decoders.isEmpty());
         }
         /*
          * If we failed to close a file, propagates the error

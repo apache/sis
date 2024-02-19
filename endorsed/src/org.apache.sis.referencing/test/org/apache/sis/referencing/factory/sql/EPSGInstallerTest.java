@@ -39,8 +39,9 @@ import org.apache.sis.metadata.sql.util.Reflection;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.apache.sis.test.TestCaseWithLogs;
 import org.apache.sis.metadata.sql.TestDatabase;
 
@@ -169,6 +170,7 @@ public final class EPSGInstallerTest extends TestCaseWithLogs {
      * @throws Exception if an error occurred while creating the database.
      */
     @Test
+    @ResourceLock(TestDatabase.POSTGRESQL)
     public void testCreationOnPostgreSQL() throws Exception {
         final InstallationScriptProvider scripts = getScripts();            // Needs to be invoked first.
         try (TestDatabase db = TestDatabase.createOnPostgreSQL("EPSG", false)) {

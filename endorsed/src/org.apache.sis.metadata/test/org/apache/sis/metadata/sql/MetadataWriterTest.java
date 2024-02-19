@@ -29,6 +29,7 @@ import org.apache.sis.metadata.iso.citation.DefaultTelephone;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
@@ -84,6 +85,7 @@ public final class MetadataWriterTest extends TestCase {
      * @throws Exception if an error occurred while writing or reading the database.
      */
     @Test
+    @ResourceLock(TestDatabase.POSTGRESQL)
     public void testPostgreSQL() throws Exception {
         try (final TestDatabase db = TestDatabase.createOnPostgreSQL("MetadataWriter", true)) {
             source = new MetadataWriter(MetadataStandard.ISO_19115, db.source, "MetadataWriter", null);

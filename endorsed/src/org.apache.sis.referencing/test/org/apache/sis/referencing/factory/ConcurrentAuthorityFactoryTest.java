@@ -23,6 +23,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.lang.reflect.Field;
 import org.opengis.util.FactoryException;
+import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_MILLISECOND;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -38,7 +39,7 @@ import org.apache.sis.test.TestCase;
  */
 public final class ConcurrentAuthorityFactoryTest extends TestCase {
     /**
-     * The timeout used for this test.
+     * The timeout used for this test, in nanoseconds.
      */
     private static final long TIMEOUT = ConcurrentAuthorityFactory.TIMEOUT_RESOLUTION * 4;
 
@@ -165,6 +166,7 @@ public final class ConcurrentAuthorityFactoryTest extends TestCase {
     /**
      * Sleeps and ensures that the sleep time did not exceeded the timeout. The sleep time could be greater if the test
      * machine is under heavy load (for example a Jenkins server), in which case we will cancel the test without failure.
+     * All times are in nanoseconds.
      */
     private static void sleepWithoutExceedingTimeout(final long previousTime, final long waitTime) throws InterruptedException {
         Thread.sleep(TimeUnit.NANOSECONDS.toMillis(waitTime));
@@ -178,6 +180,8 @@ public final class ConcurrentAuthorityFactoryTest extends TestCase {
      * <p>The workers should be disposed right after the sleep time. However, the workers disposal is performed
      * by a shared (SIS-library wide) daemon thread. Because the latter is invoked in a background thread,
      * it is subject to the hazard of thread scheduling.</p>
+     *
+     * @param  waitTime  the time to wait, in nanoseconds.
      */
     private static void sleepUntilAfterTimeout(final long waitTime, final ConcurrentAuthorityFactory<?> factory)
             throws InterruptedException
@@ -186,7 +190,7 @@ public final class ConcurrentAuthorityFactoryTest extends TestCase {
         int n = 3;
         while (factory.isCleanScheduled()) {
             ConcurrentAuthorityFactory.LOGGER.warning("Execution of ConcurrentAuthorityFactory.disposeExpired() has been delayed.");
-            Thread.sleep(TIMEOUT);
+            Thread.sleep(TIMEOUT / NANOS_PER_MILLISECOND);
             System.gc();
             if (--n == 0) {
                 break;

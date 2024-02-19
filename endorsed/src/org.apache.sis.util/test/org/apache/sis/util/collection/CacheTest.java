@@ -34,6 +34,7 @@ import org.apache.sis.util.internal.StandardDateFormat;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.Performance;
@@ -45,6 +46,7 @@ import static org.apache.sis.test.Assertions.assertMapEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@Isolated("Depends on garbage collector activity")
 public final class CacheTest extends TestCase {
     /**
      * Creates a new test case.

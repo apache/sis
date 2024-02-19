@@ -69,6 +69,23 @@ import org.apache.sis.test.TestCase;
  */
 public class TestDatabase implements AutoCloseable {
     /**
+     * The lock to use for ensuring that there is no collision between tests using the PostgreSQL database.
+     * Example:
+     *
+     * {@snippet lang="java" :
+     *     @Test
+     *     @ResourceLock(TestDatabase.POSTGRESQL)
+     *     public void testFoo() throws SQLException {
+     *         try (TestDatabase db = TestDatabase.createOnPostgreSQL("Foo", true)) {
+     *         }
+     *     }
+     *     }
+     *
+     * @see #createOnPostgreSQL(String, boolean)
+     */
+    public static final String POSTGRESQL = "PostgreSQL";
+
+    /**
      * Data source for connection to an alternative database for testing purpose.
      * If {@code null}, an in-memory Derby database will be used.
      *
@@ -107,8 +124,10 @@ public class TestDatabase implements AutoCloseable {
     /**
      * Creates a temporary database. This method creates a Derby in-memory database by default,
      * but this default can be changed by setting the {@link #TEST_DATABASE} hard-coded value.
+     * See class javadoc if there is a need to inspect content of that in-memory database.
      *
-     * <p>See class javadoc if there is a need to inspect content of that in-memory database.</p>
+     * <p>The given database name shall be unique, for allowing parallel execution of tests.
+     * This is often the name of the test class without the {@code Test} suffix.</p>
      *
      * @param  name  the database name (without {@code "memory:"} prefix).
      * @return connection to the test database (usually on Apache Derby).
@@ -139,9 +158,12 @@ public class TestDatabase implements AutoCloseable {
     }
 
     /**
-     * Creates a in-memory database on HSQLDB. The database can optionally use a connection pool.
+     * Creates an in-memory database on HSQLDB. The database can optionally use a connection pool.
      * The test method can set {@code pooled} to {@code true} if it needs the data to survive when
      * the connection is closed and re-opened.
+     *
+     * <p>The given database name shall be unique, for allowing parallel execution of tests.
+     * This is often the name of the test class without the {@code Test} suffix.</p>
      *
      * @param  name    the database name (without {@code "jdbc:hsqldb:mem:"} prefix).
      * @param  pooled  whether the database should use a connection pool.
@@ -179,6 +201,9 @@ public class TestDatabase implements AutoCloseable {
     /**
      * Creates a in-memory database on H2. The database can optionally use a connection pool.
      *
+     * <p>The given database name shall be unique, for allowing parallel execution of tests.
+     * This is often the name of the test class without the {@code Test} suffix.</p>
+     *
      * @param  name  the database name (without {@code "jdbc:h2:mem:"} prefix).
      * @return connection to the test database.
      * @throws SQLException if an error occurred while creating the database.
@@ -214,6 +239,10 @@ public class TestDatabase implements AutoCloseable {
      *
      * If the {@code create} argument is {@code false}, then the callers is responsible for creating the schema
      * soon after this method call. That schema will be deleted by {@link #close()}.
+     *
+     * <h4>Thread safety</h4>
+     * Because all tests on PostgreSQL use the same database and some tests require the same schema,
+     * there is a risk of conflict. See {@link #POSTGRESQL} for indication about how to synchronize.
      *
      * @param  schema  temporary schema to create. Shall not contain {@code '_'} or {@code '%'} characters.
      * @param  create  whether the schema should be created by this method.
