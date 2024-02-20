@@ -377,12 +377,8 @@ public final class TestUtilities extends Static {
      */
     public static void rethrownIfNotNull(final Throwable failure) {
         if (failure != null) {
-            if (failure instanceof Error) {
-                throw (Error) failure;
-            }
-            if (failure instanceof RuntimeException) {
-                throw (RuntimeException) failure;
-            }
+            if (failure instanceof Error e) throw e;
+            if (failure instanceof RuntimeException e) throw e;
             throw new UndeclaredThrowableException(failure);
         }
     }

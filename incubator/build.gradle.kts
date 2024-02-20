@@ -82,6 +82,8 @@ tasks.compileJava {
     options.release.set(11)         // The version of both Java source code and compiled byte code.
 }
 tasks.compileTestJava {
+    options.compilerArgs.add("-source")         // "source", not "release", because we accept any target version.
+    options.compilerArgs.add("16")              // For consistency with the value set in the `endorsed` modules.
     srcDir.list().forEach {
         addRead(options.compilerArgs, it, "org.apache.sis.test.incubator,org.junit.jupiter.api")
     }

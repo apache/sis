@@ -67,14 +67,14 @@ public final class AbstractFeatureTest extends FeatureTestCase {
          */
         CustomFeature(final DefaultFeatureType type) {
             super(type);
-            for (final PropertyType pt : type.getProperties(true)) {
-                if (pt instanceof AttributeType<?>) {
-                    Object value = ((AttributeType<?>) pt).getDefaultValue();
-                    if (isMultiValued(pt)) {
+            for (final PropertyType property : type.getProperties(true)) {
+                if (property instanceof AttributeType<?> attribute) {
+                    Object value = attribute.getDefaultValue();
+                    if (isMultiValued(property)) {
                         value = new ArrayList<>(PropertyView.singletonOrEmpty(value));
                     }
                     if (value != null) {
-                        values.put(pt.getName().toString(), value);
+                        values.put(property.getName().toString(), value);
                     }
                 }
             }
@@ -122,8 +122,8 @@ public final class AbstractFeatureTest extends FeatureTestCase {
             }
             if (value != null) {
                 final Class<?> base;
-                if (property instanceof AttributeType<?>) {
-                    base = ((AttributeType<?>) property).getValueClass();
+                if (property instanceof AttributeType<?> attribute) {
+                    base = attribute.getValueClass();
                 } else {
                     base = FeatureType.class;
                 }

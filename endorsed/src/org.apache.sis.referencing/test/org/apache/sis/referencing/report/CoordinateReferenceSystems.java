@@ -411,8 +411,8 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
         if (crs instanceof GeographicCRS) {
             return (crs.getCoordinateSystem().getDimension() == 3) ? "Geographic 3D" : "Geographic";
         }
-        if (crs instanceof GeneralDerivedCRS) {
-            final OperationMethod method = ((GeneralDerivedCRS) crs).getConversionFromBase().getMethod();
+        if (crs instanceof GeneralDerivedCRS derived) {
+            final OperationMethod method = derived.getConversionFromBase().getMethod();
             final Identifier identifier = IdentifiedObjects.getIdentifier(method, Citations.EPSG);
             if (identifier != null) {
                 return "<a href=\"CoordinateOperationMethods.html#" + identifier.getCode()
@@ -428,13 +428,13 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
             }
             return "Geocentric";
         }
-        if (crs instanceof VerticalCRS) {
-            final VerticalDatumType type = ((VerticalCRS) crs).getDatum().getVerticalDatumType();
+        if (crs instanceof VerticalCRS vertical) {
+            final VerticalDatumType type = vertical.getDatum().getVerticalDatumType();
             return CharSequences.camelCaseToSentence(type.name().toLowerCase(getLocale())) + " height";
         }
-        if (crs instanceof CompoundCRS) {
+        if (crs instanceof CompoundCRS compound) {
             final StringBuilder buffer = new StringBuilder();
-            for (final CoordinateReferenceSystem component : ((CompoundCRS) crs).getComponents()) {
+            for (final CoordinateReferenceSystem component : compound.getComponents()) {
                 if (buffer.length() != 0) {
                     buffer.append(" + ");
                 }
@@ -531,16 +531,16 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
          * If the object is deprecated, find the replacement.
          * We do not take the whole comment because it may be pretty long.
          */
-        if (object instanceof Deprecable) {
-            row.isDeprecated = ((Deprecable) object).isDeprecated();
+        if (object instanceof Deprecable dep) {
+            row.isDeprecated = dep.isDeprecated();
             if (row.isDeprecated) {
                 String replacedBy = null;
                 InternationalString i18n = object.getRemarks();
                 for (final Identifier id : object.getIdentifiers()) {
-                    if (id instanceof Deprecable && ((Deprecable) id).isDeprecated()) {
-                        i18n = ((Deprecable) id).getRemarks();
-                        if (id instanceof DeprecatedCode) {
-                            replacedBy = ((DeprecatedCode) id).replacedBy;
+                    if (id instanceof Deprecable did && did.isDeprecated()) {
+                        i18n = did.getRemarks();
+                        if (id instanceof DeprecatedCode dc) {
+                            replacedBy = dc.replacedBy;
                         }
                         break;
                     }

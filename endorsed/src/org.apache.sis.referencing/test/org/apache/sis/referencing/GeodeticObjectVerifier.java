@@ -66,8 +66,8 @@ public final class GeodeticObjectVerifier {
     private static void assertIsWorld(final Extent extent, boolean isMandatory) {
         if (extent != null) {
             for (final GeographicExtent element : extent.getGeographicElements()) {
-                if (element instanceof GeographicBoundingBox) {
-                    assertIsWorld((GeographicBoundingBox) element);
+                if (element instanceof GeographicBoundingBox bbox) {
+                    assertIsWorld(bbox);
                     isMandatory = false;
                 }
             }

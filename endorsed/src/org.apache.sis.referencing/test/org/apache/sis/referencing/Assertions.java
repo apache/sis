@@ -317,9 +317,9 @@ public final class Assertions extends Static {
     public static void assertContains(final RectangularShape outer, final Rectangle2D inner) {
         assertTrue(outer.contains  (inner), "outer.contains(inner)");
         assertTrue(outer.intersects(inner), "outer.intersects(inner)");
-        if (outer instanceof Rectangle2D) {
-            assertTrue (inner.intersects((Rectangle2D) outer), "inner.intersects(outer)");
-            assertFalse(inner.contains  ((Rectangle2D) outer), "inner.contains(outer)");
+        if (outer instanceof Rectangle2D r) {
+            assertTrue (inner.intersects(r), "inner.intersects(outer)");
+            assertFalse(inner.contains  (r), "inner.contains(outer)");
         }
         assertTrue(outer.contains(inner.getCenterX(), inner.getCenterY()), "outer.contains(centerX, centerY)");
     }
@@ -337,8 +337,7 @@ public final class Assertions extends Static {
         assertTrue(outer.contains  (inner, false), "outer.contains(inner)");
         assertTrue(outer.intersects(inner, true),  "outer.intersects(inner)");
         assertTrue(outer.intersects(inner, false), "outer.intersects(inner)");
-        if (inner instanceof AbstractEnvelope) {
-            final AbstractEnvelope ai = (AbstractEnvelope) inner;
+        if (inner instanceof AbstractEnvelope ai) {
             assertTrue (ai.intersects(outer, true),  "inner.intersects(outer)");
             assertTrue (ai.intersects(outer, false), "inner.intersects(outer)");
             assertFalse(ai.contains  (outer, true),  "inner.contains(outer)");
@@ -365,9 +364,9 @@ public final class Assertions extends Static {
     public static void assertDisjoint(final RectangularShape r1, final Rectangle2D r2) {
         assertFalse(r1.intersects(r2), "r1.intersects(r2)");
         assertFalse(r1.contains(r2), "r1.contains(r2)");
-        if (r1 instanceof Rectangle2D) {
-            assertFalse(r2.intersects((Rectangle2D) r1), "r2.intersects(r1)");
-            assertFalse(r2.contains  ((Rectangle2D) r1), "r2.contains(r1)");
+        if (r1 instanceof Rectangle2D r) {
+            assertFalse(r2.intersects(r), "r2.intersects(r1)");
+            assertFalse(r2.contains  (r), "r2.contains(r1)");
         }
         for (int i=0; i<9; i++) {
             final double x, y;
@@ -400,8 +399,7 @@ public final class Assertions extends Static {
         assertFalse(e1.intersects(e2, true),  "e1.intersects(e2)");
         assertFalse(e1.contains  (e2, false), "e1.contains(e2)");
         assertFalse(e1.contains  (e2, true),  "e1.contains(e2)");
-        if (e2 instanceof AbstractEnvelope) {
-            final AbstractEnvelope ae = (AbstractEnvelope) e2;
+        if (e2 instanceof AbstractEnvelope ae) {
             assertFalse(ae.intersects(e1, false), "e2.intersects(e1)");
             assertFalse(ae.intersects(e1, true),  "e2.intersects(e1)");
             assertFalse(ae.contains  (e1, false), "e2.contains(e1)");
@@ -436,8 +434,8 @@ public final class Assertions extends Static {
      */
     public static void assertIsIdentity(final MathTransform transform) {
         assertTrue(transform.isIdentity(), "isIdentity()");
-        if (transform instanceof LinearTransform) {
-            assertTrue(((LinearTransform) transform).getMatrix().isIdentity(), "getMatrix().isIdentity()");
+        if (transform instanceof LinearTransform linear) {
+            assertTrue(linear.getMatrix().isIdentity(), "getMatrix().isIdentity()");
         }
     }
 
@@ -449,8 +447,8 @@ public final class Assertions extends Static {
      */
     public static void assertIsNotIdentity(final MathTransform transform) {
         assertFalse(transform.isIdentity(), "isIdentity()");
-        if (transform instanceof LinearTransform) {
-            assertFalse(((LinearTransform) transform).getMatrix().isIdentity(), "getMatrix().isIdentity()");
+        if (transform instanceof LinearTransform linear) {
+            assertFalse(linear.getMatrix().isIdentity(), "getMatrix().isIdentity()");
         }
     }
 

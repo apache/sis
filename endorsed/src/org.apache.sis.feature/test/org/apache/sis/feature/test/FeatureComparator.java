@@ -178,14 +178,14 @@ public class FeatureComparator {
      */
     private void compareType(final IdentifiedType expected, final IdentifiedType actual) {
         boolean recognized = false;
-        if (expected instanceof FeatureType) {
+        if (expected instanceof FeatureType type) {
             var c = assertInstanceOf(FeatureType.class, actual, this::path);
-            compareFeatureType((FeatureType) expected, c);
+            compareFeatureType(type, c);
             recognized = true;
         }
-        if (expected instanceof PropertyType) {
+        if (expected instanceof PropertyType type) {
             var c = assertInstanceOf(PropertyType.class, actual, this::path);
-            comparePropertyType((PropertyType) expected, c);
+            comparePropertyType(type, c);
             recognized = true;
         }
         if (!recognized) {
@@ -256,8 +256,8 @@ public class FeatureComparator {
             while (expectedIter.hasNext()) {
                 final Object expectedElement = expectedIter.next();
                 final Object actualElement = actualIter.next();
-                if (expectedElement instanceof Feature) {
-                    compareFeature((Feature) expectedElement, (Feature) actualElement);
+                if (expectedElement instanceof Feature instance) {
+                    compareFeature(instance, (Feature) actualElement);
                 } else {
                     assertEquals(expectedElement, actualElement);
                 }
@@ -274,17 +274,17 @@ public class FeatureComparator {
      * @throws AssertionError if the actual property is not equal to the expected property.
      */
     private void comparePropertyType(final PropertyType expected, final PropertyType actual) {
-        if (expected instanceof AttributeType) {
+        if (expected instanceof AttributeType<?> type) {
             var c = assertInstanceOf(AttributeType.class, actual, this::path);
-            compareAttribute((AttributeType) expected, c);
+            compareAttribute(type, c);
         }
-        if (expected instanceof FeatureAssociationRole) {
+        if (expected instanceof FeatureAssociationRole role) {
             var c = assertInstanceOf(FeatureAssociationRole.class, actual, this::path);
-            compareFeatureAssociationRole((FeatureAssociationRole) expected, c);
+            compareFeatureAssociationRole(role, c);
         }
-        if (expected instanceof Operation) {
+        if (expected instanceof Operation op) {
             var c = assertInstanceOf(Operation.class, actual, this::path);
-            compareOperation((Operation) expected, c);
+            compareOperation(op, c);
         }
     }
 
@@ -380,10 +380,8 @@ public class FeatureComparator {
         if (!ignoreDescription) {
             assertEquals(expected.getDescription(), actual.getDescription(), () -> path() + "Description differ.");
         }
-        if (expected instanceof Deprecable && actual instanceof Deprecable) {
-            assertEquals(((Deprecable) expected).isDeprecated(),
-                         ((Deprecable) actual).isDeprecated(),
-                         () -> path() + "Deprecated state differ.");
+        if (expected instanceof Deprecable de && actual instanceof Deprecable da) {
+            assertEquals(de.isDeprecated(), da.isDeprecated(), () -> path() + "Deprecated state differ.");
         }
     }
 
@@ -442,8 +440,8 @@ public class FeatureComparator {
      * in a singleton collection.
      */
     private static Collection<?> asCollection(final Object value) {
-        if (value instanceof Collection<?>) {
-            return (Collection<?>) value;
+        if (value instanceof Collection<?> c) {
+            return c;
         } else {
             return CollectionsExt.singletonOrEmpty(value);
         }

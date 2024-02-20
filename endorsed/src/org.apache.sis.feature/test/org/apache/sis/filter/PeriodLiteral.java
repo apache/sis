@@ -100,8 +100,7 @@ final class PeriodLiteral implements Period, Literal<Feature,Period>, Serializab
      */
     @Override
     public boolean equals(final Object other) {
-        if (other instanceof PeriodLiteral) {
-            final PeriodLiteral p = (PeriodLiteral) other;
+        if (other instanceof PeriodLiteral p) {
             return begin == p.begin && end == p.end;
         }
         return false;

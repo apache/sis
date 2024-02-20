@@ -181,8 +181,8 @@ public final class TreeTableViewTest extends TestCase {
      * Verifies the value of the given international string in English.
      */
     private static void assertI18nEq(final String expected, Object text) {
-        if (text instanceof InternationalString) {
-            text = ((InternationalString) text).toString(Locale.ENGLISH);
+        if (text instanceof InternationalString i18n) {
+            text = i18n.toString(Locale.ENGLISH);
         }
         assertEquals(expected, text);
     }

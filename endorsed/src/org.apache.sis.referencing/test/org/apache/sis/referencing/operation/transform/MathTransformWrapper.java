@@ -212,8 +212,8 @@ public class MathTransformWrapper extends FormattableObject implements MathTrans
      */
     @Override
     protected final String formatTo(final Formatter formatter) {
-        if (transform instanceof AbstractMathTransform) {
-            return ((AbstractMathTransform) transform).formatTo(formatter);
+        if (transform instanceof AbstractMathTransform fmt) {
+            return fmt.formatTo(formatter);
         }
         throw new UnformattableObjectException();
     }

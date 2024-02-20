@@ -311,8 +311,8 @@ public class TestDatabase implements AutoCloseable {
     public final void executeSQL(final List<?> scripts) throws IOException, SQLException {
         try (Connection c = source.getConnection(); ScriptRunner r = new ScriptRunner(c, 1000)) {
             for (final Object sql : scripts) {
-                if (sql instanceof String) {
-                    r.run((String) sql);
+                if (sql instanceof String s) {
+                    r.run(s);
                 } else {
                     final var s = (Supplier<?>) sql;
                     r.run(s.toString(), (InputStream) s.get());

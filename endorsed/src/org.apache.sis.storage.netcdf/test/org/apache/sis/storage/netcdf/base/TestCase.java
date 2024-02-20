@@ -220,15 +220,9 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
          * only after we have closed all other files.
          */
         if (failure != null) {
-            if (failure instanceof IOException) {
-                throw (IOException) failure;
-            }
-            if (failure instanceof RuntimeException) {
-                throw (RuntimeException) failure;
-            }
-            if (failure instanceof Error) {
-                throw (Error) failure;
-            }
+            if (failure instanceof IOException e) throw e;
+            if (failure instanceof RuntimeException e) throw e;
+            if (failure instanceof Error e) throw e;
             throw new UndeclaredThrowableException(failure);
         }
     }

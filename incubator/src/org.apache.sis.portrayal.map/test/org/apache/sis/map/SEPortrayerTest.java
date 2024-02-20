@@ -172,15 +172,13 @@ public class SEPortrayerTest {
         presentations.stream().forEach(new Consumer<Presentation>() {
             @Override
             public void accept(Presentation t) {
-                if (t instanceof SEPresentation) {
-                    SEPresentation se = (SEPresentation) t;
+                if (t instanceof SEPresentation se) {
                     Feature Feature = se.getCandidate();
                     ids.add(new Match(String.valueOf(Feature.getPropertyValue(AttributeConvention.IDENTIFIER)),
                             se.getLayer(),
                             se.getResource(),
                             se.getSymbolizer()));
-                } else if (t instanceof ExceptionPresentation) {
-                    final ExceptionPresentation ep = (ExceptionPresentation) t;
+                } else if (t instanceof ExceptionPresentation ep) {
                     ids.add(new Match(ep.getException()));
                 }
             }

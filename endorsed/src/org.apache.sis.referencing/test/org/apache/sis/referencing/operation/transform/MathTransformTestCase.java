@@ -193,8 +193,8 @@ public abstract class MathTransformTestCase extends TransformTestCase {
      */
     @Debug
     private String getName() {
-        if (transform instanceof Parameterized) {
-            final ParameterDescriptorGroup descriptor = ((Parameterized) transform).getParameterDescriptors();
+        if (transform instanceof Parameterized pmt) {
+            final ParameterDescriptorGroup descriptor = pmt.getParameterDescriptors();
             if (descriptor != null) {
                 final Identifier identifier = descriptor.getName();
                 if (identifier != null) {
@@ -432,8 +432,8 @@ public abstract class MathTransformTestCase extends TransformTestCase {
             wkt = transform.toString();
         }
         table.append(wkt).nextColumn();
-        if (transform instanceof FormattableObject) {
-            wkt = ((FormattableObject) transform).toString(Convention.INTERNAL);
+        if (transform instanceof FormattableObject fmt) {
+            wkt = fmt.toString(Convention.INTERNAL);
         } else {
             wkt = transform.toString();
         }

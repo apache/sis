@@ -219,10 +219,10 @@ public class BindingTest {
     private static List<Object> asList(Object... array) {
         final List<Object> lst = new ArrayList<>(array.length);
         for (int i=0;i<array.length;i++) {
-            if (array[i] instanceof Integer) {
-                lst.add(BigDecimal.valueOf((Integer) array[i]));
-            } else if (array[i] instanceof Double) {
-                lst.add(BigDecimal.valueOf((Double) array[i]));
+            if (array[i] instanceof Integer v) {
+                lst.add(BigDecimal.valueOf(v));
+            } else if (array[i] instanceof Double v) {
+                lst.add(BigDecimal.valueOf(v));
             } else {
                 lst.add(array[i]);
             }
