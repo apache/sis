@@ -35,8 +35,6 @@ import org.apache.sis.util.Debug;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import org.apache.sis.test.TestCase;
 
 
 /**
@@ -230,7 +228,6 @@ public class TestDatabase implements AutoCloseable {
      * This method returns only if all the following conditions are true:
      *
      * <ol>
-     *   <li>{@link TestCase#RUN_EXTENSIVE_TESTS} is {@code true} (for reducing the risk of messing with user installation).</li>
      *   <li>A PostgreSQL server is running on the local host and listening to the default port.</li>
      *   <li>A database named {@value #NAME} exists.</li>
      *   <li>A role with Unix user name exists and can connect to the database without password.</li>
@@ -252,8 +249,7 @@ public class TestDatabase implements AutoCloseable {
      * @see <a href="https://sis.apache.org/source.html#postgres">Configuring PostgreSQL for Apache SIS tests</a>
      */
     public static TestDatabase createOnPostgreSQL(final String schema, final boolean create) throws SQLException {
-        assumeTrue(TestCase.RUN_EXTENSIVE_TESTS, "Extensive tests not enabled.");
-        final PGSimpleDataSource ds = new PGSimpleDataSource();
+        final var ds = new PGSimpleDataSource();
         // Server default to "localhost".
         ds.setDatabaseName(NAME);
         ds.setApplicationName("Apache SIS test database");

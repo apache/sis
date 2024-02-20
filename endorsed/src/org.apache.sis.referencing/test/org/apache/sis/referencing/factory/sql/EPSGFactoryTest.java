@@ -56,6 +56,7 @@ import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 
 // Test dependencies
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.Disabled;
@@ -68,6 +69,7 @@ import org.apache.sis.referencing.factory.TestFactorySource;
 import static org.apache.sis.test.Assertions.assertNotDeepEquals;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
 import static org.apache.sis.referencing.Assertions.assertAliasTipEquals;
+import static org.apache.sis.test.TestCase.TAG_SLOW;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
@@ -547,6 +549,7 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
+    @Tag(TAG_SLOW)
     public void testAuthorityCodes() throws FactoryException {
         final EPSGFactory factory = dataEPSG.factory();
         /*

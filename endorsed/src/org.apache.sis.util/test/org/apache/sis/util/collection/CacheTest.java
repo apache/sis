@@ -32,11 +32,12 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.internal.StandardDateFormat;
 
 // Test dependencies
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.Performance;
 import static org.apache.sis.test.Assertions.assertMapEquals;
+import org.apache.sis.test.Benchmark;
 
 
 /**
@@ -204,7 +205,8 @@ public final class CacheTest extends TestCaseWithGC {
      * @throws InterruptedException if the test has been interrupted.
      */
     @Test
-    @Performance
+    @Benchmark
+    @Tag(Benchmark.TAG)
     public void stress() throws InterruptedException {
         final int count = 5000;
         final Cache<Integer,IntObject> cache = new Cache<>();

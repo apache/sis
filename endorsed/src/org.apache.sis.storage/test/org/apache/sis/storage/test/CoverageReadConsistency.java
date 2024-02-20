@@ -48,6 +48,7 @@ import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.Benchmark;
 
 
 /**
@@ -132,6 +133,7 @@ public abstract class CoverageReadConsistency<S extends DataStore> extends TestC
      * Statistics about execution time.
      * Created only in benchmark mode.
      */
+    @Benchmark
     private List<Statistics> statistics;
 
     /**
@@ -478,6 +480,7 @@ nextSlice:  for (;;) {
      * Prints statistics about execution time (in milliseconds) after all tests completed.
      */
     @AfterAll
+    @Benchmark
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public void printDurations() {
         if (statistics != null) {

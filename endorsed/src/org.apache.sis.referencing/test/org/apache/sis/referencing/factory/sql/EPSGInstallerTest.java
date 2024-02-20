@@ -38,6 +38,7 @@ import org.apache.sis.util.internal.Constants;
 import org.apache.sis.metadata.sql.util.Reflection;
 
 // Test dependencies
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -118,7 +119,9 @@ public final class EPSGInstallerTest extends TestCaseWithLogs {
      * @throws Exception if an error occurred while creating the database.
      */
     @Test
+    @Tag(TAG_SLOW)
     public void testCreationOnDerby() throws Exception {
+        assumeTrue(RUN_EXTENSIVE_TESTS, "Extensive tests not enabled.");
         final InstallationScriptProvider scripts = getScripts();            // Needs to be invoked first.
         try (TestDatabase db = TestDatabase.create("EPSGInstaller")) {
             createAndTest(db.source, scripts);

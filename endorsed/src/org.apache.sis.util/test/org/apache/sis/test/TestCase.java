@@ -98,9 +98,19 @@ public abstract class TestCase {
     public static final boolean VERBOSE;
 
     /**
+     * Tag for tests that are slow.
+     * All tests annotated with this tag should check for the {@link #RUN_EXTENSIVE_TESTS} flag.
+     *
+     * @see Benchmark#TAG
+     */
+    public static final String TAG_SLOW = "Slow";
+
+    /**
      * {@code true} if the {@value org.apache.sis.test.TestConfiguration#EXTENSIVE_TESTS_KEY}
      * system property is set to {@code true}.
      * If {@code true}, then Apache SIS will run some tests which were normally skipped because they are slow.
+     *
+     * <p>All tests using this condition should be annotated with {@code @Tag(TAG_SLOW)}.</p>
      */
     public static final boolean RUN_EXTENSIVE_TESTS;
 
