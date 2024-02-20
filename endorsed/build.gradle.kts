@@ -104,6 +104,8 @@ tasks.compileTestJava {
     srcDir.list().forEach {
         addRead(options.compilerArgs, it, "org.apache.sis.test.endorsed,org.junit.jupiter.api")
     }
+    options.compilerArgs.add("-source")         // "source", not "release", because we accept any target version.
+    options.compilerArgs.add("16")              // Minimal Java version required by some API that the tests use.
     addExportForTests(options.compilerArgs)
 }
 

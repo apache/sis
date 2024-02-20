@@ -25,7 +25,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.logging.SimpleFormatter;
-import org.apache.sis.pending.jdk.JDK16;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -129,7 +128,7 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
      * All filters registered on the logger. This is a singleton containing only {@code this},
      * unless many tests are running in parallel with their own {@code LoggingWatcher}.
      */
-    private Queue<Filter> allFilters;
+    private Queue<LoggingWatcher> allFilters;
 
     /**
      * Creates a new watcher for the given logger.
@@ -183,14 +182,13 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
         synchronized (logger) {
             assertNull(allFilters);
             final Filter current = logger.getFilter();
-            if (current instanceof LoggingWatcher) {
-                allFilters = ((LoggingWatcher) current).allFilters;
+            if (current != null) {
+                var w = assertInstanceOf(LoggingWatcher.class, current, () -> "The \"" + logger.getName()
+                                + "\" logger has a " + current.getClass().getCanonicalName() + " filter.");
+                allFilters = w.allFilters;
                 assertNotNull(allFilters);
             } else {
                 allFilters = new LinkedList<>();
-                if (current != null) {
-                    allFilters.add(current);
-                }
                 logger.setFilter(this);
             }
             allFilters.add(this);
@@ -221,26 +219,24 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
      */
     @Override
     public final boolean isLoggable(final LogRecord record) {
-        /*
-         * In the simple mono-thread case, everything use fields of `this`.
-         * However, if many tests are running in parallel, we need to check
-         * which `LoggingWatcher` should take the given log record.
-         */
-        LoggingWatcher owner = this;
-        synchronized (logger) {
-            for (final Filter filter : allFilters) {
-                if (filter instanceof LoggingWatcher) {
-                    final var w = (LoggingWatcher) filter;
-                    if (w.isMultiThread || JDK16.isSameThread(record, w.threadId)) {
+        if (record.getLevel().intValue() >= Level.INFO.intValue()) {
+            /*
+             * In the simple mono-thread case, everything use fields of `this`.
+             * However, if many tests are running in parallel, we need to check
+             * which `LoggingWatcher` should take the given log record.
+             */
+            LoggingWatcher owner = null;
+            synchronized (logger) {
+                for (final LoggingWatcher w : allFilters) {
+                    if (w.isMultiThread || w.threadId == record.getLongThreadID()) {
                         owner = w;
                         break;
                     }
-                } else if (!filter.isLoggable(record)) {
-                    return false;
                 }
             }
-        }
-        if (record.getLevel().intValue() >= Level.INFO.intValue()) {
+            if (owner == null) {
+                return true;
+            }
             synchronized (owner) {
                 owner.messages.add(owner.formatter.formatMessage(record));
             }

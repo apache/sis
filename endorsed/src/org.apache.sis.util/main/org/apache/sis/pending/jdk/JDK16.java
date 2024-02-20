@@ -18,7 +18,6 @@ package org.apache.sis.pending.jdk;
 
 import java.util.List;
 import java.util.stream.Stream;
-import java.util.logging.LogRecord;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
 
 
@@ -44,33 +43,5 @@ public final class JDK16 {
     @SuppressWarnings("unchecked")
     public static <T> List<T> toList(final Stream<T> s) {
         return (List<T>) UnmodifiableArrayList.wrap(s.toArray());
-    }
-
-    /**
-     * Place holder for {@code LogRecord.getLongThreadID()}.
-     *
-     * @param  record  the record for which to get the thread identifier.
-     * @return thread identifier of the given record.
-     */
-    @SuppressWarnings("deprecation")
-    public static long getLongThreadID(final LogRecord record) {
-        return record.getThreadID();
-    }
-
-    /**
-     * Returns {@code true} if the thread identifier of the given record is probably equal to the given identifier.
-     * This method reproduces the hashing algorithm used in {@code LogRecord.shortThreadID(long)} private method.
-     *
-     * @param  record    the record for which to compare the thread identifier.
-     * @param  threadId  the thread identifier to compare.
-     * @return whether the thread identifier of the given record is probably equal to the given value.
-     */
-    @SuppressWarnings("deprecation")
-    public static boolean isSameThread(final LogRecord record, final long threadId) {
-        int hash = Long.hashCode(threadId);
-        if (threadId < 0 || threadId > Integer.MAX_VALUE) {
-            if (hash >= 0) hash = ~hash;        // Makes it negative.
-        }
-        return record.getThreadID() == hash;
     }
 }
