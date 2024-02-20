@@ -70,7 +70,7 @@ public final class MultiplicityTest extends TestUsingFile {
      * @throws JAXBException if an error occurred while creating the pool.
      */
     @Override
-    protected MarshallerPool getMarshallerPool() throws JAXBException {
+    protected synchronized MarshallerPool getMarshallerPool() throws JAXBException {
         if (pool == null) {
             pool = new MarshallerPool(JAXBContext.newInstance(FeatureAttributeMock.class),
                                       Map.of(XML.LENIENT_UNMARSHAL, Boolean.TRUE));

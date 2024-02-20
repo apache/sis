@@ -34,6 +34,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.apache.sis.test.FailureDetailsReporter;
 import org.apache.sis.referencing.cs.HardCodedCS;
@@ -45,6 +47,7 @@ import org.opengis.test.referencing.TransformTestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@Execution(ExecutionMode.SAME_THREAD)
 @ExtendWith(FailureDetailsReporter.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class CoordinateSystemTransformTest extends TransformTestCase {

@@ -32,6 +32,7 @@ import org.apache.sis.referencing.util.LazySet;
 import org.apache.sis.system.Reflect;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.system.Modules;
+import org.apache.sis.system.Configuration;
 import org.apache.sis.system.SystemListener;
 import org.apache.sis.referencing.internal.EPSGFactoryProxy;
 import org.apache.sis.referencing.factory.MultiAuthoritiesFactory;
@@ -117,6 +118,7 @@ final class AuthorityFactories<T extends AuthorityFactory> extends LazySet<T> {
     /**
      * Sets the EPSG factory to the given value.
      */
+    @Configuration
     static void EPSG(final GeodeticAuthorityFactory factory) {
         synchronized (EPSG) {
             EPSG[0] = factory;

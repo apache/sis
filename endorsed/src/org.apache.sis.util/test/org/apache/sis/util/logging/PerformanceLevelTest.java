@@ -23,6 +23,7 @@ import static org.apache.sis.util.logging.PerformanceLevel.*;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.apache.sis.test.TestCase;
 
 
@@ -51,6 +52,7 @@ public final class PerformanceLevelTest extends TestCase {
      * Tests modifying the configuration.
      */
     @Test
+    @ResourceLock("Logging")
     public void testSetMinDuration() {
         final long t1 = SLOWNESS.getMinDuration(TimeUnit.SECONDS);
         final long t2 = SLOWER  .getMinDuration(TimeUnit.SECONDS);

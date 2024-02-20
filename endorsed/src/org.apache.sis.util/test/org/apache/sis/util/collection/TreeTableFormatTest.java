@@ -26,6 +26,8 @@ import static org.apache.sis.util.collection.TableColumn.*;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.parallel.Resources;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
@@ -201,6 +203,7 @@ public final class TreeTableFormatTest extends TestCase {
      * Those types shall be handled in a special way.
      */
     @Test
+    @ResourceLock(Resources.LOCALE)
     public void testLocalizedFormat() {
         final Locale locale = Locale.getDefault();
         try {

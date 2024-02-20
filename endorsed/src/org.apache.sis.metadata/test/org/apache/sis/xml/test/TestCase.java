@@ -45,6 +45,8 @@ import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.api.parallel.ResourceAccessMode;
 import org.junit.jupiter.api.parallel.ResourceLock;
 import org.apache.sis.test.LoggingWatcher;
@@ -67,6 +69,7 @@ import org.apache.sis.test.LoggingWatcher;
  *
  * @see DocumentComparator
  */
+@Execution(ExecutionMode.SAME_THREAD)
 public abstract class TestCase extends org.apache.sis.test.TestCase {
     /**
      * Base class of (un)marshalling tests that may emit logs.

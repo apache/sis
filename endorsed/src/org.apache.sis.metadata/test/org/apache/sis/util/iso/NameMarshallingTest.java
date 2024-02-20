@@ -50,8 +50,6 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 public final class NameMarshallingTest extends TestCase {
     /**
      * A poll of configured {@link Marshaller} and {@link Unmarshaller}, created when first needed.
-     *
-     * @see #disposeMarshallerPool()
      */
     private MarshallerPool pool;
 
@@ -62,14 +60,23 @@ public final class NameMarshallingTest extends TestCase {
     }
 
     /**
-     * Returns the XML representation of the given name, wrapped
-     * in a mock {@code <gml:IO_IdentifiedObject>} element.
+     * Returns the marshaller pool, created when first needed.
      */
-    private String marshal(final GenericName name) throws JAXBException {
+    private synchronized MarshallerPool pool() throws JAXBException {
         if (pool == null) {
             pool = new MarshallerPool(JAXBContext.newInstance(IdentifiedObjectMock.class),
                                       Map.of(XML.LENIENT_UNMARSHAL, Boolean.TRUE));
         }
+        return pool;
+    }
+
+    /**
+     * Returns the XML representation of the given name, wrapped
+     * in a mock {@code <gml:IO_IdentifiedObject>} element.
+     */
+    private String marshal(final GenericName name) throws JAXBException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final MarshallerPool pool = pool();
         final Marshaller marshaller = pool.acquireMarshaller();
         marshaller.setProperty(XML.METADATA_VERSION, VERSION_2007);
         final String xml = marshal(marshaller, new IdentifiedObjectMock(null, name));
@@ -81,6 +88,8 @@ public final class NameMarshallingTest extends TestCase {
      * Converse of {@link #marshal(GenericName)}.
      */
     private GenericName unmarshal(final String xml) throws JAXBException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final MarshallerPool pool = pool();
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final Object value = unmarshal(unmarshaller, xml);
         pool.recycle(unmarshaller);
