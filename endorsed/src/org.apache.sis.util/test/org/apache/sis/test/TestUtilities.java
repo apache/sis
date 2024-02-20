@@ -21,7 +21,6 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Iterator;
 import java.util.Random;
-import java.util.concurrent.Callable;
 import java.io.PrintWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -61,14 +60,6 @@ public final class TestUtilities extends Static {
      * Width of the separator to print to {@link TestCase#out}, in number of characters.
      */
     private static final int SEPARATOR_WIDTH = 80;
-
-    /**
-     * Maximal time that {@code waitFoo()} methods can wait, in milliseconds.
-     *
-     * @see #waitForBlockedState(Thread)
-     * @see #waitForGarbageCollection(Callable)
-     */
-    private static final int MAXIMAL_WAIT_TIME = 1000;
 
     /**
      * Date parser and formatter using the {@code "yyyy-MM-dd HH:mm:ss"} pattern
@@ -394,65 +385,6 @@ public final class TestUtilities extends Static {
             }
             throw new UndeclaredThrowableException(failure);
         }
-    }
-
-    /**
-     * Waits up to one second for the given thread to reach the
-     * {@linkplain java.lang.Thread.State#BLOCKED blocked} or the
-     * {@linkplain java.lang.Thread.State#WAITING waiting} state.
-     *
-     * @param  thread  the thread to wait for blocked or waiting state.
-     * @throws IllegalThreadStateException if the thread has terminated its execution,
-     *         or has not reached the waiting or blocked state before the timeout.
-     * @throws InterruptedException if this thread has been interrupted while waiting.
-     */
-    public static void waitForBlockedState(final Thread thread) throws IllegalThreadStateException, InterruptedException {
-        int retry = MAXIMAL_WAIT_TIME / 5;              // 5 shall be the same number as in the call to Thread.sleep.
-        do {
-            Thread.sleep(5);
-            switch (thread.getState()) {
-                case WAITING:
-                case BLOCKED: return;
-                case TERMINATED: throw new IllegalThreadStateException("The thread has completed execution.");
-            }
-        } while (--retry != 0);
-        throw new IllegalThreadStateException("The thread is not in a blocked or waiting state.");
-    }
-
-    /**
-     * Waits up to one second for the garbage collector to do its work. This method can be invoked
-     * only if {@link TestConfiguration#allowGarbageCollectorDependentTests()} returns {@code true}.
-     *
-     * <p>Note that this method does not throw any exception if the given condition has not been
-     * reached before the timeout. Instead, it is the caller responsibility to test the return
-     * value. This method is designed that way because the caller can usually produce a more
-     * accurate error message about which value has not been garbage collected as expected.</p>
-     *
-     * @param  stopCondition  a condition which return {@code true} if this method can stop waiting,
-     *         or {@code false} if it needs to ask again for garbage collection.
-     * @return {@code true} if the given condition has been met, or {@code false} if we waited up
-     *         to the timeout without meeting the given condition.
-     * @throws InterruptedException if this thread has been interrupted while waiting.
-     */
-    public static boolean waitForGarbageCollection(final Callable<Boolean> stopCondition) throws InterruptedException {
-        assertTrue(TestConfiguration.allowGarbageCollectorDependentTests(), "GC-dependent tests not allowed in this run.");
-        int retry = MAXIMAL_WAIT_TIME / 50;             // 50 shall be the same number as in the call to Thread.sleep.
-        boolean stop;
-        do {
-            if (--retry == 0) {
-                return false;
-            }
-            Thread.sleep(50);
-            System.gc();
-            try {
-                stop = stopCondition.call();
-            } catch (RuntimeException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new AssertionError(e);
-            }
-        } while (!stop);
-        return true;
     }
 
     /**

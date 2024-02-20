@@ -58,15 +58,4 @@ public final class TestConfiguration extends Static {
      */
     private TestConfiguration() {
     }
-
-    /**
-     * Returns {@code true} if tests that may depend on the garbage collector activity are allowed.
-     * Those tests are a little bit dangerous since they may randomly fail on a server too busy for
-     * running the garbage collector as fast as expected.
-     *
-     * @return {@code true} if tests that may depend on garbage collector activity are allowed.
-     */
-    public static boolean allowGarbageCollectorDependentTests() {
-        return true;
-    }
 }

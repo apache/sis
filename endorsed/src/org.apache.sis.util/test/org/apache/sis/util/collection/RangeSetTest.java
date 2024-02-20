@@ -23,7 +23,6 @@ import java.util.Random;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.SortedSet;
-import java.io.PrintWriter;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.NumberRange;
 import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
@@ -575,7 +574,6 @@ public final class RangeSetTest extends TestCase {
      */
     @Performance
     public void stress() throws InterruptedException {
-        final PrintWriter out = TestCase.out;
         final Random r = TestUtilities.createRandomNumberGenerator();
         for (int p=0; p<10; p++) {
             final long start = System.nanoTime();

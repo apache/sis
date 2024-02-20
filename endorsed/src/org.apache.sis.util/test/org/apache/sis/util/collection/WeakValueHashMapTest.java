@@ -23,11 +23,8 @@ import java.util.Random;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestCase;
-import org.apache.sis.test.TestConfiguration;
 import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.Assertions.assertMapEquals;
-import static org.apache.sis.test.TestUtilities.waitForGarbageCollection;
 
 
 /**
@@ -36,7 +33,7 @@ import static org.apache.sis.test.TestUtilities.waitForGarbageCollection;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-public final class WeakValueHashMapTest extends TestCase {
+public final class WeakValueHashMapTest extends TestCaseWithGC {
     /**
      * The size of the test sets to be created.
      */
@@ -160,7 +157,7 @@ public final class WeakValueHashMapTest extends TestCase {
              * could be caused by a heavy server load preventing GC to complete its work. If this
              * happen too often, we may turn off the "allow garbage collector dependent tests" flag.
              */
-            if (TestConfiguration.allowGarbageCollectorDependentTests()) {
+            if (GC_DEPENDENT_TESTS_ENABLED) {
                 waitForGarbageCollection(() -> weakMap.size() == strongMap.size());
                 assertMapEquals(strongMap, weakMap);
                 /*
