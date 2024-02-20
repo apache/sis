@@ -16,9 +16,10 @@
  */
 package org.apache.sis.pending.jdk;
 
+import java.lang.ref.Reference;
 import java.util.List;
 import java.util.stream.Stream;
-import org.apache.sis.util.internal.UnmodifiableArrayList;
+import java.util.stream.Collectors;
 
 
 /**
@@ -34,14 +35,25 @@ public final class JDK16 {
     }
 
     /**
+     * Place holder for {@link Reference#refersTo(Object)} method added in JDK16.
+     *
+     * @param  <T>  type of elements in the reference.
+     * @param  ref  the reference to check, or {@code null}.
+     * @param  obj  the value to compare to the reference value.
+     * @return whether the reference value is the given object.
+     */
+    public static <T> boolean refersTo(Reference<T> ref, T obj) {
+        return ref.get() == obj;
+    }
+
+    /**
      * Place holder for {@link Stream#toList()} method added in JDK16.
      *
      * @param  <T>  type of elements in the stream.
      * @param  s    the stream to convert to a list.
      * @return the stream content as a list.
      */
-    @SuppressWarnings("unchecked")
     public static <T> List<T> toList(final Stream<T> s) {
-        return (List<T>) UnmodifiableArrayList.wrap(s.toArray());
+        return s.collect(Collectors.toList());
     }
 }

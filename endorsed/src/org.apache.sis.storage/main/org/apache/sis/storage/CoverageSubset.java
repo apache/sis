@@ -19,7 +19,6 @@ package org.apache.sis.storage;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
@@ -38,6 +37,7 @@ import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.StoreUtilities;
 import org.apache.sis.util.internal.UnmodifiableArrayList;
+import org.apache.sis.pending.jdk.JDK16;
 
 
 /**
@@ -144,9 +144,8 @@ final class CoverageSubset extends AbstractGridCoverageResource {
     public List<double[]> getResolutions() throws DataStoreException {
         List<double[]> resolutions = source.getResolutions();
         if (reduction != null) {
-            resolutions.stream().map((resolution) -> {
-                return reduction.apply(new DirectPositionView.Double(resolution)).getCoordinate();
-            }).collect(Collectors.toList());        // TODO: replace by Stream.toList() on JDK16.
+            JDK16.toList(resolutions.stream()
+                    .map((resolution) -> reduction.apply(new DirectPositionView.Double(resolution)).getCoordinate()));
         }
         return resolutions;
     }

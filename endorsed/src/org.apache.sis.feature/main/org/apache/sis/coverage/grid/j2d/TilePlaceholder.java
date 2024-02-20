@@ -28,6 +28,7 @@ import java.awt.image.WritableRaster;
 import java.awt.image.RenderedImage;
 import java.awt.image.BufferedImage;
 import java.lang.ref.WeakReference;
+import org.apache.sis.pending.jdk.JDK16;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.collection.WeakHashSet;
@@ -206,8 +207,7 @@ public class TilePlaceholder {
                 r = reference;
             }
             if (r != null) {
-                return r.get() == tile.getDataBuffer();
-                // TODO: use r.refersTo(tile.getDataBuffer()) with JDK16.
+                return JDK16.refersTo(r, tile.getDataBuffer());
             }
         }
         return false;

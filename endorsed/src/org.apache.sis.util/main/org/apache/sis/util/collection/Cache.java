@@ -31,6 +31,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.ref.SoftReference;
+import org.apache.sis.pending.jdk.JDK16;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
@@ -384,7 +385,7 @@ public class Cache<K,V> extends AbstractMap<K,V> implements ConcurrentMap<K,V> {
      * @return whether the given value is null or a cleared reference.
      */
     private static boolean isNull(final Object value) {
-        return (value == null) || (value instanceof Reference<?> && ((Reference<?>) value).get() == null);  // TODO: use refersTo(null) with JDK16.
+        return (value == null) || (value instanceof Reference<?> && JDK16.refersTo((Reference<?>) value, null));
     }
 
     /**

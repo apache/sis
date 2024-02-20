@@ -116,6 +116,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
+import org.apache.sis.pending.jdk.JDK16;
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 import static org.apache.sis.util.internal.StandardDateFormat.UTC;
 import static org.apache.sis.referencing.internal.ServicesForMetadata.CONNECTION;
@@ -3248,8 +3249,7 @@ next:                   while (r.next()) {
             System.gc();                // For cleaning as much weak references as we can before we check them.
             final Iterator<CloseableReference> it = authorityCodes.values().iterator();
             while (it.hasNext()) {
-                final AuthorityCodes codes = it.next().get();       // TODO: use referTo(null) with JDK16.
-                if (codes == null) {
+                if (JDK16.refersTo(it.next(), null)) {
                     it.remove();
                 } else {
                     /*
