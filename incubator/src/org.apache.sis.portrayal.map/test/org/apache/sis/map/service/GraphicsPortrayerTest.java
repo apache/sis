@@ -47,19 +47,25 @@ import org.apache.sis.style.se1.Symbology;
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
+@Execution(ExecutionMode.CONCURRENT)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class GraphicsPortrayerTest {
 
-    private static final GridGeometry WORLD = new GridGeometry(
+    private final GridGeometry WORLD = new GridGeometry(
             new GridExtent(360, 180),
             CRS.getDomainOfValidity(CommonCRS.WGS84.normalizedGeographic()),
             GridOrientation.REFLECTION_Y);
-    private static final GeometryFactory GF = new GeometryFactory();
+
+    private final GeometryFactory GF = new GeometryFactory();
 
     /**
      * Creates a new test case.

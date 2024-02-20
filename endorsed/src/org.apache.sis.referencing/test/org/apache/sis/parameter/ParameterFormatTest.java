@@ -32,6 +32,8 @@ import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 
@@ -41,6 +43,7 @@ import static org.apache.sis.test.Assertions.assertMultilinesEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@Execution(ExecutionMode.CONCURRENT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class ParameterFormatTest extends TestCase {
     /**

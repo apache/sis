@@ -143,6 +143,9 @@ tasks.test {
         events("FAILED", "STANDARD_OUT", "STANDARD_ERROR")
         setExceptionFormat("FULL")
     }
+    systemProperty("junit.jupiter.execution.parallel.enabled", "true")
+    systemProperty("junit.jupiter.execution.parallel.mode.default", "concurrent")
+    systemProperty("junit.jupiter.execution.parallel.mode.classes.default", "concurrent")
 }
 
 /*

@@ -28,6 +28,8 @@ import org.apache.sis.referencing.factory.sql.EPSGFactory;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import org.apache.sis.test.TestCase;
 
@@ -37,6 +39,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@Execution(ExecutionMode.CONCURRENT)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class ComparisonWithEPSG extends TestCase {
     /**

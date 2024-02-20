@@ -61,6 +61,8 @@ import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.AfterAll;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.apache.sis.test.TestCaseWithLogs;
 import org.apache.sis.referencing.factory.TestFactorySource;
 import static org.apache.sis.test.Assertions.assertNotDeepEquals;
@@ -77,6 +79,7 @@ import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Vadim Semenov
  */
+@Execution(ExecutionMode.SAME_THREAD)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class EPSGFactoryTest extends TestCaseWithLogs {
     /**
