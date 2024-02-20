@@ -1209,6 +1209,7 @@ codes:  for (int i=0; i<codes.length; i++) {
         if ("?".equals(scope)) {                // EPSG sometimes uses this value for unspecified scope.
             scope = null;
         }
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Map<String,Object> properties = createProperties(table, name, code, remarks, deprecated);
         if (domainCode != null) {
             properties.put(Datum.DOMAIN_OF_VALIDITY_KEY, owner.createExtent(domainCode));
@@ -1487,7 +1488,8 @@ codes:  for (int i=0; i<codes.length; i++) {
                                  * We need to check if EPSG database 10+ has more specific information.
                                  * See https://issues.apache.org/jira/browse/SIS-518
                                  */
-                                final Map<String, Object> properties = createProperties("Coordinate Reference System",
+                                @SuppressWarnings("LocalVariableHidesMemberVariable")
+                                final Map<String,Object> properties = createProperties("Coordinate Reference System",
                                                                         name, epsg, area, scope, remarks, deprecated);
                                 if (baseCRS instanceof GeographicCRS) {
                                     crs = crsFactory.createProjectedCRS(properties, (GeographicCRS) baseCRS, op, cs);
@@ -1555,8 +1557,9 @@ codes:  for (int i=0; i<codes.length; i++) {
                     case "geocentric": {
                         final CoordinateSystem cs = owner.createCoordinateSystem(getString(code, result, 8));
                         final GeodeticDatum datum = owner.createGeodeticDatum   (getString(code, result, 9));
+                        @SuppressWarnings("LocalVariableHidesMemberVariable")
                         final Map<String,Object> properties = createProperties("Coordinate Reference System",
-                                name, epsg, area, scope, remarks, deprecated);
+                                                                name, epsg, area, scope, remarks, deprecated);
                         if (cs instanceof CartesianCS) {
                             crs = crsFactory.createGeocentricCRS(properties, datum, (CartesianCS) cs);
                         } else if (cs instanceof SphericalCS) {
@@ -1659,8 +1662,8 @@ codes:  for (int i=0; i<codes.length; i++) {
                 final String  scope      = getOptionalString (result, 7);
                 final String  remarks    = getOptionalString (result, 8);
                 final boolean deprecated = getOptionalBoolean(result, 9);
-                Map<String,Object> properties = createProperties("Datum",
-                        name, epsg, area, scope, remarks, deprecated);
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
+                Map<String,Object> properties = createProperties("Datum", name, epsg, area, scope, remarks, deprecated);
                 if (anchor != null) {
                     properties.put(Datum.ANCHOR_POINT_KEY, anchor);
                 }
@@ -1683,6 +1686,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                         }
                     }
                     if (year != 0) {
+                        @SuppressWarnings("LocalVariableHidesMemberVariable")
                         final Calendar calendar = getCalendar();
                         calendar.set(year, month, day);
                         properties.put(Datum.REALIZATION_EPOCH_KEY, calendar.getTime());
@@ -1945,6 +1949,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                 final String  remarks           = getOptionalString (result, 7);
                 final boolean deprecated        = getOptionalBoolean(result, 8);
                 final Unit<Length> unit         = owner.createUnit(unitCode).asType(Length.class);
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final Map<String,Object> properties = createProperties("Ellipsoid", name, epsg, remarks, deprecated);
                 final Ellipsoid ellipsoid;
                 if (Double.isNaN(inverseFlattening)) {
@@ -2164,6 +2169,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                 final String  remarks    = getOptionalString (result, 5);
                 final boolean deprecated = getOptionalBoolean(result, 6);
                 final CoordinateSystemAxis[] axes = createCoordinateSystemAxes(epsg, dimension);
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final Map<String,Object> properties = createProperties("Coordinate System", name, epsg, remarks, deprecated);   // Must be after axes.
                 /*
                  * The following switch statement should have a case for all "epsg_cs_kind" values enumerated
@@ -2607,7 +2613,8 @@ next:                   while (r.next()) {
                     case 1:  valueDomain = MeasurementRange.create(Double.NEGATIVE_INFINITY, false,
                                     Double.POSITIVE_INFINITY, false, CollectionsExt.first(units)); break;
                 }
-                final Map<String, Object> properties =
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
+                final Map<String,Object> properties =
                         createProperties("Coordinate_Operation Parameter", name, epsg, isReversible, deprecated);
                 properties.put(Identifier.DESCRIPTION_KEY, description);
                 final ParameterDescriptor<?> descriptor = new DefaultParameterDescriptor<>(properties,
@@ -2771,6 +2778,7 @@ next:                   while (r.next()) {
                 final String  remarks    = getOptionalString (result, 3);
                 final boolean deprecated = getOptionalBoolean(result, 4);
                 final ParameterDescriptor<?>[] descriptors = createParameterDescriptors(epsg);
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
                 Map<String,Object> properties = createProperties("Coordinate_Operation Method", name, epsg, remarks, deprecated);
                 /*
                  * Note: we do not store the formula at this time, because the text is very verbose and rarely used.

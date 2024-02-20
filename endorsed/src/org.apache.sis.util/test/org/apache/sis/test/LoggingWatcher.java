@@ -16,6 +16,8 @@
  */
 package org.apache.sis.test;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Queue;
 import java.util.LinkedList;
 import java.util.ConcurrentModificationException;
@@ -95,9 +97,42 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
     public static final String LOCK = "Logging";
 
     /**
-     * The logged messages.
+     * The logged messages. All accesses to this list shall be synchronized on {@code this}.
      */
-    private final Queue<String> messages = new LinkedList<>();
+    private final Queue<Message> messages = new LinkedList<>();
+
+    /**
+     * Elements in the {@link #messages} queue.
+     */
+    private static final class Message extends org.apache.sis.pending.jdk.Record {
+        /** Formatted text of the log record. */
+        final String text;
+
+        /** Stack trace that we can use for finding the emitter, or {@code null} if none. */
+        final Throwable trace;
+
+        /** Creates a new message. */
+        Message(final String text, Throwable trace) {
+            this.text  = text;
+            this.trace = trace;
+        }
+
+        /**
+         * Returns the formatted log message together with its source.
+         * This is the string to show if an assertion fail.
+         */
+        @Override public String toString() {
+            if (trace == null) {
+                return text;
+            }
+            final var buffer = new StringWriter();
+            buffer.write(text);
+            buffer.write(System.lineSeparator());
+            buffer.write("Caused by: ");
+            trace.printStackTrace(new PrintWriter(buffer));
+            return buffer.toString();
+        }
+    }
 
     /**
      * The logger to watch.
@@ -238,7 +273,7 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
                 return true;
             }
             synchronized (owner) {
-                owner.messages.add(owner.formatter.formatMessage(record));
+                owner.messages.add(new Message(owner.formatter.formatMessage(record), record.getThrown()));
             }
         }
         return TestCase.VERBOSE;
@@ -254,10 +289,10 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
      */
     @SuppressWarnings("StringEquality")
     public synchronized void skipNextLogIfContains(final String... keywords) {
-        final String message = messages.peek();
+        final Message message = messages.peek();
         if (message != null) {
             for (final String word : keywords) {
-                if (!message.contains(word)) {
+                if (!message.text.contains(word)) {
                     return;
                 }
             }
@@ -278,9 +313,9 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
         if (messages.isEmpty()) {
             fail("Expected a logging messages but got no more.");
         }
-        final String message = messages.remove();
+        final Message message = messages.remove();
         for (final String word : keywords) {
-            if (!message.contains(word)) {
+            if (!message.text.contains(word)) {
                 fail("Expected the logging message to contains the “" + word + "” word but got:\n" + message);
             }
         }
@@ -290,7 +325,7 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
      * Verifies that there is no more log message.
      */
     public synchronized void assertNoUnexpectedLog() {
-        final String message = messages.peek();
+        final Message message = messages.peek();
         if (message != null) {
             fail("Unexpected logging message: " + message);
         }

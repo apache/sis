@@ -247,6 +247,7 @@ public final class CRSTest extends TestCaseWithLogs {
                     null, new DefaultGeographicBoundingBox(-1, +1, ymin, ymax), null, null));
             crs[i] = new DefaultProjectedCRS(properties, baseCRS.geographic(), HardCodedConversions.MERCATOR, cs);
         }
+        loggings.skipNextLogIfContains("EPSG:4047");                        // No longer supported by EPSG.
         final ProjectedCRS[] overlappingCRS = Arrays.copyOf(crs, 3);        // Exclude the last CRS only.
         /*
          * Test between the 3 overlapping CRS without region of interest. We expect the CRS having a domain
@@ -257,7 +258,7 @@ public final class CRSTest extends TestCaseWithLogs {
          * If we specify a smaller region of interest, we should get the CRS having the smallest domain of validity that
          * cover the ROI. Following lines gradually increase the ROI size and verify that we get CRS for larger domain.
          */
-        final DefaultGeographicBoundingBox regionOfInterest = new DefaultGeographicBoundingBox(-1, +1, 2.1, 2.9);
+        final var regionOfInterest = new DefaultGeographicBoundingBox(-1, +1, 2.1, 2.9);
         assertSame(crs[2], CRS.suggestCommonTarget(regionOfInterest, overlappingCRS));      // Best fit for [2.1 … 2.9]°N
 
         regionOfInterest.setNorthBoundLatitude(3.1);
