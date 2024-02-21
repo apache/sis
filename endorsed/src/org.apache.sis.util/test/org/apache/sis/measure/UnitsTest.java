@@ -184,9 +184,10 @@ public final class UnitsTest extends TestCase {
      */
     @Test
     public void testConversionFactors() {
-        assertEquals(1000, KILOMETRE        .getConverterTo(METRE)              .convert(    1));
-        assertEquals( 3.6, METRES_PER_SECOND.getConverterTo(KILOMETRES_PER_HOUR).convert(    1));
-        assertEquals(1E-6, BECQUEREL        .getConverterTo(CURIE)              .convert(37000),  1E-20);
+        assertEquals(1000,  KILOMETRE        .getConverterTo(METRE)              .convert(    1));
+        assertEquals( 3.6,  METRES_PER_SECOND.getConverterTo(KILOMETRES_PER_HOUR).convert(    1));
+        assertEquals(18.52, KNOT             .getConverterTo(KILOMETRES_PER_HOUR).convert(   10));
+        assertEquals(1E-6,  BECQUEREL        .getConverterTo(CURIE)              .convert(37000), 1E-20);
     }
 
     /**
