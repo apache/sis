@@ -47,21 +47,23 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  *         }
  *     }
  *
- * Recommended but not mandatory, ensure that there is no unexpected logging in any tests:
- *
- * {@snippet lang="java" :
- *     @AfterEach
- *     public void assertNoUnexpectedLog() {
- *         loggings.assertNoUnexpectedLog();
- *     }
- *     }
- *
  * In tests that are expected to emit warnings, add the following lines:
  *
  * {@snippet lang="java" :
  *     // Do the test here.
  *     loggings.assertNextLogContains("Some keywords", "that are expected", "to be found in the message");
  *     loggings.assertNoUnexpectedLog();
+ *     }
+ *
+ * Callers should invoke {@link #assertNoUnexpectedLog()} at the end of each test method.
+ * Alternatively, the check can also be done automatically as below (but the stack trace
+ * may be more confusing):
+ *
+ * {@snippet lang="java" :
+ *     @AfterEach
+ *     public void assertNoUnexpectedLog() {
+ *         loggings.assertNoUnexpectedLog();
+ *     }
  *     }
  *
  * <h2>Multi-threading</h2>
