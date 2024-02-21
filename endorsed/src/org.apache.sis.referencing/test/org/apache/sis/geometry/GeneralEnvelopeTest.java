@@ -123,8 +123,7 @@ public class GeneralEnvelopeTest extends TestCase {
         assertEquals(ymax,   test .getMaximum (1), "ymax");
         assertEquals(ymin,   lower.getOrdinate(1), "ymin");
         assertEquals(ymax,   upper.getOrdinate(1), "ymax");
-        if (test instanceof Envelope2D) {
-            final Envelope2D ri = (Envelope2D) test;
+        if (test instanceof Envelope2D ri) {
             assertEquals(xmin, ri.getMinX(), "xmin");
             assertEquals(xmax, ri.getMaxX(), "xmax");
             assertEquals(ymin, ri.getMinY(), "ymin");

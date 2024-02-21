@@ -56,8 +56,8 @@ public class LineAppenderTest extends AppenderTestCase {
     @Override
     void run(final String lineSeparator) throws IOException {
         final Appendable f = appender;
-        if (f instanceof LineAppender) {
-            assertEquals(" ", ((LineAppender) f).getLineSeparator());
+        if (f instanceof LineAppender la) {
+            assertEquals(" ", la.getLineSeparator());
         }
         assertSame(f, f.append("Le vrai" + lineSeparator + "policitien, "));
         assertSame(f, f.append("c'est celui\r\nqui\r")); // Line separator broken on two method calls.

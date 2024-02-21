@@ -26,6 +26,8 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.apache.sis.test.FailureDetailsReporter;
 
 
 /**
@@ -35,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
  * @version 1.4
  * @since   1.1
  */
+@ExtendWith(FailureDetailsReporter.class)
 public final class ParameterizedTransformTest extends org.opengis.test.referencing.ParameterizedTransformTest {
     /**
      * Creates a new test suite using the singleton factory instance.

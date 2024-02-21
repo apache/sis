@@ -63,7 +63,7 @@ public final class MetadataFallbackVerifier {
      */
     @Test
     public void compare() throws Exception {
-        try (TestDatabase db = TestDatabase.create("MetadataSource");
+        try (TestDatabase db = TestDatabase.create("MetadataFallback");
              MetadataSource source = new MetadataSource(MetadataStandard.ISO_19115, db.source, "metadata", null))
         {
             source.install();

@@ -22,6 +22,8 @@ import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.apache.sis.test.FailureDetailsReporter;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.referencing.TransformTestCase;
@@ -32,6 +34,7 @@ import org.opengis.test.referencing.TransformTestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@ExtendWith(FailureDetailsReporter.class)
 public final class NormalizedProjectionTest extends TransformTestCase {
     /**
      * Tolerance level for comparing floating point numbers.

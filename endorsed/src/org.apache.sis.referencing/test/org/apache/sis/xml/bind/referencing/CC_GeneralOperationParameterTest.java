@@ -30,10 +30,7 @@ import org.apache.sis.xml.Namespaces;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.xml.test.TestCase;
 
 
@@ -44,30 +41,12 @@ import org.apache.sis.xml.test.TestCase;
  *
  * @see <a href="http://issues.apache.org/jira/browse/SIS-290">SIS-290</a>
  */
-public final class CC_GeneralOperationParameterTest extends TestCase {
-    /**
-     * A JUnit rule for listening to log events emitted during execution of {@link #testGroupMergeBecauseExtraParameter()}.
-     * This rule is used by test methods for verifying that the log message contains the expected information.
-     * The expected message is something like "No parameter named "Parameter B" was found".
-     *
-     * <p>This field is public because JUnit requires us to do so, but should be considered as an implementation details
-     * (it should have been a private field).</p>
-     */
-    @RegisterExtension
-    public final LoggingWatcher loggings = new LoggingWatcher(Loggers.XML);
-
-    /**
-     * Verifies that no unexpected warning has been emitted in any test defined in this class.
-     */
-    @AfterEach
-    public void assertNoUnexpectedLog() {
-        loggings.assertNoUnexpectedLog();
-    }
-
+public final class CC_GeneralOperationParameterTest extends TestCase.WithLogs {
     /**
      * Creates a new test case.
      */
     public CC_GeneralOperationParameterTest() {
+        super(Loggers.XML);
     }
 
     /**
@@ -143,6 +122,8 @@ public final class CC_GeneralOperationParameterTest extends TestCase {
 
         provided = unmarshal("Optional parameter", "More details here.");
         assertSame(complete, CC_GeneralOperationParameter.merge(provided, complete));
+
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -175,6 +156,7 @@ public final class CC_GeneralOperationParameterTest extends TestCase {
         assertEquals (1,                     merged.getMaximumOccurs());
         assertEquals (Integer.class,         merged.getValueClass());
         assertSame   (provided.getRemarks(), merged.getRemarks());
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -200,6 +182,7 @@ public final class CC_GeneralOperationParameterTest extends TestCase {
                 create("Parameter D", "Remarks D.", false, 6));
 
         assertSame(complete, CC_GeneralOperationParameter.merge(provided, complete));
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -240,6 +223,7 @@ public final class CC_GeneralOperationParameterTest extends TestCase {
         verifyParameter(itc.next(), itm.next(), false, "Remarks C.");   // Not same because different remarks.
         assertTrue (itc.hasNext());
         assertFalse(itm.hasNext());
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -281,6 +265,7 @@ public final class CC_GeneralOperationParameterTest extends TestCase {
         verifyParameter(itc.next(), itm.next(), true, null);
         assertFalse(itc.hasNext());
         assertFalse(itm.hasNext());
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -326,6 +311,7 @@ public final class CC_GeneralOperationParameterTest extends TestCase {
         verifyParameter(itc.next(), itm.next(), true, "Remarks C.");
         assertFalse(itc.hasNext());
         assertFalse(itm.hasNext());
+        loggings.assertNoUnexpectedLog();
     }
 
     /**

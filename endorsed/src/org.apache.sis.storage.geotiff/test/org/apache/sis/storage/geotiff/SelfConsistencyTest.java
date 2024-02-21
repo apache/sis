@@ -20,17 +20,16 @@ import java.util.List;
 import java.util.Optional;
 import java.nio.file.Path;
 import org.opengis.util.GenericName;
+import org.apache.sis.util.Workaround;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.StorageConnector;
 
 // Test dependencies
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.abort;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.test.OptionalTestData;
 import org.apache.sis.storage.test.CoverageReadConsistency;
@@ -46,47 +45,37 @@ import org.apache.sis.storage.test.CoverageReadConsistency;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  */
-public final class SelfConsistencyTest extends CoverageReadConsistency {
-    /**
-     * The file used for the test, opened only once.
-     */
-    private static GeoTiffStore store;
-
+public final class SelfConsistencyTest extends CoverageReadConsistency<GeoTiffStore> {
     /**
      * Opens the test file to be used for all tests.
      *
      * @throws DataStoreException if an error occurred while opening the file.
      */
-    @BeforeAll
-    public static void openFile() throws DataStoreException {
+    public SelfConsistencyTest() throws DataStoreException {
+        super(openFile());
+    }
+
+    /**
+     * Work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
+     */
+    @Workaround(library="JDK", version="1.7")
+    private static GeoTiffStore openFile() throws DataStoreException {
         final Optional<Path> path = OptionalTestData.GEOTIFF.path();
         if (path.isPresent()) {
-            store = new GeoTiffStore(null, new StorageConnector(path.get()));
+            return new GeoTiffStore(null, new StorageConnector(path.get()));
         }
-        assumeTrue(store != null, "Test file not found.");
+        abort("Test file not found.");
+        return null;
     }
 
     /**
-     * Closes the test file used by all tests.
-     *
-     * @throws DataStoreException if an error occurred while closing the file.
+     * Work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
      */
-    @AfterAll
-    public static void closeFile() throws DataStoreException {
-        final GeoTiffStore s = store;
-        if (s != null) {
-            store = null;       // Clear first in case of failure.
-            s.close();
-        }
-    }
-
-    /**
-     * Creates a new test case.
-     *
-     * @throws DataStoreException if an error occurred while fetching the first image.
-     */
-    public SelfConsistencyTest() throws DataStoreException {
-        super(store.components().iterator().next());
+    @Override
+    protected GridCoverageResource resource() throws DataStoreException {
+        return store.components().iterator().next();
     }
 
     /**

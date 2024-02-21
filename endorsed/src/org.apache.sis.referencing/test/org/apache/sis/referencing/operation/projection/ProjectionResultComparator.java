@@ -98,8 +98,7 @@ final class ProjectionResultComparator extends NormalizedProjection {
         final List<MathTransform> steps = MathTransforms.getSteps(transform);
         for (int i=steps.size(); --i >= 0;) {
             final MathTransform step = steps.get(i);
-            if (step instanceof NormalizedProjection) {
-                final NormalizedProjection spherical = (NormalizedProjection) step;
+            if (step instanceof NormalizedProjection spherical) {
                 final Class<?> sphericalClass = spherical.getClass();
                 final Class<?> ellipticalClass = sphericalClass.getSuperclass();
                 assertEquals("Spherical", sphericalClass.getSimpleName(), "Class name for the spherical formulas.");

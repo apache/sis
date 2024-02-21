@@ -262,8 +262,7 @@ public final class AbstractEnvelopeTest extends TestCase {
             assertEquals(+180, envelope.getMaximum (0), label);
             assertEquals(   4, envelope.getMedian  (0), label);     // Note the alternance with the previous test methods.
             assertEquals( NaN, envelope.getSpan    (0), label);     // testCrossingAntiMeridian() + 360°.
-            if (envelope instanceof AbstractEnvelope) {
-                final var ext = (AbstractEnvelope) envelope;
+            if (envelope instanceof AbstractEnvelope ext) {
                 assertTrue (ext.contains  (inside),           label);
                 assertFalse(ext.contains  (outside),          label);
                 assertFalse(ext.contains  (intersect, false), label);
@@ -274,8 +273,7 @@ public final class AbstractEnvelopeTest extends TestCase {
                 assertContains(ext, contained);
                 break;
             }
-            if (envelope instanceof Rectangle2D) {
-                final var ext = (Rectangle2D) envelope;
+            if (envelope instanceof Rectangle2D ext) {
                 assertTrue (ext.contains  (inside),    label);
                 assertFalse(ext.contains  (outside),   label);
                 assertFalse(ext.contains  (intersect), label);

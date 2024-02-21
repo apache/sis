@@ -61,11 +61,10 @@ public final class SystemUnitTest extends TestCase {
     @Test
     public void verifyRelatedUnits() throws ReflectiveOperationException {
         for (final Field f : Units.class.getFields()) {
-            final Object value = f.get(null);
-            if (value instanceof SystemUnit<?>) {
-                final ConventionalUnit<?>[] related = ((SystemUnit<?>) value).related();
+            if (f.get(null) instanceof SystemUnit<?> value) {
+                final ConventionalUnit<?>[] related = value.related();
                 if (related != null) {
-                    final String symbol = ((SystemUnit<?>) value).getSymbol();
+                    final String symbol = value.getSymbol();
                     for (final ConventionalUnit<?> r : related) {
                         assertNotNull(r, symbol);
                         assertInstanceOf(LinearConverter.class, r.toTarget, symbol);

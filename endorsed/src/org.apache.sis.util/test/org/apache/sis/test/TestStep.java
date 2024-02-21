@@ -25,12 +25,14 @@ import java.lang.annotation.RetentionPolicy;
 
 /**
  * A test method producing an object to be used by another test method.
+ * This annotation is for documentation purpose only. It is used in replacement to
+ * {@link org.junit.jupiter.api.Test} when the method is invoked by another method.
+ * It may be because the methods need to be invoked inside a {@code try … finally}
+ * block, or because the result of a test is used by a next step.
  *
- * <p>If this annotation was supported, we would annotate some methods with the {@code TestStep} annotation
- * instead of the JUnit {@link org.junit.jupiter.api.Test} one. However, in current implementation, this functionality
- * is not supported and the test step methods must be explicitly invoked from another method. Consequently
- * this annotation is currently used only for documentation purpose, in case a future JUnit version would
- * support tests chaining.</p>
+ * <p>We currently do not use {@link org.junit.jupiter.api.TestMethodOrder} annotation for
+ * the purposes described above because the semantic during parallel execution is unclear,
+ * and we do not want to force {@code Lifecycle.PER_CLASS} on those tests.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

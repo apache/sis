@@ -346,7 +346,7 @@ public class CoordinateOperationMethods extends HTMLGenerator {
                     remarks = "Optional ";
                 } else {
                     final Comparable<?> min = param.getMinimumValue();
-                    if ((min instanceof Number) && ((Number) min).doubleValue() == ((Number) param.getMaximumValue()).doubleValue()) {
+                    if ((min instanceof Number n) && n.doubleValue() == ((Number) param.getMaximumValue()).doubleValue()) {
                         remarks = "Unmodifiable ";
                     } else {
                         remarks = "See note ";
@@ -425,10 +425,10 @@ public class CoordinateOperationMethods extends HTMLGenerator {
             } catch (FactoryException e) {
                 continue;                                                   // Ignore and inspect the next element.
             }
-            if (crs instanceof GeneralDerivedCRS) {
-                final GeographicBoundingBox candidate = CRS.getGeographicBoundingBox(crs);
+            if (crs instanceof GeneralDerivedCRS derived) {
+                final GeographicBoundingBox candidate = CRS.getGeographicBoundingBox(derived);
                 if (candidate != null) {
-                    final String name = ((GeneralDerivedCRS) crs).getConversionFromBase().getMethod().getName().getCode();
+                    final String name = derived.getConversionFromBase().getMethod().getName().getCode();
                     DefaultGeographicBoundingBox validity = domainOfValidity.get(name);
                     if (validity == null) {
                         validity = new DefaultGeographicBoundingBox(candidate);
@@ -469,11 +469,11 @@ public class CoordinateOperationMethods extends HTMLGenerator {
     private String getDefaultValue(final ParameterDescriptor<?> param, final String unit) {
         Object defaultValue = param.getDefaultValue();
         if (defaultValue != null) {
-            if (defaultValue instanceof Number) {
+            if (defaultValue instanceof Number n) {
                 // Trim the fractional part if unnecessary (e.g. "0.0" to "0").
-                defaultValue = Numbers.narrowestNumber((Number) defaultValue);
-            } else if (defaultValue instanceof String) {
-                return (String) defaultValue;
+                defaultValue = Numbers.narrowestNumber(n);
+            } else if (defaultValue instanceof String s) {
+                return s;
             }
         } else {
             if (ArraysExt.contains(defaultToLatitudeOfOrigin, param)) {

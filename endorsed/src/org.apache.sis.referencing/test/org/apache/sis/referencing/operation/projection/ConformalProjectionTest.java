@@ -27,8 +27,10 @@ import static org.apache.sis.referencing.operation.projection.NormalizedProjecti
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.opengis.test.referencing.TransformTestCase;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.apache.sis.test.FailureDetailsReporter;
 import org.apache.sis.test.TestUtilities;
+import org.opengis.test.referencing.TransformTestCase;
 
 
 /**
@@ -36,6 +38,7 @@ import org.apache.sis.test.TestUtilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@ExtendWith(FailureDetailsReporter.class)
 public final class ConformalProjectionTest extends TransformTestCase {
     /**
      * Natural logarithm of the pseudo-infinity as returned by Mercator formulas in the spherical

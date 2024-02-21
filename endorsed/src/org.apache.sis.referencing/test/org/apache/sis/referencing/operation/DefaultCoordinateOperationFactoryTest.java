@@ -37,10 +37,12 @@ import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 
 // Test dependencies
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
 
@@ -57,22 +59,18 @@ import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierE
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@Execution(ExecutionMode.SAME_THREAD)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class DefaultCoordinateOperationFactoryTest extends MathTransformTestCase {
     /**
      * The transformation factory to use for testing.
      */
-    private static DefaultCoordinateOperationFactory factory;
+    private final DefaultCoordinateOperationFactory factory;
 
     /**
      * The parser to use for WKT strings used in this test.
      */
-    private static WKTFormat parser;
-
-    /**
-     * Creates a new test case.
-     */
-    public DefaultCoordinateOperationFactoryTest() {
-    }
+    private final WKTFormat parser;
 
     /**
      * Creates a new {@link DefaultCoordinateOperationFactory} to use for testing purpose.
@@ -80,8 +78,7 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
      *
      * @throws ParseException if an error occurred while preparing the WKT parser.
      */
-    @BeforeAll
-    public static void createFactory() throws ParseException {
+    public DefaultCoordinateOperationFactoryTest() throws ParseException {
         factory = new DefaultCoordinateOperationFactory();
         parser  = new WKTFormat();
         parser.addFragment("NTF",
@@ -119,19 +116,22 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
     }
 
     /**
-     * Disposes the factory created by {@link #createFactory()} after all tests have been executed.
+     * Resets all fields that may be modified by test methods in this class.
+     * This is needed because we reuse the same instance for all test methods,
+     * in order to reuse the factory and parser created in the constructor.
      */
-    @AfterAll
-    public static void disposeFactory() {
-        factory = null;
-        parser  = null;
+    @Override
+    @BeforeEach
+    public void reset() {
+        super.reset();
+        isInverseTransformSupported = true;
     }
 
     /**
      * Returns the CRS for the given Well Known Text.
      */
-    private static CoordinateReferenceSystem parse(final String wkt) throws ParseException {
-        return (CoordinateReferenceSystem) parser.parseObject(wkt);
+    private CoordinateReferenceSystem parse(final String wkt) throws ParseException {
+        return assertInstanceOf(CoordinateReferenceSystem.class, parser.parseObject(wkt));
     }
 
     /**

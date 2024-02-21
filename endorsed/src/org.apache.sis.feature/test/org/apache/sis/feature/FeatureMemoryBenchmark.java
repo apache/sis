@@ -23,6 +23,9 @@ import java.util.Map;
 import java.util.Random;
 import org.apache.sis.util.internal.StandardDateFormat;
 
+// Test dependencies
+import org.apache.sis.test.Benchmark;
+
 
 /**
  * Compares {@link org.apache.sis.feature} memory usage with a plain {@link HashMap}.
@@ -34,6 +37,7 @@ import org.apache.sis.util.internal.StandardDateFormat;
  *   <li>{@code "latitude"}  : {@link Float}</li>
  * </ul>
  */
+@Benchmark
 public final class FeatureMemoryBenchmark {
     /**
      * Features created by the benchmark. We need to keep reference to all of them
@@ -174,7 +178,7 @@ public final class FeatureMemoryBenchmark {
             final boolean useSIS = arg.equalsIgnoreCase("sis");
             boolean isSimple = false;
             if (useSIS || (isSimple = arg.equalsIgnoreCase("simple")) || arg.equalsIgnoreCase("complex")) {
-                final FeatureMemoryBenchmark b = new FeatureMemoryBenchmark(useSIS, isSimple);
+                final var b = new FeatureMemoryBenchmark(useSIS, isSimple);
                 long time = System.nanoTime();
                 b.run();
                 time = System.nanoTime() - time;

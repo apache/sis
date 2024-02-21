@@ -67,12 +67,17 @@ import org.apache.sis.util.iso.Names;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
+@Execution(ExecutionMode.CONCURRENT)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class SEPortrayerTest {
     /**
      * The factory to use for creating style elements.
@@ -172,15 +177,13 @@ public class SEPortrayerTest {
         presentations.stream().forEach(new Consumer<Presentation>() {
             @Override
             public void accept(Presentation t) {
-                if (t instanceof SEPresentation) {
-                    SEPresentation se = (SEPresentation) t;
+                if (t instanceof SEPresentation se) {
                     Feature Feature = se.getCandidate();
                     ids.add(new Match(String.valueOf(Feature.getPropertyValue(AttributeConvention.IDENTIFIER)),
                             se.getLayer(),
                             se.getResource(),
                             se.getSymbolizer()));
-                } else if (t instanceof ExceptionPresentation) {
-                    final ExceptionPresentation ep = (ExceptionPresentation) t;
+                } else if (t instanceof ExceptionPresentation ep) {
                     ids.add(new Match(ep.getException()));
                 }
             }

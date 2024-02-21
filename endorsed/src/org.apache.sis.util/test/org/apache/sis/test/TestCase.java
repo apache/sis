@@ -24,6 +24,7 @@ import java.io.UnsupportedEncodingException;
 import org.apache.sis.util.logging.MonolineFormatter;
 
 // Test dependencies
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 
 
@@ -47,6 +48,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
  * @author  Martin Desruisseaux (Geomatys)
  */
 @ExtendWith(FailureDetailsReporter.class)
+@TestInstance(TestInstance.Lifecycle.PER_METHOD)
 public abstract class TestCase {
     /**
      * A flag for code that are pending future SIS development before to be enabled.
@@ -73,13 +75,6 @@ public abstract class TestCase {
     public static final double STRICT = 0;
 
     /**
-     * The seed for the random number generator created by {@link TestUtilities#createRandomNumberGenerator()},
-     * or 0 if none. This information is used for printing the seed in case of test failure, in order to allow
-     * the developer to reproduce the failure.
-     */
-    static long randomSeed;
-
-    /**
      * The output writer where to print debugging information (never {@code null}).
      * Texts sent to this printer will be shown only if the test fails, or if the
      * {@value org.apache.sis.test.TestConfiguration#VERBOSE_OUTPUT_KEY} system property
@@ -103,9 +98,19 @@ public abstract class TestCase {
     public static final boolean VERBOSE;
 
     /**
+     * Tag for tests that are slow.
+     * All tests annotated with this tag should check for the {@link #RUN_EXTENSIVE_TESTS} flag.
+     *
+     * @see Benchmark#TAG
+     */
+    public static final String TAG_SLOW = "Slow";
+
+    /**
      * {@code true} if the {@value org.apache.sis.test.TestConfiguration#EXTENSIVE_TESTS_KEY}
      * system property is set to {@code true}.
      * If {@code true}, then Apache SIS will run some tests which were normally skipped because they are slow.
+     *
+     * <p>All tests using this condition should be annotated with {@code @Tag(TAG_SLOW)}.</p>
      */
     public static final boolean RUN_EXTENSIVE_TESTS;
 

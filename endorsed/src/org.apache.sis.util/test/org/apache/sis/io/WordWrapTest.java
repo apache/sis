@@ -73,8 +73,8 @@ public class WordWrapTest extends LineAppenderTest {
     @Override
     void run(final String lineSeparator) throws IOException {
         final Appendable f = appender;
-        if (f instanceof LineAppender) {
-            assertEquals(LINE_LENGTH, ((LineAppender) f).getMaximalLineLength());
+        if (f instanceof LineAppender la) {
+            assertEquals(LINE_LENGTH, la.getMaximalLineLength());
         }
         final String BLUE    = X364.FOREGROUND_BLUE   .sequence();
         final String DEFAULT = X364.FOREGROUND_DEFAULT.sequence();

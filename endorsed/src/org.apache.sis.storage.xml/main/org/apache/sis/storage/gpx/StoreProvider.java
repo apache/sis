@@ -71,6 +71,19 @@ public final class StoreProvider extends StaxDataStoreProvider {
     private static final Range<Version> VERSIONS = new Range<>(Version.class, V1_0, true, V1_1, true);
 
     /**
+     * The default factory instance.
+     */
+    private static final StoreProvider INSTANCE = new StoreProvider();
+
+    /**
+     * {@return the default provider instance}.
+     * This method is invoked by Java service loader.
+     */
+    public static StoreProvider provider() {
+        return INSTANCE;
+    }
+
+    /**
      * Creates a new GPX store provider.
      */
     public StoreProvider() {

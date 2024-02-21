@@ -198,8 +198,7 @@ final class TransformResultComparator implements MathTransform {
     {
         double tolerance;
         final MathTransform t1, r1, t2, r2;
-        if (tr1 instanceof TransformResultComparator) {
-            final TransformResultComparator c = (TransformResultComparator) tr1;
+        if (tr1 instanceof TransformResultComparator c) {
             t1 = c.tested;
             r1 = c.reference;
             tolerance = c.tolerance;
@@ -207,8 +206,7 @@ final class TransformResultComparator implements MathTransform {
             t1 = r1 = tr1;
             tolerance = 0;
         }
-        if (tr2 instanceof TransformResultComparator) {
-            final TransformResultComparator c = (TransformResultComparator) tr2;
+        if (tr2 instanceof TransformResultComparator c) {
             t2 = c.tested;
             r2 = c.reference;
             if (c.tolerance > tolerance) {

@@ -25,8 +25,10 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.opengis.test.referencing.TransformTestCase;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.apache.sis.test.FailureDetailsReporter;
 import org.apache.sis.referencing.cs.HardCodedCS;
+import org.opengis.test.referencing.TransformTestCase;
 
 
 /**
@@ -34,6 +36,7 @@ import org.apache.sis.referencing.cs.HardCodedCS;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@ExtendWith(FailureDetailsReporter.class)
 public final class GeographicOffsetsTest extends TransformTestCase {
     /**
      * Creates a new test case.

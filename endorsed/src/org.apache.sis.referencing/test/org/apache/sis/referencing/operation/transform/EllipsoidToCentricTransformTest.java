@@ -28,13 +28,16 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.GeneralDirectPosition;
+import org.apache.sis.system.Loggers;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.apache.sis.test.LoggingWatcher;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
+import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.ToleranceModifier;
@@ -47,9 +50,16 @@ import org.opengis.test.ToleranceModifier;
  */
 public final class EllipsoidToCentricTransformTest extends MathTransformTestCase {
     /**
+     * A JUnit extension for listening to log events.
+     */
+    @RegisterExtension
+    public final LoggingWatcher loggings;
+
+    /**
      * Creates a new test case.
      */
     public EllipsoidToCentricTransformTest() {
+        loggings = new LoggingWatcher(Loggers.CRS_FACTORY);
     }
 
     /**
@@ -93,6 +103,7 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
         tolerance = GeocentricTranslationTest.precision(2);         // Half the precision of target sample point
         verifyTransform(GeocentricTranslationTest.samplePoint(1),   // 53°48'33.820"N, 02°07'46.380"E, 73.00 metres
                         GeocentricTranslationTest.samplePoint(2));  // 3771793.968,  140253.342,  5124304.349 metres
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -115,6 +126,7 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
         zDimension = new int[] {2};                                 // Dimension of h where to apply zTolerance
         verifyTransform(GeocentricTranslationTest.samplePoint(2),   // X = 3771793.968,  Y = 140253.342,  Z = 5124304.349 metres
                         GeocentricTranslationTest.samplePoint(1));  // 53°48'33.820"N, 02°07'46.380"E, 73.00 metres
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -131,6 +143,7 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
         toleranceModifier = ToleranceModifier.PROJECTION;
         createGeodeticConversion(CommonCRS.WGS84.ellipsoid(), true);
         verifyInDomain(CoordinateDomain.GEOGRAPHIC, 306954540);
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -151,6 +164,7 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
         tolerance         = Formulas.LINEAR_TOLERANCE;
         toleranceModifier = ToleranceModifier.PROJECTION;
         verifyInverse(40, 30, 10000);
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -179,6 +193,7 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
         tolerance = 1E-8;
         derivativeDeltas = new double[] {1};                                    // Approximately one metre.
         verifyDerivative(point.getCoordinate());
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -191,6 +206,8 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
     public void testDerivativeOnSphere() throws FactoryException, TransformException {
         testDerivative(CommonCRS.SPHERE.ellipsoid(), true);
         testDerivative(CommonCRS.SPHERE.ellipsoid(), false);
+        loggings.skipNextLogIfContains("EPSG:4047");            // No longer supported by EPSG.
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -203,6 +220,7 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
     public void testDerivative() throws FactoryException, TransformException {
         testDerivative(CommonCRS.WGS84.ellipsoid(), true);
         testDerivative(CommonCRS.WGS84.ellipsoid(), false);
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -226,6 +244,7 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
         tolerance = GeocentricTranslationTest.precision(2);
         verifyTransform(GeocentricTranslationTest.samplePoint(1),
                         GeocentricTranslationTest.samplePoint(2));
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -270,6 +289,7 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
         assertInstanceOf(LinearTransform.class, step = it.next());
         assertEquals(2, step.getSourceDimensions());
         assertEquals(2, step.getTargetDimensions());
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -290,6 +310,8 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
         assertWktEquals("PARAM_MT[“Geocentric_To_Ellipsoid”,\n" +
                         "  PARAMETER[“semi_major”, 6378137.0],\n" +
                         "  PARAMETER[“semi_minor”, 6356752.314245179]]");
+
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -314,6 +336,8 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
                         "    PARAMETER[“semi_major”, 6378137.0],\n" +
                         "    PARAMETER[“semi_minor”, 6356752.314245179]],\n" +
                         "  PARAM_MT[“Geographic3D to 2D conversion”]]");
+
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -365,5 +389,7 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
                 "    Parameter[“elt_0_0”, 57.29577951308232],\n" +
                 "    Parameter[“elt_1_1”, 57.29577951308232],\n" +
                 "    Parameter[“elt_2_2”, 6378137.0]]]");
+
+        loggings.assertNoUnexpectedLog();
     }
 }

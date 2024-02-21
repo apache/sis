@@ -116,8 +116,8 @@ public final class StoreTest extends TestCase {
             for (Identification info : resource.getMetadata().getIdentificationInfo()) {
                 final String id = Citations.getIdentifier(info.getCitation());
                 assertTrue(identifiers.remove(id), id);
-                if (resource instanceof Aggregate) {
-                    verifyContent((Aggregate) resource, identifiers);
+                if (resource instanceof Aggregate aggregate) {
+                    verifyContent(aggregate, identifiers);
                 }
             }
         }

@@ -101,6 +101,8 @@ tasks.compileJava {
     options.release.set(11)         // The version of both Java source code and compiled byte code.
 }
 tasks.compileTestJava {
+    options.compilerArgs.add("-source")         // "source", not "release", because we accept any target version.
+    options.compilerArgs.add("16")              // Minimal Java version required by some API that the tests use.
     srcDir.list().forEach {
         addRead(options.compilerArgs, it, "org.apache.sis.test.endorsed,org.junit.jupiter.api")
     }
@@ -201,6 +203,9 @@ tasks.test {
         events("FAILED", "STANDARD_OUT", "STANDARD_ERROR")
         setExceptionFormat("FULL")
     }
+    systemProperty("junit.jupiter.execution.parallel.enabled", "true")
+    systemProperty("junit.jupiter.execution.parallel.mode.default", "concurrent")
+    systemProperty("junit.jupiter.execution.parallel.mode.classes.default", "concurrent")
 }
 
 /*

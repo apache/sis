@@ -35,12 +35,14 @@ import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
+import org.apache.sis.system.Configuration;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
@@ -52,6 +54,7 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@Isolated("Temporarily modifies the system-wide EPSG factory.")
 public final class EPSGFactoryFallbackTest extends TestCase {
     /**
      * Creates a new test case.
@@ -222,6 +225,7 @@ public final class EPSGFactoryFallbackTest extends TestCase {
     /**
      * Sets the EPSG factory to the given instance and clears the cache of all {@link CommonCRS} enumeration values.
      */
+    @Configuration
     private static void setEPSGFactory(final GeodeticAuthorityFactory factory) {
         AuthorityFactories.EPSG(factory);
         for (final CommonCRS          crs : CommonCRS         .values()) crs.clear();
@@ -231,6 +235,7 @@ public final class EPSGFactoryFallbackTest extends TestCase {
 
     /**
      * Compares all CRS created by {@link EPSGFactoryFallback} with CRS created by the real EPSG database.
+     * This test must be run in a class annotated with {@link Isolated}.
      *
      * @throws FactoryException if a CRS cannot be constructed.
      */

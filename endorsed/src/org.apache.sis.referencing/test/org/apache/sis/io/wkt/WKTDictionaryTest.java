@@ -227,8 +227,8 @@ public final class WKTDictionaryTest extends TestCase {
          * distinct instance, separated by identity comparison (not by {@link Object#equals(Object)}).
          */
         @Override public void accept(final Object value) {
-            if (value instanceof StoredTree) {
-                ((StoredTree) value).forEachValue(this);
+            if (value instanceof StoredTree tree) {
+                tree.forEachValue(this);
             }
             counts.merge(value, 1, this);
         }

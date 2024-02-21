@@ -420,8 +420,8 @@ public final class TreeNodeTest extends TestCase {
     {
         final Object actual = node.getValue(column);
         Object unlocalized = actual;
-        if (unlocalized instanceof InternationalString) {
-            unlocalized = ((InternationalString) unlocalized).toString(Locale.ROOT);
+        if (unlocalized instanceof InternationalString i18n) {
+            unlocalized = i18n.toString(Locale.ROOT);
         }
         assertEquals(expected[index++], unlocalized, "values[" + index + ']');
         for (final TreeTable.Node child : node.getChildren()) {

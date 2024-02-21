@@ -27,8 +27,8 @@ import org.apache.sis.xml.XML;
 import org.apache.sis.metadata.xml.TestUsingFile;
 
 // Test dependencies
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.mock.FeatureAttributeMock;
 
@@ -38,6 +38,7 @@ import org.apache.sis.test.mock.FeatureAttributeMock;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class MultiplicityTest extends TestUsingFile {
     /**
      * Opens the stream to the XML file containing multiplicity declarations.
@@ -52,7 +53,7 @@ public final class MultiplicityTest extends TestUsingFile {
     /**
      * A poll of configured {@code Marshaller} and {@code Unmarshaller}.
      */
-    private static MarshallerPool pool;
+    private MarshallerPool pool;
 
     /**
      * Creates a new test case.
@@ -69,21 +70,12 @@ public final class MultiplicityTest extends TestUsingFile {
      * @throws JAXBException if an error occurred while creating the pool.
      */
     @Override
-    protected MarshallerPool getMarshallerPool() throws JAXBException {
+    protected synchronized MarshallerPool getMarshallerPool() throws JAXBException {
         if (pool == null) {
             pool = new MarshallerPool(JAXBContext.newInstance(FeatureAttributeMock.class),
                                       Map.of(XML.LENIENT_UNMARSHAL, Boolean.TRUE));
         }
         return pool;
-    }
-
-    /**
-     * Invoked by JUnit after the execution of every tests in order to dispose
-     * the {@link MarshallerPool} instance used internally by this class.
-     */
-    @AfterAll
-    public static void disposeMarshallerPool() {
-        pool = null;
     }
 
     /**

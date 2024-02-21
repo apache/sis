@@ -16,7 +16,6 @@
  */
 package org.apache.sis.xml.bind.lan;
 
-import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 import jakarta.xml.bind.Marshaller;
@@ -31,9 +30,8 @@ import org.apache.sis.xml.util.LegacyNamespaces;
 import static org.apache.sis.util.internal.StandardDateFormat.UTC;
 
 // Test dependencies
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.mock.MetadataMock;
 import org.apache.sis.xml.test.TestCase;
@@ -53,6 +51,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class LanguageCodeTest extends TestCase {
     /**
      * XML fragment using the {@code <gco:CharacterString>} construct.
@@ -74,13 +73,7 @@ public final class LanguageCodeTest extends TestCase {
     /**
      * A poll of configured {@link Marshaller} and {@link Unmarshaller}, created when first needed.
      */
-    private static MarshallerPool pool;
-
-    /**
-     * Creates a new test case.
-     */
-    public LanguageCodeTest() {
-    }
+    private final MarshallerPool pool;
 
     /**
      * Creates the XML (un)marshaller pool to be shared by all test methods.
@@ -90,25 +83,13 @@ public final class LanguageCodeTest extends TestCase {
      * {@link MetadataMock} instead of {@link org.apache.sis.metadata.iso.DefaultMetadata}.</p>
      *
      * @throws JAXBException if an error occurred while creating the pool.
-     *
-     * @see #disposeMarshallerPool()
      */
-    @BeforeAll
-    public static void createMarshallerPool() throws JAXBException {
-        final Map<String,Object> properties = new HashMap<>(4);
+    public LanguageCodeTest() throws JAXBException {
+        final var properties = new HashMap<String,Object>(4);
         assertNull(properties.put(XML.LOCALE, Locale.UK));
         assertNull(properties.put(XML.TIMEZONE, UTC));
         assertNull(properties.put(XML.LENIENT_UNMARSHAL, Boolean.TRUE));
         pool = new MarshallerPool(JAXBContext.newInstance(MetadataMock.class), properties);
-    }
-
-    /**
-     * Invoked by JUnit after the execution of every tests in order to dispose
-     * the {@link MarshallerPool} instance used internally by this class.
-     */
-    @AfterAll
-    public static void disposeMarshallerPool() {
-        pool = null;
     }
 
     /**

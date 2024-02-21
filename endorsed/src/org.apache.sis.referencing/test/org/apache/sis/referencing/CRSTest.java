@@ -39,11 +39,8 @@ import org.apache.sis.util.Utilities;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import org.apache.sis.test.LoggingWatcher;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestCaseWithLogs;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
@@ -57,26 +54,12 @@ import static org.apache.sis.test.Assertions.assertMessageContains;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
  */
-public final class CRSTest extends TestCase {
-    /**
-     * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
-     * do so, but should be considered as an implementation details (it should have been a private field).
-     */
-    @RegisterExtension
-    public final LoggingWatcher loggings = new LoggingWatcher(Loggers.CRS_FACTORY);
-
-    /**
-     * Verifies that no unexpected warning has been emitted in any test defined in this class.
-     */
-    @AfterEach
-    public void assertNoUnexpectedLog() {
-        loggings.assertNoUnexpectedLog();
-    }
-
+public final class CRSTest extends TestCaseWithLogs {
     /**
      * Creates a new test case.
      */
     public CRSTest() {
+        super(Loggers.CRS_FACTORY);
     }
 
     /**
@@ -123,6 +106,7 @@ public final class CRSTest extends TestCase {
         verifyForCode(CommonCRS.Vertical.DEPTH.crs(),          "EPSG:5715");
 
         loggings.skipNextLogIfContains("EPSG:4047");    // No longer supported by EPSG.
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -139,6 +123,7 @@ public final class CRSTest extends TestCase {
         verifyForCode(CommonCRS.NAD27.normalizedGeographic(), "CRS:27");
         verifyForCode(CommonCRS.WGS84.normalizedGeographic(), "http://www.opengis.net/gml/srs/crs.xml#84");
         verifyForCode(CommonCRS.NAD83.normalizedGeographic(), "http://www.opengis.net/gml/srs/crs.xml#83");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -155,6 +140,7 @@ public final class CRSTest extends TestCase {
         verifyForCode(CommonCRS.Temporal.JULIAN.crs(), "urn:ogc:def:crs:OGC::JulianDate");
         verifyForCode(CommonCRS.Temporal.TRUNCATED_JULIAN.crs(),
                       "http://www.opengis.net/gml/srs/crs.xml#TruncatedJulianDate");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -166,6 +152,7 @@ public final class CRSTest extends TestCase {
     public void testForInvalidCode() throws FactoryException {
         var e = assertThrows(NoSuchAuthorityCodeException.class, () -> CRS.forCode("EPSG:4"));
         assertEquals("4", e.getAuthorityCode());
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -196,6 +183,7 @@ public final class CRSTest extends TestCase {
                             "1=http://www.opengis.net/def/crs/epsg/0/4326&" +
                             "2=http://www.opengis.net/def/crs/epsg/0/5715",
                 CommonCRS.WGS84.geographic(), CommonCRS.Vertical.DEPTH.crs());
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -213,6 +201,7 @@ public final class CRSTest extends TestCase {
                 + "PRIMEM[\"Greenwich\",0],UNIT[\"degree\",0.0174532925199433]]");
         assertInstanceOf(DefaultGeographicCRS.class, crs);
         assertEquals("GCS WGS 1984", crs.getName().getCode());
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -228,6 +217,7 @@ public final class CRSTest extends TestCase {
                             "UNIT[\"MEtre\", 1]]"));
 
         assertMessageContains(e, "I do not exist");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -257,6 +247,7 @@ public final class CRSTest extends TestCase {
                     null, new DefaultGeographicBoundingBox(-1, +1, ymin, ymax), null, null));
             crs[i] = new DefaultProjectedCRS(properties, baseCRS.geographic(), HardCodedConversions.MERCATOR, cs);
         }
+        loggings.skipNextLogIfContains("EPSG:4047");                        // No longer supported by EPSG.
         final ProjectedCRS[] overlappingCRS = Arrays.copyOf(crs, 3);        // Exclude the last CRS only.
         /*
          * Test between the 3 overlapping CRS without region of interest. We expect the CRS having a domain
@@ -267,7 +258,7 @@ public final class CRSTest extends TestCase {
          * If we specify a smaller region of interest, we should get the CRS having the smallest domain of validity that
          * cover the ROI. Following lines gradually increase the ROI size and verify that we get CRS for larger domain.
          */
-        final DefaultGeographicBoundingBox regionOfInterest = new DefaultGeographicBoundingBox(-1, +1, 2.1, 2.9);
+        final var regionOfInterest = new DefaultGeographicBoundingBox(-1, +1, 2.1, 2.9);
         assertSame(crs[2], CRS.suggestCommonTarget(regionOfInterest, overlappingCRS));      // Best fit for [2.1 … 2.9]°N
 
         regionOfInterest.setNorthBoundLatitude(3.1);
@@ -298,6 +289,7 @@ public final class CRSTest extends TestCase {
                 CommonCRS.NAD27.universal(20, -101),
                 CommonCRS.NAD27.universal(18, -20))
         );
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -312,6 +304,7 @@ public final class CRSTest extends TestCase {
         assertFalse(CRS.isHorizontalCRS(HardCodedCRS.WGS84_3D));
         assertFalse(CRS.isHorizontalCRS(HardCodedCRS.GEOID_4D));
         assertFalse(CRS.isHorizontalCRS(HardCodedCRS.GEOCENTRIC));
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -326,6 +319,7 @@ public final class CRSTest extends TestCase {
         assertSame(HardCodedCRS.WGS84,                 CRS.getHorizontalComponent(HardCodedCRS.WGS84));
         assertSame(HardCodedCRS.WGS84_LATITUDE_FIRST,  CRS.getHorizontalComponent(HardCodedCRS.WGS84_LATITUDE_FIRST));
         assertEqualsIgnoreMetadata(HardCodedCRS.WGS84, CRS.getHorizontalComponent(HardCodedCRS.WGS84_3D));
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -346,6 +340,7 @@ public final class CRSTest extends TestCase {
         assertNull(CRS.getVerticalComponent(HardCodedCRS.WGS84_3D, false));
         assertEqualsIgnoreMetadata(HardCodedCRS.ELLIPSOIDAL_HEIGHT,
                 CRS.getVerticalComponent(HardCodedCRS.WGS84_3D, true));
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -360,6 +355,7 @@ public final class CRSTest extends TestCase {
 
         assertSame(HardCodedCRS.TIME, CRS.getTemporalComponent(HardCodedCRS.TIME));
         assertSame(HardCodedCRS.TIME, CRS.getTemporalComponent(HardCodedCRS.GEOID_4D));
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -376,6 +372,7 @@ public final class CRSTest extends TestCase {
         assertInstanceOf(ProjectedCRS.class, horizontal);
         assertEquals(2, horizontal.getCoordinateSystem().getDimension());
         assertTrue(CRS.isHorizontalCRS(horizontal));
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -403,6 +400,7 @@ public final class CRSTest extends TestCase {
                 HardCodedCRS.WGS84,
                 HardCodedCRS.GEOID_3D,
                 HardCodedCRS.NESTED);
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -420,6 +418,7 @@ public final class CRSTest extends TestCase {
         assertSame(HardCodedCRS.NESTED,                   CRS.selectDimensions(HardCodedCRS.NESTED,   0, 1, 2, 3));
         assertSame(HardCodedCRS.GEOID_3D,                 CRS.selectDimensions(HardCodedCRS.NESTED,   0, 1, 2));
         assertEqualsIgnoreMetadata(HardCodedCRS.GEOID_3D, CRS.selectDimensions(HardCodedCRS.GEOID_4D, 0, 1, 2));
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -433,6 +432,7 @@ public final class CRSTest extends TestCase {
         final GeographicCRS crs = HardCodedCRS.WGS84_3D;
         assertSame(CommonCRS.Vertical.ELLIPSOIDAL.crs(),   CRS.selectDimensions(crs, 2));
         assertSame(CommonCRS.WGS84.normalizedGeographic(), CRS.selectDimensions(crs, 0, 1));
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -446,6 +446,7 @@ public final class CRSTest extends TestCase {
         final ProjectedCRS crs = HardCodedConversions.mercator3D();
         assertSame(CommonCRS.Vertical.ELLIPSOIDAL.crs(), CRS.selectDimensions(crs, 2));
         assertEqualsIgnoreMetadata(HardCodedConversions.mercator(), CRS.selectDimensions(crs, 0, 1));
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -459,6 +460,7 @@ public final class CRSTest extends TestCase {
         assertMessageContains(e, "components");
         assertSame(HardCodedCRS.WGS84, CRS.compound(HardCodedCRS.WGS84));
         assertEqualsIgnoreMetadata(HardCodedCRS.WGS84_3D, CRS.compound(HardCodedCRS.WGS84, HardCodedCRS.ELLIPSOIDAL_HEIGHT));
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -508,6 +510,7 @@ public final class CRSTest extends TestCase {
     public void testGetGreenwichLongitude() {
         assertEquals(0,          CRS.getGreenwichLongitude(HardCodedCRS.WGS84));
         assertEquals(2.33722917, CRS.getGreenwichLongitude(HardCodedCRS.NTF), 1E-12);
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -520,5 +523,6 @@ public final class CRSTest extends TestCase {
     public void testIdentifiedObjectLookup() throws FactoryException {
         IdentifiedObjectsTest.testLookupEPSG();
         IdentifiedObjectsTest.testLookupWMS();
+        loggings.assertNoUnexpectedLog();
     }
 }

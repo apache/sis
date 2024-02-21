@@ -28,6 +28,9 @@ import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.metadata.internal.ReferencingServices;
 import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_SECOND;
 
+// Test dependencies
+import org.apache.sis.test.Benchmark;
+
 
 /**
  * Implements two alternative methods to compute φ in Mercator projection.
@@ -54,6 +57,7 @@ import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_SECOND;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@Benchmark
 public final class MercatorMethodComparison {
     /**
      * Where to print the outputs of this class.

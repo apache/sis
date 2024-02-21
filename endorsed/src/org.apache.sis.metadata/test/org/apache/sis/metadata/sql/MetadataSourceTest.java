@@ -30,6 +30,7 @@ import org.apache.sis.metadata.iso.distribution.DefaultFormat;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestStep;
 
@@ -68,6 +69,7 @@ public final class MetadataSourceTest extends TestCase {
      * @throws Exception if an error occurred while executing the script runner.
      */
     @Test
+    @ResourceLock(TestDatabase.POSTGRESQL)
     public void testOnPostgreSQL() throws Exception {
         try (TestDatabase db = TestDatabase.createOnPostgreSQL("metadata", false)) {
             testAll(db);

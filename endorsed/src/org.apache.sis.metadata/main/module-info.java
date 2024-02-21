@@ -34,6 +34,7 @@ module org.apache.sis.metadata {
     requires transitive java.sql;
     requires transitive jakarta.xml.bind;
     requires transitive org.apache.sis.util;
+    requires static org.postgresql.jdbc;
 
     /*
      * Services needed or implemented by this module.

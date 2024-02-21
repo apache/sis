@@ -37,6 +37,7 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 
 // Test dependencies
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.dataset.TestData;
@@ -70,6 +71,18 @@ public class FeatureSetTest extends TestCase {
      */
     public FeatureSetTest() {
         timeOrigin = Instant.parse("2014-11-29T00:00:00Z");
+    }
+
+    /**
+     * Forgets the data used by the current test. This method makes {@code this} instance
+     * ready for another test method reusing the decoders that are already opened.
+     */
+    @Override
+    @AfterEach
+    public void reset() {
+        super.reset();
+        type = null;
+        featureIndex = 0;
     }
 
     /**

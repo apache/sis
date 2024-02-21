@@ -23,7 +23,6 @@ import java.util.Random;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.SortedSet;
-import java.io.PrintWriter;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.NumberRange;
 import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
@@ -33,9 +32,9 @@ import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_SECOND;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.Performance;
 import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
+import org.apache.sis.test.Benchmark;
 
 
 /**
@@ -573,9 +572,8 @@ public final class RangeSetTest extends TestCase {
      *
      * @throws InterruptedException if the test has been interrupted.
      */
-    @Performance
+    @Benchmark
     public void stress() throws InterruptedException {
-        final PrintWriter out = TestCase.out;
         final Random r = TestUtilities.createRandomNumberGenerator();
         for (int p=0; p<10; p++) {
             final long start = System.nanoTime();

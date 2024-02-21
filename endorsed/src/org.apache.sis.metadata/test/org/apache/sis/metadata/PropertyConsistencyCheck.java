@@ -217,8 +217,8 @@ public abstract class PropertyConsistencyCheck extends AnnotationConsistencyChec
             fail(e.toString());
             return;
         }
-        if (instance instanceof AbstractMetadata) {
-            validate((AbstractMetadata) instance);
+        if (instance instanceof AbstractMetadata md) {
+            validate(md);
         }
         /*
          * Iterate over all properties defined in the interface,
@@ -255,9 +255,8 @@ public abstract class PropertyConsistencyCheck extends AnnotationConsistencyChec
                 assertFalse(isMap | isCollection, "Null values are not allowed to be collections.");
             } else {
                 assertTrue(propertyType.isInstance(value), "Wrong property type.");
-                if (value instanceof CheckedContainer<?>) {
-                    assertTrue(elementType.isAssignableFrom(((CheckedContainer<?>) value).getElementType()),
-                               "Wrong element type in collection.");
+                if (value instanceof CheckedContainer<?> c) {
+                    assertTrue(elementType.isAssignableFrom(c.getElementType()), "Wrong element type in collection.");
                 }
                 if (isMap) {
                     assertTrue(((Map<?,?>) value).isEmpty(), "Collections shall be initially empty.");

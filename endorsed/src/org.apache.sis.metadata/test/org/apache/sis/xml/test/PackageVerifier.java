@@ -202,21 +202,21 @@ final class PackageVerifier {
                 for (final XmlJavaTypeAdapter adapter : adapters.value()) {
                     Class<?> propertyType = adapter.type();
                     if (propertyType == XmlJavaTypeAdapter.DEFAULT.class) {
-                        for (Class<?> c = adapter.value(); ; c = c.getSuperclass()) {
-                            final Type type = c.getGenericSuperclass();
-                            if (type == null) {
+                        for (Class<?> adapterClass = adapter.value(); ; adapterClass = adapterClass.getSuperclass()) {
+                            final Type adapterType = adapterClass.getGenericSuperclass();
+                            if (adapterType == null) {
                                 throw new SchemaException(String.format(
                                         "Cannot infer type for %s adapter.", adapter.value().getName()));
                             }
-                            if (type instanceof ParameterizedType) {
-                                final Type[] p = ((ParameterizedType) type).getActualTypeArguments();
-                                if (p.length == 2) {
-                                    Type pt = p[1];
-                                    if (pt instanceof ParameterizedType) {
-                                        pt = ((ParameterizedType) pt).getRawType();
+                            if (adapterType instanceof ParameterizedType p1) {
+                                final Type[] parameters = p1.getActualTypeArguments();
+                                if (parameters.length == 2) {
+                                    Type typeInAPI = parameters[1];
+                                    if (typeInAPI instanceof ParameterizedType p2) {
+                                        typeInAPI = p2.getRawType();
                                     }
-                                    if (pt instanceof Class<?>) {
-                                        propertyType = (Class<?>) pt;
+                                    if (typeInAPI instanceof Class<?> pc) {
+                                        propertyType = pc;
                                         break;
                                     }
                                 }

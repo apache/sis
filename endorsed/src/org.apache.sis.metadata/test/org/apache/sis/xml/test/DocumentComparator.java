@@ -202,16 +202,16 @@ public class DocumentComparator {
         ArgumentChecks.ensureNonNull("expected", expected);
         ArgumentChecks.ensureNonNull("actual",   actual);
         DocumentBuilder builder = null;
-        if (expected instanceof Node) {
-            expectedDoc = (Node) expected;
+        if (expected instanceof Node node) {
+            expectedDoc = node;
         } else {
             builder = newDocumentBuilder();
             try (InputStream stream = toInputStream(expected)) {
                 expectedDoc = builder.parse(stream);
             }
         }
-        if (actual instanceof Node) {
-            actualDoc = (Node) actual;
+        if (actual instanceof Node node) {
+            actualDoc = node;
         } else {
             if (builder == null) {
                 builder = newDocumentBuilder();
@@ -240,12 +240,12 @@ public class DocumentComparator {
      * See the constructor Javadoc for the list of allowed input type.
      */
     private static InputStream toInputStream(final Object input) throws IOException {
-        if (input instanceof InputStream) return (InputStream) input;
-        if (input instanceof File)        return new FileInputStream((File) input);
-        if (input instanceof URI)         return ((URI) input).toURL().openStream();
-        if (input instanceof URL)         return ((URL) input).openStream();
-        if (input instanceof Path)        return Files.newInputStream((Path) input);
-        if (input instanceof String)      return new ByteArrayInputStream(input.toString().getBytes("UTF-8"));
+        if (input instanceof InputStream t) return t;
+        if (input instanceof File t)        return new FileInputStream(t);
+        if (input instanceof URI t)         return t.toURL().openStream();
+        if (input instanceof URL t)         return t.openStream();
+        if (input instanceof Path t)        return Files.newInputStream(t);
+        if (input instanceof String t)      return new ByteArrayInputStream(t.getBytes("UTF-8"));
         throw new IOException("Cannot handle input type: " + (input != null ? input.getClass() : input));
     }
 
@@ -308,16 +308,16 @@ public class DocumentComparator {
          * Check text value for types:
          * TEXT_NODE, CDATA_SECTION_NODE, COMMENT_NODE, PROCESSING_INSTRUCTION_NODE
          */
-        if (expected instanceof CDATASection) {
-            compareCDATASectionNode((CDATASection) expected, actual);
-        } else if (expected instanceof Text) {
-            compareTextNode((Text) expected, actual);
-        } else if (expected instanceof Comment) {
-            compareCommentNode((Comment) expected, actual);
-        } else if (expected instanceof ProcessingInstruction) {
-            compareProcessingInstructionNode((ProcessingInstruction) expected, actual);
-        } else if (expected instanceof Attr) {
-            compareAttributeNode((Attr) expected, actual);
+        if (expected instanceof CDATASection t) {
+            compareCDATASectionNode(t, actual);
+        } else if (expected instanceof Text t) {
+            compareTextNode(t, actual);
+        } else if (expected instanceof Comment t) {
+            compareCommentNode(t, actual);
+        } else if (expected instanceof ProcessingInstruction t) {
+            compareProcessingInstructionNode(t, actual);
+        } else if (expected instanceof Attr t) {
+            compareAttributeNode(t, actual);
         } else {
             compareNames(expected, actual);
             compareAttributes(expected, actual);
@@ -663,8 +663,8 @@ public class DocumentComparator {
      * than zero has been provided.
      */
     private static double doubleValue(final Comparable<?> property) {
-        if (property instanceof Number) {
-            return ((Number) property).doubleValue();
+        if (property instanceof Number n) {
+            return n.doubleValue();
         }
         if (property instanceof CharSequence) try {
             return Double.parseDouble(property.toString());
@@ -723,8 +723,8 @@ public class DocumentComparator {
         final List<String> hierarchy = new ArrayList<>();
         while (node != null) {
             hierarchy.add(node.getNodeName());
-            if (node instanceof Attr) {
-                node = ((Attr) node).getOwnerElement();
+            if (node instanceof Attr t) {
+                node = t.getOwnerElement();
             } else {
                 node = node.getParentNode();
             }

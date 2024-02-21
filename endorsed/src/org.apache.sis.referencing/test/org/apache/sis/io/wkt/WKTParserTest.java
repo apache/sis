@@ -27,6 +27,8 @@ import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Disabled;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.apache.sis.test.FailureDetailsReporter;
 import org.opengis.test.wkt.CRSParserTest;
 
 
@@ -36,6 +38,7 @@ import org.opengis.test.wkt.CRSParserTest;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
+@ExtendWith(FailureDetailsReporter.class)
 public final class WKTParserTest extends CRSParserTest {
     /**
      * Whether the test should replace the curly quotation marks “ and ” by the straight quotation mark ".

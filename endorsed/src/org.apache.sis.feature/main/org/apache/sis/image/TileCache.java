@@ -23,6 +23,7 @@ import java.lang.ref.Reference;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.internal.Numerics;
 import org.apache.sis.feature.internal.Resources;
+import org.apache.sis.pending.jdk.JDK16;
 
 
 /**
@@ -148,7 +149,7 @@ final class TileCache extends Cache<TileCache.Key, Raster> {
          * The {@link #dispose()} should have been invoked in such cases.
          */
         final boolean isEmpty() {
-            return image.get() == null;     // TODO: use `refersTo(null)` with JDK16.
+            return JDK16.refersTo(image, null);
         }
 
         /**

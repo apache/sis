@@ -38,12 +38,13 @@ import org.apache.sis.referencing.operation.matrix.MatrixTestCase;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
-import org.opengis.test.Validators;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.apache.sis.test.FailureDetailsReporter;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.referencing.Assertions;
+import org.opengis.test.Validators;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.util.Factory;
 import org.opengis.geometry.DirectPosition;
 import org.apache.sis.measure.Longitude;
 import org.opengis.test.CalculationType;
@@ -71,8 +72,16 @@ import org.opengis.test.referencing.TransformTestCase;
  *   <li>{@link #verifyTransform(double[], double[])}   — from GeoAPI and Apache SIS</li>
  * </ul>
  *
+ * <h2>Life cycle</h2>
+ * GeoAPI tests have a state. Therefor, a new instance of {@code MathTransformTestCase} should be created
+ * for each test method to execute. However, it may be costly if the constructor requires large resources
+ * (e.g., a connection to an EPSG database). For making easier to reuse the same {@code TestCase} instance,
+ * a {@link #reset()} method is provided. Subclasses are responsible to override that method with the
+ * {@link org.junit.jupiter.api.BeforeEach} annotation if they want per-class life cycle.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@ExtendWith(FailureDetailsReporter.class)
 public abstract class MathTransformTestCase extends TransformTestCase {
     /**
      * The number of coordinates to use for stressing the math transform. We use a number that
@@ -111,27 +120,35 @@ public abstract class MathTransformTestCase extends TransformTestCase {
      * Creates a new test case.
      */
     protected MathTransformTestCase() {
-        this(new Factory[0]);
-    }
-
-    /**
-     * Creates a new test case which will use the given factories.
-     *
-     * @param factories  the factories to be used by the test.
-     */
-    protected MathTransformTestCase(final Factory... factories) {
-        super(factories);
         /*
-         * Use 'zTolerance' threshold instead of 'tolerance' when comparing vertical coordinate values.
+         * Use `zTolerance` threshold instead of `tolerance` when comparing vertical coordinate values.
          */
-        toleranceModifier = (final double[] tolerance, final DirectPosition coordinate, final CalculationType mode) -> {
+        toleranceModifier = (final double[] tolerances, final DirectPosition coordinates, final CalculationType mode) -> {
             if (mode != CalculationType.IDENTITY) {
                 final int i = forComparison(zDimension, mode);
-                if (i >= 0 && i < tolerance.length) {
-                    tolerance[i] = zTolerance;
+                if (i >= 0 && i < tolerances.length) {
+                    tolerances[i] = zTolerance;
                 }
             }
         };
+    }
+
+    /**
+     * Resets all fields that may be modified by test methods in this class.
+     * This is needed if the subclass reuses the same {@code TestCase} instance for all test methods.
+     *
+     * <p>The default implementation of this method does not reset the {@code isFooSupported} Boolean flags,
+     * on the assumption that subclasses do not modify them. Subclasses are responsible for restoring these
+     * flags if needed.</p>
+     */
+    protected void reset() {
+        transform  = null;
+        λDimension = null;
+        zDimension = null;
+        zTolerance = 0;
+        tolerance  = 0;
+        derivativeDeltas = null;
+        configurationTip = null;
     }
 
     /**
@@ -176,8 +193,8 @@ public abstract class MathTransformTestCase extends TransformTestCase {
      */
     @Debug
     private String getName() {
-        if (transform instanceof Parameterized) {
-            final ParameterDescriptorGroup descriptor = ((Parameterized) transform).getParameterDescriptors();
+        if (transform instanceof Parameterized pmt) {
+            final ParameterDescriptorGroup descriptor = pmt.getParameterDescriptors();
             if (descriptor != null) {
                 final Identifier identifier = descriptor.getName();
                 if (identifier != null) {
@@ -234,7 +251,7 @@ public abstract class MathTransformTestCase extends TransformTestCase {
         super.verifyTransform(coordinates, expected);
         /*
          * In addition to the GeoAPI "verifyTransform" check, check also for consistency of various variant
-         * of MathTransform.transform(…) methods.  In GeoAPI, 'verifyTransform' and 'verifyConsistency' are
+         * of MathTransform.transform(…) methods.  In GeoAPI, `verifyTransform` and `verifyConsistency` are
          * two independent steps because not all developers may want to perform both verifications together.
          * But in Apache SIS, we want to verify consistency for all math transforms. A previous version had
          * a bug with the Google projection which was unnoticed because of lack of this consistency check.
@@ -248,7 +265,7 @@ public abstract class MathTransformTestCase extends TransformTestCase {
          * The comparison below needs a higher tolerance threshold, because we converted the source
          * coordinates to floating points which induce a lost of precision. The multiplication factor
          * used here has been determined empirically. The value is quite high, but this is only an
-         * oportunist check anyway. The "real" test is the one performed by 'verifyConsistency'.
+         * oportunist check anyway. The "real" test is the one performed by `verifyConsistency`.
          * We do not perform this check for non-linear transforms, because the differences in input
          * have too unpredictable consequences on the output.
          */
@@ -256,7 +273,7 @@ public abstract class MathTransformTestCase extends TransformTestCase {
             for (int i=0; i<expected.length; i++) {
                 final double e = expected[i];
                 double tol = 1E-6 * abs(e);
-                if (!(tol > tolerance)) {               // Use '!' for replacing NaN by 'tolerance'.
+                if (!(tol > tolerance)) {               // Use `!` for replacing NaN by `tolerance`.
                     tol = tolerance;
                 }
                 assertEquals(e, result[i], tol);
@@ -415,8 +432,8 @@ public abstract class MathTransformTestCase extends TransformTestCase {
             wkt = transform.toString();
         }
         table.append(wkt).nextColumn();
-        if (transform instanceof FormattableObject) {
-            wkt = ((FormattableObject) transform).toString(Convention.INTERNAL);
+        if (transform instanceof FormattableObject fmt) {
+            wkt = fmt.toString(Convention.INTERNAL);
         } else {
             wkt = transform.toString();
         }

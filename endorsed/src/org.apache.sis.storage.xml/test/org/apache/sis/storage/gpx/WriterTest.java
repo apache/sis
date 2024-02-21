@@ -30,8 +30,6 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.gps.Fix;
 
 // Test dependencies
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
@@ -54,23 +52,7 @@ public final class WriterTest extends TestCase {
     /**
      * The provider shared by all data stores created in this test class.
      */
-    private static StoreProvider provider;
-
-    /**
-     * Creates the provider to be shared by all data stores created in this test class.
-     */
-    @BeforeAll
-    public static void createProvider() {
-        provider = new StoreProvider();
-    }
-
-    /**
-     * Disposes the data store provider after all tests have been completed.
-     */
-    @AfterAll
-    public static void disposeProvider() {
-        provider = null;
-    }
+    private final StoreProvider provider;
 
     /**
      * Where to write the GPX file.
@@ -81,6 +63,7 @@ public final class WriterTest extends TestCase {
      * Creates a new test case.
      */
     public WriterTest() {
+        provider = StoreProvider.provider();
         output = new ByteArrayOutputStream();
     }
 

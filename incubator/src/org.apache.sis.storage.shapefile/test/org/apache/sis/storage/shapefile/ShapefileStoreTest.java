@@ -16,15 +16,12 @@
  */
 package org.apache.sis.storage.shapefile;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.UnaryOperator;
@@ -45,6 +42,7 @@ import org.apache.sis.feature.internal.AttributeConvention;
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.AttributeType;
@@ -196,8 +194,7 @@ public class ShapefileStoreTest {
      * Test creating a new shapefile.
      */
     @Test
-    public void testCreate() throws URISyntaxException, DataStoreException, IOException {
-        final Path folder = Files.createTempDirectory("shapefileTest");
+    public void testCreate(@TempDir final Path folder) throws URISyntaxException, DataStoreException, IOException {
         final Path temp = folder.resolve("test.shp");
         final String name = temp.getFileName().toString().split("\\.")[0];
         try (final ShapefileStore store = new ShapefileStore(temp)) {
@@ -241,8 +238,6 @@ public class ShapefileStoreTest {
                 assertEquals(Double.class, floatProp.getValueClass());
                 assertEquals(LocalDate.class, dateProp.getValueClass());
             }
-        } finally {
-            deleteDirectory(folder);
         }
     }
 
@@ -250,8 +245,7 @@ public class ShapefileStoreTest {
      * Test adding features to a shapefile.
      */
     @Test
-    public void testAddFeatures() throws URISyntaxException, DataStoreException, IOException {
-        final Path folder = Files.createTempDirectory("shapefileTest");
+    public void testAddFeatures(@TempDir final Path folder) throws URISyntaxException, DataStoreException, IOException {
         final Path temp = folder.resolve("test.shp");
         try (final ShapefileStore store = new ShapefileStore(temp)) {
             FeatureType type = createType();
@@ -266,8 +260,6 @@ public class ShapefileStoreTest {
             assertEquals(2, result.length);
             assertEquals(feature1, result[0]);
             assertEquals(feature2, result[1]);
-        } finally {
-            deleteDirectory(folder);
         }
     }
 
@@ -275,8 +267,7 @@ public class ShapefileStoreTest {
      * Test remove features from a shapefile.
      */
     @Test
-    public void testRemoveFeatures() throws DataStoreException, IOException {
-        final Path folder = Files.createTempDirectory("shapefileTest");
+    public void testRemoveFeatures(@TempDir final Path folder) throws DataStoreException, IOException {
         final Path temp = folder.resolve("test.shp");
         try (final ShapefileStore store = new ShapefileStore(temp)) {
             FeatureType type = createType();
@@ -294,8 +285,6 @@ public class ShapefileStoreTest {
             Object[] result = store.features(false).toArray();
             assertEquals(1, result.length);
             assertEquals(feature2, result[0]);
-        } finally {
-            deleteDirectory(folder);
         }
     }
 
@@ -303,8 +292,7 @@ public class ShapefileStoreTest {
      * Test replacing features in a shapefile.
      */
     @Test
-    public void testReplaceFeatures() throws DataStoreException, IOException {
-        final Path folder = Files.createTempDirectory("shapefileTest");
+    public void testReplaceFeatures(@TempDir final Path folder) throws DataStoreException, IOException {
         final Path temp = folder.resolve("test.shp");
         try (final ShapefileStore store = new ShapefileStore(temp)) {
             FeatureType type = createType();
@@ -330,8 +318,6 @@ public class ShapefileStoreTest {
             Feature f1 = (Feature) result[0];
             assertEquals(45, f1.getPropertyValue("id"));
             assertEquals(feature2, result[1]);
-        } finally {
-            deleteDirectory(folder);
         }
     }
 
@@ -368,13 +354,4 @@ public class ShapefileStoreTest {
         feature.setPropertyValue("date", LocalDate.of(2030, 6, 21));
         return feature;
     }
-
-    private static void deleteDirectory(Path path) throws IOException{
-        try (Stream<Path> stream = Files.walk(path)) {
-            stream.sorted(Comparator.reverseOrder())
-                    .map(Path::toFile)
-                    .forEach(File::delete);
-        }
-    }
-
 }

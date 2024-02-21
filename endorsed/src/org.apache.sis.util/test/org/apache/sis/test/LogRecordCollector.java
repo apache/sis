@@ -25,6 +25,7 @@ import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.logging.ConsoleHandler;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.io.UnsupportedEncodingException;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.system.Modules;
@@ -41,17 +42,20 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class LogRecordCollector extends Handler {
+final class LogRecordCollector extends Handler implements Runnable {
     /**
      * Expected suffix in name of test classes.
      */
     private static final String CLASSNAME_SUFFIX = "Test";
 
     /**
-     * The parent logger of all Apache SIS loggers.
-     * Needs to be retained by strong reference.
+     * The parent loggers to observe.
+     * The need to be retained by strong references.
      */
-    private static final Logger LOGGER = Logger.getLogger(Loggers.ROOT);
+    private static final Logger[] LOGGERS = {
+        Logger.getLogger(Loggers.ROOT),
+        Logger.getLogger("ucar.nc2")
+    };
 
     /**
      * The unique instance.
@@ -61,7 +65,7 @@ final class LogRecordCollector extends Handler {
     /**
      * Sets the encoding of the console logging handler, if an encoding has been specified.
      * Note that we look specifically for {@link ConsoleHandler}, we do not generalize to
-     * {@link StreamHandler} because the log files may not be intended for being show in
+     * {@link StreamHandler} because the log files may not be intended for being shown in
      * the console.
      *
      * <p>In case of failure to use the given encoding, we will just print a short error
@@ -69,21 +73,27 @@ final class LogRecordCollector extends Handler {
      */
     static {
         final String encoding = System.getProperty(TestConfiguration.OUTPUT_ENCODING_KEY);
-        if (encoding != null) try {
-            for (Logger logger=LOGGER; logger!=null; logger=logger.getParent()) {
-                for (final Handler handler : logger.getHandlers()) {
-                    if (handler instanceof ConsoleHandler) {
-                        handler.setEncoding(encoding);
+        if (encoding != null) {
+            for (Logger logger : LOGGERS) try {
+                while (logger != null) {
+                    for (final Handler handler : logger.getHandlers()) {
+                        if (handler instanceof ConsoleHandler) {
+                            handler.setEncoding(encoding);
+                        }
                     }
+                    if (!logger.getUseParentHandlers()) {
+                        break;
+                    }
+                    logger = logger.getParent();
                 }
-                if (!logger.getUseParentHandlers()) {
-                    break;
-                }
+            } catch (UnsupportedEncodingException e) {
+                Logging.recoverableException(logger, LogRecordCollector.class, "<clinit>", e);
+                break;
             }
-        } catch (UnsupportedEncodingException e) {
-            Logging.recoverableException(LOGGER, LogRecordCollector.class, "<clinit>", e);
         }
-        LOGGER.addHandler(INSTANCE);
+        for (Logger logger : LOGGERS) {
+            logger.addHandler(INSTANCE);
+        }
     }
 
     /**
@@ -95,27 +105,32 @@ final class LogRecordCollector extends Handler {
      *   <li>Target logger</li>
      *   <li>Logging level</li>
      * </ul>
+     *
+     * All accesses to this list must be synchronized on {@code records}.
      */
     private final List<String> records = new ArrayList<>();
 
     /**
      * The description of the test currently running.
      */
-    private ExtensionContext currentTest;
+    private final ThreadLocal<ExtensionContext> currentTest;
 
     /**
      * Creates a new log record collector.
      */
     private LogRecordCollector() {
         setLevel(Level.INFO);
+        currentTest = new ThreadLocal<>();
     }
 
     /**
      * Sets the description of the tests which is currently running, or {@code null} if the test finished.
      */
     final void setCurrentTest(final ExtensionContext description) {
-        synchronized (records) {
-            currentTest = description;
+        if (description != null) {
+            currentTest.set(description);
+        } else {
+            currentTest.remove();
         }
     }
 
@@ -125,27 +140,31 @@ final class LogRecordCollector extends Handler {
      */
     @Override
     public void publish(final LogRecord record) {
-        synchronized (records) {
-            String cname;
-            String method;
-            if (currentTest != null) {
-                cname  = currentTest.getRequiredTestClass().getCanonicalName();
-                method = currentTest.getRequiredTestMethod().getName();
-            } else {
-                /*
-                 * If the test does not extent TestCase, we are not notified about its execution.
-                 * So we will use the stack trace. This happen mostly when execution GeoAPI tests.
-                 */
-                cname  = "<unknown>";
-                method = "<unknown>";
-                for (final StackTraceElement t : Thread.currentThread().getStackTrace()) {
-                    final String c = t.getClassName();
-                    if (c.startsWith(Modules.CLASSNAME_PREFIX) && c.endsWith(CLASSNAME_SUFFIX)) {
-                        cname  = c;
-                        method = t.getMethodName();
-                        break;
-                    }
+        String cname;
+        String method;
+        ExtensionContext source = currentTest.get();
+        if (source != null) {
+            cname  = source.getRequiredTestClass().getCanonicalName();
+            method = source.getRequiredTestMethod().getName();
+        } else {
+            /*
+             * If the test does not extent TestCase, we are not notified about its execution.
+             * So we will use the stack trace. This happen mostly when execution GeoAPI tests.
+             */
+            cname  = "<unknown>";
+            method = "<unknown>";
+            for (final StackTraceElement t : Thread.currentThread().getStackTrace()) {
+                final String c = t.getClassName();
+                if (c.startsWith(Modules.CLASSNAME_PREFIX) && c.endsWith(CLASSNAME_SUFFIX)) {
+                    cname  = c;
+                    method = t.getMethodName();
+                    break;
                 }
+            }
+        }
+        synchronized (records) {
+            if (records.isEmpty()) {
+                Runtime.getRuntime().addShutdownHook(new Thread(this));
             }
             records.add(cname);
             records.add(method);
@@ -156,10 +175,13 @@ final class LogRecordCollector extends Handler {
 
     /**
      * If any tests has emitted log records, report them.
+     *
+     * @param  out  where to print the report.
+     * @throws IOException if an error occurred while writing to {@code out}.
      */
-    final void report(final Appendable out) throws IOException {
+    private void report(final Appendable out) throws IOException {
+        final String lineSeparator = System.lineSeparator();
         synchronized (records) {
-            final String lineSeparator = System.lineSeparator();
             if (!records.isEmpty()) {
                 out.append(lineSeparator)
                    .append("The following tests have logged messages at level INFO or higher:").append(lineSeparator)
@@ -198,5 +220,23 @@ final class LogRecordCollector extends Handler {
      */
     @Override
     public void close() {
+    }
+
+    /**
+     * If some tests in the class emitted unexpected log records,
+     * prints a table showing which tests caused logging.
+     *
+     * <p>Note: this was use to be a JUnit {@code afterAll(ExtensionContext)} method.
+     * But we want this method to be executed after all tests in the project,
+     * not after each class.</p>
+     */
+    @Override
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
+    public final void run() {
+        try {
+            LogRecordCollector.INSTANCE.report(System.err);     // Same stream as logging console handler.
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);                  // Should never happen.
+        }
     }
 }

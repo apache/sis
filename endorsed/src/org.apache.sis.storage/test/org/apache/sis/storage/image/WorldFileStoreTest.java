@@ -19,7 +19,6 @@ package org.apache.sis.storage.image;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Files;
-import java.nio.file.DirectoryStream;
 import java.nio.file.StandardOpenOption;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.extent.GeographicBoundingBox;
@@ -33,6 +32,7 @@ import org.apache.sis.setup.OptionKey;
 import org.apache.sis.util.ArraysExt;
 
 // Test dependencies
+import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
@@ -122,65 +122,56 @@ public final class WorldFileStoreTest extends TestCase {
      * This test unconditionally open the data store as an aggregate,
      * i.e. it bypasses the simplification of PNG files as {@link SingleImageStore} view.
      *
+     * @param  directory  a temporary directory where to write the image.
      * @throws DataStoreException if an error occurred during Image I/O or data store operations.
      * @throws IOException if an error occurred when creating, reading or deleting temporary files.
      */
     @Test
-    public void testReadWrite() throws DataStoreException, IOException {
-        final Path directory = Files.createTempDirectory("SIS-");
-        try {
-            final WorldFileStoreProvider provider = new WorldFileStoreProvider(false);
-            try (WorldFileStore source = provider.open(testData())) {
-                assertFalse(source instanceof WritableStore);
-                final GridCoverageResource resource = getSingleton(source.components());
-                assertEquals("gradient:1", resource.getIdentifier().get().toString());
+    public void testReadWrite(@TempDir final Path directory) throws DataStoreException, IOException {
+        final WorldFileStoreProvider provider = new WorldFileStoreProvider(false);
+        try (WorldFileStore source = provider.open(testData())) {
+            assertFalse(source instanceof WritableStore);
+            final GridCoverageResource resource = getSingleton(source.components());
+            assertEquals("gradient:1", resource.getIdentifier().get().toString());
+            /*
+             * Above `resource` is the content of "gradient.png" file.
+             * Write the resource in a new file using a different format.
+             */
+            final Path targetPath = directory.resolve("copy.jpg");
+            final StorageConnector connector = new StorageConnector(targetPath);
+            connector.setOption(OptionKey.OPEN_OPTIONS, new StandardOpenOption[] {
+                StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE
+            });
+            try (WritableStore target = (WritableStore) provider.open(connector)) {
+                assertEquals(0, target.isMultiImages());
+                final WritableResource copy = (WritableResource) target.add(resource);
+                assertEquals(1, target.isMultiImages());
+                assertNotSame(resource, copy);
+                assertEquals (resource.getGridGeometry(),     copy.getGridGeometry());
+                assertEquals (resource.getSampleDimensions(), copy.getSampleDimensions());
                 /*
-                 * Above `resource` is the content of "gradient.png" file.
-                 * Write the resource in a new file using a different format.
+                 * Verify that attempt to write again without `REPLACE` mode fails.
                  */
-                final Path targetPath = directory.resolve("copy.jpg");
-                final StorageConnector connector = new StorageConnector(targetPath);
-                connector.setOption(OptionKey.OPEN_OPTIONS, new StandardOpenOption[] {
-                    StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE
-                });
-                try (WritableStore target = (WritableStore) provider.open(connector)) {
-                    assertEquals(0, target.isMultiImages());
-                    final WritableResource copy = (WritableResource) target.add(resource);
-                    assertEquals(1, target.isMultiImages());
-                    assertNotSame(resource, copy);
-                    assertEquals (resource.getGridGeometry(),     copy.getGridGeometry());
-                    assertEquals (resource.getSampleDimensions(), copy.getSampleDimensions());
-                    /*
-                     * Verify that attempt to write again without `REPLACE` mode fails.
-                     */
-                    final GridCoverage coverage = resource.read(null, null);
-                    var e = assertThrows(ResourceAlreadyExistsException.class, () -> copy.write(coverage),
-                                         "Should not have replaced existing resource.");
-                    assertMessageContains(e, "1");      // "1" is the image identifier.
-                    /*
-                     * Try to write again in `REPLACE` mode.
-                     */
-                    copy.write(coverage, WritableResource.CommonOption.REPLACE);
-                    assertEquals(1, target.isMultiImages());
-                }
+                final GridCoverage coverage = resource.read(null, null);
+                var e = assertThrows(ResourceAlreadyExistsException.class, () -> copy.write(coverage),
+                                     "Should not have replaced existing resource.");
+                assertMessageContains(e, "1");      // "1" is the image identifier.
                 /*
-                 * Verify that the 3 files have been written. The JGW file content is verified,
-                 * but the PRJ file content is not fully verified because it may vary.
+                 * Try to write again in `REPLACE` mode.
                  */
-                assertTrue(Files.size(targetPath) > 0);
-                assertTrue(Files.readAllLines(directory.resolve("copy.prj"))
-                                .stream().anyMatch((line) -> line.contains("WGS 84")));
-                assertArrayEquals(new String[] {
-                    "2.8125", "0.0", "0.0", "-2.8125", "-178.59375", "88.59375"
-                }, Files.readAllLines(directory.resolve("copy.jgw")).toArray());
+                copy.write(coverage, WritableResource.CommonOption.REPLACE);
+                assertEquals(1, target.isMultiImages());
             }
-        } finally {
-            try (DirectoryStream<Path> entries = Files.newDirectoryStream(directory)) {
-                for (Path entry : entries) {
-                    Files.delete(entry);
-                }
-            }
-            Files.delete(directory);
+            /*
+             * Verify that the 3 files have been written. The JGW file content is verified,
+             * but the PRJ file content is not fully verified because it may vary.
+             */
+            assertTrue(Files.size(targetPath) > 0);
+            assertTrue(Files.readAllLines(directory.resolve("copy.prj"))
+                            .stream().anyMatch((line) -> line.contains("WGS 84")));
+            assertArrayEquals(new String[] {
+                "2.8125", "0.0", "0.0", "-2.8125", "-178.59375", "88.59375"
+            }, Files.readAllLines(directory.resolve("copy.jgw")).toArray());
         }
     }
 }

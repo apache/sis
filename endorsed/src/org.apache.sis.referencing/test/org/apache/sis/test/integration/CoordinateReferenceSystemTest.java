@@ -24,13 +24,12 @@ import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.factory.TestFactorySource;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.referencing.factory.TestFactorySource;
 
 
 /**
@@ -53,7 +52,7 @@ public final class CoordinateReferenceSystemTest extends TestCase {
      */
     @Test
     public void testCreateFromCombinedURN() throws FactoryException {
-        assumeTrue(TestFactorySource.getSharedFactory() != null);
+        assertTrue(TestFactorySource.getSharedFactory() != null);
         CoordinateReferenceSystem crs = CRS.forCode("urn:ogc:def:crs, crs:EPSG::27700, crs:EPSG::5701");
         assertSame(CRS.forCode("EPSG:7405"), crs, "OSGB 1936 / British National Grid + ODN height");
     }
@@ -65,7 +64,7 @@ public final class CoordinateReferenceSystemTest extends TestCase {
      */
     @Test
     public void testDerivedCRS() throws FactoryException {
-        assumeTrue(TestFactorySource.getSharedFactory() != null);
+        assertTrue(TestFactorySource.getSharedFactory() != null);
         CoordinateReferenceSystem crs = CRS.forCode("EPSG:5820");
         assertInstanceOf(DerivedCRS .class, crs);
         assertInstanceOf(GeodeticCRS.class, crs);

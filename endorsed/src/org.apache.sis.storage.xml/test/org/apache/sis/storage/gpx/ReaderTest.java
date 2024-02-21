@@ -32,8 +32,6 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.gps.Fix;
 
 // Test dependencies
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
@@ -56,28 +54,13 @@ public final class ReaderTest extends TestCase {
     /**
      * The provider shared by all data stores created in this test class.
      */
-    private static StoreProvider provider;
+    private final StoreProvider provider;
 
     /**
      * Creates the provider to be shared by all data stores created in this test class.
      */
-    @BeforeAll
-    public static void createProvider() {
-        provider = new StoreProvider();
-    }
-
-    /**
-     * Disposes the data store provider after all tests have been completed.
-     */
-    @AfterAll
-    public static void disposeProvider() {
-        provider = null;
-    }
-
-    /**
-     * Creates a new test case.
-     */
     public ReaderTest() {
+        provider = StoreProvider.provider();
     }
 
     /**
@@ -86,7 +69,7 @@ public final class ReaderTest extends TestCase {
      * @param  version   identifies the version of the schema to test.
      * @param  resource  name of the test file.
      */
-    private static Store create(final TestData version, final String resource) throws DataStoreException {
+    private Store create(final TestData version, final String resource) throws DataStoreException {
         final var connector = new StorageConnector(version.openStream(resource));
         connector.setOption(OptionKey.GEOMETRY_LIBRARY, GeometryLibrary.ESRI);
         return new Store(provider, connector);
@@ -563,7 +546,7 @@ public final class ReaderTest extends TestCase {
      * Creates a data store for the {@code "1.1/route.xml"} test files using its URL instead of the input stream.
      * Using the URL makes easier for the data store to read the same data more than once.
      */
-    private static Store createFromURL() throws DataStoreException {
+    private Store createFromURL() throws DataStoreException {
         final StorageConnector connector = new StorageConnector(TestData.V1_1.getURL(TestData.ROUTE));
         connector.setOption(OptionKey.GEOMETRY_LIBRARY, GeometryLibrary.ESRI);
         connector.setOption(OptionKey.URL_ENCODING, "UTF-8");

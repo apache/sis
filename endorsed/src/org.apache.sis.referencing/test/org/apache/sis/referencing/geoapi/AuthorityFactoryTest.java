@@ -21,6 +21,8 @@ import org.apache.sis.referencing.CRS;
 
 // Test dependencies
 import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.apache.sis.test.FailureDetailsReporter;
 
 
 /**
@@ -34,6 +36,7 @@ import org.junit.jupiter.api.Disabled;
  * @version 1.4
  * @since   1.1
  */
+@ExtendWith(FailureDetailsReporter.class)
 public final class AuthorityFactoryTest extends org.opengis.test.referencing.AuthorityFactoryTest {
     /**
      * Creates a new test suite using the singleton factory instance.
