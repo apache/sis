@@ -16,11 +16,13 @@
  */
 package org.apache.sis.test;
 
+import java.util.Set;
 import java.io.Console;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import org.apache.sis.util.internal.Strings;
 import org.apache.sis.util.logging.MonolineFormatter;
 
 // Test dependencies
@@ -71,31 +73,10 @@ public abstract class TestCase {
 
     /**
      * Tolerance threshold for strict comparisons of floating point numbers.
+     * This value can be used in {@code assert} method calls when the method
+     * signature mandate a tolerance threshold.
      */
     public static final double STRICT = 0;
-
-    /**
-     * The output writer where to print debugging information (never {@code null}).
-     * Texts sent to this printer will be shown only if the test fails, or if the
-     * {@value org.apache.sis.test.TestConfiguration#VERBOSE_OUTPUT_KEY} system property
-     * is set to {@code true}. This writer will use the system default encoding, unless
-     * the {@value org.apache.sis.test.TestConfiguration#OUTPUT_ENCODING_KEY} system
-     * property has been set to a different value.
-     *
-     * @see org.apache.sis.test.TestUtilities#forceFlushOutput()
-     */
-    public static final PrintWriter out;
-
-    /**
-     * The buffer which is backing the {@linkplain #out} stream.
-     */
-    private static final StringWriter buffer;
-
-    /**
-     * {@code true} if the {@value org.apache.sis.test.TestConfiguration#VERBOSE_OUTPUT_KEY}
-     * system property is set to {@code true}.
-     */
-    public static final boolean VERBOSE;
 
     /**
      * Tag for tests that are slow.
@@ -106,23 +87,79 @@ public abstract class TestCase {
     public static final String TAG_SLOW = "Slow";
 
     /**
-     * {@code true} if the {@value org.apache.sis.test.TestConfiguration#EXTENSIVE_TESTS_KEY}
-     * system property is set to {@code true}.
-     * If {@code true}, then Apache SIS will run some tests which were normally skipped because they are slow.
+     * Whether to run more extensive tests. This is set to the value specified by the
+     * {@value org.apache.sis.test.TestConfiguration#EXTENSIVE_TESTS_KEY} system property if defined,
+     * or otherwise this is {@code true} if the {@value org.apache.sis.test.TestConfiguration#SIS_TEST_OPTIONS}
+     * environment variable contains the "extensive" word. If {@code true}, then Apache SIS will run some tests
+     * which were normally skipped because they are slow.
      *
      * <p>All tests using this condition should be annotated with {@code @Tag(TAG_SLOW)}.</p>
      */
     public static final boolean RUN_EXTENSIVE_TESTS;
 
     /**
+     * Whether the tests should print debugging information. This is set to the value specified by the
+     * {@value org.apache.sis.test.TestConfiguration#VERBOSE_OUTPUT_KEY} system property if defined,
+     * or otherwise this is {@code true} if the {@value org.apache.sis.test.TestConfiguration#SIS_TEST_OPTIONS}
+     * environment variable contains the "verbose" word. If {@code true}, then the content of {@link #out} will
+     * be sent to the standard output stream after each test.
+     *
+     * @see #out
+     */
+    public static final boolean VERBOSE;
+
+    /**
+     * Whether the tests can allowed to popup a widget. This is set to the value specified by the
+     * {@value org.apache.sis.test.TestConfiguration#SHOW_WIDGET_KEY} system property if defined,
+     * or otherwise this is {@code true} if the {@value org.apache.sis.test.TestConfiguration#SIS_TEST_OPTIONS}
+     * environment variable contains the "widget" word. Only a few tests provide visualization widget.
+     */
+    public static final boolean SHOW_WIDGET;
+
+    /**
+     * The output writer where to print debugging information (never {@code null}).
+     * Texts sent to this printer will be shown only if the test fails, or if the
+     * {@link #VERBOSE} flag is {@code true}. This writer will use the system default encoding,
+     * unless the {@value org.apache.sis.test.TestConfiguration#OUTPUT_ENCODING_KEY} system property
+     * has been set to a different value.
+     *
+     * @see TestUtilities#forceFlushOutput()
+     */
+    public static final PrintWriter out;
+
+    /**
+     * The buffer which is backing the {@linkplain #out} stream.
+     */
+    private static final StringWriter buffer;
+
+    /**
      * Sets the {@link #out} writer and its underlying {@link #buffer}.
      */
     static {
         out = new PrintWriter(buffer = new StringWriter());
-        VERBOSE = Boolean.getBoolean(TestConfiguration.VERBOSE_OUTPUT_KEY);
-        RUN_EXTENSIVE_TESTS = Boolean.getBoolean(TestConfiguration.EXTENSIVE_TESTS_KEY);
+        final Set<String> options = Set.of(Strings.orEmpty(System.getenv(TestConfiguration.SIS_TEST_OPTIONS)).split(","));
+        RUN_EXTENSIVE_TESTS = isEnabled(options, "extensive", TestConfiguration.EXTENSIVE_TESTS_KEY);
+        SHOW_WIDGET = isEnabled(options, "widget", TestConfiguration.SHOW_WIDGET_KEY);
+        VERBOSE = isEnabled(options, "verbose", TestConfiguration.VERBOSE_OUTPUT_KEY);
         if (VERBOSE) {
             System.setErr(System.out);      // For avoiding log records to be interleaved with block of text.
+        }
+    }
+
+    /**
+     * Returns whether the user has enabled an option.
+     *
+     * @param  options   {@value org.apache.sis.test.TestConfiguration#SIS_TEST_OPTIONS} environment variable content.
+     * @param  keyword   keyword to search in {@code options}.
+     * @param  property  system property to search.
+     * @return whether the specified option is enabled.
+     */
+    private static boolean isEnabled(final Set<String> options, final String keyword, final String property) {
+        final String value = System.getProperty(property);
+        if (value != null) {
+            return Boolean.parseBoolean(value);
+        } else {
+            return options.contains(keyword);
         }
     }
 

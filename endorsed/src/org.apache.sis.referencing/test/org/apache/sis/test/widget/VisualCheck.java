@@ -22,9 +22,6 @@ import java.awt.event.WindowEvent;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 
-// Test dependencies
-import org.apache.sis.test.TestConfiguration;
-
 
 /**
  * Methods showing windows for performing visual checks.
@@ -33,11 +30,6 @@ import org.apache.sis.test.TestConfiguration;
  * @author  Martin Desruisseaux (Geomatys)
  */
 public final class VisualCheck {
-    /**
-     * Whether to show widgets.
-     */
-    public static final boolean SHOW_WIDGET = Boolean.getBoolean(TestConfiguration.SHOW_WIDGET_KEY);
-
     /**
      * Do not allows instantiation of this class.
      */

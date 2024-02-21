@@ -26,9 +26,22 @@ import org.apache.sis.util.Static;
  */
 public final class TestConfiguration extends Static {
     /**
+     * Environment variable to use as a fallback if a system property is not set.
+     * This is a comma-separated list of the following keywords, without spaces:
+     * {@code extensive}, {@code verbose}.
+     *
+     * @see TestCase#RUN_EXTENSIVE_TESTS
+     * @see TestCase#VERBOSE
+     * @see TestCase#SHOW_WIDGET
+     */
+    public static final String SIS_TEST_OPTIONS = "SIS_TEST_OPTIONS";
+
+    /**
      * The {@systemProperty org.apache.sis.test.extensive} system property for enabling more extensive tests.
      * If this {@linkplain System#getProperties() system property} is set to {@code true},
      * then Apache SIS will run some tests which were normally skipped because they are slow.
+     *
+     * @see TestCase#RUN_EXTENSIVE_TESTS
      */
     public static final String EXTENSIVE_TESTS_KEY = "org.apache.sis.test.extensive";
 
@@ -36,12 +49,16 @@ public final class TestConfiguration extends Static {
      * The {@systemProperty org.apache.sis.test.verbose} system property for enabling verbose outputs.
      * If this {@linkplain System#getProperties() system property} is set to {@code true},
      * then the content sent to the {@link TestCase#out} field will be printed after each test.
+     *
+     * @see TestCase#VERBOSE
      */
     public static final String VERBOSE_OUTPUT_KEY = "org.apache.sis.test.verbose";
 
     /**
      * The {@systemProperty org.apache.sis.test.gui.show} system property
      * for enabling display of test images or widgets.
+     *
+     * @see TestCase#SHOW_WIDGET
      */
     public static final String SHOW_WIDGET_KEY = "org.apache.sis.test.gui.show";
 
@@ -50,6 +67,8 @@ public final class TestConfiguration extends Static {
      * This property is used only if the {@link #VERBOSE_OUTPUT_KEY} property
      * is set to "{@code true}". If this property is not set, then the system
      * encoding will be used.
+     *
+     * @see TestCase#out
      */
     public static final String OUTPUT_ENCODING_KEY = "org.apache.sis.test.encoding";
 
