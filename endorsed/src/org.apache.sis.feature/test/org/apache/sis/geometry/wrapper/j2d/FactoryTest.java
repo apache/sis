@@ -17,11 +17,11 @@
 package org.apache.sis.geometry.wrapper.j2d;
 
 import java.awt.geom.Path2D;
-import org.apache.sis.geometry.wrapper.GeometriesTestCase;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import org.apache.sis.geometry.wrapper.GeometriesTestCase;
 
 
 /**

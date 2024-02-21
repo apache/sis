@@ -19,12 +19,12 @@ package org.apache.sis.geometry.wrapper.esri;
 import com.esri.core.geometry.Polyline;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
-import org.apache.sis.geometry.wrapper.GeometriesTestCase;
 import org.apache.sis.util.StringBuilders;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.geometry.wrapper.GeometriesTestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 
 

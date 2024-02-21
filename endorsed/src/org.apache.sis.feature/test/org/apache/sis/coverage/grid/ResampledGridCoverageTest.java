@@ -55,12 +55,12 @@ import org.apache.sis.test.TestUtilities;
 import org.apache.sis.image.TiledImageMock;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
-import static org.opengis.test.Assertions.assertSampleValuesEqual;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 import static org.apache.sis.feature.Assertions.assertValuesEqual;
 import static org.apache.sis.feature.Assertions.assertPixelsEqual;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import static org.opengis.test.Assertions.assertSampleValuesEqual;
 import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
 
 

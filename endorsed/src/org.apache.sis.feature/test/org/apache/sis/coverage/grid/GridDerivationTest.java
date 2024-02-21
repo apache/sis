@@ -44,13 +44,13 @@ import static org.apache.sis.coverage.grid.GridGeometryTest.assertExtentEquals;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.opengis.test.Assertions.assertBetween;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import static org.opengis.test.Assertions.assertBetween;
 import static org.opengis.test.Assertions.assertMatrixEquals;
 
 

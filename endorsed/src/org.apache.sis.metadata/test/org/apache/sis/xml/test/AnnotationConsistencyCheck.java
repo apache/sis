@@ -30,6 +30,7 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElementRef;
 import jakarta.xml.bind.annotation.XmlElementRefs;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import org.opentest4j.AssertionFailedError;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Obligation;
 import org.opengis.annotation.Specification;
@@ -37,12 +38,11 @@ import org.opengis.util.CodeList;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.util.LegacyNamespaces;
-import org.apache.sis.xml.bind.cat.CodeListUID;
 import org.apache.sis.xml.bind.Context;
+import org.apache.sis.xml.bind.cat.CodeListUID;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.opentest4j.AssertionFailedError;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCaseWithLogs;
 

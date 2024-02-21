@@ -45,8 +45,8 @@ import org.apache.sis.measure.Units;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.apache.sis.test.FailureDetailsReporter;
 import org.opengis.test.referencing.ObjectFactoryTest;
+import org.apache.sis.test.FailureDetailsReporter;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 

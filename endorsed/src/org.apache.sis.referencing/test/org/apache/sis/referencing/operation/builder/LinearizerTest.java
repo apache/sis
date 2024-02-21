@@ -26,9 +26,11 @@ import org.apache.sis.geometry.Envelope2D;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.opengis.test.Assertions;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.operation.HardCodedConversions;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.test.Assertions;
 
 
 /**

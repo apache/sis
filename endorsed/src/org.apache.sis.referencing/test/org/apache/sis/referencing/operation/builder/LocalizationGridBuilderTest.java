@@ -26,8 +26,8 @@ import org.apache.sis.geometry.Envelope2D;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.apache.sis.test.FailureDetailsReporter;
 import org.opengis.test.referencing.TransformTestCase;
+import org.apache.sis.test.FailureDetailsReporter;
 import static org.apache.sis.referencing.Assertions.assertEnvelopeEquals;
 import static org.apache.sis.test.TestCase.STRICT;
 

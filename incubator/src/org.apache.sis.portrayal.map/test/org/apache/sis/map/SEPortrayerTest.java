@@ -66,8 +66,8 @@ import org.apache.sis.util.iso.Names;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.TestInstance;
+import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 

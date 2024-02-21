@@ -21,7 +21,6 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.factory.TestFactorySource;
 import org.apache.sis.referencing.factory.sql.EPSGFactory;
 
 // Test dependencies
@@ -30,6 +29,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.apache.sis.referencing.factory.TestFactorySource;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import org.apache.sis.test.TestCase;
 

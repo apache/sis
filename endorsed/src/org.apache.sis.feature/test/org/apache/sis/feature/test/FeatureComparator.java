@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.opengis.util.GenericName;
-import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.internal.CollectionsExt;
 
 // Test dependencies
@@ -42,6 +41,7 @@ import org.opengis.feature.PropertyType;
 import org.opengis.feature.AttributeType;
 import org.opengis.feature.IdentifiedType;
 import org.opengis.feature.Operation;
+import org.apache.sis.util.Deprecable;
 
 
 /**

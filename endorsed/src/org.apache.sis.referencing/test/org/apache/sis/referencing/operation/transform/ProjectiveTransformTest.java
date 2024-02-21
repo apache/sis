@@ -36,12 +36,12 @@ import org.apache.sis.math.Fraction;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.apache.sis.test.FailureDetailsReporter;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
+import org.apache.sis.test.FailureDetailsReporter;
+import static org.apache.sis.test.TestCase.STRICT;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.junit.jupiter.api.Assertions.*;
-import static org.apache.sis.test.TestCase.STRICT;
 import org.opengis.test.Assertions;
 import org.opengis.test.referencing.AffineTransformTest;
 

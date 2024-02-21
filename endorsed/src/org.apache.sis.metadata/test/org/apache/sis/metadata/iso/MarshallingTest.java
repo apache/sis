@@ -63,11 +63,11 @@ import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.bind.gcx.Anchor;
 import org.apache.sis.xml.bind.metadata.replace.ReferenceSystemMetadata;
-import org.apache.sis.metadata.xml.TestUsingFile;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.metadata.xml.TestUsingFile;
 
 
 /**

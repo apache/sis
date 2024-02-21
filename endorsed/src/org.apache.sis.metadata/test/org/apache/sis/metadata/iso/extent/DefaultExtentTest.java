@@ -25,11 +25,11 @@ import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.NilObject;
-import org.apache.sis.metadata.xml.TestUsingFile;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.metadata.xml.TestUsingFile;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.test.TestUtilities.date;
 
