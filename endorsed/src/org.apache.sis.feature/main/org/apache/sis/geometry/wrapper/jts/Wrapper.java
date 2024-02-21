@@ -199,15 +199,12 @@ final class Wrapper extends GeometryWrapper {
     public GeneralEnvelope getEnvelope() {
         final Envelope bounds = geometry.getEnvelopeInternal();
         final CoordinateReferenceSystem crs = getCoordinateReferenceSystem();
-        final GeneralEnvelope env;
-        if (crs != null) {
-            env = new GeneralEnvelope(crs);
-            env.setToNaN();
-        } else {
-            env = new GeneralEnvelope(Factory.BIDIMENSIONAL);
+        final var env = (crs != null) ? new GeneralEnvelope(crs) : new GeneralEnvelope(Factory.BIDIMENSIONAL);
+        env.setToNaN();
+        if (!bounds.isNull()) {
+            env.setRange(0, bounds.getMinX(), bounds.getMaxX());
+            env.setRange(1, bounds.getMinY(), bounds.getMaxY());
         }
-        env.setRange(0, bounds.getMinX(), bounds.getMaxX());
-        env.setRange(1, bounds.getMinY(), bounds.getMaxY());
         return env;
     }
 
