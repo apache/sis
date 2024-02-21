@@ -43,12 +43,12 @@ import org.apache.sis.util.Version;
 // Test dependencies
 import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.api.parallel.ResourceAccessMode;
 import org.junit.jupiter.api.parallel.ResourceLock;
+import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import org.apache.sis.test.LoggingWatcher;
 
 

@@ -50,6 +50,7 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.test.widget.VisualCheck;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 
+// Specific to the main branch:
 import static org.apache.sis.test.GeoapiAssert.assertBetween;
 import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
 

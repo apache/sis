@@ -21,7 +21,6 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.MathTransform2D;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
@@ -37,13 +36,14 @@ import org.apache.sis.math.Fraction;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.apache.sis.test.FailureDetailsReporter;
+import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
+import org.apache.sis.test.FailureDetailsReporter;
+import static org.apache.sis.test.TestCase.STRICT;
 
 // Specific to the main branch:
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.junit.jupiter.api.Disabled;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.apache.sis.test.TestCase.STRICT;
 import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.GeoapiAssert;
 

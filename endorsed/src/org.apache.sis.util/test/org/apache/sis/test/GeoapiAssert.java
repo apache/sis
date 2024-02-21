@@ -24,9 +24,10 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Static;
-import org.opengis.test.Assert;
 
+// Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
+import org.opengis.test.Assert;
 
 
 /**

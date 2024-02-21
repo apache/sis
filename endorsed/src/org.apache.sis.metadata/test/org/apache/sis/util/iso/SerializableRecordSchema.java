@@ -18,6 +18,8 @@ package org.apache.sis.util.iso;
 
 import java.io.Serializable;
 import java.io.ObjectStreamException;
+
+// Test dependencies
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 

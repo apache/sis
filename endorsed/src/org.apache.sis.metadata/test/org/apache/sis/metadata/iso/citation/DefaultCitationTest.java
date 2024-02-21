@@ -43,11 +43,11 @@ import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.UnmodifiableMetadataException;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.metadata.iso.extent.Extents;
-import org.apache.sis.metadata.xml.TestUsingFile;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;

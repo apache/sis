@@ -31,9 +31,9 @@ import org.apache.sis.util.SimpleInternationalString;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
+import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 
 /**

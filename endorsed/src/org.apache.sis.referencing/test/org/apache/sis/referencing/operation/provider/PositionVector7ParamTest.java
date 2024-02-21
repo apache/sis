@@ -25,11 +25,11 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
-import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 
 
 /**

@@ -22,11 +22,11 @@ import java.io.InputStream;
 import java.io.StringReader;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.util.LegacyNamespaces;
-import org.apache.sis.metadata.xml.TestUsingFile;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.metadata.xml.TestUsingFile;
 import org.apache.sis.metadata.iso.extent.DefaultExtentTest;
 
 

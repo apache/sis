@@ -28,6 +28,8 @@ import org.apache.sis.referencing.factory.sql.EPSGFactory;
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.*;
+
+// Specific to the main branch:
 import static org.apache.sis.test.GeoapiAssert.assertBetween;
 
 

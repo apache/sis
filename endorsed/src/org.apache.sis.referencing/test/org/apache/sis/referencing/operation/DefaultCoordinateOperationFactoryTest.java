@@ -34,7 +34,6 @@ import org.apache.sis.referencing.util.PositionalAccuracyConstant;
 import org.apache.sis.util.internal.Constants;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.io.wkt.WKTFormat;
-import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 
 // Test dependencies
 import org.junit.jupiter.api.BeforeEach;
@@ -43,6 +42,7 @@ import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
 

@@ -22,6 +22,8 @@ import org.opengis.referencing.operation.TransformException;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import org.apache.sis.test.TestCase;
+
+// Specific to the main branch:
 import static org.apache.sis.feature.Assertions.assertPathEquals;
 
 

@@ -26,9 +26,9 @@ import org.apache.sis.measure.Units;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.FailureDetailsReporter;
 import org.apache.sis.referencing.cs.HardCodedCS;
-import org.opengis.test.referencing.TransformTestCase;
 
 
 /**

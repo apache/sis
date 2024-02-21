@@ -36,8 +36,8 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
-import static org.apache.sis.test.Assertions.assertMapEquals;
 import org.apache.sis.test.Benchmark;
+import static org.apache.sis.test.Assertions.assertMapEquals;
 
 
 /**

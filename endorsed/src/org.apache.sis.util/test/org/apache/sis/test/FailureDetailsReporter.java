@@ -17,6 +17,8 @@
 package org.apache.sis.test;
 
 import java.io.PrintStream;
+
+// Test dependencies
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;

@@ -34,7 +34,6 @@ import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.io.wkt.WKTFormat;
-import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 
 // Test dependencies
 import org.junit.jupiter.api.BeforeEach;
@@ -44,6 +43,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
 
 // Specific to the main branch:

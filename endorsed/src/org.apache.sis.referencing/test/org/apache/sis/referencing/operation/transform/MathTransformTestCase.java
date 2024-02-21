@@ -34,15 +34,15 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.FormattableObject;
-import org.apache.sis.referencing.operation.matrix.MatrixTestCase;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.opengis.test.Validators;
+import org.apache.sis.referencing.Assertions;
+import org.apache.sis.referencing.operation.matrix.MatrixTestCase;
 import org.apache.sis.test.FailureDetailsReporter;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.referencing.Assertions;
-import org.opengis.test.Validators;
 
 
 /**
