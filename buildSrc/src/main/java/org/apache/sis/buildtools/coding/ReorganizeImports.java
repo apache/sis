@@ -150,15 +150,12 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
         "org.junit",
         "org.opengis.test",
         "org.apache.sis.image.TiledImageMock",
-        "org.apache.sis.metadata.sql.TestDatabase",
         "org.apache.sis.referencing.cs.HardCodedAxes",
         "org.apache.sis.referencing.cs.HardCodedCS",
         "org.apache.sis.referencing.crs.HardCodedCRS",
         "org.apache.sis.referencing.datum.HardCodedDatum",
         "org.apache.sis.referencing.operation.HardCodedConversions",
-        "org.apache.sis.metadata.iso.citation.HardCodedCitations",
-        "org.apache.sis.metadata.sql.TestDatabase",
-        "org.apache.sis.storage.gpx.TestData"
+        "org.apache.sis.metadata.iso.citation.HardCodedCitations"
     };
 
     /**
@@ -455,9 +452,13 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
                 element = element.substring(STATIC.length()).trim();
             }
             if (element.startsWith("org.apache.sis")) {
-                if (element.contains(".test.") || element.endsWith("Test") ||
-                        (element.contains("Assert") && !element.contains("ArgumentCheckByAssertion")))
-                {
+                if (element.contains(".test.") || element.endsWith("Test") || element.endsWith("TestCase")) {
+                    return true;
+                }
+                if (element.regionMatches(element.lastIndexOf('.')+1, "Test", 0, 4)) {
+                    return true;
+                }
+                if (element.contains("Assert") && !element.contains("ArgumentCheckByAssertion")) {
                     return true;
                 }
             }
