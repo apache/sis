@@ -75,7 +75,7 @@ import static org.apache.sis.measure.UnitRegistry.PREFIXABLE;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 public final class Units extends Static {
@@ -597,7 +597,7 @@ public final class Units extends Static {
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
      *   <tr><td>SI speed units:</td> <td style="word-spacing:1em"><u><b>{@code METRES_PER_SECOND}</b></u>.</td></tr>
-     *   <tr><td>Non-SI units:</td>   <td style="word-spacing:1em">{@link #KILOMETRES_PER_HOUR}.</td></tr>
+     *   <tr><td>Non-SI units:</td>   <td style="word-spacing:1em">{@link #KILOMETRES_PER_HOUR}, {@link #KNOT}.</td></tr>
      *   <tr><td>Components:</td>     <td style="word-spacing:0.5em">{@link #METRE} ∕ {@link #SECOND}</td></tr>
      * </table>
      *
@@ -613,13 +613,29 @@ public final class Units extends Static {
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
      *   <tr><td>SI speed units:</td> <td style="word-spacing:1em"><b>{@link #METRES_PER_SECOND}</b>.</td></tr>
-     *   <tr><td>Non-SI units:</td>   <td style="word-spacing:1em"><u>{@code KILOMETRES_PER_HOUR}</u>.</td></tr>
+     *   <tr><td>Non-SI units:</td>   <td style="word-spacing:1em"><u>{@code KILOMETRES_PER_HOUR}</u>, {@link #KNOT}.</td></tr>
      *   <tr><td>Components:</td>     <td style="word-spacing:0.5em">{@link #KILOMETRE} ∕ {@link #HOUR}</td></tr>
      * </table>
      *
      * @since 0.8
      */
     public static final Unit<Speed> KILOMETRES_PER_HOUR;
+
+    /**
+     * Unit of measurement defined as 1.852 km/h.
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #METRES_PER_SECOND}
+     * and the unlocalized name is “knot”.
+     *
+     * <table class="compact" style="margin-left:30px; line-height:1.25">
+     *   <caption>Related units</caption>
+     *   <tr><td>SI speed units:</td> <td style="word-spacing:1em"><b>{@link #METRES_PER_SECOND}</b>.</td></tr>
+     *   <tr><td>Non-SI units:</td>   <td style="word-spacing:1em">{@link #KILOMETRES_PER_HOUR}, <u>{@code #KNOT}</u>.</td></tr>
+     *   <tr><td>Components:</td>     <td style="word-spacing:0.5em">{@link #KILOMETRE} ∕ {@link #HOUR}</td></tr>
+     * </table>
+     *
+     * @since 1.5
+     */
+    public static final Unit<Speed> KNOT;
 
     /**
      * The SI derived unit for acceleration (m/s²).
@@ -999,6 +1015,12 @@ public final class Units extends Static {
      * A SI conventional unit for mass (g).
      * The unlocalized name is “gram”.
      *
+     * <table class="compact" style="margin-left:30px; line-height:1.25">
+     *   <caption>Related units</caption>
+     *   <tr><td>SI mass units:</td> <td style="word-spacing:1em"><u>{@code GRAM}</u>, <b>{@link #KILOGRAM}</b>.</td></tr>
+     *   <tr><td>Non-SI units:</td>  <td style="word-spacing:1em">{@link #TONNE}.</td></tr>
+     * </table>
+     *
      * @since 0.8
      */
     public static final Unit<Mass> GRAM;
@@ -1007,9 +1029,29 @@ public final class Units extends Static {
      * The SI base unit for mass (kg).
      * The unlocalized name is “kilogram”.
      *
+     * <table class="compact" style="margin-left:30px; line-height:1.25">
+     *   <caption>Related units</caption>
+     *   <tr><td>SI mass units:</td> <td style="word-spacing:1em">{@link #GRAM}, <u><b>{@code KILOGRAM}</b></u>.</td></tr>
+     *   <tr><td>Non-SI units:</td>  <td style="word-spacing:1em">{@link #TONNE}.</td></tr>
+     * </table>
+     *
      * @since 0.8
      */
     public static final Unit<Mass> KILOGRAM;
+
+    /**
+     * The SI convention unit for mass (t).
+     * The unlocalized name is “tonne”.
+     *
+     * <table class="compact" style="margin-left:30px; line-height:1.25">
+     *   <caption>Related units</caption>
+     *   <tr><td>SI mass units:</td> <td style="word-spacing:1em">{@link #GRAM}, <b>{@link #KILOGRAM}</b>.</td></tr>
+     *   <tr><td>Non-SI units:</td>  <td style="word-spacing:1em"><u>{@code TONNE}</u>.</td></tr>
+     * </table>
+     *
+     * @since 1.5
+     */
+    public static final Unit<Mass> TONNE;
 
     /**
      * The SI base unit for amount of substance (mol).
@@ -1229,11 +1271,12 @@ public final class Units extends Static {
         final SystemUnit<ScaleRateOfChange> unityPerSecond;
         unityPerSecond = new SystemUnit<>(ScaleRateOfChange.class, frequency, null, OTHER, (short) 1036, null);
         unityPerSecond.related(1);
-        mps .related(1);
+        mps .related(2);
         mps2.related(1);
         METRES_PER_SECOND         = mps;
         METRES_PER_SECOND_SQUARED = mps2;
         KILOMETRES_PER_HOUR       = add(mps, LinearConverter.scale(10, 36),     "km∕h",  ACCEPTED, (short) 0);
+        KNOT                      = add(mps, LinearConverter.scale(1852, 3600), "kn",    OTHER,    (short) 0);
         RADIANS_PER_SECOND        = add(AngularVelocity.class, null, frequency, "rad∕s", SI,       (short) 1035);
         GAL                       = add(mps2, centi, "Gal", (byte) (CGS | PREFIXABLE | ACCEPTED),  (short) 0);
         add(unityPerSecond, LinearConverter.scale(1, 31556925445E6), "ppm∕a", OTHER, (short) 1030);
@@ -1261,6 +1304,7 @@ public final class Units extends Static {
         SQUARE_METRE = m2;
         CUBIC_METRE  = m3;
         KILOGRAM     = kg;
+        TONNE        = add(kg, kilo,  "t",         ACCEPTED,               (short) 0);
         HECTARE      = add(m2, ten4,  "ha",        ACCEPTED,               (short) 0);
         LITRE        = add(m3, milli, "L", (byte) (ACCEPTED | PREFIXABLE), (short) 0);
         GRAM         = add(kg, milli, "g", (byte) (ACCEPTED | PREFIXABLE), (short) 0);
@@ -1314,6 +1358,7 @@ public final class Units extends Static {
         UnitRegistry.alias(DEGREE,      Short.valueOf(Constants.EPSG_AXIS_DEGREES));
         UnitRegistry.alias(ARC_MINUTE,  "'");
         UnitRegistry.alias(ARC_SECOND, "\"");
+        UnitRegistry.alias(KNOT,       "kt");       // Symbol used in aviation.
         UnitRegistry.alias(KELVIN,      "K");       // Ordinary "K" letter (not the dedicated Unicode character).
         UnitRegistry.alias(CELSIUS,     "℃");
         UnitRegistry.alias(CELSIUS,   "Cel");

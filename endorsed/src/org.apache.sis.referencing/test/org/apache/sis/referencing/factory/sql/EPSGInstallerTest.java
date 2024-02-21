@@ -134,6 +134,8 @@ public final class EPSGInstallerTest extends TestCaseWithLogs {
     /**
      * Tests the creation of an EPSG database on HSQLDB.
      * This test is skipped if the SQL scripts are not found.
+     * Otherwise, this test is enabled by default because it is the fastest database tested in this class,
+     * at the cost of less data types and less concurrency mechanisms (not used for EPSG installer test).
      *
      * @throws Exception if an error occurred while creating the database.
      */
@@ -155,7 +157,9 @@ public final class EPSGInstallerTest extends TestCaseWithLogs {
      * @throws Exception if an error occurred while creating the database.
      */
     @Test
+    @Tag(TAG_SLOW)
     public void testCreationOnH2() throws Exception {
+        assumeTrue(RUN_EXTENSIVE_TESTS, "Extensive tests not enabled.");
         final InstallationScriptProvider scripts = getScripts();            // Needs to be invoked first.
         try (TestDatabase db = TestDatabase.createOnH2("EPSGInstaller")) {
             createAndTest(db.source, scripts);

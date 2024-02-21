@@ -100,6 +100,7 @@ public final class UnitFormatTest extends TestCase {
         verify(declared, "RADIANS_PER_SECOND",  "∕T",           "rad∕s", "radians per second",      Units.RADIANS_PER_SECOND);
         verify(declared, "METRES_PER_SECOND",   "L∕T",          "m∕s",   "metres per second",       Units.METRES_PER_SECOND);
         verify(declared, "KILOMETRES_PER_HOUR", "L∕T",          "km∕h",  "kilometres per hour",     Units.KILOMETRES_PER_HOUR);
+        verify(declared, "KNOT",                "L∕T",          "kn",    "knot",                    Units.KNOT);
         verify(declared, "PASCAL",              "M∕(L⋅T²)",     "Pa",    "pascal",                  Units.PASCAL);
         verify(declared, "HECTOPASCAL",         "M∕(L⋅T²)",     "hPa",   "hectopascal",             Units.HECTOPASCAL);
         verify(declared, "DECIBAR",             "M∕(L⋅T²)",     "dbar",  "decibar",                 Units.DECIBAR);
@@ -125,6 +126,7 @@ public final class UnitFormatTest extends TestCase {
         verify(declared, "LUX",                 "J∕L²",         "lx",    "lux",                     Units.LUX);
         verify(declared, "KILOGRAM",            "M",            "kg",    "kilogram",                Units.KILOGRAM);
         verify(declared, "GRAM",                "M",            "g",     "gram",                    Units.GRAM);
+        verify(declared, "TONNE",               "M",            "t",     "tonne",                   Units.TONNE);
         verify(declared, "MOLE",                "N",            "mol",   "mole",                    Units.MOLE);
         verify(declared, "UNITY",               "",             "",       null,                     Units.UNITY);
         verify(declared, "PERCENT",             "",             "%",     "percent",                 Units.PERCENT);

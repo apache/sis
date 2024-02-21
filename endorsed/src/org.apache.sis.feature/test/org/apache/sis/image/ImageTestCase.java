@@ -31,7 +31,6 @@ import static java.lang.StrictMath.round;
 import org.junit.jupiter.api.AfterAll;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.TestConfiguration;
 
 
 /**
@@ -58,10 +57,8 @@ public abstract class ImageTestCase extends TestCase {
     protected RenderedImage image;
 
     /**
-     * Set to {@code true} for enabling the display of test images. The default value is {@code false},
-     * unless the {@value TestConfiguration#SHOW_WIDGET_KEY} system property has been set to {@code "true"}.
-     *
-     * @see TestConfiguration#SHOW_WIDGET_KEY
+     * Set to {@code true} for enabling the display of test images.
+     * The default value is the {@link #SHOW_WIDGET} value.
      */
     protected boolean viewEnabled;
 
@@ -75,7 +72,7 @@ public abstract class ImageTestCase extends TestCase {
      * Creates a new test case.
      */
     protected ImageTestCase() {
-        viewEnabled = Boolean.getBoolean(TestConfiguration.SHOW_WIDGET_KEY);
+        viewEnabled = SHOW_WIDGET;
     }
 
     /**

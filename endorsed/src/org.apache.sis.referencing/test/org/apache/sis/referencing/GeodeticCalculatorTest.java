@@ -270,7 +270,7 @@ public class GeodeticCalculatorTest extends TestCase {
         c.setStartGeographicPoint(-33.0, -71.6);                // Valparaíso
         c.setGeodesicDistance(100000);                          // 100 km
         Shape region = c.createGeodesicCircle2D(10000);
-        if (VisualCheck.SHOW_WIDGET) {
+        if (SHOW_WIDGET) {
             VisualCheck.show(region);
         }
         final Rectangle2D bounds = region.getBounds2D();
@@ -305,7 +305,7 @@ public class GeodeticCalculatorTest extends TestCase {
          * The more accurate curve cannot be simplified to a Java2D primitive.
          */
         assertInstanceOf(Path2D.class, multiCurves);
-        if (VisualCheck.SHOW_WIDGET) {
+        if (SHOW_WIDGET) {
             VisualCheck.show(singleCurve, multiCurves);
         }
     }

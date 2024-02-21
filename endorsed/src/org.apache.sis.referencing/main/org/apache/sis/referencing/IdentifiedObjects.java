@@ -50,6 +50,7 @@ import org.apache.sis.metadata.internal.NameToIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
+import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -443,7 +444,8 @@ public final class IdentifiedObjects extends Static {
      * @param  authority  the authority for the identifier to return, or {@code null} for
      *         the first identifier regardless its authority.
      * @return the identifier, or {@code null} if none was found without ambiguity or if the given object was null.
-     * @throws FactoryException if an error occurred during the search.
+     * @throws UnavailableFactoryException if the factory for the authority identified in the URN is not available.
+     * @throws FactoryException if the lookup failed for another reason.
      *
      * @see #newFinder(String)
      * @see #toURN(Class, Identifier)
@@ -561,7 +563,8 @@ public final class IdentifiedObjects extends Static {
      * @param  object  the object (usually a {@linkplain org.apache.sis.referencing.crs.AbstractCRS
      *         coordinate reference system}) whose EPSG code is to be found, or {@code null}.
      * @return the EPSG code, or {@code null} if none was found without ambiguity or if the given object was null.
-     * @throws FactoryException if an error occurred during the search.
+     * @throws UnavailableFactoryException if the EPSG factory is not available.
+     * @throws FactoryException if the lookup failed for another reason.
      *
      * @see #newFinder(String)
      *

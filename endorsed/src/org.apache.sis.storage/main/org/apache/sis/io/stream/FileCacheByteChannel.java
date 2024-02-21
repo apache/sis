@@ -326,6 +326,8 @@ public abstract class FileCacheByteChannel extends ByteRangeChannel {
     /**
      * A temporary buffer for transferring data when we cannot write directly in the destination buffer.
      * It shall be a buffer backed by a Java array, not a direct buffer. Created when first needed.
+     *
+     * @see #transfer()
      */
     private ByteBuffer transfer;
 
@@ -606,8 +608,8 @@ public abstract class FileCacheByteChannel extends ByteRangeChannel {
     }
 
     /**
-     * Attempts to read up to <i>r</i> bytes from the channel,
-     * where <i>r</i> is the number of bytes remaining in the buffer.
+     * Attempts to read up to <var>r</var> bytes from the channel,
+     * where <var>r</var> is the number of bytes remaining in the buffer.
      * Bytes are written in the given buffer starting at the current position.
      * Upon return, the buffer position is advanced by the number of bytes read.
      *
@@ -666,7 +668,11 @@ public abstract class FileCacheByteChannel extends ByteRangeChannel {
             buffer = dst;
         } else {
             buffer = transfer();
-            buffer.clear().limit(dst.remaining());
+            buffer.clear();
+            final int r = dst.remaining();
+            if (r < BUFFER_SIZE) {
+                buffer.limit(r);
+            }
         }
         /*
          * Transfer bytes from the input stream to the buffer. The bytes are also copied to the temporary file.
@@ -688,7 +694,7 @@ public abstract class FileCacheByteChannel extends ByteRangeChannel {
     }
 
     /**
-     * Attempts to read up to <i>r</i> bytes from the cache.
+     * Attempts to read up to <var>r</var> bytes from the cache.
      * This method does not use the connection (it may be null).
      * The {@link #position} field is updated by the number of bytes read.
      *
@@ -765,8 +771,8 @@ public abstract class FileCacheByteChannel extends ByteRangeChannel {
     }
 
     /**
-     * Attempts to write up to <i>r</i> bytes to the channel,
-     * where <i>r</i> is the number of bytes remaining in the buffer.
+     * Attempts to write up to <var>r</var> bytes to the channel,
+     * where <var>r</var> is the number of bytes remaining in the buffer.
      * Bytes are read from the given buffer starting at the current position.
      * Upon return, the buffer position is advanced by the number of bytes written.
      *
