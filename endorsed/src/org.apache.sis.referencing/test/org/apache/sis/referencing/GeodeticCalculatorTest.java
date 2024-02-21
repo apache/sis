@@ -31,6 +31,7 @@ import net.sf.geographiclib.GeodesicData;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.util.j2d.ShapeUtilitiesExt;
 import org.apache.sis.geometry.DirectPosition2D;
@@ -43,7 +44,6 @@ import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADI
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.opengis.test.Assertions.assertBetween;
 import org.apache.sis.test.OptionalTestData;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
@@ -51,7 +51,7 @@ import org.apache.sis.test.widget.VisualCheck;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.referencing.cs.AxisDirection;
+import static org.opengis.test.Assertions.assertBetween;
 import static org.opengis.test.Assertions.assertAxisDirectionsEqual;
 
 

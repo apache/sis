@@ -22,11 +22,11 @@ import java.io.InputStream;
 import java.nio.charset.Charset;
 import jakarta.xml.bind.JAXBException;
 import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.metadata.xml.TestUsingFile;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.metadata.xml.TestUsingFile;
 
 
 /**

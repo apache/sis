@@ -33,8 +33,8 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84;
 import static org.apache.sis.referencing.crs.HardCodedCRS.WGS84_LATITUDE_FIRST;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
-import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.test.Assertions.assertMessageContains;
+import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
 
 /**

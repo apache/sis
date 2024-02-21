@@ -17,6 +17,8 @@
 package org.apache.sis.test;
 
 import java.util.logging.Logger;
+
+// Test dependencies
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.api.parallel.ResourceLock;

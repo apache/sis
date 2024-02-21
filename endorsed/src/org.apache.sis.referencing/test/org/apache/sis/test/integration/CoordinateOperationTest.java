@@ -35,13 +35,13 @@ import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import org.apache.sis.geometry.DirectPosition2D;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 
 

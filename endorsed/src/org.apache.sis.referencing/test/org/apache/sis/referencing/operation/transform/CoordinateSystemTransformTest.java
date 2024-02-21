@@ -37,9 +37,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.FailureDetailsReporter;
 import org.apache.sis.referencing.cs.HardCodedCS;
-import org.opengis.test.referencing.TransformTestCase;
 
 
 /**

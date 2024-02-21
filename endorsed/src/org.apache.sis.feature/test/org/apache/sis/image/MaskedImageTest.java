@@ -36,9 +36,11 @@ import org.apache.sis.util.Debug;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.opengis.test.Assertions.assertSampleValuesEqual;
 import static org.apache.sis.feature.Assertions.assertPixelsEqual;
 import org.apache.sis.test.TestCase;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import static org.opengis.test.Assertions.assertSampleValuesEqual;
 
 
 /**

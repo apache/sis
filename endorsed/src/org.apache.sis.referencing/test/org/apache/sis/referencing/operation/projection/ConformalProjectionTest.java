@@ -28,9 +28,9 @@ import static org.apache.sis.referencing.operation.projection.NormalizedProjecti
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.FailureDetailsReporter;
 import org.apache.sis.test.TestUtilities;
-import org.opengis.test.referencing.TransformTestCase;
 
 
 /**

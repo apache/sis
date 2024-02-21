@@ -23,8 +23,8 @@ import org.apache.sis.util.SimpleInternationalString;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.apache.sis.test.FailureDetailsReporter;
 import org.opengis.test.util.NameTest;
+import org.apache.sis.test.FailureDetailsReporter;
 
 
 /**

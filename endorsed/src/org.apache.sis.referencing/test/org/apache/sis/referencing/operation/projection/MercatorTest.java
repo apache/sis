@@ -36,11 +36,11 @@ import static org.apache.sis.referencing.operation.projection.ConformalProjectio
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.opengis.test.Assertions.assertBetween;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.apache.sis.referencing.operation.provider.MercatorSpherical;
 import org.apache.sis.referencing.operation.provider.RegionalMercator;
+import static org.opengis.test.Assertions.assertBetween;
 
 
 /**

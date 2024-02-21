@@ -24,11 +24,11 @@ import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.WritableRaster;
 import static java.lang.StrictMath.*;
-import org.apache.sis.image.ImageTestCase;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.apache.sis.image.ImageTestCase;
 import org.apache.sis.test.TestUtilities;
 
 

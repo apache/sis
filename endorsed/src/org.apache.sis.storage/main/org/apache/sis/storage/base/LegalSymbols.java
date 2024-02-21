@@ -29,7 +29,7 @@ import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
 import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
 
-// Specific to the geoapi-3.1 and master branches:
+// Specific to the main and geoapi-3.1 branches:
 import org.apache.sis.metadata.iso.citation.DefaultResponsibleParty;
 
 

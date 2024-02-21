@@ -42,12 +42,12 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
-import static org.opengis.test.Assertions.assertSampleValuesEqual;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.feature.Assertions.assertPixelsEqual;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.PointOutsideCoverageException;
+import static org.opengis.test.Assertions.assertSampleValuesEqual;
 
 
 /**
