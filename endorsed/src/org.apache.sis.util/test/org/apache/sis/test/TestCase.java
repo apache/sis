@@ -98,6 +98,11 @@ public abstract class TestCase {
     public static final boolean RUN_EXTENSIVE_TESTS;
 
     /**
+     * Whether the tests can use the PostgreSQL database on the local host.
+     */
+    public static final boolean USE_POSTGRESQL;
+
+    /**
      * Whether the tests should print debugging information. This is set to the value specified by the
      * {@value org.apache.sis.test.TestConfiguration#VERBOSE_OUTPUT_KEY} system property if defined,
      * or otherwise this is {@code true} if the {@value org.apache.sis.test.TestConfiguration#SIS_TEST_OPTIONS}
@@ -138,9 +143,10 @@ public abstract class TestCase {
     static {
         out = new PrintWriter(buffer = new StringWriter());
         final Set<String> options = Set.of(Strings.orEmpty(System.getenv(TestConfiguration.SIS_TEST_OPTIONS)).split(","));
-        RUN_EXTENSIVE_TESTS = isEnabled(options, "extensive", TestConfiguration.EXTENSIVE_TESTS_KEY);
-        SHOW_WIDGET = isEnabled(options, "widget", TestConfiguration.SHOW_WIDGET_KEY);
-        VERBOSE = isEnabled(options, "verbose", TestConfiguration.VERBOSE_OUTPUT_KEY);
+        RUN_EXTENSIVE_TESTS = isEnabled(options, "extensive",  TestConfiguration.EXTENSIVE_TESTS_KEY);
+        USE_POSTGRESQL      = isEnabled(options, "postgresql", TestConfiguration.USE_POSTGRESQL_KEY);
+        SHOW_WIDGET         = isEnabled(options, "widget",     TestConfiguration.SHOW_WIDGET_KEY);
+        VERBOSE             = isEnabled(options, "verbose",    TestConfiguration.VERBOSE_OUTPUT_KEY);
         if (VERBOSE) {
             System.setErr(System.out);      // For avoiding log records to be interleaved with block of text.
         }

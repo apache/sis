@@ -46,6 +46,16 @@ public final class TestConfiguration extends Static {
     public static final String EXTENSIVE_TESTS_KEY = "org.apache.sis.test.extensive";
 
     /**
+     * The {@systemProperty org.apache.sis.test.postgresql} system property for enabling tests
+     * on the PostgreSQL database. If this {@linkplain System#getProperties() system property}
+     * is set to {@code true}, then the {@code "SpatialMetadataTest"} database will be used.
+     *
+     * @see TestCase#USE_POSTGRESQL
+     * @see org.apache.sis.metadata.sql.TestDatabase
+     */
+    public static final String USE_POSTGRESQL_KEY = "org.apache.sis.test.postgresql";
+
+    /**
      * The {@systemProperty org.apache.sis.test.verbose} system property for enabling verbose outputs.
      * If this {@linkplain System#getProperties() system property} is set to {@code true},
      * then the content sent to the {@link TestCase#out} field will be printed after each test.
