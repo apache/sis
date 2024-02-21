@@ -18,6 +18,7 @@ package org.apache.sis.storage.geotiff.writer;
 
 import java.util.List;
 import java.util.EnumMap;
+import java.util.logging.Level;
 import static javax.imageio.plugins.tiff.GeoTIFFTagSet.TAG_GEO_ASCII_PARAMS;
 import static javax.imageio.plugins.tiff.GeoTIFFTagSet.TAG_GEO_DOUBLE_PARAMS;
 import javax.measure.Unit;
@@ -56,6 +57,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -183,6 +185,13 @@ public final class GeoEncoder {
      * This information is used for modifying in-place the ASCII entry of a citation for inserting more names.
      */
     private int citationLengthIndex;
+
+    /**
+     * Whether to disable attempts to write EPSG codes. This is set to {@code true} on the first attempt to use the
+     * EPSG database if it appears to be unavailable. This is used for avoiding many retries which will continue to
+     * fail.
+     */
+    private boolean disableEPSG;
 
     /**
      * Prepares information for writing GeoTIFF tags for the given grid geometry.
@@ -558,7 +567,13 @@ public final class GeoEncoder {
          * This is not necessarily a bad thing, because there is a possibility that future GeoTIFF
          * specifications become stricter, so we are already "strict" regarding usages of EPSG codes.
          */
-        final short epsg = toShortEPSG(IdentifiedObjects.lookupEPSG(object));
+        short epsg = GeoCodes.userDefined;
+        if (!disableEPSG) try {
+            epsg = toShortEPSG(IdentifiedObjects.lookupEPSG(object));
+        } catch (UnavailableFactoryException e) {
+            listeners.warning(Level.FINE, null, e);
+            disableEPSG = true;
+        }
         writeShort(key, epsg);
         return (epsg == GeoCodes.userDefined);
     }
