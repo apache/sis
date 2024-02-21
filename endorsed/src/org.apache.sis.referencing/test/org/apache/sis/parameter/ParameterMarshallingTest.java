@@ -38,11 +38,8 @@ import org.apache.sis.xml.XML;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.opengis.test.Validators;
-import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertAliasTipEquals;
@@ -54,26 +51,12 @@ import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierE
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class ParameterMarshallingTest extends TestCase {
-    /**
-     * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
-     * do so, but should be considered as an implementation details (it should have been a private field).
-     */
-    @RegisterExtension
-    public final LoggingWatcher loggings = new LoggingWatcher(Loggers.XML);
-
-    /**
-     * Verifies that no unexpected warning has been emitted in any test defined in this class.
-     */
-    @AfterEach
-    public void assertNoUnexpectedLog() {
-        loggings.assertNoUnexpectedLog();
-    }
-
+public final class ParameterMarshallingTest extends TestCase.WithLogs {
     /**
      * Creates a new test case.
      */
     public ParameterMarshallingTest() {
+        super(Loggers.XML);
     }
 
     /**
@@ -178,6 +161,7 @@ public final class ParameterMarshallingTest extends TestCase {
          */
         assertNull(r.getValueDomain(), "valueDomain");
         assertNull(r.getValueClass(),  "valueClass");               // May change in any future SIS release.
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -198,6 +182,7 @@ public final class ParameterMarshallingTest extends TestCase {
               + "      </gml:OperationParameter>"
               + "    </gml:operationParameter>"
               + "</gml:ParameterValue>");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -219,6 +204,7 @@ public final class ParameterMarshallingTest extends TestCase {
               + "      </gml:OperationParameter>"
               + "    </gml:operationParameter>"
               + "</gml:ParameterValue>");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -239,6 +225,7 @@ public final class ParameterMarshallingTest extends TestCase {
               + "      </gml:OperationParameter>"
               + "    </gml:operationParameter>"
               + "</gml:ParameterValue>");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -259,6 +246,7 @@ public final class ParameterMarshallingTest extends TestCase {
               + "      </gml:OperationParameter>"
               + "    </gml:operationParameter>"
               + "</gml:ParameterValue>");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -279,6 +267,7 @@ public final class ParameterMarshallingTest extends TestCase {
               + "      </gml:OperationParameter>"
               + "    </gml:operationParameter>"
               + "</gml:ParameterValue>");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -300,6 +289,7 @@ public final class ParameterMarshallingTest extends TestCase {
               + "      </gml:OperationParameter>"
               + "    </gml:operationParameter>"
               + "</gml:ParameterValue>");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -321,6 +311,7 @@ public final class ParameterMarshallingTest extends TestCase {
               + "      </gml:OperationParameter>"
               + "    </gml:operationParameter>"
               + "</gml:ParameterValue>");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -336,6 +327,7 @@ public final class ParameterMarshallingTest extends TestCase {
 
         // Test unmarshalling.
         verifyDescriptorGroup(unmarshalFile(DefaultParameterDescriptorGroup.class, TestFile.DESCRIPTOR.openTestFile()));
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -411,6 +403,7 @@ public final class ParameterMarshallingTest extends TestCase {
         assertMarshalEqualsFile(TestFile.VALUE.openTestFile(),
                 ParameterFormatTest.createMercatorParameters().createValue(),
                 "xmlns:*", "xsi:schemaLocation");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -422,6 +415,7 @@ public final class ParameterMarshallingTest extends TestCase {
     @Test
     public void testValueGroupUnmarshalling() throws JAXBException {
         testValueGroupUnmarshalling(TestFile.VALUE);
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -437,6 +431,7 @@ public final class ParameterMarshallingTest extends TestCase {
         loggings.assertNextLogContains("EPSG::8801");
         loggings.assertNextLogContains("EPSG::8802");
         loggings.assertNextLogContains("EPSG::8805");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**

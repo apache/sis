@@ -131,8 +131,8 @@ public final class MapProjectionTest extends TestCase {
         assertEquals(isMandatory ? 1 : 0, actual.getMinimumOccurs());
         if (epsgName != null) {
             for (final GenericName alias : actual.getAlias()) {
-                if (alias instanceof ReferenceIdentifier && ((ReferenceIdentifier) alias).getAuthority() != Citations.EPSG) {
-                    assertOgcIdentifierEquals(ogcName, (ReferenceIdentifier) alias);
+                if (alias instanceof ReferenceIdentifier id && id.getAuthority() != Citations.EPSG) {
+                    assertOgcIdentifierEquals(ogcName, id);
                     return;
                 }
             }

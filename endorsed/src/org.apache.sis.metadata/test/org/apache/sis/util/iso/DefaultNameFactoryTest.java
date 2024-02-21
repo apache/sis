@@ -20,10 +20,10 @@ import org.opengis.util.GenericName;
 import org.apache.sis.util.SimpleInternationalString;
 
 // Test dependencies
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.apache.sis.test.FailureDetailsReporter;
 import org.opengis.test.util.NameTest;
 
 
@@ -33,33 +33,13 @@ import org.opengis.test.util.NameTest;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@ExtendWith(FailureDetailsReporter.class)
 public final class DefaultNameFactoryTest extends NameTest {
-    /**
-     * The factory to test.
-     */
-    private static DefaultNameFactory factorySIS;
-
     /**
      * Creates a new test suite using the singleton factory instance.
      */
     public DefaultNameFactoryTest() {
-        super(factorySIS);
-    }
-
-    /**
-     * Creates the singleton factory instance to be reused for all tests in this class.
-     */
-    @BeforeAll
-    public static void createFactory() {
-        factorySIS = new DefaultNameFactory();
-    }
-
-    /**
-     * Disposes the singleton factory instance after all tests have been executed.
-     */
-    @AfterAll
-    public static void disposeFactory() {
-        factorySIS = null;
+        super(DefaultNameFactory.provider());
     }
 
     /**

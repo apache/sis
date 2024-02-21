@@ -37,11 +37,13 @@ import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 
 // Test dependencies
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
 
 // Specific to the main branch:
@@ -67,16 +69,18 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@Execution(ExecutionMode.SAME_THREAD)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class CoordinateOperationRegistryTest extends MathTransformTestCase {
     /**
      * The transformation factory to use for testing.
      */
-    private static DefaultCoordinateOperationFactory factory;
+    private final DefaultCoordinateOperationFactory factory;
 
     /**
      * The parser to use for WKT strings used in this test.
      */
-    private static WKTFormat parser;
+    private final WKTFormat parser;
 
     /**
      * The EPSG authority factory for CRS objects. Can be used as an alternative to {@link #parser}.
@@ -89,45 +93,39 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
     private final CoordinateOperationRegistry registry;
 
     /**
-     * Creates a new test case.
-     *
-     * @throws FactoryException if an error occurred while creating the factory to be tested.
-     */
-    public CoordinateOperationRegistryTest() throws FactoryException {
-        crsFactory = CRS.getAuthorityFactory("EPSG");
-        assumeTrue(crsFactory instanceof CoordinateOperationAuthorityFactory, "EPSG factory required.");
-        registry = new CoordinateOperationRegistry((CoordinateOperationAuthorityFactory) crsFactory, factory, null);
-    }
-
-    /**
      * Creates a new {@link DefaultCoordinateOperationFactory} to use for testing purpose.
      * The same factory will be used for all tests in this class.
      *
      * @throws ParseException if an error occurred while preparing the WKT parser.
+     * @throws FactoryException if an error occurred while creating the factory to be tested.
      */
-    @BeforeAll
-    public static void createFactory() throws ParseException {
+    public CoordinateOperationRegistryTest() throws ParseException, FactoryException {
+        crsFactory = CRS.getAuthorityFactory("EPSG");
+        assumeTrue(crsFactory instanceof CoordinateOperationAuthorityFactory, "EPSG factory required.");
         factory = new DefaultCoordinateOperationFactory();
         parser  = new WKTFormat();
         parser.addFragment("NTF",
                 "Datum[“Nouvelle Triangulation Française (Paris)”,\n" +
                 "  Ellipsoid[“Clarke 1880 (IGN)”, 6378249.2, 293.4660212936269]]");
+        registry = new CoordinateOperationRegistry((CoordinateOperationAuthorityFactory) crsFactory, factory, null);
     }
 
     /**
-     * Disposes the factory created by {@link #createFactory()} after all tests have been executed.
+     * Resets all fields that may be modified by test methods in this class.
+     * This is needed because we reuse the same instance for all methods,
+     * in order to reuse the factory and parser created in the constructor.
      */
-    @AfterAll
-    public static void disposeFactory() {
-        factory = null;
-        parser  = null;
+    @Override
+    @BeforeEach
+    public void reset() {
+        super.reset();
     }
 
     /**
      * Returns the CRS for the given Well Known Text.
      */
-    private static CoordinateReferenceSystem parse(final String wkt) throws ParseException {
-        return (CoordinateReferenceSystem) parser.parseObject(wkt);
+    private CoordinateReferenceSystem parse(final String wkt) throws ParseException {
+        return assertInstanceOf(CoordinateReferenceSystem.class, parser.parseObject(wkt));
     }
 
     /**

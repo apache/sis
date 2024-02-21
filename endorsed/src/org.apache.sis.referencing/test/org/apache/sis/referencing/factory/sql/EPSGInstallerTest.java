@@ -38,13 +38,12 @@ import org.apache.sis.util.internal.Constants;
 import org.apache.sis.metadata.sql.util.Reflection;
 
 // Test dependencies
-import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.LoggingWatcher;
-import org.apache.sis.test.TestCase;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import org.junit.jupiter.api.parallel.ResourceLock;
+import org.apache.sis.test.TestCaseWithLogs;
 import org.apache.sis.metadata.sql.TestDatabase;
 
 
@@ -64,29 +63,12 @@ import org.apache.sis.metadata.sql.TestDatabase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class EPSGInstallerTest extends TestCase {
-    /**
-     * A JUnit rule for listening to log events emitted during execution of tests.
-     * This rule is used by tests that verifies the log message content.
-     *
-     * <p>This field is public because JUnit requires us to do so, but should be considered
-     * as an implementation details (it should have been a private field).</p>
-     */
-    @RegisterExtension
-    public final LoggingWatcher loggings = new LoggingWatcher(Loggers.CRS_FACTORY);
-
-    /**
-     * Verifies that no unexpected warning has been emitted in any test defined in this class.
-     */
-    @AfterEach
-    public void assertNoUnexpectedLog() {
-        loggings.assertNoUnexpectedLog();
-    }
-
+public final class EPSGInstallerTest extends TestCaseWithLogs {
     /**
      * Creates a new test case.
      */
     public EPSGInstallerTest() {
+        super(Loggers.CRS_FACTORY);
     }
 
     /**
@@ -113,6 +95,8 @@ public final class EPSGInstallerTest extends TestCase {
         assertTrue(Pattern.matches(EPSGInstaller.REPLACE_STATEMENT,
                 "UPDATE epsg.\"Coordinate Axis\"\n" +
                 "SET coord_axis_orientation = replace(coord_axis_orientation, CHR(182), CHR(10))"));
+
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -135,7 +119,9 @@ public final class EPSGInstallerTest extends TestCase {
      * @throws Exception if an error occurred while creating the database.
      */
     @Test
+    @Tag(TAG_SLOW)
     public void testCreationOnDerby() throws Exception {
+        assumeTrue(RUN_EXTENSIVE_TESTS, "Extensive tests not enabled.");
         final InstallationScriptProvider scripts = getScripts();            // Needs to be invoked first.
         try (TestDatabase db = TestDatabase.create("EPSGInstaller")) {
             createAndTest(db.source, scripts);
@@ -187,6 +173,7 @@ public final class EPSGInstallerTest extends TestCase {
      * @throws Exception if an error occurred while creating the database.
      */
     @Test
+    @ResourceLock(TestDatabase.POSTGRESQL)
     public void testCreationOnPostgreSQL() throws Exception {
         final InstallationScriptProvider scripts = getScripts();            // Needs to be invoked first.
         try (TestDatabase db = TestDatabase.createOnPostgreSQL("EPSG", false)) {

@@ -34,13 +34,10 @@ import org.apache.sis.math.Vector;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import org.apache.sis.test.LoggingWatcher;
-import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.crs.HardCodedCRS;
+import org.apache.sis.test.TestCaseWithLogs;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
@@ -57,7 +54,7 @@ import org.apache.sis.pending.geoapi.filter.Literal;
  *
  * @param  <G> root class of geometry implementation.
  */
-public abstract class RegistryTestCase<G> extends TestCase {
+public abstract class RegistryTestCase<G> extends TestCaseWithLogs {
     /**
      * Name of property value used in test feature instances.
      */
@@ -99,14 +96,6 @@ public abstract class RegistryTestCase<G> extends TestCase {
     private double tolerance;
 
     /**
-     * For verification of log records emitted during filtering operations.
-     *
-     * @see #assertNoUnexpectedLog()
-     */
-    @RegisterExtension
-    public final LoggingWatcher loggings = new LoggingWatcher(Node.LOGGER);
-
-    /**
      * Creates a new test case.
      *
      * @param  rootGeometry  the root geometry class as on of JTS, ESRI or Java2D root class.
@@ -114,6 +103,7 @@ public abstract class RegistryTestCase<G> extends TestCase {
      */
     @SuppressWarnings("unchecked")
     protected RegistryTestCase(final Class<G> rootGeometry, final boolean supportCRS) {
+        super(Node.LOGGER);
         factory = new DefaultFilterFactory.Features<>(rootGeometry, Object.class, WraparoundMethod.SPLIT);
         library = (Geometries<G>) Geometries.factory(rootGeometry);
         assertEquals(rootGeometry, library.rootClass);
@@ -272,6 +262,9 @@ public abstract class RegistryTestCase<G> extends TestCase {
 
         function = factory.function("ST_Transform", reference, factory.literal("EPSG:4326"));
         assertPointEquals(function.apply(instance), CommonCRS.WGS84.geographic(), 30, 10);
+
+        // Tested methods should not log.
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -293,6 +286,9 @@ public abstract class RegistryTestCase<G> extends TestCase {
         tolerance = 1E-12;
         Object result = evaluate("ST_Buffer", geometry, 1);
         assertEnvelopeEquals(result, true, HardCodedCRS.WGS84_LATITUDE_FIRST, 9, 19, 11, 21);
+
+        // Tested methods should not log.
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -312,6 +308,9 @@ public abstract class RegistryTestCase<G> extends TestCase {
          */
         final Object result = evaluate("ST_Centroid", geometry);
         assertPointEquals(result, HardCodedCRS.WGS84_LATITUDE_FIRST, 20, 20);
+
+        // Tested methods should not log.
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -329,6 +328,9 @@ public abstract class RegistryTestCase<G> extends TestCase {
         function = factory.function("ST_Envelope", factory.property(P_NAME, library.polylineClass));
         result = function.apply(instance);
         assertEnvelopeEquals(result, false, null, 12, 3.3, 13.1, 5.7);
+
+        // Tested methods should not log.
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -352,6 +354,9 @@ public abstract class RegistryTestCase<G> extends TestCase {
         // Ensure switching argument order does not modify behavior.
         function = factory.function("ST_Intersects", factory.literal(point), reference);
         assertEquals(Boolean.TRUE, function.apply(instance));
+
+        // Tested methods should not log.
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -387,6 +392,9 @@ public abstract class RegistryTestCase<G> extends TestCase {
         // Test with a missing CRS information.
         setGeometryCRS(null);
         assertEquals(Boolean.TRUE, evaluate("ST_Intersects", geometry, point));
+
+        // Tested methods should not log.
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -401,6 +409,9 @@ public abstract class RegistryTestCase<G> extends TestCase {
 
         result = evaluate("ST_Point", 10, 20, "CRS:84");
         assertPointEquals(result, CommonCRS.defaultGeographic(), 10, 20);
+
+        // Tested methods should not log.
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -413,6 +424,7 @@ public abstract class RegistryTestCase<G> extends TestCase {
                 List.of(library.createPoint(10, 20),
                         library.createPoint(30, 40)), HardCodedCRS.WGS84);
         assertPolylineEquals(result, HardCodedCRS.WGS84, 10, 20, 30, 40);
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -432,6 +444,9 @@ public abstract class RegistryTestCase<G> extends TestCase {
          */
         final Object result = evaluate("ST_Simplify", geometry, 10);
         assertPolylineEquals(result, HardCodedCRS.WGS84_LATITUDE_FIRST, 10, 20, 20, 20);
+
+        // Tested methods should not log.
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -444,6 +459,7 @@ public abstract class RegistryTestCase<G> extends TestCase {
         setGeometryCRS(HardCodedCRS.WGS84_LATITUDE_FIRST);
         final Object result = evaluate("ST_SimplifyPreserveTopology", geometry, 10);
         assertPolylineEquals(result, HardCodedCRS.WGS84_LATITUDE_FIRST, 10, 20, 20, 20);
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -465,6 +481,9 @@ public abstract class RegistryTestCase<G> extends TestCase {
         assertNotSame(function, optimized, "Optimization should produce a new expression.");
         var literal = assertInstanceOf(Literal.class, optimized, "Expected immediate expression evaluation.");
         assertPointEquals(literal.getValue(), HardCodedCRS.WGS84_LATITUDE_FIRST, 30, 10);
+
+        // Tested methods should not log.
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -489,13 +508,8 @@ public abstract class RegistryTestCase<G> extends TestCase {
         final Object literal = optimized.getParameters().get(1).apply(null);
         final DirectPosition point = library.castOrWrap(literal).getCentroid();
         assertArrayEquals(new double[] {30, 10}, point.getCoordinate());
-    }
 
-    /**
-     * Executed after each test for verifying that no unexpected log message has been emitted.
-     */
-    @AfterEach
-    public void assertNoUnexpectedLog() {
+        // Tested methods should not log.
         loggings.assertNoUnexpectedLog();
     }
 }

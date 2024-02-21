@@ -21,8 +21,10 @@ import java.util.ArrayList;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.lang.reflect.Field;
 import org.opengis.util.FactoryException;
+import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_MILLISECOND;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -38,7 +40,7 @@ import org.apache.sis.test.TestCase;
  */
 public final class ConcurrentAuthorityFactoryTest extends TestCase {
     /**
-     * The timeout used for this test.
+     * The timeout used for this test, in nanoseconds.
      */
     private static final long TIMEOUT = ConcurrentAuthorityFactory.TIMEOUT_RESOLUTION * 4;
 
@@ -117,10 +119,11 @@ public final class ConcurrentAuthorityFactoryTest extends TestCase {
         assertEquals(1, factory.countAvailableDataAccess(), "Expected one valid DAO.");
         assertFalse (createdDAOs.get(0).isClosed(),         "Should not be disposed yet.");
 
-        sleepUntilAfterTimeout(3 * ConcurrentAuthorityFactory.TIMEOUT_RESOLUTION, factory);
-        assertEquals(createdDAOs, factory.createdDAOs(),    "Expected no new DAO.");
-        assertEquals(0, factory.countAvailableDataAccess(), "Worker should be disposed.");
-        assertTrue  (createdDAOs.get(0).isClosed(),         "Worker should be disposed.");
+        boolean expired;
+        expired = sleepUntilAfterTimeout(3 * ConcurrentAuthorityFactory.TIMEOUT_RESOLUTION, factory);
+        assertEquals(createdDAOs, factory.createdDAOs(),    unexpectedDAO("Expected no new DAO.",       expired));
+        assertEquals(0, factory.countAvailableDataAccess(), unexpectedDAO("Worker should be disposed.", expired));
+        assertTrue  (createdDAOs.get(0).isClosed(),         unexpectedDAO("Worker should be disposed.", expired));
         /*
          * Ask again for the same object and check that no new DAO
          * were created because the value was taken from the cache.
@@ -155,16 +158,17 @@ public final class ConcurrentAuthorityFactoryTest extends TestCase {
         assertFalse (createdDAOs.get(1).isClosed(),         "Should not be disposed yet.");
         assertEquals(createdDAOs, factory.createdDAOs(),    "Expected no new DAO.");
 
-        sleepUntilAfterTimeout(3 * ConcurrentAuthorityFactory.TIMEOUT_RESOLUTION, factory);
-        assertEquals(createdDAOs, factory.createdDAOs(),    "Expected no new DAO.");
-        assertEquals(0, factory.countAvailableDataAccess(), "Worker should be disposed.");
-        assertTrue  (createdDAOs.get(1).isClosed(),         "Worker should be disposed.");
-        assertTrue  (createdDAOs.get(0).isClosed(),         "Worker should be disposed.");
+        expired = sleepUntilAfterTimeout(3 * ConcurrentAuthorityFactory.TIMEOUT_RESOLUTION, factory);
+        assertEquals(createdDAOs, factory.createdDAOs(),    unexpectedDAO("Expected no new DAO.",       expired));
+        assertEquals(0, factory.countAvailableDataAccess(), unexpectedDAO("Worker should be disposed.", expired));
+        assertTrue  (createdDAOs.get(1).isClosed(),         unexpectedDAO("Worker should be disposed.", expired));
+        assertTrue  (createdDAOs.get(0).isClosed(),         unexpectedDAO("Worker should be disposed.", expired));
     }
 
     /**
      * Sleeps and ensures that the sleep time did not exceeded the timeout. The sleep time could be greater if the test
      * machine is under heavy load (for example a Jenkins server), in which case we will cancel the test without failure.
+     * All times are in nanoseconds.
      */
     private static void sleepWithoutExceedingTimeout(final long previousTime, final long waitTime) throws InterruptedException {
         Thread.sleep(TimeUnit.NANOSECONDS.toMillis(waitTime));
@@ -178,19 +182,33 @@ public final class ConcurrentAuthorityFactoryTest extends TestCase {
      * <p>The workers should be disposed right after the sleep time. However, the workers disposal is performed
      * by a shared (SIS-library wide) daemon thread. Because the latter is invoked in a background thread,
      * it is subject to the hazard of thread scheduling.</p>
+     *
+     * @param  waitTime  the time to wait, in nanoseconds.
+     * @return whether there is more pending factories to dispose.
      */
-    private static void sleepUntilAfterTimeout(final long waitTime, final ConcurrentAuthorityFactory<?> factory)
+    private static boolean sleepUntilAfterTimeout(final long waitTime, final ConcurrentAuthorityFactory<?> factory)
             throws InterruptedException
     {
         Thread.sleep(TimeUnit.NANOSECONDS.toMillis(waitTime));
         int n = 3;
         while (factory.isCleanScheduled()) {
-            ConcurrentAuthorityFactory.LOGGER.warning("Execution of ConcurrentAuthorityFactory.disposeExpired() has been delayed.");
-            Thread.sleep(TIMEOUT);
+            Thread.sleep(TIMEOUT / NANOS_PER_MILLISECOND);
             System.gc();
             if (--n == 0) {
-                break;
+                return true;
             }
         }
+        return false;
+    }
+
+    /**
+     * Returns the supplier of the error message to report if a timeout-dependent test fails.
+     *
+     * @param  message  the message.
+     * @param  expired  the result of the call to {@link #sleepUntilAfterTimeout(long, ConcurrentAuthorityFactory)}.
+     * @return the supplied to give to a JUnit {@code assert} method.
+     */
+    private static Supplier<String> unexpectedDAO(final String message, final boolean expired) {
+        return () -> expired ? message + " Note: the execution of ConcurrentAuthorityFactory.disposeExpired() has been delayed." : message;
     }
 }

@@ -41,10 +41,11 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.system.DataDirectory;
 
 // Test dependencies
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.referencing.operation.gridded.LoadedGridTest;
+import static org.apache.sis.test.TestCase.TAG_SLOW;
 
 // Specific to the main branch:
 import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
@@ -182,8 +183,9 @@ public final class NTv2Test extends DatumShiftTestCase {
      * @throws Exception if an error occurred while loading or computing the grid, or while testing transformations.
      */
     @Test
+    @Tag(TAG_SLOW)
     public void testMultiGrids() throws Exception {
-        assumeTrue(RUN_EXTENSIVE_TESTS);
+        assumeTrue(RUN_EXTENSIVE_TESTS, "Extensive tests not enabled.");
         assumeTrue(DataDirectory.getenv() != null);
         final Parameters pg = Parameters.castOrWrap(new NTv2().getParameters().createValue());
         pg.getOrCreate(NTv2.FILE).setValue(new URI(MULTIGRID_TEST_FILE));

@@ -37,16 +37,13 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.opengis.test.Validators;
-import org.apache.sis.test.LoggingWatcher;
-import static org.apache.sis.test.Assertions.assertMessageContains;
 import org.apache.sis.xml.test.TestCase;
 import org.apache.sis.referencing.cs.HardCodedCS;
-import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
+import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
+import static org.apache.sis.referencing.Assertions.assertEpsgNameAndIdentifierEqual;
 
 // Specific to the main branch:
 import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
@@ -57,11 +54,12 @@ import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class DefaultProjectedCRSTest extends TestCase {
+public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
     /**
      * Creates a new test case.
      */
     public DefaultProjectedCRSTest() {
+        super(Loggers.COORDINATE_OPERATION);
     }
 
     /**
@@ -72,26 +70,6 @@ public final class DefaultProjectedCRSTest extends TestCase {
     private static InputStream openTestFile() {
         // Call to `getResourceAsStream(…)` is caller sensitive: it must be in the same module.
         return DefaultProjectedCRSTest.class.getResourceAsStream("ProjectedCRS.xml");
-    }
-
-    /**
-     * A JUnit rule for listening to log events emitted during execution of {@link #testWKT1_WithExplicitAxisLength()}.
-     * This rule is used by the test methods for verifying that the logged messages contain the expected information.
-     * The expected message is something like "Parameter semi_minor could have been omitted but got a value that does
-     * not match the WGS84 ellipsoid".
-     *
-     * <p>This field is public because JUnit requires us to do so, but should be considered as an implementation details
-     * (it should have been a private field).</p>
-     */
-    @RegisterExtension
-    public final LoggingWatcher loggings = new LoggingWatcher(Loggers.COORDINATE_OPERATION);
-
-    /**
-     * Verifies that no unexpected warning has been emitted in any test defined in this class.
-     */
-    @AfterEach
-    public void assertNoUnexpectedLog() {
-        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -107,6 +85,7 @@ public final class DefaultProjectedCRSTest extends TestCase {
         var e = assertThrows(InvalidGeodeticParameterException.class, () -> create(HardCodedCRS.WGS84_3D),
                              "Should not accept a three-dimensional base geodetic CRS.");
         assertMessageContains(e, "Lambert Conic Conformal (1SP)");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -170,6 +149,8 @@ public final class DefaultProjectedCRSTest extends TestCase {
                 "  AXIS[“Northing”, NORTH],\n" +
                 "  AUTHORITY[“EPSG”, “27572”]]",
                 crs);
+
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -200,6 +181,8 @@ public final class DefaultProjectedCRSTest extends TestCase {
                 "  AXIS[“Northing”, NORTH],\n" +
                 "  AUTHORITY[“EPSG”, “27572”]]",
                 crs);
+
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -233,6 +216,8 @@ public final class DefaultProjectedCRSTest extends TestCase {
                 "  AXIS[“Northing”, NORTH],\n" +
                 "  AUTHORITY[“EPSG”, “27572”]]",
                 crs);
+
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -269,6 +254,8 @@ public final class DefaultProjectedCRSTest extends TestCase {
                 "    Unit[“metre”, 1, Id[“EPSG”, 9001]],\n" +
                 "  Id[“EPSG”, 27572]]",
                 crs);
+
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -324,6 +311,8 @@ public final class DefaultProjectedCRSTest extends TestCase {
                 "    Unit[“metre”, 1],\n" +
                 "  Id[“EPSG”, 27572, URI[“urn:ogc:def:crs:EPSG::27572”]]]",
                 crs);
+
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -375,6 +364,8 @@ public final class DefaultProjectedCRSTest extends TestCase {
                 "    Unit[“metre”, 1],\n" +
                 "  Id[“EPSG”, 27572, URI[“urn:ogc:def:crs:EPSG::27572”]]]",
                 crs);
+
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -455,6 +446,8 @@ public final class DefaultProjectedCRSTest extends TestCase {
                 "    Axis[“Northing (N)”, north],\n" +
                 "    Unit[“metre”, 1]]",
                 crs);
+
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -484,6 +477,7 @@ public final class DefaultProjectedCRSTest extends TestCase {
          */
         assertMarshalEqualsFile(openTestFile(), crs, null, STRICT, new String[] {"gml:name"},
                 new String[] {"xmlns:*", "xsi:schemaLocation", "gml:id"});
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -502,5 +496,6 @@ public final class DefaultProjectedCRSTest extends TestCase {
         assertTrue (c.equals(normalized, ComparisonMode.IGNORE_METADATA));
         assertTrue (c.equals(normalized, ComparisonMode.APPROXIMATE));
         assertTrue (c.equals(normalized, ComparisonMode.ALLOW_VARIANT));
+        loggings.assertNoUnexpectedLog();
     }
 }

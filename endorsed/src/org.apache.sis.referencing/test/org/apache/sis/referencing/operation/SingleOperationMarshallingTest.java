@@ -42,12 +42,9 @@ import static org.apache.sis.metadata.iso.citation.Citations.EPSG;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.extension.RegisterExtension;
 import org.opengis.test.Validators;
 import org.apache.sis.xml.bind.referencing.CC_OperationParameterGroupTest;
-import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
@@ -62,26 +59,12 @@ import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class SingleOperationMarshallingTest extends TestCase {
-    /**
-     * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
-     * do so, but should be considered as an implementation details (it should have been a private field).
-     */
-    @RegisterExtension
-    public final LoggingWatcher loggings = new LoggingWatcher(Loggers.XML);
-
-    /**
-     * Verifies that no unexpected warning has been emitted in any test defined in this class.
-     */
-    @AfterEach
-    public void assertNoUnexpectedLog() {
-        loggings.assertNoUnexpectedLog();
-    }
-
+public final class SingleOperationMarshallingTest extends TestCase.WithLogs {
     /**
      * Creates a new test case.
      */
     public SingleOperationMarshallingTest() {
+        super(Loggers.XML);
     }
 
     /**
@@ -143,6 +126,7 @@ public final class SingleOperationMarshallingTest extends TestCase {
         final var method = (OperationMethod) XML.unmarshal(xml);
         verifyMethod(method);
         Validators.validate(method);
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -202,6 +186,7 @@ public final class SingleOperationMarshallingTest extends TestCase {
         Validators.validate(c);
         loggings.assertNextLogContains("EPSG::8801");
         loggings.assertNextLogContains("EPSG::8802");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -279,5 +264,6 @@ public final class SingleOperationMarshallingTest extends TestCase {
          */
         Validators.validate(c);
         loggings.assertNextLogContains("EPSG::8602");
+        loggings.assertNoUnexpectedLog();
     }
 }

@@ -38,12 +38,13 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.util.LegacyNamespaces;
 import org.apache.sis.xml.bind.cat.CodeListUID;
+import org.apache.sis.xml.bind.Context;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import org.opentest4j.AssertionFailedError;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestCaseWithLogs;
 
 
 /**
@@ -70,7 +71,7 @@ import org.apache.sis.test.TestCase;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-public abstract class AnnotationConsistencyCheck extends TestCase {
+public abstract class AnnotationConsistencyCheck extends TestCaseWithLogs {
     /**
      * The {@value} string used in JAXB annotations for default names or namespaces.
      */
@@ -108,6 +109,7 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
      * @param  types  the GeoAPI interfaces, {@link CodeList} or {@link Enum} types to test.
      */
     protected AnnotationConsistencyCheck(final Class<?>... types) {
+        super(Context.LOGGER);
         this.types = types;     // No need to clone — test classes are normally used only by SIS.
     }
 
@@ -666,6 +668,7 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
                 }
             }
         }
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -699,6 +702,7 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
                 assertEquals(Namespaces.getPreferredPrefix(namespace, null), ns.prefix(), "Unexpected namespace prefix.");
             }
         }
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -757,6 +761,7 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
             assertNotNull(xmlType, "Missing @XmlType annotation.");
             // More tests on development branch (removed on trunk because test depends on GeoAPI 3.1)
         }
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -855,6 +860,7 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
                 assertExpectedNamespace(element.namespace(), impl, uml);
             }
         }
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -944,6 +950,7 @@ public abstract class AnnotationConsistencyCheck extends TestCase {
                 }
             }
         }
+        loggings.assertNoUnexpectedLog();
     }
 
     /**

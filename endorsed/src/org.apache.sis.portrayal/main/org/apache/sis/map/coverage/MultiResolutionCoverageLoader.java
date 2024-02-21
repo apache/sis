@@ -37,6 +37,7 @@ import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.system.Configuration;
+import org.apache.sis.pending.jdk.JDK16;
 
 
 /**
@@ -358,7 +359,7 @@ dimensions: for (int j=0; j<tgtDim; j++) {
                 table.nextColumn();
             }
             final Reference<GridCoverage> ref = coverages[level];
-            if (ref != null && ref.get() != null) {     // TODO: use !refersTo(null) in JDK16.
+            if (ref != null && !JDK16.refersTo(ref, null)) {
                 table.append("cached");
             }
             table.nextLine();

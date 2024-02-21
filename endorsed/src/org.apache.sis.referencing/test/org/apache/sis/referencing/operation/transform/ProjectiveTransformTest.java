@@ -36,6 +36,8 @@ import org.apache.sis.math.Fraction;
 // Test dependencies
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.apache.sis.test.FailureDetailsReporter;
 import org.opengis.test.Validators;
 
 // Specific to the main branch:
@@ -55,6 +57,7 @@ import org.apache.sis.test.GeoapiAssert;
  * @author  Martin Desruisseaux (Geomatys)
  */
 @SuppressWarnings("doclint:missing")
+@ExtendWith(FailureDetailsReporter.class)
 public class ProjectiveTransformTest extends TransformTestCase {
     /**
      * The factory to use for creating linear transforms.

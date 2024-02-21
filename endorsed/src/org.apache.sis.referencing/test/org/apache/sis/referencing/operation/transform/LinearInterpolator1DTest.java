@@ -24,6 +24,8 @@ import org.opengis.referencing.operation.TransformException;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.apache.sis.test.FailureDetailsReporter;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 
 
@@ -33,6 +35,7 @@ import static org.apache.sis.test.Assertions.assertMessageContains;
  * @author  Rémi Maréchal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys).
  */
+@ExtendWith(FailureDetailsReporter.class)
 public final class LinearInterpolator1DTest extends MathTransformTestCase {
     /**
      * The values of the <i>y=f(x)</i> function to test.

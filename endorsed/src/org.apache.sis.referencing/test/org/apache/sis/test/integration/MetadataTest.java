@@ -66,10 +66,7 @@ import org.apache.sis.util.internal.Constants;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.xml.test.DocumentComparator;
 import org.apache.sis.xml.test.TestCase;
@@ -87,31 +84,17 @@ import org.apache.sis.pending.geoapi.evolution.UnsupportedCodeList;
  *
  * @see org.apache.sis.metadata.iso.DefaultMetadataTest
  */
-public final class MetadataTest extends TestCase {
+public final class MetadataTest extends TestCase.WithLogs {
     /**
      * The resource file which contains an XML representation of a {@link Metadata} object.
      */
     private static final String XML_FILE = "Metadata.xml";
 
     /**
-     * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
-     * do so, but should be considered as an implementation details (it should have been a private field).
-     */
-    @RegisterExtension
-    public final LoggingWatcher loggings = new LoggingWatcher(Loggers.XML);
-
-    /**
-     * Verifies that no unexpected warning has been emitted in any test defined in this class.
-     */
-    @AfterEach
-    public void assertNoUnexpectedLog() {
-        loggings.assertNoUnexpectedLog();
-    }
-
-    /**
      * Creates a new test case.
      */
     public MetadataTest() {
+        super(Loggers.XML);
     }
 
     /**
@@ -414,6 +397,7 @@ public final class MetadataTest extends TestCase {
         comparator.ignoredAttributes.add(Namespaces.GML + ":id");
         comparator.ignoreComments = true;
         comparator.compare();
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -446,5 +430,6 @@ public final class MetadataTest extends TestCase {
         pool.recycle(unmarshaller);
         final DefaultMetadata expected = createHardCoded();
         assertTrue(metadata.equals(expected, ComparisonMode.DEBUG));
+        loggings.assertNoUnexpectedLog();
     }
 }

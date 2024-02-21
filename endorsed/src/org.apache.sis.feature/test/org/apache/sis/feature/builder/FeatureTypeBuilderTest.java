@@ -377,8 +377,8 @@ public final class FeatureTypeBuilderTest extends TestCase {
      */
     private static void assertPropertyEquals(final String name, final Class<?> valueClass, AbstractIdentifiedType property) {
         assertEquals(name, property.getName().toString());
-        if (property instanceof AbstractOperation) {
-            property = ((AbstractOperation) property).getResult();
+        if (property instanceof AbstractOperation op) {
+            property = op.getResult();
         }
         assertEquals(valueClass, attributeType(property).getValueClass());
     }

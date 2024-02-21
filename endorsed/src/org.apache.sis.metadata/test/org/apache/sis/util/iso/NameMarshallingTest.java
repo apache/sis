@@ -32,8 +32,8 @@ import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.xml.util.LegacyNamespaces;
 
 // Test dependencies
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.mock.IdentifiedObjectMock;
 import org.apache.sis.xml.test.TestCase;
@@ -46,13 +46,12 @@ import static org.apache.sis.metadata.Assertions.assertXmlEquals;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Cullen Rombach (Image Matters)
  */
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class NameMarshallingTest extends TestCase {
     /**
      * A poll of configured {@link Marshaller} and {@link Unmarshaller}, created when first needed.
-     *
-     * @see #disposeMarshallerPool()
      */
-    private static MarshallerPool pool;
+    private MarshallerPool pool;
 
     /**
      * Creates a new test case.
@@ -61,14 +60,23 @@ public final class NameMarshallingTest extends TestCase {
     }
 
     /**
-     * Returns the XML representation of the given name, wrapped
-     * in a mock {@code <gml:IO_IdentifiedObject>} element.
+     * Returns the marshaller pool, created when first needed.
      */
-    private String marshal(final GenericName name) throws JAXBException {
+    private synchronized MarshallerPool pool() throws JAXBException {
         if (pool == null) {
             pool = new MarshallerPool(JAXBContext.newInstance(IdentifiedObjectMock.class),
                                       Map.of(XML.LENIENT_UNMARSHAL, Boolean.TRUE));
         }
+        return pool;
+    }
+
+    /**
+     * Returns the XML representation of the given name, wrapped
+     * in a mock {@code <gml:IO_IdentifiedObject>} element.
+     */
+    private String marshal(final GenericName name) throws JAXBException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final MarshallerPool pool = pool();
         final Marshaller marshaller = pool.acquireMarshaller();
         marshaller.setProperty(XML.METADATA_VERSION, VERSION_2007);
         final String xml = marshal(marshaller, new IdentifiedObjectMock(null, name));
@@ -80,6 +88,8 @@ public final class NameMarshallingTest extends TestCase {
      * Converse of {@link #marshal(GenericName)}.
      */
     private GenericName unmarshal(final String xml) throws JAXBException {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final MarshallerPool pool = pool();
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
         final Object value = unmarshal(unmarshaller, xml);
         pool.recycle(unmarshaller);
@@ -199,14 +209,5 @@ public final class NameMarshallingTest extends TestCase {
         final String actual = marshal(name);
         assertXmlEquals(expected, actual, "xmlns:*");
         assertEquals(name, unmarshal(expected));
-    }
-
-    /**
-     * Invoked by JUnit after the execution of every tests in order to dispose
-     * the {@link MarshallerPool} instance used internally by this class.
-     */
-    @AfterAll
-    public static void disposeMarshallerPool() {
-        pool = null;
     }
 }

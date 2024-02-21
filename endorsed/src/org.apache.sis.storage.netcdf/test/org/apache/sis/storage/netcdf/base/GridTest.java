@@ -40,6 +40,8 @@ public class GridTest extends TestCase {
      * Whether the {@code "runtime"} variable in {@link TestData#NETCDF_4D_PROJECTED} is used as a target dimension
      * for the {@code gridToCRS} transform. The UCAR library and Apache SIS implementation have different behavior
      * regarding this dimension.
+     *
+     * <p>This field can be set in subclasses constructor and shall not be modified afterward.</p>
      */
     protected boolean includeRuntimeDimension;
 
@@ -48,6 +50,8 @@ public class GridTest extends TestCase {
      */
     public GridTest() {
     }
+
+    // Do not override `reset()` because `includeRuntimeDimension` should be constant.
 
     /**
      * Optionally filters out some grid geometries that shall be ignored by the tests.

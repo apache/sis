@@ -25,6 +25,8 @@ import org.opengis.referencing.operation.TransformException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.apache.sis.test.FailureDetailsReporter;
 import org.apache.sis.test.TestUtilities;
 
 
@@ -33,6 +35,7 @@ import org.apache.sis.test.TestUtilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@ExtendWith(FailureDetailsReporter.class)
 public final class CartesianToSphericalTest extends TransformTestCase {
     /**
      * Creates a new test case.

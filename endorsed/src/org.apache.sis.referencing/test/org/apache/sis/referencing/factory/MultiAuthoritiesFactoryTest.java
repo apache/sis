@@ -40,11 +40,8 @@ import org.apache.sis.measure.Units;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import org.apache.sis.test.LoggingWatcher;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestCaseWithLogs;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.datum.HardCodedDatum;
@@ -57,26 +54,12 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class MultiAuthoritiesFactoryTest extends TestCase {
-    /**
-     * A JUnit {@link Rule} for listening to log events. This field is public because JUnit requires us to
-     * do so, but should be considered as an implementation details (it should have been a private field).
-     */
-    @RegisterExtension
-    public final LoggingWatcher loggings = new LoggingWatcher(Loggers.CRS_FACTORY);
-
-    /**
-     * Verifies that no unexpected warning has been emitted in any test defined in this class.
-     */
-    @AfterEach
-    public void assertNoUnexpectedLog() {
-        loggings.assertNoUnexpectedLog();
-    }
-
+public final class MultiAuthoritiesFactoryTest extends TestCaseWithLogs {
     /**
      * Creates a new test case.
      */
     public MultiAuthoritiesFactoryTest() {
+        super(Loggers.CRS_FACTORY);
     }
 
     /**
@@ -118,6 +101,7 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
                 List.of(mock1, mock2), null,
                 List.of(mock1, mock3), null);
         assertSetEquals(List.of("MOCK1", "MOCK2", "MOCK3"), factory.getCodeSpaces());
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -151,6 +135,7 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
                 () -> factory.getAuthorityFactory(CRSAuthorityFactory.class, "mock1", "9.9"),
                 "Should not have found a 'mock1' factory for the 9.9 version.");
         assertMessageContains(e, "MOCK1", "9.9");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -212,6 +197,7 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
                 () -> factory.createGeodeticDatum("MOCK2:4326"),
                 "Should not have found an object from a non-existent factory.");
         assertMessageContains(e, "MOCK2");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -237,6 +223,7 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
                 () -> factory.createGeographicCRS("urn:ogc:def:datum:MOCK::4326"),
                 "Should not create an object of the wrong type.");
         assertMessageContains(e, "datum", "GeographicCRS");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -259,6 +246,7 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
                 () -> factory.createDatum("http://www.opengis.net/gml/srs/mock.xml#6326"),
                 "Should not create an object of the wrong type.");
         assertMessageContains(e, "crs", "Datum");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -292,6 +280,7 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
                 () -> factory.createObject("urn:ogc:def:crs, datum:MOCK::6326, cs:MOCK::6424, cs:MOCK::6422"),
                 "Shall not accept to create combined URI with unexpected objects.");
         assertMessageContains(e);
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -319,6 +308,7 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
                                        + "2=http://www.opengis.net/def/cs/MOCK/0/6424"),
                 "Shall not accept Datum + CoordinateSystem combination.");
         assertMessageContains(e);
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -352,6 +342,7 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
         assertFalse(codes.contains("MOCK:6326"));      // A geodetic datum.
         assertFalse(codes.isEmpty());
         assertArrayEquals(new String[] {"MOCK:4979", "MOCK:84", "MOCK:4326", "MOCK:5714", "MOCK:9905"}, codes.toArray());
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -391,5 +382,6 @@ public final class MultiAuthoritiesFactoryTest extends TestCase {
         final var factory = new MultiAuthoritiesFactory(mock, null, mock, null);
         final IdentifiedObjectFinder finder = factory.newIdentifiedObjectFinder();
         assertSame(HardCodedDatum.WGS72, finder.findSingleton(HardCodedDatum.WGS72));
+        loggings.assertNoUnexpectedLog();
     }
 }

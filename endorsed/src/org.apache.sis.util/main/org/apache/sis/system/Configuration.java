@@ -25,7 +25,8 @@ import java.lang.annotation.RetentionPolicy;
 /**
  * Annotates methods having a system-wide impact on the configuration of the Apache SIS library.
  * Also used for some static final constants fixed to arbitrary values that could be customized.
- * This annotation should not be used on test classes for avoiding to pollute usage searches.
+ * When applied to test classes, this annotation helps to identify which tests cannot be executed
+ * in parallel.
  *
  * <h2>Application to static final constants</h2>
  * We do not annotate all static constants having arbitrary values because there is too many of them.

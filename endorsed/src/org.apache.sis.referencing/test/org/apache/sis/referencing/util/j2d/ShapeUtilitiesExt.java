@@ -120,19 +120,16 @@ public final class ShapeUtilitiesExt {
     public static Point2D.Double pointOnBezier(final Shape bezier, final double t) {
         final double x, y;
         final double mt = 1 - t;
-        if (bezier instanceof Line2D) {
-            final Line2D z = (Line2D) bezier;
+        if (bezier instanceof Line2D z) {
             x = mt * z.getX1()  +  t * z.getX2();
             y = mt * z.getY1()  +  t * z.getY2();
-        } else if (bezier instanceof QuadCurve2D) {
-            final QuadCurve2D z = (QuadCurve2D) bezier;
+        } else if (bezier instanceof QuadCurve2D z) {
             final double a = mt * mt;
             final double b = mt * t * 2;
             final double c =  t * t;
             x = a * z.getX1()  +  b * z.getCtrlX()  +  c * z.getX2();
             y = a * z.getY1()  +  b * z.getCtrlY()  +  c * z.getY2();
-        } else if (bezier instanceof CubicCurve2D) {
-            final CubicCurve2D z = (CubicCurve2D) bezier;
+        } else if (bezier instanceof CubicCurve2D z) {
             final double a = mt * mt * mt;
             final double b = mt * mt * t  * 3;
             final double c = mt * (t * t) * 3;

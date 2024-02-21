@@ -21,6 +21,8 @@ import org.opengis.referencing.operation.TransformException;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.apache.sis.test.FailureDetailsReporter;
 import org.apache.sis.test.TestUtilities;
 
 
@@ -29,6 +31,7 @@ import org.apache.sis.test.TestUtilities;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@ExtendWith(FailureDetailsReporter.class)
 public final class CartesianToPolarTest extends TransformTestCase {
     /**
      * Creates a new test case.

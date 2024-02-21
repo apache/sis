@@ -50,6 +50,7 @@ import org.apache.sis.util.Version;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.apache.sis.storage.sql.SQLStoreTest;
 import org.apache.sis.storage.sql.feature.GeometryGetterTest;
 import org.apache.sis.test.TestCase;
@@ -103,6 +104,7 @@ public final class PostgresTest extends TestCase {
      * @throws Exception if an error occurred while testing the database.
      */
     @Test
+    @ResourceLock(TestDatabase.POSTGRESQL)
     public void testSpatialFeatures() throws Exception {
         try (TestDatabase database = TestDatabase.createOnPostgreSQL(SQLStoreTest.SCHEMA, true)) {
             database.executeSQL(List.of(resource("SpatialFeatures.sql")));

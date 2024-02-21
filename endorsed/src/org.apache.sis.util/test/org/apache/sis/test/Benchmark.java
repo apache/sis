@@ -24,15 +24,24 @@ import java.lang.annotation.Target;
 
 
 /**
- * Annotates methods that can be used for testing the performance of a class.
- * The annotated methods may or may not be executed in normal SIS builds.
- * Some methods may be executed only manually before and after an implementation change,
- * in order to test the impact on performance.
+ * Annotates classes, methods or fields that can be used for benchmarking.
+ * The annotated methods may also be JUnit tests, but not necessarily.
+ * If the method is also a test, then it should also be annotated with {@code @Tag(Benchmark.TAG)}.
+ *
+ * <p>This annotation is for documentation purposes only. Some annotated methods may be executed manually
+ * before and after an implementation change, in order to test the impact on performance.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
 @Documented
-@Target(ElementType.METHOD)
 @Retention(RetentionPolicy.SOURCE)
-public @interface Performance {
+@Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD})
+public @interface Benchmark {
+    /**
+     * The value to use in {@link org.junit.jupiter.api.Tag} annotations
+     * for tests that are also benchmarks.
+     *
+     * @see TestCase#TAG_SLOW
+     */
+    String TAG = "Benchmark";
 }

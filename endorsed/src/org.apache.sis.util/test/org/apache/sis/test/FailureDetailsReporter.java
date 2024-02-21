@@ -16,9 +16,7 @@
  */
 package org.apache.sis.test;
 
-import java.io.PrintWriter;
-import java.io.IOException;
-import org.junit.jupiter.api.extension.AfterAllCallback;
+import java.io.PrintStream;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -31,7 +29,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class FailureDetailsReporter implements BeforeEachCallback, AfterEachCallback, AfterAllCallback {
+public final class FailureDetailsReporter implements BeforeEachCallback, AfterEachCallback {
     /**
      * Creates a new reporter.
      */
@@ -59,42 +57,28 @@ public final class FailureDetailsReporter implements BeforeEachCallback, AfterEa
      */
     @Override
     public final void afterEach(final ExtensionContext description) {
-        if (TestCase.VERBOSE) {
-            TestCase.flushOutput();
-        }
+        boolean flush = TestCase.VERBOSE;
         LogRecordCollector.INSTANCE.setCurrentTest(null);
         if (description.getExecutionException().isPresent()) {
-            description.getTestMethod().ifPresent((methodName) -> {
-                final long seed = TestCase.randomSeed;
-                if (seed != 0) {
-                    final PrintWriter out = TestCase.out;
+            description.getTestMethod().ifPresent((method) -> {
+                final Long seed = TestUtilities.randomSeed.get();
+                if (seed != null) {
+                    @SuppressWarnings("UseOfSystemOutOrSystemErr")
+                    final PrintStream out = System.err;           // Same as logging console handler.
                     out.print("Random number generator for ");
                     out.print(description.getTestClass().map(Class::getCanonicalName).orElse("<?>"));
                     out.print('.');
-                    out.print(methodName);
+                    out.print(method.getName());
                     out.print("() was created with seed ");
                     out.print(seed);
                     out.println('.');
                 }
-                TestCase.flushOutput();
             });
+            flush = true;
         }
-        TestCase.randomSeed = 0;
-    }
-
-    /**
-     * If some tests in the class emitted unexpected log records,
-     * prints a table showing which tests caused logging.
-     *
-     * @param  description  description of the test container.
-     */
-    @Override
-    public final void afterAll(final ExtensionContext description) {
-        try {
-            LogRecordCollector.INSTANCE.report(TestCase.out);
-        } catch (IOException e) {
-            throw new AssertionError(e);        // Should never happen.
+        TestUtilities.randomSeed.remove();
+        if (flush) {
+            TestCase.flushOutput();
         }
-        TestCase.flushOutput();
     }
 }

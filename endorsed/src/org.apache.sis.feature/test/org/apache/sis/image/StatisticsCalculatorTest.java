@@ -23,7 +23,6 @@ import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
 import java.util.function.DoubleUnaryOperator;
-import static java.util.logging.Logger.getLogger;
 import org.apache.sis.system.Modules;
 import org.apache.sis.math.Statistics;
 
@@ -31,9 +30,7 @@ import org.apache.sis.math.Statistics;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.apache.sis.test.Assertions.assertMessageContains;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import org.apache.sis.test.LoggingWatcher;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestCaseWithLogs;
 
 
 /**
@@ -42,19 +39,13 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class StatisticsCalculatorTest extends TestCase {
+public final class StatisticsCalculatorTest extends TestCaseWithLogs.Isolated {
     /**
      * Size of the artificial tiles. Should be small enough so we can have many of them.
      * Width and height should be different in order to increase the chance to see bugs
      * if some code confuse them.
      */
     private static final int TILE_WIDTH = 5, TILE_HEIGHT = 3;
-
-    /**
-     * Intercepts log records for verifying them.
-     */
-    @RegisterExtension
-    public final LoggingWatcher loggings = new LoggingWatcher(getLogger(Modules.RASTER));
 
     /**
      * The area of interest, or {@code null} if none.
@@ -70,6 +61,7 @@ public final class StatisticsCalculatorTest extends TestCase {
      * Creates a new test case.
      */
     public StatisticsCalculatorTest() {
+        super(Modules.RASTER);
     }
 
     /**
@@ -139,6 +131,7 @@ public final class StatisticsCalculatorTest extends TestCase {
     @Test
     public void testParallelExecution() {
         compareParallelWithSequential(new ImageProcessor(), 100, 51324);
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -149,6 +142,7 @@ public final class StatisticsCalculatorTest extends TestCase {
     public void testWithAOI() {
         areaOfInterest = new Ellipse2D.Float(70, -50, TILE_WIDTH*11.6f, TILE_HEIGHT*9.2f);
         compareParallelWithSequential(new ImageProcessor(), 19723, 44501);
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -162,6 +156,7 @@ public final class StatisticsCalculatorTest extends TestCase {
             ImageProcessor.filterNodataValues(100, 51324, 51323, 201, 310)
         };
         compareParallelWithSequential(operations, 101, 51322);
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -219,5 +214,6 @@ public final class StatisticsCalculatorTest extends TestCase {
         assertTrue(Double.isNaN(op.applyAsDouble(100)));
         assertTrue(Double.isNaN(op.applyAsDouble(310)));
         assertTrue(Double.isNaN(op.applyAsDouble(201)));
+        loggings.assertNoUnexpectedLog();
     }
 }

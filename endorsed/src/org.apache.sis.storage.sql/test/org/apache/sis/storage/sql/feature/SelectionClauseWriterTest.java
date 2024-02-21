@@ -70,7 +70,7 @@ public final class SelectionClauseWriterTest extends TestCase implements SchemaM
      */
     @Test
     public void testOnDerby() throws Exception {
-        try (TestDatabase db = TestDatabase.create("SQLStore")) {
+        try (TestDatabase db = TestDatabase.create("SelectionClause")) {
             db.executeSQL(List.of("CREATE TABLE TEST (ALPHA INTEGER, BETA INTEGER, GAMMA INTEGER, PI FLOAT);"));
             final StorageConnector connector = new StorageConnector(db.source);
             connector.setOption(SchemaModifier.OPTION, this);

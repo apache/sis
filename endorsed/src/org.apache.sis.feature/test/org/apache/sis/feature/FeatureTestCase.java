@@ -352,7 +352,7 @@ public abstract class FeatureTestCase extends TestCase {
         final DataQuality quality = feature.quality();
         for (final Element report : quality.getReports()) {
             for (final Result result : report.getResults()) {
-                if (result instanceof ConformanceResult && !((ConformanceResult) result).pass()) {
+                if (result instanceof ConformanceResult r && !r.pass()) {
                     assertTrue(anomalyIndex < anomalousProperties.length, "Too many reports");
                     final String propertyName = anomalousProperties[anomalyIndex];
                     @SuppressWarnings("deprecation")

@@ -28,7 +28,6 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import org.opengis.util.GenericName;
-import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.internal.CollectionsExt;
 
 // Test dependencies
@@ -177,14 +176,14 @@ public class FeatureComparator {
      */
     private void compareType(final AbstractIdentifiedType expected, final AbstractIdentifiedType actual) {
         boolean recognized = false;
-        if (expected instanceof DefaultFeatureType) {
+        if (expected instanceof DefaultFeatureType type) {
             var c = assertInstanceOf(DefaultFeatureType.class, actual, this::path);
-            compareFeatureType((DefaultFeatureType) expected, c);
+            compareFeatureType(type, c);
             recognized = true;
         }
-        if (expected instanceof AbstractIdentifiedType) {
+        /* Condition in "geoapi-3.1" branch removed in this branch. */ {
             var c = assertInstanceOf(AbstractIdentifiedType.class, actual, this::path);
-            comparePropertyType((AbstractIdentifiedType) expected, c);
+            comparePropertyType(expected, c);
             recognized = true;
         }
         if (!recognized) {
@@ -255,8 +254,8 @@ public class FeatureComparator {
             while (expectedIter.hasNext()) {
                 final Object expectedElement = expectedIter.next();
                 final Object actualElement = actualIter.next();
-                if (expectedElement instanceof AbstractFeature) {
-                    compareFeature((AbstractFeature) expectedElement, (AbstractFeature) actualElement);
+                if (expectedElement instanceof AbstractFeature instance) {
+                    compareFeature(instance, (AbstractFeature) actualElement);
                 } else {
                     assertEquals(expectedElement, actualElement);
                 }
@@ -273,17 +272,17 @@ public class FeatureComparator {
      * @throws AssertionError if the actual property is not equal to the expected property.
      */
     private void comparePropertyType(final AbstractIdentifiedType expected, final AbstractIdentifiedType actual) {
-        if (expected instanceof DefaultAttributeType) {
+        if (expected instanceof DefaultAttributeType<?> type) {
             var c = assertInstanceOf(DefaultAttributeType.class, actual, this::path);
-            compareAttribute((DefaultAttributeType) expected, c);
+            compareAttribute(type, c);
         }
-        if (expected instanceof DefaultAssociationRole) {
+        if (expected instanceof DefaultAssociationRole role) {
             var c = assertInstanceOf(DefaultAssociationRole.class, actual, this::path);
-            compareFeatureAssociationRole((DefaultAssociationRole) expected, c);
+            compareFeatureAssociationRole(role, c);
         }
-        if (expected instanceof AbstractOperation) {
+        if (expected instanceof AbstractOperation op) {
             var c = assertInstanceOf(AbstractOperation.class, actual, this::path);
-            compareOperation((AbstractOperation) expected, c);
+            compareOperation(op, c);
         }
     }
 
@@ -379,10 +378,8 @@ public class FeatureComparator {
         if (!ignoreDescription) {
             assertEquals(expected.getDescription(), actual.getDescription(), () -> path() + "Description differ.");
         }
-        if (expected instanceof Deprecable && actual instanceof Deprecable) {
-            assertEquals(((Deprecable) expected).isDeprecated(),
-                         ((Deprecable) actual).isDeprecated(),
-                         () -> path() + "Deprecated state differ.");
+        /* Condition in "geoapi-3.1" branch removed in this branch. */ {
+            assertEquals(expected.isDeprecated(), actual.isDeprecated(), () -> path() + "Deprecated state differ.");
         }
     }
 
@@ -441,8 +438,8 @@ public class FeatureComparator {
      * in a singleton collection.
      */
     private static Collection<?> asCollection(final Object value) {
-        if (value instanceof Collection<?>) {
-            return (Collection<?>) value;
+        if (value instanceof Collection<?> c) {
+            return c;
         } else {
             return CollectionsExt.singletonOrEmpty(value);
         }

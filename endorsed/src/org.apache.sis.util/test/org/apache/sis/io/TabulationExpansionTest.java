@@ -55,8 +55,8 @@ public final class TabulationExpansionTest extends LineAppenderTest {
     @Override
     void run(final String lineSeparator) throws IOException {
         final Appendable f = appender;
-        if (f instanceof LineAppender) {
-            assertEquals(8, ((LineAppender) f).getTabulationWidth());
+        if (f instanceof LineAppender la) {
+            assertEquals(8, la.getTabulationWidth());
         }
         assertSame(f, f.append("12\t8"   + lineSeparator));
         assertSame(f, f.append("1234\t8" + lineSeparator));

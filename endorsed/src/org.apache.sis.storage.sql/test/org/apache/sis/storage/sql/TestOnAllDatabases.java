@@ -18,6 +18,7 @@ package org.apache.sis.storage.sql;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.metadata.sql.TestDatabase;
 
@@ -45,6 +46,7 @@ public abstract class TestOnAllDatabases extends TestCase {
      * @throws Exception if an error occurred while testing the database.
      */
     @Test
+    @ResourceLock("SQLStore-Derby")
     public void testOnDerby() throws Exception {
         try (TestDatabase database = TestDatabase.create("SQLStore")) {
             test(database, true);
@@ -57,6 +59,7 @@ public abstract class TestOnAllDatabases extends TestCase {
      * @throws Exception if an error occurred while testing the database.
      */
     @Test
+    @ResourceLock("SQLStore-HSQLDB")
     public void testOnHSQLDB() throws Exception {
         try (TestDatabase database = TestDatabase.createOnHSQLDB("SQLStore", true)) {
             test(database, true);
@@ -69,6 +72,7 @@ public abstract class TestOnAllDatabases extends TestCase {
      * @throws Exception if an error occurred while testing the database.
      */
     @Test
+    @ResourceLock("SQLStore-H2")
     public void testOnH2() throws Exception {
         try (TestDatabase database = TestDatabase.createOnH2("SQLStore")) {
             test(database, true);
@@ -81,6 +85,8 @@ public abstract class TestOnAllDatabases extends TestCase {
      * @throws Exception if an error occurred while testing the database.
      */
     @Test
+    @ResourceLock("SQLStore-PostgreSQL")
+    @ResourceLock(TestDatabase.POSTGRESQL)
     public void testOnPostgreSQL() throws Exception {
         try (TestDatabase database = TestDatabase.createOnPostgreSQL(SCHEMA, true)) {
             test(database, false);

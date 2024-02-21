@@ -34,6 +34,9 @@ import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 
+// Test dependencies
+import org.apache.sis.test.Benchmark;
+
 
 /**
  * Measures the performance of a given map projection implementation.
@@ -46,8 +49,8 @@ import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@SuppressWarnings("UseOfSystemOutOrSystemErr")
-public final class Benchmark {
+@Benchmark
+public final class ProjectionBenchmark {
     /**
      * Runs the benchmark and prints the time result to the standard output.
      * Edit this method for measuring the performance of a different map projection implementation.
@@ -56,7 +59,7 @@ public final class Benchmark {
      * @throws Exception if an error occurred while creating the map projection, projecting a point, <i>etc.</i>
      */
     public static void main(String[] args) throws Exception {
-        final Benchmark benchmark = new Benchmark(  // Put on next line the provider of the projection to benchmark.
+        final var benchmark = new ProjectionBenchmark(    // Put on next line the provider of the projection to benchmark.
                 new org.apache.sis.referencing.operation.provider.LambertConformal2SP(),
                 8,      // Central meridian
                 25,     // Standard parallel 1
@@ -113,7 +116,7 @@ public final class Benchmark {
     /**
      * Prepares benchmarking for the map projection created by the given provider.
      */
-    private Benchmark(final AbstractProvider provider,
+    private ProjectionBenchmark(final AbstractProvider provider,
                       final double centralMeridian,
                       final double standardParallel1,
                       final double standardParallel2) throws FactoryException, NoninvertibleTransformException
@@ -211,6 +214,7 @@ public final class Benchmark {
         /**
          * Runs the benchmark on the complete map projection, including the linear parts.
          */
+        @SuppressWarnings("UseOfSystemOutOrSystemErr")
         final void runComplete(final double[] sources, final double[] targets) throws TransformException {
             long time = System.nanoTime();
             projection.transform(sources, 0, targets, 0, NUM_POINTS);
@@ -224,6 +228,7 @@ public final class Benchmark {
          * Runs the benchmark only on the non-linear part of the map projection,
          * ignoring the linear parts.
          */
+        @SuppressWarnings("UseOfSystemOutOrSystemErr")
         final void runKernel(final double[] sources, final double[] targets) throws TransformException {
             normalize.transform(sources, 0, targets, 0, NUM_POINTS);
             long time = System.nanoTime();
@@ -266,6 +271,7 @@ public final class Benchmark {
     /**
      * Prints statistics about measured time.
      */
+    @SuppressWarnings("UseOfSystemOutOrSystemErr")
     private void printStatistics() throws IOException {
         System.out.println();
         StatisticsFormat.getInstance().format(new Statistics[] {forward.performance, inverse.performance}, System.out);

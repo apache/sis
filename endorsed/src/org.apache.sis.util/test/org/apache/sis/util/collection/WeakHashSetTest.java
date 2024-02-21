@@ -22,10 +22,7 @@ import java.util.Random;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestCase;
-import org.apache.sis.test.TestConfiguration;
 import static org.apache.sis.test.Assertions.assertSetEquals;
-import static org.apache.sis.test.TestUtilities.waitForGarbageCollection;
 
 
 /**
@@ -34,7 +31,7 @@ import static org.apache.sis.test.TestUtilities.waitForGarbageCollection;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-public final class WeakHashSetTest extends TestCase {
+public final class WeakHashSetTest extends TestCaseWithGC {
     /**
      * The size of the test sets to be created.
      */
@@ -149,12 +146,12 @@ public final class WeakHashSetTest extends TestCase {
                 assertTrue(weakSet.containsAll(strongSet), "containsAll:");
             }
             /*
-             * The test below needs the garbage collector to complete fully its job in a timely
-             * manner. A failure in those tests is not necessarily a WeakValueHashMap bug, as it
-             * could be caused by a heavy server load preventing GC to complete its work. If this
-             * happen too often, we may turn off the "allow garbage collector dependent tests" flag.
+             * The test below needs the garbage collector to complete fully its job in a timely manner.
+             * A failure in those tests is not necessarily a WeakValueHashMap bug, as it could be caused
+             * by a heavy server load preventing GC to complete its work. If this happen too often,
+             * we may turn off the "allow garbage collector dependent tests" flag.
              */
-            if (TestConfiguration.allowGarbageCollectorDependentTests()) {
+            if (GC_DEPENDENT_TESTS_ENABLED) {
                 waitForGarbageCollection(() -> weakSet.size() == strongSet.size());
                 assertSetEquals(strongSet, weakSet);
                 /*

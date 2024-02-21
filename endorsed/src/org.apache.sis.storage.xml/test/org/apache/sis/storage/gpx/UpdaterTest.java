@@ -31,8 +31,6 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 
 // Test dependencies
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -55,23 +53,7 @@ public final class UpdaterTest extends TestCase {
     /**
      * The provider shared by all data stores created in this test class.
      */
-    private static StoreProvider provider;
-
-    /**
-     * Creates the provider to be shared by all data stores created in this test class.
-     */
-    @BeforeAll
-    public static void createProvider() {
-        provider = new StoreProvider();
-    }
-
-    /**
-     * Disposes the data store provider after all tests have been completed.
-     */
-    @AfterAll
-    public static void disposeProvider() {
-        provider = null;
-    }
+    private final StoreProvider provider;
 
     /**
      * Temporary file where to write the GPX file.
@@ -79,9 +61,10 @@ public final class UpdaterTest extends TestCase {
     private Path file;
 
     /**
-     * Creates a new test case.
+     * Creates the provider to be shared by all data stores created in this test class.
      */
     public UpdaterTest() {
+        provider = StoreProvider.provider();
     }
 
     /**

@@ -139,9 +139,9 @@ abstract class MapProjectionTestCase extends MathTransformTestCase {
     final NormalizedProjection getKernel() {
         NormalizedProjection kernel = null;
         for (final MathTransform component : MathTransforms.getSteps(transform)) {
-            if (component instanceof NormalizedProjection) {
+            if (component instanceof NormalizedProjection proj) {
                 assertNull(kernel, "Found more than one kernel.");
-                kernel = (NormalizedProjection) component;
+                kernel = proj;
             }
         }
         assertNotNull(kernel);

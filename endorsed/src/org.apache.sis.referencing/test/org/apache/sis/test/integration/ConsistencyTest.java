@@ -41,9 +41,10 @@ import org.apache.sis.io.wkt.UnformattableObjectException;
 import org.apache.sis.util.iso.DefaultNameSpace;
 
 // Test dependencies
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import org.apache.sis.test.TestCase;
 
 
@@ -54,8 +55,6 @@ import org.apache.sis.test.TestCase;
  * <ul>
  *   <li>Format in WKT, parse, reformat again and verify that we get the same WKT string.</li>
  * </ul>
- *
- * This test is executed only if {@link #RUN_EXTENSIVE_TESTS} is {@code true}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -108,6 +107,7 @@ public final class ConsistencyTest extends TestCase {
      * @throws FactoryException if an error other than "unsupported operation method" occurred.
      */
     @Test
+    @Tag(TAG_SLOW)
     public void testCoordinateReferenceSystems() throws FactoryException {
         assumeTrue(RUN_EXTENSIVE_TESTS, "Extensive tests not enabled.");
         final WKTFormat v1  = new WKTFormat();

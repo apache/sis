@@ -32,12 +32,12 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.internal.StandardDateFormat;
 
 // Test dependencies
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
-import org.apache.sis.test.TestCase;
-import org.apache.sis.test.Performance;
 import static org.apache.sis.test.Assertions.assertMapEquals;
+import org.apache.sis.test.Benchmark;
 
 
 /**
@@ -45,7 +45,7 @@ import static org.apache.sis.test.Assertions.assertMapEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class CacheTest extends TestCase {
+public final class CacheTest extends TestCaseWithGC {
     /**
      * Creates a new test case.
      */
@@ -162,7 +162,7 @@ public final class CacheTest extends TestCase {
         assertTrue(handler instanceof Cache<?,?>.Work);
         final OtherThread thread = new OtherThread();
         thread.start();
-        TestUtilities.waitForBlockedState(thread);
+        waitForBlockedState(thread);
         assertNull(cache.peek(keyByOtherThread), "The blocked thread shall not have added a value.");
         /*
          * Write. This will release the lock and let the other thread continue its job.
@@ -205,7 +205,8 @@ public final class CacheTest extends TestCase {
      * @throws InterruptedException if the test has been interrupted.
      */
     @Test
-    @Performance
+    @Benchmark
+    @Tag(Benchmark.TAG)
     public void stress() throws InterruptedException {
         final int count = 5000;
         final Cache<Integer,IntObject> cache = new Cache<>();
