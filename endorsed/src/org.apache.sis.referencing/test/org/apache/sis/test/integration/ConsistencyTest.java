@@ -274,7 +274,7 @@ public final class ConsistencyTest extends TestCase {
              * that lookup operation should not do a lot of work actually.
              */
             final String lookup = IdentifiedObjects.lookupURN(parsed, null);
-            assertEquals("Failed to lookup the parsed CRS.", urn, lookup);
+            assertEquals(urn, lookup, "Failed to lookup the parsed CRS.");
         } else {
             print(id.getCode(), "SKIPPED", "Unit conversion factors differ.");
         }

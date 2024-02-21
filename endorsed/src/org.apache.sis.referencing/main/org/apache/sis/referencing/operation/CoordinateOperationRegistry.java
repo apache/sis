@@ -57,6 +57,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
+import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.referencing.factory.MissingFactoryResourceException;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
@@ -169,7 +170,7 @@ class CoordinateOperationRegistry {
      * @see #authorityCodes
      * @see #findCode(CoordinateReferenceSystem)
      */
-    private final IdentifiedObjectFinder codeFinder;
+    private IdentifiedObjectFinder codeFinder;
 
     /**
      * The factory to use for creating operations as defined by authority, or {@code null} if none.
@@ -265,9 +266,6 @@ class CoordinateOperationRegistry {
 
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         Map<CoordinateReferenceSystem, List<String>> authorityCodes = Collections.emptyMap();
-
-        @SuppressWarnings("LocalVariableHidesMemberVariable")
-        IdentifiedObjectFinder codeFinder = null;
         if (registry != null) {
             if (registry instanceof GeodeticAuthorityFactory) {
                 codeFinder = ((GeodeticAuthorityFactory) registry).newIdentifiedObjectFinder();
@@ -280,7 +278,6 @@ class CoordinateOperationRegistry {
                 authorityCodes = new IdentityHashMap<>(5);          // Rarely more than 4 entries.
             }
         }
-        this.codeFinder     = codeFinder;
         this.authorityCodes = authorityCodes;
         if (context != null) {
             areaOfInterest  = context.getAreaOfInterest();
@@ -308,7 +305,7 @@ class CoordinateOperationRegistry {
 
     /**
      * Finds the authority codes for the given coordinate reference system.
-     * This method does not trust the code given by the user in its CRS - we verify it.
+     * This method does not trust the code given by the user in the CRS - it verifies it.
      * This method may return codes even if the axis order does not match;
      * it will be caller's responsibility to make necessary adjustments.
      *
@@ -329,17 +326,22 @@ class CoordinateOperationRegistry {
                     : IdentifiedObjectFinder.Domain.VALID_DATASET);
             int matchCount = 0;
             final Citation authority = registry.getAuthority();
-            for (final IdentifiedObject candidate : codeFinder.find(crs)) {
-                final Identifier identifier = IdentifiedObjects.getIdentifier(candidate, authority);
-                if (identifier != null) {
-                    final String code = identifier.getCode();
-                    if (Utilities.deepEquals(candidate, crs, ComparisonMode.APPROXIMATE)) {
-                        // If axis order matches, give precedence to that CRS.
-                        codes.add(matchCount++, code);
-                    } else {
-                        codes.add(code);
+            try {
+                for (final IdentifiedObject candidate : codeFinder.find(crs)) {
+                    final Identifier identifier = IdentifiedObjects.getIdentifier(candidate, authority);
+                    if (identifier != null) {
+                        final String code = identifier.getCode();
+                        if (Utilities.deepEquals(candidate, crs, ComparisonMode.APPROXIMATE)) {
+                            // If axis order matches, give precedence to that CRS.
+                            codes.add(matchCount++, code);
+                        } else {
+                            codes.add(code);
+                        }
                     }
                 }
+            } catch (UnavailableFactoryException e) {
+                log(null, e);
+                codeFinder = null;
             }
             authorityCodes.put(crs, codes);
         }
