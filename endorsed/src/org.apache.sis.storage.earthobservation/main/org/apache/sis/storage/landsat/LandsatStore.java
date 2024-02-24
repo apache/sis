@@ -252,6 +252,8 @@ public class LandsatStore extends DataStore implements Aggregate {
      *
      * @return information about the dataset.
      * @throws DataStoreException if an error occurred while reading the metadata.
+     *
+     * @see <a href="doc-files/MetadataMapping.html">Mapping from Landsat to ISO 19115 metadata</a>
      */
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {

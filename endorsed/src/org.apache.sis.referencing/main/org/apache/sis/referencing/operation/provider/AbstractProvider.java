@@ -62,9 +62,10 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
     private static final long serialVersionUID = 1165868434518724597L;
 
     /**
-     * The logger for coordinate operations.
+     * The logger for the creation of coordinate operation. The logger name is {@value Loggers#CRS_FACTORY}
+     * because the logs should be emitted in the context of some {@code FooFactory.createBar(…)} methods.
      */
-    public static final Logger LOGGER = Logger.getLogger(Loggers.COORDINATE_OPERATION);
+    public static final Logger LOGGER = Logger.getLogger(Loggers.CRS_FACTORY);
 
     /**
      * The base interface of the {@code CoordinateOperation} instances that use this method.
