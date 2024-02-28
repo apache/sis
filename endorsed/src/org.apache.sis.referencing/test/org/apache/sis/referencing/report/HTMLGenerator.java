@@ -110,11 +110,10 @@ abstract class HTMLGenerator implements Closeable {
         out.write("<meta charset=\"" + ENCODING + "\"/>");
         out.newLine();
         println("title", title);
-        openTag("style type=\"text/css\" media=\"all\"");
         out.write(margin);
-        out.write("@import url(\"");
+        out.write("<link rel=\"stylesheet\" href=\"");
         out.write(css);
-        out.write("\");");
+        out.write("\"/>");
         out.newLine();
         closeTags(head);
         openTag("body");
