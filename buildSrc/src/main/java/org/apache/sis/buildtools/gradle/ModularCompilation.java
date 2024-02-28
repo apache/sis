@@ -161,12 +161,6 @@ final class ModularCompilation extends Conventions {
      */
 
     /**
-     * Modules to exclude. This is a temporary workaround for a SIS module
-     * not yet well integrated with other SIS modules.
-     */
-    private static final Set<String> EXCLUDE_MODULES = Set.of("org.apache.sis.storage.shapefile");
-
-    /**
      * File extensions of resources to not copy.
      * In addition, everything in {@code doc-files} sub-directories will be excluded.
      *
@@ -209,13 +203,6 @@ final class ModularCompilation extends Conventions {
                     if (include(source)) {
                         results.put(target, source);
                     }
-                }
-                @Override protected boolean acceptCompilableResource(File source) {
-                    while (source != null) {
-                        if (EXCLUDE_MODULES.contains(source.getName())) return false;
-                        source = source.getParentFile();
-                    }
-                    return true;
                 }
             };
             try {

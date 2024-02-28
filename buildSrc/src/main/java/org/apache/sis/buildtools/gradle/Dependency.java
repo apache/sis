@@ -70,6 +70,7 @@ public final class Dependency {
         Map.entry("gui",                      "application:sis-javafx"),            // Optional.
         Map.entry("cql",                      "core:sis-cql"),                      // Incubator.
         Map.entry("storage.shapefile",        "core:sis-shapefile"),
+        Map.entry("storage.coveragejson",     "core:sis-coveragejson"),
         Map.entry("portrayal.map",            "core:sis-portrayal-map"),
         Map.entry("webapp",                   "application:sis-webapp")
     );
