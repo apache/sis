@@ -119,7 +119,6 @@ module org.apache.sis.util {
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.geotiff,
             org.apache.sis.storage.earthobservation,
-            org.apache.sis.storage.shapefile,           // In the "incubator" sub-project.
             org.apache.sis.cql,                         // In the "incubator" sub-project.
             org.apache.sis.portrayal.map,               // In the "incubator" sub-project.
             org.apache.sis.portrayal,
@@ -144,12 +143,8 @@ module org.apache.sis.util {
             org.apache.sis.referencing.gazetteer,
             org.apache.sis.feature,
             org.apache.sis.storage,
-            org.apache.sis.storage.xml,
             org.apache.sis.storage.sql,
-            org.apache.sis.storage.shapefile,           // In the "incubator" sub-project.
             org.apache.sis.storage.netcdf,
-            org.apache.sis.storage.geotiff,
-            org.apache.sis.storage.earthobservation,
             org.apache.sis.portrayal,
             org.apache.sis.console,
             org.apache.sis.webapp,                      // In the "incubator" sub-project.
@@ -165,6 +160,5 @@ module org.apache.sis.util {
             org.apache.sis.storage.sql,
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.geotiff,
-            org.apache.sis.portrayal,
-            org.apache.sis.console;
+            org.apache.sis.portrayal;
 }
