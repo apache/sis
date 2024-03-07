@@ -47,6 +47,7 @@ import org.apache.sis.storage.geotiff.base.Compression;
 import org.apache.sis.storage.geotiff.reader.Type;
 import org.apache.sis.storage.geotiff.reader.GridGeometryBuilder;
 import org.apache.sis.storage.geotiff.reader.ImageMetadataBuilder;
+import org.apache.sis.storage.geotiff.spi.SchemaModifier;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -490,7 +491,8 @@ final class ImageFileDirectory extends DataCube {
                 }
                 GenericName name = reader.nameFactory.createLocalName(reader.store.namespace(), getImageIndex());
                 name = name.toFullyQualifiedName();     // Because "1" alone is not very informative.
-                identifier = reader.store.customizer.customize(index, name);
+                final var source = new SchemaModifier.Source(reader.store, index, getDataType());
+                identifier = reader.store.customizer.customize(source, name);
                 if (identifier == null) identifier = name;
             }
             return Optional.of(identifier);
@@ -1375,7 +1377,13 @@ final class ImageFileDirectory extends DataCube {
              */
             return super.createMetadata();
         }
-        this.metadata = null;     // Clear now in case an exception happens.
+        this.metadata = null;       // Clear now in case an exception happens.
+        final SchemaModifier.Source source;
+        if (isReducedResolution()) {
+            source = null;          // Note: the `index` value is invalid in this case.
+        } else {
+            source = new SchemaModifier.Source(reader.store, index, getDataType());
+        }
         getIdentifier().ifPresent((id) -> {
             if (!getImageIndex().equals(id.tip().toString())) {
                 metadata.addTitle(id.toString());
@@ -1386,8 +1394,7 @@ final class ImageFileDirectory extends DataCube {
          *
          * Destination: metadata/contentInfo/attributeGroup/attribute
          */
-        final boolean isIndexValid = !isReducedResolution();
-        metadata.newCoverage(isIndexValid && reader.store.customizer.isElectromagneticMeasurement(index));
+        metadata.newCoverage(source != null && reader.store.customizer.isElectromagneticMeasurement(source));
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final List<SampleDimension> sampleDimensions = getSampleDimensions();
         for (int band = 0; band < samplesPerPixel; band++) {
@@ -1428,8 +1435,8 @@ final class ImageFileDirectory extends DataCube {
          */
         metadata.finish(reader.store, listeners);
         final DefaultMetadata md = metadata.build();
-        if (isIndexValid) {
-            final Metadata c = reader.store.customizer.customize(index, md);
+        if (source != null) {
+            final Metadata c = reader.store.customizer.customize(source, md);
             if (c != null) return c;
         }
         return md;
@@ -1467,7 +1474,7 @@ final class ImageFileDirectory extends DataCube {
      * The grid geometry has 2 or 3 dimensions, depending on whether the CRS declares a vertical axis or not.
      *
      * <h4>Thread-safety</h4>
-     * This method is thread-safe because it can be invoked directly by user.
+     * This method must be thread-safe because it can be invoked directly by the user.
      *
      * @see #getExtent()
      * @see #getTileSize()
@@ -1500,26 +1507,46 @@ final class ImageFileDirectory extends DataCube {
     }
 
     /**
+     * Information about which band is subject to modification. This information is given to
+     * {@link SchemaModifier} for allowing users to modify name, metadata or sample dimensions.
+     */
+    private final class Source extends SchemaModifier.BandSource {
+        /** Creates a new source for the specified band. */
+        Source(final int bandIndex, final DataType dataType) {
+            super(reader.store, index, bandIndex, samplesPerPixel, dataType);
+        }
+
+        /** Computes the range of sample values if requested. */
+        @Override public Optional<NumberRange<?>> getSampleRange() {
+            final Vector minValues = ImageFileDirectory.this.minValues;
+            final Vector maxValues = ImageFileDirectory.this.maxValues;
+            if (minValues != null && maxValues != null) {
+                final int band = getBandIndex();
+                return Optional.of(NumberRange.createBestFit(sampleFormat == FLOAT,
+                        minValues.get(Math.min(band, minValues.size()-1)), true,
+                        maxValues.get(Math.min(band, maxValues.size()-1)), true));
+            }
+            return Optional.empty();
+        }
+    }
+
+    /**
      * Returns the ranges of sample values together with the conversion from samples to real values.
      *
      * <h4>Thread-safety</h4>
-     * This method is thread-safe because it can be invoked directly by user.
+     * This method must be thread-safe because it can be invoked directly by the user.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<SampleDimension> getSampleDimensions() throws DataStoreContentException {
         synchronized (getSynchronizationLock()) {
             if (sampleDimensions == null) {
+                final Number fill = getFillValue(true);
+                final DataType dataType = getDataType();
                 final SampleDimension[] dimensions = new SampleDimension[samplesPerPixel];
                 final SampleDimension.Builder builder = new SampleDimension.Builder();
                 final boolean isIndexValid = !isReducedResolution();
                 for (int band = 0; band < dimensions.length; band++) {
-                    NumberRange<?> sampleRange = null;
-                    if (minValues != null && maxValues != null) {
-                        sampleRange = NumberRange.createBestFit(sampleFormat == FLOAT,
-                                minValues.get(Math.min(band, minValues.size()-1)), true,
-                                maxValues.get(Math.min(band, maxValues.size()-1)), true);
-                    }
                     short nameKey = 0;
                     switch (photometricInterpretation) {
                         case PHOTOMETRIC_INTERPRETATION_BLACK_IS_ZERO:
@@ -1539,10 +1566,10 @@ final class ImageFileDirectory extends DataCube {
                     } else {
                         builder.setName(band + 1);
                     }
-                    builder.setBackground(getFillValue(true));
+                    builder.setBackground(fill);
                     final SampleDimension sd;
                     if (isIndexValid) {
-                        sd = reader.store.customizer.customize(index, band, sampleRange, builder);
+                        sd = reader.store.customizer.customize(new Source(band, dataType), builder);
                     } else {
                         sd = builder.build();
                     }
@@ -1571,10 +1598,28 @@ final class ImageFileDirectory extends DataCube {
     @Override
     protected SampleModel getSampleModel() throws DataStoreContentException {
         assert Thread.holdsLock(getSynchronizationLock());
-        if (sampleModel == null) try {
-            sampleModel = new SampleModelFactory(getDataType(), tileWidth, tileHeight, samplesPerPixel, bitsPerSample, isPlanar).build();
-        } catch (IllegalArgumentException | RasterFormatException e) {
-            throw new DataStoreContentException(Errors.format(Errors.Keys.UnsupportedType_1, getDataType()), e);
+        if (sampleModel == null) {
+            RuntimeException error = null;
+            final DataType type = getDataType();
+            if (type != null) try {
+                sampleModel = new SampleModelFactory(type, tileWidth, tileHeight, samplesPerPixel, bitsPerSample, isPlanar).build();
+            } catch (IllegalArgumentException | RasterFormatException e) {
+                error = e;
+            }
+            if (sampleModel == null) {
+                Object message = type;
+                if (message == null) {
+                    final String format;
+                    switch (sampleFormat) {
+                        case SIGNED:   format = "int";      break;
+                        case UNSIGNED: format = "unsigned"; break;
+                        case FLOAT:    format = "float";    break;
+                        default:       format = "unknown";  break;
+                    }
+                    message = format + ' ' + bitsPerSample + " bits";
+                }
+                throw new DataStoreContentException(Errors.format(Errors.Keys.UnsupportedType_1, message), error);
+            }
         }
         return sampleModel;
     }
@@ -1615,38 +1660,29 @@ final class ImageFileDirectory extends DataCube {
      * Returns the type of raster data. The enumeration values are restricted to types compatible with Java2D,
      * at the cost of using more bits than {@link #bitsPerSample} if there is no exact match.
      *
-     * @throws DataStoreContentException if the type is not recognized.
+     * @return the type, or {@code null} if the type is not recognized.
      */
-    private DataType getDataType() throws DataStoreContentException {
-        final String format;
+    private DataType getDataType() {
         switch (sampleFormat) {
             case SIGNED: {
                 if (bitsPerSample <  Byte   .SIZE) return DataType.BYTE;
                 if (bitsPerSample <= Short  .SIZE) return DataType.SHORT;
                 if (bitsPerSample <= Integer.SIZE) return DataType.INT;
-                format = "int";
                 break;
             }
             case UNSIGNED: {
                 if (bitsPerSample <= Byte   .SIZE) return DataType.BYTE;
                 if (bitsPerSample <= Short  .SIZE) return DataType.USHORT;
                 if (bitsPerSample <= Integer.SIZE) return DataType.INT;
-                format = "unsigned";
                 break;
             }
             case FLOAT: {
                 if (bitsPerSample == Float  .SIZE) return DataType.FLOAT;
                 if (bitsPerSample == Double .SIZE) return DataType.DOUBLE;
-                format = "float";
-                break;
-            }
-            default: {
-                format = "?";
                 break;
             }
         }
-        throw new DataStoreContentException(Errors.format(
-                Errors.Keys.UnsupportedType_1, format + ' ' + bitsPerSample + " bits"));
+        return null;
     }
 
     /**
@@ -1748,6 +1784,7 @@ final class ImageFileDirectory extends DataCube {
     /**
      * Returns the value to use for filling empty spaces in the raster, or {@code null} if none.
      * The exclusion of zero value is optional, controlled by the {@code acceptZero} argument.
+     * If the value is outside the range of valid sample values, then {@code null} is returned.
      *
      * @param  acceptZero  whether to return a number for the zero value.
      */

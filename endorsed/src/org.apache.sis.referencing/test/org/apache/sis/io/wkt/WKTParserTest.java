@@ -22,13 +22,16 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.util.FactoryException;
 import org.apache.sis.metadata.internal.AxisNames;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
+import org.apache.sis.system.Loggers;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Disabled;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.opengis.test.wkt.CRSParserTest;
+import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.FailureDetailsReporter;
 
 
@@ -41,6 +44,12 @@ import org.apache.sis.test.FailureDetailsReporter;
 @ExtendWith(FailureDetailsReporter.class)
 public final class WKTParserTest extends CRSParserTest {
     /**
+     * A JUnit extension for listening to log events.
+     */
+    @RegisterExtension
+    public final LoggingWatcher loggings;
+
+    /**
      * Whether the test should replace the curly quotation marks “ and ” by the straight quotation mark ".
      * The ISO 19162 specification uses only straight quotation marks, but SIS supports both.
      * Curly quotation marks are convenient for identifying bugs, so we test them first.
@@ -52,6 +61,7 @@ public final class WKTParserTest extends CRSParserTest {
      */
     public WKTParserTest() {
         super(GeodeticObjectFactory.provider());
+        loggings = new LoggingWatcher(Loggers.WKT);
     }
 
     /**
@@ -115,6 +125,7 @@ public final class WKTParserTest extends CRSParserTest {
         verifyEllipsoidalCS();
         useStraightQuotes = true;
         super.testGeographic3D();                           // Test again with “ and ” replaced by ".
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -142,6 +153,7 @@ public final class WKTParserTest extends CRSParserTest {
         verifyEllipsoidalCS();
         useStraightQuotes = true;
         super.testGeographicWithUnicode();                  // Test again with “ and ” replaced by ".
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -169,6 +181,7 @@ public final class WKTParserTest extends CRSParserTest {
         verifyEllipsoidalCS();
         useStraightQuotes = true;
         super.testGeographicWithIdentifier();               // Test again with “ and ” replaced by ".
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -196,6 +209,7 @@ public final class WKTParserTest extends CRSParserTest {
         verifyEllipsoidalCS();
         useStraightQuotes = true;
         super.testGeographicWithGradUnits();                // Test again with “ and ” replaced by ".
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -232,6 +246,7 @@ public final class WKTParserTest extends CRSParserTest {
 
         useStraightQuotes = true;
         super.testGeocentric();                             // Test again with “ and ” replaced by ".
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -288,6 +303,7 @@ public final class WKTParserTest extends CRSParserTest {
 
         useStraightQuotes = true;
         super.testProjectedWithFootUnits();                  // Test again with “ and ” replaced by ".
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -327,6 +343,7 @@ public final class WKTParserTest extends CRSParserTest {
 
         useStraightQuotes = true;
         super.testProjectedWithImplicitParameterUnits();    // Test again with “ and ” replaced by ".
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -352,6 +369,7 @@ public final class WKTParserTest extends CRSParserTest {
 
         useStraightQuotes = true;
         super.testVertical();                               // Test again with “ and ” replaced by ".
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -375,6 +393,7 @@ public final class WKTParserTest extends CRSParserTest {
 
         useStraightQuotes = true;
         super.testTemporal();                               // Test again with “ and ” replaced by ".
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -400,6 +419,7 @@ public final class WKTParserTest extends CRSParserTest {
 
         useStraightQuotes = true;
         super.testParametric();                             // Test again with “ and ” replaced by ".
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -428,6 +448,7 @@ public final class WKTParserTest extends CRSParserTest {
 
         useStraightQuotes = true;
         super.testEngineering();                            // Test again with “ and ” replaced by ".
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -444,6 +465,9 @@ public final class WKTParserTest extends CRSParserTest {
      *    TIMEEXTENT[“date/time t1”,“date/time t2”]]
      *  }
      *
+     * In current Apache SIS version, this test produces a logs a warning saying
+     * that the {@code TimeExtent[…]} element is not yet supported.
+     *
      * @throws FactoryException if an error occurred during the WKT parsing.
      */
     @Test
@@ -453,9 +477,12 @@ public final class WKTParserTest extends CRSParserTest {
         final CoordinateSystem cs = object.getCoordinateSystem();
         assertEquals("site east",  cs.getAxis(0).getName().getCode(), "name");
         assertEquals("site north", cs.getAxis(1).getName().getCode(), "name");
+        loggings.assertNextLogContains("A construction site CRS", "TimeExtent[String,String]");
 
         useStraightQuotes = true;
         super.testEngineeringRotated();                     // Test again with “ and ” replaced by ".
+        loggings.assertNextLogContains("A construction site CRS", "TimeExtent[String,String]");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -490,6 +517,7 @@ public final class WKTParserTest extends CRSParserTest {
 
         useStraightQuotes = true;
         super.testEngineeringForShip();                     // Test again with “ and ” replaced by ".
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -524,6 +552,7 @@ public final class WKTParserTest extends CRSParserTest {
         verifyEllipsoidalCS();
         useStraightQuotes = true;
         super.testDerivedGeodetic();                        // Test again with “ and ” replaced by ".
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -563,6 +592,7 @@ public final class WKTParserTest extends CRSParserTest {
 
         useStraightQuotes = true;
         super.testDerivedEngineeringFromGeodetic();         // Test again with “ and ” replaced by ".
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -587,6 +617,7 @@ public final class WKTParserTest extends CRSParserTest {
 
         useStraightQuotes = true;
         super.testDerivedEngineeringFromProjected();        // Test again with “ and ” replaced by ".
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -624,6 +655,7 @@ public final class WKTParserTest extends CRSParserTest {
 
         useStraightQuotes = true;
         super.testCompoundWithVertical();                   // Test again with “ and ” replaced by ".
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -659,6 +691,7 @@ public final class WKTParserTest extends CRSParserTest {
 
         useStraightQuotes = true;
         super.testCompoundWithTime();                       // Test again with “ and ” replaced by ".
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -696,5 +729,6 @@ public final class WKTParserTest extends CRSParserTest {
 
         useStraightQuotes = true;
         super.testCompoundWithParametric();                 // Test again with “ and ” replaced by ".
+        loggings.assertNoUnexpectedLog();
     }
 }

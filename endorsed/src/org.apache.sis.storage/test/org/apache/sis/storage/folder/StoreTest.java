@@ -35,7 +35,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestCaseWithLogs;
 
 
 /**
@@ -44,11 +44,12 @@ import org.apache.sis.test.TestCase;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class StoreTest extends TestCase {
+public final class StoreTest extends TestCaseWithLogs {
     /**
      * Creates a new test case.
      */
     public StoreTest() {
+        super("ucar.nc2.NetcdfFile");
     }
 
     /**
@@ -81,6 +82,9 @@ public final class StoreTest extends TestCase {
         if (!identifiers.isEmpty()) {
             fail("Missing resources: " + identifiers);
         }
+        loggings.skipNextLogIfContains("ucar.unidata");
+        loggings.skipNextLogIfContains("ucar.unidata");     // Logs emitted by UCAR. There is two files to skip.
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -104,6 +108,7 @@ public final class StoreTest extends TestCase {
         if (!identifiers.isEmpty()) {
             fail("Missing resources: " + identifiers);
         }
+        loggings.assertNoUnexpectedLog();
     }
 
     /**

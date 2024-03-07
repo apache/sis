@@ -266,7 +266,7 @@ public class IndexedResourceCompiler {
         filterLanguages(resourcesToProcess, true);
         for (final Map.Entry<File,Boolean> entry : resourcesToProcess.entrySet()) {
             final File source = entry.getKey();
-            if (entry.getValue() && acceptCompilableResource(source)) {
+            if (entry.getValue()) {
                 onJavaSource(new File(source.getParentFile(), getBaseName(source) + JAVA_EXT));
             } else {
                 otherResource(source, sourceToTarget(source));
@@ -707,18 +707,6 @@ search: for (int i=0; i<buffer.length(); i++) {                 // Length of `bu
                 out.write(buffer.toString());
             }
         }
-    }
-
-    /**
-     * Invoked for each resource file that {@code IndexedResourceCompiler} thinks is compilable.
-     * Subclasses can override this method for excluding some false positives.
-     * The default implementation always returns {@code true}.
-     *
-     * @param  source  the {@code .properties} file that may be compiled.
-     * @return whether to compile the specified file.
-     */
-    protected boolean acceptCompilableResource(final File source) {
-        return true;
     }
 
     /**

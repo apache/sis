@@ -104,6 +104,8 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
      *
      * <p>The returned value should never be empty. An empty value would be a failure
      * to {@linkplain ImageFileDirectory#setOverviewIdentifier initialize overviews}.</p>
+     *
+     * @return a persistent identifier unique within the data store.
      */
     @Override
     public abstract Optional<GenericName> getIdentifier();
