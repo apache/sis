@@ -38,7 +38,7 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.metadata.acquisition.GeometryType;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
-import org.apache.sis.feature.internal.MovingFeatures;
+import org.apache.sis.feature.privy.MovingFeatures;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.AttributeTypeBuilder;
@@ -47,7 +47,7 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.netcdf.internal.Resources;
 import org.apache.sis.util.Characters;
-import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.math.Vector;
 

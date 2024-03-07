@@ -34,7 +34,7 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.privy.CollectionsExt;
 
 // Specific to the main branch:
 import org.apache.sis.feature.DefaultFeatureType;

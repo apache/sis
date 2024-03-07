@@ -22,7 +22,7 @@ import org.apache.sis.math.Vector;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.privy.Strings;
 import org.apache.sis.storage.netcdf.internal.Resources;
 
 

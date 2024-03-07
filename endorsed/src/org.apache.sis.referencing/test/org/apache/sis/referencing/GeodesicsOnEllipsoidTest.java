@@ -22,11 +22,11 @@ import java.util.Arrays;
 import static java.lang.StrictMath.*;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.apache.sis.referencing.util.ReferencingUtilities;
-import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.referencing.privy.ReferencingUtilities;
+import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
+import static org.apache.sis.metadata.privy.ReferencingServices.NAUTICAL_MILE;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

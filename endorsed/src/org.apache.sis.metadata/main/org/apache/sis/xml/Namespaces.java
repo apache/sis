@@ -21,8 +21,8 @@ import java.util.Locale;
 import java.util.Objects;
 import javax.xml.XMLConstants;
 import org.apache.sis.util.Static;
-import org.apache.sis.xml.util.LegacyNamespaces;
-import static org.apache.sis.metadata.internal.ImplementationHelper.ISO_NAMESPACE;
+import org.apache.sis.xml.privy.LegacyNamespaces;
+import static org.apache.sis.metadata.privy.ImplementationHelper.ISO_NAMESPACE;
 
 
 /**

@@ -37,7 +37,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.internal.StandardDateFormat;
+import org.apache.sis.util.privy.StandardDateFormat;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.UnitFormat;
 

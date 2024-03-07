@@ -29,7 +29,7 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.io.stream.InternalOptionKey;
-import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.privy.Strings;
 
 
 /**

@@ -41,9 +41,9 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.util.internal.Acyclic;
-import org.apache.sis.util.internal.PropertyFormat;
-import org.apache.sis.util.internal.LocalizedParseException;
-import org.apache.sis.util.internal.TreeFormatCustomization;
+import org.apache.sis.util.privy.PropertyFormat;
+import org.apache.sis.util.privy.LocalizedParseException;
+import org.apache.sis.util.privy.TreeFormatCustomization;
 import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
 
 

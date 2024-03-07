@@ -22,8 +22,8 @@ import javax.measure.Unit;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArraysExt;
-import static org.apache.sis.util.internal.Constants.EPSG_METRE;
-import static org.apache.sis.util.internal.Constants.EPSG_AXIS_DEGREES;
+import static org.apache.sis.util.privy.Constants.EPSG_METRE;
+import static org.apache.sis.util.privy.Constants.EPSG_AXIS_DEGREES;
 
 
 /**

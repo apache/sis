@@ -24,8 +24,8 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.quality.DataQuality;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CorruptedObjectException;
-import org.apache.sis.util.internal.CloneAccess;
-import org.apache.sis.util.internal.Cloner;
+import org.apache.sis.util.privy.CloneAccess;
+import org.apache.sis.util.privy.Cloner;
 
 
 /**

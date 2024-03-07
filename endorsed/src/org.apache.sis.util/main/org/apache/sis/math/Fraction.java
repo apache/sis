@@ -20,7 +20,7 @@ import java.io.Serializable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakHashSet;
-import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.privy.Numerics;
 import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
 
 

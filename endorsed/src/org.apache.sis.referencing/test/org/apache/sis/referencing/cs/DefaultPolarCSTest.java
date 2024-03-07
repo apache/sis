@@ -19,7 +19,7 @@ package org.apache.sis.referencing.cs;
 import java.util.Map;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.RangeMeaning;
-import org.apache.sis.referencing.util.AxisDirections;
+import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.measure.Units;
 
 // Test dependencies

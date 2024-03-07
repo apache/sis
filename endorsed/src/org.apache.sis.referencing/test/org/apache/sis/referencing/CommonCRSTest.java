@@ -35,9 +35,9 @@ import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.metadata.internal.AxisNames;
+import org.apache.sis.metadata.privy.AxisNames;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
-import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.privy.Constants;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

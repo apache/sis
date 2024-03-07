@@ -25,9 +25,9 @@ import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.temporal.PeriodDuration;
 import org.opengis.util.InternationalString;
 import org.apache.sis.xml.bind.Context;
-import org.apache.sis.xml.util.XmlUtilities;
+import org.apache.sis.xml.privy.XmlUtilities;
 import org.apache.sis.xml.bind.gco.PropertyType;
-import org.apache.sis.metadata.internal.TemporalUtilities;
+import org.apache.sis.metadata.privy.TemporalUtilities;
 import org.apache.sis.util.SimpleInternationalString;
 
 // Specific to the main branch:

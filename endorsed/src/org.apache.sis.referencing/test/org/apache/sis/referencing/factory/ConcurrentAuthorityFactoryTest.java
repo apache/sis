@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.lang.reflect.Field;
 import org.opengis.util.FactoryException;
-import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_MILLISECOND;
+import static org.apache.sis.util.privy.StandardDateFormat.NANOS_PER_MILLISECOND;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

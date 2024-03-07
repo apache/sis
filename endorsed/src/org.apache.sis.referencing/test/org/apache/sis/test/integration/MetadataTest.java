@@ -57,12 +57,12 @@ import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.bind.metadata.replace.ReferenceSystemMetadata;
-import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.xml.privy.LegacyNamespaces;
 import org.apache.sis.xml.bind.gcx.Anchor;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.privy.Constants;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

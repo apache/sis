@@ -33,9 +33,9 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.metadata.internal.Identifiers;
-import org.apache.sis.metadata.internal.NameToIdentifier;
-import org.apache.sis.metadata.internal.ImplementationHelper;
+import org.apache.sis.metadata.privy.Identifiers;
+import org.apache.sis.metadata.privy.NameToIdentifier;
+import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.Formatter;
@@ -454,7 +454,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     AbstractDatum() {
-        super(org.apache.sis.referencing.util.NilReferencingObject.INSTANCE);
+        super(org.apache.sis.referencing.privy.NilReferencingObject.INSTANCE);
         realizationEpoch = Long.MIN_VALUE;
     }
 

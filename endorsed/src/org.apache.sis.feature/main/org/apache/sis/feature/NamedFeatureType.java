@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
-import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.privy.Strings;
 
 
 /**

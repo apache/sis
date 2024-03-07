@@ -40,7 +40,7 @@ import javax.xml.transform.stax.StAXSource;
 import javax.xml.namespace.QName;
 import jakarta.xml.bind.JAXBException;
 import org.apache.sis.io.stream.ChannelDataInput;
-import org.apache.sis.util.internal.StandardDateFormat;
+import org.apache.sis.util.privy.StandardDateFormat;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.geotiff.base.Tags;
@@ -49,7 +49,7 @@ import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.XML;
-import static org.apache.sis.metadata.internal.TemporalUtilities.toDate;
+import static org.apache.sis.metadata.privy.TemporalUtilities.toDate;
 
 
 /**

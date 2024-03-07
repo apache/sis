@@ -16,7 +16,7 @@
  */
 package org.apache.sis.metadata.simple;
 
-import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.privy.Numerics;
 
 // Specific to the main branch:
 import org.apache.sis.pending.geoapi.temporal.Duration;

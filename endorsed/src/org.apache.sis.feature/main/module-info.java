@@ -31,7 +31,7 @@ module org.apache.sis.feature {
     requires static esri.geometry.api;
     requires static org.locationtech.jts;
 
-    uses org.apache.sis.filter.internal.FunctionRegister;
+    uses org.apache.sis.filter.FunctionRegister;
 
     exports org.apache.sis.image;
     exports org.apache.sis.coverage;
@@ -47,12 +47,12 @@ module org.apache.sis.feature {
             org.apache.sis.storage.shapefile,       // In the "incubator" sub-project.
             org.apache.sis.portrayal;
 
-    exports org.apache.sis.filter.internal to
+    exports org.apache.sis.filter.privy to
             org.apache.sis.storage,
             org.apache.sis.storage.sql,
             org.apache.sis.storage.shapefile;       // In the "incubator" sub-project.
 
-    exports org.apache.sis.feature.internal to
+    exports org.apache.sis.feature.privy to
             org.apache.sis.storage,
             org.apache.sis.storage.xml,
             org.apache.sis.storage.netcdf,
@@ -70,12 +70,7 @@ module org.apache.sis.feature {
     exports org.apache.sis.geometry.wrapper.j2d to
             org.apache.sis.gui;                     // In the "optional" sub-project.
 
-    exports org.apache.sis.coverage.internal to
-            org.apache.sis.storage,
-            org.apache.sis.storage.netcdf,
-            org.apache.sis.portrayal;
-
-    exports org.apache.sis.coverage.grid.j2d to
+    exports org.apache.sis.coverage.privy to
             org.apache.sis.storage,
             org.apache.sis.storage.sql,
             org.apache.sis.storage.netcdf,

@@ -21,7 +21,7 @@ import java.awt.image.DataBuffer;
 import java.awt.image.WritableRaster;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.coverage.grid.j2d.RasterFactory;
+import org.apache.sis.coverage.privy.RasterFactory;
 import org.apache.sis.geometry.DirectPosition2D;
 
 // Test dependencies

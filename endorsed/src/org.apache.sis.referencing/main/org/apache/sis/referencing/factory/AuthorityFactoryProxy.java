@@ -30,7 +30,7 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.privy.Strings;
 
 
 /**

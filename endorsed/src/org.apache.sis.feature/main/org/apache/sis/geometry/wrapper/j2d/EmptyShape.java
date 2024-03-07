@@ -24,7 +24,7 @@ import java.awt.geom.Point2D;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
 import java.util.NoSuchElementException;
-import org.apache.sis.referencing.util.j2d.AbstractShape;
+import org.apache.sis.referencing.privy.AbstractShape;
 
 
 /**

@@ -26,7 +26,7 @@ import jakarta.xml.bind.JAXBException;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.MarshallerPool;
-import org.apache.sis.xml.util.XmlUtilities;
+import org.apache.sis.xml.privy.XmlUtilities;
 import org.apache.sis.pending.temporal.DefaultTemporalFactory;
 
 // Test dependencies

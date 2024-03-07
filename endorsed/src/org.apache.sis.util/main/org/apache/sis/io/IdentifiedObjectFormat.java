@@ -23,9 +23,9 @@ import java.text.ParsePosition;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.internal.Strings;
-import org.apache.sis.util.internal.Constants;
-import org.apache.sis.util.internal.MetadataServices;
+import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.privy.MetadataServices;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;

@@ -29,7 +29,7 @@ import org.apache.sis.xml.Namespaces;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.internal.AnnotatedMatrix;
-import org.apache.sis.referencing.util.PositionalAccuracyConstant;
+import org.apache.sis.referencing.privy.PositionalAccuracyConstant;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import static org.apache.sis.referencing.GeodeticObjectVerifier.*;

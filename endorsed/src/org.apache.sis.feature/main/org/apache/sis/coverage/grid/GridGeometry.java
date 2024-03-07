@@ -56,11 +56,11 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
-import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
-import org.apache.sis.referencing.util.DirectPositionView;
-import org.apache.sis.referencing.util.TemporalAccessor;
-import org.apache.sis.referencing.util.AxisDirections;
-import org.apache.sis.metadata.internal.ReferencingServices;
+import org.apache.sis.referencing.privy.ExtendedPrecisionMatrix;
+import org.apache.sis.referencing.privy.DirectPositionView;
+import org.apache.sis.referencing.privy.TemporalAccessor;
+import org.apache.sis.referencing.privy.AxisDirections;
+import org.apache.sis.metadata.privy.ReferencingServices;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
@@ -70,13 +70,14 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.internal.DoubleDouble;
-import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.privy.DoubleDouble;
+import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.io.TableAppender;
@@ -1974,8 +1975,7 @@ public class GridGeometry implements LenientComparable, Serializable {
                 if (Longitude.isWraparound(westBoundLongitude, eastBoundLongitude)) {
                     vocabulary.appendLabel(Vocabulary.Keys.Note, buffer);
                     buffer.append(' ')
-                          .append(org.apache.sis.metadata.internal.Resources.forLocale(locale).getString(
-                                  org.apache.sis.metadata.internal.Resources.Keys.BoxCrossesAntiMeridian));
+                          .append(Messages.forLocale(locale).getString(Messages.Keys.BoxCrossesAntiMeridian));
                 }
                 writeNodes();
             }

@@ -18,7 +18,7 @@ package org.apache.sis.storage.aggregate;
 
 import java.util.Arrays;
 import java.math.BigInteger;
-import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.privy.Strings;
 
 
 /**

@@ -33,7 +33,7 @@ import org.apache.sis.xml.bind.gcx.Anchor;
 import org.apache.sis.xml.bind.gcx.FileName;
 import org.apache.sis.xml.bind.gcx.MimeFileType;
 import org.apache.sis.xml.bind.cat.CodeListUID;
-import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.xml.privy.LegacyNamespaces;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.iso.Types;

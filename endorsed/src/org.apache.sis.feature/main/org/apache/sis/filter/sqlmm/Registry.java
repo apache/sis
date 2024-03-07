@@ -19,7 +19,7 @@ package org.apache.sis.filter.sqlmm;
 import java.util.Arrays;
 import java.util.Collection;
 import org.apache.sis.geometry.wrapper.Geometries;
-import org.apache.sis.filter.internal.FunctionRegister;
+import org.apache.sis.filter.FunctionRegister;
 import org.apache.sis.pending.jdk.JDK16;
 
 // Specific to the main branch:

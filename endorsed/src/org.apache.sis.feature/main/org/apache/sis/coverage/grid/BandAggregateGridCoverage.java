@@ -24,8 +24,8 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.coverage.internal.MultiSourceArgument;
-import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.coverage.privy.MultiSourceArgument;
+import org.apache.sis.util.privy.CollectionsExt;
 
 
 /**

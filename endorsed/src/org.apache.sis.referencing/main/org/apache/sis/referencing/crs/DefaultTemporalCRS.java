@@ -35,13 +35,13 @@ import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
-import org.apache.sis.referencing.util.WKTKeywords;
-import org.apache.sis.metadata.internal.ImplementationHelper;
+import org.apache.sis.referencing.privy.WKTKeywords;
+import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Fraction;
-import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_SECOND;
-import static org.apache.sis.util.internal.StandardDateFormat.MILLIS_PER_SECOND;
+import static org.apache.sis.util.privy.StandardDateFormat.NANOS_PER_SECOND;
+import static org.apache.sis.util.privy.StandardDateFormat.MILLIS_PER_SECOND;
 
 
 /**

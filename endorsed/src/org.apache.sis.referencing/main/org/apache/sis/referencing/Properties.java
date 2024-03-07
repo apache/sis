@@ -30,8 +30,8 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.apache.sis.util.Deprecable;
-import org.apache.sis.util.internal.AbstractMap;
-import org.apache.sis.referencing.util.CoordinateOperations;
+import org.apache.sis.util.privy.AbstractMap;
+import org.apache.sis.referencing.privy.CoordinateOperations;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.ReferenceIdentifier;

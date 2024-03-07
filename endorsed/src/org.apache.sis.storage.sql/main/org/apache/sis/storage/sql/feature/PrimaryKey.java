@@ -18,8 +18,8 @@ package org.apache.sis.storage.sql.feature;
 
 import java.util.List;
 import java.util.Collection;
-import org.apache.sis.util.internal.CollectionsExt;
-import org.apache.sis.util.internal.UnmodifiableArrayList;
+import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
 
 
 /**

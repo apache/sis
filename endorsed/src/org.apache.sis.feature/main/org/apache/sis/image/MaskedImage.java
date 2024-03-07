@@ -32,11 +32,11 @@ import java.awt.image.RenderedImage;
 import java.awt.image.IndexColorModel;
 import java.awt.image.MultiPixelPackedSampleModel;
 import java.lang.ref.SoftReference;
-import org.apache.sis.util.internal.Numerics;
-import org.apache.sis.coverage.grid.j2d.FillValues;
-import org.apache.sis.coverage.grid.j2d.ImageUtilities;
-import org.apache.sis.coverage.grid.j2d.TilePlaceholder;
-import static org.apache.sis.util.internal.Numerics.LONG_SHIFT;
+import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.coverage.privy.FillValues;
+import org.apache.sis.coverage.privy.ImageUtilities;
+import org.apache.sis.coverage.privy.TilePlaceholder;
+import static org.apache.sis.util.privy.Numerics.LONG_SHIFT;
 import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
 
 

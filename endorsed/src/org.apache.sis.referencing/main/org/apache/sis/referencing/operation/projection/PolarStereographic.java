@@ -35,14 +35,14 @@ import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.provider.PolarStereographicA;
 import org.apache.sis.referencing.operation.provider.PolarStereographicB;
 import org.apache.sis.referencing.operation.provider.PolarStereographicC;
-import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.internal.DoubleDouble;
+import org.apache.sis.util.privy.DoubleDouble;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.math.MathFunctions;
-import static org.apache.sis.referencing.util.Formulas.fastHypot;
+import static org.apache.sis.referencing.privy.Formulas.fastHypot;
 
 
 /**

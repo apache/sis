@@ -21,7 +21,7 @@ import java.util.Map;
 import java.io.IOException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.feature.internal.FeatureUtilities;
+import org.apache.sis.feature.privy.FeatureUtilities;
 import org.apache.sis.util.resources.Errors;
 
 

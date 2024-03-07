@@ -44,10 +44,10 @@ import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.io.stream.IOUtilities;
-import org.apache.sis.coverage.internal.RangeArgument;
-import org.apache.sis.coverage.grid.j2d.ImageUtilities;
+import org.apache.sis.coverage.privy.RangeArgument;
+import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.internal.UnmodifiableArrayList;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.iso.Names;
 

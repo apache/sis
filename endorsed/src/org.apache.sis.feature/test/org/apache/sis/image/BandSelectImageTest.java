@@ -26,8 +26,8 @@ import java.awt.image.RenderedImage;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
-import org.apache.sis.coverage.grid.j2d.ColorModelFactory;
-import org.apache.sis.coverage.grid.j2d.ImageUtilities;
+import org.apache.sis.coverage.privy.ColorModelFactory;
+import org.apache.sis.coverage.privy.ImageUtilities;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

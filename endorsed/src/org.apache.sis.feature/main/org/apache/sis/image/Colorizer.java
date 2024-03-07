@@ -31,8 +31,8 @@ import java.awt.image.IndexColorModel;
 import java.awt.image.RenderedImage;
 import org.apache.sis.coverage.Category;
 import org.apache.sis.coverage.SampleDimension;
-import org.apache.sis.coverage.grid.j2d.ColorModelBuilder;
-import org.apache.sis.coverage.grid.j2d.ColorModelFactory;
+import org.apache.sis.coverage.privy.ColorModelBuilder;
+import org.apache.sis.coverage.privy.ColorModelFactory;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArgumentChecks;
 

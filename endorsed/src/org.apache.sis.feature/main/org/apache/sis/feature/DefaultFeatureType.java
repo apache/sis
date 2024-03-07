@@ -36,8 +36,8 @@ import org.opengis.util.InternationalString;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.Containers;
-import org.apache.sis.util.internal.CollectionsExt;
-import org.apache.sis.util.internal.UnmodifiableArrayList;
+import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.feature.internal.Resources;
 
 

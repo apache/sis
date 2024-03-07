@@ -18,7 +18,7 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import org.opengis.referencing.cs.AxisDirection;
-import org.apache.sis.referencing.util.AxisDirections;
+import org.apache.sis.referencing.privy.AxisDirections;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

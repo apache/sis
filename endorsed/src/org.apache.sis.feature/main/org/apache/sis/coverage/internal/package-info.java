@@ -16,7 +16,7 @@
  */
 
 /**
- * A set of helper classes for grid coverages.
+ * A set of helper classes for grid coverages in the {org.apache.sis.feature} module.
  *
  * <p><strong>Do not use!</strong></p>
  *

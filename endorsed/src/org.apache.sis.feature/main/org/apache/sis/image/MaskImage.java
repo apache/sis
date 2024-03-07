@@ -22,10 +22,10 @@ import java.awt.image.WritableRaster;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.apache.sis.coverage.grid.j2d.ColorModelFactory;
-import org.apache.sis.coverage.grid.j2d.ImageUtilities;
+import org.apache.sis.coverage.privy.ColorModelFactory;
+import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.util.logging.Logging;
-import static org.apache.sis.coverage.grid.j2d.ImageUtilities.LOGGER;
+import static org.apache.sis.coverage.privy.ImageUtilities.LOGGER;
 
 
 /**

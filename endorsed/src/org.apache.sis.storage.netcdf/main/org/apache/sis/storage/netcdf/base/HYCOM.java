@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.internal.StandardDateFormat;
+import org.apache.sis.util.privy.StandardDateFormat;
 
 
 /**

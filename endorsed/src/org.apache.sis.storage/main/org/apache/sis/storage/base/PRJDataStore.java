@@ -47,7 +47,7 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.xml.util.ExceptionSimplifier;
+import org.apache.sis.xml.privy.ExceptionSimplifier;
 
 
 /**

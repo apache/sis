@@ -27,7 +27,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.ImageProcessor;
-import org.apache.sis.coverage.grid.j2d.ImageUtilities;
+import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.storage.IncompatibleResourceException;
 
 

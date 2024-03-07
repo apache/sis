@@ -54,11 +54,6 @@ public class Resources extends IndexedResourceBundle {
         }
 
         /**
-         * Bounding box crosses the antimeridian.
-         */
-        public static final short BoxCrossesAntiMeridian = 3;
-
-        /**
          * Connection to “{0}” database is already initialized.
          */
         public static final short ConnectionAlreadyInitialized_1 = 6;
@@ -82,7 +77,7 @@ public class Resources extends IndexedResourceBundle {
         /**
          * Multiline record
          */
-        public static final short MultilineRecord = 9;
+        public static final short MultilineRecord = 3;
 
         /**
          * Single number

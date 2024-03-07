@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.operation.matrix;
 
 import org.opengis.referencing.operation.Matrix;
-import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.privy.Numerics;
 
 
 /**

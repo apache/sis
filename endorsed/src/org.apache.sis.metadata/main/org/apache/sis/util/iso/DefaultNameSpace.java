@@ -29,8 +29,8 @@ import org.opengis.util.ScopedName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.util.internal.Constants;
-import org.apache.sis.util.internal.UnmodifiableArrayList;
+import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 

@@ -23,7 +23,7 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.PathIterator;
 import java.awt.geom.AffineTransform;
 import java.io.Serializable;
-import org.apache.sis.referencing.util.j2d.AbstractShape;
+import org.apache.sis.referencing.privy.AbstractShape;
 
 
 /**

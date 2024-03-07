@@ -24,7 +24,7 @@ import java.awt.geom.PathIterator;
 import java.awt.geom.IllegalPathStateException;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.geom.GeometryFactory;
-import org.apache.sis.referencing.util.j2d.AbstractShape;
+import org.apache.sis.referencing.privy.AbstractShape;
 
 
 /**

@@ -20,8 +20,8 @@ import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
-import org.apache.sis.metadata.internal.Resources;
 import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.resources.Messages;
 
 
 /**
@@ -109,7 +109,7 @@ final class SpecialCases extends PropertyAccessor {
             if (east != null) {
                 Object west = super.get(westBoundLongitude, metadata);
                 if (west != null && Longitude.isWraparound((Double) west, (Double) east)) {
-                    return Resources.formatInternational(Resources.Keys.BoxCrossesAntiMeridian);
+                    return Messages.formatInternational(Messages.Keys.BoxCrossesAntiMeridian);
                 }
             }
         }

@@ -34,7 +34,7 @@ import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
 import org.apache.sis.referencing.ImmutableIdentifier;
-import org.apache.sis.referencing.util.CoordinateOperations;
+import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.internal.SignReversalComment;
 import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import org.apache.sis.util.Deprecable;

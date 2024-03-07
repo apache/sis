@@ -47,7 +47,7 @@ import org.apache.sis.referencing.cs.*;
 import org.apache.sis.referencing.crs.*;
 import org.apache.sis.referencing.datum.*;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
-import org.apache.sis.referencing.util.ReferencingFactoryContainer;
+import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
 import org.apache.sis.referencing.internal.MergedProperties;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.system.Semaphores;

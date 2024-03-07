@@ -24,8 +24,8 @@ import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.DateType;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import static org.apache.sis.metadata.internal.ImplementationHelper.toDate;
-import static org.apache.sis.metadata.internal.ImplementationHelper.toMilliseconds;
+import static org.apache.sis.metadata.privy.ImplementationHelper.toDate;
+import static org.apache.sis.metadata.privy.ImplementationHelper.toMilliseconds;
 
 
 /**

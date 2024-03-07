@@ -23,7 +23,7 @@ import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.referencing.ImmutableIdentifier;
-import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
+import static org.apache.sis.util.privy.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
