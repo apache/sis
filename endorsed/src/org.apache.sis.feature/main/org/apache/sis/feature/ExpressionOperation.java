@@ -23,9 +23,9 @@ import java.util.Collection;
 import java.util.function.Function;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.apache.sis.feature.internal.FeatureUtilities;
-import org.apache.sis.filter.internal.FunctionNames;
-import org.apache.sis.filter.internal.Visitor;
+import org.apache.sis.feature.privy.FeatureUtilities;
+import org.apache.sis.filter.privy.FunctionNames;
+import org.apache.sis.filter.privy.Visitor;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.CodeList;

@@ -26,7 +26,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolation;
 import org.apache.sis.referencing.operation.provider.Molodensky;
-import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.referencing.privy.Formulas;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -42,7 +42,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.provider.AbridgedMolodensky;
 import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.math.Statistics;
-import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
+import static org.apache.sis.metadata.privy.ReferencingServices.NAUTICAL_MILE;
 import org.opengis.test.CalculationType;
 import org.opengis.test.ToleranceModifier;
 import org.opengis.test.ToleranceModifiers;

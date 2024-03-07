@@ -27,8 +27,8 @@ import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.extent.SpatialTemporalExtent;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.metadata.internal.TemporalUtilities;
-import org.apache.sis.metadata.internal.ReferencingServices;
+import org.apache.sis.metadata.privy.TemporalUtilities;
+import org.apache.sis.metadata.privy.ReferencingServices;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
 

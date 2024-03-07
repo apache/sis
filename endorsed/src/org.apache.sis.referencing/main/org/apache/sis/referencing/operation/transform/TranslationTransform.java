@@ -20,7 +20,7 @@ import java.util.Arrays;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
+import org.apache.sis.referencing.privy.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.internal.Arithmetic;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -30,7 +30,7 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * <h2>Design note</h2>
  * We do not provide two-dimensional specialization because
- * {@link org.apache.sis.referencing.util.j2d.AffineTransform2D} should be used in such case.
+ * {@link org.apache.sis.referencing.privy.AffineTransform2D} should be used in such case.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *

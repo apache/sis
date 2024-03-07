@@ -39,9 +39,9 @@ import org.apache.sis.image.Interpolation;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.measure.NumberRange;
-import org.apache.sis.coverage.internal.SampleDimensions;
-import static org.apache.sis.util.internal.Numerics.saturatingAdd;
-import static org.apache.sis.util.internal.Numerics.saturatingSubtract;
+import org.apache.sis.coverage.privy.SampleDimensions;
+import static org.apache.sis.util.privy.Numerics.saturatingAdd;
+import static org.apache.sis.util.privy.Numerics.saturatingSubtract;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.CannotEvaluateException;

@@ -34,8 +34,8 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
-import org.apache.sis.metadata.internal.AxisNames;
-import org.apache.sis.referencing.util.ReferencingFactoryContainer;
+import org.apache.sis.metadata.privy.AxisNames;
+import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
@@ -43,7 +43,7 @@ import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
+import static org.apache.sis.util.privy.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

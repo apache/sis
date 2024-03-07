@@ -19,7 +19,7 @@ package org.apache.sis.metadata.iso.identification;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
-import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.privy.Strings;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Collections;

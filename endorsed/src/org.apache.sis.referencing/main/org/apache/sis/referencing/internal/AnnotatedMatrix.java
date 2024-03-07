@@ -18,8 +18,8 @@ package org.apache.sis.referencing.internal;
 
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.metadata.quality.PositionalAccuracy;
-import org.apache.sis.util.internal.CloneAccess;
-import org.apache.sis.referencing.util.PositionalAccuracyConstant;
+import org.apache.sis.util.privy.CloneAccess;
+import org.apache.sis.referencing.privy.PositionalAccuracyConstant;
 
 
 /**

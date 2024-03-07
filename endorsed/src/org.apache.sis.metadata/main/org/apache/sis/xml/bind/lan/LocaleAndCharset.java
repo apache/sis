@@ -26,9 +26,9 @@ import java.util.Locale;
 import java.util.Iterator;
 import java.util.Objects;
 import java.nio.charset.Charset;
-import org.apache.sis.util.internal.Bag;
-import org.apache.sis.util.internal.Unsafe;
-import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.privy.Bag;
+import org.apache.sis.util.privy.Unsafe;
+import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable.Node;
 

@@ -17,7 +17,7 @@
 package org.apache.sis.xml;
 
 import static org.apache.sis.util.CharSequences.*;
-import static org.apache.sis.util.internal.DefinitionURI.regionMatches;
+import static org.apache.sis.util.privy.DefinitionURI.regionMatches;
 
 
 /**

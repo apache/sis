@@ -27,12 +27,12 @@ import org.opengis.util.InternationalString;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.xml.privy.LegacyNamespaces;
 import org.apache.sis.xml.bind.gco.GO_GenericName;
-import org.apache.sis.metadata.internal.NameToIdentifier;
+import org.apache.sis.metadata.privy.NameToIdentifier;
 import org.apache.sis.util.iso.DefaultMemberName;
 import org.apache.sis.util.iso.Names;
-import static org.apache.sis.util.internal.CollectionsExt.nonNull;
+import static org.apache.sis.util.privy.CollectionsExt.nonNull;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.ReferenceIdentifier;

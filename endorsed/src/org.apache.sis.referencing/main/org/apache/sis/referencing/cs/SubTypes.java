@@ -29,7 +29,7 @@ import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.cs.UserDefinedCS;
 import org.opengis.referencing.cs.VerticalCS;
-import org.apache.sis.referencing.util.AxisDirections;
+import org.apache.sis.referencing.privy.AxisDirections;
 
 
 /**

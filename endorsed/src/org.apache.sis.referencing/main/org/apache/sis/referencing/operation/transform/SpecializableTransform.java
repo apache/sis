@@ -27,7 +27,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.apache.sis.referencing.util.DirectPositionView;
+import org.apache.sis.referencing.privy.DirectPositionView;
 import org.apache.sis.referencing.internal.RTreeNode;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ArgumentChecks;

@@ -54,7 +54,7 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverageProcessor;
 import org.apache.sis.coverage.grid.IllegalGridGeometryException;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.privy.Numerics;
 
 
 /**

@@ -28,9 +28,9 @@ import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.provider.Affine;
-import org.apache.sis.util.internal.Constants;
-import static org.apache.sis.util.internal.Constants.NUM_ROW;
-import static org.apache.sis.util.internal.Constants.NUM_COL;
+import org.apache.sis.util.privy.Constants;
+import static org.apache.sis.util.privy.Constants.NUM_ROW;
+import static org.apache.sis.util.privy.Constants.NUM_COL;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

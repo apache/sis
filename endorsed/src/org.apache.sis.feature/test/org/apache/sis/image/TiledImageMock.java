@@ -36,8 +36,8 @@ import java.awt.image.SampleModel;
 import java.awt.image.TileObserver;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
-import org.apache.sis.coverage.grid.j2d.ImageUtilities;
-import org.apache.sis.coverage.grid.j2d.WritableTiledImage;
+import org.apache.sis.coverage.privy.ImageUtilities;
+import org.apache.sis.coverage.privy.WritableTiledImage;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.pending.jdk.JDK18;
 

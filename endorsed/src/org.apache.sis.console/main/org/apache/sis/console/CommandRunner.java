@@ -34,7 +34,7 @@ import org.apache.sis.system.Environment;
 import org.apache.sis.util.Locales;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.internal.X364;
+import org.apache.sis.util.privy.X364;
 import org.apache.sis.storage.DataOptionKey;
 import org.apache.sis.storage.StorageConnector;
 

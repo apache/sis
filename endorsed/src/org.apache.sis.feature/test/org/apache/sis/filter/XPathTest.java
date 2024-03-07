@@ -16,7 +16,7 @@
  */
 package org.apache.sis.filter;
 
-import org.apache.sis.filter.internal.XPath;
+import org.apache.sis.filter.privy.XPath;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

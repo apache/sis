@@ -21,7 +21,7 @@ import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.scene.control.TableView;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.privy.Strings;
 
 
 /**

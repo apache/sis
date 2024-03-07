@@ -21,8 +21,8 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElements;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.apache.sis.xml.bind.Context;
-import org.apache.sis.util.internal.Strings;
-import static org.apache.sis.xml.util.LegacyNamespaces.VERSION_3_0;
+import org.apache.sis.util.privy.Strings;
+import static org.apache.sis.xml.privy.LegacyNamespaces.VERSION_3_0;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.temporal.Period;

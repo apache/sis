@@ -27,7 +27,7 @@ import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.content.FeatureCatalogueDescription;
 import org.apache.sis.util.Static;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.xml.privy.LegacyNamespaces;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;

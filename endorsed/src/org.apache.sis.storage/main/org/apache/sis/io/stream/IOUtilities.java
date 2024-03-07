@@ -49,7 +49,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.internal.InputStreamAdapter;
 

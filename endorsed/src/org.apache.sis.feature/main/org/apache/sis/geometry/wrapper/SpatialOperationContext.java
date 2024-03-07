@@ -36,15 +36,15 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.util.ReferencingFactoryContainer;
-import org.apache.sis.referencing.util.ReferencingUtilities;
+import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
+import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

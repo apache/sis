@@ -20,9 +20,9 @@ import java.util.Date;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
-import org.apache.sis.util.internal.DoubleDouble;
+import org.apache.sis.util.privy.DoubleDouble;
 import static org.apache.sis.util.ArgumentChecks.*;
-import static org.apache.sis.referencing.util.Formulas.JULIAN_YEAR_LENGTH;
+import static org.apache.sis.referencing.privy.Formulas.JULIAN_YEAR_LENGTH;
 
 
 /**

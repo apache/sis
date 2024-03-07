@@ -35,7 +35,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.CheckedContainer;
-import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.privy.Strings;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.system.Modules;
 import org.apache.sis.system.Semaphores;

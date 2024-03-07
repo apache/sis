@@ -30,24 +30,24 @@ import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Conversion;
-import org.apache.sis.referencing.util.AxisDirections;
-import org.apache.sis.referencing.util.ReferencingUtilities;
+import org.apache.sis.referencing.privy.AxisDirections;
+import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.AxisFilter;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
-import static org.apache.sis.referencing.util.ReferencingUtilities.getPropertiesForModifiedCRS;
+import static org.apache.sis.referencing.privy.ReferencingUtilities.getPropertiesForModifiedCRS;
 
 
 /**
  * Helper class for separating the ellipsoidal height from the horizontal part of a CRS.
- * This is the converse of {@link org.apache.sis.referencing.util.EllipsoidalHeightCombiner}.
+ * This is the converse of {@link org.apache.sis.referencing.privy.EllipsoidalHeightCombiner}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
- * @see org.apache.sis.referencing.util.EllipsoidalHeightCombiner
+ * @see org.apache.sis.referencing.privy.EllipsoidalHeightCombiner
  */
 final class EllipsoidalHeightSeparator implements AxisFilter {
     /**

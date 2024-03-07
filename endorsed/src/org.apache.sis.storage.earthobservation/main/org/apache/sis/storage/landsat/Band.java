@@ -38,7 +38,7 @@ import org.apache.sis.metadata.iso.content.DefaultBand;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.util.internal.CollectionsExt.first;
+import static org.apache.sis.util.privy.CollectionsExt.first;
 
 
 /**

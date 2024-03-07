@@ -38,8 +38,8 @@ import org.apache.sis.setup.InstallationResources;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.system.Fallback;
 import org.apache.sis.system.DataDirectory;
-import org.apache.sis.util.internal.CollectionsExt;
-import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.privy.Constants;
 
 
 /**

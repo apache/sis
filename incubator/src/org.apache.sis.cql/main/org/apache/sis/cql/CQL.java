@@ -61,7 +61,7 @@ import org.apache.sis.cql.internal.CQLParser.ExpressionUnaryContext;
 import org.apache.sis.cql.internal.CQLParser.FilterContext;
 import org.apache.sis.cql.internal.CQLParser.FilterGeometryContext;
 import org.apache.sis.cql.internal.CQLParser.FilterTermContext;
-import org.apache.sis.util.internal.StandardDateFormat;
+import org.apache.sis.util.privy.StandardDateFormat;
 import static org.apache.sis.cql.internal.CQLParser.*;
 
 

@@ -21,7 +21,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
-import static org.apache.sis.referencing.util.Formulas.JULIAN_YEAR_LENGTH;
+import static org.apache.sis.referencing.privy.Formulas.JULIAN_YEAR_LENGTH;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

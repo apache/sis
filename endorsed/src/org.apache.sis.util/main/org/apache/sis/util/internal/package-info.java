@@ -16,18 +16,12 @@
  */
 
 /**
- * A set of helper classes for the SIS implementation.
+ * A set of helper classes for the {@code org.apache.sis.util} module.
  *
  * <STRONG>Do not use!</STRONG>
  *
  * This package is for internal use by SIS only. Classes in this package
  * may change in incompatible ways in any future version without notice.
- *
- * <h2>Note on serialization</h2>
- * Developers should avoid putting serializable classes in this package as much as possible,
- * since the serialization forms may be considered as a kind of API contract (depending how
- * much strict we want to be regarding compatibility). This is not always practical however,
- * so some serialized classes still exist in this package.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

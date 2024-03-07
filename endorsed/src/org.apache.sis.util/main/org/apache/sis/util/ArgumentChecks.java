@@ -25,7 +25,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
-import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

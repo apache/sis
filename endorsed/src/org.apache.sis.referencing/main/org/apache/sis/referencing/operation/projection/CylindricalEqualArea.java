@@ -29,7 +29,7 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.operation.provider.Mercator1SP;
 import org.apache.sis.referencing.operation.provider.LambertCylindricalEqualAreaSpherical;
 import org.apache.sis.util.Workaround;
-import org.apache.sis.util.internal.DoubleDouble;
+import org.apache.sis.util.privy.DoubleDouble;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;

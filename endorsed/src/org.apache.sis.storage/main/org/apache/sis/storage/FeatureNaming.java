@@ -25,7 +25,7 @@ import java.util.Objects;
 import org.opengis.util.GenericName;
 import org.opengis.util.ScopedName;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.storage.internal.Resources;
 
 

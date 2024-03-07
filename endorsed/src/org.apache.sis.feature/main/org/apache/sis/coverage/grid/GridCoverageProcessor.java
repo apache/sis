@@ -46,16 +46,16 @@ import org.apache.sis.image.Colorizer;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.image.Interpolation;
-import org.apache.sis.coverage.internal.SampleDimensions;
-import org.apache.sis.coverage.internal.MultiSourceArgument;
+import org.apache.sis.coverage.privy.SampleDimensions;
+import org.apache.sis.coverage.privy.MultiSourceArgument;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.WeakHashSet;
-import org.apache.sis.util.internal.Numerics;
-import org.apache.sis.util.internal.UnmodifiableArrayList;
+import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.measure.NumberRange;
 
 

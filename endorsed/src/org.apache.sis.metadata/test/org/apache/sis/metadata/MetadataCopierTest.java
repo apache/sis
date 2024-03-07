@@ -42,7 +42,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
- * @see org.apache.sis.metadata.internal.MergerTest
+ * @see org.apache.sis.metadata.privy.MergerTest
  */
 public final class MetadataCopierTest extends TestCase {
     /**

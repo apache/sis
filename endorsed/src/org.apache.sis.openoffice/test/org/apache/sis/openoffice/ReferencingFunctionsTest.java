@@ -17,8 +17,8 @@
 package org.apache.sis.openoffice;
 
 import com.sun.star.lang.IllegalArgumentException;
-import org.apache.sis.referencing.util.Formulas;
-import org.apache.sis.referencing.util.PositionalAccuracyConstant;
+import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.privy.PositionalAccuracyConstant;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

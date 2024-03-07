@@ -16,7 +16,7 @@
  */
 package org.apache.sis.filter;
 
-import static org.apache.sis.util.internal.StandardDateFormat.MILLISECONDS_PER_DAY;
+import static org.apache.sis.util.privy.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

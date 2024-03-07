@@ -25,8 +25,8 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import org.apache.sis.filter.internal.FunctionNames;
-import org.apache.sis.filter.internal.Visitor;
+import org.apache.sis.filter.privy.FunctionNames;
+import org.apache.sis.filter.privy.Visitor;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.CodeList;

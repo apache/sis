@@ -26,7 +26,7 @@ import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakValueHashMap;
-import org.apache.sis.feature.internal.FeatureExpression;
+import org.apache.sis.feature.privy.FeatureExpression;
 import org.apache.sis.filter.internal.Node;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;

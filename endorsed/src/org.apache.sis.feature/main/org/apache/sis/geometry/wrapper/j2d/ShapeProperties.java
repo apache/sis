@@ -23,7 +23,7 @@ import java.lang.reflect.Array;
 import java.awt.Shape;
 import java.awt.geom.PathIterator;
 import java.awt.geom.IllegalPathStateException;
-import org.apache.sis.referencing.util.j2d.AbstractShape;
+import org.apache.sis.referencing.privy.AbstractShape;
 import org.apache.sis.util.StringBuilders;
 
 

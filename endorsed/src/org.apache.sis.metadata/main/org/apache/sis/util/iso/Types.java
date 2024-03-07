@@ -42,7 +42,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.util.internal.CodeLists;
+import org.apache.sis.util.privy.CodeLists;
 import org.apache.sis.pending.jdk.JDK19;
 import org.apache.sis.system.Modules;
 

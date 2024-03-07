@@ -31,8 +31,8 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.util.CoordinateOperations;
-import org.apache.sis.referencing.util.WraparoundApplicator;
+import org.apache.sis.referencing.privy.CoordinateOperations;
+import org.apache.sis.referencing.privy.WraparoundApplicator;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.WraparoundTransform;
@@ -42,7 +42,7 @@ import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.Units;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.privy.Numerics;
 
 
 /**

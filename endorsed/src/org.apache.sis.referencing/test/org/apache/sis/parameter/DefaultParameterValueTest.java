@@ -23,7 +23,7 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.InvalidParameterTypeException;
 import org.opengis.parameter.InvalidParameterValueException;
-import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.measure.Units;
 

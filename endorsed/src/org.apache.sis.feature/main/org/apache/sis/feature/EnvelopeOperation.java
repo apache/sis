@@ -30,14 +30,14 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.feature.internal.AttributeConvention;
-import org.apache.sis.feature.internal.FeatureUtilities;
+import org.apache.sis.feature.privy.AttributeConvention;
+import org.apache.sis.feature.privy.FeatureUtilities;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
-import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.util.resources.Errors;
 

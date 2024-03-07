@@ -31,7 +31,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.URIDataStoreProvider;
-import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.parameter.ParameterBuilder;
 

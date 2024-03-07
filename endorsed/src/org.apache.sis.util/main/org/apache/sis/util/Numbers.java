@@ -30,8 +30,8 @@ import java.math.BigInteger;
 import static java.lang.Double.doubleToLongBits;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.internal.DoubleDouble;
-import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.privy.DoubleDouble;
+import org.apache.sis.util.privy.CollectionsExt;
 
 
 /**

@@ -44,7 +44,7 @@ import static org.opengis.geoapi.SchemaInformation.SCHEMA_ROOT_URL;
 import org.apache.sis.util.Classes;
 import org.apache.sis.system.Modules;
 import org.apache.sis.xml.Namespaces;
-import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.xml.privy.LegacyNamespaces;
 
 // Test dependencies
 import static org.apache.sis.test.TestCase.PENDING_FUTURE_SIS_VERSION;

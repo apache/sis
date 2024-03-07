@@ -30,7 +30,7 @@ import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.datum.GeodeticDatumMock;
 

@@ -21,7 +21,7 @@ import javax.measure.Unit;
 import javax.measure.quantity.Time;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.converter.SurjectiveConverter;
-import org.apache.sis.util.internal.StandardDateFormat;
+import org.apache.sis.util.privy.StandardDateFormat;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.measure.Units;
 

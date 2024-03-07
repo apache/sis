@@ -29,7 +29,7 @@ import javax.xml.transform.stax.StAXResult;
 import org.w3c.dom.Node;
 import org.xml.sax.ContentHandler;
 import org.apache.sis.util.Static;
-import org.apache.sis.xml.util.StreamWriterDelegate;
+import org.apache.sis.xml.privy.StreamWriterDelegate;
 
 
 /**
