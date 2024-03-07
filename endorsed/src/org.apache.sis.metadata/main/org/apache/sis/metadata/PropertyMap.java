@@ -22,7 +22,7 @@ import java.util.AbstractMap;
 import java.util.AbstractSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import org.apache.sis.util.internal.AbstractMapEntry;
+import org.apache.sis.util.privy.AbstractMapEntry;
 import org.apache.sis.util.resources.Errors;
 
 

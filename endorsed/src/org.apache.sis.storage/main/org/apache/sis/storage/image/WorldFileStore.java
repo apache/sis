@@ -56,7 +56,7 @@ import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.internal.ListOfUnknownSize;
+import org.apache.sis.util.privy.ListOfUnknownSize;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.setup.OptionKey;

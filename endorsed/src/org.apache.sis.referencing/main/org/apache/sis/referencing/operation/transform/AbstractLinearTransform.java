@@ -27,7 +27,7 @@ import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.resources.Errors;
 
 

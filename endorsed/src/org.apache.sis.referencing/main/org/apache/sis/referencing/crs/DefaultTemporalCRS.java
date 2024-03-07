@@ -40,8 +40,8 @@ import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Fraction;
-import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_SECOND;
-import static org.apache.sis.util.internal.StandardDateFormat.MILLIS_PER_SECOND;
+import static org.apache.sis.util.privy.StandardDateFormat.NANOS_PER_SECOND;
+import static org.apache.sis.util.privy.StandardDateFormat.MILLIS_PER_SECOND;
 
 
 /**

@@ -39,7 +39,7 @@ import org.apache.sis.coverage.grid.j2d.TileOpExecutor;
 import org.apache.sis.coverage.internal.SampleDimensions;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Disposable;
-import org.apache.sis.util.internal.UnmodifiableArrayList;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.NumberRange;

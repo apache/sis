@@ -30,12 +30,12 @@ import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.metadata.sql.util.ScriptRunner;
 import org.apache.sis.metadata.sql.util.SQLUtilities;
-import org.apache.sis.util.internal.StandardDateFormat;
+import org.apache.sis.util.privy.StandardDateFormat;
 import org.apache.sis.system.Fallback;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.setup.InstallationResources;
-import static org.apache.sis.util.internal.Constants.EPSG;
+import static org.apache.sis.util.privy.Constants.EPSG;
 
 
 /**

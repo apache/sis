@@ -59,7 +59,7 @@ import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ObjectConverters;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 

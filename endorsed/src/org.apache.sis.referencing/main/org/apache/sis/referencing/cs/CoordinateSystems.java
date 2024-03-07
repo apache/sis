@@ -41,7 +41,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.internal.DoubleDouble;
+import org.apache.sis.util.privy.DoubleDouble;
 import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.internal.Resources;

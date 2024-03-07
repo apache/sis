@@ -31,7 +31,7 @@ import org.apache.sis.referencing.util.j2d.IntervalRectangle;
 import org.apache.sis.referencing.util.j2d.TileOrganizer;
 import org.apache.sis.referencing.util.j2d.Tile;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.pending.jdk.JDK19;
 
 

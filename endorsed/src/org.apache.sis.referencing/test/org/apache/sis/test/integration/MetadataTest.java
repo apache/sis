@@ -62,7 +62,7 @@ import org.apache.sis.xml.bind.gcx.Anchor;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.privy.Constants;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

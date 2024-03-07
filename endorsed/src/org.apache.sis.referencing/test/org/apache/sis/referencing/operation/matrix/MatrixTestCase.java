@@ -21,7 +21,7 @@ import java.awt.geom.AffineTransform;
 import static java.lang.StrictMath.*;
 import Jama.Matrix;
 import org.apache.sis.math.Statistics;
-import org.apache.sis.util.internal.DoubleDouble;
+import org.apache.sis.util.privy.DoubleDouble;
 import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
 
 // Test dependencies

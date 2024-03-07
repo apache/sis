@@ -27,7 +27,7 @@ import org.apache.sis.referencing.util.CoordinateOperations;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.util.collection.BackingStoreException;

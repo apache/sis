@@ -45,7 +45,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.image.ErrorHandler;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.system.CommonExecutor;
-import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.privy.Strings;
 
 
 /**

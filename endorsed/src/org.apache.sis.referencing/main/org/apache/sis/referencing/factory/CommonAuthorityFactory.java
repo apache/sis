@@ -47,7 +47,7 @@ import org.apache.sis.referencing.util.GeodeticObjectBuilder;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.SimpleInternationalString;
-import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.util.logging.Logging;

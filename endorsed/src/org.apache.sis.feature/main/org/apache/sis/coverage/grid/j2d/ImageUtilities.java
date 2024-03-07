@@ -40,9 +40,9 @@ import org.apache.sis.system.Configuration;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Static;
-import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.resources.Vocabulary;
-import static org.apache.sis.util.internal.Numerics.COMPARISON_THRESHOLD;
+import static org.apache.sis.util.privy.Numerics.COMPARISON_THRESHOLD;
 
 
 /**

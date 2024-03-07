@@ -27,7 +27,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.privy.Strings;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.gcx.Anchor;
 import org.apache.sis.xml.util.ExternalLinkHandler;

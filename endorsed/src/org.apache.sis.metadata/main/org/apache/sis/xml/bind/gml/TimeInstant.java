@@ -23,7 +23,7 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.apache.sis.xml.bind.Context;
-import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.privy.Strings;
 import org.apache.sis.xml.util.XmlUtilities;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

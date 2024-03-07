@@ -16,7 +16,7 @@
  */
 package org.apache.sis.metadata.simple;
 
-import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.privy.Numerics;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.temporal.Duration;

@@ -40,9 +40,9 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.internal.CloneAccess;
-import org.apache.sis.util.internal.Numerics;
-import org.apache.sis.util.internal.UnmodifiableArrayList;
+import org.apache.sis.util.privy.CloneAccess;
+import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.resources.Errors;
 

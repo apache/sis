@@ -16,8 +16,8 @@
  */
 
 /**
- * Localized resources for SIS. While anyone could use the resources provided in this package,
- * those resources are primarily for internal SIS usage and may change in any future version.
+ * Localized resources for SIS.
+ * Those resources are primarily for internal SIS usage and may change in any future version.
  *
  * <p>Apache SIS resources are provided in binary files having the "{@code .utf}" extension.
  * The resource keys are numeric constants declared in the {@code Keys} static inner classes.

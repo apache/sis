@@ -25,7 +25,7 @@ import javax.measure.quantity.Length;
 import org.opengis.util.CodeList;
 import org.opengis.geometry.Envelope;
 import org.opengis.filter.*;
-import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.feature.internal.Resources;
 

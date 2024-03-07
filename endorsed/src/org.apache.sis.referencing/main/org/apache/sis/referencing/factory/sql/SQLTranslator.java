@@ -26,8 +26,8 @@ import java.sql.SQLException;
 import java.sql.Types;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.internal.Constants;
-import static org.apache.sis.util.internal.Strings.isNullOrEmpty;
+import org.apache.sis.util.privy.Constants;
+import static org.apache.sis.util.privy.Strings.isNullOrEmpty;
 import org.apache.sis.metadata.sql.util.Reflection;
 import org.apache.sis.metadata.sql.util.SQLUtilities;
 

@@ -24,7 +24,7 @@ import org.apache.sis.xml.bind.Context;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.metadata.internal.NameMeaning;
 import org.apache.sis.referencing.util.NilReferencingObject;
-import static org.apache.sis.util.internal.Strings.appendUnicodeIdentifier;
+import static org.apache.sis.util.privy.Strings.appendUnicodeIdentifier;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.metadata.Identifier;
@@ -127,7 +127,7 @@ final class NameIterator implements Iterator<Identifier> {
      * Then, this method returns the concatenation of the following elements separated by hyphens:</p>
      * <ul>
      *   <li>The code space in lower case, retaining only characters that are valid for Unicode identifiers.</li>
-     *   <li>The object type as defined in OGC's URN (see {@link org.apache.sis.util.internal.DefinitionURI})</li>
+     *   <li>The object type as defined in OGC's URN (see {@link org.apache.sis.util.privy.DefinitionURI})</li>
      *   <li>The object code, retaining only characters that are valid for Unicode identifiers.</li>
      * </ul>
      *

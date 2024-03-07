@@ -79,9 +79,9 @@ import org.apache.sis.metadata.internal.AxisNames;
 import org.apache.sis.metadata.internal.TransformationAccuracy;
 import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.internal.Constants;
-import org.apache.sis.util.internal.Numerics;
-import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 

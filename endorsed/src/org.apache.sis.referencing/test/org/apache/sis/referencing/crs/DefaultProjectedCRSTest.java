@@ -30,7 +30,7 @@ import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.util.GeodeticObjectBuilder;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
-import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.measure.Units;

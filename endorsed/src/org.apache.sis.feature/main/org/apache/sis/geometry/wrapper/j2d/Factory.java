@@ -32,7 +32,7 @@ import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.referencing.util.j2d.AbstractShape;
 import org.apache.sis.referencing.util.j2d.ShapeUtilities;
 import org.apache.sis.util.UnsupportedImplementationException;
-import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.math.Vector;
 
 

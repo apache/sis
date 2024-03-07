@@ -26,7 +26,7 @@ import org.apache.sis.math.Statistics;
 import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.metadata.internal.ReferencingServices;
-import static org.apache.sis.util.internal.StandardDateFormat.NANOS_PER_SECOND;
+import static org.apache.sis.util.privy.StandardDateFormat.NANOS_PER_SECOND;
 
 // Test dependencies
 import org.apache.sis.test.Benchmark;

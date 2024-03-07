@@ -44,7 +44,7 @@ import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.parameter.DefaultParameterValue;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.measure.Units;

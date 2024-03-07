@@ -19,7 +19,7 @@ package org.apache.sis.referencing.util;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import org.apache.sis.util.internal.SetOfUnknownSize;
+import org.apache.sis.util.privy.SetOfUnknownSize;
 
 
 /**

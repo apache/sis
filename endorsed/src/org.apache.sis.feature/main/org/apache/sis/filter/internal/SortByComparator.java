@@ -23,7 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.Comparator;
 import java.io.Serializable;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.internal.UnmodifiableArrayList;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.SortBy;

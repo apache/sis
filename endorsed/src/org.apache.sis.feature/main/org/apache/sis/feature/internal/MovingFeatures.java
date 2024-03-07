@@ -23,7 +23,7 @@ import org.apache.sis.util.iso.Names;
 import org.apache.sis.math.Vector;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.referencing.crs.DefaultTemporalCRS;
-import org.apache.sis.util.internal.UnmodifiableArrayList;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Attribute;

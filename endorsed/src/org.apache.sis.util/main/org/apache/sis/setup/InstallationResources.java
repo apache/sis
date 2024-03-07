@@ -21,9 +21,9 @@ import java.util.Locale;
 import java.util.ServiceLoader;
 import java.io.IOException;
 import java.io.BufferedReader;
-import org.apache.sis.util.internal.URLs;
-import org.apache.sis.util.internal.Constants;
-import org.apache.sis.util.internal.MetadataServices;
+import org.apache.sis.util.privy.URLs;
+import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.privy.MetadataServices;
 import org.apache.sis.system.Reflect;
 
 

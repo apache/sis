@@ -31,7 +31,7 @@ import org.apache.sis.metadata.KeyNamePolicy;
 import org.apache.sis.metadata.ValueExistencePolicy;
 import org.apache.sis.util.CorruptedObjectException;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.internal.Unsafe;
+import org.apache.sis.util.privy.Unsafe;
 import org.apache.sis.util.resources.Errors;
 
 

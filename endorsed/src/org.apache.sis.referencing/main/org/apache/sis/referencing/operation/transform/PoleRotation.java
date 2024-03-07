@@ -37,8 +37,8 @@ import org.apache.sis.referencing.operation.provider.SouthPoleRotation;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.internal.Numerics;
-import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 

@@ -90,11 +90,11 @@ import org.apache.sis.util.Localized;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.internal.Constants;
-import org.apache.sis.util.internal.CollectionsExt;
-import org.apache.sis.util.internal.StandardDateFormat;
-import org.apache.sis.util.internal.Strings;
-import org.apache.sis.util.internal.URLs;
+import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.privy.URLs;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
@@ -118,7 +118,7 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.pending.jdk.JDK16;
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
-import static org.apache.sis.util.internal.StandardDateFormat.UTC;
+import static org.apache.sis.util.privy.StandardDateFormat.UTC;
 import static org.apache.sis.referencing.internal.ServicesForMetadata.CONNECTION;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

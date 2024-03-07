@@ -293,7 +293,7 @@ public class ReferencingServices extends OptionalDependency {
      * @param  locale  language to use if possible.
      * @return the information, or {@code null} if none.
      *
-     * @see org.apache.sis.util.internal.MetadataServices#getInformation(String, Locale)
+     * @see org.apache.sis.util.privy.MetadataServices#getInformation(String, Locale)
      */
     public String getInformation(String key, Locale locale) {
         return null;

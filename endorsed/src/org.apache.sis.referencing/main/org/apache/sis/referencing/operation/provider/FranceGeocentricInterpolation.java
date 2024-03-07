@@ -58,7 +58,7 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import static org.apache.sis.util.internal.Constants.DIM;
+import static org.apache.sis.util.privy.Constants.DIM;
 
 
 /**

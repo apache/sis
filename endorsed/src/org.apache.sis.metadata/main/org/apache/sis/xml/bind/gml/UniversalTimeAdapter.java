@@ -42,7 +42,7 @@ public final class UniversalTimeAdapter extends XmlAdapter<XMLGregorianCalendar,
     /**
      * The timezone of the date to marshal with this adapter.
      */
-    private static final TimeZone UTC = TimeZone.getTimeZone(org.apache.sis.util.internal.StandardDateFormat.UTC);
+    private static final TimeZone UTC = TimeZone.getTimeZone(org.apache.sis.util.privy.StandardDateFormat.UTC);
 
     /**
      * Empty constructor for JAXB only.

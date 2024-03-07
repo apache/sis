@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.internal.URLs;
+import org.apache.sis.util.privy.URLs;
 import org.apache.sis.metadata.sql.util.ScriptRunner;
 
 // Test dependencies

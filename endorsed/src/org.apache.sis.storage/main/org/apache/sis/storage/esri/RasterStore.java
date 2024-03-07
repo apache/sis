@@ -48,8 +48,8 @@ import org.apache.sis.coverage.grid.j2d.ObservableImage;
 import org.apache.sis.coverage.internal.RangeArgument;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.internal.UnmodifiableArrayList;
-import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.math.Statistics;
 

@@ -34,7 +34,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.system.DataDirectory;
 import org.apache.sis.system.Reflect;
-import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.privy.Strings;
 
 
 /**

@@ -46,7 +46,7 @@ import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.referencing.internal.AnnotatedMatrix;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.io.wkt.Formatter;

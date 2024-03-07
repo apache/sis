@@ -28,7 +28,7 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.feature.internal.MovingFeatures;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.util.CorruptedObjectException;
-import org.apache.sis.util.internal.UnmodifiableArrayList;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Attribute;

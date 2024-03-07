@@ -61,7 +61,7 @@ import org.apache.sis.system.Modules;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.internal.CloneAccess;
+import org.apache.sis.util.privy.CloneAccess;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.measure.Quantities;

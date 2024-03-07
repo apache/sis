@@ -32,7 +32,7 @@ import org.apache.sis.xml.bind.gco.GO_GenericName;
 import org.apache.sis.metadata.internal.NameToIdentifier;
 import org.apache.sis.util.iso.DefaultMemberName;
 import org.apache.sis.util.iso.Names;
-import static org.apache.sis.util.internal.CollectionsExt.nonNull;
+import static org.apache.sis.util.privy.CollectionsExt.nonNull;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.parameter.ParameterDirection;

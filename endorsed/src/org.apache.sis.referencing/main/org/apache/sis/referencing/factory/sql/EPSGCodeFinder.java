@@ -43,7 +43,7 @@ import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.pending.jdk.JDK19;
 import org.apache.sis.metadata.internal.ReferencingServices;
 import org.apache.sis.metadata.sql.util.SQLUtilities;

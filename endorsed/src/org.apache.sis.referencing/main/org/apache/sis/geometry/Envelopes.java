@@ -53,7 +53,7 @@ import org.apache.sis.referencing.util.CoordinateOperations;
 import org.apache.sis.referencing.util.DirectPositionView;
 import org.apache.sis.referencing.util.TemporalAccessor;
 import org.apache.sis.system.Loggers;
-import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.ArgumentChecks;

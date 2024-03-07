@@ -66,7 +66,7 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.util.internal.CollectionsExt.nonNull;
+import static org.apache.sis.util.privy.CollectionsExt.nonNull;
 import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADIUS;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

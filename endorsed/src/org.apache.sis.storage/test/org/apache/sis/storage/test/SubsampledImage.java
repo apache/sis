@@ -29,7 +29,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import static java.lang.StrictMath.floorDiv;
 import org.apache.sis.image.PlanarImage;
-import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.privy.Strings;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;

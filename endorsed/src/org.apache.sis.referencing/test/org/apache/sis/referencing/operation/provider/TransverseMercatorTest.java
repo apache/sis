@@ -17,7 +17,7 @@
 package org.apache.sis.referencing.operation.provider;
 
 import org.opengis.parameter.ParameterValueGroup;
-import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.privy.Constants;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

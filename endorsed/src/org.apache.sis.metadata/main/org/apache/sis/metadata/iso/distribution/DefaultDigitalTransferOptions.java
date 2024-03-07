@@ -33,7 +33,7 @@ import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.gts.TM_PeriodDuration;
-import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.privy.CollectionsExt;
 import static org.apache.sis.metadata.internal.ImplementationHelper.ensurePositive;
 
 

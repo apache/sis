@@ -31,7 +31,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.internal.Identifiers;
 import org.apache.sis.metadata.internal.NameMeaning;
 import org.apache.sis.referencing.util.WKTKeywords;
-import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.privy.Strings;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;

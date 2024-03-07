@@ -25,7 +25,7 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.metadata.simple.SimpleCitation;
 import org.apache.sis.xml.util.LegacyNamespaces;
-import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.io.wkt.Convention;
 
 // Test dependencies

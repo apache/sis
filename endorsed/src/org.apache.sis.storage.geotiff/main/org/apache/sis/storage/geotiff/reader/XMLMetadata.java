@@ -40,7 +40,7 @@ import javax.xml.transform.stax.StAXSource;
 import javax.xml.namespace.QName;
 import jakarta.xml.bind.JAXBException;
 import org.apache.sis.io.stream.ChannelDataInput;
-import org.apache.sis.util.internal.StandardDateFormat;
+import org.apache.sis.util.privy.StandardDateFormat;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.geotiff.base.Tags;

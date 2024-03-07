@@ -35,7 +35,7 @@ import org.apache.sis.coverage.grid.IllegalGridGeometryException;
 import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.privy.Numerics;
 
 
 /**

@@ -52,8 +52,8 @@ import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.util.CoordinateOperations;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.system.Modules;
-import org.apache.sis.util.internal.Constants;
-import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

@@ -25,7 +25,7 @@ import java.sql.SQLException;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.internal.MetadataServices;
+import org.apache.sis.util.privy.MetadataServices;
 import org.apache.sis.metadata.sql.util.Initializer;
 import org.apache.sis.system.SystemListener;
 import org.apache.sis.xml.bind.Context;

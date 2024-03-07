@@ -32,7 +32,7 @@ import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.internal.DoubleDouble;
+import org.apache.sis.util.privy.DoubleDouble;
 import org.apache.sis.referencing.util.DirectPositionView;
 import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.operation.transform.LinearTransform;

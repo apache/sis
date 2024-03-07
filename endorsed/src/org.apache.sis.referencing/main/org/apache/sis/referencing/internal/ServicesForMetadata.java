@@ -65,7 +65,7 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.Logging;
 

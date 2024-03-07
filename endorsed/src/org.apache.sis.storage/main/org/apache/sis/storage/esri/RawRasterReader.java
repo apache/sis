@@ -42,7 +42,7 @@ import org.apache.sis.io.stream.Region;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.util.ArraysExt;
-import static org.apache.sis.util.internal.Numerics.wholeDiv;
+import static org.apache.sis.util.privy.Numerics.wholeDiv;
 import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
 
 

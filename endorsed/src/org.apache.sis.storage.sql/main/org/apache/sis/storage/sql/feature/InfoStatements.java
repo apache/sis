@@ -45,7 +45,7 @@ import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;

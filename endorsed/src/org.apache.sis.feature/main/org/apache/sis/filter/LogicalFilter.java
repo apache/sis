@@ -22,8 +22,8 @@ import java.util.LinkedHashSet;
 import java.util.Objects;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.filter.internal.Node;
-import org.apache.sis.util.internal.CollectionsExt;
-import org.apache.sis.util.internal.UnmodifiableArrayList;
+import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.Filter;

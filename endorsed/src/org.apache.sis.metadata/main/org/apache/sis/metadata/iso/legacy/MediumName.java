@@ -24,7 +24,7 @@ import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
 import static org.opengis.annotation.Obligation.*;
 import static org.opengis.annotation.Specification.*;
-import org.apache.sis.util.internal.CodeLists;
+import org.apache.sis.util.privy.CodeLists;
 import org.apache.sis.util.iso.Types;
 
 

@@ -23,7 +23,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Longitude;
-import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.io.wkt.FormattableObject;

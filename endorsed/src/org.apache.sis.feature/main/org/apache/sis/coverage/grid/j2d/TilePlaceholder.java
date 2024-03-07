@@ -32,7 +32,7 @@ import org.apache.sis.pending.jdk.JDK16;
 import org.apache.sis.util.Disposable;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.collection.WeakHashSet;
-import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.system.ReferenceQueueConsumer;
 
 

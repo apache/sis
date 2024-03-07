@@ -39,7 +39,7 @@ import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.metadata.internal.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Emptiable;
-import org.apache.sis.util.internal.CheckedArrayList;
+import org.apache.sis.util.privy.CheckedArrayList;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;

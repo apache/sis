@@ -37,7 +37,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.io.stream.Region;
 import org.apache.sis.io.stream.HyperRectangleReader;
 import org.apache.sis.io.stream.ChannelDataInput;

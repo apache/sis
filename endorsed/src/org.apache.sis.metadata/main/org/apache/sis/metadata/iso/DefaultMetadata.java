@@ -69,7 +69,7 @@ import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.metadata.internal.Dependencies;
-import org.apache.sis.util.internal.CollectionsExt;
+import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.lan.LocaleAndCharset;

@@ -26,7 +26,7 @@ import org.apache.sis.referencing.internal.Arithmetic;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.resources.Errors;
 
 

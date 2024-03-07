@@ -20,7 +20,7 @@ import static java.lang.Math.*;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.apache.sis.util.Static;
 import org.apache.sis.measure.Latitude;
-import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import static org.apache.sis.math.MathFunctions.atanh;
@@ -47,7 +47,7 @@ public final class Formulas extends Static {
      * to keep the same precision there even if {@code LINEAR_TOLERANCE} was made smaller.
      *
      * @see #ANGULAR_TOLERANCE
-     * @see org.apache.sis.util.internal.Numerics#COMPARISON_THRESHOLD
+     * @see org.apache.sis.util.privy.Numerics#COMPARISON_THRESHOLD
      */
     @Configuration
     public static final double LINEAR_TOLERANCE = 0.01;
@@ -60,7 +60,7 @@ public final class Formulas extends Static {
      * <p>For a {@link #LINEAR_TOLERANCE} of 1 centimetre, this is slightly less than 1E-7°.</p>
      *
      * @see #LINEAR_TOLERANCE
-     * @see org.apache.sis.util.internal.Numerics#COMPARISON_THRESHOLD
+     * @see org.apache.sis.util.privy.Numerics#COMPARISON_THRESHOLD
      */
     @Configuration
     public static final double ANGULAR_TOLERANCE = LINEAR_TOLERANCE / (NAUTICAL_MILE * 60);

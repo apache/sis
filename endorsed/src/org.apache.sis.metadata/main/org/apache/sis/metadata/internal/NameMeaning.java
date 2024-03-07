@@ -28,9 +28,9 @@ import org.opengis.referencing.operation.*;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.Static;
-import org.apache.sis.util.internal.Strings;
-import org.apache.sis.util.internal.Constants;
-import org.apache.sis.util.internal.DefinitionURI;
+import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.privy.DefinitionURI;
 import org.apache.sis.metadata.iso.citation.Citations;
 
 

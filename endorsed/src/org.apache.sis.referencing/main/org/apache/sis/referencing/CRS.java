@@ -86,7 +86,7 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 

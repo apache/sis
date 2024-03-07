@@ -34,7 +34,7 @@ import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.metadata.sql.util.Reflection;
 
 // Test dependencies

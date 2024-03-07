@@ -54,8 +54,8 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.WeakHashSet;
-import org.apache.sis.util.internal.Numerics;
-import org.apache.sis.util.internal.UnmodifiableArrayList;
+import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.measure.NumberRange;
 
 

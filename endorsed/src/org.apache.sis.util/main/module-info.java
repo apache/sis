@@ -79,7 +79,7 @@ module org.apache.sis.util {
 
     uses org.apache.sis.util.ObjectConverter;
     uses org.apache.sis.setup.InstallationResources;
-    uses org.apache.sis.util.internal.MetadataServices;
+    uses org.apache.sis.util.privy.MetadataServices;
 
     exports org.apache.sis.io;
     exports org.apache.sis.math;
@@ -108,7 +108,7 @@ module org.apache.sis.util {
             org.apache.sis.referencing.epsg,            // In the "non-free" sub-project.
             org.apache.sis.referencing.database;        // In the "non-free" sub-project.
 
-    exports org.apache.sis.util.internal to
+    exports org.apache.sis.util.privy to
             org.apache.sis.metadata,
             org.apache.sis.referencing,
             org.apache.sis.referencing.gazetteer,

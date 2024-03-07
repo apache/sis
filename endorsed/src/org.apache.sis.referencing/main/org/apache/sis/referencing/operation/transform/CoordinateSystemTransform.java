@@ -44,7 +44,7 @@ import org.apache.sis.referencing.util.CoordinateOperations;
 import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.privy.Constants;
 
 
 /**

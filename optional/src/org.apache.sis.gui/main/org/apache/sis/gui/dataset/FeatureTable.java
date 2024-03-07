@@ -38,7 +38,7 @@ import javafx.geometry.Pos;
 import javafx.util.Callback;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.feature.internal.AttributeConvention;

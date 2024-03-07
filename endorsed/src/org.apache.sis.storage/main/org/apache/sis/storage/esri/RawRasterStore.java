@@ -51,7 +51,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.image.DataType;
-import static org.apache.sis.util.internal.Numerics.wholeDiv;
+import static org.apache.sis.util.privy.Numerics.wholeDiv;
 import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
 
 

@@ -28,7 +28,7 @@ import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.internal.Strings;
+import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.resources.Errors;
 
 

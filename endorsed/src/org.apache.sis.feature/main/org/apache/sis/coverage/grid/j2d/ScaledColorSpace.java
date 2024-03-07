@@ -18,7 +18,7 @@ package org.apache.sis.coverage.grid.j2d;
 
 import java.awt.color.ColorSpace;
 import org.apache.sis.util.Debug;
-import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.privy.Numerics;
 
 
 /**

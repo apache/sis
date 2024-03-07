@@ -50,7 +50,7 @@ import org.apache.sis.referencing.util.j2d.AffineTransform2D;
 import org.apache.sis.io.stream.InputStreamArrayGetter;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.sql.feature.InfoStatements;
-import org.apache.sis.util.internal.Constants;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.resources.Errors;

@@ -63,7 +63,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.CodeType;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.internal.X364;
+import org.apache.sis.util.privy.X364;
 import org.apache.sis.io.LineAppender;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.stream.IOUtilities;

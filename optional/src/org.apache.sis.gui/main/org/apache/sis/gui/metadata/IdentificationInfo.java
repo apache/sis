@@ -57,7 +57,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.resources.Vocabulary;
-import static org.apache.sis.util.internal.CollectionsExt.nonNull;
+import static org.apache.sis.util.privy.CollectionsExt.nonNull;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.util.InternationalString;

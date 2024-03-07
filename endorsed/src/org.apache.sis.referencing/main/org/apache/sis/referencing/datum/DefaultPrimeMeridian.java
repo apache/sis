@@ -35,7 +35,7 @@ import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.metadata.internal.ImplementationHelper;
 import org.apache.sis.xml.bind.gml.Measure;
 import org.apache.sis.util.ComparisonMode;
-import org.apache.sis.util.internal.Numerics;
+import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.measure.Units;

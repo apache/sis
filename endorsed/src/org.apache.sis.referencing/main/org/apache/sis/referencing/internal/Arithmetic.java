@@ -20,7 +20,7 @@ import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
 import org.opengis.referencing.operation.Matrix;        // For javadoc.
 import org.apache.sis.system.Configuration;
-import org.apache.sis.util.internal.DoubleDouble;
+import org.apache.sis.util.privy.DoubleDouble;
 import org.apache.sis.math.Fraction;
 import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
 
