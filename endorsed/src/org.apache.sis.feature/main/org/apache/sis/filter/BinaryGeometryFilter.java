@@ -25,7 +25,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.geometry.wrapper.SpatialOperationContext;
-import org.apache.sis.feature.internal.AttributeConvention;
+import org.apache.sis.feature.privy.AttributeConvention;
 import org.apache.sis.filter.internal.Node;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

@@ -23,7 +23,7 @@ import org.opengis.util.ScopedName;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.filter.internal.Node;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.feature.internal.FeatureExpression;
+import org.apache.sis.feature.privy.FeatureExpression;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
 import org.apache.sis.feature.builder.PropertyTypeBuilder;

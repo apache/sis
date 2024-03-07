@@ -46,8 +46,8 @@ import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
-import org.apache.sis.filter.internal.FunctionNames;
-import org.apache.sis.filter.internal.Visitor;
+import org.apache.sis.filter.privy.FunctionNames;
+import org.apache.sis.filter.privy.Visitor;
 import org.apache.sis.util.privy.StandardDateFormat;
 
 

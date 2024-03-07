@@ -41,7 +41,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.storage.FeatureSet;
-import org.apache.sis.feature.internal.AttributeConvention;
+import org.apache.sis.feature.privy.AttributeConvention;
 import org.apache.sis.gui.internal.IdentityValueFactory;
 import org.apache.sis.gui.internal.ExceptionReporter;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;

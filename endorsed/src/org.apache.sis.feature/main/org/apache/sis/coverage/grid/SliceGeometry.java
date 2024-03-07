@@ -45,7 +45,7 @@ import org.apache.sis.util.resources.Errors;
  * {@link GridGeometry#selectDimensions(int[])} and {@link ImageRenderer#getImageGeometry(int)} methods.
  *
  * <p>This class implements {@link Function} for allowing {@code apply(…)} to be invoked from outside this package.
- * That function is invoked (indirectly) by {@link org.apache.sis.coverage.grid.j2d.TiledImage#getProperty(String)}.</p>
+ * That function is invoked (indirectly) by {@link org.apache.sis.coverage.privy.TiledImage#getProperty(String)}.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

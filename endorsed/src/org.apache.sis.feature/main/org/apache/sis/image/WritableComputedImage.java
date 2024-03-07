@@ -22,7 +22,7 @@ import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
-import org.apache.sis.coverage.grid.j2d.ObservableImage;
+import org.apache.sis.coverage.privy.ObservableImage;
 
 
 /**

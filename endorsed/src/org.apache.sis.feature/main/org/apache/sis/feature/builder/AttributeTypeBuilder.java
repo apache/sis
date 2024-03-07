@@ -35,7 +35,7 @@ import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.util.privy.SetOfUnknownSize;
 import org.apache.sis.util.privy.AbstractIterator;
-import org.apache.sis.feature.internal.AttributeConvention;
+import org.apache.sis.feature.privy.AttributeConvention;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.util.resources.Errors;

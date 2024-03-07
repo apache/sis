@@ -39,7 +39,7 @@ import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
 import org.apache.sis.image.DataType;
 import org.apache.sis.image.ImageProcessor;
-import org.apache.sis.coverage.internal.SampleDimensions;
+import org.apache.sis.coverage.privy.SampleDimensions;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;

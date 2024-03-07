@@ -30,7 +30,7 @@ import org.opengis.util.ScopedName;
 import org.apache.sis.math.FunctionProperty;
 import org.apache.sis.feature.DefaultAttributeType;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.feature.internal.FeatureExpression;
+import org.apache.sis.feature.privy.FeatureExpression;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.util.iso.Names;

@@ -39,7 +39,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.coverage.grid.GridGeometry;
-import org.apache.sis.coverage.grid.j2d.ImageUtilities;
+import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.ReadOnlyStorageException;

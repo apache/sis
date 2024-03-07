@@ -43,7 +43,7 @@ import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.coverage.grid.GridExtent;     // For javadoc
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.coverage.grid.j2d.ImageUtilities;
+import org.apache.sis.coverage.privy.ImageUtilities;
 
 
 /**
