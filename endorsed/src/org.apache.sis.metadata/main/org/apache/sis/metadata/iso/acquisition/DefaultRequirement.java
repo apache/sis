@@ -28,8 +28,8 @@ import org.opengis.metadata.acquisition.RequestedDate;
 import org.opengis.metadata.acquisition.Requirement;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import static org.apache.sis.metadata.internal.ImplementationHelper.toDate;
-import static org.apache.sis.metadata.internal.ImplementationHelper.toMilliseconds;
+import static org.apache.sis.metadata.privy.ImplementationHelper.toDate;
+import static org.apache.sis.metadata.privy.ImplementationHelper.toMilliseconds;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.metadata.citation.Responsibility;

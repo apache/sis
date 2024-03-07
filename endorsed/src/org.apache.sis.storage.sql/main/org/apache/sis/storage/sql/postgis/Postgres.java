@@ -37,7 +37,7 @@ import org.apache.sis.storage.sql.feature.Database;
 import org.apache.sis.storage.sql.feature.ValueGetter;
 import org.apache.sis.storage.sql.feature.Resources;
 import org.apache.sis.storage.sql.feature.SelectionClauseWriter;
-import org.apache.sis.metadata.sql.util.Dialect;
+import org.apache.sis.metadata.sql.privy.Dialect;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.Version;
 

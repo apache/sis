@@ -26,7 +26,7 @@ import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
+import static org.apache.sis.metadata.privy.ReferencingServices.NAUTICAL_MILE;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

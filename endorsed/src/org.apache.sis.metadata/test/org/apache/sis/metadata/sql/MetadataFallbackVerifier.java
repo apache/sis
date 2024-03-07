@@ -21,7 +21,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.MetadataStandard;
-import org.apache.sis.metadata.simple.CitationConstant;
+import org.apache.sis.metadata.internal.CitationConstant;
 import org.apache.sis.metadata.iso.citation.Citations;
 import static org.apache.sis.util.privy.CollectionsExt.first;
 

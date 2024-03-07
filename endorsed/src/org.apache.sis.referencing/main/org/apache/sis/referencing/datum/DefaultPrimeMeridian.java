@@ -32,7 +32,7 @@ import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.referencing.util.WKTKeywords;
-import org.apache.sis.metadata.internal.ImplementationHelper;
+import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.xml.bind.gml.Measure;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.privy.Numerics;

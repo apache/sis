@@ -21,7 +21,7 @@ import org.postgresql.ds.PGSimpleDataSource;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.apache.sis.util.privy.Constants;
-import org.apache.sis.metadata.sql.util.Initializer;
+import org.apache.sis.metadata.sql.privy.Initializer;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.factory.sql.EPSGFactory;
 

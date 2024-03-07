@@ -49,7 +49,7 @@ import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.XML;
-import static org.apache.sis.metadata.internal.TemporalUtilities.toDate;
+import static org.apache.sis.metadata.privy.TemporalUtilities.toDate;
 
 
 /**

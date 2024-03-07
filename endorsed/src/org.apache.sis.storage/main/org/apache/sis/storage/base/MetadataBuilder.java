@@ -82,7 +82,7 @@ import org.apache.sis.metadata.iso.maintenance.*;
 import org.apache.sis.metadata.iso.spatial.*;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.sql.MetadataSource;
-import org.apache.sis.metadata.internal.Merger;
+import org.apache.sis.metadata.privy.Merger;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.AbstractFeatureSet;

@@ -60,7 +60,7 @@ import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.util.DirectPositionView;
 import org.apache.sis.referencing.util.TemporalAccessor;
 import org.apache.sis.referencing.util.AxisDirections;
-import org.apache.sis.metadata.internal.ReferencingServices;
+import org.apache.sis.metadata.privy.ReferencingServices;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
@@ -77,6 +77,7 @@ import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.io.TableAppender;
@@ -1974,8 +1975,7 @@ public class GridGeometry implements LenientComparable, Serializable {
                 if (Longitude.isWraparound(westBoundLongitude, eastBoundLongitude)) {
                     vocabulary.appendLabel(Vocabulary.Keys.Note, buffer);
                     buffer.append(' ')
-                          .append(org.apache.sis.metadata.internal.Resources.forLocale(locale).getString(
-                                  org.apache.sis.metadata.internal.Resources.Keys.BoxCrossesAntiMeridian));
+                          .append(Messages.forLocale(locale).getString(Messages.Keys.BoxCrossesAntiMeridian));
                 }
                 writeNodes();
             }

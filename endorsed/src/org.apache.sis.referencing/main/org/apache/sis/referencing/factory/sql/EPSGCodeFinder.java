@@ -45,14 +45,14 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.pending.jdk.JDK19;
-import org.apache.sis.metadata.internal.ReferencingServices;
-import org.apache.sis.metadata.sql.util.SQLUtilities;
+import org.apache.sis.metadata.privy.ReferencingServices;
+import org.apache.sis.metadata.sql.privy.SQLUtilities;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.util.Formulas;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.ConcurrentAuthorityFactory;
-import static org.apache.sis.metadata.internal.NameToIdentifier.Simplifier.ESRI_DATUM_PREFIX;
+import static org.apache.sis.metadata.privy.NameToIdentifier.Simplifier.ESRI_DATUM_PREFIX;
 
 
 /**

@@ -18,7 +18,7 @@ package org.apache.sis.referencing.util;
 
 import java.util.Map;
 import org.opengis.referencing.datum.Ellipsoid;
-import org.apache.sis.metadata.internal.ReferencingServices;
+import org.apache.sis.metadata.privy.ReferencingServices;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Units;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;

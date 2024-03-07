@@ -48,7 +48,7 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
-import org.apache.sis.metadata.internal.ReferencingServices;
+import org.apache.sis.metadata.privy.ReferencingServices;
 import org.apache.sis.referencing.util.CoordinateOperations;
 import org.apache.sis.referencing.util.DirectPositionView;
 import org.apache.sis.referencing.util.TemporalAccessor;

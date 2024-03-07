@@ -48,8 +48,8 @@ module org.apache.sis.metadata {
     provides org.apache.sis.util.privy.MetadataServices
         with org.apache.sis.metadata.internal.ServicesForUtility;
 
-    uses org.apache.sis.metadata.internal.ReferencingServices;
-    uses org.apache.sis.metadata.sql.util.Initializer;
+    uses org.apache.sis.metadata.privy.ReferencingServices;
+    uses org.apache.sis.metadata.sql.privy.Initializer;
     uses org.apache.sis.xml.bind.AdapterReplacement;
     uses org.apache.sis.xml.bind.TypeRegistration;
     uses org.opengis.temporal.TemporalFactory;
@@ -77,7 +77,7 @@ module org.apache.sis.metadata {
     /*
      * Internal API open only to other Apache SIS modules.
      */
-    exports org.apache.sis.metadata.internal to
+    exports org.apache.sis.metadata.privy to
             org.apache.sis.referencing,
             org.apache.sis.feature,
             org.apache.sis.storage,
@@ -147,7 +147,7 @@ module org.apache.sis.metadata {
             org.glassfish.jaxb.core,            // For access to various classes.
             jakarta.xml.bind;                   // Seems ignored.
 
-    exports org.apache.sis.metadata.sql.util to
+    exports org.apache.sis.metadata.sql.privy to
             org.apache.sis.referencing,
             org.apache.sis.storage.sql,
             org.apache.sis.referencing.database;    // In the "non-free" subproject.
@@ -158,7 +158,7 @@ module org.apache.sis.metadata {
             org.apache.sis.storage,
             org.apache.sis.storage.xml;
 
-    exports org.apache.sis.xml.util to
+    exports org.apache.sis.xml.privy to
             org.apache.sis.referencing,
             org.apache.sis.storage,
             org.apache.sis.storage.xml,

@@ -39,7 +39,7 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADIUS;
+import static org.apache.sis.metadata.privy.ReferencingServices.AUTHALIC_RADIUS;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

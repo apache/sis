@@ -16,7 +16,7 @@
  */
 
 /**
- * A set of helper classes for the SIS implementation.
+ * A set of helper classes for the {@code org.apache.sis.metadata} module.
  *
  * <STRONG>Do not use!</STRONG>
  *

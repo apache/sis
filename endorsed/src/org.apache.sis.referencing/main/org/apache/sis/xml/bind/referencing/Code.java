@@ -23,8 +23,8 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.DefinitionURI;
-import org.apache.sis.metadata.internal.NameMeaning;
-import org.apache.sis.metadata.internal.Identifiers;
+import org.apache.sis.metadata.privy.NameMeaning;
+import org.apache.sis.metadata.privy.Identifiers;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.NamedIdentifier;
 

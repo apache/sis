@@ -36,7 +36,7 @@ import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.referencing.util.ReferencingUtilities;
-import org.apache.sis.metadata.internal.ImplementationHelper;
+import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.Utilities;

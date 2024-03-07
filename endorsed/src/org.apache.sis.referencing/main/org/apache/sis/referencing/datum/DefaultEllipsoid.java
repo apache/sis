@@ -35,7 +35,7 @@ import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.privy.DoubleDouble;
 import org.apache.sis.xml.bind.gml.Measure;
 import org.apache.sis.xml.bind.referencing.SecondDefiningParameter;
-import org.apache.sis.metadata.internal.ImplementationHelper;
+import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.util.Formulas;

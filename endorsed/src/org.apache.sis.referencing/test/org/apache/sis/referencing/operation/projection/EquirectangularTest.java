@@ -26,7 +26,7 @@ import org.apache.sis.referencing.operation.provider.Equirectangular;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
-import static org.apache.sis.metadata.internal.ReferencingServices.AUTHALIC_RADIUS;
+import static org.apache.sis.metadata.privy.ReferencingServices.AUTHALIC_RADIUS;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

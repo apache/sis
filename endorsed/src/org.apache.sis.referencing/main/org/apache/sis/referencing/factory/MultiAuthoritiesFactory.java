@@ -53,7 +53,7 @@ import org.apache.sis.util.privy.AbstractIterator;
 import org.apache.sis.util.privy.DefinitionURI;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.util.privy.SetOfUnknownSize;
-import org.apache.sis.metadata.internal.NameMeaning;
+import org.apache.sis.metadata.privy.NameMeaning;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.util.LazySet;

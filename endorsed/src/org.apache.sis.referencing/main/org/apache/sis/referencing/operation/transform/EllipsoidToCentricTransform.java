@@ -49,7 +49,7 @@ import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.operation.provider.GeocentricToGeographic;
 import org.apache.sis.referencing.operation.provider.GeographicToGeocentric;
 import org.apache.sis.referencing.operation.provider.Geographic3Dto2D;
-import org.apache.sis.metadata.internal.ReferencingServices;
+import org.apache.sis.metadata.privy.ReferencingServices;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;

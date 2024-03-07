@@ -65,7 +65,7 @@ import org.apache.sis.referencing.util.ReferencingUtilities;
 import org.apache.sis.referencing.util.WKTUtilities;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.metadata.internal.ImplementationHelper;
+import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.util.privy.UnmodifiableArrayList;

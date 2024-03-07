@@ -26,7 +26,7 @@ import java.lang.reflect.Field;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
-import org.apache.sis.metadata.simple.CitationConstant;
+import org.apache.sis.metadata.internal.CitationConstant;
 import org.apache.sis.metadata.simple.SimpleCitation;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.xml.IdentifierSpace;

@@ -57,7 +57,7 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory.Context;
-import org.apache.sis.metadata.internal.Identifiers;
+import org.apache.sis.metadata.privy.Identifiers;
 import org.apache.sis.xml.NilObject;
 
 

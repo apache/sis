@@ -28,7 +28,7 @@ import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.privy.CollectionsExt;
-import org.apache.sis.metadata.sql.util.Reflection;
+import org.apache.sis.metadata.sql.privy.Reflection;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.InternalDataStoreException;

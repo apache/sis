@@ -51,7 +51,7 @@ import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.provider.Equirectangular;
-import org.apache.sis.metadata.internal.TemporalUtilities;
+import org.apache.sis.metadata.privy.TemporalUtilities;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.netcdf.internal.Resources;

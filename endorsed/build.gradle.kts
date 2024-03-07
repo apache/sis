@@ -162,14 +162,14 @@ fun addExportForTests(args : MutableList<String>) {
      * an internal API.
      */
     // ――――――――――――― Module name ――――――――――――――――――――――― Package to export ―――――――――――――――
-    addExport(args, "org.apache.sis.metadata",          "org.apache.sis.metadata.internal",
+    addExport(args, "org.apache.sis.metadata",          "org.apache.sis.metadata.privy",
                     "org.apache.sis.referencing.gazetteer")
 
     addExport(args, "org.apache.sis.metadata",          "org.apache.sis.metadata.xml",
                     "org.apache.sis.storage," +
                     "org.apache.sis.console")
 
-    addExport(args, "org.apache.sis.metadata",          "org.apache.sis.xml.util",
+    addExport(args, "org.apache.sis.metadata",          "org.apache.sis.xml.privy",
                     "org.apache.sis.storage.geotiff")
 
     addExport(args, "org.apache.sis.metadata",          "org.apache.sis.xml.bind.gcx",

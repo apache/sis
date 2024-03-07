@@ -25,7 +25,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.storage.sql.feature.Database;
 import org.apache.sis.storage.sql.feature.Column;
 import org.apache.sis.storage.sql.feature.TableReference;
-import org.apache.sis.metadata.sql.util.SQLBuilder;
+import org.apache.sis.metadata.sql.privy.SQLBuilder;
 
 
 /**

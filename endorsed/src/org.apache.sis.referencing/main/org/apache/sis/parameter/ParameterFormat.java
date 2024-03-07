@@ -56,7 +56,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.util.privy.X364;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.metadata.internal.NameToIdentifier;
+import org.apache.sis.metadata.privy.NameToIdentifier;
 import org.apache.sis.pending.jdk.JDK19;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

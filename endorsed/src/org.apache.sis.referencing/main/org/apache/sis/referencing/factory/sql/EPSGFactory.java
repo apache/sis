@@ -38,7 +38,7 @@ import org.opengis.referencing.datum.DatumAuthorityFactory;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.apache.sis.metadata.sql.util.Initializer;
+import org.apache.sis.metadata.sql.privy.Initializer;
 import org.apache.sis.referencing.internal.DeferredCoordinateOperation;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.util.ReferencingFactoryContainer;

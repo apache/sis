@@ -28,8 +28,8 @@ import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
-import static org.apache.sis.metadata.internal.ImplementationHelper.toDate;
-import static org.apache.sis.metadata.internal.ImplementationHelper.toMilliseconds;
+import static org.apache.sis.metadata.privy.ImplementationHelper.toDate;
+import static org.apache.sis.metadata.privy.ImplementationHelper.toMilliseconds;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.metadata.citation.Responsibility;

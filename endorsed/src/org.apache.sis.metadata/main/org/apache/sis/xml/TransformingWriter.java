@@ -39,7 +39,7 @@ import javax.xml.namespace.QName;
 import static javax.xml.stream.XMLStreamConstants.*;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.privy.CollectionsExt;
-import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.xml.privy.LegacyNamespaces;
 
 
 /**

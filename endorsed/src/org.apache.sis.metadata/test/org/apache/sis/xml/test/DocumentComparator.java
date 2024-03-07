@@ -46,7 +46,7 @@ import org.xml.sax.SAXException;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.privy.Strings;
-import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.xml.privy.LegacyNamespaces;
 import static org.apache.sis.util.Characters.NO_BREAK_SPACE;
 
 // Test dependencies

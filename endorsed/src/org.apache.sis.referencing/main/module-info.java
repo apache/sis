@@ -30,7 +30,7 @@ module org.apache.sis.referencing {
     requires transitive java.desktop;
     requires transitive org.apache.sis.metadata;
 
-    provides org.apache.sis.metadata.sql.util.Initializer
+    provides org.apache.sis.metadata.sql.privy.Initializer
         with org.apache.sis.referencing.internal.DatabaseListener;
 
     provides org.opengis.referencing.crs.CRSFactory
@@ -150,7 +150,7 @@ module org.apache.sis.referencing {
     provides org.apache.sis.xml.bind.AdapterReplacement
         with org.apache.sis.xml.bind.referencing.SC_VerticalCRS;
 
-    provides org.apache.sis.metadata.internal.ReferencingServices
+    provides org.apache.sis.metadata.privy.ReferencingServices
         with org.apache.sis.referencing.internal.ServicesForMetadata;
 
     exports org.apache.sis.geometry;

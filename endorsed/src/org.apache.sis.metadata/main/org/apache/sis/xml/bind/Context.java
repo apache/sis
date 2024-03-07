@@ -41,8 +41,8 @@ import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.xml.ValueConverter;
 import org.apache.sis.xml.ReferenceResolver;
 import org.apache.sis.xml.bind.gco.PropertyType;
-import org.apache.sis.xml.util.LegacyNamespaces;
-import org.apache.sis.xml.util.ExternalLinkHandler;
+import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.xml.privy.ExternalLinkHandler;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.system.Loggers;
 

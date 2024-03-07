@@ -24,7 +24,7 @@ import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.referencing.datum.DefaultEllipsoid;
 import static org.apache.sis.math.MathFunctions.atanh;
-import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
+import static org.apache.sis.metadata.privy.ReferencingServices.NAUTICAL_MILE;
 
 
 /**

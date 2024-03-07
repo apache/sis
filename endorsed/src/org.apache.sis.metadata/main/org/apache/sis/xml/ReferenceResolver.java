@@ -30,9 +30,9 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.gcx.Anchor;
-import org.apache.sis.xml.util.ExternalLinkHandler;
-import org.apache.sis.xml.util.URISource;
-import org.apache.sis.xml.util.XmlUtilities;
+import org.apache.sis.xml.privy.ExternalLinkHandler;
+import org.apache.sis.xml.privy.URISource;
+import org.apache.sis.xml.privy.XmlUtilities;
 
 
 /**

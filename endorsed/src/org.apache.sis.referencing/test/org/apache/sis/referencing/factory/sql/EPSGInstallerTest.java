@@ -35,7 +35,7 @@ import org.apache.sis.system.Loggers;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.privy.Constants;
-import org.apache.sis.metadata.sql.util.Reflection;
+import org.apache.sis.metadata.sql.privy.Reflection;
 
 // Test dependencies
 import org.junit.jupiter.api.Tag;

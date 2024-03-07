@@ -58,7 +58,7 @@ import static org.apache.sis.util.CharSequences.*;
  *
  * The <i>object type</i> can be one of the following name.
  * Mapping between those names and GeoAPI interfaces is provided by the
- * {@link org.apache.sis.metadata.internal.NameMeaning} class.
+ * {@link org.apache.sis.metadata.privy.NameMeaning} class.
  * <table class="sis">
  *   <caption>Recognized object types in URN</caption>
  *   <tr><th>Object type</th>         <th>Meaning</th></tr>
@@ -104,7 +104,7 @@ import static org.apache.sis.util.CharSequences.*;
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
- * @see org.apache.sis.metadata.internal.NameMeaning
+ * @see org.apache.sis.metadata.privy.NameMeaning
  * @see <a href="https://portal.ogc.org/files/?artifact_id=24045">Definition identifier URNs in OGC namespace</a>
  * @see <a href="https://www.ogc.org/ogcna">OGC Naming Authority</a>
  */
@@ -194,7 +194,7 @@ public final class DefinitionURI {
      * <h4>Example</h4>
      * In the {@code "urn:ogc:def:crs:EPSG:8.2:4326"} URN, this is {@code "crs"}.
      *
-     * @see org.apache.sis.metadata.internal.NameMeaning#toObjectType(Class)
+     * @see org.apache.sis.metadata.privy.NameMeaning#toObjectType(Class)
      */
     public String type;
 

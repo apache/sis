@@ -19,7 +19,7 @@ package org.apache.sis.metadata.sql;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
-import org.apache.sis.metadata.sql.util.ScriptRunner;
+import org.apache.sis.metadata.sql.privy.ScriptRunner;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.StringBuilders;
 

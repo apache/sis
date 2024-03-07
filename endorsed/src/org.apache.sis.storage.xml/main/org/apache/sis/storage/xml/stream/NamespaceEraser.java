@@ -19,7 +19,7 @@ package org.apache.sis.storage.xml.stream;
 import javax.xml.XMLConstants;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.XMLStreamException;
-import org.apache.sis.xml.util.StreamWriterDelegate;
+import org.apache.sis.xml.privy.StreamWriterDelegate;
 
 
 /**

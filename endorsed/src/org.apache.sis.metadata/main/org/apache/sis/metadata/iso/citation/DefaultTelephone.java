@@ -27,7 +27,7 @@ import org.opengis.metadata.citation.Telephone;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.xml.privy.LegacyNamespaces;
 import org.apache.sis.xml.bind.gco.StringAdapter;
 import org.apache.sis.xml.bind.metadata.code.CI_TelephoneTypeCode;
 import org.apache.sis.metadata.internal.Dependencies;

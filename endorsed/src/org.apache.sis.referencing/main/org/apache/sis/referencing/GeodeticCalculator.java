@@ -57,7 +57,7 @@ import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.TableAppender;
-import static org.apache.sis.metadata.internal.ReferencingServices.NAUTICAL_MILE;
+import static org.apache.sis.metadata.privy.ReferencingServices.NAUTICAL_MILE;
 import static org.apache.sis.referencing.operation.provider.ModifiedAzimuthalEquidistant.LATITUDE_OF_ORIGIN;
 import static org.apache.sis.referencing.operation.provider.ModifiedAzimuthalEquidistant.LONGITUDE_OF_ORIGIN;
 

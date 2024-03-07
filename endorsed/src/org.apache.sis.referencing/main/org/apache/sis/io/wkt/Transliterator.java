@@ -24,7 +24,7 @@ import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.AxisDirection;
-import org.apache.sis.metadata.internal.AxisNames;
+import org.apache.sis.metadata.privy.AxisNames;
 import org.apache.sis.referencing.util.AxisDirections;
 import org.apache.sis.referencing.util.WKTKeywords;
 import org.apache.sis.util.CharSequences;

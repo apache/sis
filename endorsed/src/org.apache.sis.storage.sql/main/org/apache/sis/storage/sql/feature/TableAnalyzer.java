@@ -23,8 +23,8 @@ import java.util.LinkedHashMap;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.metadata.sql.util.Reflection;
-import org.apache.sis.metadata.sql.util.SQLUtilities;
+import org.apache.sis.metadata.sql.privy.Reflection;
+import org.apache.sis.metadata.sql.privy.SQLUtilities;
 import org.apache.sis.util.privy.Strings;
 
 

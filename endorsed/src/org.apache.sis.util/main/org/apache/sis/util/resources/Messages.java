@@ -54,6 +54,11 @@ public class Messages extends IndexedResourceBundle {
         public static final short AlreadyRegistered_2 = 1;
 
         /**
+         * Bounding box crosses the antimeridian.
+         */
+        public static final short BoxCrossesAntiMeridian = 36;
+
+        /**
          * Cannot create the {0} schema in database.
          */
         public static final short CanNotCreateSchema_1 = 2;

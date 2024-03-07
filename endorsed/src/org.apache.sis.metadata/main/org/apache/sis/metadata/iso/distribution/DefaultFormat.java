@@ -31,7 +31,7 @@ import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.xml.util.LegacyNamespaces;
+import org.apache.sis.xml.privy.LegacyNamespaces;
 import org.apache.sis.xml.bind.metadata.MD_Medium;
 import org.apache.sis.xml.bind.metadata.CI_Citation;
 import org.apache.sis.util.privy.CollectionsExt;

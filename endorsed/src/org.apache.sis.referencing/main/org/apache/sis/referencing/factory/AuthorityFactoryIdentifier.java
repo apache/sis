@@ -30,7 +30,7 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.privy.Constants;
-import org.apache.sis.metadata.internal.NameMeaning;
+import org.apache.sis.metadata.privy.NameMeaning;
 import org.apache.sis.referencing.internal.Resources;
 
 
@@ -98,13 +98,13 @@ final class AuthorityFactoryIdentifier {
 
     /**
      * The authority of the factory, in upper case. The upper case policy should be kept
-     * consistent with {@link org.apache.sis.metadata.internal.NameMeaning#AUTHORITIES}.
+     * consistent with {@link org.apache.sis.metadata.privy.NameMeaning#AUTHORITIES}.
      *
      * <h4>Example</h4>
      * In the {@code "urn:ogc:def:crs:EPSG:8.2:4326"} URN, this is {@code "EPSG"}.
      *
      * @see org.apache.sis.util.privy.DefinitionURI
-     * @see org.apache.sis.metadata.internal.NameMeaning
+     * @see org.apache.sis.metadata.privy.NameMeaning
      */
     private String authority;
 

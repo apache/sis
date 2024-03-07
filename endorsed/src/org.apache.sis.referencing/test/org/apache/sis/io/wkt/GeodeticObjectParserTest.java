@@ -34,7 +34,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.parameter.ParameterValue;
 import org.opengis.parameter.ParameterValueGroup;
-import org.apache.sis.metadata.internal.AxisNames;
+import org.apache.sis.metadata.privy.AxisNames;
 import org.apache.sis.referencing.util.ReferencingFactoryContainer;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
