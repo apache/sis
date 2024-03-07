@@ -22,7 +22,7 @@ import java.util.Objects;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.apache.sis.referencing.util.AxisDirections;
+import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;

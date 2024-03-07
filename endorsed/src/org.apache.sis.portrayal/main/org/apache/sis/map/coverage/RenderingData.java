@@ -56,7 +56,7 @@ import org.apache.sis.coverage.internal.SampleDimensions;
 import org.apache.sis.coverage.grid.j2d.ColorModelType;
 import org.apache.sis.coverage.grid.j2d.ImageUtilities;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.util.WraparoundApplicator;
+import org.apache.sis.referencing.privy.WraparoundApplicator;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.ArraysExt;

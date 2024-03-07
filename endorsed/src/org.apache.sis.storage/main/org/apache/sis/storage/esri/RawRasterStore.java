@@ -45,7 +45,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.AuxiliaryContent;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.io.stream.ChannelDataInput;
-import org.apache.sis.referencing.util.j2d.AffineTransform2D;
+import org.apache.sis.referencing.privy.AffineTransform2D;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Messages;

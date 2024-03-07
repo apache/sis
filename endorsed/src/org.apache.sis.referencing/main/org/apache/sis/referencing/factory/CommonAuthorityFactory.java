@@ -43,7 +43,7 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.operation.provider.TransverseMercator.Zoner;
-import org.apache.sis.referencing.util.GeodeticObjectBuilder;
+import org.apache.sis.referencing.privy.GeodeticObjectBuilder;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.SimpleInternationalString;

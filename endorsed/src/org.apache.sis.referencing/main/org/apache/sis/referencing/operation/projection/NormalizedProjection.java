@@ -49,8 +49,8 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.referencing.operation.transform.DomainDefinition;
 import org.apache.sis.referencing.operation.provider.MapProjection;
-import org.apache.sis.referencing.util.CoordinateOperations;
-import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.referencing.privy.CoordinateOperations;
+import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.Numerics;

@@ -49,7 +49,7 @@ import org.apache.sis.metadata.privy.ReferencingServices;
 import org.apache.sis.metadata.sql.privy.SQLUtilities;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.ConcurrentAuthorityFactory;
 import static org.apache.sis.metadata.privy.NameToIdentifier.Simplifier.ESRI_DATUM_PREFIX;

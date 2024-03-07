@@ -47,10 +47,10 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.internal.PositionTransformer;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.referencing.util.ReferencingUtilities;
-import org.apache.sis.referencing.util.Formulas;
-import org.apache.sis.referencing.util.j2d.ShapeUtilities;
-import org.apache.sis.referencing.util.j2d.Bezier;
+import org.apache.sis.referencing.privy.ReferencingUtilities;
+import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.privy.ShapeUtilities;
+import org.apache.sis.referencing.internal.Bezier;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.Numerics;

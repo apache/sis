@@ -61,10 +61,10 @@ import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.referencing.factory.MissingFactoryResourceException;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
-import org.apache.sis.referencing.util.CoordinateOperations;
-import org.apache.sis.referencing.util.EllipsoidalHeightCombiner;
-import org.apache.sis.referencing.util.PositionalAccuracyConstant;
-import org.apache.sis.referencing.util.ReferencingUtilities;
+import org.apache.sis.referencing.privy.CoordinateOperations;
+import org.apache.sis.referencing.privy.EllipsoidalHeightCombiner;
+import org.apache.sis.referencing.privy.PositionalAccuracyConstant;
+import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.internal.DeferredCoordinateOperation;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.operation.provider.Affine;
@@ -127,14 +127,14 @@ class CoordinateOperationRegistry {
      * Only the changes in ellipsoid axis-length are taken in account.
      * Such ellipsoid shifts are approximations and may have 1 kilometre error.
      *
-     * @see org.apache.sis.referencing.util.PositionalAccuracyConstant#DATUM_SHIFT_OMITTED
+     * @see org.apache.sis.referencing.privy.PositionalAccuracyConstant#DATUM_SHIFT_OMITTED
      */
     static final Identifier ELLIPSOID_CHANGE = createIdentifier(Vocabulary.Keys.EllipsoidChange);
 
     /**
      * The identifier for a transformation which is a datum shift.
      *
-     * @see org.apache.sis.referencing.util.PositionalAccuracyConstant#DATUM_SHIFT_APPLIED
+     * @see org.apache.sis.referencing.privy.PositionalAccuracyConstant#DATUM_SHIFT_APPLIED
      */
     static final Identifier DATUM_SHIFT = createIdentifier(Vocabulary.Keys.DatumShift);
 

@@ -30,7 +30,7 @@ import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.privy.Identifiers;
 import org.apache.sis.metadata.privy.NameMeaning;
-import org.apache.sis.referencing.util.WKTKeywords;
+import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;

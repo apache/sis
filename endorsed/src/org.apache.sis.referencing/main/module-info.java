@@ -167,7 +167,7 @@ module org.apache.sis.referencing {
     exports org.apache.sis.referencing.operation.matrix;
     exports org.apache.sis.referencing.operation.transform;
 
-    exports org.apache.sis.referencing.util to
+    exports org.apache.sis.referencing.privy to
             org.apache.sis.referencing.gazetteer,
             org.apache.sis.feature,
             org.apache.sis.storage,
@@ -178,15 +178,6 @@ module org.apache.sis.referencing {
             org.apache.sis.portrayal,
             org.apache.sis.console,
             org.apache.sis.openoffice,
-            org.apache.sis.gui;                             // In the "optional" sub-project.
-
-    exports org.apache.sis.referencing.util.j2d to
-            org.apache.sis.referencing.gazetteer,
-            org.apache.sis.feature,
-            org.apache.sis.storage,
-            org.apache.sis.storage.sql,
-            org.apache.sis.storage.netcdf,
-            org.apache.sis.portrayal,
             org.apache.sis.gui;                             // In the "optional" sub-project.
 
     exports org.apache.sis.referencing.operation.provider to

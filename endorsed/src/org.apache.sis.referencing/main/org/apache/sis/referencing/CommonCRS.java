@@ -71,7 +71,7 @@ import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.provider.TransverseMercator;
-import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.system.SystemListener;
 import org.apache.sis.system.Modules;

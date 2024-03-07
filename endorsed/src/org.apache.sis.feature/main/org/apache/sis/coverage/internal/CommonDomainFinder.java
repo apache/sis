@@ -32,7 +32,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.IllegalGridGeometryException;
-import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
+import org.apache.sis.referencing.privy.ExtendedPrecisionMatrix;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.privy.Numerics;

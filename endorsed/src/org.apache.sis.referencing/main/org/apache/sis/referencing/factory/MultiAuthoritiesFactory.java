@@ -56,7 +56,7 @@ import org.apache.sis.util.privy.SetOfUnknownSize;
 import org.apache.sis.metadata.privy.NameMeaning;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.util.LazySet;
+import org.apache.sis.referencing.privy.LazySet;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;

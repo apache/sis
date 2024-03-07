@@ -21,13 +21,13 @@ import java.awt.geom.Point2D;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.util.j2d.LinearTransform2D;
+import org.apache.sis.referencing.internal.LinearTransform2D;
 
 
 /**
  * Projective transform in 2D case.
  * This class is used only if the transform is not affine, i.e. the last row in the 3×3 matrix is not [0 0 1].
- * Otherwise {@link org.apache.sis.referencing.util.j2d.AffineTransform2D} should be used instead
+ * Otherwise {@link org.apache.sis.referencing.privy.AffineTransform2D} should be used instead
  * (unless {@link java.awt.geom.AffineTransform} is not available on the target platform).
  *
  * @author  Jan Jezek (UWB)

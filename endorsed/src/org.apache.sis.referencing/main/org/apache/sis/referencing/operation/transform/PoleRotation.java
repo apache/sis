@@ -34,7 +34,7 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.operation.provider.NorthPoleRotation;
 import org.apache.sis.referencing.operation.provider.SouthPoleRotation;
-import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.privy.Numerics;

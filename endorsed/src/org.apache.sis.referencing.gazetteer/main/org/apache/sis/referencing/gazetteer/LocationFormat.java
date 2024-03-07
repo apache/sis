@@ -50,7 +50,7 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.util.ReferencingUtilities;
+import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.referencing.crs.AbstractCRS;

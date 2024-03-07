@@ -41,7 +41,7 @@ import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.system.Loggers;
-import org.apache.sis.referencing.util.DefinitionVerifier;
+import org.apache.sis.referencing.privy.DefinitionVerifier;
 import org.apache.sis.setup.OptionKey;
 
 

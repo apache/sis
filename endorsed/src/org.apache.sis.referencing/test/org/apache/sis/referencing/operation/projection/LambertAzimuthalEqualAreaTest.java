@@ -26,8 +26,8 @@ import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.metadata.privy.ReferencingServices;
 import org.apache.sis.parameter.Parameters;
 import static org.apache.sis.math.MathFunctions.SQRT_2;
-import static org.apache.sis.referencing.util.Formulas.LINEAR_TOLERANCE;
-import static org.apache.sis.referencing.util.Formulas.ANGULAR_TOLERANCE;
+import static org.apache.sis.referencing.privy.Formulas.LINEAR_TOLERANCE;
+import static org.apache.sis.referencing.privy.Formulas.ANGULAR_TOLERANCE;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

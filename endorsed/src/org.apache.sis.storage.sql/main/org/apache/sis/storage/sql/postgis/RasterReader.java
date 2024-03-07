@@ -46,7 +46,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.j2d.ColorModelFactory;
 import org.apache.sis.coverage.grid.j2d.ObservableImage;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.util.j2d.AffineTransform2D;
+import org.apache.sis.referencing.privy.AffineTransform2D;
 import org.apache.sis.io.stream.InputStreamArrayGetter;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.sql.feature.InfoStatements;

@@ -32,7 +32,7 @@ import org.apache.sis.coverage.grid.GridClippingMode;
 import org.apache.sis.coverage.grid.DimensionalityReduction;
 import org.apache.sis.coverage.grid.DisjointExtentException;
 import org.apache.sis.coverage.internal.RangeArgument;
-import org.apache.sis.referencing.util.DirectPositionView;
+import org.apache.sis.referencing.privy.DirectPositionView;
 import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.StoreUtilities;

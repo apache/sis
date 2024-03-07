@@ -59,11 +59,11 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.PassThroughTransform;
-import org.apache.sis.referencing.util.PositionalAccuracyConstant;
-import org.apache.sis.referencing.util.CoordinateOperations;
-import org.apache.sis.referencing.util.ReferencingUtilities;
-import org.apache.sis.referencing.util.WKTUtilities;
-import org.apache.sis.referencing.util.WKTKeywords;
+import org.apache.sis.referencing.privy.PositionalAccuracyConstant;
+import org.apache.sis.referencing.privy.CoordinateOperations;
+import org.apache.sis.referencing.privy.ReferencingUtilities;
+import org.apache.sis.referencing.privy.WKTUtilities;
+import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.util.privy.Constants;
@@ -1071,7 +1071,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     AbstractCoordinateOperation() {
-        super(org.apache.sis.referencing.util.NilReferencingObject.INSTANCE);
+        super(org.apache.sis.referencing.privy.NilReferencingObject.INSTANCE);
     }
 
     /**

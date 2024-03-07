@@ -35,8 +35,8 @@ import org.apache.sis.util.privy.DoubleDouble;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.pending.jdk.JDK21;
-import org.apache.sis.referencing.util.AxisDirections;
-import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
+import org.apache.sis.referencing.privy.AxisDirections;
+import org.apache.sis.referencing.privy.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.Arithmetic;
 import org.apache.sis.referencing.operation.transform.MathTransforms;       // For javadoc

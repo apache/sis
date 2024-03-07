@@ -426,7 +426,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     AbstractDatum() {
-        super(org.apache.sis.referencing.util.NilReferencingObject.INSTANCE);
+        super(org.apache.sis.referencing.privy.NilReferencingObject.INSTANCE);
         realizationEpoch = Long.MIN_VALUE;
     }
 

@@ -22,7 +22,7 @@ import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
 import org.opengis.parameter.ParameterDescriptor;
-import org.apache.sis.referencing.util.WKTKeywords;
+import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.util.CharSequences;
 
 

@@ -64,7 +64,7 @@ import org.apache.sis.storage.netcdf.base.Grid;
 import org.apache.sis.storage.wkt.StoreFormat;
 import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.util.AxisDirections;
+import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.iso.Types;

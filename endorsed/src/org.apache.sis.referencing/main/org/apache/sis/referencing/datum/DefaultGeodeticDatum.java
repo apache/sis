@@ -38,9 +38,9 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
 import org.apache.sis.metadata.iso.extent.Extents;
-import org.apache.sis.referencing.util.WKTKeywords;
-import org.apache.sis.referencing.util.CoordinateOperations;
-import org.apache.sis.referencing.util.ExtentSelector;
+import org.apache.sis.referencing.privy.WKTKeywords;
+import org.apache.sis.referencing.privy.CoordinateOperations;
+import org.apache.sis.referencing.privy.ExtentSelector;
 import org.apache.sis.metadata.privy.NameToIdentifier;
 import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.referencing.internal.AnnotatedMatrix;
@@ -53,7 +53,7 @@ import org.apache.sis.io.wkt.Formatter;
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
-import static org.apache.sis.referencing.util.WKTUtilities.toFormattable;
+import static org.apache.sis.referencing.privy.WKTUtilities.toFormattable;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;

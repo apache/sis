@@ -58,7 +58,7 @@ import org.apache.sis.system.Loggers;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.StandardDateFormat;
 import org.apache.sis.referencing.ImmutableIdentifier;
-import org.apache.sis.referencing.util.ReferencingFactoryContainer;
+import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;

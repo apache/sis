@@ -33,7 +33,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.filter.sqlmm.SQLMM;
-import org.apache.sis.referencing.util.ReferencingUtilities;
+import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Debug;

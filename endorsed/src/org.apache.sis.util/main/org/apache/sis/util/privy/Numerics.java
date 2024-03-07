@@ -81,8 +81,8 @@ public final class Numerics extends Static {
      * <p>The current value is set to the smallest power of 10 which allow the
      * {@code org.apache.sis.test.integration.ConsistencyTest} to pass.</p>
      *
-     * @see org.apache.sis.referencing.util.Formulas#LINEAR_TOLERANCE
-     * @see org.apache.sis.referencing.util.Formulas#ANGULAR_TOLERANCE
+     * @see org.apache.sis.referencing.privy.Formulas#LINEAR_TOLERANCE
+     * @see org.apache.sis.referencing.privy.Formulas#ANGULAR_TOLERANCE
      * @see org.apache.sis.referencing.operation.matrix.GeneralMatrix#ZERO_THRESHOLD
      */
     @Configuration

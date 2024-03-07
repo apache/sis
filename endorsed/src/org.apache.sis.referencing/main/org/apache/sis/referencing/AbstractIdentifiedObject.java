@@ -61,7 +61,7 @@ import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.metadata.privy.NameToIdentifier;
 import org.apache.sis.metadata.privy.ImplementationHelper;
-import org.apache.sis.referencing.util.WKTUtilities;
+import org.apache.sis.referencing.privy.WKTUtilities;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.ElementKind;

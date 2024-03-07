@@ -40,10 +40,10 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.util.WKTUtilities;
-import org.apache.sis.referencing.util.AxisDirections;
-import org.apache.sis.referencing.util.WKTKeywords;
-import org.apache.sis.referencing.util.ReferencingUtilities;
+import org.apache.sis.referencing.privy.WKTUtilities;
+import org.apache.sis.referencing.privy.AxisDirections;
+import org.apache.sis.referencing.privy.WKTKeywords;
+import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.Utilities;
@@ -670,7 +670,7 @@ next:   for (final CoordinateSystemAxis axis : axes) {
      */
     @SuppressWarnings("this-escape")
     AbstractCS() {
-        super(org.apache.sis.referencing.util.NilReferencingObject.INSTANCE);
+        super(org.apache.sis.referencing.privy.NilReferencingObject.INSTANCE);
         forConvention = forConvention(this);
         axes = EMPTY;
         /*

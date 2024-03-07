@@ -52,7 +52,7 @@ import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.base.PRJDataStore;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.AuxiliaryContent;
-import org.apache.sis.referencing.util.j2d.AffineTransform2D;
+import org.apache.sis.referencing.privy.AffineTransform2D;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;

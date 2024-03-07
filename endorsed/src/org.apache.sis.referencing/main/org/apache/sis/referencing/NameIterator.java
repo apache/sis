@@ -23,7 +23,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.metadata.privy.NameMeaning;
-import org.apache.sis.referencing.util.NilReferencingObject;
+import org.apache.sis.referencing.privy.NilReferencingObject;
 import static org.apache.sis.util.privy.Strings.appendUnicodeIdentifier;
 
 // Specific to the geoapi-4.0 branch:

@@ -47,7 +47,7 @@ import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.privy.StandardDateFormat;
 import org.apache.sis.util.iso.DefaultNameFactory;
-import org.apache.sis.referencing.util.ReferencingFactoryContainer;
+import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.NameFactory;

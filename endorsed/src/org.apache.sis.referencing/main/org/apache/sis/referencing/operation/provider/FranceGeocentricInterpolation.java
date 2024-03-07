@@ -50,7 +50,7 @@ import org.apache.sis.referencing.operation.gridded.LoadedGrid;
 import org.apache.sis.referencing.operation.gridded.GridLoader;
 import org.apache.sis.referencing.operation.gridded.CompressedGrid;
 import org.apache.sis.referencing.operation.transform.InterpolatedGeocentricTransform;
-import org.apache.sis.referencing.util.NilReferencingObject;
+import org.apache.sis.referencing.privy.NilReferencingObject;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;

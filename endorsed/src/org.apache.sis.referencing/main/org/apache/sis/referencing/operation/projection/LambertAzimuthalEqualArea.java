@@ -27,7 +27,7 @@ import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.privy.DoubleDouble;
 import org.apache.sis.parameter.Parameters;
-import static org.apache.sis.referencing.util.Formulas.fastHypot;
+import static org.apache.sis.referencing.privy.Formulas.fastHypot;
 import static org.apache.sis.referencing.operation.provider.LambertAzimuthalEqualArea.*;
 
 

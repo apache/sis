@@ -23,7 +23,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.provider.NADCON;
 import org.apache.sis.referencing.operation.provider.NTv2;
-import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.referencing.privy.Formulas;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

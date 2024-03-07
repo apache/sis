@@ -34,7 +34,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.referencing.util.j2d.ParameterizedAffine;
+import org.apache.sis.referencing.internal.ParameterizedAffine;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.privy.DoubleDouble;
 import org.apache.sis.util.privy.Constants;

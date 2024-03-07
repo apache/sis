@@ -22,7 +22,7 @@ import static java.lang.Math.*;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.OperationMethod;
-import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.DoubleDouble;

@@ -29,8 +29,8 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
-import org.apache.sis.referencing.util.WKTKeywords;
-import org.apache.sis.referencing.util.WKTUtilities;
+import org.apache.sis.referencing.privy.WKTKeywords;
+import org.apache.sis.referencing.privy.WKTUtilities;
 
 
 /**

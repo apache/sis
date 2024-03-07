@@ -23,7 +23,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.referencing.internal.Arithmetic;
-import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
+import org.apache.sis.referencing.privy.ExtendedPrecisionMatrix;
 
 
 /**

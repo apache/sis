@@ -22,7 +22,7 @@ import static java.lang.StrictMath.*;
 import Jama.Matrix;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.util.privy.DoubleDouble;
-import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
+import org.apache.sis.referencing.privy.ExtendedPrecisionMatrix;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

@@ -41,7 +41,7 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.metadata.sql.privy.Initializer;
 import org.apache.sis.referencing.internal.DeferredCoordinateOperation;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.referencing.util.ReferencingFactoryContainer;
+import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Localized;

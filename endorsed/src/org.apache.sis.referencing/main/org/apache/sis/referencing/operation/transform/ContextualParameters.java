@@ -35,10 +35,10 @@ import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.apache.sis.referencing.util.ExtendedPrecisionMatrix;
-import org.apache.sis.referencing.util.WKTUtilities;
-import org.apache.sis.referencing.util.WKTKeywords;
-import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.referencing.privy.ExtendedPrecisionMatrix;
+import org.apache.sis.referencing.privy.WKTUtilities;
+import org.apache.sis.referencing.privy.WKTKeywords;
+import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -54,7 +54,7 @@ import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import static org.apache.sis.referencing.util.WKTUtilities.LOGGER;
+import static org.apache.sis.referencing.privy.WKTUtilities.LOGGER;
 
 
 /**

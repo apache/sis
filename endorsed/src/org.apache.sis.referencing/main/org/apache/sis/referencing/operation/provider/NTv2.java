@@ -48,7 +48,7 @@ import org.apache.sis.referencing.operation.gridded.GridLoader;
 import org.apache.sis.referencing.operation.gridded.GridGroup;
 import org.apache.sis.referencing.operation.gridded.GridFile;
 import org.apache.sis.referencing.operation.gridded.LoadedGrid;
-import org.apache.sis.referencing.util.Formulas;
+import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;

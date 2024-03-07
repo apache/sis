@@ -38,8 +38,8 @@ import org.apache.sis.xml.bind.referencing.SecondDefiningParameter;
 import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
-import org.apache.sis.referencing.util.Formulas;
-import org.apache.sis.referencing.util.WKTKeywords;
+import org.apache.sis.referencing.privy.Formulas;
+import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.measure.Units;
@@ -700,7 +700,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultEllipsoid() {
-        super(org.apache.sis.referencing.util.NilReferencingObject.INSTANCE);
+        super(org.apache.sis.referencing.privy.NilReferencingObject.INSTANCE);
         /*
          * We need to let the DefaultEllipsoid fields unitialized because afterUnmarshal(…)
          * will check for zero values. We cannot thrown an exception from 'afterUnmarshal'

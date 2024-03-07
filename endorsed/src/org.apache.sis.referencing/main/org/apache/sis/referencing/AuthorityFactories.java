@@ -28,7 +28,7 @@ import org.opengis.referencing.cs.CSAuthorityFactory;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.datum.DatumAuthorityFactory;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
-import org.apache.sis.referencing.util.LazySet;
+import org.apache.sis.referencing.privy.LazySet;
 import org.apache.sis.system.Reflect;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.system.Modules;

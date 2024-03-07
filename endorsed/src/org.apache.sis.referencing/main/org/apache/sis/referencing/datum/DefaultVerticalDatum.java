@@ -29,7 +29,7 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.privy.LegacyNamespaces;
-import org.apache.sis.referencing.util.WKTKeywords;
+import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.metadata.privy.ImplementationHelper;
 
