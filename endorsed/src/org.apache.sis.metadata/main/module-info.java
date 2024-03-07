@@ -124,15 +124,14 @@ module org.apache.sis.metadata {
             org.glassfish.jaxb.core,            // TODO: need to export to Jakarta only.
             jakarta.xml.bind;                   // Seems ignored.
 
-    exports org.apache.sis.xml.bind.metadata.code to
+    exports org.apache.sis.xml.bind.metadata to
+            org.apache.sis.referencing,
+            org.apache.sis.profile.france,
             org.glassfish.jaxb.runtime,         // TODO: need to export to Jakarta only.
             org.glassfish.jaxb.core,            // TODO: need to export to Jakarta only.
             jakarta.xml.bind;                   // Seems ignored.
 
-    exports org.apache.sis.xml.bind.metadata to
-            org.apache.sis.referencing,
-            org.apache.sis.storage,
-            org.apache.sis.profile.france,
+    exports org.apache.sis.xml.bind.metadata.code to
             org.glassfish.jaxb.runtime,         // TODO: need to export to Jakarta only.
             org.glassfish.jaxb.core,            // TODO: need to export to Jakarta only.
             jakarta.xml.bind;                   // Seems ignored.

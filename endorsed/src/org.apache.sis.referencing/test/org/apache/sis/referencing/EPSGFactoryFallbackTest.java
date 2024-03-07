@@ -36,6 +36,7 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.system.Configuration;
+import org.apache.sis.system.Loggers;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 
@@ -43,7 +44,7 @@ import org.apache.sis.util.Utilities;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestCaseWithLogs;
 import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.test.Assertions.assertSetEquals;
@@ -55,11 +56,12 @@ import static org.apache.sis.test.Assertions.assertSetEquals;
  * @author  Martin Desruisseaux (Geomatys)
  */
 @Isolated("Temporarily modifies the system-wide EPSG factory.")
-public final class EPSGFactoryFallbackTest extends TestCase {
+public final class EPSGFactoryFallbackTest extends TestCaseWithLogs {
     /**
      * Creates a new test case.
      */
     public EPSGFactoryFallbackTest() {
+        super(Loggers.CRS_FACTORY);
     }
 
     /**
@@ -93,6 +95,7 @@ public final class EPSGFactoryFallbackTest extends TestCase {
         final Set<String> codes = EPSGFactoryFallback.INSTANCE.getAuthorityCodes(ProjectedCRS.class);
         assertTrue(codes.containsAll(List.of("5041", "5042", "32601", "32660", "32701", "32760")));
         assertTrue(Collections.disjoint(codes, List.of("7030", "6326", "4326", "4978", "32600", "32700", "5714")));
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -103,6 +106,7 @@ public final class EPSGFactoryFallbackTest extends TestCase {
     @Test
     public void testCreatePrimeMeridian() throws FactoryException {
         verifyCreatePrimeMeridian(CommonCRS.WGS84.primeMeridian(), StandardDefinitions.GREENWICH);
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -118,6 +122,7 @@ public final class EPSGFactoryFallbackTest extends TestCase {
         verifyCreateEllipsoid(CommonCRS.NAD27 .ellipsoid(), "7008");
         verifyCreateEllipsoid(CommonCRS.ED50  .ellipsoid(), "7022");
         verifyCreateEllipsoid(CommonCRS.SPHERE.ellipsoid(), "7048");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -133,6 +138,7 @@ public final class EPSGFactoryFallbackTest extends TestCase {
         verifyCreateDatum(CommonCRS.NAD27 .datum(), "6267");
         verifyCreateDatum(CommonCRS.ED50  .datum(), "6230");
         verifyCreateDatum(CommonCRS.SPHERE.datum(), "6047");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -145,6 +151,7 @@ public final class EPSGFactoryFallbackTest extends TestCase {
         verifyCreateCS(CommonCRS.DEFAULT.geographic(),   "6422");
         verifyCreateCS(CommonCRS.DEFAULT.geographic3D(), "6423");
         verifyCreateCS(CommonCRS.DEFAULT.spherical(),    "6404");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -176,6 +183,7 @@ public final class EPSGFactoryFallbackTest extends TestCase {
         verifyCreateCRS(CommonCRS.WGS84 .universal( 40, 14),     "32633");
         verifyCreateCRS(CommonCRS.Vertical.MEAN_SEA_LEVEL.crs(),  "5714");
         verifyCreateCRS(CommonCRS.Vertical.DEPTH.crs(),           "5715");
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -254,5 +262,7 @@ public final class EPSGFactoryFallbackTest extends TestCase {
         } finally {
             setEPSGFactory(EPSG);
         }
+        loggings.skipNextLogIfContains("EPSG:4019");        // Deprecated EPSG entry.
+        loggings.assertNoUnexpectedLog();
     }
 }

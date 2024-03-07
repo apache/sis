@@ -110,6 +110,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      *
      * @param other  the {@code RecordType} to copy.
      */
+    @SuppressWarnings("this-escape")
     public DefaultRecordType(final RecordType other) {
         typeName   = other.getTypeName();
         container  = other.getContainer();
@@ -197,6 +198,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
         this.typeName  = typeName;
         this.container = container;
         final NameSpace namespace = nameFactory.createNameSpace(typeName, null);
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Map<MemberName,Type> fieldTypes = JDK19.newLinkedHashMap(fields.size());
         for (final Map.Entry<? extends CharSequence, ? extends Type> entry : fields.entrySet()) {
             final Type         type   = entry.getValue();
@@ -403,7 +405,7 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
 
     /**
      * Determines if the given record is compatible with this record type. This method returns {@code true}
-     * if the given {@code record} argument is non-null and the following condition holds:
+     * if the given {@code record} argument is non-null and the following condition is true:
      *
      * {@snippet lang="java" :
      *     Set<MemberName> attributeNames = record.getAttributes().keySet();
@@ -414,8 +416,8 @@ public class DefaultRecordType extends RecordDefinition implements RecordType, S
      * We do not require that {@code record.getRecordType() == this} in order to allow record
      * "sub-types" to define additional fields, in a way similar to Java sub-classing.
      *
-     * @param  record  the record to test for compatibility.
-     * @return {@code true} if the given record is compatible with this {@code RecordType}.
+     * @param  record  the record to test for compatibility with this type, or {@code null}.
+     * @return {@code true} if the given record is non-null and compatible with this record type.
      */
     @Override
     public boolean isInstance(final Record record) {

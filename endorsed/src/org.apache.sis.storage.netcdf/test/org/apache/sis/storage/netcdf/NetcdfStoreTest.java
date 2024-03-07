@@ -19,12 +19,13 @@ package org.apache.sis.storage.netcdf;
 import org.opengis.metadata.Metadata;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.system.Loggers;
 import org.apache.sis.util.Version;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestCaseWithLogs;
 
 // Specific to the main branch:
 import org.apache.sis.storage.netcdf.base.TestData;
@@ -35,11 +36,12 @@ import org.apache.sis.storage.netcdf.base.TestData;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class NetcdfStoreTest extends TestCase {
+public final class NetcdfStoreTest extends TestCaseWithLogs {
     /**
      * Creates a new test case.
      */
     public NetcdfStoreTest() {
+        super(Loggers.CRS_FACTORY);
     }
 
     /**
@@ -65,6 +67,8 @@ public final class NetcdfStoreTest extends TestCase {
             assertSame(metadata, store.getMetadata(), "Should be cached.");
         }
         MetadataReaderTest.compareToExpected(metadata);
+        loggings.skipNextLogIfContains("EPSG:4019");        // Deprecated EPSG code.
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -80,5 +84,6 @@ public final class NetcdfStoreTest extends TestCase {
         }
         assertEquals(1, version.getMajor());
         assertEquals(4, version.getMinor());
+        loggings.assertNoUnexpectedLog();
     }
 }

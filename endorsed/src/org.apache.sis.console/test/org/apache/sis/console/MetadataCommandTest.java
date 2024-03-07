@@ -17,11 +17,12 @@
 package org.apache.sis.console;
 
 import java.net.URL;
+import org.apache.sis.system.Loggers;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestCase;
+import org.apache.sis.test.TestCaseWithLogs;
 
 // Specific to the main branch:
 import org.junit.jupiter.api.Disabled;
@@ -32,11 +33,12 @@ import org.junit.jupiter.api.Disabled;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class MetadataCommandTest extends TestCase {
+public final class MetadataCommandTest extends TestCaseWithLogs {
     /**
      * Creates a new test case.
      */
     public MetadataCommandTest() {
+        super(Loggers.CRS_FACTORY);
     }
 
     /**
@@ -51,6 +53,8 @@ public final class MetadataCommandTest extends TestCase {
         var test = new MetadataCommand(0, new String[] {CommandRunner.TEST, url.toString()});
         test.run();
         verifyNetCDF("Metadata", test.outputBuffer.toString());
+        loggings.skipNextLogIfContains("EPSG:4019");                // Warning about deprecated EPSG code.
+        loggings.assertNoUnexpectedLog();
     }
 
     /**
@@ -76,5 +80,7 @@ public final class MetadataCommandTest extends TestCase {
         var test = new MetadataCommand(0, new String[] {CommandRunner.TEST, url.toString(), "--format", "XML"});
         test.run();
         verifyNetCDF("<?xml", test.outputBuffer.toString());
+        loggings.skipNextLogIfContains("EPSG:4019");                // Warning about deprecated EPSG code.
+        loggings.assertNoUnexpectedLog();
     }
 }

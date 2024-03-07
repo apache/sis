@@ -38,7 +38,6 @@ import org.apache.sis.metadata.iso.content.DefaultBand;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
-import org.apache.sis.util.resources.Vocabulary;
 import static org.apache.sis.util.internal.CollectionsExt.first;
 
 
@@ -132,12 +131,19 @@ final class Band extends GridResourceWrapper implements SchemaModifier {
     }
 
     /**
+     * Returns whether the given source is for the main image.
+     */
+    private static boolean isMain(final Source source) {
+        return source.getImageIndex().orElse(-1) == 0;
+    }
+
+    /**
      * Invoked when the GeoTIFF reader creates the resource identifier.
      * We use the identifier of the enclosing {@link Band}.
      */
     @Override
-    public GenericName customize(final int image, final GenericName fallback) {
-        return (image == 0) ? identifier : fallback;
+    public GenericName customize(final Source source, final GenericName fallback) {
+        return isMain(source) ? identifier : fallback;
     }
 
     /**
@@ -145,10 +151,10 @@ final class Band extends GridResourceWrapper implements SchemaModifier {
      * This method modifies or completes some information inferred by the GeoTIFF reader.
      */
     @Override
-    public Metadata customize(final int image, final DefaultMetadata metadata) {
-        if (image == 0) {
+    public Metadata customize(final Source source, final DefaultMetadata metadata) {
+        if (isMain(source)) {
             for (final Identification id : metadata.getIdentificationInfo()) {
-                final DefaultCitation c = (DefaultCitation) id.getCitation();
+                final var c = (DefaultCitation) id.getCitation();
                 if (c != null) {
                     c.setTitle(band.title);
                     break;
@@ -159,9 +165,9 @@ final class Band extends GridResourceWrapper implements SchemaModifier {
              * one specific implementation (`GeoTiffStore`) which is known to build metadata that way.
              * A ClassCastException would be a bug in the handling of `isElectromagneticMeasurement(…)`.
              */
-            final DefaultImageDescription content = (DefaultImageDescription) first(metadata.getContentInfo());
-            final DefaultAttributeGroup   group   = (DefaultAttributeGroup)   first(content.getAttributeGroups());
-            final DefaultSampleDimension  sd      = (DefaultSampleDimension)  first(group.getAttributes());
+            final var content = (DefaultImageDescription) first(metadata.getContentInfo());
+            final var group   = (DefaultAttributeGroup)   first(content.getAttributeGroups());
+            final var sd      = (DefaultSampleDimension)  first(group.getAttributes());
             group.getContentTypes().add(CoverageContentType.PHYSICAL_MEASUREMENT);
             sd.setDescription(sampleDimension.getDescription());
             sd.setMinValue   (sampleDimension.getMinValue());
@@ -183,11 +189,10 @@ final class Band extends GridResourceWrapper implements SchemaModifier {
      * Invoked when a sample dimension is created for a band in an image.
      */
     @Override
-    public SampleDimension customize(final int image, final int band, final NumberRange<?> sampleRange,
-                                     final SampleDimension.Builder dimension)
-    {
-        if ((image | band) == 0) {
+    public SampleDimension customize(final BandSource source, final SampleDimension.Builder dimension) {
+        if (isMain(source) && source.getBandIndex() == 0) {
             dimension.setName(identifier);
+            final NumberRange<?> sampleRange = source.getSampleRange().orElse(null);
             if (sampleRange != null) {
                 final Number min    = sampleRange.getMinValue();
                 final Number max    = sampleRange.getMaxValue();
@@ -196,7 +201,7 @@ final class Band extends GridResourceWrapper implements SchemaModifier {
                 if (min != null && max != null && scale != null && offset != null) {
                     int lower = min.intValue();
                     if (lower >= 0) {           // Should always be zero but we are paranoiac.
-                        dimension.addQualitative(Vocabulary.formatInternational(Vocabulary.Keys.Nodata), 0);
+                        dimension.addQualitative(null, 0);
                         if (lower == 0) lower = 1;
                     }
                     dimension.addQuantitative(this.band.group.measurement, lower, max.intValue(),
@@ -211,7 +216,7 @@ final class Band extends GridResourceWrapper implements SchemaModifier {
      * Returns {@code true} if the converted values are measurement in the electromagnetic spectrum.
      */
     @Override
-    public boolean isElectromagneticMeasurement(final int image) {
-        return (image == 0) && band.wavelength != 0;
+    public boolean isElectromagneticMeasurement(final Source source) {
+        return isMain(source) && band.wavelength != 0;
     }
 }

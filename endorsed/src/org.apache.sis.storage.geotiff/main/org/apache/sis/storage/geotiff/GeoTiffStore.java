@@ -285,7 +285,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
                 String filename = IOUtilities.filenameWithoutExtension(reader.input.filename);
                 name = f.createLocalName(null, filename);
             }
-            name = customizer.customize(-1, name);
+            name = customizer.customize(new SchemaModifier.Source(this), name);
             if (name != null) {
                 namespace = f.createNameSpace(name, null);
             }
@@ -423,7 +423,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
             getIdentifier().ifPresent((id) -> builder.addTitleOrIdentifier(id.toString(), MetadataBuilder.Scope.ALL));
             builder.setISOStandards(true);
             final DefaultMetadata md = builder.build();
-            metadata = customizer.customize(-1, md);
+            metadata = customizer.customize(new SchemaModifier.Source(this), md);
             if (metadata == null) metadata = md;
             md.transitionTo(DefaultMetadata.State.FINAL);
         }

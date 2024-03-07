@@ -81,6 +81,7 @@ public abstract class AbstractResource implements Resource {
      *
      * @since 1.4
      */
+    @SuppressWarnings("this-escape")
     protected AbstractResource(final Resource parent) {
         StoreListeners parentListeners = null;
         if (parent instanceof AbstractResource) {
@@ -108,6 +109,7 @@ public abstract class AbstractResource implements Resource {
      * @param  hidden  {@code false} if this resource shall use its own {@link StoreListeners}
      *         with the specified parent, or {@code true} for using {@code parentListeners} directly.
      */
+    @SuppressWarnings("this-escape")
     protected AbstractResource(final StoreListeners parentListeners, final boolean hidden) {
         if (hidden && parentListeners != null) {
             listeners = parentListeners;
@@ -124,6 +126,9 @@ public abstract class AbstractResource implements Resource {
      * <h4>Relationship with metadata</h4>
      * The default implementation of {@link #createMetadata()} uses this identifier for initializing
      * the {@code metadata/identificationInfo/citation/title} property.
+     *
+     * @return a persistent identifier unique within the data store.
+     * @throws DataStoreException if an error occurred while fetching the identifier.
      */
     @Override
     public Optional<GenericName> getIdentifier() throws DataStoreException {

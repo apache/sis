@@ -37,37 +37,39 @@ import org.apache.sis.measure.Units;
  * <table class="sis">
  *   <caption>Coordinate system properties changed by enum values</caption>
  *   <tr>
- *     <th>Property</th>
- *     <th>Example</th>
- *     <th>{@linkplain #NORMALIZED      Normalized}</th>
- *     <th>{@link #DISPLAY_ORIENTED     Display<br>oriented}</th>
- *     <th>{@linkplain #RIGHT_HANDED    Right<br>handed}</th>
- *     <th>{@linkplain #POSITIVE_RANGE  Positive<br>range}</th>
+ *     <th             rowspan="2">Property</th>
+ *     <th class="sep" rowspan="2">Example</th>
+ *     <th class="sep" colspan="4">Modified by:</th>
+ *   </tr><tr>
+ *     <th class="sep">{@linkplain #NORMALIZED Normalized}</th>
+ *     <th>{@linkplain #DISPLAY_ORIENTED Display<br>oriented}</th>
+ *     <th>{@linkplain #RIGHT_HANDED     Right<br>handed}</th>
+ *     <th>{@linkplain #POSITIVE_RANGE   Positive<br>range}</th>
  *   </tr><tr>
  *     <td>Axis order</td>
- *     <td>(<var>longitude</var>, <var>latitude</var>)</td>
- *     <td style="text-align:center">✔</td>
+ *     <td> class="sep"(<var>longitude</var>, <var>latitude</var>)</td>
+ *     <td class="sep" style="text-align:center">✔</td>
  *     <td style="text-align:center">✔</td>
  *     <td style="text-align:center">✔</td>
  *     <td></td>
  *   </tr><tr>
  *     <td>Axis direction</td>
- *     <td>({@linkplain AxisDirection#EAST east}, {@linkplain AxisDirection#NORTH north})</td>
- *     <td style="text-align:center">✔</td>
+ *     <td> class="sep"({@linkplain AxisDirection#EAST east}, {@linkplain AxisDirection#NORTH north})</td>
+ *     <td class="sep" style="text-align:center">✔</td>
  *     <td style="text-align:center">✔</td>
  *     <td></td>
  *     <td></td>
  *   </tr><tr>
  *     <td>Unit of measurement</td>
- *     <td>Angular degrees &amp; metres</td>
- *     <td style="text-align:center">✔</td>
+ *     <td> class="sep"Angular degrees &amp; metres</td>
+ *     <td class="sep" style="text-align:center">✔</td>
  *     <td></td>
  *     <td></td>
  *     <td></td>
  *   </tr><tr>
  *     <td>Range of values</td>
- *     <td>[0 … 360]° of longitude</td>
- *     <td></td>
+ *     <td> class="sep"[0 … 360]° of longitude</td>
+ *     <td> class="sep"</td>
  *     <td></td>
  *     <td></td>
  *     <td style="text-align:center">✔</td>
@@ -78,7 +80,7 @@ import org.apache.sis.measure.Units;
  * The axis order is specified by the authority (typically a national agency) defining the Coordinate Reference System
  * (CRS). The order depends on the CRS type and the country defining the CRS. In the case of geographic CRS, the
  * (<var>latitude</var>, <var>longitude</var>) axis order is widely used by geographers and pilots for centuries.
- * However, software developers tend to consistently use the (<var>x</var>,<var>y</var>) order for every kind of CRS.
+ * However, software developers tend to consistently use the (<var>x</var>,<var>y</var>) order for every kinds of CRS.
  * Those different practices resulted in contradictory definitions of axis order for almost every CRS of kind
  * {@code GeographicCRS}, for some {@code ProjectedCRS} in the South hemisphere (South Africa, Australia, <i>etc.</i>)
  * and for some polar projections among others.
