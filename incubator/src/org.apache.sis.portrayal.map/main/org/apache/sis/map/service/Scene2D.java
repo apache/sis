@@ -55,18 +55,28 @@ public final class Scene2D {
      */
     private double dpi = 96;
 
+    /**
+     * @param grid scene domain
+     * @param graphics to paint with
+     */
     public Scene2D(GridGeometry grid, Graphics2D graphics) {
         this.grid = Objects.requireNonNull(grid);
         this.graphics = Objects.requireNonNull(graphics);
     }
 
+    /**
+     * Graphics2D to use for painting data.
+     * This instance should be left untouched.
+     *
+     * @return Graphics2D
+     */
     public Graphics2D getGraphics() {
         return graphics;
     }
 
     /**
      * Set current rendering DPI.
-     * Default is 99.
+     * Default is 96.
      *
      * @param dpi new DPI
      */

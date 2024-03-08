@@ -24,15 +24,41 @@ import org.apache.sis.style.Style;
 
 
 /**
+ * A Painter is responsible for portraying and querying resource on a scene.
+ *
+ * Currently the API only support stateless rendering.
  *
  * @author Johann Sorel (Geomatys)
  */
 public interface StylePainter {
 
+    /**
+     * Get the supported style implementation this painter can portray.
+     *
+     * @return supported style class.
+     */
     Class<? extends Style> getStyleClass();
 
-    void paint(Scene2D scene, MapLayer layer);
+    /**
+     * Stateless portraying og the given map layer.
+     *
+     * @param scene parameters for rendering
+     * @param layer having supported style class.
+     * @throws RenderingException if an error occured while rendering
+     */
+    void paint(Scene2D scene, MapLayer layer) throws RenderingException;
 
+    /**
+     * Search for elements in the scene which intersect the given area.
+     *
+     * Any exception should be returned in the stream as ExceptionPresentations, this allows
+     * to still have some results even if a data caused an error.
+     *
+     * @param scene parameters of the scene
+     * @param layer to seach in
+     * @param mask to search for intersection
+     * @return a stream of presentation instances that intersect the searched area.
+     */
     Stream<Presentation> intersects(Scene2D scene, MapLayer layer, Shape mask);
 
 }
