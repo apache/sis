@@ -32,8 +32,10 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridOrientation;
 import org.apache.sis.feature.builder.AttributeRole;
 import org.apache.sis.feature.builder.FeatureTypeBuilder;
+import org.apache.sis.feature.privy.AttributeConvention;
 import org.apache.sis.map.MapLayer;
 import org.apache.sis.map.Presentation;
+import org.apache.sis.map.SEPresentation;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.storage.FeatureSet;
@@ -77,7 +79,7 @@ public class GraphicsPortrayerTest {
      * Sanity test for rendering.
      */
     @Test
-    public void testRendering() throws RenderingException {
+    public void testPortray() throws RenderingException {
 
         final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
         ftb.setName("test");
@@ -107,6 +109,47 @@ public class GraphicsPortrayerTest {
         int color2 = image.getRGB(179, 45);
         assertEquals(color1, Color.BLACK.getRGB());
         assertEquals(color2, new Color(0,0,0,0).getRGB());
+    }
+
+    /**
+     * Sanity test for presentation.
+     */
+    @Test
+    public void testPresent() throws RenderingException {
+
+        final FeatureTypeBuilder ftb = new FeatureTypeBuilder();
+        ftb.setName("test");
+        ftb.addAttribute(String.class).setName(AttributeConvention.IDENTIFIER);
+        ftb.addAttribute(Geometry.class).setName("geom").addRole(AttributeRole.DEFAULT_GEOMETRY);
+        final FeatureType ft = ftb.build();
+
+        final Feature feature = ft.newInstance();
+        LineString geom = GF.createLineString(new Coordinate[]{new Coordinate(0,0), new Coordinate(0,90)});
+        geom.setUserData(WORLD.getCoordinateReferenceSystem());
+        feature.setPropertyValue(AttributeConvention.IDENTIFIER, "test-1");
+        feature.setPropertyValue("geom", geom);
+
+        final FeatureSet featureSet = new MemoryFeatureSet(null, ft, Arrays.asList(feature));
+
+        final LineSymbolizer<Feature> symbolizer = new LineSymbolizer<>(FeatureTypeStyle.FACTORY);
+        final Symbology style = createStyle(symbolizer);
+
+        final MapLayer item = new MapLayer();
+        item.setData(featureSet);
+        item.setStyle(style);
+
+        try (Stream<Presentation> stream = new GraphicsPortrayer()
+                .setDomain(WORLD)
+                .present(item)) {
+            Object[] presentations = stream.toArray();
+            assertEquals(1, presentations.length);
+            assertTrue(presentations[0] instanceof SEPresentation);
+            final SEPresentation pe = (SEPresentation) presentations[0];
+            assertEquals(item, pe.getLayer());
+            assertEquals(featureSet, pe.getResource());
+            assertEquals("test-1", pe.getCandidate().getPropertyValue(AttributeConvention.IDENTIFIER));
+            assertEquals(symbolizer, pe.getSymbolizer());
+        }
     }
 
     /**

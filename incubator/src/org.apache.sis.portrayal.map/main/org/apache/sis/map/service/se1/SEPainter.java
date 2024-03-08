@@ -42,13 +42,22 @@ public final class SEPainter implements StylePainter {
     /**
      * Render the given map using default SEPortrayer configuration.
      *
-     * @param mapItem to be rendered, not null.
+     * @param layer to be rendered, not null.
      * @return this portrayer
      */
-    public void paint(Scene2D scene, MapLayer mapItem) {
-        try (Stream<Presentation> stream = new SEPortrayer().present(scene.grid, mapItem)) {
+    @Override
+    public void paint(Scene2D scene, MapLayer layer) {
+        try (Stream<Presentation> stream = new SEPortrayer().present(scene.grid, layer)) {
             paint(scene, stream);
         }
+    }
+
+    /**
+     * {@inheritDoc }
+     */
+    @Override
+    public Stream<Presentation> present(Scene2D scene, MapLayer layer) {
+        return new SEPortrayer().present(scene.grid, layer);
     }
 
     /**

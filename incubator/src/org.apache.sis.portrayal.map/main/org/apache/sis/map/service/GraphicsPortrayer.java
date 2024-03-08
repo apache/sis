@@ -162,6 +162,41 @@ public final class GraphicsPortrayer {
     }
 
     /**
+     * Present given map.
+     *
+     * @param map to present, not null
+     * @throws IllegalArgumentException if canvas is not property configured
+     * @throws RenderingException if a rendering procedure fails.
+     */
+    public synchronized Stream<Presentation> present(MapItem map) throws RenderingException {
+        return present(init(), map);
+    }
+
+    private Stream<Presentation> present(Scene2D scene, MapItem map) throws RenderingException {
+        if (map == null || !map.isVisible()) return Stream.empty();
+        if (map instanceof MapLayer) {
+            return present(scene, (MapLayer) map);
+        } else if (map instanceof MapLayers) {
+            final MapLayers layers = (MapLayers) map;
+            Stream<Presentation> stream = Stream.empty();
+            for (MapItem item : layers.getComponents()) {
+                stream = Stream.concat(stream, present(scene, item));
+            }
+            return stream;
+        } else {
+            return Stream.empty();
+        }
+    }
+
+    private Stream<Presentation> present(Scene2D scene, MapLayer layer) throws RenderingException {
+        final Style style = layer.getStyle();
+        if (style == null) return Stream.empty();
+        final StylePainter painter = PAINTERS.get(style.getClass());
+        if (painter == null) return Stream.empty();
+        return painter.present(scene, layer);
+    }
+
+    /**
      * Compute visual intersection of given map.
      *
      * @param mapItem to be processed, not null.
