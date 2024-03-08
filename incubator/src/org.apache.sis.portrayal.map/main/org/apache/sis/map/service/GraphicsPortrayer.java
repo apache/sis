@@ -117,7 +117,7 @@ public final class GraphicsPortrayer {
      */
     private Scene2D init() {
         Objects.requireNonNull(domain, "domain");       // Not an argument.
-        if (image == null) {
+        if (graphics == null) {
             setCanvas(new BufferedImage(
                     (int) domain.getExtent().getSize(0),
                     (int) domain.getExtent().getSize(1),
