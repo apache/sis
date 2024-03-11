@@ -22,7 +22,7 @@ package org.apache.sis.map.service;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class RenderingException extends Exception {
+public class RenderingException extends Exception {
 
     public RenderingException(String message) {
         super(message);
