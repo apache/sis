@@ -16,7 +16,6 @@
  */
 package org.apache.sis.util.privy;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.InaccessibleObjectException;
 import java.lang.reflect.UndeclaredThrowableException;
@@ -25,6 +24,9 @@ import org.opengis.util.CodeList;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters.Filter;
 import org.apache.sis.util.resources.Errors;
+
+// Specific to the main branch:
+import java.lang.reflect.Array;
 
 
 /**

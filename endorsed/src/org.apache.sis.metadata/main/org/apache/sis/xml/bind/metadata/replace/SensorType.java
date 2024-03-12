@@ -16,11 +16,13 @@
  */
 package org.apache.sis.xml.bind.metadata.replace;
 
-import java.util.List;
-import java.util.ArrayList;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
 import org.opengis.util.CodeList;
+
+// Specific to the main branch:
+import java.util.List;
+import java.util.ArrayList;
 
 
 /**

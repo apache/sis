@@ -26,8 +26,8 @@ import java.io.Serializable;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.privy.Cloner;
-import org.apache.sis.util.internal.Acyclic;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.internal.Acyclic;
 import org.apache.sis.pending.jdk.JDK19;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 

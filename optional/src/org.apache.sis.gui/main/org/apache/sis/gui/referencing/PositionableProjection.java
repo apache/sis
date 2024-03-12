@@ -16,8 +16,6 @@
  */
 package org.apache.sis.gui.referencing;
 
-import java.util.List;
-import java.util.ArrayList;
 import org.opengis.util.CodeList;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
@@ -38,6 +36,10 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
+
+// Specific to the main branch:
+import java.util.List;
+import java.util.ArrayList;
 
 
 /**
