@@ -21,6 +21,8 @@ import org.opengis.util.CodeList;
 import org.apache.sis.util.privy.CodeLists;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.FilterByVersion;
+
+// Specific to the main and geoapi-3.1 branches:
 import org.apache.sis.util.iso.Types;
 
 
