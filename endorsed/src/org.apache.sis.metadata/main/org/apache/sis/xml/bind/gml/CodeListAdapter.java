@@ -21,6 +21,8 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.privy.CodeLists;
+import org.apache.sis.xml.bind.Context;
 
 
 /**
@@ -84,11 +86,16 @@ public abstract class CodeListAdapter<BoundType extends CodeList<BoundType>> ext
      * contain the value. JAXB calls automatically this method at unmarshalling time.
      *
      * @param  identifier  the code space and identifier.
-     * @return a code list which represents the GML value.
+     * @return a code list which represents the GML value, or {@code null}.
      */
     @Override
     public final BoundType unmarshal(final Value identifier) {
-        return (identifier != null) ? Types.forCodeName(getCodeListClass(), identifier.value, true) : null;
+        if (identifier != null) try {
+            return CodeLists.getOrCreate(getCodeListClass(), identifier.value);
+        } catch (RuntimeException e) {
+            Context.warningOccured(Context.current(), CodeListAdapter.class, "unmarshal", e, true);
+        }
+        return null;
     }
 
     /**

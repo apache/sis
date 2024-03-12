@@ -206,7 +206,7 @@ public final class Axis extends NamedElement {
          * give precedence to choices #2 and #3 in that order. Choice #1 is not considered authoritative
          * because it applies (in principle) only to vertical axis.
          */
-        AxisDirection dir = Types.forCodeName(AxisDirection.class, direction, false);
+        AxisDirection dir = Types.forCodeName(AxisDirection.class, direction, null);
         AxisDirection check = AxisDirections.fromAbbreviation(abbreviation);
         final boolean isSigned = (dir != null);     // Whether `dir` takes in account the direction of positive values.
         boolean isConsistent = true;
@@ -277,7 +277,7 @@ public final class Axis extends NamedElement {
                         case 'N': return AxisDirection.NORTH;
                     }
                 }
-                return Types.forCodeName(AxisDirection.class, direction, false);
+                return Types.forCodeName(AxisDirection.class, direction, null);
             }
         }
         return null;

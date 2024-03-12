@@ -26,7 +26,9 @@ import java.util.IllformedLocaleException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
+import java.util.function.Function;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import org.opengis.annotation.UML;
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
@@ -43,6 +45,7 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.privy.CodeLists;
+import org.apache.sis.util.privy.Strings;
 import org.apache.sis.pending.jdk.JDK19;
 import org.apache.sis.system.Modules;
 
@@ -98,7 +101,7 @@ import org.opengis.util.ControlledVocabulary;
  *   }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 public final class Types extends Static {
@@ -471,9 +474,21 @@ public final class Types extends Static {
      * @return the list of values for the given code list or enumeration, or an empty array if none.
      *
      * @see Class#getEnumConstants()
+     *
+     * @deprecated This method depends on reflection, which is restricted in the context of Java Module System.
+     *             Instead, {@code T.values()} static methods should be invoked directly as much as possible.
      */
+    @SuppressWarnings("unchecked")
+    @Deprecated(since="1.5", forRemoval=true)
     public static <T extends ControlledVocabulary> T[] getCodeValues(final Class<T> codeType) {
-        return CodeLists.values(codeType);
+        if (CodeList.class.isAssignableFrom(codeType)) {
+            return (T[]) CodeList.values((Class) codeType);
+        }
+        final T[] codes = codeType.getEnumConstants();
+        if (codes != null) {
+            return codes;
+        }
+        return (T[]) Array.newInstance(codeType, 0);
     }
 
     /**
@@ -579,8 +594,13 @@ public final class Types extends Static {
      *
      * @since 0.5
      */
+    @OptionalCandidate
     public static <T extends Enum<T>> T forEnumName(final Class<T> enumType, String name) {
-        return CodeLists.forName(enumType, name);
+        try {
+            return CodeLists.forEnumName(enumType, name);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     /**
@@ -594,6 +614,47 @@ public final class Types extends Static {
      *       Spaces and punctuation characters like {@code '_'} and {@code '-'} are ignored.</li>
      * </ul>
      *
+     * If no match is found, then a new code is created only if the {@code creator} argument is non-null.
+     * That argument should be a lambda function to the {@code valueOf(String)} method of the code list class.
+     * Example:
+     *
+     * {@snippet lang="java" :
+     *   AxisDirection dir = Types.forCodeName(AxisDirection.class, name, AxisDirection::valueOf);
+     *   }
+     *
+     * If the {@code constructor} is null and no existing code matches the given name,
+     * then this method returns {@code null}.
+     *
+     * @param  <T>          the compile-time type given as the {@code codeType} parameter.
+     * @param  codeType     the type of code list.
+     * @param  name         the name of the code to obtain, or {@code null}.
+     * @param  constructor  the constructor to use if a new code needs to be created,
+     *                      or {@code null} for not creating any new code.
+     * @return a code matching the given name, or {@code null} if the name is null
+     *         or if no matching code is found and {@code constructor} is {@code null}.
+     *
+     * @see #getCodeName(ControlledVocabulary)
+     * @see CodeList#valueOf(Class, String, Function)
+     *
+     * @since 1.5
+     */
+    @OptionalCandidate
+    public static <T extends CodeList<T>> T forCodeName(final Class<T> codeType, String name,
+            final Function<? super String, ? extends T> constructor)
+    {
+        name = Strings.trimOrNull(name);
+        if (name == null) {
+            return null;        // Avoid initialization of the <T> class.
+        }
+        T code = CodeLists.forCodeName(codeType, name);
+        if (code == null && constructor != null) {
+            code = constructor.apply(name);
+        }
+        return code;
+    }
+
+    /**
+     * Returns the code of the given type that matches the given name, or optionally returns a new one.
      * If no match is found, then a new code is created only if the {@code canCreate} argument is {@code true}.
      * Otherwise this method returns {@code null}.
      *
@@ -604,11 +665,16 @@ public final class Types extends Static {
      * @return a code matching the given name, or {@code null} if the name is null
      *         or if no matching code is found and {@code canCreate} is {@code false}.
      *
-     * @see #getCodeName(ControlledVocabulary)
-     * @see CodeList#valueOf(Class, String)
+     * @deprecated This method depends on reflection, which is restricted in the context of Java Module System.
+     *             Replaced by {@link #forCodeName(Class, String, Function)}.
      */
+    @Deprecated(since="1.5", forRemoval=true)
     public static <T extends CodeList<T>> T forCodeName(final Class<T> codeType, String name, final boolean canCreate) {
-        return CodeLists.forName(codeType, name, canCreate);
+        if (canCreate) {
+            return CodeLists.getOrCreate(codeType, name);
+        } else {
+            return forCodeName(codeType, name, null);
+        }
     }
 
     /**

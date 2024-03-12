@@ -101,7 +101,7 @@ public final class DefaultContactTest extends TestCase implements Filter {
          */
         assertSame(tel2, contact.getPhone());       // Shall ignore the TelephoneType.SMS.
         assertEquals("IgnoredPropertyAssociatedTo_1", resourceKey);
-        assertArrayEquals(new String[] {"TelephoneType[SMS]"}, parameters);
+        assertArrayEquals(new String[] {"TelephoneType.SMS"}, parameters);
         verifyLegacyLists(tels);
     }
 

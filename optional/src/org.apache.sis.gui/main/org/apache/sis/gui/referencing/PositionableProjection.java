@@ -16,8 +16,6 @@
  */
 package org.apache.sis.gui.referencing;
 
-import java.util.List;
-import java.util.ArrayList;
 import org.opengis.util.CodeList;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
@@ -45,17 +43,11 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  * The point of interest is typically determined by mouse location.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.1
  */
 @SuppressWarnings("serial")         // We do not guarantee serialization compatibility.
 public abstract class PositionableProjection extends CodeList<PositionableProjection> {
-    /**
-     * List of all enumerations of this type.
-     * Must be declared before any enum declaration.
-     */
-    private static final List<PositionableProjection> VALUES = new ArrayList<>(1);
-
     /**
      * Provides <cite>Orthographic</cite> projection centered on a point of interest.
      */
@@ -134,22 +126,18 @@ public abstract class PositionableProjection extends CodeList<PositionableProjec
     private final short nameKey;
 
     /**
-     * Constructs an element of the given name. The new element is automatically added to the list
-     * returned by {@link #values()}. Subclasses shall ensure that only one instance is created for
-     * each value because there is no mechanism for removing previously created values.
+     * Constructs an element of the given name.
      *
-     * @param name  the name of the new element. This name shall not be in use by another element of this type.
+     * <h4>Design note</h4>
+     * We do not provide public or protected constructor because code lists should be final,
+     * except for anonymous classes. Otherwise, {@link CodeList} constructor associate codes
+     * to the wrong class, as seen from the values returned by {@link #values(Class)}.
+     *
+     * @param name     the name of the new element. This name shall not be in use by another element of this type.
+     * @param nameKey  the projection name as a {@link Resources} keys.
      */
-    protected PositionableProjection(final String name) {
-        super(name, VALUES);
-        nameKey = 0;
-    }
-
-    /**
-     * Creates a new enumeration.
-     */
-    private PositionableProjection(final String name, final short nameKey) {
-        super(name, VALUES);
+    PositionableProjection(final String name, final short nameKey) {
+        super(name);
         this.nameKey = nameKey;
     }
 
@@ -159,9 +147,7 @@ public abstract class PositionableProjection extends CodeList<PositionableProjec
      * @return the list of codes declared in the current JVM.
      */
     public static PositionableProjection[] values() {
-        synchronized (VALUES) {
-            return VALUES.toArray(PositionableProjection[]::new);
-        }
+        return values(PositionableProjection.class);
     }
 
     /**
@@ -174,16 +160,6 @@ public abstract class PositionableProjection extends CodeList<PositionableProjec
     @Override
     public PositionableProjection[] family() {
         return values();
-    }
-
-    /**
-     * Disables the search for UML identifiers because we do not export this package to GeoAPI.
-     *
-     * @return {@code null}.
-     */
-    @Override
-    public String identifier() {
-        return null;
     }
 
     /**

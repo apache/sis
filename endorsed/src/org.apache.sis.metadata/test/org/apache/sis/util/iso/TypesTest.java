@@ -147,18 +147,18 @@ public final class TypesTest extends TestCase {
      */
     @Test
     public void testForCodeName() {
-        assertSame(ImagingCondition.SEMI_DARKNESS, Types.forCodeName(ImagingCondition.class, "SEMI_DARKNESS", false));
-        assertSame(ImagingCondition.SEMI_DARKNESS, Types.forCodeName(ImagingCondition.class, "SEMIDARKNESS",  false));
-        assertSame(ImagingCondition.SEMI_DARKNESS, Types.forCodeName(ImagingCondition.class, "semi darkness", false));
-        assertSame(ImagingCondition.SEMI_DARKNESS, Types.forCodeName(ImagingCondition.class, "semi-darkness", false));
-        assertNull(Types.forCodeName(ImagingCondition.class, "darkness", false));
+        assertSame(ImagingCondition.SEMI_DARKNESS, Types.forCodeName(ImagingCondition.class, "SEMI_DARKNESS", null));
+        assertSame(ImagingCondition.SEMI_DARKNESS, Types.forCodeName(ImagingCondition.class, "SEMIDARKNESS",  null));
+        assertSame(ImagingCondition.SEMI_DARKNESS, Types.forCodeName(ImagingCondition.class, "semi darkness", null));
+        assertSame(ImagingCondition.SEMI_DARKNESS, Types.forCodeName(ImagingCondition.class, "semi-darkness", null));
+        assertNull(Types.forCodeName(ImagingCondition.class, "darkness", null));
 
-        assertSame(PixelInCell.CELL_CORNER, Types.forCodeName(PixelInCell.class, "cell corner", false));
-        assertSame(PixelInCell.CELL_CORNER, Types.forCodeName(PixelInCell.class, "cellCorner",  false));
-        assertSame(PixelInCell.CELL_CENTER, Types.forCodeName(PixelInCell.class, "cell center", false));
-        assertSame(PixelInCell.CELL_CENTER, Types.forCodeName(PixelInCell.class, "cellCenter",  false));
-        assertSame(PixelInCell.CELL_CENTER, Types.forCodeName(PixelInCell.class, "cell centre", false));
-        assertSame(PixelInCell.CELL_CENTER, Types.forCodeName(PixelInCell.class, "cellCentre",  false));
+        assertSame(PixelInCell.CELL_CORNER, Types.forCodeName(PixelInCell.class, "cell corner", null));
+        assertSame(PixelInCell.CELL_CORNER, Types.forCodeName(PixelInCell.class, "cellCorner",  null));
+        assertSame(PixelInCell.CELL_CENTER, Types.forCodeName(PixelInCell.class, "cell center", null));
+        assertSame(PixelInCell.CELL_CENTER, Types.forCodeName(PixelInCell.class, "cellCenter",  null));
+        assertSame(PixelInCell.CELL_CENTER, Types.forCodeName(PixelInCell.class, "cell centre", null));
+        assertSame(PixelInCell.CELL_CENTER, Types.forCodeName(PixelInCell.class, "cellCentre",  null));
     }
 
     /**

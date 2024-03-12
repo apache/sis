@@ -69,6 +69,7 @@ import org.apache.sis.system.Configuration;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.privy.CodeLists;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Units;
@@ -269,11 +270,12 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * In the latter case, this method emits a warning.
      */
     private <T extends Enum<T>> T forEnumName(final Class<T> enumType, final String name) {
-        final T code = Types.forEnumName(enumType, name);
-        if (code == null && name != null) {
-            warning(Errors.Keys.UnknownEnumValue_2, enumType, name, null);
+        try {
+            return CodeLists.forEnumName(enumType, name);
+        } catch (IllegalArgumentException e) {
+            warning(Errors.Keys.UnknownEnumValue_2, enumType, name, e);
+            return null;
         }
-        return code;
     }
 
     /**
@@ -281,7 +283,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
      * In the latter case, this method emits a warning.
      */
     private <T extends CodeList<T>> T forCodeName(final Class<T> codeType, final String name) {
-        final T code = Types.forCodeName(codeType, name, false);
+        final T code = Types.forCodeName(codeType, name, null);
         if (code == null && name != null) {
             /*
              * CodeLists are not enums, but using the error message for enums is not completly wrong since

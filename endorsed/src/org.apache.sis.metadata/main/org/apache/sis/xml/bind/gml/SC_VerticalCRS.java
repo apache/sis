@@ -50,7 +50,7 @@ import org.apache.sis.util.resources.Errors;
  * }
  * }
  *
- * Next, the module shall provides the following:
+ * Next, the module shall provide the following:
  * <ul>
  *   <li>The path to {@code MyClass} shall be provided in the {@code module-info.java} file
  *       as a {@code org.apache.sis.xml.bind.AdapterReplacement} service.</li>
