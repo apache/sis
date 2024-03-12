@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.internal;
 
 import java.util.Collection;
+import java.util.function.Predicate;
 import javax.measure.Unit;
 import org.opengis.util.CodeList;
 import org.opengis.util.GenericName;
@@ -28,9 +29,6 @@ import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.privy.CodeLists;
 import org.apache.sis.measure.Units;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import java.util.function.Predicate;
 
 
 /**

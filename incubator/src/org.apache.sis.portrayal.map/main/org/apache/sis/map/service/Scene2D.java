@@ -24,6 +24,7 @@ import javax.measure.quantity.Length;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.measure.Units;
 
+
 /**
  * Holds the rendering properties.
  *
