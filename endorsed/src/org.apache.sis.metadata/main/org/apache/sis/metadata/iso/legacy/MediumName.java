@@ -16,15 +16,12 @@
  */
 package org.apache.sis.metadata.iso.legacy;
 
-import java.util.List;
-import java.util.ArrayList;
 import org.opengis.annotation.UML;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
 import static org.opengis.annotation.Obligation.*;
 import static org.opengis.annotation.Specification.*;
-import org.apache.sis.util.privy.CodeLists;
 import org.apache.sis.util.iso.Types;
 
 
@@ -42,84 +39,86 @@ public final class MediumName extends CodeList<MediumName> implements Citation {
     /** Serial number for compatibility with different versions. */
     private static final long serialVersionUID = 7157038832444373933L;
 
-    /** List of all enumerations of this type. */
-    private static final List<MediumName> VALUES = new ArrayList<>(18);
+    /*
+     * We need to construct values with `valueOf(String)` instead of the constructor
+     * because this package is not exported to GeoAPI. See `CodeList` class javadoc.
+     */
 
     /** Read-only optical disk. */
     @UML(identifier="cdRom", obligation=CONDITIONAL, specification=ISO_19115)
-    public static final MediumName CD_ROM = new MediumName("CD_ROM");
+    public static final MediumName CD_ROM = valueOf("CD_ROM");
 
     /** Digital versatile disk. */
     @UML(identifier="dvd", obligation=CONDITIONAL, specification=ISO_19115)
-    public static final MediumName DVD = new MediumName("DVD");
+    public static final MediumName DVD = valueOf("DVD");
 
     /** Digital versatile disk digital versatile disk, read only. */
     @UML(identifier="dvdRom", obligation=CONDITIONAL, specification=ISO_19115)
-    public static final MediumName DVD_ROM = new MediumName("DVD_ROM");
+    public static final MediumName DVD_ROM = valueOf("DVD_ROM");
 
     /** 3½ inch magnetic disk. */
     @UML(identifier="3halfInchFloppy", obligation=CONDITIONAL, specification=ISO_19115)
-    public static final MediumName FLOPPY_3_HALF_INCH = new MediumName("FLOPPY_3_HALF_INCH");
+    public static final MediumName FLOPPY_3_HALF_INCH = valueOf("FLOPPY_3_HALF_INCH");
 
     /** 5¼ inch magnetic disk. */
     @UML(identifier="5quarterInchFloppy", obligation=CONDITIONAL, specification=ISO_19115)
-    public static final MediumName FLOPPY_5_QUARTER_INCH = new MediumName("FLOPPY_5_QUARTER_INCH");
+    public static final MediumName FLOPPY_5_QUARTER_INCH = valueOf("FLOPPY_5_QUARTER_INCH");
 
     /** 7 track magnetic tape. */
     @UML(identifier="7trackTape", obligation=CONDITIONAL, specification=ISO_19115)
-    public static final MediumName TAPE_7_TRACK = new MediumName("TAPE_7_TRACK");
+    public static final MediumName TAPE_7_TRACK = valueOf("TAPE_7_TRACK");
 
     /** 9 track magnetic tape. */
     @UML(identifier="9trackTape", obligation=CONDITIONAL, specification=ISO_19115)
-    public static final MediumName TAPE_9_TRACK = new MediumName("TAPE_9_TRACK");
+    public static final MediumName TAPE_9_TRACK = valueOf("TAPE_9_TRACK");
 
     /** 3480 cartridge tape drive. */
     @UML(identifier="3480Cartridge", obligation=CONDITIONAL, specification=ISO_19115)
-    public static final MediumName CARTRIDGE_3480 = new MediumName("CARTRIDGE_3480");
+    public static final MediumName CARTRIDGE_3480 = valueOf("CARTRIDGE_3480");
 
     /** 3490 cartridge tape drive. */
     @UML(identifier="3490Cartridge", obligation=CONDITIONAL, specification=ISO_19115)
-    public static final MediumName CARTRIDGE_3490 = new MediumName("CARTRIDGE_3490");
+    public static final MediumName CARTRIDGE_3490 = valueOf("CARTRIDGE_3490");
 
     /** 3580 cartridge tape drive. */
     @UML(identifier="3580Cartridge", obligation=CONDITIONAL, specification=ISO_19115)
-    public static final MediumName CARTRIDGE_3580 = new MediumName("CARTRIDGE_3580");
+    public static final MediumName CARTRIDGE_3580 = valueOf("CARTRIDGE_3580");
 
     /** 4 millimetre magnetic tape. */
     @UML(identifier="4mmCartridgeTape", obligation=CONDITIONAL, specification=ISO_19115)
-    public static final MediumName CARTRIDGE_TAPE_4mm = new MediumName("CARTRIDGE_TAPE_4mm");
+    public static final MediumName CARTRIDGE_TAPE_4mm = valueOf("CARTRIDGE_TAPE_4mm");
 
     /** 8 millimetre magnetic tape. */
     @UML(identifier="8mmCartridgeTape", obligation=CONDITIONAL, specification=ISO_19115)
-    public static final MediumName CARTRIDGE_TAPE_8mm = new MediumName("CARTRIDGE_TAPE_8mm");
+    public static final MediumName CARTRIDGE_TAPE_8mm = valueOf("CARTRIDGE_TAPE_8mm");
 
     /** ¼ inch magnetic tape. */
     @UML(identifier="1quarterInchCartridgeTape", obligation=CONDITIONAL, specification=ISO_19115)
-    public static final MediumName CARTRIDGE_TAPE_1_QUARTER_INCH = new MediumName("CARTRIDGE_TAPE_1_QUARTER_INCH");
+    public static final MediumName CARTRIDGE_TAPE_1_QUARTER_INCH = valueOf("CARTRIDGE_TAPE_1_QUARTER_INCH");
 
     /** Half inch cartridge streaming tape drive. */
     @UML(identifier="digitalLinearTape", obligation=CONDITIONAL, specification=ISO_19115)
-    public static final MediumName DIGITAL_LINEAR_TAPE = new MediumName("DIGITAL_LINEAR_TAPE");
+    public static final MediumName DIGITAL_LINEAR_TAPE = valueOf("DIGITAL_LINEAR_TAPE");
 
     /** Direct computer linkage. */
     @UML(identifier="onLine", obligation=CONDITIONAL, specification=ISO_19115)
-    public static final MediumName ON_LINE = new MediumName("ON_LINE");
+    public static final MediumName ON_LINE = valueOf("ON_LINE");
 
     /** Linkage through a satellite communication system. */
     @UML(identifier="satellite", obligation=CONDITIONAL, specification=ISO_19115)
-    public static final MediumName SATELLITE = new MediumName("SATELLITE");
+    public static final MediumName SATELLITE = valueOf("SATELLITE");
 
     /** Communication through a telephone network. */
     @UML(identifier="telephoneLink", obligation=CONDITIONAL, specification=ISO_19115)
-    public static final MediumName TELEPHONE_LINK = new MediumName("TELEPHONE_LINK");
+    public static final MediumName TELEPHONE_LINK = valueOf("TELEPHONE_LINK");
 
     /** Pamphlet or leaflet giving descriptive information. */
     @UML(identifier="hardcopy", obligation=CONDITIONAL, specification=ISO_19115)
-    public static final MediumName HARDCOPY = new MediumName("HARDCOPY");
+    public static final MediumName HARDCOPY = valueOf("HARDCOPY");
 
     /** Constructs an element of the given name. */
     private MediumName(final String name) {
-        super(name, VALUES);
+        super(name);
     }
 
     /**
@@ -127,41 +126,19 @@ public final class MediumName extends CodeList<MediumName> implements Citation {
      *
      * @return the list of codes declared in the current JVM.
      */
-    public static MediumName[] values() {
-        synchronized (VALUES) {
-            return VALUES.toArray(MediumName[]::new);
-        }
-    }
-
-    /**
-     * Returns the list of codes of the same kind as this code list element.
-     *
-     * @return all code {@linkplain #values() values} for this code list.
-     */
     @Override
     public MediumName[] family() {
-        return values();
+        return values(MediumName.class);
     }
 
     /**
-     * Disables the search for UML identifiers because we do not export this package to GeoAPI.
-     *
-     * @return {@code null}.
-     */
-    @Override
-    public String identifier() {
-        return null;
-    }
-
-    /**
-     * Returns the medium name that matches the given string, or {@code null} if none match it.
-     * Contrarily to non-deprecated code list, this method does not create a new code if none match the given name.
+     * Returns the medium name that matches the given string, or a new one if none match it.
      *
      * @param  code  the name of the code to fetch or to create.
      * @return a code matching the given name, or {@code null}.
      */
     public static MediumName valueOf(final String code) {
-        return CodeLists.forName(MediumName.class, code, false);
+        return valueOf(MediumName.class, code, MediumName::new).get();
     }
 
     /**
@@ -177,7 +154,7 @@ public final class MediumName extends CodeList<MediumName> implements Citation {
         if (citation != null) {
             final InternationalString title = citation.getTitle();
             if (title != null) {
-                return valueOf(title.toString());
+                return Types.forCodeName(MediumName.class, title.toString(), null);
             }
         }
         return null;

@@ -183,7 +183,7 @@ public final class TreeNodeChildrenTest extends TestCase {
             "Some title",
             "First alternate title",
             "Some edition",
-            "PresentationForm[MAP_DIGITAL]",
+            "PresentationForm.MAP_DIGITAL",
             "Some other details"
         };
         assertEquals(-1, children.titleProperty);
@@ -205,8 +205,8 @@ public final class TreeNodeChildrenTest extends TestCase {
             "First alternate title",
             "Second alternate title",
             "Some edition",
-            "PresentationForm[MAP_DIGITAL]",
-            "PresentationForm[MAP_HARDCOPY]",
+            "PresentationForm.MAP_DIGITAL",
+            "PresentationForm.MAP_HARDCOPY",
             "Some other details"
         };
         assertEquals(-1, children.titleProperty);
@@ -234,7 +234,7 @@ public final class TreeNodeChildrenTest extends TestCase {
         final TreeNodeChildren children = (TreeNodeChildren) node.getChildren();
         final String[] expected = {
             // The "Date" node should be omitted because merged with the parent "Date" node.
-            "DateType[CREATION]"
+            "DateType.CREATION"
         };
         assertEquals(0, children.titleProperty);
         assertFalse (children.isEmpty());
@@ -260,9 +260,9 @@ public final class TreeNodeChildrenTest extends TestCase {
             "Second alternate title",
             "Third alternate title",                // After addition
             "New edition",                          // After "addition" (actually change).
-            "PresentationForm[IMAGE_DIGITAL]",      // After addition
-            "PresentationForm[MAP_DIGITAL]",
-            "PresentationForm[MAP_HARDCOPY]",
+            "PresentationForm.IMAGE_DIGITAL",       // After addition
+            "PresentationForm.MAP_DIGITAL",
+            "PresentationForm.MAP_HARDCOPY",
             "Some other details"
         };
         toAdd.setValue(TableColumn.IDENTIFIER, "edition");
@@ -358,8 +358,8 @@ public final class TreeNodeChildrenTest extends TestCase {
             null, // edition date
             null, // identifiers (collection)
             null, // cited responsibly parties (collection)
-            "PresentationForm[MAP_DIGITAL]",
-            "PresentationForm[MAP_HARDCOPY]",
+            "PresentationForm.MAP_DIGITAL",
+            "PresentationForm.MAP_HARDCOPY",
             null, // series
             "Some other details",
 //          null, // collective title                       -- deprecated as of ISO 19115:2014.

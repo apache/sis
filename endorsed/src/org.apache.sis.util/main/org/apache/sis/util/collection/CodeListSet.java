@@ -24,7 +24,6 @@ import java.util.NoSuchElementException;
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
 import org.opengis.util.CodeList;
-import org.apache.sis.util.privy.CodeLists;
 import org.apache.sis.util.privy.CheckedArrayList;
 import org.apache.sis.util.resources.Errors;
 
@@ -136,7 +135,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     public CodeListSet(final Class<E> elementType, final boolean fill) throws IllegalArgumentException {
         this(elementType);
         if (fill) {
-            codes = POOL.unique(CodeLists.values(elementType));
+            codes = POOL.unique(CodeList.values(elementType));
             int n = codes.length;
             if (n < Long.SIZE) {
                 values = (1L << n) - 1;
@@ -167,7 +166,7 @@ public class CodeListSet<E extends CodeList<E>> extends AbstractSet<E>
     final E valueOf(final int ordinal) {
         E[] array = codes;
         if (array == null || ordinal >= array.length) {
-            codes = array = POOL.unique(CodeLists.values(elementType));
+            codes = array = POOL.unique(CodeList.values(elementType));
         }
         return array[ordinal];
     }

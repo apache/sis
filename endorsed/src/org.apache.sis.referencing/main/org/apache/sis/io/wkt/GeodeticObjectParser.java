@@ -1029,7 +1029,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             }
             unit = defaultUnit;
         }
-        AxisDirection direction = Types.forCodeName(AxisDirection.class, orientation.keyword, true);
+        AxisDirection direction = Types.forCodeName(AxisDirection.class, orientation.keyword, AxisDirection::valueOf);
         final Element meridian = element.pullElement(OPTIONAL, WKTKeywords.Meridian);
         if (meridian != null) {
             double angle = meridian.pullDouble("meridian");
@@ -1576,7 +1576,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         }
         final String name = element.pullString("name");
         final PixelInCell pixelInCell = Types.forCodeName(PixelInCell.class,
-                element.pullVoidElement("pixelInCell").keyword, true);
+                element.pullVoidElement("pixelInCell").keyword, PixelInCell::valueOf);
         final DatumFactory datumFactory = factories.getDatumFactory();
         try {
             return datumFactory.createImageDatum(parseAnchorAndClose(element, name), pixelInCell);

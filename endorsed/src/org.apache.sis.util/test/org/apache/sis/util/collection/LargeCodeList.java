@@ -16,8 +16,6 @@
  */
 package org.apache.sis.util.collection;
 
-import java.util.List;
-import java.util.ArrayList;
 import org.opengis.util.CodeList;
 
 // Test dependencies
@@ -31,27 +29,23 @@ import static org.junit.jupiter.api.Assertions.*;
  * @author  Martin Desruisseaux (Geomatys)
  */
 @SuppressWarnings("serial")
-public final class LargeCodeList  extends CodeList<LargeCodeList> {
-    /**
-     * List of all enumerations of this type.
-     */
-    private static final List<LargeCodeList> VALUES = new ArrayList<>(100);
-
+public final class LargeCodeList extends CodeList<LargeCodeList> {
     /**
      * Creates 100 code list elements.
+     * We need to construct values with {@code valueOf(String)} instead of the constructor
+     * because this package is not exported to GeoAPI. See {@link CodeList} class javadoc.
      */
     static {
-        for (int i=0; i<100; i++) {
-            assertEquals(i, new LargeCodeList(i).ordinal());
+        for (int i=0; i<80; i++) {
+            assertEquals(i, valueOf("LC#" + i).ordinal());
         }
     }
 
     /**
-     * Constructs an element. The new element is automatically
-     * added to the list to be returned by {@link #values}.
+     * Constructs an element.
      */
-    private LargeCodeList(final int i) {
-        super("LC#" + i, VALUES);
+    private LargeCodeList(String name) {
+        super(name);
     }
 
     /**
@@ -60,9 +54,7 @@ public final class LargeCodeList  extends CodeList<LargeCodeList> {
      * @return the list of codes declared in the current JVM.
      */
     public static LargeCodeList[] values() {
-        synchronized (VALUES) {
-            return VALUES.toArray(LargeCodeList[]::new);
-        }
+        return values(LargeCodeList.class);
     }
 
     /**
@@ -76,13 +68,12 @@ public final class LargeCodeList  extends CodeList<LargeCodeList> {
     }
 
     /**
-     * Returns the axis code that matches the given string,
-     * or returns a new one if none match it.
+     * Returns the code that matches the given string, or returns a new one if none match it.
      *
      * @param  code  the name of the code list element to fetch or to create.
      * @return a code list element matching the given name.
      */
     public static LargeCodeList valueOf(final String code) {
-        return valueOf(LargeCodeList.class, code);
+        return valueOf(LargeCodeList.class, code, LargeCodeList::new).get();
     }
 }

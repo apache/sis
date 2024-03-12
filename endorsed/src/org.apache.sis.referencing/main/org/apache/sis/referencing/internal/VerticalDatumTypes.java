@@ -23,9 +23,10 @@ import org.opengis.util.GenericName;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.AxisDirection;
-import org.apache.sis.util.StringBuilders;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.StringBuilders;
+import org.apache.sis.util.privy.CodeLists;
 import org.apache.sis.measure.Units;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -187,7 +188,7 @@ public final class VerticalDatumTypes implements Predicate<CodeList<?>> {
             for (int i=0; i<name.length();) {
                 final int c = name.codePointAt(i);
                 if (Character.isLetter(c)) {
-                    return CodeList.valueOf(VerticalDatumType.class, new VerticalDatumTypes(name), null);
+                    return CodeLists.find(VerticalDatumType.class, new VerticalDatumTypes(name));
                 }
                 i += Character.charCount(c);
             }

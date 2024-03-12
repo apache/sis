@@ -213,7 +213,7 @@ public final class CodeListSetTest extends TestCase {
     public void testFill() {
         final CodeListSet<AxisDirection> c = new CodeListSet<>(AxisDirection.class, true);
         assertTrue(c.size() >= 32, "Expect at least 32 elements as of GeoAPI 3.0.");
-        assertTrue(c.toString().startsWith("[AxisDirection[OTHER], AxisDirection[NORTH], "));
+        assertTrue(c.toString().startsWith("[AxisDirection.OTHER, AxisDirection.NORTH, "));
         /*
          * Testing the full array would be too long and may change in future GeoAPI version
          * anyway. Actually the main interest of this test is to ensure that the toString()

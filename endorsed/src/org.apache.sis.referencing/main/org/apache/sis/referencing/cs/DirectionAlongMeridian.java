@@ -169,7 +169,7 @@ final class DirectionAlongMeridian extends FormattableObject implements Comparab
             final String name = toString();
             direction = AxisDirections.valueOf(name);
             if (direction == null) {
-                direction = Types.forCodeName(AxisDirection.class, name, true);
+                direction = Types.forCodeName(AxisDirection.class, name, AxisDirection::valueOf);
             }
         }
         return direction;
