@@ -25,6 +25,7 @@ import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOrganisation;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.NilReason;
 
@@ -75,12 +76,16 @@ final class MetadataFallback extends MetadataSource {
      * @return an implementation of the required interface, or the code list element.
      */
     @Override
-    public <T> T lookup(final Class<T> type, final String identifier) {
+    public <T> T lookup(final Class<T> type, final String identifier) throws MetadataStoreException {
         ArgumentChecks.ensureNonNull("type", type);
         ArgumentChecks.ensureNonEmpty("identifier", identifier);
         Object value;
         if (CodeList.class.isAssignableFrom(type)) {
-            value = getCodeList(type, identifier);
+            try {
+                value = getCodeList(type, identifier);
+            } catch (IllegalArgumentException e) {
+                throw new MetadataStoreException(Errors.format(Errors.Keys.DatabaseError_2, type, identifier), e);
+            }
         } else {
             value = null;
             if (type == Citation.class) {

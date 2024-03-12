@@ -67,6 +67,7 @@ import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.privy.CodeLists;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.util.collection.Containers;
@@ -878,7 +879,11 @@ public class MetadataSource implements AutoCloseable {
     private Object lookup(final Class<?> type, final String identifier, boolean verify) throws MetadataStoreException {
         Object value;
         if (CodeList.class.isAssignableFrom(type)) {
-            value = getCodeList(type, identifier);
+            try {
+                value = getCodeList(type, identifier);
+            } catch (IllegalArgumentException e) {
+                throw new MetadataStoreException(Errors.format(Errors.Keys.DatabaseError_2, type, identifier), e);
+            }
         } else {
             final CacheKey key = new CacheKey(type, identifier);
             /*
@@ -1060,10 +1065,13 @@ public class MetadataSource implements AutoCloseable {
     /**
      * Returns the code of the given type and name. This method is defined for avoiding the compiler warning
      * message when the actual class is unknown (it must have been checked dynamically by the caller however).
+     *
+     * @return the requested code, or {@code null} if the given name is null or empty.
+     * @throws IllegalArgumentException if there is no value for the given name and the code cannot be created.
      */
     @SuppressWarnings("unchecked")
     static CodeList<?> getCodeList(final Class<?> type, final String name) {
-        return Types.forCodeName(type.asSubclass(CodeList.class), name, true);
+        return CodeLists.getOrCreate(type.asSubclass(CodeList.class), name);
     }
 
     /**

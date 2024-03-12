@@ -354,7 +354,7 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
         /** Converts the given string to the target type of this converter. */
         @Override T doConvert(final String source) {
-            final T code = CodeLists.forName(targetClass, source, false);
+            final T code = CodeLists.forCodeName(targetClass, source);
             if (code == null) {
                 throw new UnconvertibleObjectException(formatErrorMessage(source));
             }
@@ -388,11 +388,11 @@ abstract class StringConverter<T> extends SystemConverter<String, T> {
 
         /** Converts the given string to the target type of this converter. */
         @Override T doConvert(final String source) {
-            final T code = CodeLists.forName(targetClass, source);
-            if (code == null) {
-                throw new UnconvertibleObjectException(formatErrorMessage(source));
+            try {
+                return CodeLists.forEnumName(targetClass, source);
+            } catch (IllegalArgumentException e) {
+                throw new UnconvertibleObjectException(formatErrorMessage(source), e);
             }
-            return code;
         }
 
         /** Invoked by the constructor for creating the inverse converter. */

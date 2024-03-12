@@ -19,6 +19,7 @@ package org.apache.sis.xml.bind.cat;
 import jakarta.xml.bind.annotation.adapters.XmlAdapter;
 import org.opengis.util.CodeList;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.privy.CodeLists;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.FilterByVersion;
 
@@ -111,7 +112,12 @@ public abstract class CodeListAdapter<ValueType extends CodeListAdapter<ValueTyp
      */
     @Override
     public final BoundType unmarshal(final ValueType adapter) {
-        return (adapter != null) ? Types.forCodeName(getCodeListClass(), adapter.identifier.toString(), true) : null;
+        if (adapter != null) try {
+            return CodeLists.getOrCreate(getCodeListClass(), adapter.identifier.toString());
+        } catch (RuntimeException e) {
+            Context.warningOccured(Context.current(), CodeListAdapter.class, "unmarshal", e, true);
+        }
+        return null;
     }
 
     /**

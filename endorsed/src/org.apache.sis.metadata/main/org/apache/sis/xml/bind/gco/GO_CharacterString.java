@@ -37,6 +37,7 @@ import org.apache.sis.xml.privy.LegacyNamespaces;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.privy.CodeLists;
 import org.apache.sis.util.resources.IndexedResourceBundle;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Errors;
@@ -291,17 +292,20 @@ public class GO_CharacterString {
             if (ct != null && CodeList.class.isAssignableFrom(ct)) {
                 final String attribute = e.getAttribute("codeListValue").trim();
                 if (!attribute.isEmpty()) {
-                    @SuppressWarnings("unchecked")
-                    final CodeList<?> c = Types.forCodeName((Class) ct, attribute, true);
-                    text = Types.getCodeTitle(c);
-                    type = ENUM;
+                    try {
+                        @SuppressWarnings("unchecked")
+                        final CodeList<?> c = CodeLists.getOrCreate((Class) ct, attribute);
+                        text = Types.getCodeTitle(c);
+                        type = ENUM;
+                    } catch (RuntimeException ex) {
+                        Context.warningOccured(Context.current(), GO_CharacterString.class, "setCodeList", ex, true);
+                    }
                     return;
-                } else {
-                    resources = Errors.class;
-                    errorKey  = Errors.Keys.MissingOrEmptyAttribute_2;
-                    args      = new Object[2];
-                    args[1]   = "codeListValue";
                 }
+                resources = Errors.class;
+                errorKey  = Errors.Keys.MissingOrEmptyAttribute_2;
+                args      = new Object[2];
+                args[1]   = "codeListValue";
             } else {
                 resources = Messages.class;
                 errorKey  = Messages.Keys.UnknownCodeList_1;
@@ -320,6 +324,7 @@ public class GO_CharacterString {
      * @return the character sequence for this {@code <gco:CharacterString>}.
      */
     protected CharSequence toCharSequence() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final CharSequence text = CharSequences.trimWhitespaces(this.text);
         if (text != null && (text.length() != 0 || text instanceof Anchor)) {       // Anchor may contain attributes.
             return text;
@@ -340,6 +345,7 @@ public class GO_CharacterString {
      */
     @Override
     public final String toString() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final CharSequence text = this.text;
         return (text != null) ? text.toString() : null;     // We really want to return null here.
     }

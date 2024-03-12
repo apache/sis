@@ -45,7 +45,7 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  * The point of interest is typically determined by mouse location.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.1
  */
 @SuppressWarnings("serial")         // We do not guarantee serialization compatibility.
@@ -134,21 +134,17 @@ public abstract class PositionableProjection extends CodeList<PositionableProjec
     private final short nameKey;
 
     /**
-     * Constructs an element of the given name. The new element is automatically added to the list
-     * returned by {@link #values()}. Subclasses shall ensure that only one instance is created for
-     * each value because there is no mechanism for removing previously created values.
+     * Constructs an element of the given name.
      *
-     * @param name  the name of the new element. This name shall not be in use by another element of this type.
+     * <h4>Design note</h4>
+     * We do not provide public or protected constructor because code lists should be final,
+     * except for anonymous classes. Otherwise, {@link CodeList} constructor associate codes
+     * to the wrong class, as seen from the values returned by {@link #values(Class)}.
+     *
+     * @param name     the name of the new element. This name shall not be in use by another element of this type.
+     * @param nameKey  the projection name as a {@link Resources} keys.
      */
-    protected PositionableProjection(final String name) {
-        super(name, VALUES);
-        nameKey = 0;
-    }
-
-    /**
-     * Creates a new enumeration.
-     */
-    private PositionableProjection(final String name, final short nameKey) {
+    PositionableProjection(final String name, final short nameKey) {
         super(name, VALUES);
         this.nameKey = nameKey;
     }

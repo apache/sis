@@ -422,7 +422,7 @@ public class DefaultMedium extends ISOMetadata implements Medium {
         if (newValue != null) {
             final InternationalString title = newValue.getTitle();
             if (title != null) {
-                name = CodeLists.forName(MediumName.class, title.toString(), false);
+                name = CodeLists.forCodeName(MediumName.class, title.toString());
             }
         }
     }

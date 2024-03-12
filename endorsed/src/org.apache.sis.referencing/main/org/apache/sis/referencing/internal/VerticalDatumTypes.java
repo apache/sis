@@ -17,15 +17,17 @@
 package org.apache.sis.referencing.internal;
 
 import java.util.Collection;
+import java.util.function.Predicate;
 import javax.measure.Unit;
 import org.opengis.util.CodeList;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.AxisDirection;
-import org.apache.sis.util.StringBuilders;
-import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
+import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.StringBuilders;
+import org.apache.sis.util.privy.CodeLists;
 import org.apache.sis.measure.Units;
 
 
@@ -34,12 +36,12 @@ import org.apache.sis.measure.Units;
  * Those constants are not in public API because they were intentionally omitted from ISO 19111,
  * and the ISO experts said that they should really not be public.
  *
- * <p>This class implements {@code CodeList.Filter} for opportunist reasons.
+ * <p>This class implements {@link Predicate} for opportunist reasons.
  * This implementation convenience may change in any future SIS version.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
-public final class VerticalDatumTypes implements CodeList.Filter {
+public final class VerticalDatumTypes implements Predicate<CodeList<?>> {
     /**
      * A vertical datum for ellipsoidal heights that are measured along the
      * normal to the ellipsoid used in the definition of horizontal datum.
@@ -184,7 +186,7 @@ public final class VerticalDatumTypes implements CodeList.Filter {
             for (int i=0; i<name.length();) {
                 final int c = name.codePointAt(i);
                 if (Character.isLetter(c)) {
-                    return CodeList.valueOf(VerticalDatumType.class, new VerticalDatumTypes(name));
+                    return CodeLists.find(VerticalDatumType.class, new VerticalDatumTypes(name));
                 }
                 i += Character.charCount(c);
             }
@@ -227,19 +229,8 @@ public final class VerticalDatumTypes implements CodeList.Filter {
      * @return {@code true} if the code matches the criterion.
       */
     @Override
-    public boolean accept(final CodeList<?> code) {
+    public boolean test(final CodeList<?> code) {
         final int i = datum.indexOf(code.name());
         return (i == 0) || (i >= 0 && Character.isWhitespace(datum.codePointBefore(i)));
-    }
-
-    /**
-     * Returns {@code null} for disabling the creation of new code list elements.
-     * This method is public as an implementation side-effect and should be ignored.
-     *
-     * @return {@code null}.
-     */
-    @Override
-    public String codename() {
-        return null;
     }
 }

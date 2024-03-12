@@ -76,8 +76,7 @@ public final class LargeCodeList  extends CodeList<LargeCodeList> {
     }
 
     /**
-     * Returns the axis code that matches the given string,
-     * or returns a new one if none match it.
+     * Returns the code that matches the given string, or returns a new one if none match it.
      *
      * @param  code  the name of the code list element to fetch or to create.
      * @return a code list element matching the given name.
