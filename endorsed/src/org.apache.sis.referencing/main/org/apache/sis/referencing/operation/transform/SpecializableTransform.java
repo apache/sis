@@ -561,7 +561,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
          */
         @Override
         public final DirectPosition transform(final DirectPosition ptSrc, DirectPosition ptDst) throws TransformException {
-            final double[] source = ptSrc.getCoordinate();      // Needs to be first in case ptDst overwrites ptSrc.
+            final double[] source = ptSrc.getCoordinates();      // Needs to be first in case ptDst overwrites ptSrc.
             ptDst = global.transform(ptSrc, ptDst);
             final SubArea domain = forward.locate(ptDst);
             if (domain != null) {
@@ -576,7 +576,7 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
          */
         @Override
         public final Matrix derivative(final DirectPosition point) throws TransformException {
-            return transform(point.getCoordinate(), 0, null, 0, true);
+            return transform(point.getCoordinates(), 0, null, 0, true);
         }
 
         /**

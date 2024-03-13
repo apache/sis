@@ -369,8 +369,8 @@ public class WraparoundAdjustment {
                      * how many periods we need to add to those values. We adjust the side which results in the value closest
                      * to zero, in order to reduce rounding error if no more adjustment is done in the next block.
                      */
-                    final double lower = lowerCorner.getOrdinate(i);
-                    final double upper = upperCorner.getOrdinate(i);
+                    final double lower = lowerCorner.getCoordinate(i);
+                    final double upper = upperCorner.getCoordinate(i);
                     double lowerCycles = 0;                             // In number of periods.
                     double upperCycles = 0;
                     double delta = upper - lower;
@@ -531,7 +531,7 @@ public class WraparoundAdjustment {
             for (int i=0; i<periods.length; i++) {
                 final double period = periods[i];
                 if (period > 0) {
-                    final double x = shifted.getOrdinate(i);
+                    final double x = shifted.getCoordinate(i);
                     double delta = shiftableDomain.getMinimum(i) - x;
                     if (delta > 0) {                                        // Test for point before domain of validity.
                         delta = Math.ceil(delta / period);
@@ -549,7 +549,7 @@ public class WraparoundAdjustment {
                             shifted = new GeneralDirectPosition(pointOfInterest);
                         }
                         pointOfInterest = shifted;                         // `shifted` may have been set before the loop.
-                        shifted.setOrdinate(i, Math.fma(period, delta, x));
+                        shifted.setCoordinate(i, Math.fma(period, delta, x));
                     }
                 }
             }

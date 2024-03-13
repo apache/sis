@@ -83,8 +83,8 @@ public class GeodeticCalculatorTest extends TestCase {
      * @param ε  the tolerance threshold.
      */
     static void assertPositionEquals(final double φ, final double λ, final DirectPosition p, final double ε) {
-        assertEquals(φ, p.getOrdinate(0), ε, "φ");
-        assertEquals(λ, p.getOrdinate(1), ε, "λ");
+        assertEquals(φ, p.getCoordinate(0), ε, "φ");
+        assertEquals(λ, p.getCoordinate(1), ε, "λ");
     }
 
     /**
@@ -411,8 +411,8 @@ public class GeodeticCalculatorTest extends TestCase {
                     aErrors.accept(abs(c.getStartingAzimuth() - azimuth));
                     c.setStartingAzimuth(azimuth);
                     DirectPosition endPoint = c.getEndPoint();
-                    final double φ = endPoint.getOrdinate(0);
-                    final double λ = endPoint.getOrdinate(1);
+                    final double φ = endPoint.getCoordinate(0);
+                    final double λ = endPoint.getCoordinate(1);
                     double dy =              (buffer[0] - φ)      * toMetres;
                     double dx = IEEEremainder(buffer[1] - λ, 360) * toMetres * cos(toRadians(φ));
                     yError.accept(abs(dy) / resolution);
@@ -523,11 +523,11 @@ public class GeodeticCalculatorTest extends TestCase {
                 final DirectPosition start = c.getStartPoint();
                 final DirectPosition end   = c.getEndPoint();
                 try {
-                    assertEquals(expected[COLUMN_φ1], start.getOrdinate(0),    Formulas.ANGULAR_TOLERANCE, "φ₁");
-                    assertEquals(expected[COLUMN_λ1], start.getOrdinate(1),    Formulas.ANGULAR_TOLERANCE, "λ₁");
+                    assertEquals(expected[COLUMN_φ1], start.getCoordinate(0),  Formulas.ANGULAR_TOLERANCE, "φ₁");
+                    assertEquals(expected[COLUMN_λ1], start.getCoordinate(1),  Formulas.ANGULAR_TOLERANCE, "λ₁");
                     assertEquals(expected[COLUMN_α1], c.getStartingAzimuth(),  azimuthTolerance / cosφ1,   "α₁");
-                    assertEquals(expected[COLUMN_φ2], end.getOrdinate(0),      latitudeTolerance,          "φ₂");
-                    assertEquals(expected[COLUMN_λ2], end.getOrdinate(1),      longitudeTolerance,         "λ₂");
+                    assertEquals(expected[COLUMN_φ2], end.getCoordinate(0),    latitudeTolerance,          "φ₂");
+                    assertEquals(expected[COLUMN_λ2], end.getCoordinate(1),    longitudeTolerance,         "λ₂");
                     assertEquals(expected[COLUMN_α2], c.getEndingAzimuth(),    azimuthTolerance / cosφ2,   "α₂");
                     assertEquals(expected[COLUMN_Δs], c.getGeodesicDistance(), linearTolerance * relaxIfConfirmed(potentialProblem), "∆s");
                     clear();

@@ -653,7 +653,7 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
                     while (++dim == removedAxis) {
                         removedAxis = toRemovedDimension(++remCounter);
                     }
-                    reduced.coordinates[i] = source.getOrdinate(dim);
+                    reduced.coordinates[i] = source.getCoordinate(dim);
                 }
                 return reduced;
             }

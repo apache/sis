@@ -405,9 +405,9 @@ public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
                                 Strings.toIndexed("points", i), DIMENSION, dimension));
                 }
                 i++;
-                final double x = p.getOrdinate(0); if (Double.isNaN(x)) continue;
-                final double y = p.getOrdinate(1); if (Double.isNaN(y)) continue;
-                final double z = p.getOrdinate(2); if (Double.isNaN(z)) continue;
+                final double x = p.getCoordinate(0); if (Double.isNaN(x)) continue;
+                final double y = p.getCoordinate(1); if (Double.isNaN(y)) continue;
+                final double z = p.getCoordinate(2); if (Double.isNaN(z)) continue;
                 sum_x  = sum_x .add(x, false);
                 sum_y  = sum_y .add(y, false);
                 sum_z  = sum_z .add(z, false);
@@ -515,9 +515,9 @@ public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
                 } else {
                     if (!points.hasNext()) break;
                     final DirectPosition p = points.next();
-                    x = p.getOrdinate(0);
-                    y = p.getOrdinate(1);
-                    z = p.getOrdinate(2);
+                    x = p.getCoordinate(0);
+                    y = p.getCoordinate(1);
+                    z = p.getCoordinate(2);
                 }
                 x = (x - mean_x) * sx;
                 y = (y - mean_y) * sy;

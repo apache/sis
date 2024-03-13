@@ -399,7 +399,7 @@ select: if (commonCRS == null) {
             double latitude = Double.NaN, longitude = Double.NaN;
             for (int i=0; i<BIDIMENSIONAL; i++) {
                 final CoordinateSystemAxis axis = cs.getAxis(i);
-                double coordinate = centroid.getOrdinate(i);
+                double coordinate = centroid.getCoordinate(i);
                 coordinate = axis.getUnit().getConverterToAny(Units.DEGREE).convert(coordinate);
                 final AxisDirection direction = axis.getDirection();
                      if (direction == AxisDirection.NORTH) latitude  =  coordinate;

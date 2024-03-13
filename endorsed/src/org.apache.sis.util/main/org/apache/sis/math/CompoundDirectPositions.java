@@ -131,7 +131,7 @@ final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPo
      * Return the coordinate value at the given dimension.
      */
     @Override
-    public double getOrdinate(final int dimension) {
+    public double getCoordinate(final int dimension) {
         return coordinates[dimension].doubleValue(index);
     }
 
@@ -139,7 +139,7 @@ final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPo
      * Not needed.
      */
     @Override
-    public double[] getCoordinate() {
+    public double[] getCoordinates() {
         throw new UnsupportedOperationException();
     }
 
@@ -147,7 +147,7 @@ final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPo
      * Not needed.
      */
     @Override
-    public void setOrdinate(int dimension, double value) {
+    public void setCoordinate(int dimension, double value) {
         throw new UnsupportedOperationException();
     }
 }

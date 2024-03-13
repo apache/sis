@@ -161,7 +161,7 @@ final class Transformer {
                     sourcePt.coordinates[i] = (i < coords.length) ? coords[i] : 0;
                 }
                 try {
-                    result[j] = mt.transform(sourcePt, targetPt).getCoordinate();
+                    result[j] = mt.transform(sourcePt, targetPt).getCoordinates();
                 } catch (TransformException exception) {
                     /*
                      * The coordinate operation failed for this particular point. But maybe it will
@@ -200,8 +200,8 @@ final class Transformer {
         }
         final GeneralEnvelope result = Envelopes.transform(operation, new GeneralEnvelope(min, max));
         return new double[][] {
-            result.getLowerCorner().getCoordinate(),
-            result.getUpperCorner().getCoordinate()
+            result.getLowerCorner().getCoordinates(),
+            result.getUpperCorner().getCoordinates()
         };
     }
 }

@@ -372,7 +372,7 @@ public final class LinearTransformBuilderTest extends TestCase {
         assertFalse(actual.containsValue(t00));
         assertMapEquals(expected, actual);
 
-        builder.setControlPoint(new int[] {1, 2}, t12.getCoordinate());
+        builder.setControlPoint(new int[] {1, 2}, t12.getCoordinates());
         assertNull(expected.put(s12, t12));
         assertEquals(1, actual.size());
         assertFalse(actual.isEmpty());
@@ -384,7 +384,7 @@ public final class LinearTransformBuilderTest extends TestCase {
         assertFalse(actual.containsValue(t00));
         assertMapEquals(expected, actual);
 
-        builder.setControlPoint(new int[] {2, 3}, t23.getCoordinate());
+        builder.setControlPoint(new int[] {2, 3}, t23.getCoordinates());
         assertNull(expected.put(s23, t23));
         assertEquals(2, actual.size());
         assertFalse(actual.isEmpty());
@@ -396,7 +396,7 @@ public final class LinearTransformBuilderTest extends TestCase {
         assertFalse(actual.containsValue(t00));
         assertMapEquals(expected, actual);
 
-        builder.setControlPoint(new int[] {0, 0}, t00.getCoordinate());
+        builder.setControlPoint(new int[] {0, 0}, t00.getCoordinates());
         assertNull(expected.put(s00, t00));
         assertEquals(3, actual.size());
         assertFalse(actual.isEmpty());

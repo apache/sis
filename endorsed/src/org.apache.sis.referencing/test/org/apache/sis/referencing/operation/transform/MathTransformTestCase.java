@@ -180,8 +180,8 @@ public abstract class MathTransformTestCase extends TransformTestCase {
     protected final void normalize(final DirectPosition expected, final DirectPosition actual, final CalculationType mode) {
         final int i = forComparison(λDimension, mode);
         if (i >= 0) {
-            expected.setOrdinate(i, Longitude.normalize(expected.getOrdinate(i)));
-            actual  .setOrdinate(i, Longitude.normalize(actual  .getOrdinate(i)));
+            expected.setCoordinate(i, Longitude.normalize(expected.getCoordinate(i)));
+            actual  .setCoordinate(i, Longitude.normalize(actual  .getCoordinate(i)));
         }
     }
 

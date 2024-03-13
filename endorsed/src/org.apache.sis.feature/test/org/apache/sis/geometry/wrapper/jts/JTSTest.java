@@ -152,8 +152,8 @@ public final class JTSTest extends TestCase {
             wrapper.setCoordinateReferenceSystem(crs);
             final GeneralEnvelope envelope = wrapper.getEnvelope();
             assertEquals(crs, envelope.getCoordinateReferenceSystem());
-            assertArrayEquals(new double[] {5, 6}, envelope.getLowerCorner().getCoordinate());
-            assertArrayEquals(new double[] {5, 6}, envelope.getUpperCorner().getCoordinate());
+            assertArrayEquals(new double[] {5, 6}, envelope.getLowerCorner().getCoordinates());
+            assertArrayEquals(new double[] {5, 6}, envelope.getUpperCorner().getCoordinates());
         }
 
         {   /*
@@ -168,8 +168,8 @@ public final class JTSTest extends TestCase {
             wrapper.setCoordinateReferenceSystem(crs);
             final GeneralEnvelope envelope = wrapper.getEnvelope();
             assertEquals(crs, envelope.getCoordinateReferenceSystem());
-            assertArrayEquals(new double[] {5, 6, Double.NaN}, envelope.getLowerCorner().getCoordinate());
-            assertArrayEquals(new double[] {5, 6, Double.NaN}, envelope.getUpperCorner().getCoordinate());
+            assertArrayEquals(new double[] {5, 6, Double.NaN}, envelope.getLowerCorner().getCoordinates());
+            assertArrayEquals(new double[] {5, 6, Double.NaN}, envelope.getUpperCorner().getCoordinates());
         }
     }
 

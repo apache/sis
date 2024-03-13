@@ -343,8 +343,8 @@ public class LocationFormat extends TabularFormat<Location> {
                             dimension = 1;
                             break;
                     case 4: dimension = 1;                            // Fall through
-                    case 1: if (geopos   != null) g = geopos  .getOrdinate(dimension);
-                            if (position != null) p = position.getOrdinate(dimension);
+                    case 1: if (geopos   != null) g = geopos  .getCoordinate(dimension);
+                            if (position != null) p = position.getCoordinate(dimension);
                             rounding = RoundingMode.HALF_EVEN;
                             break;
                 }

@@ -99,7 +99,7 @@ public abstract class DirectPositionView extends AbstractDirectPosition {
          * @return the coordinate value at the given dimension.
          */
         @Override
-        public double getOrdinate(final int dim) {
+        public double getCoordinate(final int dim) {
             assert dim >= 0 && dim < dimension : dim;
             return coordinates[offset + dim];
         }
@@ -110,7 +110,7 @@ public abstract class DirectPositionView extends AbstractDirectPosition {
          * @return all coordinate values.
          */
         @Override
-        public double[] getCoordinate() {
+        public double[] getCoordinates() {
             return Arrays.copyOfRange(coordinates, offset, offset + dimension);
         }
     }
@@ -145,7 +145,7 @@ public abstract class DirectPositionView extends AbstractDirectPosition {
          * @return the coordinate value at the given dimension.
          */
         @Override
-        public double getOrdinate(final int dim) {
+        public double getCoordinate(final int dim) {
             assert dim >= 0 && dim < dimension : dim;
             return coordinates[offset + dim];
         }

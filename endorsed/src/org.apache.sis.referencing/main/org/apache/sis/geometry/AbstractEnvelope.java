@@ -283,7 +283,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * The default implementation returns a view over the {@link #getLower(int)} method,
      * so changes in this envelope will be immediately reflected in the returned direct position.
      * If the particular case of the {@code GeneralEnvelope} subclass, the returned position
-     * supports also {@linkplain DirectPosition#setOrdinate(int, double) write operations},
+     * supports also {@linkplain DirectPosition#setCoordinate(int, double) write operations},
      * so changes in the position are reflected back in the envelope.
      *
      * <h4>Note on wraparound</h4>
@@ -311,7 +311,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * The default implementation returns a view over the {@link #getUpper(int)} method,
      * so changes in this envelope will be immediately reflected in the returned direct position.
      * If the particular case of the {@code GeneralEnvelope} subclass, the returned position
-     * supports also {@linkplain DirectPosition#setOrdinate(int, double) write operations},
+     * supports also {@linkplain DirectPosition#setCoordinate(int, double) write operations},
      * so changes in the position are reflected back in the envelope.
      *
      * <h4>Note on wraparound</h4>
@@ -787,7 +787,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
         ensureDimensionMatches("point", dimension, position);
         assert assertEquals(getCoordinateReferenceSystem(), position.getCoordinateReferenceSystem()) : position;
         for (int i=0; i<dimension; i++) {
-            final double value = position.getOrdinate(i);
+            final double value = position.getCoordinate(i);
             final double lower = getLower(i);
             final double upper = getUpper(i);
             final boolean c1   = (value >= lower);
@@ -870,8 +870,8 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
         for (int i=0; i<dimension; i++) {
             final double lower0 = getLower(i);
             final double upper0 = getUpper(i);
-            final double lower1 = lowerCorner.getOrdinate(i);
-            final double upper1 = upperCorner.getOrdinate(i);
+            final double lower1 = lowerCorner.getCoordinate(i);
+            final double upper1 = upperCorner.getCoordinate(i);
             final boolean lowerCondition, upperCondition;
             if (edgesInclusive) {
                 lowerCondition = (lower1 >= lower0);
@@ -1006,8 +1006,8 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
         for (int i=0; i<dimension; i++) {
             final double lower0 = getLower(i);
             final double upper0 = getUpper(i);
-            final double lower1 = lowerCorner.getOrdinate(i);
-            final double upper1 = upperCorner.getOrdinate(i);
+            final double lower1 = lowerCorner.getCoordinate(i);
+            final double upper1 = upperCorner.getCoordinate(i);
             final boolean lowerCondition, upperCondition;
             if (touch) {
                 lowerCondition = (lower1 <= upper0);
@@ -1061,7 +1061,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      */
     static boolean hasNaN(final DirectPosition position) {
         for (int i=position.getDimension(); --i>=0;) {
-            if (Double.isNaN(position.getOrdinate(i))) {
+            if (Double.isNaN(position.getCoordinate(i))) {
                 return true;
             }
         }
@@ -1123,8 +1123,8 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
                     ε *= span;
                 }
             }
-            if (!epsilonEqual(getLower(i), lowerCorner.getOrdinate(i), ε) ||
-                !epsilonEqual(getUpper(i), upperCorner.getOrdinate(i), ε))
+            if (!epsilonEqual(getLower(i), lowerCorner.getCoordinate(i), ε) ||
+                !epsilonEqual(getUpper(i), upperCorner.getCoordinate(i), ε))
             {
                 return false;
             }
@@ -1248,7 +1248,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
             do {                                                        // Executed exactly twice.
                 for (int i=0; i<dimension; i++) {
                     buffer.append(i == 0 && !isUpper ? '(' : ' ');
-                    final double coordinate = (isUpper ? upperCorner : lowerCorner).getOrdinate(i);
+                    final double coordinate = (isUpper ? upperCorner : lowerCorner).getCoordinate(i);
                     if (isSinglePrecision) {
                         buffer.append((float) coordinate);
                     } else {
@@ -1285,8 +1285,8 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
     @Override
     protected String formatTo(final Formatter formatter) {
         final Vector[] points = {
-            Vector.create(getLowerCorner().getCoordinate()),
-            Vector.create(getUpperCorner().getCoordinate())
+            Vector.create(getLowerCorner().getCoordinates()),
+            Vector.create(getUpperCorner().getCoordinates())
         };
         formatter.append(points, WKTUtilities.suggestFractionDigits(getCoordinateReferenceSystem(), points));
         final int dimension = getDimension();
@@ -1300,7 +1300,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
 
     /**
      * Base class for unmodifiable direct positions backed by the enclosing envelope.
-     * Subclasses must override the {@link #getOrdinate(int)} method in order to delegate
+     * Subclasses must override the {@link #getCoordinate(int)} method in order to delegate
      * the work to the appropriate {@link AbstractEnvelope} method.
      *
      * <p>Instance of this class are serializable if the enclosing envelope is serializable.</p>
@@ -1327,12 +1327,12 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
     private final class LowerCorner extends Point {
         private static final long serialVersionUID = 1310741484466506178L;
 
-        @Override public double getOrdinate(final int dimension) throws IndexOutOfBoundsException {
+        @Override public double getCoordinate(final int dimension) throws IndexOutOfBoundsException {
             return getLower(dimension);
         }
 
         /** Sets the coordinate value along the specified dimension. */
-        @Override public void setOrdinate(final int dimension, final double value) {
+        @Override public void setCoordinate(final int dimension, final double value) {
             setRange(dimension, value, getUpper(dimension));
         }
     }
@@ -1343,12 +1343,12 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
     private final class UpperCorner extends Point {
         private static final long serialVersionUID = -6458663549974061472L;
 
-        @Override public double getOrdinate(final int dimension) throws IndexOutOfBoundsException {
+        @Override public double getCoordinate(final int dimension) throws IndexOutOfBoundsException {
             return getUpper(dimension);
         }
 
         /** Sets the coordinate value along the specified dimension. */
-        @Override public void setOrdinate(final int dimension, final double value) {
+        @Override public void setCoordinate(final int dimension, final double value) {
             setRange(dimension, getLower(dimension), value);
         }
     }
@@ -1359,7 +1359,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
     private final class Median extends Point {
         private static final long serialVersionUID = -5826011018957321729L;
 
-        @Override public double getOrdinate(final int dimension) throws IndexOutOfBoundsException {
+        @Override public double getCoordinate(final int dimension) throws IndexOutOfBoundsException {
             return getMedian(dimension);
         }
     }

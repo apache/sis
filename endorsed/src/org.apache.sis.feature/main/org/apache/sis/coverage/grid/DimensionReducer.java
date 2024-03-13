@@ -83,7 +83,7 @@ final class DimensionReducer {
         }
         final GeneralDirectPosition position = new GeneralDirectPosition(reducedCRS);
         for (int i=0; i < dimensions.length; i++) {
-            position.coordinates[i] = target.getOrdinate(dimensions[i]);
+            position.coordinates[i] = target.getCoordinate(dimensions[i]);
         }
         return position;
     }
@@ -101,7 +101,7 @@ final class DimensionReducer {
         final GeneralEnvelope envelope = new GeneralEnvelope(reducedCRS);
         for (int i=0; i < dimensions.length; i++) {
             final int s = dimensions[i];
-            envelope.setRange(i, lowerCorner.getOrdinate(s), upperCorner.getOrdinate(s));
+            envelope.setRange(i, lowerCorner.getCoordinate(s), upperCorner.getOrdinate(s));
         }
         return envelope;
     }

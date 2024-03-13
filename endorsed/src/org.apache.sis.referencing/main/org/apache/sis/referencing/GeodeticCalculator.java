@@ -352,10 +352,10 @@ public class GeodeticCalculator {
      * @return {@link #userToGeodetic} for convenience.
      */
     private PositionTransformer geographic(final double φ, final double λ) {
-        userToGeodetic.setOrdinate(0, toDegrees(φ));
-        userToGeodetic.setOrdinate(1, toDegrees(λ));
+        userToGeodetic.setCoordinate(0, toDegrees(φ));
+        userToGeodetic.setCoordinate(1, toDegrees(λ));
         for (int i=userToGeodetic.getDimension(); --i >= 2;) {
-            userToGeodetic.setOrdinate(i, 0);                   // Set height to ellipsoid surface.
+            userToGeodetic.setCoordinate(i, 0);                   // Set height to ellipsoid surface.
         }
         return userToGeodetic;
     }
@@ -409,7 +409,7 @@ public class GeodeticCalculator {
         } catch (TransformException e) {
             throw new IllegalArgumentException(transformError(false), e);
         }
-        setStartGeographicPoint(p.getOrdinate(0), p.getOrdinate(1));
+        setStartGeographicPoint(p.getCoordinate(0), p.getOrdinate(1));
     }
 
     /**
@@ -476,7 +476,7 @@ public class GeodeticCalculator {
         } catch (TransformException e) {
             throw new IllegalArgumentException(transformError(false), e);
         }
-        setEndGeographicPoint(p.getOrdinate(0), p.getOrdinate(1));
+        setEndGeographicPoint(p.getCoordinate(0), p.getOrdinate(1));
     }
 
     /**

@@ -117,10 +117,10 @@ public class IntervalRectangle extends Rectangle2D implements Serializable {
      * @see Envelope#getUpperCorner()
      */
     public IntervalRectangle(final DirectPosition lower, final DirectPosition upper) {
-        xmin = lower.getOrdinate(0);
-        xmax = upper.getOrdinate(0);
-        ymin = lower.getOrdinate(1);
-        ymax = upper.getOrdinate(1);
+        xmin = lower.getCoordinate(0);
+        xmax = upper.getCoordinate(0);
+        ymin = lower.getCoordinate(1);
+        ymax = upper.getCoordinate(1);
     }
 
     /**

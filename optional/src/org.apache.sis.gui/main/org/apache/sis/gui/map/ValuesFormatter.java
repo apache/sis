@@ -366,7 +366,7 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
          * that position should be given as a non-null {@code slice} argument.
          */
         Position(final DirectPosition position, final GridExtent slice) {
-            coordinates = position.getCoordinate();
+            coordinates = position.getCoordinates();
             crs         = position.getCoordinateReferenceSystem();
             newSlice    = slice;
         }
@@ -377,7 +377,7 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
         }
 
         /** Returns the coordinate value in given dimension. */
-        @Override public double getOrdinate(final int dimension) {
+        @Override public double getCoordinate(final int dimension) {
             return coordinates[dimension];
         }
 

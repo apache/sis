@@ -18,7 +18,6 @@ package org.apache.sis.storage.shapefile.shp;
 
 import java.io.IOException;
 import java.nio.ByteOrder;
-import org.opengis.geometry.Envelope;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.io.stream.ChannelDataInput;
@@ -51,7 +50,7 @@ public final class ShapeHeader {
     public ShapeType shapeType;
     /**
      * Shapefile bounding box without CRS.
-     * Ordinates are in X,Y,Z,M order.
+     * Coordinates are in X,Y,Z,M order.
      */
     public ImmutableEnvelope bbox;
 
@@ -125,5 +124,4 @@ public final class ShapeHeader {
         channel.writeDouble(bbox.getMaximum(3));
         channel.flush();
     }
-
 }

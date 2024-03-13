@@ -197,14 +197,14 @@ public final class ExtentsTest extends TestCase {
     public static void testCentroid() {
         final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox(140, 160, 30, 50);
         DirectPosition pos = Extents.centroid(bbox);
-        assertEquals(150, pos.getOrdinate(0), "longitude");
-        assertEquals( 40, pos.getOrdinate(1), "latitude");
+        assertEquals(150, pos.getCoordinate(0), "longitude");
+        assertEquals( 40, pos.getCoordinate(1), "latitude");
         /*
          * Test crossing anti-meridian.
          */
         bbox.setEastBoundLongitude(-160);
         pos = Extents.centroid(bbox);
-        assertEquals(170, pos.getOrdinate(0), "longitude");
-        assertEquals( 40, pos.getOrdinate(1), "latitude");
+        assertEquals(170, pos.getCoordinate(0), "longitude");
+        assertEquals( 40, pos.getCoordinate(1), "latitude");
     }
 }

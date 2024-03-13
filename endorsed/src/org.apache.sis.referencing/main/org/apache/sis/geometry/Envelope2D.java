@@ -157,8 +157,8 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
          * JDK constraint: The call to ensureDimensionMatch(…) should have been first if Sun/Oracle
          * fixed RFE #4093999 (Relax constraint on placement of this()/super() call in constructors).
          */
-        this(lowerCorner.getOrdinate(0), lowerCorner.getOrdinate(1),
-             upperCorner.getOrdinate(0), upperCorner.getOrdinate(1));
+        this(lowerCorner.getCoordinate(0), lowerCorner.getOrdinate(1),
+             upperCorner.getCoordinate(0), upperCorner.getOrdinate(1));
         ensureDimensionMatches("crs", DIMENSION, crs);
         this.crs = crs;
     }

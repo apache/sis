@@ -293,8 +293,8 @@ public final class Assertions extends Static {
             if (i < tolerances.length) {
                 tolerance = tolerances[i];
             }
-            if (abs(expectedLower.getOrdinate(i) - actualLower.getOrdinate(i)) > tolerance ||
-                abs(expectedUpper.getOrdinate(i) - actualUpper.getOrdinate(i)) > tolerance)
+            if (abs(expectedLower.getCoordinate(i) - actualLower.getOrdinate(i)) > tolerance ||
+                abs(expectedUpper.getCoordinate(i) - actualUpper.getOrdinate(i)) > tolerance)
             {
                 fail("Envelopes are not equal in dimension " + i + ":\n"
                         + "expected " + Envelopes.toString(expected) + "\n"
@@ -345,7 +345,7 @@ public final class Assertions extends Static {
         }
         final GeneralDirectPosition median = new GeneralDirectPosition(inner.getDimension());
         for (int i=median.getDimension(); --i>=0;) {
-            median.setOrdinate(i, inner.getMedian(i));
+            median.setCoordinate(i, inner.getMedian(i));
         }
         assertTrue(outer.contains(median), "outer.contains(median)");
     }
@@ -418,7 +418,7 @@ public final class Assertions extends Static {
                     case 2: coordinate = e2.getMaximum(i); break;
                     default: throw new AssertionError(i);
                 }
-                pos.setOrdinate(i, coordinate);
+                pos.setCoordinate(i, coordinate);
                 n /= 3;
             }
             assertEquals(0, n); // Opportunist check of this assert method.

@@ -164,7 +164,7 @@ public class Angle implements Comparable<Angle>, Formattable, Serializable {
             final AxisDirection dir = axis.getDirection();
             final boolean isPositive = dir.equals(positive);
             if (isPositive || dir.equals(negative)) {
-                double value = position.getOrdinate(i);
+                double value = position.getCoordinate(i);
                 if (!isPositive) value = -value;
                 final Unit<?> unit = axis.getUnit();
                 if (unit != Units.DEGREE) try {

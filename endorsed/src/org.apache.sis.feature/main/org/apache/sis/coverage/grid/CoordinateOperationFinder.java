@@ -658,7 +658,7 @@ apply:          if (forwardChangeOfCRS == null) {
              * Returns the median rounded to a value having an exact representation in base 2 using about 10 bits.
              * The intent is to reduce the risk of rounding errors with add/subtract operations.
              */
-            @Override public double getOrdinate(final int i) {
+            @Override public double getCoordinate(final int i) {
                 final double m = coordinates()[i];
                 final int power = 10 - Math.getExponent(m);
                 return Math.scalb(Math.rint(Math.scalb(m, power)), -power);

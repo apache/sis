@@ -424,8 +424,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             for (int i=0; i<dimension; i++) {
                 final int iLower = beginIndex + i;
                 final int iUpper = iLower + d;
-                coordinates[iLower] = lower.getOrdinate(i);
-                coordinates[iUpper] = upper.getOrdinate(i);
+                coordinates[iLower] = lower.getCoordinate(i);
+                coordinates[iUpper] = upper.getCoordinate(i);
             }
         }
         final CoordinateReferenceSystem envelopeCRS = envelope.getCoordinateReferenceSystem();
@@ -563,7 +563,7 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
         for (int i=0; i<dimension; i++) {
             final int iLower = beginIndex + i;
             final int iUpper = iLower + d;
-            final double value = position.getOrdinate(i);
+            final double value = position.getCoordinate(i);
             final double min = coordinates[iLower];
             final double max = coordinates[iUpper];
             if (!isNegative(max - min)) {                       // Standard case, or NaN.
@@ -670,8 +670,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             final int iUpper = iLower + d;
             final double min0 = coordinates[iLower];
             final double max0 = coordinates[iUpper];
-            final double min1 = lower.getOrdinate(i);
-            final double max1 = upper.getOrdinate(i);
+            final double min1 = lower.getCoordinate(i);
+            final double max1 = upper.getCoordinate(i);
             final boolean sp0 = isNegative(max0 - min0);
             final boolean sp1 = isNegative(max1 - min1);
             if (sp0 == sp1) {
@@ -827,8 +827,8 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
             final int iUpper = iLower + d;
             final double min0  = coordinates[iLower];
             final double max0  = coordinates[iUpper];
-            final double min1  = lower.getOrdinate(i);
-            final double max1  = upper.getOrdinate(i);
+            final double min1  = lower.getCoordinate(i);
+            final double max1  = upper.getCoordinate(i);
             final double span0 = max0 - min0;
             final double span1 = max1 - min1;
             if (isSameSign(span0, span1)) {                 // Always `false` if any value is NaN.

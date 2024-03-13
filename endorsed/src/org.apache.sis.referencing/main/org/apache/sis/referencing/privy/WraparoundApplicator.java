@@ -144,7 +144,7 @@ public final class WraparoundApplicator {
                 final CoordinateSystemAxis axis = targetCS.getAxis(wraparoundDimension);
                 m = (axis.getMinimumValue() + axis.getMaximumValue()) / 2;
             } else {
-                m = targetMedian.getOrdinate(wraparoundDimension);
+                m = targetMedian.getCoordinate(wraparoundDimension);
             }
             if (!Double.isFinite(m)) {
                 if (targetMedian != null) {
@@ -158,7 +158,7 @@ public final class WraparoundApplicator {
                  */
                 m = 0;
             }
-            sm = (sourceMedian != null) ? sourceMedian.getOrdinate(wraparoundDimension) : Double.NaN;
+            sm = (sourceMedian != null) ? sourceMedian.getCoordinate(wraparoundDimension) : Double.NaN;
         } catch (BackingStoreException e) {
             // Some `DirectPosition` implementations compute coordinates only when first needed.
             throw e.unwrapOrRethrow(TransformException.class);

@@ -51,7 +51,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * on the value of the containing object's {@code CoordinateReferenceSystem}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.2
+ * @version 1.5
  *
  * @see DirectPosition1D
  * @see DirectPosition2D
@@ -135,7 +135,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * @param point  the position to copy.
      */
     public GeneralDirectPosition(final DirectPosition point) {
-        coordinates = point.getCoordinate();                            // Should already be cloned.
+        coordinates = point.getCoordinates();                            // Should already be cloned.
         crs = point.getCoordinateReferenceSystem();
         ensureDimensionMatches("crs", coordinates.length, crs);
     }
@@ -207,9 +207,11 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * This method is final for ensuring consistency with the {@link #coordinates}, array field, which is public.</div>
      *
      * @return a copy of the {@link #coordinates coordinates} array.
+     *
+     * @since 1.5
      */
     @Override
-    public final double[] getCoordinate() {
+    public final double[] getCoordinates() {
         return coordinates.clone();
     }
 
@@ -220,14 +222,26 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      *                      setting all coordinate values to {@link Double#NaN NaN}.
      * @throws MismatchedDimensionException if the length of the specified array is not
      *         equals to the {@linkplain #getDimension() dimension} of this position.
+     *
+     * @since 1.5
      */
-    public void setCoordinate(final double... coordinates) throws MismatchedDimensionException {
+    public void setCoordinates(final double... coordinates) throws MismatchedDimensionException {
         if (coordinates == null) {
             Arrays.fill(this.coordinates, Double.NaN);
         } else {
             ensureDimensionMatches("coordinates", this.coordinates.length, coordinates);
             System.arraycopy(coordinates, 0, this.coordinates, 0, coordinates.length);
         }
+    }
+
+    /**
+     * Sets the coordinate values along all dimensions.
+     *
+     * @deprecated Renamed {@link #setCoordinates(double...)}.
+     */
+    @Deprecated(since="1.5", forRemoval=true)
+    public void setCoordinate(final double... coordinates) throws MismatchedDimensionException {
+        setCoordinates(coordinates);
     }
 
     /**
@@ -239,9 +253,11 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * @param  dimension  the dimension in the range 0 to {@linkplain #getDimension() dimension}-1.
      * @return the coordinate at the specified dimension.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
+     *
+     * @since 1.5
      */
     @Override
-    public final double getOrdinate(final int dimension) throws IndexOutOfBoundsException {
+    public final double getCoordinate(final int dimension) throws IndexOutOfBoundsException {
         return coordinates[dimension];
     }
 
@@ -251,9 +267,11 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
      * @param  dimension  the dimension for the coordinate of interest.
      * @param  value      the coordinate value of interest.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
+     *
+     * @since 1.5
      */
     @Override
-    public void setOrdinate(final int dimension, final double value) throws IndexOutOfBoundsException {
+    public void setCoordinate(final int dimension, final double value) throws IndexOutOfBoundsException {
         coordinates[dimension] = value;
     }
 
@@ -274,7 +292,7 @@ public class GeneralDirectPosition extends AbstractDirectPosition implements Ser
             ensureDimensionMatches("position", coordinates.length, position);
             setCoordinateReferenceSystem(position.getCoordinateReferenceSystem());
             for (int i=0; i<coordinates.length; i++) {
-                coordinates[i] = position.getOrdinate(i);
+                coordinates[i] = position.getCoordinate(i);
             }
         }
     }

@@ -145,7 +145,7 @@ final class CoverageSubset extends AbstractGridCoverageResource {
         List<double[]> resolutions = source.getResolutions();
         if (reduction != null) {
             JDK16.toList(resolutions.stream()
-                    .map((resolution) -> reduction.apply(new DirectPositionView.Double(resolution)).getCoordinate()));
+                    .map((resolution) -> reduction.apply(new DirectPositionView.Double(resolution)).getCoordinates()));
         }
         return resolutions;
     }

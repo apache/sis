@@ -337,7 +337,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                     south ? TransverseMercator.Zoner.SOUTH_BOUNDS
                           : TransverseMercator.Zoner.NORTH_BOUNDS, 0);
             double northing = datum.universal(position.x * 1.01, position.y).getConversionFromBase()
-                                   .getMathTransform().transform(position, position).getOrdinate(1);
+                                   .getMathTransform().transform(position, position).getCoordinate(1);
             if (south) {
                 northing = 2*PolarStereographicA.UPS_SHIFT - northing;
             }
@@ -854,8 +854,8 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                          * Use of lower and upper corners below are not the same as calls to Envelope.getMinimum(0)
                          * or Envelope.getMaximum(0) if the envelope crosses the anti-meridian.
                          */
-                        zoneStart = ZONER.zone(0, geographicArea.getLowerCorner().getOrdinate(0)) - 1;  // Inclusive.
-                        zoneEnd   = ZONER.zone(0, geographicArea.getUpperCorner().getOrdinate(0));      // Exclusive.
+                        zoneStart = ZONER.zone(0, geographicArea.getLowerCorner().getCoordinate(0)) - 1;  // Inclusive.
+                        zoneEnd   = ZONER.zone(0, geographicArea.getUpperCorner().getCoordinate(0));      // Exclusive.
                         if (zoneEnd < zoneStart) {
                             zoneEnd += zoneCount;                              // Envelope crosses the anti-meridian.
                         }
@@ -1352,8 +1352,8 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                         int y = gridY;
                         if (x < xCenter) x += step - 1;
                         if (downward)    y += step - 1;
-                        normalized.setOrdinate(0, x);
-                        normalized.setOrdinate(1, y);
+                        normalized.setCoordinate(0, x);
+                        normalized.setCoordinate(1, y);
                         String ref = encoder.encode(this, normalized, false, separator, digits, 0);
                         if (ref != null) {
                             /*
@@ -1365,7 +1365,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                             latitudeBand = encoder.latitudeBand;
                             if (latitudeBand != previous && previous != 0) {
                                 pending = ref;
-                                normalized.setOrdinate(1, y + (downward ? +1 : -1));
+                                normalized.setCoordinate(1, y + (downward ? +1 : -1));
                                 ref = encoder.encode(this, normalized, false, separator, digits, 0);
                                 if (ref == null || encoder.latitudeBand == previous) {
                                     ref = pending;  // No result or same result as previous iteration - cancel.
@@ -1595,7 +1595,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                 owner.normalized = position = toNormalized.transform(position, owner.normalized);
             }
             owner.geographic = position = toGeographic.transform(position, owner.geographic);
-            return position.getOrdinate(0);
+            return position.getCoordinate(0);
         }
 
         /**
@@ -1619,8 +1619,8 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             }
             final DirectPosition geographic = toGeographic.transform(position, owner.geographic);
             owner.geographic     = geographic;                  // For reuse in next method calls.
-            final double  λ      = geographic.getOrdinate(1);
-            final double  φ      = geographic.getOrdinate(0);
+            final double  λ      = geographic.getCoordinate(1);
+            final double  φ      = geographic.getCoordinate(0);
             final boolean isUTM  = φ >= TransverseMercator.Zoner.SOUTH_BOUNDS &&
                                    φ <  TransverseMercator.Zoner.NORTH_BOUNDS;
             final int zone       = isUTM ? ZONER.zone(φ, λ) : POLE;
@@ -1643,7 +1643,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
                     toActualZone = CRS.findOperation(datum.geographic(), datum.universal(φ, λ), null).getMathTransform();
                     actualZone   = signedZone;
                 }
-                geographic.setOrdinate(1, Longitude.normalize(λ));
+                geographic.setCoordinate(1, Longitude.normalize(λ));
                 owner.normalized = position = toActualZone.transform(geographic, owner.normalized);
             }
             /*
@@ -1674,8 +1674,8 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
              * 100 kilometres square identification.
              */
             if (digits >= 0) {
-                final double  x = position.getOrdinate(0);
-                final double  y = position.getOrdinate(1);
+                final double  x = position.getCoordinate(0);
+                final double  y = position.getCoordinate(1);
                 final double cx = Math.floor(x / GRID_SQUARE_SIZE);
                 final double cy = Math.floor(y / GRID_SQUARE_SIZE);
                 int col = (int) cx;

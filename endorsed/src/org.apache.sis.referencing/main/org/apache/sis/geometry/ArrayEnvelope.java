@@ -112,8 +112,8 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
         ensureSameDimension(dimension, upperCorner.getDimension());
         coordinates = new double[dimension * 2];
         for (int i=0; i<dimension; i++) {
-            coordinates[i            ] = lowerCorner.getOrdinate(i);
-            coordinates[i + dimension] = upperCorner.getOrdinate(i);
+            coordinates[i            ] = lowerCorner.getCoordinate(i);
+            coordinates[i + dimension] = upperCorner.getCoordinate(i);
         }
         verifyRanges(crs, coordinates);
     }
@@ -170,8 +170,8 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
         final DirectPosition lowerCorner = envelope.getLowerCorner();
         final DirectPosition upperCorner = envelope.getUpperCorner();
         for (int i=0; i<dimension; i++) {
-            coordinates[i]           = lowerCorner.getOrdinate(i);
-            coordinates[i+dimension] = upperCorner.getOrdinate(i);
+            coordinates[i]           = lowerCorner.getCoordinate(i);
+            coordinates[i+dimension] = upperCorner.getCoordinate(i);
         }
         verifyRanges(crs, coordinates);
     }

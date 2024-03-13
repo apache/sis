@@ -406,10 +406,10 @@ affine: if (depth.width == 0 && depth.height == 0) {
      * @param  tolerance       the tolerance value to use in comparisons of matrix coefficients,
      *                         along the X axis and along the Y axis. The distance between the location
      *                         of the matrix being compared is half the size of the region of interest.
-     * @param  xmin            the minimal <var>x</var> ordinate.
-     * @param  xmax            the maximal <var>x</var> ordinate.
-     * @param  ymin            the minimal <var>y</var> ordinate.
-     * @param  ymax            the maximal <var>y</var> ordinate.
+     * @param  xmin            the minimal <var>x</var> coordinate.
+     * @param  xmax            the maximal <var>x</var> coordinate.
+     * @param  ymin            the minimal <var>y</var> coordinate.
+     * @param  ymax            the maximal <var>y</var> coordinate.
      * @param  upperLeft       the transform derivative at {@code (xmin,ymax)}.
      * @param  upperRight      the transform derivative at {@code (xmax,ymax)}.
      * @param  lowerLeft       the transform derivative at {@code (xmin,ymin)}.

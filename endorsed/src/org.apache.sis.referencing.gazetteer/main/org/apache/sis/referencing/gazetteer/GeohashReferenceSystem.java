@@ -321,7 +321,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
             final int lonNumBits = latNumBits + (length & 1);   // Longitude has 1 more bit when length is odd.
             if (position != null) try {
                 position = toGeographic(position);
-                double φ = Math.toRadians(position.getOrdinate(1));
+                double φ = Math.toRadians(position.getCoordinate(1));
                 double a = Math.PI/2 * Formulas.geocentricRadius(ellipsoid, φ);     // Arc length of 90° using radius at φ.
                 double b = Math.cos(φ) * (2*a) / (1 << lonNumBits);                 // Precision along longitude axis.
                 a /= (1 << latNumBits);                                             // Precision along latitude axis.
@@ -357,7 +357,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
                 p = unit.getConverterToAny(ellipsoid.getAxisUnit()).convert(p);
                 if (position != null) try {
                     position = toGeographic(position);
-                    double φ = Math.toRadians(position.getOrdinate(1));
+                    double φ = Math.toRadians(position.getCoordinate(1));
                     numLat   = Math.PI/2 * Formulas.geocentricRadius(ellipsoid, φ) / p;
                     numLon   = Math.cos(φ) * (2*numLat);
                 } catch (FactoryException | TransformException e) {
@@ -472,7 +472,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
             } catch (FactoryException e) {
                 throw new GazetteerException(e.getLocalizedMessage(), e);
             }
-            return encode(position.getOrdinate(1), position.getOrdinate(0));
+            return encode(position.getCoordinate(1), position.getOrdinate(0));
         }
 
         /**
@@ -500,7 +500,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
                 throw new GazetteerException(e.getLocalizedMessage(), e);
             }
             setPrecision(precision, position);
-            return encode(position.getOrdinate(1), position.getOrdinate(0));
+            return encode(position.getCoordinate(1), position.getOrdinate(0));
         }
 
         /**

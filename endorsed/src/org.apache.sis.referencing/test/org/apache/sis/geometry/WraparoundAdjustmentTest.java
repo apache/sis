@@ -230,7 +230,7 @@ public final class WraparoundAdjustmentTest extends TestCase {
 
         final WraparoundAdjustment wa = new WraparoundAdjustment(domainOfValidity, HardCodedConversions.mercator());
         DirectPosition actual = wa.shift(pointOfInterest);
-        assertEquals(-6679169, actual.getOrdinate(0), 1);
-        assertEquals(  221194, actual.getOrdinate(1), 1);
+        assertEquals(-6679169, actual.getCoordinate(0), 1);
+        assertEquals(  221194, actual.getCoordinate(1), 1);
     }
 }

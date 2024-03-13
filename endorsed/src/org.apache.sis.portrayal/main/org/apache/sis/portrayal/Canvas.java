@@ -570,7 +570,7 @@ public class Canvas extends Observable implements Localized {
                      */
                     oldObjectiveToDisplay = getObjectiveToDisplay();
                     final WraparoundApplicator wp = new WraparoundApplicator(null, objectivePOI, oldValue.getCoordinateSystem());
-                    final MathTransform change = orthogonalTangent(wp.forDomainOfUse(newToOld), anchor.getCoordinate());
+                    final MathTransform change = orthogonalTangent(wp.forDomainOfUse(newToOld), anchor.getCoordinates());
                     final MathTransform result = MathTransforms.concatenate(change, oldObjectiveToDisplay);
                     /*
                      * The result is the new `objectiveToTransform` such as the display is unchanged around POI.
@@ -909,7 +909,7 @@ public class Canvas extends Observable implements Localized {
      * May be {@code null} if the point of interest is unknown.
      */
     final double[] getObjectivePOI() {
-        return (objectivePOI != null) ? objectivePOI.getCoordinate() : null;
+        return (objectivePOI != null) ? objectivePOI.getCoordinates() : null;
     }
 
     /**

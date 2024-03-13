@@ -367,7 +367,7 @@ search: for (int j=numPoints; --j >= 0;) {
         int offset = 0;
         for (int i = gridSize.length; i != 0;) {
             final int size = gridSize[--i];
-            final double coordinate = source.getOrdinate(i);
+            final double coordinate = source.getCoordinate(i);
             final int index = (int) coordinate;
             if (index != coordinate) {
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.NotAnInteger_1, coordinate));
@@ -688,11 +688,11 @@ search: for (int j=numPoints; --j >= 0;) {
             } else {
                 index = numPoints;
                 for (int i=0; i<srcDim; i++) {
-                    isValid &= Double.isFinite(sources[i][index] = src.getOrdinate(i));
+                    isValid &= Double.isFinite(sources[i][index] = src.getCoordinate(i));
                 }
             }
             for (int i=0; i<tgtDim; i++) {
-                isValid &= Double.isFinite(targets[i][index] = tgt.getOrdinate(i));
+                isValid &= Double.isFinite(targets[i][index] = tgt.getCoordinate(i));
             }
             /*
              * If the point contains some NaN or infinite coordinate values, it is okay to leave it as-is
@@ -748,7 +748,7 @@ search: for (int j=numPoints; --j >= 0;) {
                 case 2: return new DirectPosition2D(data[0][offset], data[1][offset]);
             }
             final GeneralDirectPosition pos = new GeneralDirectPosition(data.length);
-            for (int i=0; i<data.length; i++) pos.setOrdinate(i, data[i][offset]);
+            for (int i=0; i<data.length; i++) pos.setCoordinate(i, data[i][offset]);
             return pos;
         }
 
@@ -793,7 +793,7 @@ search:         for (int j=domain(); --j >= 0;) {
          */
         @Override
         public final boolean containsValue(final Object value) {
-            return (value instanceof Position) && search(targets, ((Position) value).getDirectPosition().getCoordinate()) >= 0;
+            return (value instanceof Position) && search(targets, ((Position) value).getDirectPosition().getCoordinates()) >= 0;
         }
 
         /**
@@ -837,7 +837,7 @@ search:         for (int j=domain(); --j >= 0;) {
                     int offset = 0;
                     while (i != 0) {
                         final int size = gridSize[--i];
-                        final double coordinate = source.getOrdinate(i);
+                        final double coordinate = source.getCoordinate(i);
                         final int index = (int) coordinate;
                         if (index < 0 || index >= size || index != coordinate) {
                             return -1;
@@ -896,7 +896,7 @@ search:         for (int j=domain(); --j >= 0;) {
                     int offset = index;
                     for (int i=0; i<dim; i++) {
                         final int size = gridSize[i];
-                        pos.setOrdinate(i, offset % size);
+                        pos.setCoordinate(i, offset % size);
                         offset /= size;
                     }
                     if (offset == 0) {
@@ -932,7 +932,7 @@ search:         for (int j=domain(); --j >= 0;) {
          * in the flattened array. In non-gridded case, this operation requires linear scan.
          */
         @Override int flatIndex(final DirectPosition source) {
-            return search(sources, source.getCoordinate());
+            return search(sources, source.getCoordinates());
         }
 
         /**
