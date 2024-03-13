@@ -45,13 +45,6 @@ import static org.apache.sis.gui.internal.LogHandler.LOGGER;
  */
 public final class Styles extends Static {
     /**
-     * Path to the CSS file defining pseudo-classes. This is the file defining appearance
-     * of controls in some situation defining by pseudo-classes, for example when a text
-     * field is flagged with {@link #ERROR}.
-     */
-    public static final String STYLESHEET = "org/apache/sis/gui/pseudo-classes.css";
-
-    /**
      * Approximate size of vertical scroll bar.
      */
     public static final int SCROLLBAR_WIDTH = 20;
