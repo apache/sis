@@ -35,7 +35,7 @@ import org.opengis.feature.AttributeType;
 /**
  * Base implementation of iterators returned by {@link Store#features(boolean)}. This base class returns one feature
  * per line. For example, iteration over the following file will produce 4 {@code Feature} instances, even if there is
- * actually only three distinct instances because the feature "a" is splitted on 2 lines:
+ * actually only three distinct instances because the feature "a" is split on 2 lines:
  *
  * {@snippet lang="csv" :
  *    a,  10, 150, 11.0 2.0 12.0 3.0

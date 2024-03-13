@@ -374,7 +374,7 @@ public abstract class WindowHandler {
         /**
          * Returns the window which is showing the resource. We avoid the call to {@link #getView()}
          * because in the particular case of {@link CoverageExplorer}, it causes the initialization
-         * of a splitted pane which is not the one used by the main window.
+         * of a split pane which is not the one used by the main window.
          */
         @Override
         Window getWindow() {

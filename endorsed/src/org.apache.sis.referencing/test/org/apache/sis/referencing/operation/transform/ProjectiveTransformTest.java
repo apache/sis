@@ -58,8 +58,7 @@ import org.opengis.test.referencing.AffineTransformTest;
 public class ProjectiveTransformTest extends AffineTransformTest {
     /**
      * A math transform factory which delegates instantiations to the enclosing test class.
-     * This is a workaround for RFE #4093999 ("Relax constraint on placement of this()/super()
-     * call in constructors").
+     * This is a workaround while waiting for JEP 447: Statements before super(…).
      */
     private static final class Proxy extends MathTransformFactoryBase {
         /** The enclosing test class. */

@@ -117,8 +117,8 @@ final class ResamplingGrid extends AbstractMathTransform2D {
     /**
      * Creates a new grid of precomputed values using the given transform applied on the specified region.
      * The region is subdivided into a number of sub-regions. The number of sub-divisions is specified by
-     * the {@code depth} argument. A value of 1 means that the region is splitted in two parts. A value of
-     * 2 means that each part is itself splitted in 2 smaller parts (so the original grid is splitted in 4),
+     * the {@code depth} argument. A value of 1 means that the region is split in two parts. A value of
+     * 2 means that each part is itself split in 2 smaller parts (so the original grid is split in 4),
      * <i>etc.</i> with recursive splits like a QuadTree.
      *
      * <p>Determining an optimal value of {@code depth} argument is the most tricky part of this class.

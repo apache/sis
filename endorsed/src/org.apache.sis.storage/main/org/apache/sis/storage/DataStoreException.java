@@ -122,8 +122,7 @@ public class DataStoreException extends Exception implements LocalizedException 
     }
 
     /**
-     * Workaround for RFE #4093999
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Workaround while waiting for JEP 447: Statements before super(…).
      */
     @Workaround(library="JDK", version="1.8")
     private DataStoreException(final Locale locale, final Object[] params) {

@@ -43,7 +43,7 @@ import java.util.Set;
  * <h2>Rational</h2>
  * This tool has been created because in all Apache SIS versions from 0.3 to 1.3, the {@code @since} and
  * {@code @version} Javadoc tags were put on all classes, public or not. It was a little bit misleading
- * because non-public classes can be moved, splitted, merged, <i>etc.</i>, making the meaning of "since"
+ * because non-public classes can be moved, split, merged, <i>etc.</i>, making the meaning of "since"
  * confusing. The rule is that {@code @since} should tell when a class was first available in public API,
  * which is not necessarily when it was first created. Finally, with the use of JPMS exporting only some
  * chosen packages, the presence/absence of those tags is a useful way to remind whether or not a class

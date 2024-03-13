@@ -249,8 +249,7 @@ public class WorldFileStore extends PRJDataStore {
      *
      * @param  format    information about the storage (URL, stream, <i>etc</i>) and the reader/writer to use.
      * @param  readOnly  {@code true} if the store should be open in read-only mode, ignoring {@code format}.
-     *                   This is a workaround for RFE #4093999 in Sun's bug database, for allowing us to invoke
-     *                   {@link FormatFinder#cleanup()} when invoked from the public constructor.
+     *                   This is a workaround while waiting for JEP 447: Statements before super(…).
      * @throws DataStoreException if an error occurred while opening the stream.
      * @throws IOException if an error occurred while creating the image reader instance.
      */

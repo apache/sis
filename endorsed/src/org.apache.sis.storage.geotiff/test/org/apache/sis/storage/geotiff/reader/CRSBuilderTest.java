@@ -50,7 +50,7 @@ public final class CRSBuilderTest extends TestCase {
     }
 
     /**
-     * Tests {@link CRSBuilder#splitName(String)} on a string that should not be splitted.
+     * Tests {@link CRSBuilder#splitName(String)} on a string that should not be split.
      */
     @Test
     public void testNoSplit() {
