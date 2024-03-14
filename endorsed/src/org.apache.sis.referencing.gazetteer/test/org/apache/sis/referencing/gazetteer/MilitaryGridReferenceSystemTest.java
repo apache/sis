@@ -635,7 +635,7 @@ public final class MilitaryGridReferenceSystemTest extends TestCase {
             final DirectPosition r = decode(coder, reference);
             final ProjectedCRS crs = (ProjectedCRS) r.getCoordinateReferenceSystem();
             assertSame(expected, crs.getConversionFromBase().getMathTransform().transform(position, expected));
-            final double distance = expected.distance(r.getCoordinate(0), r.getOrdinate(1));
+            final double distance = expected.distance(r.getCoordinate(0), r.getCoordinate(1));
             if (!(distance < 1.5)) {    // Use '!' for catching NaN.
                 final String lineSeparator = System.lineSeparator();
                 fail("Consistency check failed for φ = " + position.x + " and λ = " + position.y + lineSeparator

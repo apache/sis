@@ -101,7 +101,7 @@ final class DimensionReducer {
         final GeneralEnvelope envelope = new GeneralEnvelope(reducedCRS);
         for (int i=0; i < dimensions.length; i++) {
             final int s = dimensions[i];
-            envelope.setRange(i, lowerCorner.getCoordinate(s), upperCorner.getOrdinate(s));
+            envelope.setRange(i, lowerCorner.getCoordinate(s), upperCorner.getCoordinate(s));
         }
         return envelope;
     }

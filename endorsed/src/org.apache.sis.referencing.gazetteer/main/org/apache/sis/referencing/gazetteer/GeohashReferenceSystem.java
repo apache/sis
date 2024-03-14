@@ -472,7 +472,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
             } catch (FactoryException e) {
                 throw new GazetteerException(e.getLocalizedMessage(), e);
             }
-            return encode(position.getCoordinate(1), position.getOrdinate(0));
+            return encode(position.getCoordinate(1), position.getCoordinate(0));
         }
 
         /**
@@ -500,7 +500,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
                 throw new GazetteerException(e.getLocalizedMessage(), e);
             }
             setPrecision(precision, position);
-            return encode(position.getCoordinate(1), position.getOrdinate(0));
+            return encode(position.getCoordinate(1), position.getCoordinate(0));
         }
 
         /**

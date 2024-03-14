@@ -58,7 +58,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * serializable, is left to subclasses.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.5
  * @since   0.3
  */
 public abstract class AbstractDirectPosition extends FormattableObject implements DirectPosition {
@@ -116,6 +116,8 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      * Returns a sequence of numbers that hold the coordinate of this position in its reference system.
      *
      * @return the coordinates.
+     *
+     * @since 1.5
      */
     @Override
     public double[] getCoordinates() {
@@ -137,6 +139,8 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      * @throws IndexOutOfBoundsException if the given index is negative or is equal or greater
      *         than the {@linkplain #getDimension() position dimension}.
      * @throws UnsupportedOperationException if this direct position is immutable.
+     *
+     * @since 1.5
      */
     @Override
     public void setCoordinate(int dimension, double value) {
@@ -452,7 +456,7 @@ parse:  while (i < length) {
             final int dimension = getDimension();
             if (dimension == that.getDimension()) {
                 for (int i=0; i<dimension; i++) {
-                    if (!Numerics.equals(getCoordinate(i), that.getOrdinate(i))) {
+                    if (!Numerics.equals(getCoordinate(i), that.getCoordinate(i))) {
                         return false;
                     }
                 }

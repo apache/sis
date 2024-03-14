@@ -273,14 +273,14 @@ public class AffineTransform2D extends ImmutableAffineTransform
             }
         } else {
             if (ptDst == null) {
-                final DirectPosition2D point = new DirectPosition2D(ptSrc.getCoordinate(0), ptSrc.getOrdinate(1));
+                final DirectPosition2D point = new DirectPosition2D(ptSrc.getCoordinate(0), ptSrc.getCoordinate(1));
                 super.transform(point, point);
                 return point;
             }
             ArgumentChecks.ensureDimensionMatches("ptDst", DIMENSION, ptDst);
             if (ptDst instanceof Point2D) {
                 final Point2D point = (Point2D) ptDst;
-                point.setLocation(ptSrc.getCoordinate(0), ptSrc.getOrdinate(1));
+                point.setLocation(ptSrc.getCoordinate(0), ptSrc.getCoordinate(1));
                 super.transform(point, point);
                 return ptDst;
             }
@@ -288,7 +288,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
         /*
          * At this point, we have no choice to create a temporary Point2D.
          */
-        final Point2D.Double point = new Point2D.Double(ptSrc.getCoordinate(0), ptSrc.getOrdinate(1));
+        final Point2D.Double point = new Point2D.Double(ptSrc.getCoordinate(0), ptSrc.getCoordinate(1));
         super.transform(point, point);
         ptDst.setCoordinate(0, point.x);
         ptDst.setCoordinate(1, point.y);

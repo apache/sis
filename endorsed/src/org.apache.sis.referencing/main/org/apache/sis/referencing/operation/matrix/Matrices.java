@@ -392,7 +392,7 @@ public final class Matrices extends Static {
              * anti-meridian.
              */
             final double scale     = dstEnvelope.getSpan(i)   / srcEnvelope.getSpan(i);
-            final double translate = dstCorner.getCoordinate(i) - srcCorner.getOrdinate(i)*scale;
+            final double translate = dstCorner.getCoordinate(i) - srcCorner.getCoordinate(i)*scale;
             matrix.setElement(i, i,      scale);
             matrix.setElement(i, srcDim, translate);
         }
