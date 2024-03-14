@@ -151,15 +151,15 @@ class SimpleLocation extends AbstractLocation implements DirectPosition, Envelop
      * Returns the coordinates of the centroid.
      */
     @Override
-    public final double[] getCoordinate() {
-        return new double[] {getOrdinate(0), getOrdinate(1)};
+    public final double[] getCoordinates() {
+        return new double[] {getCoordinate(0), getOrdinate(1)};
     }
 
     /**
      * Returns the centroid coordinate value for the specified dimension.
      */
     @Override
-    public final double getOrdinate(final int dimension) {
+    public final double getCoordinate(final int dimension) {
         return getMedian(dimension);
     }
 
@@ -238,7 +238,7 @@ class SimpleLocation extends AbstractLocation implements DirectPosition, Envelop
      * Do not allow modification of the direct position.
      */
     @Override
-    public final void setOrdinate(int dimension, double value) {
+    public final void setCoordinate(int dimension, double value) {
         throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, DirectPosition.class));
     }
 

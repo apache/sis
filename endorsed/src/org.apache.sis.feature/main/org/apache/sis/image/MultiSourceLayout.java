@@ -118,9 +118,8 @@ final class MultiSourceLayout extends ImageLayout {
      * or may contain {@code null} elements for selecting all bands of the corresponding image.
      * An empty array element (i.e. zero band to select) discards the corresponding source image.
      *
-     * <p>This static method is a workaround for RFE #4093999
-     * ("Relax constraint on placement of this()/super() call in constructors").
-     * This method may become the constructor after JEP 8300786 is available.</p>
+     * <p>This static method is a workaround while waiting for JEP 447: Statements before super(…).
+     * This method may become the constructor after JEP 447 is available.</p>
      *
      * @param  sources         images to combine, in order.
      * @param  bandsPerSource  bands to use for each source image, in order. May contain {@code null} elements.

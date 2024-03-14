@@ -93,8 +93,7 @@ public final class LocalizedParseException extends ParseException implements Loc
     }
 
     /**
-     * Workaround for RFE #4093999
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Workaround while waiting for JEP 447: Statements before super(…).
      */
     @Workaround(library="JDK", version="1.8")
     private LocalizedParseException(final Locale locale, final Class<?> type,
@@ -104,8 +103,7 @@ public final class LocalizedParseException extends ParseException implements Loc
     }
 
     /**
-     * Workaround for RFE #4093999
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Workaround while waiting for JEP 447: Statements before super(…).
      */
     @Workaround(library="JDK", version="1.8")
     private LocalizedParseException(final Locale locale, final Object[] parameters, final int errorOffset) {
@@ -113,8 +111,7 @@ public final class LocalizedParseException extends ParseException implements Loc
     }
 
     /**
-     * Workaround for RFE #4093999
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Workaround while waiting for JEP 447: Statements before super(…).
      *
      * @param  type         the type of objects parsed by the {@link java.text.Format}.
      * @param  text         the text that {@code Format} failed to parse.
@@ -136,8 +133,7 @@ public final class LocalizedParseException extends ParseException implements Loc
     }
 
     /**
-     * Workaround for RFE #4093999
-     * ("Relax constraint on placement of this()/super() call in constructors").
+     * Workaround while waiting for JEP 447: Statements before super(…).
      */
     @Workaround(library="JDK", version="1.8")
     private static short key(final Object[] parameters) {

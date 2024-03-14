@@ -320,16 +320,16 @@ public abstract class AbstractMathTransform extends FormattableObject
              */
             final double[] array;
             if (dimSource >= dimTarget) {
-                array = ptSrc.getCoordinate();
+                array = ptSrc.getCoordinates();
             } else {
                 array = new double[dimTarget];
                 for (int i=dimSource; --i>=0;) {
-                    array[i] = ptSrc.getOrdinate(i);
+                    array[i] = ptSrc.getCoordinate(i);
                 }
             }
             transform(array, 0, array, 0, false);
             for (int i=0; i<dimTarget; i++) {
-                ptDst.setOrdinate(i, array[i]);
+                ptDst.setCoordinate(i, array[i]);
             }
         } else {
             /*
@@ -341,10 +341,10 @@ public abstract class AbstractMathTransform extends FormattableObject
             if (dimSource <= dimTarget) {
                 source = destination.coordinates;
                 for (int i=0; i<dimSource; i++) {
-                    source[i] = ptSrc.getOrdinate(i);
+                    source[i] = ptSrc.getCoordinate(i);
                 }
             } else {
-                source = ptSrc.getCoordinate();
+                source = ptSrc.getCoordinates();
             }
             transform(source, 0, destination.coordinates, 0, false);
             ptDst = destination;
@@ -811,7 +811,7 @@ public abstract class AbstractMathTransform extends FormattableObject
     @Override
     public Matrix derivative(final DirectPosition point) throws TransformException {
         final int dimSource = getSourceDimensions();
-        final double[] coordinates = point.getCoordinate();
+        final double[] coordinates = point.getCoordinates();
         if (coordinates.length != dimSource) {
             throw mismatchedDimension("point", dimSource, coordinates.length);
         }

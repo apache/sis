@@ -57,7 +57,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * Collections that do not rely on hash codes, like {@code ArrayList}, are safe in all cases.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.5
  *
  * @see DirectPosition1D
  * @see GeneralDirectPosition
@@ -148,8 +148,8 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      */
     public DirectPosition2D(final DirectPosition position) throws MismatchedDimensionException {
         ensureDimensionMatches("position", 2, position);
-        x   = position.getOrdinate(0);
-        y   = position.getOrdinate(1);
+        x   = position.getCoordinate(0);
+        y   = position.getCoordinate(1);
         crs = position.getCoordinateReferenceSystem();
     }
 
@@ -229,9 +229,11 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * This method is final for ensuring consistency with the {@code x} and {@code y} fields, which are public.</div>
      *
      * @return the coordinate.
+     *
+     * @since 1.5
      */
     @Override
-    public final double[] getCoordinate() {
+    public final double[] getCoordinates() {
         return new double[] {x,y};
     }
 
@@ -244,9 +246,11 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * @param  dimension  the dimension in the range 0 to 1 inclusive.
      * @return the coordinate at the specified dimension.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
+     *
+     * @since 1.5
      */
     @Override
-    public final double getOrdinate(final int dimension) throws IndexOutOfBoundsException {
+    public final double getCoordinate(final int dimension) throws IndexOutOfBoundsException {
         switch (dimension) {
             case 0:  return x;
             case 1:  return y;
@@ -260,9 +264,11 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * @param  dimension  the dimension for the coordinate of interest.
      * @param  value      the coordinate value of interest.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
+     *
+     * @since 1.5
      */
     @Override
-    public void setOrdinate(int dimension, double value) throws IndexOutOfBoundsException {
+    public void setCoordinate(int dimension, double value) throws IndexOutOfBoundsException {
         switch (dimension) {
             case 0:  x = value; break;
             case 1:  y = value; break;
@@ -335,8 +341,8 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
         if (object instanceof DirectPosition) {
             final DirectPosition other = (DirectPosition) object;
             if (other.getDimension() == 2 &&
-                doubleToLongBits(other.getOrdinate(0)) == doubleToLongBits(x) &&
-                doubleToLongBits(other.getOrdinate(1)) == doubleToLongBits(y) &&
+                doubleToLongBits(other.getCoordinate(0)) == doubleToLongBits(x) &&
+                doubleToLongBits(other.getCoordinate(1)) == doubleToLongBits(y) &&
                 Objects.equals(other.getCoordinateReferenceSystem(), crs))
             {
                 assert hashCode() == other.hashCode() : this;

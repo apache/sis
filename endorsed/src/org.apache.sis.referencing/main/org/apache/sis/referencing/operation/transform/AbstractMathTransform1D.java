@@ -134,7 +134,7 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
             coordinate = Double.NaN;
         } else {
             ensureDimensionMatches("point", 1, point);
-            coordinate = point.getOrdinate(0);
+            coordinate = point.getCoordinate(0);
         }
         return new Matrix1(derivative(coordinate));
     }
@@ -213,7 +213,7 @@ public abstract class AbstractMathTransform1D extends AbstractMathTransform impl
                 coordinate = Double.NaN;
             } else {
                 ensureDimensionMatches("point", 1, point);
-                coordinate = point.getOrdinate(0);
+                coordinate = point.getCoordinate(0);
             }
             return new Matrix1(derivative(coordinate));
         }

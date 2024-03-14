@@ -50,7 +50,7 @@ import org.opengis.coverage.grid.GridCoordinates;
  * {@link ArithmeticException} is thrown.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.5
  *
  * @see GridCoverage.Evaluator#toGridCoordinates(DirectPosition)
  *
@@ -403,7 +403,7 @@ public class FractionalGridCoordinates implements GridCoordinates, Serializable 
          * Returns all coordinate values.
          */
         @Override
-        public double[] getCoordinate() {
+        public double[] getCoordinates() {
             return coordinates.clone();
         }
 
@@ -411,7 +411,7 @@ public class FractionalGridCoordinates implements GridCoordinates, Serializable 
          * Returns the coordinate value at the given dimension.
          */
         @Override
-        public double getOrdinate(int dimension) {
+        public double getCoordinate(int dimension) {
             return coordinates[dimension];
         }
 
@@ -419,7 +419,7 @@ public class FractionalGridCoordinates implements GridCoordinates, Serializable 
          * Sets the coordinate value at the given dimension.
          */
         @Override
-        public void setOrdinate(final int dimension, final double value) {
+        public void setCoordinate(final int dimension, final double value) {
             coordinates[dimension] = value;
         }
 

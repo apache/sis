@@ -242,8 +242,8 @@ public class GridCoverage2D extends GridCoverage {
      */
     public GridCoverage2D(GridGeometry domain, final List<? extends SampleDimension> range, RenderedImage data) {
         /*
-         * The complex nesting of method calls below is a workaround for RFE #4093999
-         * ("Relax constraint on placement of this()/super() call in constructors").
+         * The complex nesting of method calls below is a workaround
+         * while waiting for JEP 447: Statements before super(…).
          */
         super(domain = addExtentIfAbsent(domain, data = unwrapIfSameSize(data)),
                 defaultIfAbsent(range, data, ImageUtilities.getNumBands(data)));

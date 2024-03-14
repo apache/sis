@@ -615,7 +615,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
         for (int i=0; i<srcDim; i++) {
             final double e = elt[mix++];
             if (e != 0) {                               // For avoiding NullPointerException if affine.
-                w += point.getOrdinate(i) * e;
+                w += point.getCoordinate(i) * e;
             }
         }
         /*

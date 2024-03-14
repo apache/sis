@@ -115,14 +115,14 @@ public class GeneralEnvelopeTest extends TestCase {
         }
         final DirectPosition lower = test.getLowerCorner();
         final DirectPosition upper = test.getUpperCorner();
-        assertEquals(xLower, lower.getOrdinate(0), "lower");
-        assertEquals(xUpper, upper.getOrdinate(0), "upper");
-        assertEquals(xmin,   test .getMinimum (0), "xmin");
-        assertEquals(xmax,   test .getMaximum (0), "xmax");
-        assertEquals(ymin,   test .getMinimum (1), "ymin");
-        assertEquals(ymax,   test .getMaximum (1), "ymax");
-        assertEquals(ymin,   lower.getOrdinate(1), "ymin");
-        assertEquals(ymax,   upper.getOrdinate(1), "ymax");
+        assertEquals(xLower, lower.getCoordinate(0), "lower");
+        assertEquals(xUpper, upper.getCoordinate(0), "upper");
+        assertEquals(xmin,   test .getMinimum   (0), "xmin");
+        assertEquals(xmax,   test .getMaximum   (0), "xmax");
+        assertEquals(ymin,   test .getMinimum   (1), "ymin");
+        assertEquals(ymax,   test .getMaximum   (1), "ymax");
+        assertEquals(ymin,   lower.getCoordinate(1), "ymin");
+        assertEquals(ymax,   upper.getCoordinate(1), "ymax");
         if (test instanceof Envelope2D ri) {
             assertEquals(xmin, ri.getMinX(), "xmin");
             assertEquals(xmax, ri.getMaxX(), "xmax");
@@ -615,8 +615,8 @@ public class GeneralEnvelopeTest extends TestCase {
     @Test
     public void testCornerModifications() {
         final GeneralEnvelope e = create(2, -4, 3, -3);
-        e.getLowerCorner().setOrdinate(0,  1);
-        e.getUpperCorner().setOrdinate(1, -1);
+        e.getLowerCorner().setCoordinate(0,  1);
+        e.getUpperCorner().setCoordinate(1, -1);
         assertEquals( 1, e.getLower(0));
         assertEquals(-4, e.getLower(1));
         assertEquals( 3, e.getUpper(0));
@@ -662,8 +662,8 @@ public class GeneralEnvelopeTest extends TestCase {
 
         envelope.setTimeRange(Instant.parse("2015-04-10T06:00:00Z"),
                               Instant.parse("2018-12-29T12:00:00Z"));
-        assertArrayEquals(new double[] {-20, -30, 57122.25}, envelope.getLowerCorner().getCoordinate());
-        assertArrayEquals(new double[] { 25,  12, 58481.50}, envelope.getUpperCorner().getCoordinate());
+        assertArrayEquals(new double[] {-20, -30, 57122.25}, envelope.getLowerCorner().getCoordinates());
+        assertArrayEquals(new double[] { 25,  12, 58481.50}, envelope.getUpperCorner().getCoordinates());
     }
 
     /**

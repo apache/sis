@@ -1734,10 +1734,10 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      */
     final GridExtent sliceByRatio(final DirectPosition slicePoint, final double sliceRatio, final int[] dimensionsToKeep) {
         for (int i=slicePoint.getDimension(); --i >= 0;) {
-            slicePoint.setOrdinate(i, Math.fma(sliceRatio, getSize(i, true), getLow(i)));
+            slicePoint.setCoordinate(i, Math.fma(sliceRatio, getSize(i, true), getLow(i)));
         }
         for (int i=0; i<dimensionsToKeep.length; i++) {
-            slicePoint.setOrdinate(dimensionsToKeep[i], Double.NaN);
+            slicePoint.setCoordinate(dimensionsToKeep[i], Double.NaN);
         }
         return slice(slicePoint, null);
     }
@@ -1762,7 +1762,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         final int n = slicePoint.getDimension();
         final int m = getDimension();
         for (int k=0; k<n; k++) {
-            double p = slicePoint.getOrdinate(k);
+            double p = slicePoint.getCoordinate(k);
             if (!Double.isNaN(p)) {
                 final long c = Math.round(p);
                 final int i = (modifiedDimensions != null) ? modifiedDimensions[k] : k;
@@ -1774,7 +1774,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                     final StringBuilder b = new StringBuilder();
                     for (int j=0; j<n; j++) {
                         if (j != 0) b.append(", ");
-                        p = slicePoint.getOrdinate(j);
+                        p = slicePoint.getCoordinate(j);
                         if (Double.isNaN(p)) b.append("NaN");
                         else b.append(Math.round(p));
                     }

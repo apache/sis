@@ -326,8 +326,8 @@ public abstract class Geometries<G> implements Serializable {
         final Object geometry;
         final int n = point.getDimension();
         switch (n) {
-            case 2: geometry = createPoint(point.getOrdinate(0), point.getOrdinate(1)); break;
-            case 3: geometry = createPoint(point.getOrdinate(0), point.getOrdinate(1), point.getOrdinate(2)); break;
+            case 2: geometry = createPoint(point.getCoordinate(0), point.getOrdinate(1)); break;
+            case 3: geometry = createPoint(point.getCoordinate(0), point.getOrdinate(1), point.getOrdinate(2)); break;
             default: throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3, "point", (n <= 2) ? 2 : 3, n));
         }
         final GeometryWrapper wrapper = castOrWrap(geometry);
@@ -472,10 +472,10 @@ public abstract class Geometries<G> implements Serializable {
         } else {
             final DirectPosition lc = envelope.getLowerCorner();
             final DirectPosition uc = envelope.getUpperCorner();
-            xmin = lc.getOrdinate(xd);
-            ymin = lc.getOrdinate(yd);
-            xmax = uc.getOrdinate(xd);
-            ymax = uc.getOrdinate(yd);
+            xmin = lc.getCoordinate(xd);
+            ymin = lc.getCoordinate(yd);
+            xmax = uc.getCoordinate(xd);
+            ymax = uc.getCoordinate(yd);
         }
         final double[] coordinates;
         /*

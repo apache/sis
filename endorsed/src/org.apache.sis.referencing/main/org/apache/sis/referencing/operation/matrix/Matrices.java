@@ -300,8 +300,8 @@ public final class Matrices extends Static {
                         if (!same) {
                             scale = scale.negate();
                         }
-                        translate = scale.multiply((same ? srcCorner : srcOppositeCorner).getOrdinate(srcIndex), decimal);
-                        translate = DoubleDouble.of(dstCorner.getOrdinate(dstIndex), decimal).subtract(translate);
+                        translate = scale.multiply((same ? srcCorner : srcOppositeCorner).getCoordinate(srcIndex), decimal);
+                        translate = DoubleDouble.of(dstCorner.getCoordinate(dstIndex), decimal).subtract(translate);
 
                         matrix.setNumber(dstIndex, srcIndex,       scale);
                         matrix.setNumber(dstIndex, srcAxes.length, translate);
@@ -392,7 +392,7 @@ public final class Matrices extends Static {
              * anti-meridian.
              */
             final double scale     = dstEnvelope.getSpan(i)   / srcEnvelope.getSpan(i);
-            final double translate = dstCorner.getOrdinate(i) - srcCorner.getOrdinate(i)*scale;
+            final double translate = dstCorner.getCoordinate(i) - srcCorner.getOrdinate(i)*scale;
             matrix.setElement(i, i,      scale);
             matrix.setElement(i, srcDim, translate);
         }
@@ -752,7 +752,7 @@ public final class Matrices extends Static {
         }
         if (translation != null) {
             for (int j=0; j<numRow; j++) {
-                matrix.setElement(j, numCol, translation.getOrdinate(j));
+                matrix.setElement(j, numCol, translation.getCoordinate(j));
             }
         }
         return matrix;

@@ -678,18 +678,18 @@ nextPoint:  for (int pointIndex = 0;;) {                // Break condition at th
                     if (sourcePt == null) {
                         sourcePt = new GeneralDirectPosition(dimension);
                         for (int j=0; j<dimension; j++) {
-                            sourcePt.setOrdinate(j, envelope.getMedian(j));
+                            sourcePt.setCoordinate(j, envelope.getMedian(j));
                         }
                     }
                     if (b1) {
-                        sourcePt.setOrdinate(i, v1);
+                        sourcePt.setCoordinate(i, v1);
                         transformed.add(targetPt = mt.transform(sourcePt, targetPt));
                     }
                     if (b2) {
-                        sourcePt.setOrdinate(i, v2);
+                        sourcePt.setCoordinate(i, v2);
                         transformed.add(targetPt = mt.transform(sourcePt, targetPt));
                     }
-                    sourcePt.setOrdinate(i, envelope.getMedian(i));
+                    sourcePt.setCoordinate(i, envelope.getMedian(i));
                 }
             }
         }
@@ -792,7 +792,7 @@ poles:  for (int i=0; i<dimension; i++) {
                     targetPt  = new GeneralDirectPosition(centerPt.clone());
                     sourceBox = AbstractEnvelope.castOrCopy(envelope);
                 }
-                targetPt.setOrdinate(i, extremum);
+                targetPt.setCoordinate(i, extremum);
                 try {
                     sourcePt = inverse.transform(targetPt, sourcePt);
                     if (sourceBox.contains(sourcePt)) {
@@ -806,7 +806,7 @@ poles:  for (int i=0; i<dimension; i++) {
                          */
                         if (CoordinateOperations.isWrapAround(axis)) {
                             revertPt = mt.transform(sourcePt, revertPt);
-                            final double delta = Math.abs(revertPt.getOrdinate(i) - extremum);
+                            final double delta = Math.abs(revertPt.getCoordinate(i) - extremum);
                             if (!(delta < SPAN_FRACTION_AS_BOUND * (axis.getMaximumValue() - axis.getMinimumValue()))) {
                                 continue;
                             }
@@ -838,7 +838,7 @@ poles:  for (int i=0; i<dimension; i++) {
             }
             // Restore `targetPt` to its initial state, which is equal to `centerPt`.
             if (targetPt != null) {
-                targetPt.setOrdinate(i, centerPt[i]);
+                targetPt.setCoordinate(i, centerPt[i]);
             }
         }
         /*
@@ -886,12 +886,12 @@ poles:  for (int i=0; i<dimension; i++) {
                                 c++;                // Skip also the case for "wrapAroundMax".
                                 continue;
                             }
-                            targetPt.setOrdinate(axisIndex, (c == 0) ? axis.getMinimumValue() : axis.getMaximumValue());
+                            targetPt.setCoordinate(axisIndex, (c == 0) ? axis.getMinimumValue() : axis.getMaximumValue());
                             value = min;
                         } else {
                             value = max;
                         }
-                        targetPt.setOrdinate(wrapAroundDimension, value);
+                        targetPt.setCoordinate(wrapAroundDimension, value);
                         try {
                             sourcePt = inverse.transform(targetPt, sourcePt);
                             if (sourceBox.contains(sourcePt)) {
@@ -900,7 +900,7 @@ poles:  for (int i=0; i<dimension; i++) {
                                  * its validity as below (see similar code in other loop above for explanation):
                                  *
                                  *     revertPt = mt.transform(sourcePt, revertPt);
-                                 *     final double delta = Math.abs(revertPt.getOrdinate(wrapAroundDimension) - value);
+                                 *     final double delta = Math.abs(revertPt.getCoordinate(wrapAroundDimension) - value);
                                  *     if (delta < SPAN_FRACTION_AS_BOUND * (max - min)) {
                                  *         transformed.add(targetPt);
                                  *     }
@@ -921,9 +921,9 @@ poles:  for (int i=0; i<dimension; i++) {
                             }
                         }
                     }
-                    targetPt.setOrdinate(axisIndex, centerPt[axisIndex]);
+                    targetPt.setCoordinate(axisIndex, centerPt[axisIndex]);
                 }
-                targetPt.setOrdinate(wrapAroundDimension, centerPt[wrapAroundDimension]);
+                targetPt.setCoordinate(wrapAroundDimension, centerPt[wrapAroundDimension]);
             }
         }
         /*

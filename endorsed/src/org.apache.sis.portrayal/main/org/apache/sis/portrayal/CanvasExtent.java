@@ -108,7 +108,7 @@ final class CanvasExtent extends GridExtent {
         }
         final double[] c = new double[agmDim];
         for (int i = poi.getDimension(); --i >= 0;) {
-            c[i] = poi.getOrdinate(i);
+            c[i] = poi.getCoordinate(i);
         }
         return new CanvasExtent(axisTypes, lower, upper, c);
     }
@@ -197,7 +197,7 @@ final class CanvasExtent extends GridExtent {
         while (supplementalDimensions != 0) {
             final int n = Long.numberOfTrailingZeros(supplementalDimensions);
             gridToCRS.setElement(j, j, Double.NaN);
-            gridToCRS.setElement(j++, agmDim, pointOfInterest.getOrdinate(n));
+            gridToCRS.setElement(j++, agmDim, pointOfInterest.getCoordinate(n));
             supplementalDimensions &= ~(1L << n);
         }
         return MathTransforms.linear(gridToCRS);

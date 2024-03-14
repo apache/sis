@@ -113,9 +113,9 @@ final class TransformResultComparator implements MathTransform {
      */
     @Override
     public DirectPosition transform(DirectPosition ptSrc, DirectPosition ptDst) throws TransformException {
-        final double[] expected = reference.transform(ptSrc, ptDst).getCoordinate();
+        final double[] expected = reference.transform(ptSrc, ptDst).getCoordinates();
         final DirectPosition value = tested.transform(ptSrc, ptDst);
-        assertArrayEquals(expected, value.getCoordinate(), tolerance);
+        assertArrayEquals(expected, value.getCoordinates(), tolerance);
         return value;
     }
 

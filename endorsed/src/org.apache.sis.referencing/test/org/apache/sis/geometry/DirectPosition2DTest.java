@@ -73,7 +73,7 @@ public final class DirectPosition2DTest extends TestCase {
         assertTrue(p2.equals(p1));
         assertEquals(p2.hashCode(), p1.hashCode());
 
-        p1.setOrdinate(0, p1.getOrdinate(0) + 1);
+        p1.setCoordinate(0, p1.getCoordinate(0) + 1);
         assertFalse(p1.equals(p2));
         assertFalse(p2.equals(p1));
         assertNotEquals(p2.hashCode(), p1.hashCode());

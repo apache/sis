@@ -42,7 +42,6 @@ import org.apache.sis.referencing.operation.HardCodedConversions;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Michael Hausegger
  *
- *
  * @see org.apache.sis.measure.AngleFormatTest
  */
 public final class CoordinateFormatTest extends TestCase {
@@ -57,7 +56,7 @@ public final class CoordinateFormatTest extends TestCase {
      */
     private static void assertPositionEquals(final DirectPosition expected, final DirectPosition actual) {
         assertNotSame(expected, actual);
-        assertArrayEquals(expected.getCoordinate(), actual.getCoordinate());
+        assertArrayEquals(expected.getCoordinates(), actual.getCoordinates());
     }
 
     /**
@@ -94,7 +93,7 @@ public final class CoordinateFormatTest extends TestCase {
         final CoordinateFormat format = new CoordinateFormat(null, null);
         final ParsePosition charPos = new ParsePosition(0);
         DirectPosition position = format.parse("23.78 -12.74 127.9 3.25", charPos);
-        assertArrayEquals(new double[] {23.78, -12.74, 127.9, 3.25}, position.getCoordinate());
+        assertArrayEquals(new double[] {23.78, -12.74, 127.9, 3.25}, position.getCoordinates());
         assertEquals(-1, charPos.getErrorIndex());
         assertEquals(23, charPos.getIndex());
         /*
@@ -103,7 +102,7 @@ public final class CoordinateFormatTest extends TestCase {
          */
         charPos.setIndex(0);
         position = format.parse("4.64 10.25 -3.12", charPos);
-        assertArrayEquals(new double[] {4.64, 10.25, -3.12}, position.getCoordinate());
+        assertArrayEquals(new double[] {4.64, 10.25, -3.12}, position.getCoordinates());
         assertEquals(-1, charPos.getErrorIndex());
         assertEquals(16, charPos.getIndex());
         /*
@@ -114,7 +113,7 @@ public final class CoordinateFormatTest extends TestCase {
         assertEquals("; ", format.getSeparator());
         charPos.setIndex(0);
         position = format.parse("4.64;10.25 ;  -3.12", charPos);
-        assertArrayEquals(new double[] {4.64, 10.25, -3.12}, position.getCoordinate());
+        assertArrayEquals(new double[] {4.64, 10.25, -3.12}, position.getCoordinates());
         assertEquals(-1, charPos.getErrorIndex());
         assertEquals(19, charPos.getIndex());
     }
@@ -158,9 +157,9 @@ public final class CoordinateFormatTest extends TestCase {
         final CoordinateFormat format = new CoordinateFormat(Locale.US, null);
         format.setDefaultCRS(HardCodedConversions.mercator());
         DirectPosition pos = format.parse("100 m W 300 m N", new ParsePosition(0));
-        assertArrayEquals(new double[] {-100, 300}, pos.getCoordinate());
+        assertArrayEquals(new double[] {-100, 300}, pos.getCoordinates());
         pos = format.parse("200 m E 100 m S", new ParsePosition(0));
-        assertArrayEquals(new double[] {200, -100}, pos.getCoordinate());
+        assertArrayEquals(new double[] {200, -100}, pos.getCoordinates());
     }
 
     /**
@@ -214,7 +213,7 @@ public final class CoordinateFormatTest extends TestCase {
         format.setDefaultCRS(HardCodedCRS.GEOID_4D);
         final ParsePosition charPos = new ParsePosition(11);
         final DirectPosition pos = format.parse("(to skip); 23°46,8′E 12°44,4′S 127,9 m 22-09-2006 07:00 (ignore)", charPos);
-        assertArrayEquals(new double[] {23.78, -12.74, 127.90, 54000.25}, pos.getCoordinate());
+        assertArrayEquals(new double[] {23.78, -12.74, 127.90, 54000.25}, pos.getCoordinates());
         assertEquals(-1, charPos.getErrorIndex());
         assertEquals(55, charPos.getIndex());
         /*
@@ -249,7 +248,7 @@ public final class CoordinateFormatTest extends TestCase {
         DirectPosition position = format.parse(buffer, charPos);
         assertEquals(buffer.length(), charPos.getIndex(), "Should have parsed the whole text.");
         assertEquals(2, position.getDimension(), "DirectPosition.getDimension()");
-        assertArrayEquals(new double[] {-3, 4}, position.getCoordinate());
+        assertArrayEquals(new double[] {-3, 4}, position.getCoordinates());
     }
 
     /**
@@ -265,7 +264,7 @@ public final class CoordinateFormatTest extends TestCase {
         DirectPosition position = coordinateFormat.parse("[skip] 12", charPos);
         assertEquals(9, charPos.getIndex(), "Should have parsed the whole text.");
         assertEquals(1, position.getDimension(), "DirectPosition.getDimension()");
-        assertArrayEquals(new double[] {12}, position.getCoordinate());
+        assertArrayEquals(new double[] {12}, position.getCoordinates());
     }
 
     /**
@@ -338,7 +337,7 @@ public final class CoordinateFormatTest extends TestCase {
         assertEquals("40°07′N 9°52′35,6″E ± 3 km", format.format(pos));
 
         final DirectPosition p = format.parseObject("40°07′N 9°52′35,6″E ± 3 km");
-        assertArrayEquals(new double[] {40.1166, 9.8765}, p.getCoordinate(), 0.0001);
+        assertArrayEquals(new double[] {40.1166, 9.8765}, p.getCoordinates(), 0.0001);
     }
 
     /**

@@ -31,6 +31,7 @@ import javafx.scene.text.Font;
 import javafx.geometry.Rectangle2D;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import org.apache.sis.gui.internal.FontGIS;
 import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.gui.internal.ToolbarButton;
 
@@ -44,7 +45,7 @@ import org.apache.sis.gui.internal.ToolbarButton;
  * or synchronized between windows, at user's choice.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.5
  * @since   1.3
  */
 public final class WindowManager {          // Not designed for subclassing.
@@ -94,8 +95,8 @@ public final class WindowManager {          // Not designed for subclassing.
      */
     final Stage newWindow(final Region content) {
         final Stage     stage      = new Stage();
-        final Button    mainWindow = new Button("\u2302\uFE0F");        // ⌂ — house
-        final Button    fullScreen = new Button("\u21F1\uFE0F");        // ⇱ — North West Arrow to Corner
+        final Button    mainWindow = FontGIS.button((char) 0,                 "\uD83D\uDDD4");   // 🗔 — Desktop Window
+        final Button    fullScreen = FontGIS.button(FontGIS.Code.FULL_SCREEN, "\u21F1\uFE0F");   // ⇱ — North West Arrow to Corner
         final Resources localized  = Resources.forLocale(locale);
         mainWindow.setTooltip(new Tooltip(localized.getString(Resources.Keys.MainWindow)));
         fullScreen.setTooltip(new Tooltip(localized.getString(Resources.Keys.FullScreen)));

@@ -395,7 +395,7 @@ public final class TransformSeparatorTest extends TestCase {
         DirectPosition actual   = null;
         for (int t=0; t<50; t++) {
             for (int i=source.getDimension(); --i>=0;) {
-                source.setOrdinate(i, random.nextDouble());
+                source.setCoordinate(i, random.nextDouble());
             }
             step     = tr1 .transform(source,   step);
             expected = tr2 .transform(step, expected);

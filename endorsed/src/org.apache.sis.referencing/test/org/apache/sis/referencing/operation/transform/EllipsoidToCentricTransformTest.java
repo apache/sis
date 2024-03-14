@@ -184,7 +184,7 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
          */
         tolerance = 1E-2;
         derivativeDeltas = new double[] {toRadians(1.0 / 60) / 1852};           // Approximately one metre.
-        verifyDerivative(point.getCoordinate());
+        verifyDerivative(point.getCoordinates());
         /*
          * Derivative of the inverse transform.
          */
@@ -192,7 +192,7 @@ public final class EllipsoidToCentricTransformTest extends MathTransformTestCase
         transform = transform.inverse();
         tolerance = 1E-8;
         derivativeDeltas = new double[] {1};                                    // Approximately one metre.
-        verifyDerivative(point.getCoordinate());
+        verifyDerivative(point.getCoordinates());
         loggings.assertNoUnexpectedLog();
     }
 

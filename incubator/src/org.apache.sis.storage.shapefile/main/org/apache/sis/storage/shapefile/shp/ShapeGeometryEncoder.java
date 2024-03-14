@@ -200,10 +200,10 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
         final double maxY = channel.readDouble();
         if (filter != null && maxY < filter.y) return false;
         shape.bbox = new GeneralEnvelope(getDimension());
-        shape.bbox.getLowerCorner().setOrdinate(0, minX);
-        shape.bbox.getLowerCorner().setOrdinate(1, minY);
-        shape.bbox.getUpperCorner().setOrdinate(0, maxX);
-        shape.bbox.getUpperCorner().setOrdinate(1, maxY);
+        shape.bbox.getLowerCorner().setCoordinate(0, minX);
+        shape.bbox.getLowerCorner().setCoordinate(1, minY);
+        shape.bbox.getUpperCorner().setCoordinate(0, maxX);
+        shape.bbox.getUpperCorner().setCoordinate(1, maxY);
         return true;
     }
 
@@ -275,9 +275,9 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
     /**
      * Read lines ordinates.
      *
-     * @param channel to read from
-     * @param shape to update
-     * @param lines to update
+     * @param  channel to read from
+     * @param  shape to update
+     * @param  lines to update
      * @param ordinateIndex ordinate index to read
      * @throws IOException If an I/O error occurs
      */

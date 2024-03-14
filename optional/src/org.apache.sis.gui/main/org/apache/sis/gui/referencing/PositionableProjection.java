@@ -198,8 +198,8 @@ public abstract class PositionableProjection extends CodeList<PositionableProjec
             center = CRS.findOperation(inherit, normalizedCRS, null).getMathTransform().transform(center, null);
         }
         return createProjectedCRS(normalizedCRS,
-                Latitude .clamp    (center.getOrdinate(0)),
-                Longitude.normalize(center.getOrdinate(1)));
+                Latitude .clamp    (center.getCoordinate(0)),
+                Longitude.normalize(center.getCoordinate(1)));
     }
 
     /**

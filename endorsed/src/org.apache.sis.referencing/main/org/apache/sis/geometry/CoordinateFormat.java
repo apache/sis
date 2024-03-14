@@ -1454,7 +1454,7 @@ abort:  if (dimensions != 0 && groundAccuracy != null) try {
          */
         final int dimension = position.getDimension();
         for (int i=0; i < dimension; i++) {
-            double value = position.getOrdinate(i);
+            double value = position.getCoordinate(i);
             final Object valueObject;
             final String unit, direction;
             final Format f;

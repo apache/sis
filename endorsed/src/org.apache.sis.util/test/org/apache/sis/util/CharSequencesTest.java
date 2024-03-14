@@ -166,8 +166,8 @@ public final class CharSequencesTest extends TestCase {
      */
     @Test
     public void testSplitOnEOL() {
-        final CharSequence[] splitted = splitOnEOL("\nOne\r\nTwo\rThree \rFour\n Five\n\r Six \n");
-        assertArrayEquals(new String[] {"", "One", "Two", "Three ", "Four", " Five", "", " Six ", ""}, splitted);
+        final CharSequence[] split = splitOnEOL("\nOne\r\nTwo\rThree \rFour\n Five\n\r Six \n");
+        assertArrayEquals(new String[] {"", "One", "Two", "Three ", "Four", " Five", "", " Six ", ""}, split);
         assertArrayEquals(new String[] {""}, splitOnEOL(""));
         assertArrayEquals(new String[] {},   splitOnEOL(null));
     }

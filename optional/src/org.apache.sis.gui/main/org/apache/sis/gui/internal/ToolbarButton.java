@@ -88,13 +88,14 @@ public abstract class ToolbarButton implements EventHandler<ActionEvent> {
      * The action handler will be {@code this}.
      *
      * @param  group      the group of the toggle button.
-     * @param  icon       the text to put in the button, as a Unicode emoji.
+     * @param  icon       the character to put in the button, as a {@link FontGIS} code.
+     * @param  fallback   the text to put in the button as a Unicode emoji if Font-GIS is not available.
      * @param  localized  an instance of {@link Resources} for current locale.
      * @param  tooltip    the {@link Resources.Keys} value for the tooltip.
      * @return the button configured with text or icon, tooltip and action.
      */
-    public final ToggleButton createButton(final ToggleGroup group, final String icon, final Resources localized, final short tooltip) {
-        final ToggleButton tb = new ToggleButton(icon);
+    public final ToggleButton createButton(final ToggleGroup group, final char icon, final String fallback, final Resources localized, final short tooltip) {
+        final ToggleButton tb = FontGIS.toggle(icon, fallback);
         tb.setToggleGroup(group);
         tb.setTooltip(new Tooltip(localized.getString(tooltip)));
         tb.setOnAction(this);

@@ -222,9 +222,9 @@ final class Wrapper extends GeometryWrapper {
             }
         } else if (ReferencingUtilities.getDimension(crs) != Factory.BIDIMENSIONAL) {
             final GeneralDirectPosition point = new GeneralDirectPosition(crs);
-            point.setOrdinate(0, c.x);
-            point.setOrdinate(1, c.y);
-            point.setOrdinate(2, c.getZ());
+            point.setCoordinate(0, c.x);
+            point.setCoordinate(1, c.y);
+            point.setCoordinate(2, c.getZ());
             return point;
         }
         return new DirectPosition2D(crs, c.x, c.y);

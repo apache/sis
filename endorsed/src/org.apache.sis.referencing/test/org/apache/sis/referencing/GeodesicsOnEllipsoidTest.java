@@ -315,8 +315,8 @@ public final class GeodesicsOnEllipsoidTest extends GeodeticCalculatorTest {
          *   λ₂  —  end point longitude. Shifted by 10° compared to Karney because of λ₁ = 10°.
          *   α₂  —  azimuth at end point.
          */
-        assertEquals( 41.79331020506, endPoint.getOrdinate(1), 1E-11, "φ₂");
-        assertEquals(147.84490004377, endPoint.getOrdinate(0), 1E-11, "λ₂");
+        assertEquals( 41.79331020506, endPoint.getCoordinate(1), 1E-11, "φ₂");
+        assertEquals(147.84490004377, endPoint.getCoordinate(0), 1E-11, "λ₂");
         assertEquals(149.09016931807, testedEarth.getEndingAzimuth(), 1E-11, "α₂");
     }
 

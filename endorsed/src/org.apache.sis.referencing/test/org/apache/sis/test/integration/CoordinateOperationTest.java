@@ -215,7 +215,7 @@ public final class CoordinateOperationTest extends MathTransformTestCase {
          */
         DirectPosition source = new DirectPosition2D(latitude, longitude);
         DirectPosition target = completeTransform.transform(source, null);
-        final double[] coordinate = target.getCoordinate();
+        final double[] coordinate = target.getCoordinates();
         assertEquals(expectedX, coordinate[0], 0.01);
         assertEquals(expectedY, coordinate[1], 0.01);
     }

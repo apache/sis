@@ -155,7 +155,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * @return the coordinates.
      */
     @Override
-    public final double[] getCoordinate() {
+    public final double[] getCoordinates() {
         return new double[] {coordinate};
     }
 
@@ -170,7 +170,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
      */
     @Override
-    public final double getOrdinate(final int dimension) throws IndexOutOfBoundsException {
+    public final double getCoordinate(final int dimension) throws IndexOutOfBoundsException {
         if (dimension == 0) {
             return coordinate;
         } else {
@@ -186,7 +186,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
      */
     @Override
-    public void setOrdinate(int dimension, double value) throws IndexOutOfBoundsException {
+    public void setCoordinate(int dimension, double value) throws IndexOutOfBoundsException {
         if (dimension == 0) {
             coordinate = value;
         } else {
@@ -206,7 +206,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
     public void setLocation(final DirectPosition position) throws MismatchedDimensionException {
         ensureDimensionMatches("position", 1, position);
         setCoordinateReferenceSystem(position.getCoordinateReferenceSystem());
-        coordinate = position.getOrdinate(0);
+        coordinate = position.getCoordinate(0);
     }
 
     /**

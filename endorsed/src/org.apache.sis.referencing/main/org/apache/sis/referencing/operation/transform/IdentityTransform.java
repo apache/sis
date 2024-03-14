@@ -161,7 +161,7 @@ final class IdentityTransform extends AbstractLinearTransform {
         }
         ArgumentChecks.ensureDimensionMatches("ptDst", dimension, ptDst);
         for (int i=0; i<dimension; i++) {
-            ptDst.setOrdinate(i, ptSrc.getOrdinate(i));
+            ptDst.setCoordinate(i, ptSrc.getCoordinate(i));
         }
         return ptDst;
     }

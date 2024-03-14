@@ -17,6 +17,7 @@
 package org.apache.sis.gui;
 
 import java.io.File;
+import java.net.URL;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -48,7 +49,6 @@ import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.gui.internal.LogHandler;
 import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.gui.internal.RecentChoices;
-import org.apache.sis.gui.internal.Styles;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStore;
@@ -190,7 +190,10 @@ public class DataViewer extends Application {
         pane.setTop(menus);
         pane.setCenter(content.getView());
         final Scene scene = new Scene(pane);
-        scene.getStylesheets().add(Styles.STYLESHEET);
+        final URL css = DataViewer.class.getResource("pseudo-classes.css");
+        if (css != null) {
+            scene.getStylesheets().add(css.toExternalForm());
+        }
         final Rectangle2D bounds = Screen.getPrimary().getVisualBounds();
         window.setTitle("Apache Spatial Information System");
         window.getIcons().addAll(new Image(DataViewer.class.getResourceAsStream("SIS_64px.png")),

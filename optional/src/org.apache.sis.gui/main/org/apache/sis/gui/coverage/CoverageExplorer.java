@@ -37,6 +37,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.gui.Widget;
+import org.apache.sis.gui.internal.FontGIS;
 import org.apache.sis.gui.internal.DataStoreOpener;
 import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.gui.internal.ToolbarButton;
@@ -71,7 +72,7 @@ import org.apache.sis.gui.map.StatusBar;
  * implementation may generalize to {@link org.opengis.coverage.Coverage} instances.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see CoverageCanvas
  * @see GridView
@@ -92,12 +93,12 @@ public class CoverageExplorer extends Widget {
         /**
          * Shows the coverage visual as an image. This view uses {@link CoverageCanvas}.
          */
-        IMAGE("\uD83D\uDDFA\uFE0F", Resources.Keys.TabularData),    // 🗺 — World map.
+        IMAGE(FontGIS.Code.WORLD_MAP_ALT, "\uD83D\uDDFA\uFE0F", Resources.Keys.TabularData),    // 🗺 — World map.
 
         /**
          * Shows the coverage numerical value in a table. This view uses {@link GridView}.
          */
-        TABLE("\uD83D\uDD22\uFE0F", Resources.Keys.Visualize);      // 🔢 — Input symbol for numbers.
+        TABLE(FontGIS.Code.GRID, "\uD83D\uDD22\uFE0F", Resources.Keys.Visualize);   // 🔢 — Input symbol for numbers.
 
         /**
          * Number of enumeration values.
@@ -105,9 +106,14 @@ public class CoverageExplorer extends Widget {
         static final int COUNT = 2;
 
         /**
-         * The Unicode characters to use as icon.
+         * The Unicode character to use as icon, as a {@link FontGIS} code.
          */
-        final String icon;
+        final char icon;
+
+        /**
+         * The fallback text if the icon cannot be shown.
+         */
+        final String fallback;
 
         /**
          * Key from {@link Resources} bundle for the localized text to use as tooltip.
@@ -117,9 +123,10 @@ public class CoverageExplorer extends Widget {
         /**
          * Creates a new enumeration value.
          */
-        private View(final String icon, short tooltip) {
-            this.icon = icon;
-            this.tooltip = tooltip;
+        private View(final char icon, final String fallback, short tooltip) {
+            this.icon     = icon;
+            this.fallback = fallback;
+            this.tooltip  = tooltip;
         }
     }
 
@@ -360,7 +367,7 @@ public class CoverageExplorer extends Widget {
             final Resources localized = Resources.forLocale(getLocale());
             buttons[0] = new Separator();
             for (final View type : View.values()) {
-                buttons[1 + type.ordinal()] = new Selector(type).createButton(group, type.icon, localized, type.tooltip);
+                buttons[1 + type.ordinal()] = new Selector(type).createButton(group, type.icon, type.fallback, localized, type.tooltip);
             }
             final View type = getViewType();
             final ViewAndControls c = getViewAndControls(type, false);

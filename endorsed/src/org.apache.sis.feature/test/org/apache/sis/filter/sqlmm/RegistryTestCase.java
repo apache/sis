@@ -529,7 +529,7 @@ public abstract class RegistryTestCase<G> extends TestCaseWithLogs {
          */
         final Object literal = optimized.getParameters().get(1).apply(null);
         final DirectPosition point = library.castOrWrap(literal).getCentroid();
-        assertArrayEquals(new double[] {30, 10}, point.getCoordinate());
+        assertArrayEquals(new double[] {30, 10}, point.getCoordinates());
 
         // Tested methods should not log.
         loggings.assertNoUnexpectedLog();

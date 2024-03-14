@@ -118,10 +118,10 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      * @return the coordinates.
      */
     @Override
-    public double[] getCoordinate() {
+    public double[] getCoordinates() {
         final double[] coordinates = new double[getDimension()];
         for (int i=0; i<coordinates.length; i++) {
-            coordinates[i] = getOrdinate(i);
+            coordinates[i] = getCoordinate(i);
         }
         return coordinates;
     }
@@ -139,7 +139,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      * @throws UnsupportedOperationException if this direct position is immutable.
      */
     @Override
-    public void setOrdinate(int dimension, double value) {
+    public void setCoordinate(int dimension, double value) {
         throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, getClass()));
     }
 
@@ -170,11 +170,11 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
                 }
             }
             for (int i=0; i<dimension; i++) {
-                setOrdinate(i, position.getOrdinate(i));
+                setCoordinate(i, position.getCoordinate(i));
             }
         } else {
             for (int i=0; i<dimension; i++) {
-                setOrdinate(i, Double.NaN);
+                setCoordinate(i, Double.NaN);
             }
         }
     }
@@ -209,7 +209,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
             final int dimension = getDimension();
             final CoordinateSystem cs = crs.getCoordinateSystem();
             for (int i=0; i<dimension; i++) {
-                double coordinate = getOrdinate(i);
+                double coordinate = getCoordinate(i);
                 final CoordinateSystemAxis axis = cs.getAxis(i);
                 final double  minimum = axis.getMinimumValue();
                 final double  maximum = axis.getMaximumValue();
@@ -226,7 +226,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
                     }
                     coordinate -= shift;
                 }
-                setOrdinate(i, coordinate);
+                setCoordinate(i, coordinate);
                 changed = true;
             }
         }
@@ -254,7 +254,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
     @Override
     protected String formatTo(final Formatter formatter) {
         final Vector[] points = {
-            Vector.create(getCoordinate())
+            Vector.create(getCoordinates())
         };
         formatter.append(points, WKTUtilities.suggestFractionDigits(getCoordinateReferenceSystem(), points));
         return WKTKeywords.Point;
@@ -300,7 +300,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
             char separator = '(';
             for (int i=0; i<dimension; i++) {
                 buffer.append(separator);
-                final double coordinate = position.getOrdinate(i);
+                final double coordinate = position.getCoordinate(i);
                 if (isSinglePrecision) {
                     buffer.append((float) coordinate);
                 } else {
@@ -425,7 +425,7 @@ parse:  while (i < length) {
         final int dimension = getDimension();
         int code = 1;
         for (int i=0; i<dimension; i++) {
-            code = code*31 + Double.hashCode(getOrdinate(i));
+            code = code*31 + Double.hashCode(getCoordinate(i));
         }
         return code + Objects.hashCode(getCoordinateReferenceSystem());
     }
@@ -452,7 +452,7 @@ parse:  while (i < length) {
             final int dimension = getDimension();
             if (dimension == that.getDimension()) {
                 for (int i=0; i<dimension; i++) {
-                    if (!Numerics.equals(getOrdinate(i), that.getOrdinate(i))) {
+                    if (!Numerics.equals(getCoordinate(i), that.getOrdinate(i))) {
                         return false;
                     }
                 }

@@ -127,7 +127,7 @@ public final class DimensionalityReductionTest extends TestCase {
      * @param target     expected reduced coordinates.
      */
     private static void testPosition(final DimensionalityReduction reduction, double[] source, double[] target) {
-        assertArrayEquals(target, reduction.apply(new DirectPositionView.Double(source)).getCoordinate());
+        assertArrayEquals(target, reduction.apply(new DirectPositionView.Double(source)).getCoordinates());
     }
 
     /**

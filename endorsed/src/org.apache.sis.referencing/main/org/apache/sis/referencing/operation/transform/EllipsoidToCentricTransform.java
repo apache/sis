@@ -496,10 +496,10 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
         final double h;
         switch (dim) {
             default: throw mismatchedDimension("point", getSourceDimensions(), dim);
-            case 3:  wh = true;  h = point.getOrdinate(2); break;
+            case 3:  wh = true;  h = point.getCoordinate(2); break;
             case 2:  wh = false; h = 0; break;
         }
-        return transform(point.getOrdinate(0), point.getOrdinate(1), h, null, 0, true, wh);
+        return transform(point.getCoordinate(0), point.getOrdinate(1), h, null, 0, true, wh);
     }
 
     /**
@@ -846,7 +846,7 @@ next:   while (--numPts >= 0) {
          */
         @Override
         public Matrix derivative(final DirectPosition point) throws TransformException {
-            final double[] coordinate = point.getCoordinate();
+            final double[] coordinate = point.getCoordinates();
             ArgumentChecks.ensureDimensionMatches("point", 3, coordinate);
             return this.transform(coordinate, 0, coordinate, 0, true);
         }

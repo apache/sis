@@ -529,7 +529,7 @@ public final class GridDerivationTest extends TestCase {
          * Opportunistically use different units for testing conversions.
          */
         GeneralDirectPosition p = new GeneralDirectPosition(HardCodedCRS.ELLIPSOIDAL_HEIGHT_cm);
-        p.setOrdinate(0, 1500);
+        p.setCoordinate(0, 1500);
         slice = grid.derive().slice(p).build();
         assertNotSame(grid, slice);
         assertSame(grid.gridToCRS, slice.gridToCRS);
@@ -616,7 +616,7 @@ public final class GridDerivationTest extends TestCase {
                 .build();
 
         // Build expected grid point focused after slicing. We expect it to be upper corner.
-        expectedGridPoint = DoubleStream.of(grid3d.getUpperCorner().getCoordinate())
+        expectedGridPoint = DoubleStream.of(grid3d.getUpperCorner().getCoordinates())
                 .mapToLong(value -> (long) value)
                 .map(exclusiveValue -> exclusiveValue - 1)        // Exclusive to inclusive.
                 .toArray();

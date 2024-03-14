@@ -255,8 +255,8 @@ public final class GeohashReferenceSystemTest extends TestCase {
         for (final Place place : PLACES) {
             final Location location = coder.decode(place.geohash);
             final DirectPosition result = location.getPosition().getDirectPosition();
-            assertEquals(place.longitude, result.getOrdinate(λi), TOLERANCE, place.name);
-            assertEquals(place.latitude,  result.getOrdinate(φi), TOLERANCE, place.name);
+            assertEquals(place.longitude, result.getCoordinate(λi), TOLERANCE, place.name);
+            assertEquals(place.latitude,  result.getCoordinate(φi), TOLERANCE, place.name);
         }
     }
 

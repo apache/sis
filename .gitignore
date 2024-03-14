@@ -4,6 +4,9 @@ build/
 *.tmp
 *.log
 
+# Specific to this project
+optional/cache/
+
 # Legacy systems (should not be used anymore)
 target/
 .svn/

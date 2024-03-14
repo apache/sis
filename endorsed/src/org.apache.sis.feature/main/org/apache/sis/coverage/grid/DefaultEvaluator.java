@@ -457,7 +457,7 @@ class DefaultEvaluator implements GridCoverage.Evaluator {
         if (result != position) {
             // Should not happen, but be paranoiac.
             final double[] coordinates = position.coordinates;
-            System.arraycopy(result.getCoordinate(), 0, coordinates, 0, coordinates.length);
+            System.arraycopy(result.getCoordinates(), 0, coordinates, 0, coordinates.length);
         }
         /*
          * In most cases, the work of this method ends here. The remaining code in this method

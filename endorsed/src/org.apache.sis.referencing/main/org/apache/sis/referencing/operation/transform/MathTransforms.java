@@ -704,7 +704,7 @@ public final class MathTransforms extends Static {
         final int tgtDim = toApproximate.getTargetDimensions();
         double[] coordinates = new double[Math.max(tgtDim, srcDim + 1)];
         for (int i=0; i<srcDim; i++) {
-            coordinates[i] = tangentPoint.getOrdinate(i);
+            coordinates[i] = tangentPoint.getCoordinate(i);
         }
         final Matrix derivative = derivativeAndTransform(toApproximate, coordinates, 0, coordinates, 0);
         final MatrixSIS m = Matrices.createAffine(derivative, new DirectPositionView.Double(coordinates, 0, tgtDim));
@@ -715,7 +715,7 @@ public final class MathTransforms extends Static {
          */
         coordinates = ArraysExt.resize(coordinates, srcDim + 1);
         for (int i=0; i<srcDim; i++) {
-            coordinates[i] = -tangentPoint.getOrdinate(i);
+            coordinates[i] = -tangentPoint.getCoordinate(i);
         }
         coordinates[srcDim] = 1;
         m.translate(coordinates);

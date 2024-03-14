@@ -758,7 +758,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
         } else {
             ArgumentChecks.ensureDimensionMatches("ptDst", 1, ptDst);
         }
-        ptDst.setOrdinate(0, transform(ptSrc.getOrdinate(0)));
+        ptDst.setCoordinate(0, transform(ptSrc.getCoordinate(0)));
         return ptDst;
     }
 
@@ -769,7 +769,7 @@ final class CategoryList extends AbstractList<Category> implements MathTransform
     public final Matrix derivative(final DirectPosition point) throws TransformException {
         ArgumentChecks.ensureNonNull("point", point);
         ArgumentChecks.ensureDimensionMatches("point", 1, point);
-        return new Matrix1(derivative(point.getOrdinate(0)));
+        return new Matrix1(derivative(point.getCoordinate(0)));
     }
 
     /**
