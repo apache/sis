@@ -529,7 +529,7 @@ public class TileOpExecutor {
 
 
     /**
-     * Tile indices of the next tile to process in a multi-threaded computation. When a computation is splitted
+     * Tile indices of the next tile to process in a multi-threaded computation. When a computation is split
      * between many threads, all workers will share a reference to the same {@link Cursor} instance for fetching
      * the indices of the next tile in iteration order no matter if requested by the same or different threads.
      * We do that on the assumption that if calls to {@link RenderedImage#getTile(int, int)} causes read operations

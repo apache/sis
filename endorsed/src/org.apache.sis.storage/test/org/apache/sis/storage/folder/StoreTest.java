@@ -83,7 +83,7 @@ public final class StoreTest extends TestCaseWithLogs {
             fail("Missing resources: " + identifiers);
         }
         loggings.skipNextLogIfContains("ucar.unidata");
-        loggings.skipNextLogIfContains("ucar.unidata");     // Logs emitted by UCAR. There is two files to skip.
+        loggings.skipNextLogIfContains("ucar.unidata");     // Logs emitted by UCAR. There are two files to skip.
         loggings.assertNoUnexpectedLog();
     }
 

@@ -275,9 +275,9 @@ public abstract class ShapeGeometryEncoder<T extends Geometry> {
     /**
      * Read lines ordinates.
      *
-     * @param channel to read from
-     * @param shape to update
-     * @param lines to update
+     * @param  channel to read from
+     * @param  shape to update
+     * @param  lines to update
      * @param ordinateIndex ordinate index to read
      * @throws IOException If an I/O error occurs
      */

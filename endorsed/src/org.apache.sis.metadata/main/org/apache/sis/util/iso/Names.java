@@ -116,7 +116,7 @@ public final class Names extends Static {
     /**
      * Creates a local or scoped name in the given namespace.
      * The character sequences can be either {@link String} or {@link InternationalString} instances.
-     * The {@code namespace} character sequences is taken verbatim, while {@code scopedName} is splitted
+     * The {@code namespace} character sequences is taken verbatim, while {@code scopedName} is split
      * around the {@linkplain DefaultNameSpace#DEFAULT_SEPARATOR default separator}, which is {@code ":"}.
      *
      * @param  namespace   the namespace, or {@code null} for the global namespace.

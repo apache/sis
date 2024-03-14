@@ -352,10 +352,10 @@ public class GeodeticCalculator {
      * @return {@link #userToGeodetic} for convenience.
      */
     private PositionTransformer geographic(final double φ, final double λ) {
-        userToGeodetic.setOrdinate(0, toDegrees(φ));
-        userToGeodetic.setOrdinate(1, toDegrees(λ));
+        userToGeodetic.setCoordinate(0, toDegrees(φ));
+        userToGeodetic.setCoordinate(1, toDegrees(λ));
         for (int i=userToGeodetic.getDimension(); --i >= 2;) {
-            userToGeodetic.setOrdinate(i, 0);                   // Set height to ellipsoid surface.
+            userToGeodetic.setCoordinate(i, 0);                   // Set height to ellipsoid surface.
         }
         return userToGeodetic;
     }

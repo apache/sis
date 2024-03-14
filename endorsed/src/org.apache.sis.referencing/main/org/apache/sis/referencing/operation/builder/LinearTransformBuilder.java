@@ -748,7 +748,7 @@ search: for (int j=numPoints; --j >= 0;) {
                 case 2: return new DirectPosition2D(data[0][offset], data[1][offset]);
             }
             final GeneralDirectPosition pos = new GeneralDirectPosition(data.length);
-            for (int i=0; i<data.length; i++) pos.setOrdinate(i, data[i][offset]);
+            for (int i=0; i<data.length; i++) pos.setCoordinate(i, data[i][offset]);
             return pos;
         }
 
@@ -896,7 +896,7 @@ search:         for (int j=domain(); --j >= 0;) {
                     int offset = index;
                     for (int i=0; i<dim; i++) {
                         final int size = gridSize[i];
-                        pos.setOrdinate(i, offset % size);
+                        pos.setCoordinate(i, offset % size);
                         offset /= size;
                     }
                     if (offset == 0) {

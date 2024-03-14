@@ -595,7 +595,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
      * <p>Note that this is a undocumented SIS features. There is currently no commitment that this implementation
      * details will not change in future version.</p>
      *
-     * @param  text  the text to be splitted.
+     * @param  text  the text to be split.
      * @return an array where to store the result of splitting the given {@code text}.
      */
     private static CharSequence[] createSplitArray(final CharSequence text) {
@@ -636,37 +636,37 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
             return EMPTY_ARRAY;
         }
         if (separator == '\n' || separator == '\r') {
-            final CharSequence[] splitted = splitOnEOL(text);
-            for (int i=0; i < splitted.length; i++) {
+            final CharSequence[] split = splitOnEOL(text);
+            for (int i=0; i < split.length; i++) {
                 // For consistency with the rest of this method.
-                splitted[i] = trimWhitespaces(splitted[i]);
+                split[i] = trimWhitespaces(split[i]);
             }
-            return splitted;
+            return split;
         }
         // 'excludeEmpty' must use the same criterion as trimWhitespaces(…).
         final boolean excludeEmpty = isWhitespace(separator);
-        CharSequence[] splitted = createSplitArray(text);
+        CharSequence[] split = createSplitArray(text);
         final int length = text.length();
         int count = 0, last  = 0, i = 0;
         while ((i = indexOf(text, separator, i, length)) >= 0) {
             final CharSequence item = trimWhitespaces(text, last, i);
             if (!excludeEmpty || item.length() != 0) {
-                if (count == splitted.length) {
-                    splitted = Arrays.copyOf(splitted, count << 1);
+                if (count == split.length) {
+                    split = Arrays.copyOf(split, count << 1);
                 }
-                splitted[count++] = item;
+                split[count++] = item;
             }
             last = ++i;
         }
         // Add the last element.
         final CharSequence item = trimWhitespaces(text, last, length);
         if (!excludeEmpty || item.length() != 0) {
-            if (count == splitted.length) {
-                splitted = Arrays.copyOf(splitted, count + 1);
+            if (count == split.length) {
+                split = Arrays.copyOf(split, count + 1);
             }
-            splitted[count++] = item;
+            split[count++] = item;
         }
-        return ArraysExt.resize(splitted, count);
+        return ArraysExt.resize(split, count);
     }
 
     /**
@@ -715,7 +715,7 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
             };
         }
         int count = 0;
-        CharSequence[] splitted = createSplitArray(text);
+        CharSequence[] split = createSplitArray(text);
         int last = 0;
         boolean hasMore;
         do {
@@ -748,20 +748,20 @@ search:     for (; fromIndex <= toIndex; fromIndex++) {
                     hasMore = true; // Because there is lf.
                 }
             }
-            if (count >= splitted.length) {
-                splitted = Arrays.copyOf(splitted, count*2);
+            if (count >= split.length) {
+                split = Arrays.copyOf(split, count*2);
             }
-            splitted[count++] = text.subSequence(last, splitAt);
+            split[count++] = text.subSequence(last, splitAt);
             last = splitAt + skip;
         } while (hasMore);
         /*
          * Add the remaining string and we are done.
          */
-        if (count >= splitted.length) {
-            splitted = Arrays.copyOf(splitted, count+1);
+        if (count >= split.length) {
+            split = Arrays.copyOf(split, count+1);
         }
-        splitted[count++] = text.subSequence(last, text.length());
-        return ArraysExt.resize(splitted, count);
+        split[count++] = text.subSequence(last, text.length());
+        return ArraysExt.resize(split, count);
     }
 
     /**

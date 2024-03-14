@@ -900,7 +900,7 @@ poles:  for (int i=0; i<dimension; i++) {
                                  * its validity as below (see similar code in other loop above for explanation):
                                  *
                                  *     revertPt = mt.transform(sourcePt, revertPt);
-                                 *     final double delta = Math.abs(revertPt.getOrdinate(wrapAroundDimension) - value);
+                                 *     final double delta = Math.abs(revertPt.getCoordinate(wrapAroundDimension) - value);
                                  *     if (delta < SPAN_FRACTION_AS_BOUND * (max - min)) {
                                  *         transformed.add(targetPt);
                                  *     }

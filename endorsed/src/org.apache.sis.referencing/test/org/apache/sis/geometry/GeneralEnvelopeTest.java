@@ -118,14 +118,14 @@ public class GeneralEnvelopeTest extends TestCase {
         }
         final DirectPosition lower = test.getLowerCorner();
         final DirectPosition upper = test.getUpperCorner();
-        assertEquals(xLower, lower.getOrdinate(0), "lower");
-        assertEquals(xUpper, upper.getOrdinate(0), "upper");
-        assertEquals(xmin,   test .getMinimum (0), "xmin");
-        assertEquals(xmax,   test .getMaximum (0), "xmax");
-        assertEquals(ymin,   test .getMinimum (1), "ymin");
-        assertEquals(ymax,   test .getMaximum (1), "ymax");
-        assertEquals(ymin,   lower.getOrdinate(1), "ymin");
-        assertEquals(ymax,   upper.getOrdinate(1), "ymax");
+        assertEquals(xLower, lower.getOrdinate  (0), "lower");
+        assertEquals(xUpper, upper.getOrdinate  (0), "upper");
+        assertEquals(xmin,   test .getMinimum   (0), "xmin");
+        assertEquals(xmax,   test .getMaximum   (0), "xmax");
+        assertEquals(ymin,   test .getMinimum   (1), "ymin");
+        assertEquals(ymax,   test .getMaximum   (1), "ymax");
+        assertEquals(ymin,   lower.getOrdinate  (1), "ymin");
+        assertEquals(ymax,   upper.getOrdinate  (1), "ymax");
         if (test instanceof Envelope2D ri) {
             assertEquals(xmin, ri.getMinX(), "xmin");
             assertEquals(xmax, ri.getMaxX(), "xmax");

@@ -693,7 +693,7 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
     /**
      * Adds definitions of CRS (or other geodetic objects) from Well-Known Texts. Blank strings are ignored.
      * Each non-blank {@link String} shall contain the complete definition of exactly one geodetic object.
-     * A geodetic object cannot have its definition splitted in two or more {@link String}s.
+     * A geodetic object cannot have its definition split in two or more {@link String}s.
      *
      * <p>The key associated to each object is given by the {@code ID[…]} or {@code AUTHORITY[…]} element,
      * which is typically the last element of a WKT string and is mandatory. WKT strings can contain line

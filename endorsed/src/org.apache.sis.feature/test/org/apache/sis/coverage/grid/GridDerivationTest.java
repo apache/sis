@@ -529,7 +529,7 @@ public final class GridDerivationTest extends TestCase {
          * Opportunistically use different units for testing conversions.
          */
         GeneralDirectPosition p = new GeneralDirectPosition(HardCodedCRS.ELLIPSOIDAL_HEIGHT_cm);
-        p.setOrdinate(0, 1500);
+        p.setCoordinate(0, 1500);
         slice = grid.derive().slice(p).build();
         assertNotSame(grid, slice);
         assertSame(grid.gridToCRS, slice.gridToCRS);

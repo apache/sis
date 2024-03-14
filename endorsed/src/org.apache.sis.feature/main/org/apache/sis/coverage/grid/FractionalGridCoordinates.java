@@ -49,7 +49,7 @@ import org.apache.sis.coverage.PointOutsideCoverageException;
  * {@link ArithmeticException} is thrown.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.5
  *
  * @see GridCoverage.Evaluator#toGridCoordinates(DirectPosition)
  *

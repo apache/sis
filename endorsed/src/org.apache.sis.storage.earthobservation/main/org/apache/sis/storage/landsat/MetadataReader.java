@@ -905,7 +905,7 @@ final class MetadataReader extends MetadataBuilder {
         /*
          * At this point we are done configuring he metadata builder. Creates the ISO 19115 metadata instance,
          * then continue adding some more specific metadata elements by ourself. For example, information about
-         * bands are splitted in 3 different AttributeGroups based on their grid size.
+         * bands are split in 3 different AttributeGroups based on their grid size.
          */
         setISOStandards(true);
         final DefaultMetadata result = build();

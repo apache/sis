@@ -367,7 +367,7 @@ public final class GridExtentTest extends TestCase {
          * unlocalized, so the check below should work in any locale (note that it may
          * change in future SIS version).
          */
-        slicePoint.setOrdinate(0, 900);
+        slicePoint.setCoordinate(0, 900);
         var exception = assertThrows(PointOutsideCoverageException.class, () -> extent.slice(slicePoint, new int[] {1, 2}));
         assertMessageContains(exception, "(900, 47)");         // See above comment.
     }

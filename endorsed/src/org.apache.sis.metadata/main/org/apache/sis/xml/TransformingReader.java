@@ -40,7 +40,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * A XML reader replacing the namespaces found in XML documents by the namespaces expected by SIS at unmarshalling time.
  * This class forwards every method calls to the wrapped {@link XMLEventReader}, but with some {@code namespaceURI}
  * modified before being transferred. This class uses a dictionary for identifying the XML namespaces expected by JAXB
- * implementation. This is needed when a single namespace in a legacy schema has been splitted into many namespaces
+ * implementation. This is needed when a single namespace in a legacy schema has been split into many namespaces
  * in the newer schema. This happen for example in the upgrade from ISO 19139:2007 to ISO 19115-3.
  * In such cases, we need to check which attribute is being mapped in order to determine the new namespace.
  *

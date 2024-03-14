@@ -51,7 +51,7 @@ import static org.apache.sis.util.Numbers.*;
  *       circumstances <strong>reduce</strong> the {@linkplain #size() size} of this set.</li>
  *   <li>Conversely, when a range is {@linkplain #remove(Object) removed}, {@code RangeSet} first
  *       looks if that range is in the middle of an existing range. If such range is found, then
- *       the enclosing range is splitted as of {@link Range#subtract(Range)}. Consequently, removing
+ *       the enclosing range is split as of {@link Range#subtract(Range)}. Consequently, removing
  *       ranges may in some circumstances <strong>increase</strong> the size of this set.</li>
  * </ul>
  *
@@ -592,7 +592,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
 
     /**
      * Removes a range from this set. If the specified range is inside an existing range, then the
-     * existing range may be splitted in two smaller ranges as of {@link Range#subtract(Range)}.
+     * existing range may be split in two smaller ranges as of {@link Range#subtract(Range)}.
      * In other words, invoking this method may <strong>increase</strong> the
      * {@linkplain #size() size} of this set.
      *
@@ -636,7 +636,7 @@ public class RangeSet<E extends Comparable<? super E>> extends AbstractSet<Range
 
     /**
      * Removes a range of values to this set. If the specified range in inside an existing ranges,
-     * then the existing range may be splitted in two smaller ranges. This may result in greater
+     * then the existing range may be split in two smaller ranges. This may result in greater
      * {@linkplain #size() size} of this set.
      *
      * @param  minValue  the minimal value.

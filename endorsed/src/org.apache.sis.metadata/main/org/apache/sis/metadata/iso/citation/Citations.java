@@ -750,7 +750,7 @@ public final class Citations extends Static {
             /*
              * Before to give up, maybe the given code argument is actually written using a "codeSpace:code" syntax.
              * Try to parse that syntax only if no Identifier argument were specified (otherwise we require the code
-             * and code space to be splitted as defined in the identifier).
+             * and code space to be split as defined in the identifier).
              */
             if (identifier == null) {
                 int s = 0;

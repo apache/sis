@@ -654,7 +654,7 @@ final class Tracer {
         /**
          * Flushes any pending {@link #partialPaths} to {@link #path}. This method is invoked after
          * {@link #finish()} has been invoked for all sub-regions (many sub-regions may exist if
-         * isoline generation has been splitted for parallel computation).
+         * isoline generation has been split for parallel computation).
          *
          * @throws TransformException if an error occurred during polylines creation.
          */

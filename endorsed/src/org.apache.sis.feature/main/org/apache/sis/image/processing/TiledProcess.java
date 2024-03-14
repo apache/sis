@@ -35,12 +35,12 @@ import org.apache.sis.pending.jdk.JDK18;
  *
  * <ul class="verbose">
  *   <li>The fork and join processes are presumed relatively costly (i.e. they may need to reconstruct
- *       geometries splitted in two consecutive tiles). So instead of having many medium tasks waiting
+ *       geometries split in two consecutive tiles). So instead of having many medium tasks waiting
  *       for a thread to take them, it may be more efficient to have fewer tasks processing larger areas.
  *       {@code TiledProcess} tries to create a number of sub-tasks close to the number of processors.
  *       This is a different approach than "work stealing" algorithm applied by JDK {@code ForkJoinPool},
  *       which is designed for smaller (and more easily separable) non-blocking tasks.</li>
- *   <li>The main task is splitted in sub-tasks with a single fork step, with two division factors along
+ *   <li>The main task is split in sub-tasks with a single fork step, with two division factors along
  *       <var>x</var> and <var>y</var> axes which can be any integer (not necessarily powers of 2). This
  *       is a different approach than JDK {@code ForkJoinPool} where tasks are forked recursively in two
  *       sub-tasks at each step.</li>
@@ -99,7 +99,7 @@ public abstract class TiledProcess<R> {
     private PixelIterator[] iterators;
 
     /**
-     * Prepares {@link TiledProcess} for execution of a task splitted in different regions.
+     * Prepares {@link TiledProcess} for execution of a task split in different regions.
      * This constructor splits the given image in sub-regions ("tiles" but not in the sense
      * of {@link RenderedImage} tiles), then creates a pixel iterator for each sub-region.
      * Iterators are created with the given {@link org.apache.sis.image.PixelIterator.Builder},

@@ -377,7 +377,7 @@ final class ValuesFormatter extends ValuesUnderCursor.Formatter {
         }
 
         /** Returns the coordinate value in given dimension. */
-        @Override public double getOrdinate(final int dimension) {
+        @Override public double getCoordinate(final int dimension) {
             return coordinates[dimension];
         }
 

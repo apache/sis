@@ -221,7 +221,7 @@ public interface TreeTable {
         /**
          * Returns the user object associated to this node.
          * The user object is for information purpose only and does not appear in the rendered tree.
-         * It is typically a Java object whose content is splitted into the various table columns.
+         * It is typically a Java object whose content is split into the various table columns.
          *
          * <h4>Example</h4>
          * If a {@code CityLocation} class is defined as a (<var>city name</var>, <var>latitude</var>,

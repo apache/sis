@@ -855,7 +855,7 @@ final class ImageFileDirectory extends DataCube {
             }
             /*
              * Stores all the characters referenced by the GeoKeyDirectory. Should contain exactly one string
-             * which will be splitted by CRSBuilder, but we allow an arbitrary amount as a paranoiac check.
+             * which will be split by CRSBuilder, but we allow an arbitrary amount as a paranoiac check.
              * Note that TIFF files use 0 as the end delimiter in strings (C/C++ convention).
              */
             case (short) TAG_GEO_ASCII_PARAMS: {

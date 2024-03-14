@@ -23,7 +23,6 @@ import javafx.scene.control.Button;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.BorderPane;
 import javafx.application.Application;
-import org.apache.sis.gui.internal.Styles;
 import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.util.resources.Vocabulary;
 
@@ -60,7 +59,7 @@ public final class ValueColorMapperApp extends Application {
         pane.setCenter(createIsolineTable());
         pane.setBottom(new Button("Focus here"));
         final Scene scene = new Scene(pane);
-        scene.getStylesheets().add(Styles.STYLESHEET);
+        scene.getStylesheets().add("org/apache/sis/gui/pseudo-classes.css");
         window.setTitle("ValueColorMapper Test");
         window.setScene(scene);
         window.setWidth (400);

@@ -1326,12 +1326,12 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
     private final class LowerCorner extends Point {
         private static final long serialVersionUID = 1310741484466506178L;
 
-        @Override public double getOrdinate(final int dimension) throws IndexOutOfBoundsException {
+        @Override public double getCoordinate(final int dimension) throws IndexOutOfBoundsException {
             return getLower(dimension);
         }
 
         /** Sets the coordinate value along the specified dimension. */
-        @Override public void setOrdinate(final int dimension, final double value) {
+        @Override public void setCoordinate(final int dimension, final double value) {
             setRange(dimension, value, getUpper(dimension));
         }
     }
@@ -1342,12 +1342,12 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
     private final class UpperCorner extends Point {
         private static final long serialVersionUID = -6458663549974061472L;
 
-        @Override public double getOrdinate(final int dimension) throws IndexOutOfBoundsException {
+        @Override public double getCoordinate(final int dimension) throws IndexOutOfBoundsException {
             return getUpper(dimension);
         }
 
         /** Sets the coordinate value along the specified dimension. */
-        @Override public void setOrdinate(final int dimension, final double value) {
+        @Override public void setCoordinate(final int dimension, final double value) {
             setRange(dimension, getLower(dimension), value);
         }
     }
@@ -1358,7 +1358,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
     private final class Median extends Point {
         private static final long serialVersionUID = -5826011018957321729L;
 
-        @Override public double getOrdinate(final int dimension) throws IndexOutOfBoundsException {
+        @Override public double getCoordinate(final int dimension) throws IndexOutOfBoundsException {
             return getMedian(dimension);
         }
     }

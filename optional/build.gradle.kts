@@ -14,6 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import java.nio.file.Files
+
 group = "org.apache.sis"
 // The version is specified in `gradle.properties`.
 
@@ -130,6 +132,32 @@ fun patchForTests(args : MutableList<String>) {
 }
 
 /*
+ * Download the FontGIS glyphs if not already present — https://viglino.github.io/font-gis/
+ * The license is OFL-1.1 (SIL Open Font License), classified by ASF as Category B:
+ * the file may be included in binary-only form in convenience binaries,
+ * but shall not be included in source releases.
+ */
+fun downloadFontGIS() {
+    val targetFile = File(file("build"), "classes/java/main/org.apache.sis.gui/org/apache/sis/gui/internal/font-gis.ttf")
+    if (!targetFile.exists()) {
+        val archiveFolder = File(file("cache"), "fontgis")
+        val archiveFile   = File(archiveFolder, "fontgis.tgz")
+        val archiveEntry  = File(archiveFolder, "package/fonts/font-gis.ttf")
+        val archiveURL    = "https://registry.npmjs.org/font-gis/-/font-gis-1.0.5.tgz"
+        if (!archiveEntry.exists()) {
+            if (!archiveFile.exists()) {
+                archiveFolder.mkdirs()
+                println("Downloading " + archiveURL)
+                ant.invokeMethod("get", mapOf("src" to archiveURL, "dest" to archiveFile))
+            }
+            ant.invokeMethod("untar", mapOf("src"  to archiveFile, "dest" to archiveFolder, "compression" to "gzip"))
+        }
+        targetFile.getParentFile().mkdirs()
+        Files.createLink(targetFile.toPath(), archiveEntry.toPath())
+    }
+}
+
+/*
  * Discover and execute JUnit-based tests.
  */
 tasks.test {
@@ -153,6 +181,7 @@ tasks.test {
  * Other attributes are hard-coded in `../buildSrc`.
  */
 tasks.jar {
+    downloadFontGIS();
     manifest {
         attributes["Main-Class"] = "org.apache.sis.gui.DataViewer"
     }

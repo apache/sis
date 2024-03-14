@@ -42,7 +42,6 @@ import org.apache.sis.referencing.operation.HardCodedConversions;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Michael Hausegger
  *
- *
  * @see org.apache.sis.measure.AngleFormatTest
  */
 public final class CoordinateFormatTest extends TestCase {

@@ -57,7 +57,7 @@ public interface ErrorHandler {
      * time after the error occurred, and may aggregate errors that occurred in more than one tile.
      *
      * <h4>Multi-threading</h4>
-     * If the image processing was splitted between many worker threads, this method may be invoked
+     * If the image processing was split between many worker threads, this method may be invoked
      * from any of those threads. However, the invocation should happen after all threads terminated,
      * either successfully or with an error reported in {@code details}.
      *

@@ -45,10 +45,10 @@ public final class GeneralDirectPositionTest extends TestCase {
     @Test
     public void testNormalize() {
         final GeneralDirectPosition position = new GeneralDirectPosition(WGS84);
-        position.setCoordinate(300, -100);
+        position.setCoordinates(300, -100);
         assertTrue(position.normalize());
-        assertEquals(-90.0, position.getOrdinate(1));
-        assertEquals(-60.0, position.getOrdinate(0));
+        assertEquals(-90.0, position.getCoordinate(1));
+        assertEquals(-60.0, position.getCoordinate(0));
     }
 
     /**

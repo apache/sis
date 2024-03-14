@@ -205,7 +205,7 @@ public abstract class AbstractLocation {
         final GeneralDirectPosition pos = new GeneralDirectPosition(dimension);
         pos.setCoordinateReferenceSystem(envelope.getCoordinateReferenceSystem());
         for (int i=0; i<dimension; i++) {
-            pos.setOrdinate(i, envelope.getMedian(i));
+            pos.setCoordinate(i, envelope.getMedian(i));
         }
         return pos;
     }

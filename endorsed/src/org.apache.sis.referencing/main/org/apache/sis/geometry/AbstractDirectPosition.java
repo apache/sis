@@ -115,14 +115,71 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      * Returns a sequence of numbers that hold the coordinate of this position in its reference system.
      *
      * @return the coordinates.
+     *
+     * @deprecated Renamed {@link #getCoordinates()} for consistency with ISO 19111 terminology.
      */
     @Override
+    @Deprecated(since="1.5")
     public double[] getCoordinate() {
+        return getCoordinates();
+    }
+
+    /**
+     * Returns a sequence of numbers that hold the coordinate of this position in its reference system.
+     *
+     * @return the coordinates.
+     */
+    public double[] getCoordinates() {
         final double[] coordinates = new double[getDimension()];
         for (int i=0; i<coordinates.length; i++) {
-            coordinates[i] = getOrdinate(i);
+            coordinates[i] = getCoordinate(i);
         }
         return coordinates;
+    }
+
+    /**
+     * Returns the coordinate at the specified dimension.
+     *
+     * @param  dimension  the dimension in the range 0 to {@linkplain #getDimension dimension}-1.
+     * @return the coordinate at the specified dimension.
+     * @throws IndexOutOfBoundsException if the given index is negative or is equal or greater
+     *         than the {@linkplain #getDimension() number of dimensions}.
+     *
+     * @deprecated Renamed {@link #getCoordinate(int)} for consistency with ISO 19111 terminology.
+     */
+    @Deprecated(since="1.5")
+    public double getOrdinate(int dimension) throws IndexOutOfBoundsException {
+        return getCoordinate(dimension);
+    }
+
+    /**
+     * Returns the coordinate at the specified dimension.
+     *
+     * @param  dimension  the dimension in the range 0 to {@linkplain #getDimension dimension}-1.
+     * @return the coordinate at the specified dimension.
+     * @throws IndexOutOfBoundsException if the given index is negative or is equal or greater
+     *         than the {@linkplain #getDimension() number of dimensions}.
+     *
+     * @since 1.5
+     */
+    public abstract double getCoordinate(int dimension) throws IndexOutOfBoundsException;
+
+    /**
+     * Sets the coordinate value along the specified dimension.
+     *
+     * @param  dimension  the dimension for the coordinate of interest.
+     * @param  value      the coordinate value of interest.
+     * @throws IndexOutOfBoundsException if the given index is negative or is equal or greater
+     *         than the {@linkplain #getDimension() position dimension}.
+     * @throws UnsupportedOperationException if this direct position is immutable.
+     *
+     * @deprecated Renamed {@link #setCoordinate(int, double)} for consistency with ISO 19111 terminology.
+     */
+    @Deprecated(since="1.5")
+    public void setOrdinate(int dimension, double value)
+            throws IndexOutOfBoundsException, UnsupportedOperationException
+    {
+        setCoordinate(dimension, value);
     }
 
     /**
@@ -137,8 +194,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      *         than the {@linkplain #getDimension() position dimension}.
      * @throws UnsupportedOperationException if this direct position is immutable.
      */
-    @Override
-    public void setOrdinate(int dimension, double value) {
+    public void setCoordinate(int dimension, double value) {
         throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, getClass()));
     }
 
@@ -169,11 +225,11 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
                 }
             }
             for (int i=0; i<dimension; i++) {
-                setOrdinate(i, position.getOrdinate(i));
+                setCoordinate(i, position.getOrdinate(i));
             }
         } else {
             for (int i=0; i<dimension; i++) {
-                setOrdinate(i, Double.NaN);
+                setCoordinate(i, Double.NaN);
             }
         }
     }
@@ -208,7 +264,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
             final int dimension = getDimension();
             final CoordinateSystem cs = crs.getCoordinateSystem();
             for (int i=0; i<dimension; i++) {
-                double coordinate = getOrdinate(i);
+                double coordinate = getCoordinate(i);
                 final CoordinateSystemAxis axis = cs.getAxis(i);
                 final double  minimum = axis.getMinimumValue();
                 final double  maximum = axis.getMaximumValue();
@@ -225,7 +281,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
                     }
                     coordinate -= shift;
                 }
-                setOrdinate(i, coordinate);
+                setCoordinate(i, coordinate);
                 changed = true;
             }
         }
@@ -253,7 +309,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
     @Override
     protected String formatTo(final Formatter formatter) {
         final Vector[] points = {
-            Vector.create(getCoordinate())
+            Vector.create(getCoordinates())
         };
         formatter.append(points, WKTUtilities.suggestFractionDigits(getCoordinateReferenceSystem(), points));
         return WKTKeywords.Point;
@@ -424,7 +480,7 @@ parse:  while (i < length) {
         final int dimension = getDimension();
         int code = 1;
         for (int i=0; i<dimension; i++) {
-            code = code*31 + Double.hashCode(getOrdinate(i));
+            code = code*31 + Double.hashCode(getCoordinate(i));
         }
         return code + Objects.hashCode(getCoordinateReferenceSystem());
     }
@@ -451,7 +507,7 @@ parse:  while (i < length) {
             final int dimension = getDimension();
             if (dimension == that.getDimension()) {
                 for (int i=0; i<dimension; i++) {
-                    if (!Numerics.equals(getOrdinate(i), that.getOrdinate(i))) {
+                    if (!Numerics.equals(getCoordinate(i), that.getOrdinate(i))) {
                         return false;
                     }
                 }

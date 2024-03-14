@@ -57,7 +57,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * Collections that do not rely on hash codes, like {@code ArrayList}, are safe in all cases.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.5
  *
  * @see DirectPosition1D
  * @see GeneralDirectPosition
@@ -229,9 +229,25 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * This method is final for ensuring consistency with the {@code x} and {@code y} fields, which are public.</div>
      *
      * @return the coordinate.
+     * @deprecated Renamed {@link #getCoordinates()} for consistency with ISO 19111 terminology.
      */
     @Override
+    @Deprecated(since="1.5")
     public final double[] getCoordinate() {
+        return getCoordinates();
+    }
+
+    /**
+     * Returns a sequence of numbers that hold the coordinate of this position in its reference system.
+     *
+     * <div class="note"><b>API note:</b>
+     * This method is final for ensuring consistency with the {@code x} and {@code y} fields, which are public.</div>
+     *
+     * @return the coordinate.
+     *
+     * @since 1.5
+     */
+    public final double[] getCoordinates() {
         return new double[] {x,y};
     }
 
@@ -244,9 +260,27 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * @param  dimension  the dimension in the range 0 to 1 inclusive.
      * @return the coordinate at the specified dimension.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
+     * @deprecated Renamed {@link #getCoordinate(int)} for consistency with ISO 19111 terminology.
      */
     @Override
+    @Deprecated(since="1.5")
     public final double getOrdinate(final int dimension) throws IndexOutOfBoundsException {
+        return getCoordinate(dimension);
+    }
+
+    /**
+     * Returns the coordinate at the specified dimension.
+     *
+     * <div class="note"><b>API note:</b>
+     * This method is final for ensuring consistency with the {@code x} and {@code y} fields, which are public.</div>
+     *
+     * @param  dimension  the dimension in the range 0 to 1 inclusive.
+     * @return the coordinate at the specified dimension.
+     * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
+     *
+     * @since 1.5
+     */
+    public final double getCoordinate(final int dimension) throws IndexOutOfBoundsException {
         switch (dimension) {
             case 0:  return x;
             case 1:  return y;
@@ -260,9 +294,24 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
      * @param  dimension  the dimension for the coordinate of interest.
      * @param  value      the coordinate value of interest.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
+     * @deprecated Renamed {@link #setCoordinate(int, double)} for consistency with ISO 19111 terminology.
      */
     @Override
+    @Deprecated(since="1.5")
     public void setOrdinate(int dimension, double value) throws IndexOutOfBoundsException {
+        setCoordinate(dimension, value);
+    }
+
+    /**
+     * Sets the coordinate value along the specified dimension.
+     *
+     * @param  dimension  the dimension for the coordinate of interest.
+     * @param  value      the coordinate value of interest.
+     * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
+     *
+     * @since 1.5
+     */
+    public void setCoordinate(int dimension, double value) throws IndexOutOfBoundsException {
         switch (dimension) {
             case 0:  x = value; break;
             case 1:  y = value; break;
