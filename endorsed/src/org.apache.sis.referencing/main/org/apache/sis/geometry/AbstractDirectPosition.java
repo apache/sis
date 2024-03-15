@@ -87,45 +87,13 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
     }
 
     /**
-     * Returns always {@code this}, the direct position for this
-     * {@linkplain org.opengis.geometry.coordinate.Position position}.
+     * Returns this direct position.
      *
      * @return {@code this}.
      */
     @Override
     public final DirectPosition getDirectPosition() {
         return this;
-    }
-
-    /**
-     * Returns the coordinate reference system in which the coordinate tuple is given.
-     * May be {@code null} if this particular {@code DirectPosition} is included in a larger object
-     * with such a reference to a {@linkplain CoordinateReferenceSystem coordinate reference system}.
-     *
-     * <p>The default implementation returns {@code null}.
-     * Subclasses should override this method if the CRS can be provided.</p>
-     *
-     * @return the coordinate reference system, or {@code null}.
-     */
-    @Override
-    public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return null;
-    }
-
-    /**
-     * Returns a sequence of numbers that hold the coordinate of this position in its reference system.
-     *
-     * @return the coordinates.
-     *
-     * @since 1.5
-     */
-    @Override
-    public double[] getCoordinates() {
-        final double[] coordinates = new double[getDimension()];
-        for (int i=0; i<coordinates.length; i++) {
-            coordinates[i] = getCoordinate(i);
-        }
-        return coordinates;
     }
 
     /**

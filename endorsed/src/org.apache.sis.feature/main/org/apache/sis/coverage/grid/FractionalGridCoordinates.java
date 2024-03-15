@@ -22,7 +22,6 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.StringBuilders;
@@ -381,22 +380,6 @@ public class FractionalGridCoordinates implements GridCoordinates, Serializable 
          */
         Position(final FractionalGridCoordinates other) {
             super(other);
-        }
-
-        /**
-         * Returns the direct position, which is this object itself.
-         */
-        @Override
-        public DirectPosition getDirectPosition() {
-            return this;
-        }
-
-        /**
-         * Grid coordinates have no coordinate reference system.
-         */
-        @Override
-        public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-            return null;
         }
 
         /**

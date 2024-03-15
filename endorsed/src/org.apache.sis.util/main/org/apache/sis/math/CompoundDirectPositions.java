@@ -18,7 +18,6 @@ package org.apache.sis.math;
 
 import java.util.Iterator;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -100,26 +99,6 @@ final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPo
     }
 
     /**
-     * Returns {@code this} since this object is already a direct position.
-     *
-     * @return always {@code this}.
-     */
-    @Override
-    public DirectPosition getDirectPosition() {
-        return this;
-    }
-
-    /**
-     * Returns {@code null} since there is no CRS associated to this object.
-     *
-     * @return always {@code null}.
-     */
-    @Override
-    public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return null;
-    }
-
-    /**
      * Returns the number of dimensions.
      */
     @Override
@@ -133,21 +112,5 @@ final class CompoundDirectPositions implements DirectPosition, Iterable<DirectPo
     @Override
     public double getCoordinate(final int dimension) {
         return coordinates[dimension].doubleValue(index);
-    }
-
-    /**
-     * Not needed.
-     */
-    @Override
-    public double[] getCoordinates() {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Not needed.
-     */
-    @Override
-    public void setCoordinate(int dimension, double value) {
-        throw new UnsupportedOperationException();
     }
 }
