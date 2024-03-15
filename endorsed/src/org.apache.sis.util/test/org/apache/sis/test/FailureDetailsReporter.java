@@ -19,6 +19,7 @@ package org.apache.sis.test;
 import java.io.PrintStream;
 
 // Test dependencies
+import org.opentest4j.TestAbortedException;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -61,7 +62,8 @@ public final class FailureDetailsReporter implements BeforeEachCallback, AfterEa
     public final void afterEach(final ExtensionContext description) {
         boolean flush = TestCase.VERBOSE;
         LogRecordCollector.INSTANCE.setCurrentTest(null);
-        if (description.getExecutionException().isPresent()) {
+        Throwable ex = description.getExecutionException().orElse(null);
+        if (ex != null && !(ex instanceof TestAbortedException)) {
             description.getTestMethod().ifPresent((method) -> {
                 final Long seed = TestUtilities.randomSeed.get();
                 if (seed != null) {
