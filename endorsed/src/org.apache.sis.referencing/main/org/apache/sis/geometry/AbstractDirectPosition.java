@@ -57,7 +57,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * serializable, is left to subclasses.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.5
  * @since   0.3
  */
 public abstract class AbstractDirectPosition extends FormattableObject implements DirectPosition {
@@ -86,8 +86,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
     }
 
     /**
-     * Returns always {@code this}, the direct position for this
-     * {@linkplain org.opengis.geometry.coordinate.Position position}.
+     * Returns this direct position.
      *
      * @return {@code this}.
      */
@@ -193,6 +192,8 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      * @throws IndexOutOfBoundsException if the given index is negative or is equal or greater
      *         than the {@linkplain #getDimension() position dimension}.
      * @throws UnsupportedOperationException if this direct position is immutable.
+     *
+     * @since 1.5
      */
     public void setCoordinate(int dimension, double value) {
         throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, getClass()));

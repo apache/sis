@@ -181,8 +181,9 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
     }
 
     /**
-     * Returns always {@code this}, the direct position for this
-     * {@linkplain org.opengis.geometry.coordinate.Position position}.
+     * Returns this direct position.
+     *
+     * @return {@code this}.
      */
     @Override
     public final DirectPosition getDirectPosition() {

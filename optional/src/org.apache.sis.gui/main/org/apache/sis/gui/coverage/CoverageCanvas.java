@@ -1219,9 +1219,9 @@ public class CoverageCanvas extends MapCanvasAWT {
                              + "Max: %, 16.4f  %, 16.4f%n"
                              + "POI: %, 16.4f  %, 16.4f%n"
                              + "Min: %, 16.4f  %, 16.4f%n",
-                             aoi.getMaxX(),      aoi.getMaxY(),
-                             poi.getOrdinate(0), poi.getOrdinate(1),
-                             aoi.getMinX(),      aoi.getMinY()))
+                             aoi.getMaxX(),        aoi.getMaxY(),
+                             poi.getOrdinate(0),   poi.getOrdinate(1),
+                             aoi.getMinX(),        aoi.getMinY()))
                      .appendHorizontalSeparator();
             }
             final Rectangle source = data.objectiveToData(aoi);

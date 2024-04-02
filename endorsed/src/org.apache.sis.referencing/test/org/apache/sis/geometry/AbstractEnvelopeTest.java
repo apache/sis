@@ -194,16 +194,16 @@ public final class AbstractEnvelopeTest extends TestCase {
             final Envelope envelope = create(type, 12, -4, 30, 50);
             final DirectPosition lower = envelope.getLowerCorner();
             final DirectPosition upper = envelope.getUpperCorner();
-            assertEquals(  30, envelope.getMinimum (1), label);
-            assertEquals(  50, envelope.getMaximum (1), label);
-            assertEquals(  40, envelope.getMedian  (1), label);
-            assertEquals(  20, envelope.getSpan    (1), label);
-            assertEquals(  12, lower   .getOrdinate(0), label);
-            assertEquals(-180, envelope.getMinimum (0), label);
-            assertEquals(  -4, upper   .getOrdinate(0), label);
-            assertEquals(+180, envelope.getMaximum (0), label);
-            assertEquals(-176, envelope.getMedian  (0), label);
-            assertEquals( 344, envelope.getSpan    (0), label);         // 360° - testSimpleEnvelope()
+            assertEquals(  30, envelope.getMinimum   (1), label);
+            assertEquals(  50, envelope.getMaximum   (1), label);
+            assertEquals(  40, envelope.getMedian    (1), label);
+            assertEquals(  20, envelope.getSpan      (1), label);
+            assertEquals(  12, lower   .getOrdinate  (0), label);
+            assertEquals(-180, envelope.getMinimum   (0), label);
+            assertEquals(  -4, upper   .getOrdinate  (0), label);
+            assertEquals(+180, envelope.getMaximum   (0), label);
+            assertEquals(-176, envelope.getMedian    (0), label);
+            assertEquals( 344, envelope.getSpan      (0), label);       // 360° - testSimpleEnvelope()
             switch (type) {
                 default: {
                     final var ext = (AbstractEnvelope) envelope;

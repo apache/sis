@@ -36,7 +36,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * A one-dimensional position within some coordinate reference system.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.5
  *
  * @see DirectPosition2D
  * @see GeneralDirectPosition
@@ -153,6 +153,8 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * This method is final for ensuring consistency with the {@link #coordinate} field, which is public.</div>
      *
      * @return the coordinates.
+     *
+     * @since 1.5
      */
     @Override
     public final double[] getCoordinates() {
@@ -168,6 +170,8 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * @param  dimension  the dimension, which must be 0.
      * @return the {@link #coordinate}.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
+     *
+     * @since 1.5
      */
     @Override
     public final double getCoordinate(final int dimension) throws IndexOutOfBoundsException {
@@ -184,6 +188,8 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
      * @param  dimension  the dimension, which must be 0.
      * @param  value      the coordinate value.
      * @throws IndexOutOfBoundsException if the specified dimension is out of bounds.
+     *
+     * @since 1.5
      */
     @Override
     public void setCoordinate(int dimension, double value) throws IndexOutOfBoundsException {

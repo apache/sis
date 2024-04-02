@@ -1,5 +1,5 @@
 Apache Spatial Information System (SIS)
-Copyright 2010-2023 The Apache Software Foundation
+Copyright 2010-2024 The Apache Software Foundation
 
 This product includes software developed at
 The Apache Software Foundation (https://www.apache.org/).
@@ -49,3 +49,6 @@ https://epsg.org/terms-of-use.html
 The optional `org.apache.sis.gui` module depends on JavaFX
 published under GPL 2 with classpath exception.
 https://github.com/openjdk/jfx/blob/master/LICENSE
+
+The optional `org.apache.sis.gui` module downloads Font-GIS at build time.
+Font-GIS is published under SIL Open Font License (OFL) version 1.1.

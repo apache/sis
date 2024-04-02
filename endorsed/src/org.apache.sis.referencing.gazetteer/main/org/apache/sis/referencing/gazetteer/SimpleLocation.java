@@ -119,7 +119,9 @@ class SimpleLocation extends AbstractLocation implements DirectPosition, Envelop
     }
 
     /**
-     * Returns the direct position, which is itself.
+     * Returns this direct position.
+     *
+     * @return {@code this}.
      */
     @Override
     public final DirectPosition getDirectPosition() {
