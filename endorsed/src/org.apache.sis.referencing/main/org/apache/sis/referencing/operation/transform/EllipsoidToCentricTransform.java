@@ -499,7 +499,7 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
             case 3:  wh = true;  h = point.getCoordinate(2); break;
             case 2:  wh = false; h = 0; break;
         }
-        return transform(point.getCoordinate(0), point.getOrdinate(1), h, null, 0, true, wh);
+        return transform(point.getCoordinate(0), point.getCoordinate(1), h, null, 0, true, wh);
     }
 
     /**

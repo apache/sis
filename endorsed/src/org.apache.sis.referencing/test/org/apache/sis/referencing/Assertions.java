@@ -293,8 +293,8 @@ public final class Assertions extends Static {
             if (i < tolerances.length) {
                 tolerance = tolerances[i];
             }
-            if (abs(expectedLower.getCoordinate(i) - actualLower.getOrdinate(i)) > tolerance ||
-                abs(expectedUpper.getCoordinate(i) - actualUpper.getOrdinate(i)) > tolerance)
+            if (abs(expectedLower.getCoordinate(i) - actualLower.getCoordinate(i)) > tolerance ||
+                abs(expectedUpper.getCoordinate(i) - actualUpper.getCoordinate(i)) > tolerance)
             {
                 fail("Envelopes are not equal in dimension " + i + ":\n"
                         + "expected " + Envelopes.toString(expected) + "\n"

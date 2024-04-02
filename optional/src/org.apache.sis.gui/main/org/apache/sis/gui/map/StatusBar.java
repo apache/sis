@@ -996,7 +996,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
             final double y = lastY;
             lastX = lastY = Double.NaN;
             if (!Double.isNaN(x) && !Double.isNaN(y)) {
-                if (current == null || current.getCoordinate(0) != x || current.getOrdinate(1) != y) {
+                if (current == null || current.getCoordinate(0) != x || current.getCoordinate(1) != y) {
                     setLocalCoordinates(x, y);
                 }
             }

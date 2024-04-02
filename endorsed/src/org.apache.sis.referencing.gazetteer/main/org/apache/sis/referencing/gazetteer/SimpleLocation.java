@@ -122,7 +122,9 @@ class SimpleLocation extends AbstractLocation implements DirectPosition, Envelop
     }
 
     /**
-     * Returns the direct position, which is itself.
+     * Returns this direct position.
+     *
+     * @return {@code this}.
      */
     @Override
     public final DirectPosition getDirectPosition() {
@@ -152,7 +154,7 @@ class SimpleLocation extends AbstractLocation implements DirectPosition, Envelop
      */
     @Override
     public final double[] getCoordinates() {
-        return new double[] {getCoordinate(0), getOrdinate(1)};
+        return new double[] {getCoordinate(0), getCoordinate(1)};
     }
 
     /**

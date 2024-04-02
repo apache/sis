@@ -409,7 +409,7 @@ public class GeodeticCalculator {
         } catch (TransformException e) {
             throw new IllegalArgumentException(transformError(false), e);
         }
-        setStartGeographicPoint(p.getCoordinate(0), p.getOrdinate(1));
+        setStartGeographicPoint(p.getCoordinate(0), p.getCoordinate(1));
     }
 
     /**
@@ -476,7 +476,7 @@ public class GeodeticCalculator {
         } catch (TransformException e) {
             throw new IllegalArgumentException(transformError(false), e);
         }
-        setEndGeographicPoint(p.getCoordinate(0), p.getOrdinate(1));
+        setEndGeographicPoint(p.getCoordinate(0), p.getCoordinate(1));
     }
 
     /**

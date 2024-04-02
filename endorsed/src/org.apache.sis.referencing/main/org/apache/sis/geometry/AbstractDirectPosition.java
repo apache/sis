@@ -58,7 +58,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
  * serializable, is left to subclasses.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.1
+ * @version 1.5
  * @since   0.3
  */
 public abstract class AbstractDirectPosition extends FormattableObject implements DirectPosition {
@@ -87,43 +87,13 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
     }
 
     /**
-     * Returns always {@code this}, the direct position for this
-     * {@linkplain org.opengis.geometry.coordinate.Position position}.
+     * Returns this direct position.
      *
      * @return {@code this}.
      */
     @Override
     public final DirectPosition getDirectPosition() {
         return this;
-    }
-
-    /**
-     * Returns the coordinate reference system in which the coordinate tuple is given.
-     * May be {@code null} if this particular {@code DirectPosition} is included in a larger object
-     * with such a reference to a {@linkplain CoordinateReferenceSystem coordinate reference system}.
-     *
-     * <p>The default implementation returns {@code null}.
-     * Subclasses should override this method if the CRS can be provided.</p>
-     *
-     * @return the coordinate reference system, or {@code null}.
-     */
-    @Override
-    public CoordinateReferenceSystem getCoordinateReferenceSystem() {
-        return null;
-    }
-
-    /**
-     * Returns a sequence of numbers that hold the coordinate of this position in its reference system.
-     *
-     * @return the coordinates.
-     */
-    @Override
-    public double[] getCoordinates() {
-        final double[] coordinates = new double[getDimension()];
-        for (int i=0; i<coordinates.length; i++) {
-            coordinates[i] = getCoordinate(i);
-        }
-        return coordinates;
     }
 
     /**
@@ -137,6 +107,8 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      * @throws IndexOutOfBoundsException if the given index is negative or is equal or greater
      *         than the {@linkplain #getDimension() position dimension}.
      * @throws UnsupportedOperationException if this direct position is immutable.
+     *
+     * @since 1.5
      */
     @Override
     public void setCoordinate(int dimension, double value) {
@@ -452,7 +424,7 @@ parse:  while (i < length) {
             final int dimension = getDimension();
             if (dimension == that.getDimension()) {
                 for (int i=0; i<dimension; i++) {
-                    if (!Numerics.equals(getCoordinate(i), that.getOrdinate(i))) {
+                    if (!Numerics.equals(getCoordinate(i), that.getCoordinate(i))) {
                         return false;
                     }
                 }
