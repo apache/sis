@@ -70,6 +70,7 @@ public final class EPSGFactoryFallbackTest extends TestCaseWithLogs {
      * @throws FactoryException if the set of authority codes cannot be fetched.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void testGetAuthorityCodes() throws FactoryException {
         assertSetEquals(List.of(StandardDefinitions.GREENWICH),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(PrimeMeridian.class));
@@ -262,6 +263,7 @@ public final class EPSGFactoryFallbackTest extends TestCaseWithLogs {
         } finally {
             setEPSGFactory(EPSG);
         }
+        loggings.skipNextLogIfContains("EPSG:4047");
         loggings.skipNextLogIfContains("EPSG:4019");        // Deprecated EPSG entry.
         loggings.assertNoUnexpectedLog();
     }

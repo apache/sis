@@ -366,6 +366,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
                 "    Axis[“(Z)”, geocentricZ],\n" +
                 "    Unit[“kilometre”, 1000]]");
 
+        @SuppressWarnings("deprecation")
         final GeocentricCRS       targetCRS = CommonCRS.WGS84.geocentric();
         final CoordinateOperation operation = finder().createOperation(sourceCRS, targetCRS);
 

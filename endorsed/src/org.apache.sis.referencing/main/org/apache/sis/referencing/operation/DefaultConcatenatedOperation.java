@@ -402,7 +402,9 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
     }
 
     /**
-     * Returns the sequence of operations.
+     * Returns the sequence of operations that are steps in this concatenated operation.
+     * The sequence can contain {@link org.opengis.referencing.operation.SingleOperation}s
+     * or {@link org.opengis.referencing.operation.PassThroughOperation}s.
      *
      * @return the sequence of operations.
      */

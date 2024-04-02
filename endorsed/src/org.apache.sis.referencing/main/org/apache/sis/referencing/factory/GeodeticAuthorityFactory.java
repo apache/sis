@@ -309,7 +309,11 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * @see org.apache.sis.referencing.crs.DefaultGeocentricCRS
      * @see org.apache.sis.referencing.CommonCRS#geocentric()
+     *
+     * @deprecated ISO 19111:2019 does not define an explicit class for geocentric CRS.
+     *             The {@code GeodeticCRS} parent class should be used instead.
      */
+    @Deprecated(since = "1.5")
     public GeocentricCRS createGeocentricCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(GeocentricCRS.class, createCoordinateReferenceSystem(code), code);
     }
@@ -512,7 +516,11 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws FactoryException if the object creation failed for some other reason.
      *
      * @see org.apache.sis.referencing.crs.DefaultImageCRS
+     *
+     * @deprecated The {@code ImageCRS} class has been removed in ISO 19111:2019.
+     *             It is replaced by {@code EngineeringCRS}.
      */
+    @Deprecated(since = "1.5")
     public ImageCRS createImageCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(ImageCRS.class, createCoordinateReferenceSystem(code), code);
     }
@@ -706,7 +714,11 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws FactoryException if the object creation failed for some other reason.
      *
      * @see org.apache.sis.referencing.datum.DefaultImageDatum
+     *
+     * @deprecated The {@code ImageDatum} class has been removed in ISO 19111:2019.
+     *             It is replaced by {@code EngineeringDatum}.
      */
+    @Deprecated(since = "1.5")
     public ImageDatum createImageDatum(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(ImageDatum.class, createDatum(code), code);
     }

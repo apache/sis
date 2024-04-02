@@ -30,6 +30,7 @@ import org.apache.sis.test.TestCase;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("deprecation")
 public final class VerticalDatumTypesTest extends TestCase {
     /**
      * Creates a new test case.

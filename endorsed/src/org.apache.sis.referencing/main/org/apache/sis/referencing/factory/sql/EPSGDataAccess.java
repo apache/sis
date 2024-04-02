@@ -1665,7 +1665,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
                 Map<String,Object> properties = createProperties("Datum", name, epsg, area, scope, remarks, deprecated);
                 if (anchor != null) {
-                    properties.put(Datum.ANCHOR_POINT_KEY, anchor);
+                    properties.put(Datum.ANCHOR_DEFINITION_KEY, anchor);
                 }
                 if (epoch != null) try {
                     /*

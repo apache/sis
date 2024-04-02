@@ -21,12 +21,10 @@ import java.util.HashMap;
 import java.util.Objects;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
-import org.opengis.annotation.UML;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import static org.opengis.referencing.cs.AxisDirection.*;
-import static org.opengis.annotation.Obligation.CONDITIONAL;
 import org.apache.sis.metadata.privy.NameToIdentifier;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Characters;
@@ -36,9 +34,6 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.measure.Units;
 import static org.apache.sis.util.CharSequences.*;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.annotation.Specification.ISO_19162;
 
 
 /**
@@ -71,55 +66,7 @@ public final class AxisDirections extends Static {
      *
      * @see #isUserDefined(AxisDirection)
      */
-    private static final int LAST_ORDINAL = DISPLAY_DOWN.ordinal();
-
-    /**
-     * Forward direction.
-     * For an observer at the centre of the object this is will be towards its front, bow or nose.
-     * Added in ISO 19111:2019 (was not in ISO 19111:2007).
-     */
-    @UML(identifier="forward", obligation=CONDITIONAL, specification=ISO_19162)
-    public static final AxisDirection FORWARD = AxisDirection.valueOf("FORWARD");
-    /*
-     * TODO: remove @Disabled in `WKTParserTest` after the code list values in this class have been removed.
-     */
-
-    /**
-     * Starboard direction.
-     * For an observer at the centre of the object this will be towards its right.
-     * Added in ISO 19111:2019 (was not in ISO 19111:2007).
-     */
-    @UML(identifier="starboard", obligation=CONDITIONAL, specification=ISO_19162)
-    public static final AxisDirection STARBOARD = AxisDirection.valueOf("STARBOARD");
-
-    /**
-     * Port direction.
-     * For an observer at the centre of the object this will be towards its left.
-     * Added in ISO 19111:2019 (was not in ISO 19111:2007).
-     */
-    @UML(identifier="port", obligation=CONDITIONAL, specification=ISO_19162)
-    public static final AxisDirection PORT = AxisDirection.valueOf("PORT");
-
-    /**
-     * Direction of geographic angles (bearing).
-     * Added in ISO 19111:2019 (was not in ISO 19111:2007).
-     */
-    @UML(identifier="clockwise", obligation=CONDITIONAL, specification=ISO_19162)
-    public static final AxisDirection CLOCKWISE = AxisDirection.valueOf("CLOCKWISE");
-
-    /**
-     * Direction of arithmetic angles. Used in polar coordinate systems.
-     * Added in ISO 19111:2019 (was not in ISO 19111:2007).
-     */
-    @UML(identifier="counterClockwise", obligation=CONDITIONAL, specification=ISO_19162)
-    public static final AxisDirection COUNTER_CLOCKWISE = AxisDirection.valueOf("COUNTER_CLOCKWISE");
-
-    /**
-     * Distance from the origin in a polar coordinate system.
-     * Added in ISO 19111:2019 (was not in ISO 19111:2007).
-     */
-    @UML(identifier="awayFrom", obligation=CONDITIONAL, specification=ISO_19162)
-    public static final AxisDirection AWAY_FROM = AxisDirection.valueOf("AWAY_FROM");
+    private static final int LAST_ORDINAL = UNSPECIFIED.ordinal();
 
     /**
      * For each direction, the opposite direction.
@@ -203,8 +150,7 @@ public final class AxisDirections extends Static {
             if (opposite.ordinal() < dir.ordinal()) {
                 dir = opposite;
             }
-            // Below is a temporary patch pending integration of code list values into GeoAPI.
-            // We need this patch because we cannot rely on ordinal() value for custom codes.
+            // Ordinal values do not have the desired order for this particular case.
             if (dir == CLOCKWISE) {
                 dir = COUNTER_CLOCKWISE;
             }
@@ -326,9 +272,8 @@ public final class AxisDirections extends Static {
      * @return {@code true} if the given direction is presumed for spatial CS.
      */
     public static boolean isSpatialOrUserDefined(final AxisDirection dir, final boolean image) {
-        if (dir == null) return false;
-        final int ordinal = dir.ordinal();
-        return ordinal < FUTURE.ordinal() || ordinal > (image ? PAST : DISPLAY_DOWN).ordinal();
+        if (dir == null || dir == PAST || dir == FUTURE) return false;
+        return image || dir.ordinal() < COLUMN_POSITIVE.ordinal() || dir.ordinal() > DISPLAY_DOWN.ordinal();
     }
 
     /**

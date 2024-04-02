@@ -77,7 +77,7 @@ import org.apache.sis.util.resources.Errors;
  * by many objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see DefaultTransformation
  *
@@ -196,6 +196,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      *
      * @see DefaultMathTransformFactory#swapAndScaleAxes(MathTransform, DefaultMathTransformFactory.Context)
      */
+    @SuppressWarnings("this-escape")    // False positive.
     public DefaultConversion(final Map<String,?>       properties,
                              final OperationMethod     method,
                              final MathTransform       transform,
@@ -222,6 +223,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * @param factory     the factory to use for creating a transform from the parameters or for performing axis changes.
      * @param actual      an array of length 1 where to store the actual operation method used by the math transform factory.
      */
+    @SuppressWarnings("deprecation")
     DefaultConversion(final Conversion definition,
                       final CoordinateReferenceSystem source,
                       final CoordinateReferenceSystem target,
@@ -229,7 +231,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                       final OperationMethod[] actual) throws FactoryException
     {
         super(definition);
-        int interpDim = ReferencingUtilities.getDimension(super.getInterpolationCRS());
+        int interpDim = ReferencingUtilities.getDimension(super.getInterpolationCRS().orElse(null));
         if (transform == null) {
             /*
              * If the user did not specified explicitly a MathTransform, we will need to create it from the parameters.
@@ -392,6 +394,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      *
      * @see DefaultMathTransformFactory#createParameterizedTransform(ParameterValueGroup, DefaultMathTransformFactory.Context)
      */
+    @SuppressWarnings("deprecation")
     public <T extends Conversion> T specialize(final Class<T> baseType,
             final CoordinateReferenceSystem sourceCRS, final CoordinateReferenceSystem targetCRS,
             MathTransformFactory factory) throws FactoryException

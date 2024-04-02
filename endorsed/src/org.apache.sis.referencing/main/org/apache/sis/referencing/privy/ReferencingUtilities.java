@@ -18,8 +18,6 @@ package org.apache.sis.referencing.privy;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collection;
-import java.util.NoSuchElementException;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import org.opengis.annotation.UML;
@@ -57,8 +55,6 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory.Context;
-import org.apache.sis.metadata.privy.Identifiers;
-import org.apache.sis.xml.NilObject;
 
 
 /**
@@ -211,51 +207,6 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
-     * Copies all {@link SingleCRS} components from the given source to the given collection.
-     * For each {@link CompoundCRS} element found in the iteration, this method replaces the
-     * {@code CompoundCRS} by its {@linkplain CompoundCRS#getComponents() components}, which
-     * may themselves have other {@code CompoundCRS}. Those replacements are performed recursively
-     * until we obtain a flat view of CRS components.
-     *
-     * @param  source  the collection of single or compound CRS.
-     * @param  addTo   where to add the single CRS in order to obtain a flat view of {@code source}.
-     * @return {@code true} if this method found only single CRS in {@code source}, in which case {@code addTo}
-     *         got the same content (assuming that {@code addTo} was empty prior this method call).
-     * @throws NoSuchElementException if a CRS component is missing.
-     * @throws ClassCastException if a CRS is neither a {@link SingleCRS} or a {@link CompoundCRS}.
-     *
-     * @see org.apache.sis.referencing.CRS#getSingleComponents(CoordinateReferenceSystem)
-     */
-    public static boolean getSingleComponents(final Iterable<? extends CoordinateReferenceSystem> source,
-            final Collection<? super SingleCRS> addTo) throws ClassCastException
-    {
-        boolean sameContent = true;
-        for (final CoordinateReferenceSystem candidate : source) {
-            if (candidate instanceof CompoundCRS) {
-                getSingleComponents(((CompoundCRS) candidate).getComponents(), addTo);
-                sameContent = false;
-            } else if (candidate instanceof SingleCRS) {
-                addTo.add((SingleCRS) candidate);
-            } else {
-                /*
-                 * Illegal class. Try to provide a better error message, in particular when the CRS component
-                 * is nil because it is an unresolved xlink in a GML document. Nil objects are proxies, which
-                 * have hard to understand class names.
-                 */
-                final String message;
-                if (candidate instanceof NilObject) {
-                    message = Errors.format(Errors.Keys.NilObject_1, Identifiers.getNilReason((NilObject) candidate));
-                    throw new NoSuchElementException(message);
-                } else {
-                    message = Errors.format(Errors.Keys.NestedElementNotAllowed_1, getInterface(candidate));
-                    throw new ClassCastException(message);
-                }
-            }
-        }
-        return sameContent;
-    }
-
-    /**
      * Returns {@code true} if the type of the given datum is ellipsoidal. A vertical datum is not allowed
      * to be ellipsoidal according ISO 19111, but Apache SIS relaxes this restriction in some limited cases,
      * for example when parsing a string in the legacy WKT 1 format. Apache SIS should not expose those
@@ -358,6 +309,7 @@ public final class ReferencingUtilities extends Static {
      * @param  allow3D  whether this method is allowed to return three-dimensional CRS (with ellipsoidal height).
      * @return a two-dimensional geographic CRS with standard axes, or {@code null} if none.
      */
+    @SuppressWarnings("deprecation")
     public static GeographicCRS toNormalizedGeographicCRS(CoordinateReferenceSystem crs, final boolean latlon, final boolean allow3D) {
         /*
          * ProjectedCRS instances always have a GeographicCRS as their base.
@@ -528,7 +480,7 @@ public final class ReferencingUtilities extends Static {
         final UML uml = type.getAnnotation(UML.class);
         if (uml != null) {
             final Specification spec = uml.specification();
-            if (spec == Specification.ISO_19111 || spec == Specification.ISO_19111_2) {
+            if (spec == Specification.ISO_19111) {
                 final String name = uml.identifier();
                 final int length = name.length();
                 final StringBuilder buffer = new StringBuilder(length).append(name, name.indexOf('_') + 1, length);

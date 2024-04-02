@@ -98,9 +98,9 @@ public final class TypesTest extends TestCase {
      */
     @Test
     public void testGetStandardName() {
-        assertEquals("CI_Citation",      Types.getStandardName(Citation     .class));
-        assertEquals("CD_Datum",         Types.getStandardName(Datum        .class));
-        assertEquals("CS_AxisDirection", Types.getStandardName(AxisDirection.class));
+        assertEquals("CI_Citation",   Types.getStandardName(Citation     .class));
+        assertEquals("Datum",         Types.getStandardName(Datum        .class));
+        assertEquals("AxisDirection", Types.getStandardName(AxisDirection.class));
     }
 
     /**
@@ -109,10 +109,10 @@ public final class TypesTest extends TestCase {
     @Test
     public void testForStandardName() {
         assertEquals(Citation     .class, Types.forStandardName("CI_Citation"));
-        assertEquals(Datum        .class, Types.forStandardName("CD_Datum"));
+        assertEquals(Datum        .class, Types.forStandardName("Datum"));
         assertEquals(Citation     .class, Types.forStandardName("CI_Citation"));            // Value should be cached.
         assertEquals(Citation     .class, Types.forStandardName("Citation"));
-        assertEquals(AxisDirection.class, Types.forStandardName("CS_AxisDirection"));
+        assertEquals(AxisDirection.class, Types.forStandardName("AxisDirection"));
         assertNull  (                     Types.forStandardName("MD_Dummy"));
     }
 
@@ -206,7 +206,7 @@ public final class TypesTest extends TestCase {
     @Test
     public void testGetListName() {
         assertEquals("SV_ParameterDirection",   Types.getListName(ParameterDirection.IN_OUT));
-        assertEquals("CS_AxisDirection",        Types.getListName(AxisDirection     .NORTH));
+        assertEquals("AxisDirection",           Types.getListName(AxisDirection     .NORTH));
         assertEquals("CI_OnLineFunctionCode",   Types.getListName(OnLineFunction    .DOWNLOAD));
         assertEquals("MD_ImagingConditionCode", Types.getListName(ImagingCondition  .BLURRED_IMAGE));
     }
@@ -249,6 +249,7 @@ public final class TypesTest extends TestCase {
      * Tests the {@link Types#getCodeValues(Class)} method.
      */
     @Test
+    @SuppressWarnings("removal")
     public void testGetCodeValues() {
         final OnLineFunction[] actual = Types.getCodeValues(OnLineFunction.class);
         assertTrue(Arrays.asList(actual).containsAll(List.of(

@@ -503,7 +503,6 @@ public final class WKTParserTest extends CRSParserTest {
      */
     @Test
     @Override
-    @Disabled("Pending new AxisDirection code list in GeoAPI.")
     public void testEngineeringForShip() throws FactoryException {
         super.testEngineeringForShip();
         final CoordinateSystem cs = object.getCoordinateSystem();

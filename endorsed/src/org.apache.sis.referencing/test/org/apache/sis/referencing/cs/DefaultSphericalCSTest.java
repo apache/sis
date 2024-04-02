@@ -18,7 +18,6 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import org.opengis.referencing.cs.AxisDirection;
-import org.apache.sis.referencing.privy.AxisDirections;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -91,8 +90,8 @@ public final class DefaultSphericalCSTest extends TestCase {
         final DefaultSphericalCS normalized = cs.forConvention(AxesConvention.NORMALIZED);
         assertNotSame(cs, normalized);          // Should create a new CoordinateSystem.
         assertAxisDirectionsEqual(normalized,
-                AxisDirections.COUNTER_CLOCKWISE,
+                AxisDirection.COUNTER_CLOCKWISE,
                 AxisDirection.UP,
-                AxisDirections.AWAY_FROM);
+                AxisDirection.AWAY_FROM);
     }
 }

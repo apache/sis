@@ -24,9 +24,6 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import static org.opengis.referencing.cs.AxisDirection.*;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.referencing.privy.AxisDirections.AWAY_FROM;
-import static org.apache.sis.referencing.privy.AxisDirections.CLOCKWISE;
-import static org.apache.sis.referencing.privy.AxisDirections.COUNTER_CLOCKWISE;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

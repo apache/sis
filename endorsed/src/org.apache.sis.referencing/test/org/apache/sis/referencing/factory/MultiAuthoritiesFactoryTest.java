@@ -68,6 +68,7 @@ public final class MultiAuthoritiesFactoryTest extends TestCaseWithLogs {
      * @throws FactoryException if no object was found for a code.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void testAuthorityFactoryMock() throws FactoryException {
         final var factory = new AuthorityFactoryMock("MOCK", null);
         final Class<?>[] types = {

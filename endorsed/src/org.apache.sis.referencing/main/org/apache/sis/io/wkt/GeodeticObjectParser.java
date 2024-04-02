@@ -98,14 +98,6 @@ import org.apache.sis.util.iso.Types;
  */
 @SuppressWarnings("LocalVariableHidesMemberVariable")       // We hide with the same value made final.
 class GeodeticObjectParser extends MathTransformParser implements Comparator<CoordinateSystemAxis> {
-    /*
-     * Force class initialization of `AxisDirections` in order to have
-     * its constants added to the list of know `AxisDirection` values.
-     */
-    static {
-        AxisDirections.AWAY_FROM.toString();
-    }
-
     /**
      * The names of the 7 parameters in a {@code TOWGS84[…]} element.
      * Those names are derived from the <cite>Well Known Text</cite> (WKT) version 1 specification.
@@ -571,7 +563,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final Element anchor = element.pullElement(OPTIONAL, WKTKeywords.Anchor);
         final Map<String,Object> properties = parseMetadataAndClose(element, name, null);
         if (anchor != null) {
-            properties.put(Datum.ANCHOR_POINT_KEY, anchor.pullString("anchorDefinition"));
+            properties.put(Datum.ANCHOR_DEFINITION_KEY, anchor.pullString("anchorDefinition"));
             anchor.close(ignoredElements);
         }
         return properties;
@@ -691,6 +683,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @throws ParseException if an element cannot be parsed.
      * @throws FactoryException if the factory cannot create the coordinate system.
      */
+    @SuppressWarnings("deprecation")
     private CoordinateSystem parseCoordinateSystem(final Element parent, String type, int dimension,
             final boolean isWKT1, final Unit<?> defaultUnit, final Datum datum) throws ParseException, FactoryException
     {
@@ -1452,6 +1445,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             return null;
         }
         final String name = element.pullString("name");
+        @SuppressWarnings("deprecation")
         VerticalDatumType type = null;
         if (isWKT1) {
             type = VerticalDatumTypes.fromLegacy(element.pullInteger("datum"));
@@ -1569,6 +1563,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @return the {@code "ImageDatum"} element as an {@link ImageDatum} object.
      * @throws ParseException if the {@code "ImageDatum"} element cannot be parsed.
      */
+    @SuppressWarnings("deprecation")
     private ImageDatum parseImageDatum(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.ImageDatum, WKTKeywords.IDatum);
         if (element == null) {
@@ -1674,6 +1669,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @return the {@code "ImageCRS"} element as an {@link ImageCRS} object.
      * @throws ParseException if the {@code "ImageCRS"} element cannot be parsed.
      */
+    @SuppressWarnings("deprecation")
     private ImageCRS parseImageCRS(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.ImageCRS);
         if (element == null) {
@@ -1886,6 +1882,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @return the {@code "VerticalCRS"} element as a {@link VerticalCRS} object.
      * @throws ParseException if the {@code "VerticalCRS"} element cannot be parsed.
      */
+    @SuppressWarnings("deprecation")
     private SingleCRS parseVerticalCRS(final int mode, final Element parent, final boolean isBaseCRS)
             throws ParseException
     {
@@ -2219,6 +2216,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @return the {@code "FITTED_CS"} element as a {@link CompoundCRS} object.
      * @throws ParseException if the {@code "COMPD_CS"} element cannot be parsed.
      */
+    @SuppressWarnings("deprecation")
     private DerivedCRS parseFittedCS(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.Fitted_CS);
         if (element == null) {

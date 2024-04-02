@@ -21,7 +21,6 @@ import javax.measure.Unit;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.apache.sis.metadata.privy.AxisNames;
-import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.measure.Units;
 
 
@@ -399,7 +398,7 @@ public final class HardCodedAxes {
      * @see #GEOCENTRIC_RADIUS
      */
     public static final DefaultCoordinateSystemAxis DISTANCE = create("Distance", "r",
-            AxisDirections.AWAY_FROM, Units.METRE, 0, Double.POSITIVE_INFINITY, RangeMeaning.EXACT);
+            AxisDirection.AWAY_FROM, Units.METRE, 0, Double.POSITIVE_INFINITY, RangeMeaning.EXACT);
 
     /**
      * An axis with clockwise orientation.
@@ -407,7 +406,7 @@ public final class HardCodedAxes {
      * (not to be confused with geodetic spherical coordinate system).
      */
     public static final DefaultCoordinateSystemAxis BEARING = create("Bearing", "θ",
-            AxisDirections.CLOCKWISE, Units.DEGREE, -180, +180, RangeMeaning.WRAPAROUND);
+            AxisDirection.CLOCKWISE, Units.DEGREE, -180, +180, RangeMeaning.WRAPAROUND);
 
     /**
      * An axis with for elevation angle.

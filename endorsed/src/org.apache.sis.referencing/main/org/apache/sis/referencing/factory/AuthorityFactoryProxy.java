@@ -214,6 +214,7 @@ abstract class AuthorityFactoryProxy<T> {
             }
     };
 
+    @SuppressWarnings("deprecation")
     static final AuthorityFactoryProxy<ImageDatum> IMAGE_DATUM =
         new AuthorityFactoryProxy<ImageDatum>(ImageDatum.class, AuthorityFactoryIdentifier.DATUM) {
             @Override ImageDatum create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
@@ -455,6 +456,7 @@ abstract class AuthorityFactoryProxy<T> {
             }
     };
 
+    @SuppressWarnings("deprecation")
     static final AuthorityFactoryProxy<GeocentricCRS> GEOCENTRIC_CRS =
         new AuthorityFactoryProxy<GeocentricCRS>(GeocentricCRS.class, AuthorityFactoryIdentifier.CRS) {
             @Override GeocentricCRS create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
@@ -465,6 +467,7 @@ abstract class AuthorityFactoryProxy<T> {
             }
     };
 
+    @SuppressWarnings("deprecation")
     static final AuthorityFactoryProxy<ImageCRS> IMAGE_CRS =
         new AuthorityFactoryProxy<ImageCRS>(ImageCRS.class, AuthorityFactoryIdentifier.CRS) {
             @Override ImageCRS create(GeodeticAuthorityFactory factory, String code) throws FactoryException {

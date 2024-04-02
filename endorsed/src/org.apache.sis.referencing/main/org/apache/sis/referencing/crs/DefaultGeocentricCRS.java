@@ -68,6 +68,9 @@ import org.apache.sis.io.wkt.Formatter;
  * the coordinate system and the datum instances given to the constructor are also immutable. Unless otherwise noted
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
+ * @deprecated ISO 19111:2019 does not define an explicit class for geocentric CRS.
+ *             The {@code GeodeticCRS} parent class should be used instead.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.5
  *
@@ -76,6 +79,7 @@ import org.apache.sis.io.wkt.Formatter;
  * @since 0.4
  */
 @XmlTransient
+@Deprecated(since = "1.5")
 public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements GeocentricCRS {
     /**
      * Serial number for inter-operability with different versions.

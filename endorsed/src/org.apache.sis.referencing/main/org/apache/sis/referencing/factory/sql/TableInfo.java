@@ -61,6 +61,7 @@ final class TableInfo {
      *
      * The order is significant: it is the key for a {@code switch} statement.
      */
+    @SuppressWarnings("deprecation")
     static final TableInfo[] EPSG = {
         CRS = new TableInfo(CoordinateReferenceSystem.class,
                 "[Coordinate Reference System]",

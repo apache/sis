@@ -474,7 +474,7 @@ public final class IdentifiedObjects extends Static {
          */
         final List<? extends IdentifiedObject> components;
         if (object instanceof CompoundCRS) {
-            components = CRS.getSingleComponents((CompoundCRS) object);
+            components = ((CompoundCRS) object).getSingleComponents();
         } else if (object instanceof ConcatenatedOperation) {
             final var cop = (ConcatenatedOperation) object;
             final List<? extends CoordinateOperation> steps = cop.getOperations();

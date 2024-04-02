@@ -228,7 +228,7 @@ class PropertyAccessor {
      * Creates a new property accessor for the specified metadata implementation.
      *
      * @param  type            the interface implemented by the metadata class.
-     * @param  implementation  the class of metadata implementations, or {@code type} if none.
+     * @param  implementation  the class of the metadata implementation, or {@code type} if none.
      * @param  standardImpl    the implementation specified by the {@link MetadataStandard}, or {@code null} if none.
      *                         This is the same as {@code implementation} unless a custom implementation is used.
      */
@@ -464,9 +464,8 @@ class PropertyAccessor {
             }
         }
         /*
-         * Sort the standard methods before to add the extra methods (if any) in order to
-         * keep the extra methods last. The code checking for the extra methods require
-         * them to be last.
+         * Sort the standard methods before to add the extra methods (if any) in order to keep
+         * the extra methods last. The code checking for extra methods requires them to be last.
          */
         Arrays.sort(getters, 0, count, new PropertyComparator(implementation, standardImpl));
         if (!hasExtraGetter) {

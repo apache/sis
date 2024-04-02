@@ -424,6 +424,7 @@ class CoordinateOperationRegistry {
      * axis order, we want to check also the coordinate operations using (latitude, longitude) axis order
      * because they may be the only ones available.</p>
      */
+    @SuppressWarnings("deprecation")
     private static boolean isEasySearch(final CoordinateReferenceSystem crs) {
         if (crs instanceof GeneralDerivedCRS) {
             return false;
@@ -996,7 +997,7 @@ class CoordinateOperationRegistry {
             }
         }
         return factorySIS.createSingleOperation(properties, sourceCRS, targetCRS,
-                AbstractCoordinateOperation.getInterpolationCRS(operation), method, transform);
+                operation.getInterpolationCRS().orElse(null), method, transform);
     }
 
     /**

@@ -934,8 +934,12 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *
      * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
+     *
+     * @deprecated ISO 19111:2019 does not define an explicit class for geocentric CRS.
+     *             The {@code GeodeticCRS} parent class should be used instead.
      */
     @Override
+    @Deprecated(since = "1.5")
     public GeocentricCRS createGeocentricCRS(final String code) throws FactoryException {
         if (isDefault(GeocentricCRS.class)) {
             return super.createGeocentricCRS(code);
@@ -1120,8 +1124,12 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *
      * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
+     *
+     * @deprecated The {@code ImageCRS} class has been removed in ISO 19111:2019.
+     *             It is replaced by {@code EngineeringCRS}.
      */
     @Override
+    @Deprecated(since = "1.5")
     public ImageCRS createImageCRS(final String code) throws FactoryException {
         if (isDefault(ImageCRS.class)) {
             return super.createImageCRS(code);
@@ -1283,8 +1291,12 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *
      * @return the datum for the given code.
      * @throws FactoryException if the object creation failed.
+     *
+     * @deprecated The {@code ImageDatum} class has been removed in ISO 19111:2019.
+     *             It is replaced by {@code EngineeringDatum}.
      */
     @Override
+    @Deprecated(since = "1.5")
     public ImageDatum createImageDatum(final String code) throws FactoryException {
         if (isDefault(ImageDatum.class)) {
             return super.createImageDatum(code);

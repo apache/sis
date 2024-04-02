@@ -362,6 +362,7 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
     /**
      * Returns the text to show of right of the "type" label.
      */
+    @SuppressWarnings("deprecation")
     private static String typeOf(CoordinateReferenceSystem crs, final Locale locale) {
         while (crs instanceof CompoundCRS) {
             crs = ((CompoundCRS) crs).getComponents().get(0);

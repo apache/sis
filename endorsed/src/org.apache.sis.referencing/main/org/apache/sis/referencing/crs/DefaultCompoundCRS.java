@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Collection;
+import java.util.NoSuchElementException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import jakarta.xml.bind.annotation.XmlType;
@@ -48,11 +50,13 @@ import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
-import org.apache.sis.xml.bind.referencing.SC_CRS;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.metadata.privy.Identifiers;
+import org.apache.sis.xml.bind.referencing.SC_CRS;
+import org.apache.sis.xml.NilObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 
@@ -84,27 +88,18 @@ import org.opengis.referencing.crs.ParametricCRS;
  * </div>
  *
  * Strictly speaking, only the flat list on the left side is allowed by OGC/ISO specifications.
- * However, Apache SIS relaxes this rule by allowing hierarchies as shown on the right side. This
- * flexibility allows SIS to preserve information about the (<var>x</var>,<var>y</var>,<var>z</var>)
- * part (e.g. the EPSG identifier) that would otherwise been lost. Users can obtain the list of their
- * choice by invoking {@link #getSingleComponents()} or {@link #getComponents()} respectively.
+ * However, Apache SIS relaxes this rule by allowing hierarchies as shown on the right side.
+ * This flexibility allows SIS to preserve information about the (<var>x</var>,<var>y</var>,<var>z</var>) part
+ * (e.g. the EPSG identifier) that would otherwise been lost. Users can obtain the list of their choice
+ * by invoking {@link #getSingleComponents()} or {@link #getComponents()} respectively.
  *
  * <h2>Component order</h2>
- * ISO 19162 restricts compound CRS to the following components in that order:
+ * Apache SIS is flexible about the order of components. However, the following order is recommended:
  * <ul>
- *   <li>A mandatory horizontal CRS (only one of two-dimensional {@code GeographicCRS} or {@code ProjectedCRS} or {@code EngineeringCRS}).</li>
+ *   <li>Horizontal CRS (e.g., two-dimensional {@code GeographicCRS}, {@code ProjectedCRS} or {@code EngineeringCRS}).</li>
  *   <li>Optionally followed by a {@code VerticalCRS} or a {@code ParametricCRS} (but not both).</li>
  *   <li>Optionally followed by a {@code TemporalCRS}.</li>
  * </ul>
- *
- * SIS currently does not enforce those restrictions. In particular:
- * <ul>
- *   <li>Components may appear in different order.
- *   <li>{@code VerticalCRS} + {@code TemporalCRS} (without horizontal component) is accepted.</li>
- *   <li>{@code GeocentricCRS} or three-dimensional {@code GeographicCRS} can be combined with {@code TemporalCRS}.</li>
- * </ul>
- *
- * However, users are encouraged to follow ISO 19162 restriction for better portability.
  *
  * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
@@ -367,6 +362,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      *
      * @see org.apache.sis.referencing.CRS#getSingleComponents(CoordinateReferenceSystem)
      */
+    @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
     public List<SingleCRS> getSingleComponents() {
         return singles;
@@ -376,7 +372,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * Computes the {@link #singles} field from the given CRS list and returns {@code true}
      * if the given list was already a list of single CRS.
      *
-     * <p><strong>WARNING:</strong> this method is invoked by <em>before</em> the {@linkplain #components}
+     * <p><strong>WARNING:</strong> this method is invoked <em>before</em> the {@linkplain #components}
      * field is set. Do not use that field in this method.</p>
      *
      * @throws ClassCastException if a CRS is neither a {@link SingleCRS} or a {@link CompoundCRS}.
@@ -385,9 +381,54 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      */
     private boolean setSingleComponents(final List<? extends CoordinateReferenceSystem> elements) {
         final List<SingleCRS> flattened = new ArrayList<>(elements.size());
-        final boolean identical = ReferencingUtilities.getSingleComponents(elements, flattened);
+        final boolean identical = getSingleComponents(elements, flattened);
         singles = UnmodifiableArrayList.wrap(flattened.toArray(SingleCRS[]::new));
         return identical;
+    }
+
+    /**
+     * Copies all {@link SingleCRS} components from the given source to the given collection.
+     * For each {@link CompoundCRS} element found in the iteration, this method replaces the
+     * {@code CompoundCRS} by its {@linkplain CompoundCRS#getComponents() components}, which
+     * may themselves have other {@code CompoundCRS}. Those replacements are performed recursively
+     * until we obtain a flat view of CRS components.
+     *
+     * @param  source  the collection of single or compound CRS.
+     * @param  addTo   where to add the single CRS in order to obtain a flat view of {@code source}.
+     * @return {@code true} if this method found only single CRS in {@code source}, in which case {@code addTo}
+     *         got the same content (assuming that {@code addTo} was empty prior this method call).
+     * @throws NoSuchElementException if a CRS component is missing.
+     * @throws ClassCastException if a CRS is neither a {@link SingleCRS} or a {@link CompoundCRS}.
+     *
+     * @see org.apache.sis.referencing.CRS#getSingleComponents(CoordinateReferenceSystem)
+     */
+    private static boolean getSingleComponents(final Iterable<? extends CoordinateReferenceSystem> source,
+            final Collection<? super SingleCRS> addTo) throws ClassCastException
+    {
+        boolean sameContent = true;
+        for (final CoordinateReferenceSystem candidate : source) {
+            if (candidate instanceof CompoundCRS) {
+                getSingleComponents(((CompoundCRS) candidate).getComponents(), addTo);
+                sameContent = false;
+            } else if (candidate instanceof SingleCRS) {
+                addTo.add((SingleCRS) candidate);
+            } else {
+                /*
+                 * Illegal class. Try to provide a better error message, in particular when the CRS component
+                 * is nil because it is an unresolved xlink in a GML document. Nil objects are proxies, which
+                 * have hard to understand class names.
+                 */
+                final String message;
+                if (candidate instanceof NilObject) {
+                    message = Errors.format(Errors.Keys.NilObject_1, Identifiers.getNilReason((NilObject) candidate));
+                    throw new NoSuchElementException(message);
+                } else {
+                    message = Errors.format(Errors.Keys.NestedElementNotAllowed_1, ReferencingUtilities.getInterface(candidate));
+                    throw new ClassCastException(message);
+                }
+            }
+        }
+        return sameContent;
     }
 
     /**

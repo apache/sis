@@ -131,6 +131,7 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
         final boolean ellipsoid  = type.isAssignableFrom(Ellipsoid    .class);
         final boolean datum      = type.isAssignableFrom(GeodeticDatum.class);
         final boolean geographic = type.isAssignableFrom(GeographicCRS.class);
+        @SuppressWarnings("deprecation")
         final boolean geocentric = type.isAssignableFrom(GeocentricCRS.class);
         final boolean projected  = type.isAssignableFrom(ProjectedCRS .class);
         final Set<String> codes = new LinkedHashSet<>();

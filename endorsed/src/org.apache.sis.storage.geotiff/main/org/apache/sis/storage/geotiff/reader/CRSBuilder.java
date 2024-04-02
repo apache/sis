@@ -1121,6 +1121,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
      *
      * @see #createGeodeticDatum(String[], Unit, Unit)
      */
+    @SuppressWarnings("deprecation")
     private GeocentricCRS createGeocentricCRS() throws FactoryException {
         final int epsg = getAsInteger(GeoKeys.GeodeticCRS);
         switch (epsg) {
@@ -1165,6 +1166,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
      *
      * @param  crs  the CRS created from the EPSG geodetic dataset.
      */
+    @SuppressWarnings("deprecation")
     private void verify(final GeocentricCRS crs) throws FactoryException {
         /*
          * Note: current createUnit(…) implementation does not allow us to distinguish whether METRE ou DEGREE units

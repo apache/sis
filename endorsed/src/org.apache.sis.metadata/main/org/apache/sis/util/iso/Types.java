@@ -139,7 +139,7 @@ public final class Types extends Static {
      *   <li><code>getStandardName({@linkplain org.opengis.metadata.citation.Citation}.class)</code>
      *       (an interface) returns {@code "CI_Citation"}.</li>
      *   <li><code>getStandardName({@linkplain org.opengis.referencing.cs.AxisDirection}.class)</code>
-     *       (a code list) returns {@code "CS_AxisDirection"}.</li>
+     *       (a code list) returns {@code "AxisDirection"}.</li>
      * </ul>
      *
      * <h4>Implementation note</h4>
@@ -181,7 +181,7 @@ public final class Types extends Static {
      * <h4>Examples</h4>
      * <ul>
      *   <li>{@code getListName(ParameterDirection.IN_OUT)}      returns {@code "SV_ParameterDirection"}.</li>
-     *   <li>{@code getListName(AxisDirection.NORTH)}            returns {@code "CS_AxisDirection"}.</li>
+     *   <li>{@code getListName(AxisDirection.NORTH)}            returns {@code "AxisDirection"}.</li>
      *   <li>{@code getListName(TopicCategory.INLAND_WATERS)}    returns {@code "MD_TopicCategoryCode"}.</li>
      *   <li>{@code getListName(ImagingCondition.BLURRED_IMAGE)} returns {@code "MD_ImagingConditionCode"}.</li>
      * </ul>
@@ -498,15 +498,15 @@ public final class Types extends Static {
      *
      * <h4>Examples</h4>
      * <ul>
-     *   <li>{@code forStandardName("CI_Citation")}      returns <code>{@linkplain org.opengis.metadata.citation.Citation}.class</code></li>
-     *   <li>{@code forStandardName("CS_AxisDirection")} returns <code>{@linkplain org.opengis.referencing.cs.AxisDirection}.class</code></li>
+     *   <li>{@code forStandardName("CI_Citation")}   returns <code>{@linkplain org.opengis.metadata.citation.Citation}.class</code></li>
+     *   <li>{@code forStandardName("AxisDirection")} returns <code>{@linkplain org.opengis.referencing.cs.AxisDirection}.class</code></li>
      * </ul>
      *
      * <h4>Implementation note</h4>
      * The package prefix (e.g. {@code "CI_"} in {@code "CI_Citation"}) can be omitted.
      * The flexibility is provided for allowing transition to newer ISO standards,
      * which are dropping the package prefixes.
-     * For example, {@code "CS_AxisDirection"} in ISO 19111:2007
+     * For example, {@code "AxisDirection"} in ISO 19111:2007
      * has been renamed {@code "AxisDirection"} in ISO 19111:2018.
      *
      * <p>Only identifiers for the stable part of GeoAPI or for some Apache SIS classes are recognized.

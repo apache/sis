@@ -407,6 +407,7 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
     /**
      * Creates the text to show in the "Remarks" column for the given CRS.
      */
+    @SuppressWarnings("deprecation")
     private String getRemark(final CoordinateReferenceSystem crs) {
         if (crs instanceof GeographicCRS) {
             return (crs.getCoordinateSystem().getDimension() == 3) ? "Geographic 3D" : "Geographic";

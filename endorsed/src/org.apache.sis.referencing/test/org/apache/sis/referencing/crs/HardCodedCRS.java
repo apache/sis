@@ -319,6 +319,7 @@ public final class HardCodedCRS {
      * <p>The {@code PixelInCell} attribute of the associated {@code ImageDatum}
      * is set to {@link PixelInCell#CELL_CENTER}.</p>
      */
+    @SuppressWarnings("deprecation")
     public static final DefaultImageCRS IMAGE = new DefaultImageCRS(
             getProperties(HardCodedDatum.IMAGE), HardCodedDatum.IMAGE, HardCodedCS.GRID);
 

@@ -223,7 +223,7 @@ public final class GeodeticObjectParserTest extends TestCase {
                 "  ANCHOR[“Tananarive observatory”]]");
 
         assertNameAndIdentifierEqual("Tananarive 1925", 0, datum);
-        assertEquals("Tananarive observatory", String.valueOf(datum.getAnchorPoint()));
+        assertEquals("Tananarive observatory", datum.getAnchorDefinition().get().toString());
 
         final Ellipsoid ellipsoid = datum.getEllipsoid();
         assertNameAndIdentifierEqual("International 1924", 0, ellipsoid);
@@ -241,6 +241,7 @@ public final class GeodeticObjectParserTest extends TestCase {
      * @throws ParseException if the parsing failed.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void testGeocentricCRS() throws ParseException {
         final GeocentricCRS crs = parse(GeocentricCRS.class,
                 "GEOCCS[“Geocentric”,\n" +
