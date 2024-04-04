@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import org.opengis.metadata.Metadata;
+import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
@@ -152,13 +153,13 @@ final class Store extends URIDataStore {
         if (metadata == null) {
             parse();
             final MetadataBuilder builder = new MetadataBuilder();
-            String name = null;
+            InternationalString name = null;
             int count = 0;
             for (final Object object : objects) {
                 if (object instanceof ReferenceSystem) {
                     final ReferenceSystem rs = (ReferenceSystem) object;
                     builder.addReferenceSystem(rs);
-                    name = IdentifiedObjects.getDisplayName(rs, getLocale());
+                    name = IdentifiedObjects.getDisplayName(rs);
                     count++;
                     builder.addIdentifier(IdentifiedObjects.getIdentifier(rs, null), MetadataBuilder.Scope.RESOURCE);
                 }

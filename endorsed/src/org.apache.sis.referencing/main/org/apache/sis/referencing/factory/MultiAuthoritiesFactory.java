@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.factory;
 
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Collections;
 import java.util.Collection;
@@ -868,13 +869,18 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
-     * @return a description of the object, or {@code null} if the object
-     *         corresponding to the specified {@code code} has no description.
+     * @param  type  the type of object for which to get a description.
+     * @param  code  value allocated by authority.
+     * @return a description of the object, or empty if the object corresponding to the specified code has no description.
      * @throws FactoryException if an error occurred while fetching the description.
+     *
+     * @since 1.5
      */
     @Override
-    public InternationalString getDescriptionText(final String code) throws FactoryException {
-        return create(AuthorityFactoryProxy.DESCRIPTION, code);
+    public Optional<InternationalString> getDescriptionText(Class<? extends IdentifiedObject> type, String code)
+            throws FactoryException
+    {
+        return Optional.ofNullable(create(AuthorityFactoryProxy.description(type), code));
     }
 
     /**

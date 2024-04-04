@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.internal;
 
 import java.util.Set;
+import java.util.Optional;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
@@ -58,11 +59,14 @@ public abstract class EPSGFactoryProxy implements AuthorityFactory {
     }
 
     @Override
-    public final InternationalString getDescriptionText(String code) throws FactoryException {
-        return factory().getDescriptionText(code);
+    public final Optional<InternationalString> getDescriptionText(Class<? extends IdentifiedObject> type, String code)
+            throws FactoryException
+    {
+        return factory().getDescriptionText(type, code);
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public final IdentifiedObject createObject(String code) throws FactoryException {
         return factory().createObject(code);
     }

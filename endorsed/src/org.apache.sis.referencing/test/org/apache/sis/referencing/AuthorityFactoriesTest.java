@@ -77,16 +77,25 @@ public final class AuthorityFactoriesTest extends TestCaseWithLogs {
     }
 
     /**
-     * Tests {@link CRSAuthorityFactory#getDescriptionText(String)}.
+     * Tests {@link CRSAuthorityFactory#getDescriptionText(Class, String)}.
      *
      * @throws FactoryException if the EPSG:4326 name cannot be obtained.
      */
     @Test
     public void testGetDescriptionText() throws FactoryException {
-        final CRSAuthorityFactory factory = AuthorityFactories.ALL;
-        assertEquals("WGS 84", factory.getDescriptionText("EPSG:4326").toString());
-        assertEquals("WGS 84", factory.getDescriptionText("urn:ogc:def:crs:epsg::4326").toString());
+        assertDescriptionEquals("WGS 84", "EPSG:4326");
+        assertDescriptionEquals("WGS 84", "urn:ogc:def:crs:epsg::4326");
         loggings.assertNoUnexpectedLog();
+    }
+
+    /**
+     * Asserts that the description is equal to the expected value.
+     *
+     * @param expected  the expected description.
+     * @param code      the code of the object for which to fetch the description.
+     */
+    private void assertDescriptionEquals(String expected, String code) throws FactoryException {
+        assertEquals(expected, AuthorityFactories.ALL.getDescriptionText(IdentifiedObject.class, code).orElseThrow().toString());
     }
 
     /**

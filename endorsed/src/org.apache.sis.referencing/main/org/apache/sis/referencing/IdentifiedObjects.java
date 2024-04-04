@@ -62,7 +62,7 @@ import org.opengis.referencing.ObjectDomain;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Guilhem Legal (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see CRS
  * @see org.apache.sis.geometry.Envelopes
@@ -368,7 +368,8 @@ public final class IdentifiedObjects extends Static {
     }
 
     /**
-     * Returns a name that can be used for display purpose. This method checks the non-blank
+     * Returns a name that can be used for display purposes.
+     * This method checks the non-blank
      * {@linkplain AbstractIdentifiedObject#getName() name},
      * {@linkplain AbstractIdentifiedObject#getAlias() alias} or
      * {@linkplain AbstractIdentifiedObject#getIdentifiers() identifier}, in that order.
@@ -382,8 +383,27 @@ public final class IdentifiedObjects extends Static {
      * its {@link GenericName#toInternationalString() toInternationalString()} method will be used.</p>
      *
      * @param  object  the identified object, or {@code null}.
+     * @return a name for human reading, or {@code null} if the given object is null.
+     *
+     * @see #getDisplayName(IdentifiedObject, Locale)
+     *
+     * @since 1.5
+     */
+    public static InternationalString getDisplayName(final IdentifiedObject object) {
+        return (object == null) ? null : new DisplayName(object);
+    }
+
+    /**
+     * Returns a name that can be used for display purposes in the specified locale.
+     * Invoking this method is equivalent to invoking {@code getDisplayName(object).toString(locale)},
+     * except that the {@code object} argument can be null and the creation of an intermediate
+     * {@link InternationalString} object is avoided.
+     *
+     * @param  object  the identified object, or {@code null}.
      * @param  locale  the locale for the name to return, or {@code null} for the default.
      * @return a name for human reading, or {@code null} if none were found.
+     *
+     * @see #getDisplayName(IdentifiedObject)
      *
      * @since 1.1
      */

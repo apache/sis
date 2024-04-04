@@ -584,7 +584,7 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
         }
         final Row row = super.createRow(code, exception);
         try {
-            row.name = factory.getDescriptionText(code).toString(getLocale());
+            row.name = factory.getDescriptionText(CoordinateReferenceSystem.class, code).get().toString(getLocale());
         } catch (FactoryException e) {
             Logging.unexpectedException(null, CoordinateReferenceSystems.class, "createRow", e);
         }

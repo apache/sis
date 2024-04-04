@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
@@ -159,7 +160,7 @@ import org.opengis.metadata.Identifier;
  * @author  Matthias Basler
  * @author  Andrea Aime (TOPP)
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see <a href="https://sis.apache.org/tables/CoordinateReferenceSystems.html">List of authority codes</a>
  *
@@ -541,12 +542,12 @@ addURIs:    for (int i=0; ; i++) {
      * Returns a map of EPSG authority codes as keys and object names as values.
      * The cautions documented in {@link #getAuthorityCodes(Class)} apply also to this map.
      *
-     * @todo We may need to give some public access to this map if callers need descriptions
-     *       for other kinds of object than CRS. Current {@link #getDescriptionText(String)}
-     *       implementation selects CRS if the same code is used by many kinds of objects.
+     * @param  type  the spatial reference objects type (may be {@code Object.class}).
+     * @return the map of authority codes associated to their names. May be an empty map.
+     * @throws FactoryException if access to the underlying database failed.
      *
      * @see #getAuthorityCodes(Class)
-     * @see #getDescriptionText(String)
+     * @see #getDescriptionText(Class, String)
      */
     private synchronized Map<String,String> getCodeMap(final Class<?> type) throws SQLException {
         CloseableReference reference = authorityCodes.get(type);
@@ -627,18 +628,24 @@ addURIs:    for (int i=0; ; i++) {
      * Gets a description of the object corresponding to a code.
      * This method returns the object name in a lightweight manner, without creating the full {@link IdentifiedObject}.
      *
+     * @param  type  the type of object for which to get a description.
      * @param  code  value allocated by authority.
-     * @return the object name, or {@code null} if the object corresponding to the specified {@code code} has no name.
-     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
+     * @return the object name, or empty if none.
      * @throws FactoryException if the query failed for some other reason.
+     *
+     * @since 1.5
      */
     @Override
-    public InternationalString getDescriptionText(final String code) throws NoSuchAuthorityCodeException, FactoryException {
+    public Optional<InternationalString> getDescriptionText(final Class<? extends IdentifiedObject> type, final String code)
+            throws FactoryException
+    {
         try {
             for (final TableInfo table : TableInfo.EPSG) {
-                final String text = getCodeMap(table.type).get(code);
-                if (text != null) {
-                    return (table.nameColumn != null) ? new SimpleInternationalString(text) : null;
+                if (table.nameColumn != null && type.isAssignableFrom(table.type)) {
+                    final String text = getCodeMap(table.type).get(code);
+                    if (text != null) {
+                        return Optional.of(new SimpleInternationalString(text));
+                    }
                 }
             }
         } catch (SQLException exception) {
@@ -646,7 +653,7 @@ addURIs:    for (int i=0; ; i++) {
         } catch (BackingStoreException exception) {       // Cause is SQLException.
             throw new FactoryException(exception.getLocalizedMessage(), exception.getCause());
         }
-        throw noSuchAuthorityCode(IdentifiedObject.class, code);
+        return Optional.empty();
     }
 
     /**
@@ -686,7 +693,7 @@ addURIs:    for (int i=0; ; i++) {
 
     /**
      * Converts EPSG codes or EPSG names to the numerical identifiers (the primary keys).
-     * This method could be seen as the converse of above {@link #getDescriptionText(String)} method.
+     * This method can be seen as the converse of above {@link #getDescriptionText(Class, String)} method.
      *
      * @param  table       the table where the code should appears, or {@code null} if {@code codeColumn} is null.
      * @param  codeColumn  the column name for the codes, or {@code null} if none.
@@ -1233,8 +1240,8 @@ codes:  for (int i=0; i<codes.length; i++) {
      * for example {@link #createCoordinateReferenceSystem(String)}, {@link #createDatum(String)}, <i>etc.</i>
      * until a successful one is found.
      *
-     * <p><strong>Note that this method may be ambiguous</strong> since the same EPSG code can be used for different
-     * kinds of objects. This method throws an exception if it detects an ambiguity on a <em>best-effort</em> basis.
+     * <p><strong>Note that this method may be ambiguous</strong> because the same EPSG code can be used for different
+     * kinds of objects. This method throws an exception on a <em>best-effort</em> basis if it detects an ambiguity.
      * It is recommended to invoke the most specific {@code createFoo(String)} method when the desired type is known,
      * both for performance reason and for avoiding ambiguity.</p>
      *

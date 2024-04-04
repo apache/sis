@@ -178,12 +178,11 @@ public final class Linearizer {
      * If this linearizer can give a probable reason why it failed to compute the localization grid, returns that reason.
      * Otherwise returns {@code null}.
      *
-     * @param  owner  for fetching localized resources.
      * @return potential error cause, or {@code null} if unknown.
      */
-    final InternationalString getPotentialCause(final Node owner) {
+    final InternationalString getPotentialCause() {
         if (longitudeSpan >= 180 - 6) {         // 180° of longitude minus a UTM zone width.
-            final String name = IdentifiedObjects.getDisplayName(targetCRS, owner.getLocale());
+            final InternationalString name = IdentifiedObjects.getDisplayName(targetCRS);
             return Resources.formatInternational(Resources.Keys.GridLongitudeSpanTooWide_2,
                                                  longitudeSpan, (name != null) ? name : type);
         }

@@ -254,7 +254,7 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
     /**
      * Returns the object name associated to the given authority code, or {@code null} if none.
      * If there is no name for the {@linkplain #type} of object being queried, then this method
-     * returns the code itself.
+     * returns {@code null}.
      *
      * @param  code  the code for which to get the description. May be a string or an integer.
      * @return the description for the given code, or {@code null} if none.
@@ -279,9 +279,9 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
                             sql[ONE] = null;    // Not needed anymore.
                         }
                         statement.setInt(1, n);
-                        try (ResultSet results = statement.executeQuery()) {
-                            while (results.next()) {
-                                String name = results.getString(1);
+                        try (ResultSet r = statement.executeQuery()) {
+                            while (r.next()) {
+                                String name = r.getString(1);
                                 if (name != null) {
                                     return name;
                                 }
