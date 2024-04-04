@@ -132,7 +132,7 @@ public final class MetadataVerticalTest extends TestCase.WithLogs {
          *   <gmd:MD_DataIdentification>
          *     …
          */
-        final DataIdentification identification = (DataIdentification) getSingleton(metadata.getIdentificationInfo());
+        final var identification = (DataIdentification) getSingleton(metadata.getIdentificationInfo());
         final Citation citation = identification.getCitation();
         assertInstanceOf(NilObject.class, citation);
         assertEquals(NilReason.MISSING, ((NilObject) citation).getNilReason());
@@ -146,7 +146,7 @@ public final class MetadataVerticalTest extends TestCase.WithLogs {
          * </gmd:geographicElement>
          */
         final Extent extent = getSingleton(identification.getExtents());
-        final GeographicBoundingBox bbox = (GeographicBoundingBox) getSingleton(extent.getGeographicElements());
+        final var bbox = (GeographicBoundingBox) getSingleton(extent.getGeographicElements());
         assertEquals(Boolean.TRUE, bbox.getInclusion());
         assertEquals( 4.55, bbox.getWestBoundLongitude());
         assertEquals( 4.55, bbox.getEastBoundLongitude());
@@ -168,7 +168,7 @@ public final class MetadataVerticalTest extends TestCase.WithLogs {
         final VerticalDatum datum = crs.getDatum();
         verifyIdentifiers("test2", datum);
         assertEquals("World", datum.getScope().toString());
-        assertEquals(VerticalDatumType.DEPTH, datum.getVerticalDatumType()); // Inferred from the name.
+        assertEquals(VerticalDatumType.DEPTH, datum.getVerticalDatumType());    // Inferred from the name.
         final VerticalCS cs = crs.getCoordinateSystem();
         verifyIdentifiers("test3", cs);
         final CoordinateSystemAxis axis = cs.getAxis(0);

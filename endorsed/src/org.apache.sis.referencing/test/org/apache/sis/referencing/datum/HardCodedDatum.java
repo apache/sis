@@ -122,6 +122,7 @@ public final class HardCodedDatum {
     /**
      * Mean sea level, which can be used as an approximation of geoid.
      */
+    @SuppressWarnings("deprecation")
     public static final DefaultVerticalDatum MEAN_SEA_LEVEL = new DefaultVerticalDatum(
             properties("Mean Sea Level", "5100", "Hydrography."),
             VerticalDatumType.GEOIDAL);
@@ -149,6 +150,7 @@ public final class HardCodedDatum {
     /**
      * Image with {@link PixelInCell#CELL_CENTER}.
      */
+    @SuppressWarnings("deprecation")
     public static final DefaultImageDatum IMAGE = new DefaultImageDatum(
             properties("Image", null, null),
             PixelInCell.CELL_CENTER);

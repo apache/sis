@@ -939,8 +939,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * @see DefaultVerticalDatum#DefaultVerticalDatum(Map, VerticalDatumType)
      * @see GeodeticAuthorityFactory#createVerticalDatum(String)
+     *
+     * @deprecated As of ISO 19111:2019, the {@code VerticalDatumType} argument is replaced by {@code RealizationMethod}.
      */
     @Override
+    @Deprecated(since = "2.0")
     public VerticalDatum createVerticalDatum(final Map<String,?> properties,
             final VerticalDatumType type) throws FactoryException
     {

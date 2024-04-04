@@ -25,6 +25,7 @@ import org.apache.sis.xml.bind.gml.CodeListAdapter;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("deprecation")
 public final class CD_VerticalDatumType extends CodeListAdapter<VerticalDatumType> {
     /**
      * Empty constructor for JAXB only.

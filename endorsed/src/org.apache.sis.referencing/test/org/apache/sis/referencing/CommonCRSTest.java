@@ -216,6 +216,7 @@ public final class CommonCRSTest extends TestCase {
      * Verifies the vertical datum enumeration.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void testVertical() {
         for (final CommonCRS.Vertical e : CommonCRS.Vertical.values()) {
             final VerticalDatumType datumType;

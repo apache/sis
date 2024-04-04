@@ -35,7 +35,6 @@ import org.opengis.metadata.identification.*;
 import org.opengis.metadata.maintenance.*;
 import org.opengis.metadata.spatial.GeometricObjectType;
 import org.opengis.referencing.cs.AxisDirection;
-import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.*;
 import org.apache.sis.metadata.iso.citation.*;
@@ -63,6 +62,9 @@ import org.apache.sis.system.Loggers;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.privy.Constants;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.datum.RealizationMethod;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -100,7 +102,7 @@ public final class MetadataTest extends TestCase.WithLogs {
      * @return the hard-coded representation of {@value #XML_FILE} content.
      */
     private DefaultMetadata createHardCoded() {
-        final DefaultMetadata metadata = new DefaultMetadata();
+        final var metadata = new DefaultMetadata();
         metadata.setMetadataIdentifier(new DefaultIdentifier("test/Metadata.xml"));
         metadata.setLocalesAndCharsets(Map.of(Locale.ENGLISH, StandardCharsets.UTF_8));
         metadata.setMetadataScopes(Set.of(new DefaultMetadataScope(ScopeCode.DATASET, "Pseudo Common Data Index record")));
@@ -111,18 +113,18 @@ public final class MetadataTest extends TestCase.WithLogs {
          * because this is what will be unmarshalled from the XML document.
          */
         @SuppressWarnings("deprecation")
-        final DefaultResponsibility author = new DefaultResponsibleParty(Role.AUTHOR);
-        final Anchor country = new Anchor(URI.create("SDN:C320:2:FR"), "France"); // Non-public SIS class.
+        final var author  = new DefaultResponsibleParty(Role.AUTHOR);
+        final var country = new Anchor(URI.create("SDN:C320:2:FR"), "France"); // Non-public SIS class.
         {
-            final DefaultOnlineResource online = new DefaultOnlineResource(URI.create("http://www.ifremer.fr/sismer/"));
+            final var online = new DefaultOnlineResource(URI.create("http://www.ifremer.fr/sismer/"));
             online.setProtocol(Constants.HTTP);
-            final DefaultContact contact = new DefaultContact(online);
+            final var contact = new DefaultContact(online);
             contact.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "IFREMER");
             contact.setPhones(List.of(
                     new DefaultTelephone("+33 (0)2 xx.xx.xx.x6", TelephoneType.VOICE),
                     new DefaultTelephone("+33 (0)2 xx.xx.xx.x4", TelephoneType.FACSIMILE)
             ));
-            final DefaultAddress address = new DefaultAddress();
+            final var address = new DefaultAddress();
             address.setDeliveryPoints(Set.of(new SimpleInternationalString("Brest institute")));
             address.setCity(new SimpleInternationalString("Plouzane"));
             address.setPostalCode("29280");
@@ -136,22 +138,22 @@ public final class MetadataTest extends TestCase.WithLogs {
          * Data indentification.
          */
         {
-            final DefaultCitation citation = new DefaultCitation("Some set of points");
+            final var citation = new DefaultCitation("Some set of points");
             citation.setAlternateTitles(Set.of(new SimpleInternationalString("Code XYZ")));
             citation.setDates(List.of(
                     new DefaultCitationDate(TestUtilities.date("1990-06-04 22:00:00"), DateType.REVISION),
                     new DefaultCitationDate(TestUtilities.date("1979-08-02 22:00:00"), DateType.CREATION)));
             {
                 @SuppressWarnings("deprecation")
-                final DefaultResponsibility originator = new DefaultResponsibleParty(Role.ORIGINATOR);
-                final DefaultOnlineResource online = new DefaultOnlineResource(URI.create("http://www.com.univ-mrs.fr/LOB/"));
+                final var originator = new DefaultResponsibleParty(Role.ORIGINATOR);
+                final var online = new DefaultOnlineResource(URI.create("http://www.com.univ-mrs.fr/LOB/"));
                 online.setProtocol(Constants.HTTP);
-                final DefaultContact contact = new DefaultContact(online);
+                final var contact = new DefaultContact(online);
                 contact.setPhones(List.of(
                         new DefaultTelephone("+33 (0)4 xx.xx.xx.x5", TelephoneType.VOICE),
                         new DefaultTelephone("+33 (0)4 xx.xx.xx.x8", TelephoneType.FACSIMILE)
                 ));
-                final DefaultAddress address = new DefaultAddress();
+                final var address = new DefaultAddress();
                 address.setDeliveryPoints(Set.of(new SimpleInternationalString("Oceanology institute")));
                 address.setCity(new SimpleInternationalString("Marseille"));
                 address.setPostalCode("13288");
@@ -160,14 +162,14 @@ public final class MetadataTest extends TestCase.WithLogs {
                 originator.setParties(Set.of(new DefaultOrganisation("Oceanology laboratory", null, null, contact)));
                 citation.setCitedResponsibleParties(Set.of(originator));
             }
-            final DefaultDataIdentification identification = new DefaultDataIdentification(
+            final var identification = new DefaultDataIdentification(
                     citation,                                                   // Citation
                     "Description of pseudo data for testing purpose only.",     // Abstract
                     Locale.ENGLISH,                                             // Language,
                     TopicCategory.OCEANS);                                      // Topic category
             {
                 @SuppressWarnings("deprecation")
-                final DefaultResponsibility custodian = new DefaultResponsibleParty(author);
+                final var custodian = new DefaultResponsibleParty(author);
                 custodian.setRole(Role.CUSTODIAN);
                 identification.setPointOfContacts(Set.of(custodian));
             }
@@ -175,10 +177,10 @@ public final class MetadataTest extends TestCase.WithLogs {
              * Data indentification / Keywords.
              */
             {
-                final DefaultKeywords keyword = new DefaultKeywords(
+                final var keyword = new DefaultKeywords(
                         new Anchor(URI.create("SDN:P021:35:ATTN"), "Transmittance and attenuance of the water column"));
                 keyword.setType(KeywordType.THEME);
-                final DefaultCitation thesaurus = new DefaultCitation("BODC Parameter Discovery Vocabulary");
+                final var thesaurus = new DefaultCitation("BODC Parameter Discovery Vocabulary");
                 thesaurus.setAlternateTitles(Set.of(new SimpleInternationalString("P021")));
                 thesaurus.setDates(Set.of(new DefaultCitationDate(TestUtilities.date("2008-11-25 23:00:00"), DateType.REVISION)));
                 thesaurus.setEdition(new Anchor(URI.create("SDN:C371:1:35"), "35"));
@@ -190,7 +192,7 @@ public final class MetadataTest extends TestCase.WithLogs {
              * Data indentification / Browse graphic.
              */
             {
-                final DefaultBrowseGraphic g = new DefaultBrowseGraphic(URI.create("file:///thumbnail.png"));
+                final var g = new DefaultBrowseGraphic(URI.create("file:///thumbnail.png"));
                 g.setFileDescription(new SimpleInternationalString("Arbitrary thumbnail for this test only."));
                 identification.setGraphicOverviews(Set.of(g));
             }
@@ -198,7 +200,7 @@ public final class MetadataTest extends TestCase.WithLogs {
              * Data indentification / Resource constraint.
              */
             {
-                final DefaultLegalConstraints constraint = new DefaultLegalConstraints();
+                final var constraint = new DefaultLegalConstraints();
                 constraint.setAccessConstraints(Set.of(Restriction.LICENCE));
                 identification.setResourceConstraints(Set.of(constraint));
             }
@@ -207,8 +209,8 @@ public final class MetadataTest extends TestCase.WithLogs {
              */
             {
                 @SuppressWarnings("deprecation")
-                final DefaultAssociatedResource aggregateInfo = new DefaultAggregateInformation();
-                final DefaultCitation name = new DefaultCitation("Some oceanographic campaign");
+                final var aggregateInfo = new DefaultAggregateInformation();
+                final var name = new DefaultCitation("Some oceanographic campaign");
                 name.setAlternateTitles(Set.of(new SimpleInternationalString("Pseudo group of data")));
                 name.setDates(Set.of(new DefaultCitationDate(TestUtilities.date("1990-06-04 22:00:00"), DateType.REVISION)));
                 aggregateInfo.setName(name);
@@ -220,19 +222,19 @@ public final class MetadataTest extends TestCase.WithLogs {
              * Data indentification / Extent.
              */
             {
-                final DefaultCoordinateSystemAxis axis = new DefaultCoordinateSystemAxis(
+                final var axis = new DefaultCoordinateSystemAxis(
                         nameAndIdentifier("depth", "Depth", null), "D", AxisDirection.DOWN, Units.METRE);
 
-                final DefaultVerticalCS cs = new DefaultVerticalCS(
+                final var cs = new DefaultVerticalCS(
                         nameAndIdentifier("depth", "Depth", null), axis);
 
-                final DefaultVerticalDatum datum = new DefaultVerticalDatum(
-                        nameAndIdentifier("D28", "Depth below D28", "For testing purpose"), VerticalDatumType.OTHER_SURFACE);
+                final var datum = new DefaultVerticalDatum(
+                        nameAndIdentifier("D28", "Depth below D28", "For testing purpose"), (RealizationMethod) null);
 
-                final DefaultVerticalCRS vcrs = new DefaultVerticalCRS(
+                final var vcrs = new DefaultVerticalCRS(
                         nameAndIdentifier("D28", "Depth below D28", "CRS for testing purpose"), datum, cs);
 
-                final DefaultTemporalExtent temporal = new DefaultTemporalExtent();
+                final var temporal = new DefaultTemporalExtent();
                 temporal.setBounds(TestUtilities.date("1990-06-05 00:00:00"), TestUtilities.date("1990-07-02 00:00:00"));
                 identification.setExtents(Set.of(new DefaultExtent(
                         null,
@@ -253,8 +255,8 @@ public final class MetadataTest extends TestCase.WithLogs {
          * Information about spatial representation.
          */
         {
-            final DefaultVectorSpatialRepresentation rep = new DefaultVectorSpatialRepresentation();
-            final DefaultGeometricObjects geoObj = new DefaultGeometricObjects(GeometricObjectType.POINT);
+            final var rep = new DefaultVectorSpatialRepresentation();
+            final var geoObj = new DefaultGeometricObjects(GeometricObjectType.POINT);
             rep.setGeometricObjects(Set.of(geoObj));
             metadata.setSpatialRepresentationInfo(Set.of(rep));
         }
@@ -262,7 +264,7 @@ public final class MetadataTest extends TestCase.WithLogs {
          * Information about Coordinate Reference System.
          */
         {
-            final DefaultCitation citation = new DefaultCitation("World Geodetic System 84");
+            final var citation = new DefaultCitation("World Geodetic System 84");
             citation.setAlternateTitles(Set.of(new SimpleInternationalString("L101")));
             citation.setIdentifiers(Set.of(new ImmutableIdentifier(null, null, "SDN:L101:2:4326")));
             citation.setEdition(new Anchor(URI.create("SDN:C371:1:2"), "2"));
@@ -273,7 +275,7 @@ public final class MetadataTest extends TestCase.WithLogs {
          * Information about content.
          */
         {
-            final DefaultImageDescription contentInfo = new DefaultImageDescription();
+            final var contentInfo = new DefaultImageDescription();
             contentInfo.setCloudCoverPercentage(50.0);
             metadata.setContentInfo(Set.of(contentInfo));
         }
@@ -281,7 +283,7 @@ public final class MetadataTest extends TestCase.WithLogs {
          * Extension to metadata.
          */
         {
-            final DefaultMetadataExtensionInformation extensionInfo = new DefaultMetadataExtensionInformation();
+            final var extensionInfo = new DefaultMetadataExtensionInformation();
             extensionInfo.setExtendedElementInformation(Set.of(new DefaultExtendedElementInformation(
                     "SDN:EDMO",                                                     // Name
                     "European Directory of Marine Organisations",                   // Definition
@@ -297,21 +299,21 @@ public final class MetadataTest extends TestCase.WithLogs {
          */
         {
             @SuppressWarnings("deprecation")
-            final DefaultResponsibility distributor = new DefaultResponsibleParty(author);
-            final DefaultDistribution distributionInfo = new DefaultDistribution();
+            final var distributor = new DefaultResponsibleParty(author);
+            final var distributionInfo = new DefaultDistribution();
             distributor.setRole(Role.DISTRIBUTOR);
             distributionInfo.setDistributors(Set.of(new DefaultDistributor(distributor)));
 
-            final DefaultFormat format = new DefaultFormat();
-            final DefaultCitation specification = new DefaultCitation();
+            final var format = new DefaultFormat();
+            final var specification = new DefaultCitation();
             specification.setAlternateTitles(Set.of(new Anchor(URI.create("SDN:L241:1:MEDATLAS"), "MEDATLAS ASCII")));
             specification.setEdition(new SimpleInternationalString("1.0"));
             format.setFormatSpecificationCitation(specification);
             distributionInfo.setDistributionFormats(Set.of(format));
 
-            final DefaultDigitalTransferOptions transfer = new DefaultDigitalTransferOptions();
+            final var transfer = new DefaultDigitalTransferOptions();
             transfer.setTransferSize(2.431640625);
-            final DefaultOnlineResource onlines = new DefaultOnlineResource(URI.create("ftp://www.ifremer.fr/data/something"));
+            final var onlines = new DefaultOnlineResource(URI.create("ftp://www.ifremer.fr/data/something"));
             onlines.setDescription(new SimpleInternationalString("Dummy download link"));
             onlines.setFunction(OnLineFunction.DOWNLOAD);
             onlines.setProtocol("ftp");
@@ -326,7 +328,7 @@ public final class MetadataTest extends TestCase.WithLogs {
      * Returns a property map with a name and identifier. This is used for creating CRS components.
      */
     private static Map<String,?> nameAndIdentifier(final String identifier, final String name, final String scope) {
-        final Map<String,Object> properties = new HashMap<>(4);
+        final var properties = new HashMap<String,Object>(4);
         properties.put(DefaultVerticalDatum.NAME_KEY, new NamedIdentifier(null, name));
         properties.put(DefaultVerticalDatum.IDENTIFIERS_KEY, new NamedIdentifier(null, "test", identifier, null, null));
         if (scope != null) {
@@ -374,7 +376,7 @@ public final class MetadataTest extends TestCase.WithLogs {
          * now the "gml:id" attribute since SIS generates different values than the ones in our test XML file,
          * and those values may change in future SIS version.
          */
-        final DocumentComparator comparator = new DocumentComparator(getResource(), xml.toString());
+        final var comparator = new DocumentComparator(getResource(), xml.toString());
         comparator.ignoredNodes.add(LegacyNamespaces.GMD + ":temporalElement");
         comparator.ignoredAttributes.add("http://www.w3.org/2000/xmlns:*");
         comparator.ignoredAttributes.add(Namespaces.XSI + ":schemaLocation");

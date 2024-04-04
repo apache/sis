@@ -44,6 +44,7 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("deprecation")
 public final class DefaultVerticalDatumTest extends TestCase {
     /**
      * Creates a new test case.

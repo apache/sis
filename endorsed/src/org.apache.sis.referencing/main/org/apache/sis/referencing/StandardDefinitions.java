@@ -28,7 +28,6 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
-import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -74,6 +73,9 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
 import static org.apache.sis.metadata.privy.ReferencingServices.AUTHALIC_RADIUS;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.datum.RealizationMethod;
 
 
 /**
@@ -346,7 +348,7 @@ final class StandardDefinitions {
             case 5103: name = "North American Vertical Datum 1988"; alias = "NAVD88"; break;
             default:   throw new AssertionError(code);
         }
-        return new DefaultVerticalDatum(properties(code, name, alias, true), VerticalDatumType.GEOIDAL);
+        return new DefaultVerticalDatum(properties(code, name, alias, true), RealizationMethod.GEOID);
     }
 
     /**

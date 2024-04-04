@@ -18,6 +18,7 @@ package org.apache.sis.referencing.datum;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -35,6 +36,7 @@ import org.apache.sis.metadata.privy.ImplementationHelper;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
+import org.opengis.referencing.datum.RealizationMethod;
 
 
 /**
@@ -72,7 +74,7 @@ import org.opengis.metadata.Identifier;
  * all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.CommonCRS.Vertical#datum()
  * @see org.apache.sis.referencing.cs.DefaultVerticalCS
@@ -90,12 +92,18 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     private static final long serialVersionUID = 380347456670516572L;
 
     /**
+     * The realization method (geoid, tidal, <i>etc.</i>), or {@code null} if unspecified.
+     */
+    private RealizationMethod method;
+
+    /**
      * The type of this vertical datum.
      * If {@code null}, a value will be inferred from the name by {@link #type()}.
      *
      * @see #type()
      * @see #getVerticalDatumType()
      */
+    @SuppressWarnings("deprecation")
     private VerticalDatumType type;
 
     /**
@@ -141,13 +149,30 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * </table>
      *
      * @param  properties  the properties to be given to the identified object.
+     * @param  method      the realization method (geoid, tidal, <i>etc.</i>), or {@code null} if unspecified.
+     *
+     * @since 2.0
+     */
+    @SuppressWarnings({"deprecation", "this-escape"})
+    public DefaultVerticalDatum(final Map<String,?> properties, final RealizationMethod method) {
+        super(properties);
+        this.method = method;
+        type = VerticalDatum.super.getVerticalDatumType();
+    }
+
+    /**
+     * Creates a vertical datum from the given properties.
+     *
+     * @param  properties  the properties to be given to the identified object.
      * @param  type        the type of this vertical datum.
      *
-     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createVerticalDatum(Map, VerticalDatumType)
+     * @deprecated As of ISO 19111:2019, the {@code VerticalDatumType} argument is replaced by {@code RealizationMethod}.
      */
+    @Deprecated(since = "2.0")
     public DefaultVerticalDatum(final Map<String,?> properties, final VerticalDatumType type) {
         super(properties);
         this.type = Objects.requireNonNull(type);
+        setRealizationMethod();
     }
 
     /**
@@ -161,9 +186,13 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      *
      * @see #castOrCopy(VerticalDatum)
      */
+    @SuppressWarnings("deprecation")
     protected DefaultVerticalDatum(final VerticalDatum datum) {
         super(datum);
         type = datum.getVerticalDatumType();
+        if (datum instanceof DefaultVerticalDatum) {
+            method = ((DefaultVerticalDatum) datum).method;
+        }
     }
 
     /**
@@ -198,6 +227,31 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     }
 
     /**
+     * Returns the method through which this vertical reference frame is realized.
+     *
+     * @return method through which this vertical reference frame is realized.
+     * @since 1.5
+     */
+    @Override
+    public Optional<RealizationMethod> getRealizationMethod() {
+        return Optional.ofNullable(method);
+    }
+
+    /**
+     * Sets the realization method to a default value inferred from the legacy datum type.
+     */
+    @SuppressWarnings("deprecation")
+    private void setRealizationMethod() {
+        if (type == VerticalDatumType.GEOIDAL) {
+            method = RealizationMethod.GEOID;
+        } else if (type == VerticalDatumType.DEPTH) {
+            method = RealizationMethod.TIDAL;
+        } else if (type == VerticalDatumType.BAROMETRIC) {
+            method = RealizationMethod.LEVELLING;
+        }
+    }
+
+    /**
      * Returns the type of this datum, or infers the type from the datum name if no type were specified.
      * The latter case occurs after unmarshalling, since GML 3.2 does not contain any attribute for the datum type.
      * It may also happen if the datum were created using reflection.
@@ -211,6 +265,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * @see #getVerticalDatumType()
      * @see #getTypeElement()
      */
+    @SuppressWarnings("deprecation")
     private VerticalDatumType type() {
         VerticalDatumType t = type;
         if (t == null) {
@@ -230,8 +285,11 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * but in a programmatic way more suitable to coordinate transformation engines.
      *
      * @return the type of this vertical datum.
+     *
+     * @deprecated As of ISO 19111:2019, the {@code VerticalDatumType} argument is replaced by {@code RealizationMethod}.
      */
     @Override
+    @Deprecated(since = "2.0")
     public VerticalDatumType getVerticalDatumType() {
         return type();
     }
@@ -246,6 +304,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * @return {@code true} if both objects are equal.
      */
     @Override
+    @SuppressWarnings("deprecation")
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
             return true;                                                    // Slight optimization.
@@ -255,10 +314,13 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
         }
         switch (mode) {
             case STRICT: {
-                return type().equals(((DefaultVerticalDatum) object).type());
+                final var other = (DefaultVerticalDatum) object;
+                return Objects.equals(method, other.method) && type().equals(other.type());
             }
             case BY_CONTRACT: {
-                return Objects.equals(getVerticalDatumType(), ((VerticalDatum) object).getVerticalDatumType());
+                final var other = (VerticalDatum) object;
+                return Objects.equals(getRealizationMethod(), other.getRealizationMethod()) &&
+                       Objects.equals(getVerticalDatumType(), other.getVerticalDatumType());
             }
             default: {
                 /*
@@ -281,7 +343,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      */
     @Override
     protected long computeHashCode() {
-        return super.computeHashCode() + type().hashCode();
+        return super.computeHashCode() + type().hashCode() + 37 * Objects.hashCode(method);
     }
 
     /**
@@ -337,6 +399,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      *
      * @see <a href="http://issues.apache.org/jira/browse/SIS-160">SIS-160: Need XSLT between GML 3.1 and 3.2</a>
      */
+    @SuppressWarnings("deprecation")
     @XmlElement(name = "verticalDatumType")
     private VerticalDatumType getTypeElement() {
         return Context.isGMLVersion(Context.current(), LegacyNamespaces.VERSION_3_2) ? null : getVerticalDatumType();
@@ -345,9 +408,11 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     /**
      * Invoked by JAXB only. The vertical datum type is set only if it has not already been specified.
      */
+    @SuppressWarnings("deprecation")
     private void setTypeElement(final VerticalDatumType t) {
         if (type == null) {
             type = t;
+            setRealizationMethod();
         } else {
             ImplementationHelper.propertyAlreadySet(DefaultVerticalDatum.class, "setTypeElement", "verticalDatumType");
         }

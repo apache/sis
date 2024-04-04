@@ -24,6 +24,7 @@ import java.util.TreeMap;
 import java.util.NavigableMap;
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
@@ -40,7 +41,7 @@ import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.datum.Datum;
-import org.opengis.referencing.datum.VerticalDatumType;
+import org.opengis.referencing.datum.RealizationMethod;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.CRS;
@@ -430,8 +431,10 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
             return "Geocentric";
         }
         if (crs instanceof VerticalCRS vertical) {
-            final VerticalDatumType type = vertical.getDatum().getVerticalDatumType();
-            return CharSequences.camelCaseToSentence(type.name().toLowerCase(getLocale())) + " height";
+            final Optional<RealizationMethod> method = vertical.getDatum().getRealizationMethod();
+            if (method.isPresent()) {
+                return CharSequences.camelCaseToSentence(method.get().name().toLowerCase(getLocale())) + " realization method";
+            }
         }
         if (crs instanceof CompoundCRS compound) {
             final StringBuilder buffer = new StringBuilder();
