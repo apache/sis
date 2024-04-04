@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.Map;
 import java.util.List;
 import java.util.Deque;
+import java.util.Optional;
 import java.util.Iterator;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -96,7 +97,7 @@ import org.apache.sis.system.Shutdown;
  * Subclasses should select the interfaces that they choose to implement.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @param <DAO>  the type of factory used as Data Access Object (DAO).
  *
@@ -794,7 +795,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * The default implementation performs the following steps:
      * <ol>
      *   <li>get an instance of the Data Access Object,</li>
-     *   <li>delegate to its {@link GeodeticAuthorityFactory#getDescriptionText(String)} method,</li>
+     *   <li>delegate to its {@link GeodeticAuthorityFactory#getDescriptionText(Class, String)} method,</li>
      *   <li>release the Data Access Object.</li>
      * </ol>
      *
@@ -803,14 +804,16 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *         corresponding to the specified {@code code} has no description.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the query failed for some other reason.
+     *
+     * @since 1.5
      */
     @Override
-    public InternationalString getDescriptionText(final String code)
+    public Optional<InternationalString> getDescriptionText(Class<? extends IdentifiedObject> type, String code)
             throws NoSuchAuthorityCodeException, FactoryException
     {
         final DAO factory = getDataAccess();
         try {
-            return factory.getDescriptionText(code);
+            return factory.getDescriptionText(type, code);
         } finally {
             release("getDescriptionText", InternationalString.class, code);
         }
@@ -934,8 +937,12 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *
      * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
+     *
+     * @deprecated ISO 19111:2019 does not define an explicit class for geocentric CRS.
+     *             The {@code GeodeticCRS} parent class should be used instead.
      */
     @Override
+    @Deprecated(since = "1.5")
     public GeocentricCRS createGeocentricCRS(final String code) throws FactoryException {
         if (isDefault(GeocentricCRS.class)) {
             return super.createGeocentricCRS(code);
@@ -1120,8 +1127,12 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *
      * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
+     *
+     * @deprecated The {@code ImageCRS} class has been removed in ISO 19111:2019.
+     *             It is replaced by {@code EngineeringCRS}.
      */
     @Override
+    @Deprecated(since = "1.5")
     public ImageCRS createImageCRS(final String code) throws FactoryException {
         if (isDefault(ImageCRS.class)) {
             return super.createImageCRS(code);
@@ -1283,8 +1294,12 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *
      * @return the datum for the given code.
      * @throws FactoryException if the object creation failed.
+     *
+     * @deprecated The {@code ImageDatum} class has been removed in ISO 19111:2019.
+     *             It is replaced by {@code EngineeringDatum}.
      */
     @Override
+    @Deprecated(since = "1.5")
     public ImageDatum createImageDatum(final String code) throws FactoryException {
         if (isDefault(ImageDatum.class)) {
             return super.createImageDatum(code);

@@ -105,6 +105,7 @@ public final class AuthorityFactoryMock extends GeodeticAuthorityFactory impleme
      * Returns the authority codes for the given type.
      */
     @Override
+    @SuppressWarnings("deprecation")
     public Set<String> getAuthorityCodes(Class<? extends IdentifiedObject> type) {
         assertFalse(isClosed());
         final Set<String> codes = new LinkedHashSet<>();

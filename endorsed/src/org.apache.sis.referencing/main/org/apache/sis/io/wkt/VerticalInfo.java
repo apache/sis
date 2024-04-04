@@ -27,10 +27,12 @@ import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.VerticalCRS;
-import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.metadata.privy.AxisNames;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.datum.RealizationMethod;
 
 
 /**
@@ -94,7 +96,7 @@ final class VerticalInfo {
      * This method invokes {@link DefaultVerticalExtent#setVerticalCRS(VerticalCRS)} with the given CRS if:
      *
      * <ul>
-     *   <li>datum type is {@link VerticalDatumType#GEOIDAL},</li>
+     *   <li>realization method is {@link RealizationMethod#GEOID},</li>
      *   <li>increasing height values are up, and</li>
      *   <li>axis unit of measurement is the given linear unit.</li>
      * </ul>
@@ -105,7 +107,7 @@ final class VerticalInfo {
      *         became empty as a result of this operation.
      */
     final VerticalInfo resolve(final VerticalCRS crs) {
-        if (crs != null && crs.getDatum().getVerticalDatumType() == VerticalDatumType.GEOIDAL) {
+        if (crs != null && crs.getDatum().getRealizationMethod().orElse(null) == RealizationMethod.GEOID) {
             return resolve(crs, crs.getCoordinateSystem().getAxis(0));
         }
         return this;
@@ -134,7 +136,7 @@ final class VerticalInfo {
      * The CRS created by this method is implementation-dependent. The only guarantees are:
      *
      * <ul>
-     *   <li>datum type is {@link VerticalDatumType#GEOIDAL},</li>
+     *   <li>realization method is {@link RealizationMethod#GEOID},</li>
      *   <li>increasing height values are up, and</li>
      *   <li>axis unit of measurement is the given linear unit.</li>
      * </ul>

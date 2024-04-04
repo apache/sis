@@ -41,6 +41,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
+@SuppressWarnings("deprecation")
 public final class VerticalDatumTypes implements Predicate<CodeList<?>> {
     /**
      * A vertical datum for ellipsoidal heights that are measured along the

@@ -392,7 +392,8 @@ final class AuthorityCodes extends ObservableListBase<Code>
             for (final Code code : snapshot) {
                 String text;
                 try {
-                    text = Strings.trimOrNull(Types.toString(factory.getDescriptionText(code.code), locale));
+                    var i18n = factory.getDescriptionText(CoordinateReferenceSystem.class, code.code).orElse(null);
+                    text = Strings.trimOrNull(Types.toString(i18n, locale));
                     if (text == null) {
                         text = Vocabulary.forLocale(locale).getString(Vocabulary.Keys.Unnamed);
                     }

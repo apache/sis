@@ -292,8 +292,8 @@ public class IdentifiedObjectFinder {
      *
      * <ul>
      *   <li>If the specified object contains {@linkplain AbstractIdentifiedObject#getIdentifiers() identifiers}
-     *       associated to the same authority as the factory, then those identifiers are used for
-     *       {@linkplain GeodeticAuthorityFactory#createObject(String) creating objects} to be tested.</li>
+     *       associated to the same authority as the factory, then those identifiers are used for creating the
+     *       objects to be compared by calls to a {@code create<Type>(String)} method.</li>
      *   <li>If the authority factory can create objects from their {@linkplain AbstractIdentifiedObject#getName() name}
      *       in addition of identifiers, then the name and {@linkplain AbstractIdentifiedObject#getAlias() aliases} are
      *       used for creating objects to be tested.</li>

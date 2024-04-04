@@ -122,7 +122,7 @@ public final class ReferencingUtilitiesTest extends TestCase {
         assertEquals("parametricCS",     toPropertyName(CoordinateSystem.class, ParametricCS    .class).toString());
         assertEquals("polarCS",          toPropertyName(CoordinateSystem.class, PolarCS         .class).toString());
         assertEquals("sphericalCS",      toPropertyName(CoordinateSystem.class, SphericalCS     .class).toString());
-        assertEquals("timeCS",           toPropertyName(CoordinateSystem.class, TimeCS          .class).toString());
+        assertEquals("temporalCS",       toPropertyName(CoordinateSystem.class, TimeCS          .class).toString());
         assertEquals("verticalCS",       toPropertyName(CoordinateSystem.class, VerticalCS      .class).toString());
     }
 }

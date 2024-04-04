@@ -416,6 +416,7 @@ public final class Extents extends Static {
      * @since 0.4
      */
     @OptionalCandidate
+    @SuppressWarnings("deprecation")
     public static MeasurementRange<Double> getVerticalRange(final Extent extent) {
         MeasurementRange<Double> range = null;
         VerticalDatumType selectedType = null;

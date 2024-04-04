@@ -147,12 +147,12 @@ public final class ClassesTest extends TestCase {
     /**
      * Dummy class for {@link #testGetLeafInterfaces()}.
      */
-    @SuppressWarnings("removal")
+    @SuppressWarnings("deprecation")
     private abstract static class T1 implements GeographicCRS {
         @Override public InternationalString getScope() {return null;}
         @Override public Extent getDomainOfValidity() {return null;}
     }
-    @SuppressWarnings("removal")
+    @SuppressWarnings("deprecation")
     private abstract static class T2 extends T1 implements SingleCRS, CoordinateOperation {}
     private abstract static class T3 extends T2 implements Transformation {}
 

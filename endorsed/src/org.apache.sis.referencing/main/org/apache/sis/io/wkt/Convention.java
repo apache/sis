@@ -17,7 +17,6 @@
 package org.apache.sis.io.wkt;
 
 import org.opengis.metadata.citation.Citation;
-import org.opengis.referencing.crs.GeocentricCRS;
 import org.apache.sis.util.Debug;
 import org.apache.sis.metadata.iso.citation.Citations;
 
@@ -115,7 +114,7 @@ public enum Convention {
      *
      * <h4>Differences compared to WKT 2</h4>
      * WKT 1 and WKT 2 differ in their keywords and syntax, but also in more subtle ways regarding axis names,
-     * parameter and code list values. For example, in  {@link GeocentricCRS}, WKT 1 uses a legacy set of Cartesian axes
+     * parameter and code list values. For example, for geocentric CRS, WKT 1 uses a legacy set of Cartesian axes
      * which were defined in OGC 01-009. Those axes use the <var>Other</var>, <var>Easting</var> and <var>Northing</var>
      * {@linkplain org.opengis.referencing.cs.AxisDirection axis directions} instead of the geocentric ones.
      * For more uniform handling of CRS objects in client code, SIS parser replaces some WKT 1 conventions by

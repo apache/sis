@@ -45,7 +45,10 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.5
  * @since   0.4
+ *
+ * @deprecated The {@code UserDefinedCS} class has been removed from ISO 19111:2019.
  */
+@Deprecated(since = "1.5")
 @XmlType(name = "UserDefinedCSType")
 @XmlRootElement(name = "UserDefinedCS")
 public class DefaultUserDefinedCS extends AbstractCS implements UserDefinedCS {

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.factory;
 
+import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Collections;
 import java.util.Collection;
@@ -868,13 +869,18 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
      * </ul>
      *
-     * @return a description of the object, or {@code null} if the object
-     *         corresponding to the specified {@code code} has no description.
+     * @param  type  the type of object for which to get a description.
+     * @param  code  value allocated by authority.
+     * @return a description of the object, or empty if the object corresponding to the specified code has no description.
      * @throws FactoryException if an error occurred while fetching the description.
+     *
+     * @since 1.5
      */
     @Override
-    public InternationalString getDescriptionText(final String code) throws FactoryException {
-        return create(AuthorityFactoryProxy.DESCRIPTION, code);
+    public Optional<InternationalString> getDescriptionText(Class<? extends IdentifiedObject> type, String code)
+            throws FactoryException
+    {
+        return Optional.ofNullable(create(AuthorityFactoryProxy.description(type), code));
     }
 
     /**
@@ -950,8 +956,12 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *
      * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
+     *
+     * @deprecated ISO 19111:2019 does not define an explicit class for geocentric CRS.
+     *             The {@code GeodeticCRS} parent class should be used instead.
      */
     @Override
+    @Deprecated(since = "1.5")
     public GeocentricCRS createGeocentricCRS(final String code) throws FactoryException {
         return create(AuthorityFactoryProxy.GEOCENTRIC_CRS, code);
     }
@@ -1083,8 +1093,12 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *
      * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
+     *
+     * @deprecated The {@code ImageCRS} class has been removed in ISO 19111:2019.
+     *             It is replaced by {@code EngineeringCRS}.
      */
     @Override
+    @Deprecated(since = "1.5")
     public ImageCRS createImageCRS(final String code) throws FactoryException {
         return create(AuthorityFactoryProxy.IMAGE_CRS, code);
     }
@@ -1191,8 +1205,12 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *
      * @return the datum for the given code.
      * @throws FactoryException if the object creation failed.
+     *
+     * @deprecated The {@code ImageDatum} class has been removed in ISO 19111:2019.
+     *             It is replaced by {@code EngineeringDatum}.
      */
     @Override
+    @Deprecated(since = "1.5")
     public ImageDatum createImageDatum(final String code) throws FactoryException {
         return create(AuthorityFactoryProxy.IMAGE_DATUM, code);
     }

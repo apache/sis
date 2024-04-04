@@ -665,6 +665,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
         @Override void setPredefinedComponents(final Decoder decoder) throws FactoryException {
             super.setPredefinedComponents(decoder);
             if (isPredefinedCS(Units.DEGREE)) {
+                @SuppressWarnings("deprecation")
                 GeocentricCRS crs = defaultCRS.spherical();
                 if (isLongitudeFirst) {
                     crs = DefaultGeocentricCRS.castOrCopy(crs).forConvention(AxesConvention.RIGHT_HANDED);

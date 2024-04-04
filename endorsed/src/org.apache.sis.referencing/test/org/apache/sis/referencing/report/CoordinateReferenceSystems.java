@@ -24,6 +24,7 @@ import java.util.TreeMap;
 import java.util.NavigableMap;
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
@@ -40,7 +41,7 @@ import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.datum.Datum;
-import org.opengis.referencing.datum.VerticalDatumType;
+import org.opengis.referencing.datum.RealizationMethod;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.CRS;
@@ -407,6 +408,7 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
     /**
      * Creates the text to show in the "Remarks" column for the given CRS.
      */
+    @SuppressWarnings("deprecation")
     private String getRemark(final CoordinateReferenceSystem crs) {
         if (crs instanceof GeographicCRS) {
             return (crs.getCoordinateSystem().getDimension() == 3) ? "Geographic 3D" : "Geographic";
@@ -429,8 +431,10 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
             return "Geocentric";
         }
         if (crs instanceof VerticalCRS vertical) {
-            final VerticalDatumType type = vertical.getDatum().getVerticalDatumType();
-            return CharSequences.camelCaseToSentence(type.name().toLowerCase(getLocale())) + " height";
+            final Optional<RealizationMethod> method = vertical.getDatum().getRealizationMethod();
+            if (method.isPresent()) {
+                return CharSequences.camelCaseToSentence(method.get().name().toLowerCase(getLocale())) + " realization method";
+            }
         }
         if (crs instanceof CompoundCRS compound) {
             final StringBuilder buffer = new StringBuilder();
@@ -583,7 +587,7 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
         }
         final Row row = super.createRow(code, exception);
         try {
-            row.name = factory.getDescriptionText(code).toString(getLocale());
+            row.name = factory.getDescriptionText(CoordinateReferenceSystem.class, code).get().toString(getLocale());
         } catch (FactoryException e) {
             Logging.unexpectedException(null, CoordinateReferenceSystems.class, "createRow", e);
         }

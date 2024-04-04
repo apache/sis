@@ -700,7 +700,7 @@ next:   for (int i=components.size(); --i >= 0;) {
                 }
                 merge.putAll(properties);
                 return createSingleOperation(merge, op.getSourceCRS(), op.getTargetCRS(),
-                        AbstractCoordinateOperation.getInterpolationCRS(op),
+                        op.getInterpolationCRS().orElse(null),
                         ((SingleOperation) single).getMethod(), op.getMathTransform());
             }
         }

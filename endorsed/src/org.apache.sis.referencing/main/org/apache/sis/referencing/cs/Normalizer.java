@@ -114,11 +114,11 @@ final class Normalizer implements Comparable<Normalizer> {
         // Get ordinal of last compass direction defined by GeoAPI. We will continue on the horizontal plane.
         int code = (AxisDirection.NORTH.ordinal() + (AxisDirections.COMPASS_COUNT - 1)) << SHIFT;
         for (final AxisDirection d : new AxisDirection[] {
-            AxisDirections.FORWARD,
-            AxisDirections.STARBOARD,
-            AxisDirections.COUNTER_CLOCKWISE,
-            AxisDirections.CLOCKWISE,
-            AxisDirections.AWAY_FROM
+            AxisDirection.FORWARD,
+            AxisDirection.STARBOARD,
+            AxisDirection.COUNTER_CLOCKWISE,
+            AxisDirection.CLOCKWISE,
+            AxisDirection.AWAY_FROM
         }) ORDER.put(d, ++code);
         // Set the time coordinate as the last coordinate in all cases.
         ORDER.put(AxisDirection.PAST,   (Integer.MAX_VALUE >>> 1) - 1);
@@ -332,7 +332,7 @@ final class Normalizer implements Comparable<Normalizer> {
                  * If we were not allowed to normalize the axis direction, we may have a
                  * left-handed coordinate system here. If so, make it right-handed.
                  */
-                if (newAxes[1].getDirection() == AxisDirections.CLOCKWISE && isLengthAndAngle(newAxes, 0)) {
+                if (newAxes[1].getDirection() == AxisDirection.CLOCKWISE && isLengthAndAngle(newAxes, 0)) {
                     ArraysExt.swap(newAxes, 0, 1);
                 }
             }

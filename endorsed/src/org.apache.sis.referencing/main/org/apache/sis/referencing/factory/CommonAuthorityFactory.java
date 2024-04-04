@@ -22,13 +22,12 @@ import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Objects;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
-import org.opengis.util.GenericName;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
@@ -42,16 +41,17 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.provider.TransverseMercator.Zoner;
 import org.apache.sis.referencing.privy.GeodeticObjectBuilder;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.privy.Constants;
-import org.apache.sis.measure.Units;
-import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.measure.Units;
 
 
 /**
@@ -206,7 +206,7 @@ import org.apache.sis.util.resources.Errors;
  * switching to polar stereographic projections for high latitudes.</p>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.3
+ * @version 1.5
  *
  * @see CommonCRS
  *
@@ -237,7 +237,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      * Names of objects in the AUTO(2) namespace for codes from 42001 to 42005 inclusive.
      * Those names are defined in annexes B.7 to B.11 of WMS 1.3 specification.
      *
-     * @see #getDescriptionText(String)
+     * @see #getDescriptionText(Class, String)
      */
     private static final String[] PROJECTION_NAMES = {
         "WGS 84 / Auto UTM",
@@ -409,19 +409,24 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      *   <tr><td>{@code AUTO2:42001,1,-100,45}</td> <td>WGS 84 / UTM zone 47N</td></tr>
      * </table>
      *
+     * @param  type  the type of object for which to get a description.
      * @param  code  value in the CRS or AUTO(2) code space.
      * @return a description of the object.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if an error occurred while fetching the description.
+     *
+     * @since 1.5
      */
     @Override
-    public InternationalString getDescriptionText(final String code) throws FactoryException {
+    public Optional<InternationalString> getDescriptionText(final Class<? extends IdentifiedObject> type, final String code)
+            throws FactoryException
+    {
         final CommonAuthorityCode parsed = new CommonAuthorityCode(code);
         if (parsed.isNumeric && parsed.isParameterless()) {
             /*
              * For codes in the "AUTO(2)" namespace without parameters, we cannot rely on the default implementation
              * because it would fail to create the ProjectedCRS instance. Instead, we return a generic description.
-             * Note that we do not execute this block if parametes were specified. If there are parameters,
+             * Note that we do not execute this block if parameters were specified. If there are parameters,
              * then we instead rely on the default implementation for a more accurate description text.
              * Note also that we do not restrict to "AUTOx" namespaces because erroneous namespaces exist
              * in practice and the numerical codes are non-ambiguous (at least in current version).
@@ -434,19 +439,14 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
             }
             final int i = codeValue - FIRST_PROJECTION_CODE;
             if (i >= 0 && i < PROJECTION_NAMES.length) {
-                return new SimpleInternationalString(PROJECTION_NAMES[i]);
+                return Optional.of(new SimpleInternationalString(PROJECTION_NAMES[i]));
             }
         }
         /*
          * Fallback on fetching the full CRS, then request its name.
          * It will include the parsing of parameters if any.
          */
-        final Identifier name = createCoordinateReferenceSystem(code, parsed).getName();
-        if (name instanceof GenericName) {
-            return ((GenericName) name).tip().toInternationalString();
-        } else {
-            return new SimpleInternationalString(name.getCode());
-        }
+        return Optional.ofNullable(IdentifiedObjects.getDisplayName(createCoordinateReferenceSystem(code, parsed)));
     }
 
     /**

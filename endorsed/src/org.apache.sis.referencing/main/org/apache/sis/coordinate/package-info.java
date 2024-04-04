@@ -14,32 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.xml.bind.referencing;
-
-import org.opengis.referencing.datum.VerticalDatumType;
-import org.apache.sis.xml.bind.gml.CodeListAdapter;
-
 
 /**
- * JAXB adapter for (un)marshalling of GeoAPI code list.
+ * Tuple of coordinate values.
+ * Every coordinate tuples and envelopes are associated  with a
+ * {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System},
+ * which may have an arbitrary number of dimensions.
  *
- * @author  Martin Desruisseaux (Geomatys)
+ * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @version 1.5
+ * @since   1.5
  */
-@SuppressWarnings("deprecation")
-public final class CD_VerticalDatumType extends CodeListAdapter<VerticalDatumType> {
-    /**
-     * Empty constructor for JAXB only.
-     */
-    public CD_VerticalDatumType() {
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return {@code VerticalDatumType.class}
-     */
-    @Override
-    protected Class<VerticalDatumType> getCodeListClass() {
-        return VerticalDatumType.class;
-    }
-}
+package org.apache.sis.coordinate;

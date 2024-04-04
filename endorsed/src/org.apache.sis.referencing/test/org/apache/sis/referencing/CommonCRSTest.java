@@ -176,6 +176,7 @@ public final class CommonCRSTest extends TestCase {
      * Tests the {@link CommonCRS#geocentric()} method.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void testGeocentric() {
         final GeocentricCRS crs = CommonCRS.WGS72.geocentric();
         Validators.validate(crs);
@@ -195,6 +196,7 @@ public final class CommonCRSTest extends TestCase {
      * Tests the {@link CommonCRS#spherical()} method.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void testSpherical() {
         final GeocentricCRS crs = CommonCRS.ETRS89.spherical();
         Validators.validate(crs);
@@ -214,6 +216,7 @@ public final class CommonCRSTest extends TestCase {
      * Verifies the vertical datum enumeration.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void testVertical() {
         for (final CommonCRS.Vertical e : CommonCRS.Vertical.values()) {
             final VerticalDatumType datumType;

@@ -377,6 +377,7 @@ public enum CommonCRS {
      *
      * @see #geocentric()
      */
+    @SuppressWarnings("deprecation")
     private transient volatile GeocentricCRS cachedGeocentric;
 
     /**
@@ -384,6 +385,7 @@ public enum CommonCRS {
      *
      * @see #spherical()
      */
+    @SuppressWarnings("deprecation")
     private transient volatile GeocentricCRS cachedSpherical;
 
     /**
@@ -1907,7 +1909,7 @@ public enum CommonCRS {
          */
         GEODISPLAY(new DefaultEngineeringDatum(Map.of(
                 EngineeringDatum.NAME_KEY, "Computer display",
-                EngineeringDatum.ANCHOR_POINT_KEY, "Origin is in upper left."))),
+                EngineeringDatum.ANCHOR_DEFINITION_KEY, "Origin is in upper left."))),
 
         /**
          * Cartesian coordinate system with (right, down) oriented axes in pixel units.

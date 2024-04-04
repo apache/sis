@@ -76,6 +76,7 @@ public final class EPSGFactoryProxyDatum extends EPSGFactoryProxy implements Dat
     }
 
     @Override
+    @Deprecated(since = "1.5")
     public ImageDatum createImageDatum(String code) throws FactoryException {
         return factory().createImageDatum(code);
     }

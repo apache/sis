@@ -71,6 +71,7 @@ public final class WKTKeywordsTest extends TestCase {
      * contain all WKT keywords associated to subtypes.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void verifyTypeHierarchy() {
         verifyTypeHierarchy(SingleCRS.class, GeocentricCRS.class, GeographicCRS.class, ProjectedCRS.class,
                             VerticalCRS.class, TemporalCRS.class, EngineeringCRS.class);

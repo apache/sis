@@ -48,6 +48,7 @@ final class SubTypes {
      *
      * @see AbstractDatum#castOrCopy(Datum)
      */
+    @SuppressWarnings("deprecation")
     static AbstractDatum castOrCopy(final Datum object) {
         if (object instanceof GeodeticDatum) {
             return DefaultGeodeticDatum.castOrCopy((GeodeticDatum) object);

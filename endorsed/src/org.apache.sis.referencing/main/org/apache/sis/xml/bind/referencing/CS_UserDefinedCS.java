@@ -28,6 +28,7 @@ import org.apache.sis.xml.bind.gco.PropertyType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("deprecation")
 public final class CS_UserDefinedCS extends PropertyType<CS_UserDefinedCS, UserDefinedCS> {
     /**
      * Empty constructor for JAXB only.

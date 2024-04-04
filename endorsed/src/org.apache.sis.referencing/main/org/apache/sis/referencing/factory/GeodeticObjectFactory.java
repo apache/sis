@@ -142,13 +142,13 @@ import org.apache.sis.xml.XML;
  *     <td>{@link String} or {@link InternationalString}</td>
  *     <td>{@link DefaultObjectDomain#getScope()}</td>
  *   </tr><tr>
- *     <td>{@value org.opengis.referencing.datum.Datum#ANCHOR_POINT_KEY}</td>
+ *     <td>{@value org.opengis.referencing.datum.Datum#ANCHOR_DEFINITION_KEY}</td>
  *     <td>{@link InternationalString} or {@link String}</td>
- *     <td>{@link AbstractDatum#getAnchorPoint()}</td>
+ *     <td>{@link AbstractDatum#getAnchorDefinition()}</td>
  *   </tr><tr>
- *     <td>{@value org.opengis.referencing.datum.Datum#REALIZATION_EPOCH_KEY}</td>
- *     <td>{@link Date}</td>
- *     <td>{@link AbstractDatum#getRealizationEpoch()}</td>
+     *     <td>{@value org.opengis.referencing.datum.Datum#ANCHOR_EPOCH_KEY}</td>
+     *     <td>{@link java.time.temporal.Temporal}</td>
+     *     <td>{@link AbstractDatum#getAnchorEpoch()}</td>
  *   </tr><tr>
  *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
  *     <td>{@link InternationalString} or {@link String}</td>
@@ -350,8 +350,12 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * @see GeodeticAuthorityFactory#createGeocentricCRS(String)
      * @see DefaultGeocentricCRS#DefaultGeocentricCRS(Map, GeodeticDatum, CartesianCS)
+     *
+     * @deprecated ISO 19111:2019 does not define an explicit class for geocentric CRS.
+     *             The {@code GeodeticCRS} parent class should be used instead.
      */
     @Override
+    @Deprecated(since = "1.5")
     public GeocentricCRS createGeocentricCRS(final Map<String,?> properties,
             final GeodeticDatum datum, final CartesianCS cs) throws FactoryException
     {
@@ -428,8 +432,12 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * @see DefaultGeocentricCRS#DefaultGeocentricCRS(Map, GeodeticDatum, SphericalCS)
      * @see GeodeticAuthorityFactory#createGeocentricCRS(String)
+     *
+     * @deprecated ISO 19111:2019 does not define an explicit class for geocentric CRS.
+     *             The {@code GeodeticCRS} parent class should be used instead.
      */
     @Override
+    @Deprecated(since = "1.5")
     public GeocentricCRS createGeocentricCRS(final Map<String,?> properties,
             final GeodeticDatum datum, final SphericalCS cs) throws FactoryException
     {
@@ -931,8 +939,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * @see DefaultVerticalDatum#DefaultVerticalDatum(Map, VerticalDatumType)
      * @see GeodeticAuthorityFactory#createVerticalDatum(String)
+     *
+     * @deprecated As of ISO 19111:2019, the {@code VerticalDatumType} argument is replaced by {@code RealizationMethod}.
      */
     @Override
+    @Deprecated(since = "2.0")
     public VerticalDatum createVerticalDatum(final Map<String,?> properties,
             final VerticalDatumType type) throws FactoryException
     {
@@ -1201,8 +1212,12 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * @see DefaultImageCRS#DefaultImageCRS(Map, ImageDatum, AffineCS)
      * @see GeodeticAuthorityFactory#createImageCRS(String)
+     *
+     * @deprecated The {@code ImageCRS} class has been removed in ISO 19111:2019.
+     *             It is replaced by {@code EngineeringCRS}.
      */
     @Override
+    @Deprecated(since = "1.5")
     public ImageCRS createImageCRS(final Map<String,?> properties,
             final ImageDatum datum, final AffineCS cs) throws FactoryException
     {
@@ -1225,8 +1240,12 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * @see DefaultImageDatum#DefaultImageDatum(Map, PixelInCell)
      * @see GeodeticAuthorityFactory#createImageDatum(String)
+     *
+     * @deprecated The {@code ImageDatum} class has been removed in ISO 19111:2019.
+     *             It is replaced by {@code EngineeringDatum}.
      */
     @Override
+    @Deprecated(since = "1.5")
     public ImageDatum createImageDatum(final Map<String,?> properties,
             final PixelInCell pixelInCell) throws FactoryException
     {
@@ -1489,8 +1508,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultUserDefinedCS#DefaultUserDefinedCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
+     *
+     * @deprecated The {@code UserDefinedCS} class has been removed from ISO 19111:2019.
      */
     @Override
+    @Deprecated(since = "1.5")
     public UserDefinedCS createUserDefinedCS(final Map<String,?> properties,
             final CoordinateSystemAxis axis0,
             final CoordinateSystemAxis axis1) throws FactoryException
@@ -1523,8 +1545,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultUserDefinedCS#DefaultUserDefinedCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)
+     *
+     * @deprecated The {@code UserDefinedCS} class has been removed from ISO 19111:2019.
      */
     @Override
+    @Deprecated(since = "1.5")
     public UserDefinedCS createUserDefinedCS(final Map<String,?> properties,
             final CoordinateSystemAxis axis0,
             final CoordinateSystemAxis axis1,

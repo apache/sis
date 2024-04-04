@@ -232,13 +232,13 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *     <td>{@link InternationalString} or {@link String}</td>
      *     <td>{@link #getRemarks()}</td>
      *   </tr><tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#ANCHOR_POINT_KEY}</td>
+     *     <td>{@value org.opengis.referencing.datum.Datum#ANCHOR_DEFINITION_KEY}</td>
      *     <td>{@link InternationalString} or {@link String}</td>
-     *     <td>{@link #getAnchorPoint()}</td>
+     *     <td>{@link #getAnchorDefinition()}</td>
      *   </tr><tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#REALIZATION_EPOCH_KEY}</td>
-     *     <td>{@link Date}</td>
-     *     <td>{@link #getRealizationEpoch()}</td>
+     *     <td>{@value org.opengis.referencing.datum.Datum#ANCHOR_EPOCH_KEY}</td>
+     *     <td>{@link java.time.temporal.Temporal}</td>
+     *     <td>{@link #getAnchorEpoch()}</td>
      *   </tr>
      * </table>
      *

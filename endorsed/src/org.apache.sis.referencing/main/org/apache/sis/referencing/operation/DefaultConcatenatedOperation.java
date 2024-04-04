@@ -405,7 +405,9 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
     }
 
     /**
-     * Returns the sequence of operations.
+     * Returns the sequence of operations that are steps in this concatenated operation.
+     * The sequence can contain {@link org.opengis.referencing.operation.SingleOperation}s
+     * or {@link org.opengis.referencing.operation.PassThroughOperation}s.
      *
      * <div class="warning"><b>Upcoming API change</b><br>
      * This method is conformant to ISO 19111:2003. But the ISO 19111:2007 revision changed the element type

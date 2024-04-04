@@ -44,6 +44,7 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("deprecation")
 public final class DefaultVerticalDatumTest extends TestCase {
     /**
      * Creates a new test case.
@@ -129,7 +130,7 @@ public final class DefaultVerticalDatumTest extends TestCase {
          */
         assertEquals("Approximates geoid.",             datum.getRemarks().toString());
         assertEquals("Hydrography.",                    datum.getScope().toString());
-        assertEquals("Averaged over a 19-year period.", datum.getAnchorPoint().toString());
+        assertEquals("Averaged over a 19-year period.", datum.getAnchorDefinition().get().toString());
         /*
          * Test marshalling and compare with the original file.
          */

@@ -18,7 +18,6 @@ package org.apache.sis.io.wkt;
 
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.VerticalCRS;
-import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.util.FactoryException;
 import org.apache.sis.metadata.privy.AxisNames;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
@@ -33,6 +32,9 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.opengis.test.wkt.CRSParserTest;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.FailureDetailsReporter;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.datum.RealizationMethod;
 
 
 /**
@@ -365,7 +367,7 @@ public final class WKTParserTest extends CRSParserTest {
         super.testVertical();
         final CoordinateSystem cs = object.getCoordinateSystem();
         assertEquals(AxisNames.GRAVITY_RELATED_HEIGHT, cs.getAxis(0).getName().getCode(), "name");
-        assertEquals(VerticalDatumType.GEOIDAL, ((VerticalCRS) object).getDatum().getVerticalDatumType(), "datumType");
+        assertEquals(RealizationMethod.GEOID, ((VerticalCRS) object).getDatum().getRealizationMethod().orElse(null));
 
         useStraightQuotes = true;
         super.testVertical();                               // Test again with “ and ” replaced by ".
@@ -503,7 +505,6 @@ public final class WKTParserTest extends CRSParserTest {
      */
     @Test
     @Override
-    @Disabled("Pending new AxisDirection code list in GeoAPI.")
     public void testEngineeringForShip() throws FactoryException {
         super.testEngineeringForShip();
         final CoordinateSystem cs = object.getCoordinateSystem();

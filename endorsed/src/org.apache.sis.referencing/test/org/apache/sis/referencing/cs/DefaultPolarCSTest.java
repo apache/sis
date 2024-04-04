@@ -19,7 +19,6 @@ package org.apache.sis.referencing.cs;
 import java.util.Map;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.RangeMeaning;
-import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
@@ -53,8 +52,8 @@ public final class DefaultPolarCSTest extends TestCase {
         final DefaultPolarCS normalized = cs.forConvention(AxesConvention.DISPLAY_ORIENTED);
         assertNotSame(cs, normalized);
         assertAxisDirectionsEqual(normalized,
-                AxisDirections.AWAY_FROM,
-                AxisDirections.COUNTER_CLOCKWISE);
+                AxisDirection.AWAY_FROM,
+                AxisDirection.COUNTER_CLOCKWISE);
     }
 
     /**
@@ -73,7 +72,7 @@ public final class DefaultPolarCSTest extends TestCase {
 
         DefaultPolarCS normalized = cs.forConvention(AxesConvention.RIGHT_HANDED);
         assertAxisDirectionsEqual(normalized,
-                AxisDirections.CLOCKWISE,
+                AxisDirection.CLOCKWISE,
                 AxisDirection.SOUTH);
         assertSame(cs, normalized);
 
@@ -81,6 +80,6 @@ public final class DefaultPolarCSTest extends TestCase {
         assertNotSame(cs, normalized);
         assertAxisDirectionsEqual(normalized,
                 AxisDirection.SOUTH,                            // Not modified to North because radius cannot be negative.
-                AxisDirections.COUNTER_CLOCKWISE);
+                AxisDirection.COUNTER_CLOCKWISE);
     }
 }

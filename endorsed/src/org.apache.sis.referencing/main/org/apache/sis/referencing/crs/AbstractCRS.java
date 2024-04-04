@@ -459,6 +459,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      *
      * <p>This method should be invoked for WKT 2 formatting only.</p>
      */
+    @SuppressWarnings("deprecation")
     static boolean isBaseCRS(final Formatter formatter) {
         return formatter.getEnclosingElement(1) instanceof GeneralDerivedCRS;
     }

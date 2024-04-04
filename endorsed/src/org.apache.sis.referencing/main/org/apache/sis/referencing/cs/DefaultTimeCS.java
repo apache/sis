@@ -26,6 +26,9 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.measure.Units;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.cs.CoordinateDataType;
+
 
 /**
  * A 1-dimensional coordinate system for time elapsed in the specified time units from a specified time origin.
@@ -173,6 +176,19 @@ public class DefaultTimeCS extends AbstractCS implements TimeCS {
     @Override
     public Class<? extends TimeCS> getInterface() {
         return TimeCS.class;
+    }
+
+    /**
+     * Returns the type (measure, integer or data-time) of coordinate values.
+     * The current implementation supports only {@link CoordinateDataType#MEASURE}.
+     *
+     * @return the type of coordinate values.
+     *
+     * @since 1.5
+     */
+    @Override
+    public CoordinateDataType getCoordinateType() {
+        return CoordinateDataType.MEASURE;
     }
 
     /**

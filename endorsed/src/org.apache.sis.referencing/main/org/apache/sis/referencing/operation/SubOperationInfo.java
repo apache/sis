@@ -51,6 +51,7 @@ final class SubOperationInfo {
      * {@link ProjectedCRS} and {@link DerivedCRS} are not in this list because we rather use their base CRS
      * as the criterion for determining their type.
      */
+    @SuppressWarnings("deprecation")
     private static final Class<?>[][] COMPATIBLE_TYPES = {
         {GeodeticCRS.class},
         {VerticalCRS.class, GeodeticCRS.class},

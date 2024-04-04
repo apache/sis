@@ -56,6 +56,7 @@ final class SubTypes {
      *
      * @see AbstractCS#castOrCopy(CoordinateSystem)
      */
+    @SuppressWarnings("deprecation")
     static AbstractCS castOrCopy(final CoordinateSystem object) {
         if (object instanceof AffineCS) {
             return DefaultAffineCS.castOrCopy((AffineCS) object);

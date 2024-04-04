@@ -111,7 +111,7 @@ public final class TypeNamesTest extends TestCase {
     public void testMetadataClasses() throws ClassNotFoundException {
         verifyLookup(OGC, "Geometry",    Geometry.class);
         verifyLookup(OGC, "MD_Metadata", Metadata.class);
-        verifyLookup(OGC, "SC_CRS",      CoordinateReferenceSystem.class);
+        verifyLookup(OGC, "CRS",         CoordinateReferenceSystem.class);
     }
 
     /**

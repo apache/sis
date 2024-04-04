@@ -14,32 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.xml.bind.referencing;
+package org.apache.sis.test.mock;
 
-import org.opengis.referencing.datum.VerticalDatumType;
-import org.apache.sis.xml.bind.gml.CodeListAdapter;
+import jakarta.xml.bind.annotation.XmlType;
+import org.opengis.referencing.crs.GeographicCRS;
 
 
 /**
- * JAXB adapter for (un)marshalling of GeoAPI code list.
+ * A dummy class for {@link GeographicCRS}. Used for defining property order in
+ * {@link org.apache.sis.metadata.PropertyAccessorTest#testConstructorWithCovariantReturnType()}.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@SuppressWarnings("deprecation")
-public final class CD_VerticalDatumType extends CodeListAdapter<VerticalDatumType> {
+@XmlType(name = "GeodeticCRSType", propOrder = {
+    "coordinateSystem",
+    "datum",
+    "datumEnsemble",
+    "name",
+    "alias",
+    "identifiers",
+    "domains",
+    "remarks"
+})
+public abstract class GeographicCRSMock implements GeographicCRS {
     /**
-     * Empty constructor for JAXB only.
+     * Do not allow (for now) instantiation of this class.
      */
-    public CD_VerticalDatumType() {
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return {@code VerticalDatumType.class}
-     */
-    @Override
-    protected Class<VerticalDatumType> getCodeListClass() {
-        return VerticalDatumType.class;
+    private GeographicCRSMock() {
     }
 }
