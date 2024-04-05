@@ -22,11 +22,13 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.EngineeringDatum;
-import org.opengis.referencing.datum.ImageDatum;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.CRS;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.datum.ImageDatum;
 
 
 /**

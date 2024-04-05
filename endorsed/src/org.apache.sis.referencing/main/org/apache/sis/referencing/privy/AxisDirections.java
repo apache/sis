@@ -21,12 +21,10 @@ import java.util.HashMap;
 import java.util.Objects;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
-import org.opengis.annotation.UML;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import static org.opengis.referencing.cs.AxisDirection.*;
-import static org.opengis.annotation.Obligation.CONDITIONAL;
 import org.apache.sis.metadata.privy.NameToIdentifier;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Characters;
@@ -38,6 +36,8 @@ import org.apache.sis.measure.Units;
 import static org.apache.sis.util.CharSequences.*;
 
 // Specific to the main branch:
+import org.opengis.annotation.UML;
+import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.UNSPECIFIED;
 
 

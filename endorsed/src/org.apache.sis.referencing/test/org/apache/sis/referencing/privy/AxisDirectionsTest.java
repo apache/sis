@@ -25,17 +25,17 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import static org.opengis.referencing.cs.AxisDirection.*;
 import org.apache.sis.measure.Units;
 
-// Specific to the main branch:
-import static org.apache.sis.referencing.privy.AxisDirections.AWAY_FROM;
-import static org.apache.sis.referencing.privy.AxisDirections.CLOCKWISE;
-import static org.apache.sis.referencing.privy.AxisDirections.COUNTER_CLOCKWISE;
-
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.referencing.cs.HardCodedAxes;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.test.TestCase;
+
+// Specific to the main branch:
+import static org.apache.sis.referencing.privy.AxisDirections.AWAY_FROM;
+import static org.apache.sis.referencing.privy.AxisDirections.CLOCKWISE;
+import static org.apache.sis.referencing.privy.AxisDirections.COUNTER_CLOCKWISE;
 
 
 /**

@@ -21,6 +21,8 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.EngineeringDatum;
+
+// Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.datum.ImageDatum;
 
 

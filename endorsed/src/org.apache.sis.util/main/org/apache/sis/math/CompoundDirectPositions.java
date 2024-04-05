@@ -18,8 +18,10 @@ package org.apache.sis.math;
 
 import java.util.Iterator;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.resources.Errors;
+
+// Specific to the main branch:
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

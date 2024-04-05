@@ -23,14 +23,16 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.cs.CartesianCS;
-import org.opengis.referencing.crs.ImageCRS;
-import org.opengis.referencing.datum.ImageDatum;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.crs.ImageCRS;
+import org.opengis.referencing.datum.ImageDatum;
 
 
 /**

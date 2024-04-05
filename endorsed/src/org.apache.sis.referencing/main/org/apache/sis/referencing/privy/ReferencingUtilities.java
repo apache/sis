@@ -18,8 +18,6 @@ package org.apache.sis.referencing.privy;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Collection;
-import java.util.NoSuchElementException;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import org.opengis.annotation.UML;
@@ -57,11 +55,13 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory.Context;
-import org.apache.sis.metadata.privy.Identifiers;
-import org.apache.sis.xml.NilObject;
 
 // Specific to the main branch:
+import java.util.Collection;
+import java.util.NoSuchElementException;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.metadata.privy.Identifiers;
+import org.apache.sis.xml.NilObject;
 
 
 /**

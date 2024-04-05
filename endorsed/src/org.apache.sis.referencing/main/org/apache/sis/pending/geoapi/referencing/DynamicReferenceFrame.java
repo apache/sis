@@ -19,7 +19,6 @@ package org.apache.sis.pending.geoapi.referencing;
 import java.time.temporal.Temporal;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.annotation.UML;
-
 import static org.opengis.annotation.Obligation.*;
 import static org.opengis.annotation.Specification.*;
 

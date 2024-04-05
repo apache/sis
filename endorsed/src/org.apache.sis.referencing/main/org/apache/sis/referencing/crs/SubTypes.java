@@ -25,7 +25,6 @@ import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.crs.ImageCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
@@ -36,6 +35,9 @@ import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AxesConvention;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.crs.ImageCRS;
 
 
 /**

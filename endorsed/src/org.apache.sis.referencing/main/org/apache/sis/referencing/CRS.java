@@ -92,9 +92,9 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 
 // Specific to the main branch:
+import org.apache.sis.referencing.internal.Legacy;
 import org.apache.sis.pending.geoapi.referencing.DynamicReferenceFrame;
 import org.apache.sis.coordinate.DefaultCoordinateMetadata;
-import org.apache.sis.referencing.internal.Legacy;
 
 
 /**
