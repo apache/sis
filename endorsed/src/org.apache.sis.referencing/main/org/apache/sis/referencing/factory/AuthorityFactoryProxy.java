@@ -192,8 +192,14 @@ abstract class AuthorityFactoryProxy<T> {
      */
     static final AuthorityFactoryProxy<IdentifiedObject> OBJECT =
         new AuthorityFactoryProxy<IdentifiedObject>(IdentifiedObject.class, AuthorityFactoryIdentifier.ANY) {
-            @Override IdentifiedObject createFromAPI(AuthorityFactory factory, String code) throws FactoryException {
+            @Override IdentifiedObject create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
                 return factory.createObject(code);
+            }
+            @Override IdentifiedObject createFromAPI(AuthorityFactory factory, String code) throws FactoryException {
+                if (factory instanceof GeodeticAuthorityFactory) {
+                    return ((GeodeticAuthorityFactory) factory).createObject(code);
+                }
+                throw new FactoryException(Errors.format(Errors.Keys.UnsupportedOperation_1, "createObject"));
             }
     };
 
@@ -214,17 +220,6 @@ abstract class AuthorityFactoryProxy<T> {
             }
             @Override EngineeringDatum createFromAPI(AuthorityFactory factory, String code) throws FactoryException {
                 return datumFactory(factory).createEngineeringDatum(code);
-            }
-    };
-
-    @SuppressWarnings("deprecation")
-    static final AuthorityFactoryProxy<ImageDatum> IMAGE_DATUM =
-        new AuthorityFactoryProxy<ImageDatum>(ImageDatum.class, AuthorityFactoryIdentifier.DATUM) {
-            @Override ImageDatum create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
-                return factory.createImageDatum(code);
-            }
-            @Override ImageDatum createFromAPI(AuthorityFactory factory, String code) throws FactoryException {
-                return datumFactory(factory).createImageDatum(code);
             }
     };
 
@@ -470,17 +465,6 @@ abstract class AuthorityFactoryProxy<T> {
             }
     };
 
-    @SuppressWarnings("deprecation")
-    static final AuthorityFactoryProxy<ImageCRS> IMAGE_CRS =
-        new AuthorityFactoryProxy<ImageCRS>(ImageCRS.class, AuthorityFactoryIdentifier.CRS) {
-            @Override ImageCRS create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
-                return factory.createImageCRS(code);
-            }
-            @Override ImageCRS createFromAPI(AuthorityFactory factory, String code) throws FactoryException {
-                return crsFactory(factory).createImageCRS(code);
-            }
-    };
-
     static final AuthorityFactoryProxy<ProjectedCRS> PROJECTED_CRS =
         new AuthorityFactoryProxy<ProjectedCRS>(ProjectedCRS.class, AuthorityFactoryIdentifier.CRS) {
             @Override ProjectedCRS create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
@@ -563,7 +547,6 @@ abstract class AuthorityFactoryProxy<T> {
         GEOCENTRIC_CRS,     // Special kind of GeodeticCRS.
         VERTICAL_CRS,
         TEMPORAL_CRS,
-        IMAGE_CRS,          // Can be seen as a special kind of EngineeringCRS (even if not shown in hierarchy).
         ENGINEERING_CRS,
         DERIVED_CRS,        // DerivedCRS can be also Vertical, Temporal or Engineering CRS. Give precedence to those.
         COMPOUND_CRS,
@@ -571,7 +554,6 @@ abstract class AuthorityFactoryProxy<T> {
         GEODETIC_DATUM,
         VERTICAL_DATUM,
         TEMPORAL_DATUM,
-        IMAGE_DATUM,        // Can be seen as a special kind of EngineeringDatum (even if not shown in hierarchy).
         ENGINEERING_DATUM,
         DATUM,
         ELLIPSOID,

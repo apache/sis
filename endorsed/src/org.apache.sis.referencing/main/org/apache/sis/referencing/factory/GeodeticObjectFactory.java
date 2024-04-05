@@ -177,7 +177,7 @@ import org.apache.sis.xml.XML;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.6
  */
 public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory, CSFactory, DatumFactory, Parser {
@@ -1202,63 +1202,6 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     }
 
     /**
-     * Creates an image coordinate reference system.
-     * The default implementation creates a {@link DefaultImageCRS} instance.
-     *
-     * @param  properties  name and other properties to give to the new object.
-     * @param  datum       the image datum to use in created CRS.
-     * @param  cs          the Cartesian or oblique Cartesian coordinate system for the created CRS.
-     * @throws FactoryException if the object creation failed.
-     *
-     * @see DefaultImageCRS#DefaultImageCRS(Map, ImageDatum, AffineCS)
-     * @see GeodeticAuthorityFactory#createImageCRS(String)
-     *
-     * @deprecated The {@code ImageCRS} class has been removed in ISO 19111:2019.
-     *             It is replaced by {@code EngineeringCRS}.
-     */
-    @Override
-    @Deprecated(since = "1.5")
-    public ImageCRS createImageCRS(final Map<String,?> properties,
-            final ImageDatum datum, final AffineCS cs) throws FactoryException
-    {
-        final DefaultImageCRS crs;
-        try {
-            crs = new DefaultImageCRS(complete(properties), datum, cs);
-        } catch (IllegalArgumentException exception) {
-            throw new InvalidGeodeticParameterException(exception);
-        }
-        return unique("createImageCRS", crs);
-    }
-
-    /**
-     * Creates an image datum.
-     * The default implementation creates a {@link DefaultImageDatum} instance.
-     *
-     * @param  properties  Name and other properties to give to the new object.
-     * @param  pixelInCell Specification of the way the image grid is associated with the image data attributes.
-     * @throws FactoryException if the object creation failed.
-     *
-     * @see DefaultImageDatum#DefaultImageDatum(Map, PixelInCell)
-     * @see GeodeticAuthorityFactory#createImageDatum(String)
-     *
-     * @deprecated The {@code ImageDatum} class has been removed in ISO 19111:2019.
-     *             It is replaced by {@code EngineeringDatum}.
-     */
-    @Override
-    @Deprecated(since = "1.5")
-    public ImageDatum createImageDatum(final Map<String,?> properties,
-            final PixelInCell pixelInCell) throws FactoryException
-    {
-        final DefaultImageDatum datum;
-        try {
-            datum = new DefaultImageDatum(complete(properties), pixelInCell);
-        } catch (IllegalArgumentException exception) {
-            throw new InvalidGeodeticParameterException(exception);
-        }
-        return unique("createImageDatum", datum);
-    }
-
-    /**
      * Creates a two-dimensional affine coordinate system from the given pair of axis.
      * This coordinate system can be used with image and engineering CRS.
      *
@@ -1488,80 +1431,6 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
             throw new InvalidGeodeticParameterException(exception);
         }
         return unique("createLinearCS", cs);
-    }
-
-    /**
-     * Creates a two-dimensional user defined coordinate system from the given pair of axis.
-     * This coordinate system can be used with engineering CRS.
-     *
-     * <h4>Dependencies</h4>
-     * The components needed by this method can be created by the following methods:
-     * <ol>
-     *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
-     * </ol>
-     *
-     * The default implementation creates a {@link DefaultUserDefinedCS} instance.
-     *
-     * @param  properties  name and other properties to give to the new object.
-     * @param  axis0       the first  axis.
-     * @param  axis1       the second axis.
-     * @throws FactoryException if the object creation failed.
-     *
-     * @see DefaultUserDefinedCS#DefaultUserDefinedCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
-     *
-     * @deprecated The {@code UserDefinedCS} class has been removed from ISO 19111:2019.
-     */
-    @Override
-    @Deprecated(since = "1.5")
-    public UserDefinedCS createUserDefinedCS(final Map<String,?> properties,
-            final CoordinateSystemAxis axis0,
-            final CoordinateSystemAxis axis1) throws FactoryException
-    {
-        final DefaultUserDefinedCS cs;
-        try {
-            cs = new DefaultUserDefinedCS(complete(properties), axis0, axis1);
-        } catch (IllegalArgumentException exception) {
-            throw new InvalidGeodeticParameterException(exception);
-        }
-        return unique("createUserDefinedCS", cs);
-    }
-
-    /**
-     * Creates a three-dimensional user defined coordinate system from the given set of axis.
-     * This coordinate system can be used with engineering CRS.
-     *
-     * <h4>Dependencies</h4>
-     * The components needed by this method can be created by the following methods:
-     * <ol>
-     *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
-     * </ol>
-     *
-     * The default implementation creates a {@link DefaultUserDefinedCS} instance.
-     *
-     * @param  properties  name and other properties to give to the new object.
-     * @param  axis0       the first  axis.
-     * @param  axis1       the second axis.
-     * @param  axis2       the third  axis.
-     * @throws FactoryException if the object creation failed.
-     *
-     * @see DefaultUserDefinedCS#DefaultUserDefinedCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)
-     *
-     * @deprecated The {@code UserDefinedCS} class has been removed from ISO 19111:2019.
-     */
-    @Override
-    @Deprecated(since = "1.5")
-    public UserDefinedCS createUserDefinedCS(final Map<String,?> properties,
-            final CoordinateSystemAxis axis0,
-            final CoordinateSystemAxis axis1,
-            final CoordinateSystemAxis axis2) throws FactoryException
-    {
-        final DefaultUserDefinedCS cs;
-        try {
-            cs = new DefaultUserDefinedCS(complete(properties), axis0, axis1, axis2);
-        } catch (IllegalArgumentException exception) {
-            throw new InvalidGeodeticParameterException(exception);
-        }
-        return unique("createUserDefinedCS", cs);
     }
 
     /**

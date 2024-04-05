@@ -22,7 +22,6 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.EngineeringDatum;
-import org.opengis.referencing.datum.ImageDatum;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.util.FactoryException;
@@ -73,12 +72,6 @@ public final class EPSGFactoryProxyDatum extends EPSGFactoryProxy implements Dat
     @Override
     public EngineeringDatum createEngineeringDatum(String code) throws FactoryException {
         return factory().createEngineeringDatum(code);
-    }
-
-    @Override
-    @Deprecated(since = "1.5")
-    public ImageDatum createImageDatum(String code) throws FactoryException {
-        return factory().createImageDatum(code);
     }
 
     @Override

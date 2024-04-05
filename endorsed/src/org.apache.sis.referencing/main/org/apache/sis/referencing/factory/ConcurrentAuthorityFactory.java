@@ -1114,33 +1114,6 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
     }
 
     /**
-     * Returns a 2-dimensional engineering coordinate reference system applied to locations in images.
-     * The default implementation performs the following steps:
-     * <ul>
-     *   <li>Return the cached instance for the given code if such instance already exists.</li>
-     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createImageCRS(String)}
-     *       method, invoke that method and cache the result for future use.</li>
-     *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createImageCRS(String)}
-     *       method in the parent class. This allows to check if the more generic
-     *       {@link #createCoordinateReferenceSystem(String)} method cached a value before to try that method.</li>
-     * </ul>
-     *
-     * @return the coordinate reference system for the given code.
-     * @throws FactoryException if the object creation failed.
-     *
-     * @deprecated The {@code ImageCRS} class has been removed in ISO 19111:2019.
-     *             It is replaced by {@code EngineeringCRS}.
-     */
-    @Override
-    @Deprecated(since = "1.5")
-    public ImageCRS createImageCRS(final String code) throws FactoryException {
-        if (isDefault(ImageCRS.class)) {
-            return super.createImageCRS(code);
-        }
-        return create(AuthorityFactoryProxy.IMAGE_CRS, code);
-    }
-
-    /**
      * Returns an arbitrary datum from a code. The returned object will typically be an
      * The default implementation performs the following steps:
      * <ul>
@@ -1278,33 +1251,6 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
             return super.createEngineeringDatum(code);
         }
         return create(AuthorityFactoryProxy.ENGINEERING_DATUM, code);
-    }
-
-    /**
-     * Returns a datum defining the origin of an image coordinate reference system.
-     * The default implementation performs the following steps:
-     * <ul>
-     *   <li>Return the cached instance for the given code if such instance already exists.</li>
-     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createImageDatum(String)}
-     *       method, invoke that method and cache the result for future use.</li>
-     *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createImageDatum(String)}
-     *       method in the parent class. This allows to check if the more generic
-     *       {@link #createDatum(String)} method cached a value before to try that method.</li>
-     * </ul>
-     *
-     * @return the datum for the given code.
-     * @throws FactoryException if the object creation failed.
-     *
-     * @deprecated The {@code ImageDatum} class has been removed in ISO 19111:2019.
-     *             It is replaced by {@code EngineeringDatum}.
-     */
-    @Override
-    @Deprecated(since = "1.5")
-    public ImageDatum createImageDatum(final String code) throws FactoryException {
-        if (isDefault(ImageDatum.class)) {
-            return super.createImageDatum(code);
-        }
-        return create(AuthorityFactoryProxy.IMAGE_DATUM, code);
     }
 
     /**

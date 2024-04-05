@@ -19,7 +19,6 @@ package org.apache.sis.referencing.cs;
 import java.util.Map;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import org.opengis.referencing.cs.UserDefinedCS;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 
 
@@ -48,10 +47,10 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
  *
  * @deprecated The {@code UserDefinedCS} class has been removed from ISO 19111:2019.
  */
-@Deprecated(since = "1.5")
+@Deprecated(since="1.5", forRemoval=true)   // Actually to be moved to an internal package for GML and WKT purposes.
 @XmlType(name = "UserDefinedCSType")
 @XmlRootElement(name = "UserDefinedCS")
-public class DefaultUserDefinedCS extends AbstractCS implements UserDefinedCS {
+public final class DefaultUserDefinedCS extends AbstractCS {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -128,52 +127,6 @@ public class DefaultUserDefinedCS extends AbstractCS implements UserDefinedCS {
      */
     private DefaultUserDefinedCS(DefaultUserDefinedCS original, String name, CoordinateSystemAxis[] axes) {
         super(original, name, axes);
-    }
-
-    /**
-     * Creates a new coordinate system with the same values as the specified one.
-     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
-     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
-     *
-     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
-     *
-     * @param  original  the coordinate system to copy.
-     *
-     * @see #castOrCopy(UserDefinedCS)
-     */
-    protected DefaultUserDefinedCS(final UserDefinedCS original) {
-        super(original);
-    }
-
-    /**
-     * Returns a SIS coordinate system implementation with the same values as the given arbitrary implementation.
-     * If the given object is {@code null}, then this method returns {@code null}.
-     * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
-     * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
-     *
-     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
-     * @return a SIS implementation containing the values of the given object (may be the
-     *         given object itself), or {@code null} if the argument was null.
-     */
-    public static DefaultUserDefinedCS castOrCopy(final UserDefinedCS object) {
-        return (object == null) || (object instanceof DefaultUserDefinedCS)
-                ? (DefaultUserDefinedCS) object : new DefaultUserDefinedCS(object);
-    }
-
-    /**
-     * Returns the GeoAPI interface implemented by this class.
-     * The SIS implementation returns {@code UserDefinedCS.class}.
-     *
-     * <h4>Note for implementers</h4>
-     * Subclasses usually do not need to override this method since GeoAPI does not define {@code UserDefinedCS}
-     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
-     * own set of interfaces.
-     *
-     * @return {@code UserDefinedCS.class} or a user-defined sub-interface.
-     */
-    @Override
-    public Class<? extends UserDefinedCS> getInterface() {
-        return UserDefinedCS.class;
     }
 
     /**

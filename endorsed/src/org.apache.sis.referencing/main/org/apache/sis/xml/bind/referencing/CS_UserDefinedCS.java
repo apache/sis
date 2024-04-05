@@ -17,7 +17,6 @@
 package org.apache.sis.xml.bind.referencing;
 
 import jakarta.xml.bind.annotation.XmlElement;
-import org.opengis.referencing.cs.UserDefinedCS;
 import org.apache.sis.referencing.cs.DefaultUserDefinedCS;
 import org.apache.sis.xml.bind.gco.PropertyType;
 
@@ -28,8 +27,7 @@ import org.apache.sis.xml.bind.gco.PropertyType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@SuppressWarnings("deprecation")
-public final class CS_UserDefinedCS extends PropertyType<CS_UserDefinedCS, UserDefinedCS> {
+public final class CS_UserDefinedCS extends PropertyType<CS_UserDefinedCS, DefaultUserDefinedCS> {
     /**
      * Empty constructor for JAXB only.
      */
@@ -44,14 +42,14 @@ public final class CS_UserDefinedCS extends PropertyType<CS_UserDefinedCS, UserD
      * @return {@code UserDefinedCS.class}
      */
     @Override
-    protected Class<UserDefinedCS> getBoundType() {
-        return UserDefinedCS.class;
+    protected Class<DefaultUserDefinedCS> getBoundType() {
+        return DefaultUserDefinedCS.class;
     }
 
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CS_UserDefinedCS(final UserDefinedCS cs) {
+    private CS_UserDefinedCS(final DefaultUserDefinedCS cs) {
         super(cs);
     }
 
@@ -63,7 +61,7 @@ public final class CS_UserDefinedCS extends PropertyType<CS_UserDefinedCS, UserD
      * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
-    protected CS_UserDefinedCS wrap(final UserDefinedCS cs) {
+    protected CS_UserDefinedCS wrap(final DefaultUserDefinedCS cs) {
         return new CS_UserDefinedCS(cs);
     }
 
@@ -76,7 +74,7 @@ public final class CS_UserDefinedCS extends PropertyType<CS_UserDefinedCS, UserD
      */
     @XmlElement(name = "UserDefinedCS")
     public DefaultUserDefinedCS getElement() {
-        return DefaultUserDefinedCS.castOrCopy(metadata);
+        return metadata;
     }
 
     /**

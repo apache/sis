@@ -45,6 +45,10 @@ import org.apache.sis.storage.base.CodeType;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.ObjectDomain;
 
+// Specific to the geoapi-4.0 branch:
+import org.opengis.referencing.crs.CRSAuthorityFactory;
+import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
+
 
 /**
  * Implements the {@link XReferencing} methods to make available to Apache OpenOffice.
@@ -120,7 +124,12 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
                         type = CodeType.guess(codeOrPath);
                     }
                     if (type.equals(CodeType.URN)) {
-                        object = CRS.getAuthorityFactory(null).createObject(codeOrPath);
+                        CRSAuthorityFactory factory = CRS.getAuthorityFactory(null);
+                        if (factory instanceof GeodeticAuthorityFactory) {
+                            object = ((GeodeticAuthorityFactory) factory).createObject(codeOrPath);
+                        } else {
+                            object = factory.createCoordinateReferenceSystem(codeOrPath);
+                        }
                     } else if (type.isCRS) {
                         object = CRS.forCode(codeOrPath);
                     } else {

@@ -101,8 +101,6 @@ GriddedDataPositionalAccuracy
 Identification
 IdentifiedObject
 Identifier
-ImageCRS
-ImageDatum
 ImageDescription
 ImagingCondition
 Individual
@@ -223,7 +221,6 @@ Trigger
 UML
 Usability
 Usage
-UserDefinedCS
 ValidatorContainer
 Validators
 VectorSpatialRepresentation

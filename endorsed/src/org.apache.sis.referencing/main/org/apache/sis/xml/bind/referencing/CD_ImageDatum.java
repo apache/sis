@@ -17,7 +17,6 @@
 package org.apache.sis.xml.bind.referencing;
 
 import jakarta.xml.bind.annotation.XmlElement;
-import org.opengis.referencing.datum.ImageDatum;
 import org.apache.sis.xml.bind.gco.PropertyType;
 import org.apache.sis.referencing.datum.DefaultImageDatum;
 
@@ -29,8 +28,7 @@ import org.apache.sis.referencing.datum.DefaultImageDatum;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-@SuppressWarnings("deprecation")
-public final class CD_ImageDatum extends PropertyType<CD_ImageDatum, ImageDatum> {
+public final class CD_ImageDatum extends PropertyType<CD_ImageDatum, DefaultImageDatum> {
     /**
      * Empty constructor for JAXB only.
      */
@@ -45,14 +43,14 @@ public final class CD_ImageDatum extends PropertyType<CD_ImageDatum, ImageDatum>
      * @return {@code ImageDatum.class}
      */
     @Override
-    protected Class<ImageDatum> getBoundType() {
-        return ImageDatum.class;
+    protected Class<DefaultImageDatum> getBoundType() {
+        return DefaultImageDatum.class;
     }
 
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private CD_ImageDatum(final ImageDatum datum) {
+    private CD_ImageDatum(final DefaultImageDatum datum) {
         super(datum);
     }
 
@@ -64,7 +62,7 @@ public final class CD_ImageDatum extends PropertyType<CD_ImageDatum, ImageDatum>
      * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
-    protected CD_ImageDatum wrap(final ImageDatum datum) {
+    protected CD_ImageDatum wrap(final DefaultImageDatum datum) {
         return new CD_ImageDatum(datum);
     }
 
@@ -77,7 +75,7 @@ public final class CD_ImageDatum extends PropertyType<CD_ImageDatum, ImageDatum>
      */
     @XmlElement(name = "ImageDatum")
     public DefaultImageDatum getElement() {
-        return DefaultImageDatum.castOrCopy(metadata);
+        return metadata;
     }
 
     /**

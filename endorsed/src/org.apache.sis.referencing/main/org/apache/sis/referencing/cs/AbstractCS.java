@@ -323,9 +323,8 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
      *       {@link org.opengis.referencing.cs.CylindricalCS},
      *       {@link org.opengis.referencing.cs.PolarCS},
      *       {@link org.opengis.referencing.cs.LinearCS},
-     *       {@link org.opengis.referencing.cs.VerticalCS},
-     *       {@link org.opengis.referencing.cs.TimeCS} or
-     *       {@link org.opengis.referencing.cs.UserDefinedCS},
+     *       {@link org.opengis.referencing.cs.VerticalCS} or
+     *       {@link org.opengis.referencing.cs.TimeCS}.
      *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.
      *       Note that if the given object implements more than one of the above-cited interfaces,
      *       then the {@code castOrCopy(…)} method to be used is unspecified.</li>

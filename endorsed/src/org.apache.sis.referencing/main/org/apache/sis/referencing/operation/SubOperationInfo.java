@@ -25,6 +25,9 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 
+// Specific to the geoapi-4.0 branch:
+import org.apache.sis.referencing.crs.DefaultImageCRS;
+
 
 /**
  * Information about the operation from a source component to a target component in {@code CompoundCRS} instances.
@@ -51,14 +54,13 @@ final class SubOperationInfo {
      * {@link ProjectedCRS} and {@link DerivedCRS} are not in this list because we rather use their base CRS
      * as the criterion for determining their type.
      */
-    @SuppressWarnings("deprecation")
     private static final Class<?>[][] COMPATIBLE_TYPES = {
         {GeodeticCRS.class},
         {VerticalCRS.class, GeodeticCRS.class},
         {TemporalCRS.class},
         {ParametricCRS.class},
         {EngineeringCRS.class},
-        {ImageCRS.class}
+        {DefaultImageCRS.class}
     };
 
     /**

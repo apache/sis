@@ -17,7 +17,6 @@ CD_Datum
 CD_Ellipsoid
 CD_EngineeringDatum
 CD_GeodeticDatum
-CD_ImageDatum
 CD_PixelInCell
 CD_PrimeMeridian
 CD_TemporalDatum
@@ -53,7 +52,6 @@ CS_PolarCS
 CS_RangeMeaning
 CS_SphericalCS
 CS_TimeCS
-CS_UserDefinedCS
 CS_VerticalCS
 CV_ContinuousCoverage
 CV_Coverage

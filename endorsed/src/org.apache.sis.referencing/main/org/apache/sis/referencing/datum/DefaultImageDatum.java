@@ -23,7 +23,6 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.opengis.referencing.datum.ImageDatum;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.metadata.privy.ImplementationHelper;
@@ -56,10 +55,10 @@ import org.opengis.metadata.Identifier;
  *
  * @since 0.4
  */
-@Deprecated(since = "1.5")
+@Deprecated(since="1.5", forRemoval=true)   // Actually to be moved to an internal package for GML and WKT purposes.
 @XmlType(name = "ImageDatumType")
 @XmlRootElement(name = "ImageDatum")
-public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
+public final class DefaultImageDatum extends AbstractDatum {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -129,58 +128,10 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
     }
 
     /**
-     * Creates a new datum with the same values as the specified one.
-     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
-     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
-     *
-     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
-     *
-     * @param  datum  the datum to copy.
-     *
-     * @see #castOrCopy(ImageDatum)
-     */
-    protected DefaultImageDatum(final ImageDatum datum) {
-        super(datum);
-        pixelInCell = datum.getPixelInCell();
-    }
-
-    /**
-     * Returns a SIS datum implementation with the same values as the given arbitrary implementation.
-     * If the given object is {@code null}, then this method returns {@code null}.
-     * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
-     * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
-     *
-     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
-     * @return a SIS implementation containing the values of the given object (may be the
-     *         given object itself), or {@code null} if the argument was null.
-     */
-    public static DefaultImageDatum castOrCopy(final ImageDatum object) {
-        return (object == null) || (object instanceof DefaultImageDatum)
-                ? (DefaultImageDatum) object : new DefaultImageDatum(object);
-    }
-
-    /**
-     * Returns the GeoAPI interface implemented by this class.
-     * The SIS implementation returns {@code ImageDatum.class}.
-     *
-     * <h4>Note for implementers</h4>
-     * Subclasses usually do not need to override this method since GeoAPI does not define {@code ImageDatum}
-     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with
-     * their own set of interfaces.
-     *
-     * @return {@code ImageDatum.class} or a user-defined sub-interface.
-     */
-    @Override
-    public Class<? extends ImageDatum> getInterface() {
-        return ImageDatum.class;
-    }
-
-    /**
      * Specification of the way the image grid is associated with the image data attributes.
      *
      * @return the way image grid is associated with image data attributes.
      */
-    @Override
     @XmlElement(required = true)
     public PixelInCell getPixelInCell() {
         return pixelInCell;
@@ -198,19 +149,10 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true;                                                // Slight optimization.
+            return true;        // Slight optimization.
         }
-        if (!super.equals(object, mode)) {
-            return false;
-        }
-        switch (mode) {
-            case STRICT: {
-                return Objects.equals(pixelInCell, ((DefaultImageDatum) object).pixelInCell);
-            }
-            default: {
-                return Objects.equals(getPixelInCell(), ((ImageDatum) object).getPixelInCell());
-            }
-        }
+        return (object instanceof DefaultImageDatum) &&
+                Objects.equals(pixelInCell, ((DefaultImageDatum) object).pixelInCell);
     }
 
     /**

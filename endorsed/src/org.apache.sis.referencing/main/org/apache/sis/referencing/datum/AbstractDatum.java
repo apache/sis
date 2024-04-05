@@ -203,9 +203,8 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *   <li>Otherwise if the given object is an instance of
      *       {@link org.opengis.referencing.datum.GeodeticDatum},
      *       {@link org.opengis.referencing.datum.VerticalDatum},
-     *       {@link org.opengis.referencing.datum.TemporalDatum},
-     *       {@link org.opengis.referencing.datum.EngineeringDatum} or
-     *       {@link org.opengis.referencing.datum.ImageDatum},
+     *       {@link org.opengis.referencing.datum.TemporalDatum} or
+     *       {@link org.opengis.referencing.datum.EngineeringDatum},
      *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.
      *       Note that if the given object implements more than one of the above-cited interfaces,
      *       then the {@code castOrCopy(…)} method to be used is unspecified.</li>

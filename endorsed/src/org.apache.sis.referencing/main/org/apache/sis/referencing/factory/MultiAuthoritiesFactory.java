@@ -1081,29 +1081,6 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
     }
 
     /**
-     * Creates a 2-dimensional engineering coordinate reference system applied to locations in images.
-     * The given code can use any of the following patterns, where <var>version</var> is optional:
-     * <ul>
-     *   <li><var>authority</var>{@code :}<var>code</var></li>
-     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
-     *   <li><code>urn:ogc:def:<b>crs</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
-     *   <li><code>http://www.opengis.net/def/<b>crs</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
-     *   <li>{@code http://www.opengis.net/gml/srs/}<var>authority</var>{@code .xml#}<var>code</var></li>
-     * </ul>
-     *
-     * @return the coordinate reference system for the given code.
-     * @throws FactoryException if the object creation failed.
-     *
-     * @deprecated The {@code ImageCRS} class has been removed in ISO 19111:2019.
-     *             It is replaced by {@code EngineeringCRS}.
-     */
-    @Override
-    @Deprecated(since = "1.5")
-    public ImageCRS createImageCRS(final String code) throws FactoryException {
-        return create(AuthorityFactoryProxy.IMAGE_CRS, code);
-    }
-
-    /**
      * Creates an arbitrary datum from a code. The returned object will typically be an
      * The given code can use any of the following patterns, where <var>version</var> is optional:
      * <ul>
@@ -1191,28 +1168,6 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
     @Override
     public EngineeringDatum createEngineeringDatum(final String code) throws FactoryException {
         return create(AuthorityFactoryProxy.ENGINEERING_DATUM, code);
-    }
-
-    /**
-     * Creates a datum defining the origin of an image coordinate reference system.
-     * The given code can use any of the following patterns, where <var>version</var> is optional:
-     * <ul>
-     *   <li><var>authority</var>{@code :}<var>code</var></li>
-     *   <li><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
-     *   <li><code>urn:ogc:def:<b>datum</b>:</code><var>authority</var>{@code :}<var>version</var>{@code :}<var>code</var></li>
-     *   <li><code>http://www.opengis.net/def/<b>datum</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
-     * </ul>
-     *
-     * @return the datum for the given code.
-     * @throws FactoryException if the object creation failed.
-     *
-     * @deprecated The {@code ImageDatum} class has been removed in ISO 19111:2019.
-     *             It is replaced by {@code EngineeringDatum}.
-     */
-    @Override
-    @Deprecated(since = "1.5")
-    public ImageDatum createImageDatum(final String code) throws FactoryException {
-        return create(AuthorityFactoryProxy.IMAGE_DATUM, code);
     }
 
     /**

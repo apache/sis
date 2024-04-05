@@ -23,7 +23,6 @@ import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.crs.ImageCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
@@ -83,12 +82,6 @@ public final class EPSGFactoryProxyCRS extends EPSGFactoryProxy implements CRSAu
     @Deprecated(since = "2.0")
     public GeocentricCRS createGeocentricCRS(String code) throws FactoryException {
         return factory().createGeocentricCRS(code);
-    }
-
-    @Override
-    @Deprecated(since = "1.5")
-    public ImageCRS createImageCRS(String code) throws FactoryException {
-        return factory().createImageCRS(code);
     }
 
     @Override

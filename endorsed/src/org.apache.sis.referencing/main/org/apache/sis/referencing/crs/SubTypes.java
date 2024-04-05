@@ -25,7 +25,6 @@ import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.crs.ImageCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
@@ -153,9 +152,6 @@ final class SubTypes implements Comparator<Object> {
         }
         if (object instanceof EngineeringCRS) {
             return DefaultEngineeringCRS.castOrCopy((EngineeringCRS) object);
-        }
-        if (object instanceof ImageCRS) {
-            return DefaultImageCRS.castOrCopy((ImageCRS) object);
         }
         if (object instanceof CompoundCRS) {
             return DefaultCompoundCRS.castOrCopy((CompoundCRS) object);

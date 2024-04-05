@@ -325,8 +325,9 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
     @XmlElement(name="linearCS")      private LinearCS      getLinearCS()      {return getCoordinateSystem(LinearCS     .class);}
     @XmlElement(name="polarCS")       private PolarCS       getPolarCS()       {return getCoordinateSystem(PolarCS      .class);}
     @XmlElement(name="sphericalCS")   private SphericalCS   getSphericalCS()   {return getCoordinateSystem(SphericalCS  .class);}
-    @Deprecated(since = "1.5")
-    @XmlElement(name="userDefinedCS") private UserDefinedCS getUserDefinedCS() {return getCoordinateSystem(UserDefinedCS.class);}
+
+    // Types that do not exist anymore in lastest ISO 19111 standard.
+    @XmlElement(name="userDefinedCS") private DefaultUserDefinedCS getUserDefinedCS() {return getCoordinateSystem(DefaultUserDefinedCS.class);}
 
     /**
      * Invoked by JAXB at unmarshalling time.
@@ -337,8 +338,9 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
     private void setLinearCS     (final LinearCS      cs) {super.setCoordinateSystem("linearCS",      cs);}
     private void setPolarCS      (final PolarCS       cs) {super.setCoordinateSystem("polarCS",       cs);}
     private void setSphericalCS  (final SphericalCS   cs) {super.setCoordinateSystem("sphericalCS",   cs);}
-    @Deprecated(since = "1.5")
-    private void setUserDefinedCS(final UserDefinedCS cs) {super.setCoordinateSystem("userDefinedCS", cs);}
+
+    // Types that do not exist anymore in lastest ISO 19111 standard.
+    private void setUserDefinedCS(final DefaultUserDefinedCS cs) {super.setCoordinateSystem("userDefinedCS", cs);}
 
     /**
      * The types for which a specialized method exists.
@@ -346,7 +348,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      */
     @SuppressWarnings("deprecation")
     private static final Class<?>[] SPECIALIZED_TYPES = {
-        AffineCS.class, SphericalCS.class, CylindricalCS.class, PolarCS.class, LinearCS.class, UserDefinedCS.class
+        AffineCS.class, SphericalCS.class, CylindricalCS.class, PolarCS.class, LinearCS.class, DefaultUserDefinedCS.class
     };
 
     /**

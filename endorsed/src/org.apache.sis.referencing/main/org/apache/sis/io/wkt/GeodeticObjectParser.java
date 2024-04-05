@@ -85,6 +85,10 @@ import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 
+// Specific to the geoapi-4.0 branch:
+import org.apache.sis.referencing.crs.DefaultImageCRS;
+import org.apache.sis.referencing.datum.DefaultImageDatum;
+
 
 /**
  * Well Known Text (WKT) parser for referencing objects. This include, but is not limited too,
@@ -1560,11 +1564,10 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
-     * @return the {@code "ImageDatum"} element as an {@link ImageDatum} object.
+     * @return the {@code "ImageDatum"} element.
      * @throws ParseException if the {@code "ImageDatum"} element cannot be parsed.
      */
-    @SuppressWarnings("deprecation")
-    private ImageDatum parseImageDatum(final int mode, final Element parent) throws ParseException {
+    private DefaultImageDatum parseImageDatum(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.ImageDatum, WKTKeywords.IDatum);
         if (element == null) {
             return null;
@@ -1572,12 +1575,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final String name = element.pullString("name");
         final PixelInCell pixelInCell = Types.forCodeName(PixelInCell.class,
                 element.pullVoidElement("pixelInCell").keyword, PixelInCell::valueOf);
-        final DatumFactory datumFactory = factories.getDatumFactory();
-        try {
-            return datumFactory.createImageDatum(parseAnchorAndClose(element, name), pixelInCell);
-        } catch (FactoryException exception) {
-            throw element.parseFailed(exception);
-        }
+        return new DefaultImageDatum(parseAnchorAndClose(element, name), pixelInCell);
     }
 
     /**
@@ -1669,21 +1667,20 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @return the {@code "ImageCRS"} element as an {@link ImageCRS} object.
      * @throws ParseException if the {@code "ImageCRS"} element cannot be parsed.
      */
-    @SuppressWarnings("deprecation")
-    private ImageCRS parseImageCRS(final int mode, final Element parent) throws ParseException {
+    private DefaultImageCRS parseImageCRS(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.ImageCRS);
         if (element == null) {
             return null;
         }
-        final String     name  = element.pullString("name");
-        final ImageDatum datum = parseImageDatum(MANDATORY, element);
-        final Unit<?>    unit  = parseUnit(element);
+        final String  name  = element.pullString("name");
+        final var     datum = parseImageDatum(MANDATORY, element);
+        final Unit<?> unit  = parseUnit(element);
         final CoordinateSystem cs;
         try {
             cs = parseCoordinateSystem(element, WKTKeywords.Cartesian, 2, false, unit, datum);
             final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
             if (cs instanceof AffineCS) {
-                return factories.getCRSFactory().createImageCRS(properties, datum, (AffineCS) cs);
+                return new DefaultImageCRS(properties, datum, (AffineCS) cs);
             }
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);

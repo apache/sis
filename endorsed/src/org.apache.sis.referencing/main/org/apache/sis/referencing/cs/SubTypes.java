@@ -27,7 +27,6 @@ import org.opengis.referencing.cs.LinearCS;
 import org.opengis.referencing.cs.PolarCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.TimeCS;
-import org.opengis.referencing.cs.UserDefinedCS;
 import org.opengis.referencing.cs.VerticalCS;
 import org.apache.sis.referencing.privy.AxisDirections;
 
@@ -56,7 +55,6 @@ final class SubTypes {
      *
      * @see AbstractCS#castOrCopy(CoordinateSystem)
      */
-    @SuppressWarnings("deprecation")
     static AbstractCS castOrCopy(final CoordinateSystem object) {
         if (object instanceof AffineCS) {
             return DefaultAffineCS.castOrCopy((AffineCS) object);
@@ -81,9 +79,6 @@ final class SubTypes {
         }
         if (object instanceof TimeCS) {
             return DefaultTimeCS.castOrCopy((TimeCS) object);
-        }
-        if (object instanceof UserDefinedCS) {
-            return DefaultUserDefinedCS.castOrCopy((UserDefinedCS) object);
         }
         /*
          * Intentionally check for AbstractCS after the interfaces because user may have defined his own

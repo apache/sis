@@ -23,14 +23,15 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.cs.CartesianCS;
-import org.opengis.referencing.crs.ImageCRS;
-import org.opengis.referencing.datum.ImageDatum;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
+
+// Specific to the geoapi-4.0 branch:
+import org.apache.sis.referencing.datum.DefaultImageDatum;
 
 
 /**
@@ -61,14 +62,14 @@ import org.apache.sis.io.wkt.Formatter;
  *
  * @since 0.4
  */
-@Deprecated(since = "1.5")
+@Deprecated(since="1.5", forRemoval=true)   // Actually to be moved to an internal package for GML and WKT purposes.
 @XmlType(name = "ImageCRSType", propOrder = {
     "cartesianCS",
     "affineCS",
     "datum"
 })
 @XmlRootElement(name = "ImageCRS")
-public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
+public final class DefaultImageCRS extends AbstractCRS {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -78,12 +79,11 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      * The datum.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setDatum(ImageDatum)}</p>
+     * This field is modified only at unmarshalling time.</p>
      *
      * @see #getDatum()
      */
-    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
-    private ImageDatum datum;
+    private DefaultImageDatum datum;
 
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
@@ -123,12 +123,10 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      * @param  properties  the properties to be given to the coordinate reference system.
      * @param  datum       the datum.
      * @param  cs          the coordinate system.
-     *
-     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createImageCRS(Map, ImageDatum, AffineCS)
      */
     public DefaultImageCRS(final Map<String,?> properties,
-                           final ImageDatum    datum,
-                           final AffineCS      cs)
+                           final DefaultImageDatum datum,
+                           final AffineCS cs)
     {
         super(properties, cs);
         this.datum = Objects.requireNonNull(datum);
@@ -144,60 +142,13 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
     }
 
     /**
-     * Constructs a new coordinate reference system with the same values as the specified one.
-     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
-     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
-     *
-     * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
-     *
-     * @param  crs  the coordinate reference system to copy.
-     *
-     * @see #castOrCopy(ImageCRS)
-     */
-    protected DefaultImageCRS(final ImageCRS crs) {
-        super(crs);
-        datum = crs.getDatum();
-    }
-
-    /**
-     * Returns a SIS coordinate reference system implementation with the same values as the given
-     * arbitrary implementation. If the given object is {@code null}, then this method returns {@code null}.
-     * Otherwise if the given object is already a SIS implementation, then the given object is returned unchanged.
-     * Otherwise a new SIS implementation is created and initialized to the attribute values of the given object.
-     *
-     * @param  object  the object to get as a SIS implementation, or {@code null} if none.
-     * @return a SIS implementation containing the values of the given object (may be the
-     *         given object itself), or {@code null} if the argument was null.
-     */
-    public static DefaultImageCRS castOrCopy(final ImageCRS object) {
-        return (object == null) || (object instanceof DefaultImageCRS)
-                ? (DefaultImageCRS) object : new DefaultImageCRS(object);
-    }
-
-    /**
-     * Returns the GeoAPI interface implemented by this class.
-     * The SIS implementation returns {@code ImageCRS.class}.
-     *
-     * <h4>Note for implementers</h4>
-     * Subclasses usually do not need to override this method since GeoAPI does not define {@code ImageCRS}
-     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with
-     * their own set of interfaces.
-     *
-     * @return {@code ImageCRS.class} or a user-defined sub-interface.
-     */
-    @Override
-    public Class<? extends ImageCRS> getInterface() {
-        return ImageCRS.class;
-    }
-
-    /**
      * Returns the datum.
      *
      * @return the datum.
      */
     @Override
     @XmlElement(name = "imageDatum", required = true)
-    public ImageDatum getDatum() {
+    public DefaultImageDatum getDatum() {
         return datum;
     }
 
@@ -287,7 +238,7 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      *
      * @see #getDatum()
      */
-    private void setDatum(final ImageDatum value) {
+    private void setDatum(final DefaultImageDatum value) {
         if (datum == null) {
             datum = value;
         } else {

@@ -211,8 +211,6 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * @see org.apache.sis.referencing.AbstractIdentifiedObject
      */
-    @Override
-    @SuppressWarnings("deprecation")
     public abstract IdentifiedObject createObject(String code) throws NoSuchAuthorityCodeException, FactoryException;
 
     /**
@@ -527,30 +525,6 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
     }
 
     /**
-     * Creates a 2-dimensional engineering coordinate reference system applied to locations in images.
-     * Image coordinate reference systems are treated as a separate sub-type because a separate
-     * user community exists for images with its own terms of reference.
-     *
-     * <h4>Default implementation</h4>
-     * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
-     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
-     *
-     * @param  code  value allocated by authority.
-     * @return the coordinate reference system for the given code.
-     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
-     * @throws FactoryException if the object creation failed for some other reason.
-     *
-     * @see org.apache.sis.referencing.crs.DefaultImageCRS
-     *
-     * @deprecated The {@code ImageCRS} class has been removed in ISO 19111:2019.
-     *             It is replaced by {@code EngineeringCRS}.
-     */
-    @Deprecated(since = "1.5")
-    public ImageCRS createImageCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
-        return cast(ImageCRS.class, createCoordinateReferenceSystem(code), code);
-    }
-
-    /**
      * Creates an arbitrary datum from a code. The returned object will typically be an
      * instance of {@link GeodeticDatum}, {@link VerticalDatum} or {@link TemporalDatum}.
      * If the datum is known at compile time, it is recommended to invoke the most precise method instead of this one.
@@ -722,30 +696,6 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      */
     public EngineeringDatum createEngineeringDatum(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(EngineeringDatum.class, createDatum(code), code);
-    }
-
-    /**
-     * Creates a datum defining the origin of an image coordinate reference system.
-     * An image datum is used in a local context only.
-     * For an image datum, the anchor point is usually either the centre of the image or the corner of the image.
-     *
-     * <h4>Default implementation</h4>
-     * The default implementation delegates to {@link #createDatum(String)} and casts the result.
-     * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
-     *
-     * @param  code  value allocated by authority.
-     * @return the datum for the given code.
-     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
-     * @throws FactoryException if the object creation failed for some other reason.
-     *
-     * @see org.apache.sis.referencing.datum.DefaultImageDatum
-     *
-     * @deprecated The {@code ImageDatum} class has been removed in ISO 19111:2019.
-     *             It is replaced by {@code EngineeringDatum}.
-     */
-    @Deprecated(since = "1.5")
-    public ImageDatum createImageDatum(final String code) throws NoSuchAuthorityCodeException, FactoryException {
-        return cast(ImageDatum.class, createDatum(code), code);
     }
 
     /**

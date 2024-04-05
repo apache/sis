@@ -30,6 +30,7 @@ import org.apache.sis.util.privy.Constants;
 import org.apache.sis.referencing.internal.EPSGFactoryProxy;
 import org.apache.sis.referencing.factory.CommonAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
+import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -160,7 +161,7 @@ public final class AuthorityFactoriesTest extends TestCaseWithLogs {
      */
     @Test
     public void testCreateCRS() throws FactoryException {
-        final CRSAuthorityFactory factory = AuthorityFactories.ALL;
+        final GeodeticAuthorityFactory factory = AuthorityFactories.ALL;
         final CRSAuthorityFactory wms = AuthorityFactories.ALL.getAuthorityFactory(CRSAuthorityFactory.class, Constants.OGC, null);
         CoordinateReferenceSystem actual, expected;
 

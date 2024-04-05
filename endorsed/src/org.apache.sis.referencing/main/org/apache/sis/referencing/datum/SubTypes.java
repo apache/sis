@@ -21,7 +21,6 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.EngineeringDatum;
-import org.opengis.referencing.datum.ImageDatum;
 
 
 /**
@@ -61,9 +60,6 @@ final class SubTypes {
         }
         if (object instanceof EngineeringDatum) {
             return DefaultEngineeringDatum.castOrCopy((EngineeringDatum) object);
-        }
-        if (object instanceof ImageDatum) {
-            return DefaultImageDatum.castOrCopy((ImageDatum) object);
         }
         /*
          * Intentionally check for AbstractDatum after the interfaces because user may have defined his own
