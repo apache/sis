@@ -63,15 +63,15 @@ import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.privy.Constants;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.referencing.datum.RealizationMethod;
-
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.xml.test.DocumentComparator;
 import org.apache.sis.xml.test.TestCase;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.datum.RealizationMethod;
 
 
 /**

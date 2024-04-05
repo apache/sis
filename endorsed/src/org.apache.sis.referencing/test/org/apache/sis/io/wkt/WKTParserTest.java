@@ -19,6 +19,7 @@ package org.apache.sis.io.wkt;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.util.FactoryException;
+import org.opengis.referencing.datum.RealizationMethod;
 import org.apache.sis.metadata.privy.AxisNames;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.system.Loggers;
@@ -32,9 +33,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import org.opengis.test.wkt.CRSParserTest;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.FailureDetailsReporter;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.referencing.datum.RealizationMethod;
 
 
 /**

@@ -21,8 +21,6 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.Collection;
-import java.util.NoSuchElementException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import jakarta.xml.bind.annotation.XmlType;
@@ -54,14 +52,16 @@ import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
-import org.apache.sis.metadata.privy.Identifiers;
 import org.apache.sis.xml.bind.referencing.SC_CRS;
-import org.apache.sis.xml.NilObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.Collection;
+import java.util.NoSuchElementException;
 import org.opengis.referencing.crs.ParametricCRS;
+import org.apache.sis.metadata.privy.Identifiers;
+import org.apache.sis.xml.NilObject;
 
 
 /**
