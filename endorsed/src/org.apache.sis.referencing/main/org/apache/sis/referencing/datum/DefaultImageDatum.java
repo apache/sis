@@ -56,10 +56,10 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * @since 0.4
  */
-@Deprecated(since = "1.5")
+@Deprecated(since="1.5", forRemoval=true)   // Actually to be moved to an internal package for GML and WKT purposes.
 @XmlType(name = "ImageDatumType")
 @XmlRootElement(name = "ImageDatum")
-public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
+public final class DefaultImageDatum extends AbstractDatum implements ImageDatum {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -198,7 +198,7 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
-            return true;                                                // Slight optimization.
+            return true;        // Slight optimization.
         }
         if (!super.equals(object, mode)) {
             return false;

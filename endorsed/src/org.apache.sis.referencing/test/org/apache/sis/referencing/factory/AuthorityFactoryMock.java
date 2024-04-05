@@ -103,6 +103,9 @@ public final class AuthorityFactoryMock extends GeodeticAuthorityFactory impleme
 
     /**
      * Returns the authority codes for the given type.
+     *
+     * @param  type  the type of referencing object for which to get authority codes.
+     * @return the set of authority codes for referencing objects of the given type.
      */
     @Override
     public Set<String> getAuthorityCodes(Class<? extends IdentifiedObject> type) {

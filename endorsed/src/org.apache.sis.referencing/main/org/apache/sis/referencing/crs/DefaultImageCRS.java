@@ -61,14 +61,14 @@ import org.apache.sis.io.wkt.Formatter;
  *
  * @since 0.4
  */
-@Deprecated(since = "1.5")
+@Deprecated(since="1.5", forRemoval=true)   // Actually to be moved to an internal package for GML and WKT purposes.
 @XmlType(name = "ImageCRSType", propOrder = {
     "cartesianCS",
     "affineCS",
     "datum"
 })
 @XmlRootElement(name = "ImageCRS")
-public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
+public final class DefaultImageCRS extends AbstractCRS implements ImageCRS {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -78,7 +78,7 @@ public class DefaultImageCRS extends AbstractCRS implements ImageCRS {
      * The datum.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setDatum(ImageDatum)}</p>
+     * This field is modified only at unmarshalling time.</p>
      *
      * @see #getDatum()
      */
