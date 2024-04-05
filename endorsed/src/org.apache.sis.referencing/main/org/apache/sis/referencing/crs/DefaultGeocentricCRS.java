@@ -79,7 +79,7 @@ import org.apache.sis.io.wkt.Formatter;
  * @since 0.4
  */
 @XmlTransient
-@Deprecated(since = "1.5")
+@Deprecated(since = "2.0")
 public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements GeocentricCRS {
     /**
      * Serial number for inter-operability with different versions.

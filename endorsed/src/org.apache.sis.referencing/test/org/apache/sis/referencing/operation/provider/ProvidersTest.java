@@ -42,7 +42,6 @@ public final class ProvidersTest extends TestCase {
     /**
      * Returns all providers to test.
      */
-    @SuppressWarnings("deprecation")
     private static Class<?>[] methods() {
         return new Class<?>[] {
             Affine.class,

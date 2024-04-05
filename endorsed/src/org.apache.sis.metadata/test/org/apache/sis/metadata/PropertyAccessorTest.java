@@ -64,12 +64,12 @@ import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.content.AttributeGroup;
+import org.opengis.referencing.datum.DatumEnsemble;
 import org.opengis.referencing.ObjectDomain;
 import org.opengis.temporal.Duration;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.metadata.citation.Responsibility;
-import org.opengis.referencing.datum.DatumEnsemble;
 
 
 /**

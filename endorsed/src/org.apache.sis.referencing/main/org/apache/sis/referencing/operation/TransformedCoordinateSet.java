@@ -82,7 +82,7 @@ final class TransformedCoordinateSet extends AbstractCoordinateSet implements Un
         final CoordinateMetadata metadata = data.getCoordinateMetadata();
         if (metadata != null) try {
             GeographicBoundingBox aoi = CRS.getGeographicBoundingBox(op);
-            CoordinateMetadata step = new DefaultCoordinateMetadata(op.getSourceCRS(), op.getSourceEpoch().orElse(null));
+            final var step = new DefaultCoordinateMetadata(op.getSourceCRS(), op.getSourceEpoch().orElse(null));
             transform = MathTransforms.concatenate(CRS.findOperation(metadata, step, aoi).getMathTransform(), transform);
         } catch (FactoryException | MismatchedDimensionException e) {
             throw new TransformException(e.getMessage(), e);

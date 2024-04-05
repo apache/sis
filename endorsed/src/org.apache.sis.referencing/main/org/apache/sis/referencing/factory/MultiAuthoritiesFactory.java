@@ -961,7 +961,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *             The {@code GeodeticCRS} parent class should be used instead.
      */
     @Override
-    @Deprecated(since = "1.5")
+    @Deprecated(since = "2.0")
     public GeocentricCRS createGeocentricCRS(final String code) throws FactoryException {
         return create(AuthorityFactoryProxy.GEOCENTRIC_CRS, code);
     }

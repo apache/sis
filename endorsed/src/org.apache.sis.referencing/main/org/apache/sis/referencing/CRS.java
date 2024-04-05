@@ -958,30 +958,38 @@ public final class CRS extends Static {
 
     /**
      * Returns the epoch to which the coordinates of stations defining the dynamic CRS are referenced.
-     * If the CRS is associated to a {@linkplain DynamicReferenceFrame dynamic datum}, then reference
-     * epoch of that datum is returned. Otherwise if the CRS is {@linkplain CompoundCRS compound},
-     * then the first reference epoch found in a component is returned.
+     * If the CRS is associated to a {@linkplain DynamicReferenceFrame dynamic datum}, then the epoch
+     * of that datum is returned. Otherwise if the CRS is {@linkplain CompoundCRS compound}, then this
+     * method requires that all dynamic components have the same epoch.
      *
      * @param  crs  the coordinate reference frame from which to get the epoch, or {@code null}.
      * @return epoch to which the coordinates of stations defining the dynamic CRS frame are referenced.
+     * @throws GeodeticException if some CRS components haave different epochs.
      *
      * @since 1.5
      */
     public static Optional<Temporal> getFrameReferenceEpoch(final CoordinateReferenceSystem crs) {
+        Temporal epoch = null;
         if (crs instanceof SingleCRS) {
             final Datum datum = ((SingleCRS) crs).getDatum();
             if (datum instanceof DynamicReferenceFrame) {
-                return Optional.of(((DynamicReferenceFrame) datum).getFrameReferenceEpoch());
+                epoch = ((DynamicReferenceFrame) datum).getFrameReferenceEpoch();
             }
         } else if (crs instanceof CompoundCRS) {
             for (SingleCRS component : ((CompoundCRS) crs).getSingleComponents()) {
                 final Datum datum = component.getDatum();
                 if (datum instanceof DynamicReferenceFrame) {
-                    return Optional.of(((DynamicReferenceFrame) datum).getFrameReferenceEpoch());
+                    final Temporal t = ((DynamicReferenceFrame) datum).getFrameReferenceEpoch();
+                    if (t != null) {
+                        if (epoch == null) epoch = t;
+                        else if (!epoch.equals(t)) {
+                            throw new GeodeticException(Resources.format(Resources.Keys.InconsistentEpochs_2, epoch, t));
+                        }
+                    }
                 }
             }
         }
-        return Optional.empty();
+        return Optional.ofNullable(epoch);
     }
 
     /**
