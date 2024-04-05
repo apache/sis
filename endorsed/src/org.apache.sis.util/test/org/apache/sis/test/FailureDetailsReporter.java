@@ -17,9 +17,9 @@
 package org.apache.sis.test;
 
 import java.io.PrintStream;
-import org.opentest4j.TestAbortedException;
 
 // Test dependencies
+import org.opentest4j.TestAbortedException;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
