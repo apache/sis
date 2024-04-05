@@ -95,9 +95,9 @@ import org.apache.sis.util.logging.Logging;
 import org.opengis.geometry.Geometry;
 import org.opengis.referencing.ObjectDomain;
 import org.opengis.referencing.datum.DynamicReferenceFrame;
-import org.opengis.coordinate.CoordinateMetadata;
 import org.opengis.metadata.extent.BoundingPolygon;
 import org.opengis.metadata.extent.GeographicExtent;
+import org.opengis.coordinate.CoordinateMetadata;
 
 
 /**

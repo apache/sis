@@ -63,15 +63,15 @@ import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.privy.Constants;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.referencing.datum.RealizationMethod;
-
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.xml.test.DocumentComparator;
 import org.apache.sis.xml.test.TestCase;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.datum.RealizationMethod;
 
 
 /**
@@ -113,7 +113,7 @@ public final class MetadataTest extends TestCase.WithLogs {
          * because this is what will be unmarshalled from the XML document.
          */
         @SuppressWarnings("deprecation")
-        final var author = new DefaultResponsibleParty(Role.AUTHOR);
+        final var author  = new DefaultResponsibleParty(Role.AUTHOR);
         final var country = new Anchor(URI.create("SDN:C320:2:FR"), "France"); // Non-public SIS class.
         {
             final var online = new DefaultOnlineResource(URI.create("http://www.ifremer.fr/sismer/"));

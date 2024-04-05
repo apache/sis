@@ -16,7 +16,6 @@
  */
 package org.apache.sis.test.mock;
 
-import java.util.Optional;
 import javax.measure.Unit;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.crs.VerticalCRS;
@@ -30,6 +29,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.measure.Units;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.Optional;
 import org.opengis.referencing.datum.RealizationMethod;
 
 

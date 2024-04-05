@@ -17,9 +17,11 @@
 package org.apache.sis.xml.bind.referencing;
 
 import jakarta.xml.bind.annotation.XmlElement;
-import org.opengis.referencing.datum.ImageDatum;
 import org.apache.sis.xml.bind.gco.PropertyType;
 import org.apache.sis.referencing.datum.DefaultImageDatum;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.datum.ImageDatum;
 
 
 /**

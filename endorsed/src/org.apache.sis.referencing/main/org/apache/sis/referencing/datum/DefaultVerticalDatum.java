@@ -35,8 +35,8 @@ import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.metadata.privy.ImplementationHelper;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.RealizationMethod;
+import org.opengis.metadata.Identifier;
 
 
 /**

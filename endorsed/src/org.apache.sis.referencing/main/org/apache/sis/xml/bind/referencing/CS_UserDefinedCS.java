@@ -17,9 +17,11 @@
 package org.apache.sis.xml.bind.referencing;
 
 import jakarta.xml.bind.annotation.XmlElement;
-import org.opengis.referencing.cs.UserDefinedCS;
 import org.apache.sis.referencing.cs.DefaultUserDefinedCS;
 import org.apache.sis.xml.bind.gco.PropertyType;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.cs.UserDefinedCS;
 
 
 /**
