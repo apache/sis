@@ -106,6 +106,7 @@ public class ReferencingFunctions extends CalcAddins implements XReferencing {
      * @throws FactoryException if an error occurred while creating the object.
      * @throws DataStoreException if an error occurred while reading a data file.
      */
+    @SuppressWarnings("removal")
     private IdentifiedObject getIdentifiedObject(final String codeOrPath, CodeType type)
             throws FactoryException, DataStoreException
     {

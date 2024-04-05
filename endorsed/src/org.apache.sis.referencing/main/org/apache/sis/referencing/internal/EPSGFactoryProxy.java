@@ -66,7 +66,7 @@ public abstract class EPSGFactoryProxy implements AuthorityFactory {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("removal")
     public final IdentifiedObject createObject(String code) throws FactoryException {
         return factory().createObject(code);
     }

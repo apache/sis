@@ -80,7 +80,7 @@ public final class EPSGFactoryProxyCRS extends EPSGFactoryProxy implements CRSAu
     }
 
     @Override
-    @Deprecated(since = "1.5")
+    @Deprecated(since = "2.0")
     public GeocentricCRS createGeocentricCRS(String code) throws FactoryException {
         return factory().createGeocentricCRS(code);
     }

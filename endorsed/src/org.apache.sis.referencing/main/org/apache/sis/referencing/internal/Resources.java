@@ -310,6 +310,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short IncompatibleDatum_2 = 28;
 
         /**
+         * All dynamic components should have the same epoch, but found “{0}” and “{1}”.
+         */
+        public static final short InconsistentEpochs_2 = 103;
+
+        /**
          * Inverse operation uses this parameter value with opposite sign.
          */
         public static final short InverseOperationUsesOppositeSign = 29;

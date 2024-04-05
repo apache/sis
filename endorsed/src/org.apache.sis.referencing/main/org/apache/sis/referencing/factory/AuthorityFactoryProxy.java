@@ -190,6 +190,7 @@ abstract class AuthorityFactoryProxy<T> {
     /**
      * The proxy for the {@link GeodeticAuthorityFactory#createObject(String)} method.
      */
+    @SuppressWarnings("removal")
     static final AuthorityFactoryProxy<IdentifiedObject> OBJECT =
         new AuthorityFactoryProxy<IdentifiedObject>(IdentifiedObject.class, AuthorityFactoryIdentifier.ANY) {
             @Override IdentifiedObject createFromAPI(AuthorityFactory factory, String code) throws FactoryException {

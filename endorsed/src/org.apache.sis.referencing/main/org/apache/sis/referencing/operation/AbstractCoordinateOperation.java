@@ -42,6 +42,7 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.PassThroughOperation;
+import org.opengis.referencing.operation.TransformException;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
@@ -76,7 +77,6 @@ import static org.apache.sis.util.Utilities.deepEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coordinate.CoordinateSet;
-import org.opengis.referencing.operation.TransformException;
 
 
 /**

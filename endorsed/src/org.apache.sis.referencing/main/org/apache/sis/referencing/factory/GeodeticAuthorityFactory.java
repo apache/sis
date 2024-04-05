@@ -212,7 +212,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @see org.apache.sis.referencing.AbstractIdentifiedObject
      */
     @Override
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("removal")
     public abstract IdentifiedObject createObject(String code) throws NoSuchAuthorityCodeException, FactoryException;
 
     /**
@@ -338,7 +338,7 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @deprecated ISO 19111:2019 does not define an explicit class for geocentric CRS.
      *             The {@code GeodeticCRS} parent class should be used instead.
      */
-    @Deprecated(since = "1.5")
+    @Deprecated(since = "2.0")
     public GeocentricCRS createGeocentricCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(GeocentricCRS.class, createCoordinateReferenceSystem(code), code);
     }

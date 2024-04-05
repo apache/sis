@@ -506,8 +506,8 @@ public final class Types extends Static {
      * The package prefix (e.g. {@code "CI_"} in {@code "CI_Citation"}) can be omitted.
      * The flexibility is provided for allowing transition to newer ISO standards,
      * which are dropping the package prefixes.
-     * For example, {@code "AxisDirection"} in ISO 19111:2007
-     * has been renamed {@code "AxisDirection"} in ISO 19111:2018.
+     * For example, {@code "CS_AxisDirection"} in ISO 19111:2007
+     * has been renamed {@code "AxisDirection"} in ISO 19111:2019.
      *
      * <p>Only identifiers for the stable part of GeoAPI or for some Apache SIS classes are recognized.
      * This method does not handle the identifiers for interfaces in the {@code geoapi-pending} module.</p>

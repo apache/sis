@@ -1563,7 +1563,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      *
      * @param  mode    {@link #FIRST}, {@link #OPTIONAL} or {@link #MANDATORY}.
      * @param  parent  the parent element.
-     * @return the {@code "ImageDatum"} element as an {@link ImageDatum} object.
+     * @return the {@code "ImageDatum"} element.
      * @throws ParseException if the {@code "ImageDatum"} element cannot be parsed.
      */
     @SuppressWarnings("deprecation")
@@ -1678,9 +1678,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         if (element == null) {
             return null;
         }
-        final String     name  = element.pullString("name");
-        final ImageDatum datum = parseImageDatum(MANDATORY, element);
-        final Unit<?>    unit  = parseUnit(element);
+        final String  name  = element.pullString("name");
+        final var     datum = parseImageDatum(MANDATORY, element);
+        final Unit<?> unit  = parseUnit(element);
         final CoordinateSystem cs;
         try {
             cs = parseCoordinateSystem(element, WKTKeywords.Cartesian, 2, false, unit, datum);

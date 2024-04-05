@@ -264,6 +264,7 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
      * Returns a coordinate reference system, datum or ellipsoid for the given EPSG code.
      */
     @Override
+    @SuppressWarnings("removal")
     public IdentifiedObject createObject(final String code) throws NoSuchAuthorityCodeException {
         return (IdentifiedObject) predefined(code, -1 & ~UNIT);
     }

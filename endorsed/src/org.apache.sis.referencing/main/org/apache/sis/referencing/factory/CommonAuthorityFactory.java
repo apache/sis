@@ -456,6 +456,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
      * @throws FactoryException if the object creation failed.
      */
     @Override
+    @SuppressWarnings("removal")
     public IdentifiedObject createObject(final String code) throws FactoryException {
         return createCoordinateReferenceSystem(code);
     }

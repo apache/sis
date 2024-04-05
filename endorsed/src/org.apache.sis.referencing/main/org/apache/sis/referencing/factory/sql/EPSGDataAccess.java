@@ -1255,6 +1255,7 @@ codes:  for (int i=0; i<codes.length; i++) {
      * @see #createCoordinateSystem(String)
      */
     @Override
+    @SuppressWarnings("removal")
     public synchronized IdentifiedObject createObject(final String code)
             throws NoSuchAuthorityCodeException, FactoryException
     {

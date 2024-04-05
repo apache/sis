@@ -146,9 +146,9 @@ import org.apache.sis.xml.XML;
  *     <td>{@link InternationalString} or {@link String}</td>
  *     <td>{@link AbstractDatum#getAnchorDefinition()}</td>
  *   </tr><tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#ANCHOR_EPOCH_KEY}</td>
-     *     <td>{@link java.time.temporal.Temporal}</td>
-     *     <td>{@link AbstractDatum#getAnchorEpoch()}</td>
+ *     <td>{@value org.opengis.referencing.datum.Datum#ANCHOR_EPOCH_KEY}</td>
+ *     <td>{@link java.time.temporal.Temporal}</td>
+ *     <td>{@link AbstractDatum#getAnchorEpoch()}</td>
  *   </tr><tr>
  *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
  *     <td>{@link InternationalString} or {@link String}</td>
@@ -177,7 +177,7 @@ import org.apache.sis.xml.XML;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Guilhem Legal (Geomatys)
  * @author  Johann Sorel (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.6
  */
 public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory, CSFactory, DatumFactory, Parser {
@@ -355,7 +355,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *             The {@code GeodeticCRS} parent class should be used instead.
      */
     @Override
-    @Deprecated(since = "1.5")
+    @Deprecated(since = "2.0")
     public GeocentricCRS createGeocentricCRS(final Map<String,?> properties,
             final GeodeticDatum datum, final CartesianCS cs) throws FactoryException
     {
@@ -437,7 +437,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *             The {@code GeodeticCRS} parent class should be used instead.
      */
     @Override
-    @Deprecated(since = "1.5")
+    @Deprecated(since = "2.0")
     public GeocentricCRS createGeocentricCRS(final Map<String,?> properties,
             final GeodeticDatum datum, final SphericalCS cs) throws FactoryException
     {

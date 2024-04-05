@@ -103,6 +103,9 @@ public final class AuthorityFactoryMock extends GeodeticAuthorityFactory impleme
 
     /**
      * Returns the authority codes for the given type.
+     *
+     * @param  type  the type of referencing object for which to get authority codes.
+     * @return the set of authority codes for referencing objects of the given type.
      */
     @Override
     @SuppressWarnings("deprecation")
@@ -125,6 +128,7 @@ public final class AuthorityFactoryMock extends GeodeticAuthorityFactory impleme
      * @throws NoSuchAuthorityCodeException if the given code is unknown.
      */
     @Override
+    @SuppressWarnings("removal")
     public IdentifiedObject createObject(final String code) throws NoSuchAuthorityCodeException {
         assertFalse(isClosed());
         final int n;

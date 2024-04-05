@@ -873,6 +873,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * @throws FactoryException if the object creation failed.
      */
     @Override
+    @SuppressWarnings("removal")
     public IdentifiedObject createObject(final String code) throws FactoryException {
         return create(AuthorityFactoryProxy.OBJECT, code);
     }
@@ -942,7 +943,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *             The {@code GeodeticCRS} parent class should be used instead.
      */
     @Override
-    @Deprecated(since = "1.5")
+    @Deprecated(since = "2.0")
     public GeocentricCRS createGeocentricCRS(final String code) throws FactoryException {
         if (isDefault(GeocentricCRS.class)) {
             return super.createGeocentricCRS(code);
