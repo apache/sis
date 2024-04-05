@@ -48,11 +48,11 @@ import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
-import org.apache.sis.xml.bind.referencing.SC_CRS;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.xml.bind.referencing.SC_CRS;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 
@@ -81,27 +81,18 @@ import org.apache.sis.io.wkt.Convention;
  * </div>
  *
  * Strictly speaking, only the flat list on the left side is allowed by OGC/ISO specifications.
- * However, Apache SIS relaxes this rule by allowing hierarchies as shown on the right side. This
- * flexibility allows SIS to preserve information about the (<var>x</var>,<var>y</var>,<var>z</var>)
- * part (e.g. the EPSG identifier) that would otherwise been lost. Users can obtain the list of their
- * choice by invoking {@link #getSingleComponents()} or {@link #getComponents()} respectively.
+ * However, Apache SIS relaxes this rule by allowing hierarchies as shown on the right side.
+ * This flexibility allows SIS to preserve information about the (<var>x</var>,<var>y</var>,<var>z</var>) part
+ * (e.g. the EPSG identifier) that would otherwise been lost. Users can obtain the list of their choice
+ * by invoking {@link #getSingleComponents()} or {@link #getComponents()} respectively.
  *
  * <h2>Component order</h2>
- * ISO 19162 restricts compound CRS to the following components in that order:
+ * Apache SIS is flexible about the order of components. However, the following order is recommended:
  * <ul>
- *   <li>A mandatory horizontal CRS (only one of two-dimensional {@code GeographicCRS} or {@code ProjectedCRS} or {@code EngineeringCRS}).</li>
+ *   <li>Horizontal CRS (e.g., two-dimensional {@code GeographicCRS}, {@code ProjectedCRS} or {@code EngineeringCRS}).</li>
  *   <li>Optionally followed by a {@code VerticalCRS} or a {@code ParametricCRS} (but not both).</li>
  *   <li>Optionally followed by a {@code TemporalCRS}.</li>
  * </ul>
- *
- * SIS currently does not enforce those restrictions. In particular:
- * <ul>
- *   <li>Components may appear in different order.
- *   <li>{@code VerticalCRS} + {@code TemporalCRS} (without horizontal component) is accepted.</li>
- *   <li>{@code GeocentricCRS} or three-dimensional {@code GeographicCRS} can be combined with {@code TemporalCRS}.</li>
- * </ul>
- *
- * However, users are encouraged to follow ISO 19162 restriction for better portability.
  *
  * <h2>Immutability and thread safety</h2>
  * This class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
@@ -373,7 +364,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      * Computes the {@link #singles} field from the given CRS list and returns {@code true}
      * if the given list was already a list of single CRS.
      *
-     * <p><strong>WARNING:</strong> this method is invoked by <em>before</em> the {@linkplain #components}
+     * <p><strong>WARNING:</strong> this method is invoked <em>before</em> the {@linkplain #components}
      * field is set. Do not use that field in this method.</p>
      *
      * @throws ClassCastException if a CRS is neither a {@link SingleCRS} or a {@link CompoundCRS}.

@@ -18,8 +18,8 @@ package org.apache.sis.parameter;
 
 import static java.lang.StrictMath.*;
 import javax.measure.Unit;
+import org.opengis.metadata.citation.DateType;
 import org.opengis.referencing.cs.AxisDirection;
-import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.InvalidParameterTypeException;
 import org.opengis.parameter.InvalidParameterValueException;
@@ -416,8 +416,8 @@ public final class DefaultParameterValueTest extends TestCase {
         /*
          * Invalid operation: attempt to set a value of wrong type.
          */
-        exception = assertThrows(InvalidParameterValueException.class, () -> parameter.setValue(VerticalDatumType.BAROMETRIC));
-        assertMessageContains(exception, "Direction", "VerticalDatumType", "AxisDirection");
+        exception = assertThrows(InvalidParameterValueException.class, () -> parameter.setValue(DateType.PUBLICATION));
+        assertMessageContains(exception, "Direction", "DateType", "AxisDirection");
         assertEquals("Direction", exception.getParameterName());
     }
 

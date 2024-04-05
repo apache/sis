@@ -200,8 +200,7 @@ public final class AxisDirections extends Static {
             if (opposite.ordinal() < dir.ordinal()) {
                 dir = opposite;
             }
-            // Below is a temporary patch pending integration of code list values into GeoAPI.
-            // We need this patch because we cannot rely on ordinal() value for custom codes.
+            // Ordinal values do not have the desired order for this particular case.
             if (dir == CLOCKWISE) {
                 dir = COUNTER_CLOCKWISE;
             }
@@ -323,9 +322,8 @@ public final class AxisDirections extends Static {
      * @return {@code true} if the given direction is presumed for spatial CS.
      */
     public static boolean isSpatialOrUserDefined(final AxisDirection dir, final boolean image) {
-        if (dir == null) return false;
-        final int ordinal = dir.ordinal();
-        return ordinal < FUTURE.ordinal() || ordinal > (image ? PAST : DISPLAY_DOWN).ordinal();
+        if (dir == null || dir == PAST || dir == FUTURE) return false;
+        return image || dir.ordinal() < COLUMN_POSITIVE.ordinal() || dir.ordinal() > DISPLAY_DOWN.ordinal();
     }
 
     /**

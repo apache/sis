@@ -709,18 +709,18 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
     }
 
     /**
-     * Tests the {@link EPSGDataAccess#getDescriptionText(String)} method.
+     * Tests the {@link EPSGDataAccess#getDescriptionText(class, String)} method.
      *
      * @throws FactoryException if an error occurred while querying the factory.
      */
     @Test
     public void testDescriptionText() throws FactoryException {
         final EPSGFactory factory = dataEPSG.factory();
-        assertEquals("World Geodetic System 1984", factory.getDescriptionText( "6326").toString(Locale.US));
-        assertEquals("Mean Sea Level",             factory.getDescriptionText( "5100").toString(Locale.US));
-        assertEquals("NTF (Paris) / Nord France",  factory.getDescriptionText("27591").toString(Locale.US));
-        assertEquals("NTF (Paris) / France II",    factory.getDescriptionText("27582").toString(Locale.US));
-        assertEquals("Ellipsoidal height",         factory.getDescriptionText(   "84").toString(Locale.US));
+        assertEquals("World Geodetic System 1984", factory.getDescriptionText(IdentifiedObject.class,  "6326").get().toString(Locale.US));
+        assertEquals("Mean Sea Level",             factory.getDescriptionText(IdentifiedObject.class,  "5100").get().toString(Locale.US));
+        assertEquals("NTF (Paris) / Nord France",  factory.getDescriptionText(IdentifiedObject.class, "27591").get().toString(Locale.US));
+        assertEquals("NTF (Paris) / France II",    factory.getDescriptionText(IdentifiedObject.class, "27582").get().toString(Locale.US));
+        assertEquals("Ellipsoidal height",         factory.getDescriptionText(IdentifiedObject.class,    "84").get().toString(Locale.US));
         loggings.assertNoUnexpectedLog();
     }
 

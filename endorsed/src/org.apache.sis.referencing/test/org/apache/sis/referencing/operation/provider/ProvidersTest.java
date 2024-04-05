@@ -45,7 +45,6 @@ public final class ProvidersTest extends TestCase {
     /**
      * Returns all providers to test.
      */
-    @SuppressWarnings("removal")
     private static Class<?>[] methods() {
         return new Class<?>[] {
             Affine.class,

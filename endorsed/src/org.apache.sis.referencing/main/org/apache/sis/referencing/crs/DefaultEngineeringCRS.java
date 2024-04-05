@@ -325,6 +325,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
     @XmlElement(name="linearCS")      private LinearCS      getLinearCS()      {return getCoordinateSystem(LinearCS     .class);}
     @XmlElement(name="polarCS")       private PolarCS       getPolarCS()       {return getCoordinateSystem(PolarCS      .class);}
     @XmlElement(name="sphericalCS")   private SphericalCS   getSphericalCS()   {return getCoordinateSystem(SphericalCS  .class);}
+    @Deprecated(since = "1.5")
     @XmlElement(name="userDefinedCS") private UserDefinedCS getUserDefinedCS() {return getCoordinateSystem(UserDefinedCS.class);}
 
     /**
@@ -336,6 +337,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
     private void setLinearCS     (final LinearCS      cs) {super.setCoordinateSystem("linearCS",      cs);}
     private void setPolarCS      (final PolarCS       cs) {super.setCoordinateSystem("polarCS",       cs);}
     private void setSphericalCS  (final SphericalCS   cs) {super.setCoordinateSystem("sphericalCS",   cs);}
+    @Deprecated(since = "1.5")
     private void setUserDefinedCS(final UserDefinedCS cs) {super.setCoordinateSystem("userDefinedCS", cs);}
 
     /**

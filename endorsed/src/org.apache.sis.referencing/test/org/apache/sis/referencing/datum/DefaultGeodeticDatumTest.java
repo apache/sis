@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.datum;
 
-import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 import java.io.InputStream;
@@ -75,13 +74,13 @@ public final class DefaultGeodeticDatumTest extends TestCase {
      */
     @Test
     public void testCreateAndSerialize() {
-        final Map<String,Object> properties = new HashMap<>();
+        final var properties = new HashMap<String,Object>();
         assertNull(properties.put(DefaultEllipsoid.NAME_KEY, "Asteroid"));
-        final DefaultEllipsoid ellipsoid = DefaultEllipsoid.createEllipsoid(properties, 1200, 1000, Units.METRE);
+        final var ellipsoid = DefaultEllipsoid.createEllipsoid(properties, 1200, 1000, Units.METRE);
 
         properties.clear();
         assertNull(properties.put(DefaultEllipsoid.NAME_KEY, "Somewhere"));
-        final DefaultPrimeMeridian primeMeridian = new DefaultPrimeMeridian(properties, 12, Units.DEGREE);
+        final var primeMeridian = new DefaultPrimeMeridian(properties, 12, Units.DEGREE);
 
         properties.clear();
         assertNull(properties.put("name",       "This is a name"));
@@ -90,7 +89,7 @@ public final class DefaultGeodeticDatumTest extends TestCase {
         assertNull(properties.put("remarks",    "There is remarks"));
         assertNull(properties.put("remarks_fr", "Voici des remarques"));
         assertNull(properties.put("remarks_ja", "注です。"));
-        final DefaultGeodeticDatum datum = new DefaultGeodeticDatum(properties, ellipsoid, primeMeridian);
+        final var datum = new DefaultGeodeticDatum(properties, ellipsoid, primeMeridian);
 
         validate(datum);
         validate(assertSerializedEquals(datum));
@@ -115,7 +114,7 @@ public final class DefaultGeodeticDatumTest extends TestCase {
      */
     @Test
     public void testIsHeuristicMatchForName() {
-        DefaultGeodeticDatum datum = new DefaultGeodeticDatum(GeodeticDatumMock.WGS84);
+        var datum = new DefaultGeodeticDatum(GeodeticDatumMock.WGS84);
         assertFalse(datum.isHeuristicMatchForName("WGS72"));
         assertTrue (datum.isHeuristicMatchForName("WGS84"));
         assertTrue (datum.isHeuristicMatchForName("WGS 84"));
@@ -137,7 +136,7 @@ public final class DefaultGeodeticDatumTest extends TestCase {
      */
     @Test
     public void testGetPositionVectorTransformation() {
-        final Map<String,Object> properties = new HashMap<>();
+        final var properties = new HashMap<String,Object>();
         assertNull(properties.put(DefaultGeodeticDatum.NAME_KEY, "Invalid dummy datum"));
         /*
          * Associate two BursaWolfParameters, one valid only in a local area and the other one
@@ -152,14 +151,14 @@ public final class DefaultGeodeticDatumTest extends TestCase {
         /*
          * Build the datum using WGS 72 ellipsoid (so at least one of the BursaWolfParameters is real).
          */
-        final DefaultGeodeticDatum datum = new DefaultGeodeticDatum(properties,
+        final var datum = new DefaultGeodeticDatum(properties,
                 GeodeticDatumMock.WGS72.getEllipsoid(),
                 GeodeticDatumMock.WGS72.getPrimeMeridian());
         /*
          * Search for BursaWolfParameters around the North Sea area.
          */
-        final DefaultGeographicBoundingBox areaOfInterest = new DefaultGeographicBoundingBox(-2, 8, 55, 60);
-        final DefaultExtent extent = new DefaultExtent("Around the North Sea", areaOfInterest, null, null);
+        final var areaOfInterest = new DefaultGeographicBoundingBox(-2, 8, 55, 60);
+        final var extent = new DefaultExtent("Around the North Sea", areaOfInterest, null, null);
         Matrix matrix = datum.getPositionVectorTransformation(GeodeticDatumMock.NAD83, extent);
         assertNull(matrix, "No BursaWolfParameters for NAD83");
         matrix = datum.getPositionVectorTransformation(GeodeticDatumMock.WGS84, extent);
@@ -175,7 +174,7 @@ public final class DefaultGeodeticDatumTest extends TestCase {
         /*
          * Search in the reverse direction.
          */
-        final DefaultGeodeticDatum targetDatum = new DefaultGeodeticDatum(GeodeticDatumMock.WGS84);
+        final var targetDatum = new DefaultGeodeticDatum(GeodeticDatumMock.WGS84);
         matrix = targetDatum.getPositionVectorTransformation(datum, extent);
         global.invert(); // Expected result is the inverse.
         checkTransformationSignature(global, matrix, 1E-6);
@@ -202,10 +201,10 @@ public final class DefaultGeodeticDatumTest extends TestCase {
      */
     @Test
     public void testIndirectTransformation() {
-        final Map<String,Object> properties = new HashMap<>();
+        final var properties = new HashMap<String,Object>();
         assertNull(properties.put(DefaultGeodeticDatum.NAME_KEY, "Invalid dummy datum"));
         assertNull(properties.put(DefaultGeodeticDatum.BURSA_WOLF_KEY, BursaWolfParametersTest.createWGS72_to_WGS84()));
-        final DefaultGeodeticDatum global = new DefaultGeodeticDatum(properties,
+        final var global = new DefaultGeodeticDatum(properties,
                 GeodeticDatumMock.WGS72.getEllipsoid(),
                 GeodeticDatumMock.WGS72.getPrimeMeridian());
         /*
@@ -213,7 +212,7 @@ public final class DefaultGeodeticDatumTest extends TestCase {
          * However, an indirect transformation to WGS72 is available through WGS84.
          */
         properties.put(DefaultGeodeticDatum.BURSA_WOLF_KEY, BursaWolfParametersTest.createED87_to_WGS84());
-        final DefaultGeodeticDatum local = new DefaultGeodeticDatum(properties,
+        final var local = new DefaultGeodeticDatum(properties,
                 GeodeticDatumMock.ED50.getEllipsoid(),
                 GeodeticDatumMock.ED50.getPrimeMeridian());
         /*
@@ -238,7 +237,7 @@ public final class DefaultGeodeticDatumTest extends TestCase {
      */
     @Test
     public void testToWKT() {
-        final DefaultGeodeticDatum datum = new DefaultGeodeticDatum(GeodeticDatumMock.WGS84);
+        final var datum = new DefaultGeodeticDatum(GeodeticDatumMock.WGS84);
         assertWktEquals(Convention.WKT2,
                 "DATUM[“WGS84”,\n" +
                 "  ELLIPSOID[“WGS84”, 6378137.0, 298.257223563, LENGTHUNIT[“metre”, 1]]]",
@@ -303,9 +302,9 @@ public final class DefaultGeodeticDatumTest extends TestCase {
         assertEquals("Satellite navigation.",
                 datum.getScope().toString());
         assertEquals("Station coordinates changed by a few centimetres in 1994, 1997, 2002 and 2012.",
-                datum.getAnchorPoint().toString());
-        assertEquals(xmlDate("1984-01-01 00:00:00"),
-                datum.getRealizationEpoch());
+                datum.getAnchorDefinition().get().toString());
+        assertEquals(xmlDate("1984-01-01 00:00:00").toInstant(),
+                datum.getAnchorEpoch().orElse(null));
         assertEquals("Defining parameters cited in EPSG database.",
                 datum.getEllipsoid().getRemarks().toString());
         return datum;

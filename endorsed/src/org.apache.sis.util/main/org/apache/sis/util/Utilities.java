@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.Objects;
+import java.util.Optional;
 import org.apache.sis.util.collection.CheckedContainer;
 
 
@@ -30,7 +31,7 @@ import org.apache.sis.util.collection.CheckedContainer;
  * Static methods for object comparisons in different ways (deeply, approximately, <i>etc</i>).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 0.3
+ * @version 1.5
  * @since   0.3
  */
 public final class Utilities extends Static {
@@ -128,9 +129,16 @@ public final class Utilities extends Static {
      * @see #equalsIgnoreMetadata(Object, Object)
      * @see #equalsApproximately(Object, Object)
      */
-    public static boolean deepEquals(final Object object1, final Object object2, final ComparisonMode mode) {
+    public static boolean deepEquals(Object object1, Object object2, final ComparisonMode mode) {
         if (object1 == object2) {
             return true;
+        }
+        if (object1 instanceof Optional<?> && object2 instanceof Optional<?>) {
+            object1 = ((Optional<?>) object1).orElse(null);
+            object2 = ((Optional<?>) object2).orElse(null);
+            if (object1 == object2) {
+                return true;
+            }
         }
         if (object1 == null || object2 == null) {
             assert isNotDebug(mode) : ((object1 != null) ? object1.getClass()

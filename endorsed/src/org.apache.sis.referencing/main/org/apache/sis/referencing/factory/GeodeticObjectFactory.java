@@ -144,11 +144,11 @@ import org.apache.sis.xml.XML;
  *   </tr><tr>
  *     <td>{@value org.opengis.referencing.datum.Datum#ANCHOR_POINT_KEY}</td>
  *     <td>{@link InternationalString} or {@link String}</td>
- *     <td>{@link AbstractDatum#getAnchorPoint()}</td>
+ *     <td>{@link AbstractDatum#getAnchorDefinition()}</td>
  *   </tr><tr>
- *     <td>{@value org.opengis.referencing.datum.Datum#REALIZATION_EPOCH_KEY}</td>
- *     <td>{@link Date}</td>
- *     <td>{@link AbstractDatum#getRealizationEpoch()}</td>
+ *     <td>{@value "anchorEpoch"}</td>
+ *     <td>{@link java.time.temporal.Temporal}</td>
+ *     <td>{@link AbstractDatum#getAnchorEpoch()}</td>
  *   </tr><tr>
  *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
  *     <td>{@link InternationalString} or {@link String}</td>
@@ -1208,8 +1208,12 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * @see DefaultImageCRS#DefaultImageCRS(Map, ImageDatum, AffineCS)
      * @see GeodeticAuthorityFactory#createImageCRS(String)
+     *
+     * @deprecated The {@code ImageCRS} class has been removed in ISO 19111:2019.
+     *             It is replaced by {@code EngineeringCRS}.
      */
     @Override
+    @Deprecated(since = "1.5")
     public ImageCRS createImageCRS(final Map<String,?> properties,
             final ImageDatum datum, final AffineCS cs) throws FactoryException
     {
@@ -1232,8 +1236,12 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * @see DefaultImageDatum#DefaultImageDatum(Map, PixelInCell)
      * @see GeodeticAuthorityFactory#createImageDatum(String)
+     *
+     * @deprecated The {@code ImageDatum} class has been removed in ISO 19111:2019.
+     *             It is replaced by {@code EngineeringDatum}.
      */
     @Override
+    @Deprecated(since = "1.5")
     public ImageDatum createImageDatum(final Map<String,?> properties,
             final PixelInCell pixelInCell) throws FactoryException
     {
@@ -1496,8 +1504,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultUserDefinedCS#DefaultUserDefinedCS(Map, CoordinateSystemAxis, CoordinateSystemAxis)
+     *
+     * @deprecated The {@code UserDefinedCS} class has been removed from ISO 19111:2019.
      */
     @Override
+    @Deprecated(since = "1.5")
     public UserDefinedCS createUserDefinedCS(final Map<String,?> properties,
             final CoordinateSystemAxis axis0,
             final CoordinateSystemAxis axis1) throws FactoryException
@@ -1530,8 +1541,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultUserDefinedCS#DefaultUserDefinedCS(Map, CoordinateSystemAxis, CoordinateSystemAxis, CoordinateSystemAxis)
+     *
+     * @deprecated The {@code UserDefinedCS} class has been removed from ISO 19111:2019.
      */
     @Override
+    @Deprecated(since = "1.5")
     public UserDefinedCS createUserDefinedCS(final Map<String,?> properties,
             final CoordinateSystemAxis axis0,
             final CoordinateSystemAxis axis1,

@@ -19,7 +19,6 @@ package org.apache.sis.referencing.cs;
 import java.util.Map;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.RangeMeaning;
-import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
@@ -28,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 // Specific to the main branch:
+import org.apache.sis.referencing.privy.AxisDirections;
 import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
 
 

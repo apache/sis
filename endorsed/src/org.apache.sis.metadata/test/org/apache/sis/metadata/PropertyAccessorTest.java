@@ -57,6 +57,7 @@ import static org.apache.sis.metadata.PropertyAccessor.RETURN_PREVIOUS;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
+import org.apache.sis.test.mock.GeographicCRSMock;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
@@ -238,17 +239,16 @@ public final class PropertyAccessorTest extends TestCase {
      */
     @Test
     public void testConstructorWithCovariantReturnType() {
-        final Class<?> type = GeographicCRS.class;
-        assertMappingEquals(new PropertyAccessor(type, type, type),
-        //……Declaring type……………………………Method……………………………………………JavaBeans……………………………UML identifier………………Sentence…………………………………Type…………………………………………………………
-            GeographicCRS.class,    "getCoordinateSystem", "coordinateSystem", "coordinateSystem", "Coordinate system",  EllipsoidalCS.class,       // Covariant return type
-            GeodeticCRS.class,      "getDatum",            "datum",            "datum",            "Datum",              GeodeticDatum.class,       // Covariant return type
-            IdentifiedObject.class, "getName",             "name",             "name",             "Name",               ReferenceIdentifier.class,
-            IdentifiedObject.class, "getAlias",            "alias",            "alias",            "Alias",              GenericName[].class,
-            ReferenceSystem.class,  "getDomainOfValidity", "domainOfValidity", "domainOfValidity", "Domain of validity", Extent.class,
-            IdentifiedObject.class, "getIdentifiers",      "identifiers",      "identifier",       "Identifiers",        ReferenceIdentifier[].class,
-            IdentifiedObject.class, "getRemarks",          "remarks",          "remarks",          "Remarks",            InternationalString.class,
-            ReferenceSystem.class,  "getScope",            "scope",            "SC_CRS.scope",     "Scope",              InternationalString.class);
+        assertMappingEquals(new PropertyAccessor(GeographicCRS.class, GeographicCRSMock.class, GeographicCRSMock.class),
+        //……Declaring type……………………………Method……………………………………………JavaBeans……………………………UML identifier……………………Sentence………………………………Type…………………………………………………………
+            GeographicCRS.class,    "getCoordinateSystem", "coordinateSystem", "coordinateSystem",   "Coordinate system", EllipsoidalCS.class,       // Covariant return type
+            GeodeticCRS.class,      "getDatum",            "datum",            "datum",              "Datum",             GeodeticDatum.class,       // Covariant return type
+            IdentifiedObject.class, "getName",             "name",             "name",               "Name",              ReferenceIdentifier.class,
+            IdentifiedObject.class, "getAlias",            "alias",            "alias",              "Alias",             GenericName[].class,
+            IdentifiedObject.class, "getIdentifiers",      "identifiers",      "identifier",         "Identifiers",       ReferenceIdentifier[].class,
+            ReferenceSystem.class,  "getScope",            "scope",            "SC_CRS.scope",     "Scope",               InternationalString.class,
+            ReferenceSystem.class,  "getDomainOfValidity", "domainOfValidity", "domainOfValidity", "Domain of validity",  Extent.class,
+            IdentifiedObject.class, "getRemarks",          "remarks",          "remarks",          "Remarks",             InternationalString.class);
     }
 
     /**

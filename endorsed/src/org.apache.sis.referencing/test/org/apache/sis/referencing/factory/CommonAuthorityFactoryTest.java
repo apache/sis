@@ -130,15 +130,25 @@ public final class CommonAuthorityFactoryTest extends TestCase {
     }
 
     /**
-     * Tests {@link CommonAuthorityFactory#getDescriptionText(String)}.
+     * Tests {@link CommonAuthorityFactory#getDescriptionText(Class, String)}.
      *
      * @throws FactoryException if an error occurred while creating a CRS.
      */
     @Test
     public void testDescription() throws FactoryException {
-        assertEquals("WGS 84",                factory.getDescriptionText("CRS:84").toString());
-        assertEquals("WGS 84 / Auto UTM",     factory.getDescriptionText("AUTO:42001").toString());
-        assertEquals("WGS 84 / UTM zone 10S", factory.getDescriptionText("AUTO:42001,-124,-10").toString());
+        assertDescriptionEquals("WGS 84",                "CRS:84");
+        assertDescriptionEquals("WGS 84 / Auto UTM",     "AUTO:42001");
+        assertDescriptionEquals("WGS 84 / UTM zone 10S", "AUTO:42001,-124,-10");
+    }
+
+    /**
+     * Asserts that the description is equal to the expected value.
+     *
+     * @param expected  the expected description.
+     * @param code      the code of the object for which to fetch the description.
+     */
+    private void assertDescriptionEquals(String expected, String code) throws FactoryException {
+        assertEquals(expected, factory.getDescriptionText(CoordinateReferenceSystem.class, code).orElseThrow().toString());
     }
 
     /**

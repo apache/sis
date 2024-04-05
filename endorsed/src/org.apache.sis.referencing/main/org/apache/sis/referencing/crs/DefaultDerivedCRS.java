@@ -64,13 +64,9 @@ import org.apache.sis.referencing.datum.DefaultParametricDatum;
 
 
 /**
- * A coordinate reference system that is defined by its coordinate {@linkplain DefaultConversion conversion}
- * from another CRS (not by a {@linkplain org.apache.sis.referencing.datum.AbstractDatum datum}). {@code DerivedCRS}
- * cannot be {@linkplain DefaultProjectedCRS projected CRS} themselves, but may be derived from a projected CRS
- * (for example in order to use a {@linkplain org.apache.sis.referencing.cs.DefaultPolarCS polar coordinate system}).
- *
- * <p>A {@code DerivedCRS} instance may also implement one of the interfaces listed below,
- * provided that the conditions in the right column are met (derived from ISO 19162):</p>
+ * A coordinate reference system that is defined by its coordinate conversion from another CRS.
+ * A {@code DerivedCRS} instance may implement one of the interfaces listed below,
+ * provided that the conditions in the right column are met (derived from ISO 19162):
  *
  * <table class="sis">
  *   <caption>Derived CRS types</caption>

@@ -149,6 +149,7 @@ public final class HardCodedDatum {
     /**
      * Image with {@link PixelInCell#CELL_CENTER}.
      */
+    @SuppressWarnings("deprecation")
     public static final DefaultImageDatum IMAGE = new DefaultImageDatum(
             properties("Image", null, null),
             PixelInCell.CELL_CENTER);

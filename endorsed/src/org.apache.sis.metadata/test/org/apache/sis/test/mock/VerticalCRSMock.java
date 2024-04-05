@@ -95,10 +95,10 @@ public final class VerticalCRSMock extends IdentifiedObjectMock
      * Creates a new vertical CRS for the given name.
      *
      * @param name          the CRS, CS, datum and axis name.
-     * @param up            {@code true} if the axis direction is up, or {@code false} if down.
-     * @param unit          the unit of measurement.
      * @param minimumValue  the minium value.
      * @param maximumValue  the maximum value.
+     * @param unit          the unit of measurement.
+     * @param up            {@code true} if the axis direction is up, or {@code false} if down.
      */
     private VerticalCRSMock(final String name, VerticalDatumType type,
             final double minimumValue, final double maximumValue, final Unit<?> unit, final boolean up)
@@ -119,19 +119,19 @@ public final class VerticalCRSMock extends IdentifiedObjectMock
         return new Object[] {getCode(), alias, minimumValue, maximumValue, unit, up};
     }
 
-    @Override public String               getAbbreviation()      {return up ? "h" : "d";}
-    @Override public InternationalString  getScope()             {return null;}
-    @Override public InternationalString  getAnchorPoint()       {return null;}
-    @Override public Date                 getRealizationEpoch()  {return null;}
-    @Override public Extent               getDomainOfValidity()  {return null;}
-    @Override public VerticalDatumType    getVerticalDatumType() {return type;}
-    @Override public VerticalDatum        getDatum()             {return this;}
-    @Override public VerticalCS           getCoordinateSystem()  {return this;}
-    @Override public int                  getDimension()         {return 1;}
-    @Override public CoordinateSystemAxis getAxis(int dimension) {return this;}
-    @Override public AxisDirection        getDirection()         {return up ? AxisDirection.UP : AxisDirection.DOWN;}
-    @Override public double               getMinimumValue()      {return minimumValue;}
-    @Override public double               getMaximumValue()      {return maximumValue;}
-    @Override public RangeMeaning         getRangeMeaning()      {return RangeMeaning.EXACT;}
-    @Override public Unit<?>              getUnit()              {return unit;}
+    @Override public String                      getAbbreviation()      {return up ? "h" : "d";}
+    @Override public InternationalString         getScope()             {return null;}
+    @Override public InternationalString         getAnchorPoint()       {return null;}
+    @Override public Date                        getRealizationEpoch()  {return null;}
+    @Override public Extent                      getDomainOfValidity()  {return null;}
+    @Override public VerticalDatumType           getVerticalDatumType() {return type;}
+    @Override public VerticalDatum               getDatum()             {return this;}
+    @Override public VerticalCS                  getCoordinateSystem()  {return this;}
+    @Override public int                         getDimension()         {return 1;}
+    @Override public CoordinateSystemAxis        getAxis(int dimension) {return this;}
+    @Override public AxisDirection               getDirection()         {return up ? AxisDirection.UP : AxisDirection.DOWN;}
+    @Override public double                      getMinimumValue()      {return minimumValue;}
+    @Override public double                      getMaximumValue()      {return maximumValue;}
+    @Override public RangeMeaning                getRangeMeaning()      {return RangeMeaning.EXACT;}
+    @Override public Unit<?>                     getUnit()              {return unit;}
 }

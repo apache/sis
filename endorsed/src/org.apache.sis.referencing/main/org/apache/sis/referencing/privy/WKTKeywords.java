@@ -217,10 +217,12 @@ public final class WKTKeywords extends Static {
             vertical    = "vertical";
 
     /**
-     * Geometries.
+     * Coordinates and epoch.
      */
     public static final String
-            Point       = "Point";
+            CoordinateMetadata = "CoordinateMetadata",
+            Epoch              = "Epoch",
+            Point              = "Point";
 
     /**
      * Mapping between types of object and WKT keywords. Each GeoAPI interfaces is associated to one
@@ -272,6 +274,7 @@ public final class WKTKeywords extends Static {
         addType(org.opengis.referencing.cs.CoordinateSystemAxis.class,      Axis);
         addType(org.apache.sis.referencing.datum.BursaWolfParameters.class, ToWGS84);
         addType(org.opengis.referencing.operation.MathTransform.class,      Param_MT, Concat_MT, Inverse_MT, PassThrough_MT);
+        addType(org.apache.sis.coordinate.DefaultCoordinateMetadata.class,  CoordinateMetadata);
         addType(org.opengis.geometry.DirectPosition.class,                  Point);
     }
 

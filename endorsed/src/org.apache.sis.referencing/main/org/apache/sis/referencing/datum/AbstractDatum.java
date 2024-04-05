@@ -19,6 +19,8 @@ package org.apache.sis.referencing.datum;
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
+import java.time.temporal.Temporal;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlSchemaType;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -66,7 +68,7 @@ import org.apache.sis.referencing.internal.Legacy;
  * and static constants can be shared by many objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.cs.AbstractCS
  * @see org.apache.sis.referencing.crs.AbstractCRS
@@ -90,29 +92,31 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -729506171131910731L;
+    private static final long serialVersionUID = 5380816794438838309L;
 
     /**
-     * Description, possibly including coordinates, of the point or points used to anchor the datum
-     * to the Earth. Also known as the "origin", especially for Engineering and Image Datums.
+     * Description, possibly including coordinates, of the point or points used to anchor the datum to the Earth.
+     * Also known as the "origin", especially for Engineering and Image Datums.
      *
      * <p><b>Consider this field as final!</b>
      * This field is modified only at unmarshalling time by {@link #setAnchorPoint(InternationalString)}</p>
      *
-     * @see #getAnchorPoint()
+     * @see #getAnchorDefinition()
      */
     @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
     private InternationalString anchorDefinition;
 
     /**
-     * The time after which this datum definition is valid. This time may be precise
-     * (e.g. 1997 for IRTF97) or merely a year (e.g. 1983 for NAD83). If the time is
-     * not defined, then the value is {@link Long#MIN_VALUE}.
+     * The time after which this datum definition is valid.
+     * This time may be precise (e.g. 1997 for IRTF97) or merely a year (e.g. 1983 for NAD83).
      *
      * <p><b>Consider this field as final!</b>
      * This field is modified only at unmarshalling time by {@link #setRealizationEpoch(Date)}</p>
+     *
+     * @see #getAnchorEpoch()
      */
-    private long realizationEpoch;
+    @SuppressWarnings("serial")                     // Standard Java implementations are serializable.
+    private Temporal anchorEpoch;
 
     /**
      * Creates a datum from the given properties.
@@ -129,11 +133,11 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *   </tr><tr>
      *     <td>{@value org.opengis.referencing.datum.Datum#ANCHOR_POINT_KEY}</td>
      *     <td>{@link InternationalString} or {@link String}</td>
-     *     <td>{@link #getAnchorPoint()}</td>
+     *     <td>{@link #getAnchorDefinition()}</td>
      *   </tr><tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#REALIZATION_EPOCH_KEY}</td>
-     *     <td>{@link Date}</td>
-     *     <td>{@link #getRealizationEpoch()}</td>
+     *     <td>{@code "anchorEpoch"}</td>
+     *     <td>{@link Temporal}</td>
+     *     <td>{@link #getAnchorEpoch()}</td>
      *   </tr><tr>
      *     <th colspan="3" class="hsep">Defined in parent class (reminder)</th>
      *   </tr><tr>
@@ -163,8 +167,17 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     public AbstractDatum(final Map<String,?> properties) {
         super(properties);
-        realizationEpoch = ImplementationHelper.toMilliseconds(property(properties, REALIZATION_EPOCH_KEY, Date.class));
-        anchorDefinition = Types.toInternationalString(properties, ANCHOR_POINT_KEY);
+        anchorDefinition = Types.toInternationalString(properties, "anchorDefinition");
+        if (anchorDefinition == null) {
+            anchorDefinition = Types.toInternationalString(properties, ANCHOR_POINT_KEY);
+        }
+        anchorEpoch = property(properties, "anchorEpoch", Temporal.class);
+        if (anchorEpoch == null) {
+            Date date = property(properties, REALIZATION_EPOCH_KEY, Date.class);
+            if (date != null) {
+                anchorEpoch = date.toInstant();
+            }
+        }
     }
 
     /**
@@ -178,7 +191,10 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     protected AbstractDatum(final Datum datum) {
         super(datum);
-        realizationEpoch = ImplementationHelper.toMilliseconds(datum.getRealizationEpoch());
+        Date date = datum.getRealizationEpoch();
+        if (date != null) {
+            anchorEpoch = date.toInstant();
+        }
         anchorDefinition = datum.getAnchorPoint();
     }
 
@@ -226,7 +242,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     }
 
     /**
-     * Returns a description of the point(s) used to anchor the datum to the Earth.
+     * Returns a description of the relationship used to anchor the coordinate system to the Earth or alternate object.
      * Also known as the "origin", especially for Engineering and Image Datums.
      *
      * <ul>
@@ -236,35 +252,61 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *   <li>For an {@linkplain DefaultEngineeringDatum engineering datum}, the anchor may be an identified
      *       physical point with the orientation defined relative to the object.</li>
      *
-     *   <li>For an {@linkplain DefaultImageDatum image datum}, the anchor point may be the centre or the corner
-     *       of the image.</li>
-     *
      *   <li>For a {@linkplain DefaultTemporalDatum temporal datum}, see their
      *       {@linkplain DefaultTemporalDatum#getOrigin() origin} instead.</li>
      * </ul>
      *
      * @return description, possibly including coordinates, of the point or points used to anchor the datum to the Earth.
+     *
+     * @since 1.5
+     */
+    public Optional<InternationalString> getAnchorDefinition() {
+        return Optional.ofNullable(anchorDefinition);
+    }
+
+    /**
+     * Returns a description of the point(s) used to anchor the datum to the Earth.
+     *
+     * @deprecated Renamed {@link #getAnchorDefinition()} as of ISO 19111:2019.
+     *
+     * @return a description of the point(s) used to anchor the datum to the Earth.
      */
     @Override
+    @Deprecated(since = "1.5")
     @XmlElement(name = "anchorDefinition")
     public InternationalString getAnchorPoint() {
         return anchorDefinition;
     }
 
     /**
-     * The time after which this datum definition is valid.
-     * This time may be precise or merely a year.
+     * Returns the epoch at which a static datum matches a dynamic datum from which it has been derived.
+     * This time may be precise or merely a year (e.g. 1983 for NAD83).
      *
-     * <p>If an old datum is superseded by a new datum, then the realization epoch for the new datum
-     * defines the upper limit for the validity of the old datum.</p>
+     * @return epoch at which a static datum matches a dynamic datum from which it has been derived.
+     *
+     * @see java.time.Year
+     * @see java.time.YearMonth
+     * @see java.time.LocalDate
+     *
+     * @since 1.5
+     */
+    public Optional<Temporal> getAnchorEpoch() {
+        return Optional.ofNullable(anchorEpoch);
+    }
+
+    /**
+     * The time after which this datum definition is valid.
      *
      * @return the time after which this datum definition is valid, or {@code null} if none.
+     *
+     * @deprecated Since ISO 19111:2019, replaced by {@link #getAnchorEpoch()}.
      */
     @Override
+    @Deprecated(since = "1.5")
     @XmlSchemaType(name = "date")
     @XmlElement(name = "realizationEpoch")
     public Date getRealizationEpoch() {
-        return ImplementationHelper.toDate(realizationEpoch);
+        return getAnchorEpoch().map(Legacy::toDate).orElse(null);
     }
 
     /**
@@ -348,7 +390,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * Compares the specified object with this datum for equality.
      * If the {@code mode} argument value is {@link ComparisonMode#STRICT STRICT} or
      * {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}, then all available properties are compared including the
-     * {@linkplain #getAnchorPoint() anchor point}, {@linkplain #getRealizationEpoch() realization epoch},
+     * {@linkplain #getAnchorDefinition() anchor definition}, {@linkplain #getAnchorEpoch() anchor epoch},
      * and the {@linkplain #getDomains() domains}.
      *
      * @param  object  the object to compare to {@code this}.
@@ -365,7 +407,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
         switch (mode) {
             case STRICT: {
                 final AbstractDatum that = (AbstractDatum) object;
-                return this.realizationEpoch == that.realizationEpoch &&
+                return Objects.equals(this.anchorEpoch,      that.anchorEpoch) &&
                        Objects.equals(this.anchorDefinition, that.anchorDefinition);
             }
             case BY_CONTRACT: {
@@ -404,7 +446,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     @Override
     protected long computeHashCode() {
-        return super.computeHashCode() + Objects.hash(anchorDefinition, realizationEpoch);
+        return super.computeHashCode() + Objects.hash(anchorDefinition, anchorEpoch);
     }
 
     /**
@@ -455,7 +497,6 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     AbstractDatum() {
         super(org.apache.sis.referencing.privy.NilReferencingObject.INSTANCE);
-        realizationEpoch = Long.MIN_VALUE;
     }
 
     /**
@@ -477,8 +518,8 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * @see #getRealizationEpoch()
      */
     private void setRealizationEpoch(final Date value) {
-        if (realizationEpoch == Long.MIN_VALUE) {
-            realizationEpoch = value.getTime();
+        if (anchorEpoch == null) {
+            anchorEpoch = value.toInstant();
         } else {
             ImplementationHelper.propertyAlreadySet(AbstractDatum.class, "setRealizationEpoch", "realizationEpoch");
         }

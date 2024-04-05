@@ -82,6 +82,7 @@ public final class EPSGFactoryProxyCRS extends EPSGFactoryProxy implements CRSAu
     }
 
     @Override
+    @Deprecated(since = "1.5")
     public ImageCRS createImageCRS(String code) throws FactoryException {
         return factory().createImageCRS(code);
     }

@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.function.Predicate;
 import java.util.function.Consumer;
@@ -38,6 +39,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
@@ -128,7 +130,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * {@link org.apache.sis.referencing.factory.sql.EPSGFactory}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.5
  * @since   1.1
  */
 public class WKTDictionary extends GeodeticAuthorityFactory {
@@ -957,25 +959,31 @@ public class WKTDictionary extends GeodeticAuthorityFactory {
     /**
      * Gets a description of the object corresponding to a code.
      *
+     * @param  type  the type of object for which to get a description.
      * @param  code  value allocated by authority.
      * @return a description of the object, or {@code null} if {@code null} if none.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
      * @throws FactoryException if the query failed for some other reason.
+     *
+     * @since 1.5
      */
     @Override
-    public InternationalString getDescriptionText(final String code) throws FactoryException {
-        final String text;
+    public Optional<InternationalString> getDescriptionText(Class<? extends IdentifiedObject> type, final String code)
+            throws FactoryException
+    {
+        final InternationalString name;
         final Object value = getOrCreate(code, false);
         if (value instanceof IdentifiedObject) {
-            text = ((IdentifiedObject) value).getName().getCode();
+            name = IdentifiedObjects.getDisplayName((IdentifiedObject) value);
         } else {
-            text = String.valueOf(value);
+            final String text = String.valueOf(value);
             if (!(value instanceof StoredTree)) {
                 // Exception message saved in a previous invocation of `getOrCreate(…)`.
                 throw new FactoryException(text);
             }
+            name = new SimpleInternationalString(text);
         }
-        return new SimpleInternationalString(text);
+        return Optional.ofNullable(name);
     }
 
     /**

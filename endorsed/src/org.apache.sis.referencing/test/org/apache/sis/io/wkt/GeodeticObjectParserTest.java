@@ -223,7 +223,7 @@ public final class GeodeticObjectParserTest extends TestCase {
                 "  ANCHOR[“Tananarive observatory”]]");
 
         assertNameAndIdentifierEqual("Tananarive 1925", 0, datum);
-        assertEquals("Tananarive observatory", String.valueOf(datum.getAnchorPoint()));
+        assertEquals("Tananarive observatory", datum.getAnchorPoint().toString());
 
         final Ellipsoid ellipsoid = datum.getEllipsoid();
         assertNameAndIdentifierEqual("International 1924", 0, ellipsoid);

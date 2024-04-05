@@ -224,7 +224,7 @@ final class PropertyComparator implements Comparator<Method> {
      */
     private int indexOf(final Method method) {
         /*
-         * Check the cached value computed by previous call to 'indexOf(…)'.
+         * Check the cached value computed by previous call to `indexOf(…)`.
          * Example: "getExtents"
          */
         Integer index = order.get(method);

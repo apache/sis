@@ -262,6 +262,7 @@ public final class EPSGFactoryFallbackTest extends TestCaseWithLogs {
         } finally {
             setEPSGFactory(EPSG);
         }
+        loggings.skipNextLogIfContains("EPSG:4047");
         loggings.skipNextLogIfContains("EPSG:4019");        // Deprecated EPSG entry.
         loggings.assertNoUnexpectedLog();
     }

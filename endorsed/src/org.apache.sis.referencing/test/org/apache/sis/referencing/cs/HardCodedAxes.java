@@ -21,8 +21,10 @@ import javax.measure.Unit;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.apache.sis.metadata.privy.AxisNames;
-import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.measure.Units;
+
+// Specific to the main branch:
+import org.apache.sis.referencing.privy.AxisDirections;
 
 
 /**

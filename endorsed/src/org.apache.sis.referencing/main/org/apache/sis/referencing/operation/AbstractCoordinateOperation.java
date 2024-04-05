@@ -19,6 +19,7 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import java.util.Set;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Collection;
 import java.util.logging.Logger;
 import java.io.IOException;
@@ -41,6 +42,7 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.PassThroughOperation;
+import org.opengis.referencing.operation.TransformException;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
@@ -74,8 +76,13 @@ import org.apache.sis.system.Loggers;
 import static org.apache.sis.util.Utilities.deepEquals;
 
 // Specific to the main branch:
+import java.time.temporal.Temporal;
+import org.opengis.annotation.UML;
+import static org.opengis.annotation.Obligation.CONDITIONAL;
+import static org.opengis.annotation.Specification.ISO_19111;
 import org.opengis.metadata.extent.Extent;
 import org.apache.sis.referencing.internal.Legacy;
+import org.apache.sis.coordinate.AbstractCoordinateSet;
 
 
 /**
@@ -157,8 +164,8 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
     CoordinateReferenceSystem targetCRS;
 
     /**
-     * The CRS which is neither the {@linkplain #getSourceCRS() source CRS} or
-     * {@linkplain #getTargetCRS() target CRS} but still required for performing the operation.
+     * The CRS required for performing the operation.
+     * It may differ from the source and target CRS.
      *
      * <p><b>Consider this field as final!</b>
      * This field is non-final only for the convenience of constructors.</p>
@@ -327,6 +334,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      * @param  transform         transform from positions in the source CRS to positions in the target CRS,
      *                           or {@code null} if unspecified.
      */
+    @SuppressWarnings("this-escape")    // False positive.
     public AbstractCoordinateOperation(final Map<String,?>             properties,
                                        final CoordinateReferenceSystem sourceCRS,
                                        final CoordinateReferenceSystem targetCRS,
@@ -530,18 +538,20 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     }
 
     /**
-     * Returns the CRS which is neither the {@linkplain #getSourceCRS() source CRS} or
-     * {@linkplain #getTargetCRS() target CRS} but still required for performing the operation.
+     * Returns the <abbr>CRS</abbr> to be used for interpolations in a grid.
+     * Some single coordinate operations employ methods which include interpolation within a grid to derive
+     * the values of operation parameters. The <abbr>CRS</abbr> to be used for the interpolation
+     * may be different from either the source <abbr>CRS</abbr> or the target <abbr>CRS</abbr>.
      *
      * <h4>Example</h4>
      * Some transformations of vertical coordinates (<var>h</var>) require the horizontal coordinates (φ,λ)
      * in order to interpolate in a grid. This method returns the CRS of the grid where such interpolations
      * are performed.
      *
-     * @return the CRS (neither source or target CRS) required for interpolating the values, or {@code null} if none.
+     * @return the <abbr>CRS</abbr> required for interpolating the values.
      */
-    public CoordinateReferenceSystem getInterpolationCRS() {
-        return interpolationCRS;
+    public Optional<CoordinateReferenceSystem> getInterpolationCRS() {
+        return Optional.ofNullable(interpolationCRS);
     }
 
     /**
@@ -549,7 +559,33 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      */
     static CoordinateReferenceSystem getInterpolationCRS(final CoordinateOperation operation) {
         return (operation instanceof AbstractCoordinateOperation)
-               ? ((AbstractCoordinateOperation) operation).getInterpolationCRS() : null;
+               ? ((AbstractCoordinateOperation) operation).getInterpolationCRS().orElse(null) : null;
+    }
+
+    /**
+     * Returns the date at which source coordinate tuples are valid.
+     * This is mandatory if the <abbr>CRS</abbr> is dynamic.
+     *
+     * @return epoch at which source coordinate tuples are valid.
+     *
+     * @since 1.5
+     */
+    @UML(identifier="sourceCoordinateEpoch", obligation=CONDITIONAL, specification=ISO_19111)
+    public Optional<Temporal> getSourceEpoch() {
+        return Optional.empty();
+    }
+
+    /**
+     * Returns the date at which target coordinate tuples are valid.
+     * This is mandatory if the <abbr>CRS</abbr> is dynamic.
+     *
+     * @return epoch at which target coordinate tuples are valid.
+     *
+     * @since 1.5
+     */
+    @UML(identifier="targetCoordinateEpoch", obligation=CONDITIONAL, specification=ISO_19111)
+    public Optional<Temporal> getTargetEpoch() {
+        return Optional.empty();
     }
 
     /**
@@ -658,6 +694,37 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     @Override
     public MathTransform getMathTransform() {
         return transform;
+    }
+
+    /**
+     * Changes coordinates from being referenced to the source <abbr>CRS</abbr>
+     * and/or epoch to being referenced to the target <abbr>CRS</abbr> and/or epoch.
+     * This method operates on coordinate tuples and does not deal with interpolation of geometry types.
+     *
+     * <h4>Implementation specific behavior</h4>
+     * The default implementation has the following characteristics. Those characteristics are not
+     * guaranteed to be met by all implementations of the {@link CoordinateOperation} interface:
+     *
+     * <ul>
+     *   <li>If the <abbr>CRS</abbr> and/or epoch of the given data are not equivalent to the source <abbr>CRS</abbr> and/or
+     *       epoch of this coordinate operation, this method will automatically prepend an additional operation step.</li>
+     *   <li>The coordinate tuples are not transformed immediately, but instead will be computed on-the-fly
+     *       in the stream returned by {@link AbstractCoordinateSet#stream()}.</li>
+     *   <li>If a {@link TransformException} occurs during on-the-fly coordinate operation, it will be wrapped
+     *       in an unchecked {@link org.apache.sis.util.collection.BackingStoreException}.</li>
+     *   <li>The returned coordinate set is serializable if the given data and the math transform are also serializable.</li>
+     * </ul>
+     *
+     * @param  data  the coordinates to change.
+     * @return the result of changing coordinates.
+     * @throws TransformException if some coordinates cannot be changed. Note that an absence of exception during
+     *         this method call is not a guarantee that the coordinate changes succeeded, because other errors can
+     *         occur during the stream execution.
+     *
+     * @since 1.5
+     */
+    public AbstractCoordinateSet transform(final AbstractCoordinateSet data) throws TransformException {
+        return new TransformedCoordinateSet(this, data);
     }
 
     /**
@@ -858,7 +925,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
                 final CoordinateOperation that = (CoordinateOperation) object;
                 if ((mode.isIgnoringMetadata() ||
                     (deepEquals(getCoordinateOperationAccuracy(), that.getCoordinateOperationAccuracy(), mode))) &&
-                     deepEquals(getInterpolationCRS(),            getInterpolationCRS(that), mode))
+                     deepEquals(getInterpolationCRS().orElse(null), getInterpolationCRS(that), mode))
                 {
                     /*
                      * At this point all metadata match or can be ignored. First, compare the targetCRS.
@@ -958,8 +1025,8 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         super.formatTo(formatter);
         formatter.newLine();
         @SuppressWarnings("LocalVariableHidesMemberVariable")
-        final CoordinateReferenceSystem sourceCRS = getSourceCRS();
-        final CoordinateReferenceSystem targetCRS = getTargetCRS();
+        final CoordinateReferenceSystem sourceCRS = getSourceCRS(),
+                                        targetCRS = getTargetCRS();
         final Convention convention = formatter.getConvention();
         final boolean isWKT1 = (convention.majorVersion() == 1);
         /*
@@ -1028,7 +1095,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
          * Add interpolation CRS if we are formatting a top-level WKT 2 single operation.
          */
         if (!isSubOperation && !isGeogTran && !(this instanceof ConcatenatedOperation)) {
-            append(formatter, getInterpolationCRS(), WKTKeywords.InterpolationCRS);
+            append(formatter, getInterpolationCRS().orElse(null), WKTKeywords.InterpolationCRS);
             final double accuracy = getLinearAccuracy();
             if (accuracy > 0) {
                 formatter.append(new FormattableObject() {

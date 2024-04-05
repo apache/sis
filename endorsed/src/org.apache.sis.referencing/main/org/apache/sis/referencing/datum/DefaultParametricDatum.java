@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.datum;
 
-import java.util.Date;
 import java.util.Map;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlType;
@@ -96,11 +95,11 @@ public class DefaultParametricDatum extends AbstractDatum {
      *   </tr><tr>
      *     <td>{@value org.opengis.referencing.datum.Datum#ANCHOR_POINT_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
-     *     <td>{@link #getAnchorPoint()}</td>
+     *     <td>{@link #getAnchorDefinition()}</td>
      *   </tr><tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#REALIZATION_EPOCH_KEY}</td>
-     *     <td>{@link Date}</td>
-     *     <td>{@link #getRealizationEpoch()}</td>
+     *     <td>{@code "anchorEpoch"}</td>
+     *     <td>{@link java.time.temporal.Temporal}</td>
+     *     <td>{@link #getAnchorEpoch()}</td>
      *   </tr>
      * </table>
      *

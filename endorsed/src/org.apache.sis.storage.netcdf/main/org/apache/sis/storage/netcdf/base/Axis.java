@@ -870,7 +870,7 @@ public final class Axis extends NamedElement {
              * at `LocalizationGridException` construction time.
              */
             for (final Linearizer linearizer : linearizers) {
-                final CharSequence reason = linearizer.getPotentialCause(coordinates);
+                final CharSequence reason = linearizer.getPotentialCause();
                 if (reason != null) {
                     ex.setPotentialCause(reason);
                     break;          // Take the cause of the linearizer that had the highest priority.

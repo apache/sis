@@ -18,6 +18,7 @@ package org.apache.sis.referencing.datum;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -72,7 +73,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.CommonCRS.Vertical#datum()
  * @see org.apache.sis.referencing.cs.DefaultVerticalCS
@@ -132,11 +133,11 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      *   </tr><tr>
      *     <td>{@value org.opengis.referencing.datum.Datum#ANCHOR_POINT_KEY}</td>
      *     <td>{@link InternationalString} or {@link String}</td>
-     *     <td>{@link #getAnchorPoint()}</td>
+     *     <td>{@link #getAnchorDefinition()}</td>
      *   </tr><tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#REALIZATION_EPOCH_KEY}</td>
-     *     <td>{@link java.util.Date}</td>
-     *     <td>{@link #getRealizationEpoch()}</td>
+     *     <td>{@code "anchorEpoch"}</td>
+     *     <td>{@link java.time.temporal.Temporal}</td>
+     *     <td>{@link #getAnchorEpoch()}</td>
      *   </tr>
      * </table>
      *
@@ -255,10 +256,12 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
         }
         switch (mode) {
             case STRICT: {
-                return type().equals(((DefaultVerticalDatum) object).type());
+                final var other = (DefaultVerticalDatum) object;
+                return type().equals(other.type());
             }
             case BY_CONTRACT: {
-                return Objects.equals(getVerticalDatumType(), ((VerticalDatum) object).getVerticalDatumType());
+                final var other = (VerticalDatum) object;
+                return Objects.equals(getVerticalDatumType(), other.getVerticalDatumType());
             }
             default: {
                 /*

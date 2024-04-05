@@ -35,11 +35,11 @@ import org.apache.sis.util.privy.Strings;
 
 /**
  * Delegates object creations to one of the {@code create} methods in a backing {@code AuthorityFactory}.
- * It is possible to use the generic {@link AuthorityFactory#createObject(String)} method instead of this class,
- * but some factories are more efficient when we use the most specific {@code create} method.
+ * It is possible to use the generic {@link GeodeticAuthorityFactory#createObject(String)} method instead of this class,
+ * but the former is ambiguous and some factories are more efficient when we use the most specific {@code create} method.
  * For example, when using a {@linkplain org.apache.sis.referencing.factory.sql.EPSGDataAccess},
  * invoking {@link GeodeticAuthorityFactory#createProjectedCRS(String)} instead of
- * {@code AuthorityFactory.createObject(String)} method reduce the number of tables to be queried.
+ * {@code createObject(String)} method reduce the number of tables to be queried.
  *
  * <p>This class is useful when the same {@code create} method need to be invoked often, but is unknown at compile time.
  * It may also be used as a workaround for authority factories that do not implement the {@code createObject(String)}
@@ -172,17 +172,23 @@ abstract class AuthorityFactoryProxy<T> {
     abstract T createFromAPI(AuthorityFactory factory, String code) throws FactoryException;
 
     /**
-     * The proxy for the {@link GeodeticAuthorityFactory#getDescriptionText(String)} method.
+     * The proxy for the {@link GeodeticAuthorityFactory#getDescriptionText(Class, String)} method.
+     *
+     * @param  classe  the type of object for which to get a description.
      */
-    static final AuthorityFactoryProxy<InternationalString> DESCRIPTION =
-        new AuthorityFactoryProxy<InternationalString>(InternationalString.class, AuthorityFactoryIdentifier.ANY) {
+    static final AuthorityFactoryProxy<InternationalString> description(final Class<? extends IdentifiedObject> classe) {
+        return new AuthorityFactoryProxy<InternationalString>(InternationalString.class, AuthorityFactoryIdentifier.ANY) {
+            @Override InternationalString create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
+                return factory.getDescriptionText(classe, code).orElse(null);
+            }
             @Override InternationalString createFromAPI(AuthorityFactory factory, String code) throws FactoryException {
                 return factory.getDescriptionText(code);
             }
             @Override AuthorityFactoryProxy<InternationalString> specialize(String typeName) {
                 return this;
             }
-    };
+        };
+    }
 
     /**
      * The proxy for the {@link GeodeticAuthorityFactory#createObject(String)} method.
@@ -214,6 +220,7 @@ abstract class AuthorityFactoryProxy<T> {
             }
     };
 
+    @SuppressWarnings("deprecation")
     static final AuthorityFactoryProxy<ImageDatum> IMAGE_DATUM =
         new AuthorityFactoryProxy<ImageDatum>(ImageDatum.class, AuthorityFactoryIdentifier.DATUM) {
             @Override ImageDatum create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
@@ -445,6 +452,7 @@ abstract class AuthorityFactoryProxy<T> {
             }
     };
 
+    @SuppressWarnings("deprecation")
     static final AuthorityFactoryProxy<ImageCRS> IMAGE_CRS =
         new AuthorityFactoryProxy<ImageCRS>(ImageCRS.class, AuthorityFactoryIdentifier.CRS) {
             @Override ImageCRS create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
@@ -554,8 +562,7 @@ abstract class AuthorityFactoryProxy<T> {
         PARAMETER,
         UNIT,
         EXTENT,
-        OBJECT,
-        DESCRIPTION
+        OBJECT
     };
 
     /**

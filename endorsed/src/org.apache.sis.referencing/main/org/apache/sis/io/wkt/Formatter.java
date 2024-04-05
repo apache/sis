@@ -106,7 +106,7 @@ import org.apache.sis.referencing.internal.Legacy;
  * </ul>
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
  * @see <a href="http://www.geoapi.org/3.0/javadoc/org/opengis/referencing/doc-files/WKT.html">Legacy WKT 1</a>
@@ -1224,7 +1224,7 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Appends an floating point value.
+     * Appends an floating point value with a number of fraction digits determined automatically.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the number if needed.
      *
      * @param  number  the floating point value to append to the WKT.
@@ -1257,6 +1257,25 @@ public class Formatter implements Localized {
             numberFormat.setRoundingMode(RoundingMode.HALF_EVEN);
             numberFormat.format(number, buffer, dummy);
         }
+        resetColor();
+    }
+
+    /**
+     * Appends an floating point value with the given number of fraction digits.
+     * The {@linkplain Symbols#getSeparator() element separator} will be written before the number if needed.
+     *
+     * @param  number          the floating point value to append to the WKT.
+     * @param  fractionDigits  the number of fraction digits to use for formatting the number.
+     *
+     * @since 1.5
+     */
+    public void append(final double number, final int fractionDigits) {
+        appendSeparator();
+        setColor(ElementKind.NUMBER);
+        numberFormat.setMinimumFractionDigits(fractionDigits);
+        numberFormat.setMaximumFractionDigits(fractionDigits);
+        numberFormat.setRoundingMode(RoundingMode.HALF_EVEN);
+        numberFormat.format(number, buffer, dummy);
         resetColor();
     }
 
@@ -1452,6 +1471,7 @@ public class Formatter implements Localized {
      *
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#35">WKT 2 specification §7.4</a>
      */
+    @SuppressWarnings("StringEquality")
     public void append(final Unit<?> unit) {
         if (unit != null) {
             final boolean isSimplified = (longKeywords == 0) ? convention.isSimplified() : (longKeywords < 0);

@@ -153,6 +153,7 @@ module org.apache.sis.referencing {
     provides org.apache.sis.metadata.privy.ReferencingServices
         with org.apache.sis.referencing.internal.ServicesForMetadata;
 
+    exports org.apache.sis.coordinate;
     exports org.apache.sis.geometry;
     exports org.apache.sis.io.wkt;
     exports org.apache.sis.parameter;

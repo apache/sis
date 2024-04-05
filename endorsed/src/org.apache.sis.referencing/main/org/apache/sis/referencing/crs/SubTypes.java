@@ -102,12 +102,13 @@ final class SubTypes implements Comparator<Object> {
      *
      * @see AbstractCRS#castOrCopy(CoordinateReferenceSystem)
      */
+    @SuppressWarnings("deprecation")
     static AbstractCRS castOrCopy(final CoordinateReferenceSystem object) {
-        if (object instanceof DerivedCRS) {
-            return DefaultDerivedCRS.castOrCopy((DerivedCRS) object);
-        }
         if (object instanceof ProjectedCRS) {
             return DefaultProjectedCRS.castOrCopy((ProjectedCRS) object);
+        }
+        if (object instanceof DerivedCRS) {     // Shall be tested after ProjectedCRS.
+            return DefaultDerivedCRS.castOrCopy((DerivedCRS) object);
         }
         if (object instanceof GeodeticCRS) {
             if (object instanceof GeographicCRS) {

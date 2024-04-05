@@ -50,6 +50,9 @@ import org.apache.sis.io.wkt.Formatter;
  * the coordinate system and the datum instances given to the constructor are also immutable. Unless otherwise noted
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
+ * @deprecated The {@code ImageCRS} class has been removed in ISO 19111:2019.
+ *             It is replaced by {@code EngineeringCRS}.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.5
  *
@@ -58,6 +61,7 @@ import org.apache.sis.io.wkt.Formatter;
  *
  * @since 0.4
  */
+@Deprecated(since = "1.5")
 @XmlType(name = "ImageCRSType", propOrder = {
     "cartesianCS",
     "affineCS",

@@ -28,7 +28,6 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
-import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -74,6 +73,9 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
 import static org.apache.sis.metadata.privy.ReferencingServices.AUTHALIC_RADIUS;
+
+// Specific to the main branch:
+import org.opengis.referencing.datum.VerticalDatumType;
 
 
 /**

@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.factory;
 
 import java.util.Set;
+import java.util.Optional;
 import java.util.logging.Logger;
 import javax.measure.Unit;
 import org.opengis.referencing.*;
@@ -32,10 +33,10 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.system.Loggers;
-import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.privy.Constants;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.util.iso.AbstractFactory;
@@ -156,20 +157,60 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * The description can be used for example in a combo box in a graphical user interface.
      *
      * <h4>Default implementation</h4>
-     * The default implementation invokes {@link #createObject(String)} for the given code
-     * and returns the {@linkplain AbstractIdentifiedObject#getName() object name}.
-     * This may be costly since it involves a full object creation.
+     * The default implementation invokes {@link #createObject(Class, String)} for the given class and code,
+     * then returns the {@linkplain IdentifiedObjects#getDisplayName(IdentifiedObject) display name} of the object.
+     * This implementation may be costly because it involves a full object creation.
      * Subclasses are encouraged to provide a more efficient implementation if they can.
+     *
+     * @param  type  the type of object for which to get a description.
+     * @param  code  value allocated by authority.
+     * @return a description of the object, or empty if the object exists but has no description.
+     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
+     * @throws FactoryException if an error occurred while fetching the description.
+     *
+     * @since 1.5
+     */
+    public Optional<InternationalString> getDescriptionText(Class<? extends IdentifiedObject> type, String code)
+            throws FactoryException
+    {
+        return Optional.ofNullable(IdentifiedObjects.getDisplayName(createObject(type, code)));
+    }
+
+    /**
+     * Returns a description of the object corresponding to a code.
      *
      * @param  code  value allocated by authority.
      * @return a description of the object, or {@code null} if the object
      *         corresponding to the specified {@code code} has no description.
      * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
-     * @throws FactoryException if an error occurred while fetching the description.
+     * @throws FactoryException if the query failed for some other reason.
+     *
+     * @deprecated This method is ambiguous because the EPSG geodetic registry may allocate
+     *             the same code to different kinds of object.
      */
     @Override
+    @Deprecated(since = "1.5")
     public InternationalString getDescriptionText(final String code) throws FactoryException {
-        return new SimpleInternationalString(createObject(code).getName().getCode());
+        return getDescriptionText(IdentifiedObject.class, code).orElse(null);
+    }
+
+    /**
+     * Returns an object of the specified type from a code. This implementation forwards
+     * the method call to the most specialized methods determined by the given type.
+     *
+     * @param  <T>   the compile-time value of the {@code type} argument.
+     * @param  type  the type of object to create.
+     * @param  code  value allocated by authority.
+     * @return the object for the given code.
+     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
+     * @throws FactoryException if the object creation failed for some other reason.
+     *
+     * @since 1.5
+     */
+    public final <T extends IdentifiedObject> T createObject(final Class<T> type, final String code)
+            throws NoSuchAuthorityCodeException, FactoryException
+    {
+        return cast(type, (IdentifiedObject) AuthorityFactoryProxy.getInstance(type).create(this, code), code);
     }
 
     /**
@@ -520,7 +561,11 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws FactoryException if the object creation failed for some other reason.
      *
      * @see org.apache.sis.referencing.crs.DefaultImageCRS
+     *
+     * @deprecated The {@code ImageCRS} class has been removed in ISO 19111:2019.
+     *             It is replaced by {@code EngineeringCRS}.
      */
+    @Deprecated(since = "1.5")
     public ImageCRS createImageCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(ImageCRS.class, createCoordinateReferenceSystem(code), code);
     }
@@ -717,7 +762,11 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @throws FactoryException if the object creation failed for some other reason.
      *
      * @see org.apache.sis.referencing.datum.DefaultImageDatum
+     *
+     * @deprecated The {@code ImageDatum} class has been removed in ISO 19111:2019.
+     *             It is replaced by {@code EngineeringDatum}.
      */
+    @Deprecated(since = "1.5")
     public ImageDatum createImageDatum(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(ImageDatum.class, createDatum(code), code);
     }

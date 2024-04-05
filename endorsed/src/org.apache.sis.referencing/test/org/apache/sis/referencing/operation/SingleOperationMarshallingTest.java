@@ -163,10 +163,10 @@ public final class SingleOperationMarshallingTest extends TestCase.WithLogs {
         assertEquals( -80, e.getSouthBoundLatitude(), "southBoundLatitude");
 
         // This is a defining conversion, so we do not expect CRS.
-        assertNull(c.getSourceCRS(),        "sourceCRS");
-        assertNull(c.getTargetCRS(),        "targetCRS");
-        assertNull(c.getInterpolationCRS(), "interpolationCRS");
-        assertNull(c.getMathTransform(),    "mathTransform");
+        assertNull(c.getSourceCRS(), "sourceCRS");
+        assertNull(c.getTargetCRS(), "targetCRS");
+        assertTrue(c.getInterpolationCRS().isEmpty(), "interpolationCRS");
+        assertNull(c.getMathTransform(), "mathTransform");
 
         // The most difficult part.
         final OperationMethod method = c.getMethod();

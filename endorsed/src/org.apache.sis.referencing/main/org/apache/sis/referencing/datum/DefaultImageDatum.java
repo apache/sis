@@ -45,14 +45,18 @@ import org.opengis.referencing.ReferenceIdentifier;
  * given to the constructor are also immutable. Unless otherwise noted in the javadoc, this condition holds if
  * all components were created using only SIS factories and static constants.
  *
+ * @deprecated The {@code ImageDatum} class has been removed in ISO 19111:2019.
+ *             It is replaced by {@code EngineeringDatum}.
+ *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.crs.DefaultImageCRS
  * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createImageDatum(String)
  *
  * @since 0.4
  */
+@Deprecated(since = "1.5")
 @XmlType(name = "ImageDatumType")
 @XmlRootElement(name = "ImageDatum")
 public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
@@ -106,11 +110,11 @@ public class DefaultImageDatum extends AbstractDatum implements ImageDatum {
      *   </tr><tr>
      *     <td>{@value org.opengis.referencing.datum.Datum#ANCHOR_POINT_KEY}</td>
      *     <td>{@link InternationalString} or {@link String}</td>
-     *     <td>{@link #getAnchorPoint()}</td>
+     *     <td>{@link #getAnchorDefinition()}</td>
      *   </tr><tr>
-     *     <td>{@value org.opengis.referencing.datum.Datum#REALIZATION_EPOCH_KEY}</td>
-     *     <td>{@link java.util.Date}</td>
-     *     <td>{@link #getRealizationEpoch()}</td>
+     *     <td>{@code "anchorEpoch"}</td>
+     *     <td>{@link java.time.temporal.Temporal}</td>
+     *     <td>{@link #getAnchorEpoch()}</td>
      *   </tr>
      * </table>
      *

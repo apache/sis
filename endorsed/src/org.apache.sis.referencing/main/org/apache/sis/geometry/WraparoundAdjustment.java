@@ -128,7 +128,7 @@ public class WraparoundAdjustment {
      *
      * @param  domain  the region where a given area or point of interest should be located.
      * @param  target  the coordinate reference system of objects returned by {@code shift(…)} methods,
-     *                 or {@code null} for the same CRS as the {@code domain} CRS..
+     *                 or {@code null} for the same CRS as the {@code domain} CRS.
      */
     public WraparoundAdjustment(final Envelope domain, final CoordinateReferenceSystem target) {
         domainOfValidity = ImmutableEnvelope.castOrCopy(Objects.requireNonNull(domain));

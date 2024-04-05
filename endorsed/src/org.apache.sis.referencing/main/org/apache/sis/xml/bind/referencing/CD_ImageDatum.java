@@ -29,6 +29,7 @@ import org.apache.sis.referencing.datum.DefaultImageDatum;
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
+@SuppressWarnings("deprecation")
 public final class CD_ImageDatum extends PropertyType<CD_ImageDatum, ImageDatum> {
     /**
      * Empty constructor for JAXB only.

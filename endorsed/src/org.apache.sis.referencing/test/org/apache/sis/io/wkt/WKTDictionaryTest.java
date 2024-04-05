@@ -150,8 +150,8 @@ public final class WKTDictionaryTest extends TestCase {
          * Test descriptions before CRS creation.
          * Implementation fetches them from `StoredTree` instances.
          */
-        assertEquals("North_Pole_Stereographic", factory.getDescriptionText("ESRI::102018").toString());
-        assertEquals("South_Pole_Stereographic", factory.getDescriptionText("ESRI::102021").toString());
+        assertDescriptionEquals("North_Pole_Stereographic", factory, "ESRI::102018");
+        assertDescriptionEquals("South_Pole_Stereographic", factory, "ESRI::102021");
         /*
          * Tests CRS creation.
          */
@@ -163,8 +163,8 @@ public final class WKTDictionaryTest extends TestCase {
          * Test descriptions after CRS creation.
          * Implementation fetches them from `IdentifiedObject` instances.
          */
-        assertEquals("North_Pole_Stereographic", factory.getDescriptionText("ESRI::102018").toString());
-        assertEquals("South_Pole_Stereographic", factory.getDescriptionText("ESRI::102021").toString());
+        assertDescriptionEquals("North_Pole_Stereographic", factory, "ESRI::102018");
+        assertDescriptionEquals("South_Pole_Stereographic", factory, "ESRI::102021");
         /*
          * Test creation of CRS having errors.
          *   - Verify error index.
@@ -174,10 +174,22 @@ public final class WKTDictionaryTest extends TestCase {
     }
 
     /**
+     * Asserts that the description is equal to the expected value.
+     *
+     * @param expected  the expected description.
+     * @param factory   the factory to use for fetching the description.
+     * @param code      the code of the object for which to fetch the description.
+     */
+    private static void assertDescriptionEquals(String expected, WKTDictionary factory, String code) throws FactoryException {
+        assertEquals(expected, factory.getDescriptionText(IdentifiedObject.class, code).orElseThrow().toString());
+    }
+
+    /**
      * Verifies that there is no duplicated nodes in the {@link StoredTree}s.
      * When a WKT element is repeated often (e.g. "AngleUnit["Degree", 0.0174532925199433]]"),
      * only one {@link org.apache.sis.io.wkt.StoredTree.Node} instance should be created and shared by all trees.
      */
+    @SuppressWarnings("overloads")      // Ambiguous `andThen(…)` method is not used by this test.
     private static final class SharedValuesCheck implements Consumer<Object>, BiFunction<Integer,Integer,Integer> {
         /**
          * Counter of number of occurrences of each instance. Keys may be {@link String},

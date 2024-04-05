@@ -388,6 +388,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short MissingParameterValues_1 = 74;
 
         /**
+         * A coordinate epoch is mandatory because the “{0}” reference system is dynamic.
+         */
+        public static final short MissingReferenceFrameEpoch_1 = 102;
+
+        /**
          * Missing value for “{0}” parameter.
          */
         public static final short MissingValueForParameter_1 = 44;

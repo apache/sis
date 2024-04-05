@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.logging.Filter;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
+import java.time.temporal.Temporal;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
@@ -91,6 +92,8 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 
 // Specific to the main branch:
+import org.apache.sis.pending.geoapi.referencing.DynamicReferenceFrame;
+import org.apache.sis.coordinate.DefaultCoordinateMetadata;
 import org.apache.sis.referencing.internal.Legacy;
 
 
@@ -619,6 +622,32 @@ public final class CRS extends Static {
     }
 
     /**
+     * Finds a mathematical operation that transforms or converts coordinates between the given <abbr>CRS</abbr>s and epochs.
+     * This method performs the same work as the {@linkplain #findOperation(CoordinateReferenceSystem, CoordinateReferenceSystem,
+     * GeographicBoundingBox) variant working on CRS objects}, except that the coordinate epochs may be taken in account.
+     *
+     * @param  source          the CRS and epoch of source coordinates.
+     * @param  target          the CRS and epoch of target coordinates.
+     * @param  areaOfInterest  the area of interest, or {@code null} if none.
+     * @return the mathematical operation from {@code source} to {@code target}.
+     * @throws OperationNotFoundException if no operation was found between the given pair of <abbr>CRS</abbr>s and epochs.
+     * @throws FactoryException if the operation cannot be created for another reason.
+     *
+     * @since 1.5
+     */
+    public static CoordinateOperation findOperation(final DefaultCoordinateMetadata source,
+                                                    final DefaultCoordinateMetadata target,
+                                                    final GeographicBoundingBox areaOfInterest)
+            throws FactoryException
+    {
+        // TODO: take epoch in account.
+        if (source.getCoordinateEpoch().isPresent() || target.getCoordinateEpoch().isPresent()) {
+            throw new FactoryException("This version of Apache SIS does not yet support coordinate epoch.");
+        }
+        return findOperation(source.getCoordinateReferenceSystem(), target.getCoordinateReferenceSystem(), areaOfInterest);
+    }
+
+    /**
      * Finds a mathematical operation that transforms or converts coordinates from the given source to the
      * given target coordinate reference system. If an estimation of the geographic area containing the points
      * to transform is known, it can be specified for helping this method to find a better suited operation.
@@ -657,7 +686,7 @@ public final class CRS extends Static {
      * @param  targetCRS       the CRS of target coordinates.
      * @param  areaOfInterest  the area of interest, or {@code null} if none.
      * @return the mathematical operation from {@code sourceCRS} to {@code targetCRS}.
-     * @throws OperationNotFoundException if no operation was found between the given pair of CRS.
+     * @throws OperationNotFoundException if no operation was found between the given pair of <abbr>CRS</abbr>s.
      * @throws FactoryException if the operation cannot be created for another reason.
      *
      * @see Envelopes#findOperation(Envelope, Envelope)
@@ -880,6 +909,34 @@ public final class CRS extends Static {
             }
         }
         return envelope;
+    }
+
+    /**
+     * Returns the epoch to which the coordinates of stations defining the dynamic CRS are referenced.
+     * If the CRS is associated to a dynamic reference frame, then the reference
+     * epoch of that datum is returned. Otherwise if the CRS is {@linkplain CompoundCRS compound},
+     * then the first reference epoch found in a component is returned.
+     *
+     * @param  crs  the coordinate reference frame from which to get the epoch, or {@code null}.
+     * @return epoch to which the coordinates of stations defining the dynamic CRS frame are referenced.
+     *
+     * @since 1.5
+     */
+    public static Optional<Temporal> getFrameReferenceEpoch(final CoordinateReferenceSystem crs) {
+        if (crs instanceof SingleCRS) {
+            final Datum datum = ((SingleCRS) crs).getDatum();
+            if (datum instanceof DynamicReferenceFrame) {
+                return Optional.of(((DynamicReferenceFrame) datum).getFrameReferenceEpoch());
+            }
+        } else if (crs instanceof CompoundCRS) {
+            for (SingleCRS component : getSingleComponents(crs)) {
+                final Datum datum = component.getDatum();
+                if (datum instanceof DynamicReferenceFrame) {
+                    return Optional.of(((DynamicReferenceFrame) datum).getFrameReferenceEpoch());
+                }
+            }
+        }
+        return Optional.empty();
     }
 
     /**
@@ -1145,8 +1202,8 @@ public final class CRS extends Static {
      * Returns the first horizontal coordinate reference system found in the given CRS, or {@code null} if there is
      * none. If the given CRS is already horizontal according {@link #isHorizontalCRS(CoordinateReferenceSystem)},
      * then this method returns it as-is. Otherwise if the given CRS is compound, then this method searches for the
-     * first horizontal component in the order of the {@linkplain #getSingleComponents(CoordinateReferenceSystem)
-     * single components list}.
+     * first horizontal component in the {@linkplain #getSingleComponents(CoordinateReferenceSystem)
+     * list of single components}.
      *
      * <p>In the special case where a three-dimensional geographic or projected CRS is found, this method
      * will create a two-dimensional geographic or projected CRS without the vertical axis.</p>
@@ -1224,7 +1281,7 @@ public final class CRS extends Static {
      * Returns the first vertical coordinate reference system found in the given CRS, or {@code null} if there is none.
      * If the given CRS is already an instance of {@code VerticalCRS}, then this method returns it as-is.
      * Otherwise if the given CRS is compound, then this method searches for the first vertical component
-     * in the order of the {@linkplain #getSingleComponents(CoordinateReferenceSystem) single components list}.
+     * in the {@linkplain #getSingleComponents(CoordinateReferenceSystem) list of single components}.
      *
      * <h4>Height in a three-dimensional geographic CRS</h4>
      * In ISO 19111 model, ellipsoidal heights are indissociable from geographic CRS because such heights
@@ -1289,7 +1346,7 @@ public final class CRS extends Static {
      * Returns the first temporal coordinate reference system found in the given CRS, or {@code null} if there is none.
      * If the given CRS is already an instance of {@code TemporalCRS}, then this method returns it as-is.
      * Otherwise if the given CRS is compound, then this method searches for the first temporal component
-     * in the order of the {@linkplain #getSingleComponents(CoordinateReferenceSystem) single components list}.
+     * in the {@linkplain #getSingleComponents(CoordinateReferenceSystem) list of single components}.
      *
      * @param  crs  the coordinate reference system, or {@code null}.
      * @return the first temporal CRS, or {@code null} if none.
