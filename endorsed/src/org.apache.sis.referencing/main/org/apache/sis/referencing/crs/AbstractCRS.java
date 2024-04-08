@@ -368,9 +368,8 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     /**
      * Compares this coordinate reference system with the specified object for equality.
      * If the {@code mode} argument value is {@link ComparisonMode#STRICT STRICT} or
-     * {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}, then all available properties are
-     * compared including the {@linkplain #getDomainOfValidity() domain of validity} and
-     * the {@linkplain #getScope() scope}.
+     * {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}, then all available properties
+     * are compared including the {@linkplain #getDomains() domains} and remarks.
      *
      * @param  object  the object to compare to {@code this}.
      * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or

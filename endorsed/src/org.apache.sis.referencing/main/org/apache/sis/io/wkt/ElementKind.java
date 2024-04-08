@@ -58,65 +58,77 @@ public enum ElementKind {
     INTEGER,
 
     /**
-     * {@linkplain javax.measure.Unit Units of measurement},
-     * often represented by {@code UNIT[…]} elements.
+     * Units of measurement, often represented by {@code UNIT[…]} elements.
+     *
+     * @see javax.measure.Unit
      */
     UNIT,
 
     /**
-     * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis Coordinate system axes},
-     * often represented by {@code AXIS[…]} elements.
+     * Coordinate system axes, often represented by {@code AXIS[…]} elements.
+     *
+     * @see org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis
      */
     AXIS,
 
     /**
-     * {@linkplain org.opengis.util.CodeList Code list} values.
+     * Code list values.
+     *
+     * @see org.opengis.util.CodeList
      */
     CODE_LIST,
 
     /**
-     * Name of {@linkplain org.apache.sis.parameter.AbstractParameterDescriptor parameters},
-     * often represented by {@code PARAMETER[…]} elements.
+     * Name of parameters, often represented by {@code PARAMETER[…]} elements.
+     *
+     * @see org.apache.sis.parameter.AbstractParameterDescriptor
      */
     PARAMETER,
 
     /**
-     * {@linkplain org.apache.sis.referencing.operation.DefaultOperationMethod Operation methods},
-     * often represented by {@code PROJECTION[…]} elements.
+     * Operation methods, often represented by {@code PROJECTION[…]} elements.
+     *
+     * @see org.apache.sis.referencing.operation.DefaultOperationMethod
      */
     METHOD,
 
     /**
-     * {@linkplain org.apache.sis.referencing.datum.AbstractDatum Datum},
-     * often represented by {@code DATUM[…]} elements.
+     * Datum or reference frame, often represented by {@code DATUM[…]} elements.
+     *
+     * @see org.apache.sis.referencing.datum.AbstractDatum
      */
     DATUM,
 
     /**
-     * CRS, datum or operation {@linkplain org.apache.sis.referencing.AbstractReferenceSystem#getScope() scope},
-     * often represented by {@code SCOPE[…]} elements.
+     * CRS, datum or operation scope, often represented by {@code SCOPE[…]} elements.
+     *
+     * @see org.apache.sis.referencing.DefaultObjectDomain#getScope()
      */
     SCOPE,
 
     /**
-     * CRS, datum or operation {@linkplain org.apache.sis.referencing.AbstractReferenceSystem#getDomainOfValidity()
-     * domain of validity}, often represented by {@code AREA[…]} or {@code BBOX[…]} elements.
+     * CRS, datum or operation domain of validity,
+     * often represented by {@code AREA[…]} or {@code BBOX[…]} elements.
+     *
+     * @see org.apache.sis.referencing.DefaultObjectDomain#getDomainOfValidity()
      */
     EXTENT,
 
     /**
-     * Citation (typically for the {@linkplain org.apache.sis.referencing.ImmutableIdentifier#getAuthority()
-     * authority}), often represented by {@code CITATION[…]} elements.
+     * Citation (typically for the authority), often represented by {@code CITATION[…]} elements.
+     *
+     * @see org.apache.sis.referencing.ImmutableIdentifier#getAuthority()
      */
     CITATION,
 
     /**
-     * {@linkplain org.apache.sis.referencing.AbstractIdentifiedObject#getRemarks() Remarks},
-     * often represented by {@code REMARKS[…]} elements.
+     * Remarks, often represented by {@code REMARKS[…]} elements.
      *
      * <p>When formatting an ISO 19162 Well Known Text, texts quoted as remarks preserve non-ASCII characters.
      * By contrast, quoted texts in any other {@code ElementKind} will have some non-ASCII characters replaced
      * by ASCII ones (e.g. "é" → "e").</p>
+     *
+     * @see org.apache.sis.referencing.AbstractIdentifiedObject#getRemarks()
      */
     REMARKS,
 

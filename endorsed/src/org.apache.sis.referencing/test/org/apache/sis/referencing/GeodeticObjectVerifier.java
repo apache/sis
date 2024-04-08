@@ -34,6 +34,10 @@ import org.opengis.referencing.crs.GeodeticCRS;
 import org.apache.sis.metadata.privy.AxisNames;
 import org.apache.sis.measure.Units;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.ObjectDomain;
+import org.opengis.referencing.IdentifiedObject;
+
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -54,8 +58,21 @@ public final class GeodeticObjectVerifier {
     }
 
     /**
-     * Asserts that all {@link GeographicBoundingBox}, if any,
-     * {@linkplain #assertIsWorld(GeographicBoundingBox) encompasses the world}.
+     * Asserts that the first geographic bounding box, if any, encompasses the world.
+     *
+     * @param  object       the object to verify, or {@code null} if none.
+     * @param  isMandatory  {@code true} if an absence of world extent is a failure.
+     */
+    private static void assertIsWorld(final IdentifiedObject object, boolean isMandatory) {
+        for (ObjectDomain domain : object.getDomains()) {
+            assertIsWorld(domain.getDomainOfValidity(), isMandatory);
+            isMandatory = false;
+        }
+        assertFalse(isMandatory, "Expected a world extent element.");
+    }
+
+    /**
+     * Asserts that the first geographic bounding box, if any, encompasses the world.
      *
      * <p><b>Note:</b> a future version of this method may accept other kinds of extent,
      * for example a polygon encompassing the world.</p>
@@ -72,9 +89,7 @@ public final class GeodeticObjectVerifier {
                 }
             }
         }
-        if (isMandatory) {
-            fail("Expected a world extent element.");
-        }
+        assertFalse(isMandatory, "Expected a world extent element.");
     }
 
     /**
@@ -191,7 +206,7 @@ public final class GeodeticObjectVerifier {
      * <tr><th>Property</th> <th>Expected value</th></tr>
      * <tr><td>{@linkplain Identifier#getCode() Code} of the {@linkplain GeodeticDatum#getName() name}</td>
      *     <td>{@code "World Geodetic System 1984"}</td></tr>
-     * <tr><td>{@linkplain GeodeticDatum#getDomainOfValidity() Domain of validity}</td>
+     * <tr><td>{@linkplain GeodeticDatum#getDomains() Domain of validity}</td>
      *     <td>{@linkplain #assertIsWorld(GeographicBoundingBox) Is world} or absent</td></tr>
      * <tr><td>{@linkplain GeodeticDatum#getPrimeMeridian() Prime meridian}</td>
      *     <td>{@linkplain #assertIsGreenwich(PrimeMeridian) Is Greenwich}</td></tr>
@@ -203,9 +218,9 @@ public final class GeodeticObjectVerifier {
      * @param  isExtentMandatory  {@code true} if the domain of validity is required to contain an
      *                            {@code Extent} element for the world, or {@code false} if optional.
      */
-    public static void assertIsWGS84(final GeodeticDatum datum, final boolean isExtentMandatory) {
+    public static void assertIsWGS84(final GeodeticDatum datum, boolean isExtentMandatory) {
         assertEquals("World Geodetic System 1984", datum.getName().getCode(), "name");
-        assertIsWorld    (datum.getDomainOfValidity(), isExtentMandatory);
+        assertIsWorld    (datum, isExtentMandatory);
         assertIsGreenwich(datum.getPrimeMeridian());
         assertIsWGS84    (datum.getEllipsoid());
     }
@@ -219,7 +234,7 @@ public final class GeodeticObjectVerifier {
      * <tr><th>Property</th> <th>Expected value</th></tr>
      * <tr><td>{@linkplain Identifier#getCode() Code} of the {@linkplain GeodeticCRS#getName() name}</td>
      *     <td>{@code "WGS 84"}</td></tr>
-     * <tr><td>{@linkplain GeodeticCRS#getDomainOfValidity() Domain of validity}</td>
+     * <tr><td>{@linkplain GeodeticCRS#getDomains() Domain of validity}</td>
      *     <td>{@linkplain #assertIsWorld(GeographicBoundingBox) Is world} or absent</td></tr>
      * <tr><td>{@linkplain GeodeticCRS#getDatum() Datum}</td>
      *     <td>{@linkplain #assertIsWGS84(GeodeticDatum, boolean) Is WGS84}</td></tr>
@@ -235,7 +250,7 @@ public final class GeodeticObjectVerifier {
      */
     public static void assertIsWGS84(final GeodeticCRS crs, final boolean isExtentMandatory, final boolean isRangeMandatory) {
         assertEquals("WGS 84", crs.getName().getCode(), "name");
-        assertIsWorld(crs.getDomainOfValidity(), isExtentMandatory);
+        assertIsWorld(crs, isExtentMandatory);
         assertIsWGS84(crs.getDatum(), isExtentMandatory);
         final CoordinateSystem cs = crs.getCoordinateSystem();
         assertInstanceOf(EllipsoidalCS.class, cs, "coordinateSystem");
@@ -251,7 +266,7 @@ public final class GeodeticObjectVerifier {
      * <tr><th>Property</th> <th>Expected value</th></tr>
      * <tr><td>{@linkplain Identifier#getCode() Code} of the {@linkplain GeodeticDatum#getName() name}</td>
      *     <td>{@code "Mean Sea Level"}</td></tr>
-     * <tr><td>{@linkplain GeodeticDatum#getDomainOfValidity() Domain of validity}</td>
+     * <tr><td>{@linkplain GeodeticDatum#getDomains() Domain of validity}</td>
      *     <td>{@linkplain #assertIsWorld(GeographicBoundingBox) Is world} or absent</td></tr>
      * </table>
      *
@@ -261,7 +276,7 @@ public final class GeodeticObjectVerifier {
      */
     public static void assertIsMeanSeaLevel(final VerticalDatum datum, final boolean isExtentMandatory) {
         assertEquals("Mean Sea Level", datum.getName().getCode());
-        assertIsWorld(datum.getDomainOfValidity(), isExtentMandatory);
+        assertIsWorld(datum, isExtentMandatory);
     }
 
     /**

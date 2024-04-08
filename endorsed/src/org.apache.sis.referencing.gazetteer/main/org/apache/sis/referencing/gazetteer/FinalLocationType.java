@@ -31,6 +31,7 @@ import org.apache.sis.metadata.MetadataCopier;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.citation.Party;
+import org.opengis.referencing.ObjectDomain;
 import org.opengis.referencing.gazetteer.LocationType;
 import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
 
@@ -150,9 +151,11 @@ final class FinalLocationType extends AbstractLocationType implements Serializab
             if (theme == null) theme = rs.getTheme();
             if (owner == null) owner = rs.getOverallOwner();
             if (territoryOfUse == null) {
-                final Extent domainOfValidity = rs.getDomainOfValidity();
-                if (domainOfValidity instanceof GeographicExtent) {
-                    territoryOfUse = (GeographicExtent) domainOfValidity;
+                for (ObjectDomain domain : rs.getDomains()) {
+                    Extent domainOfValidity = domain.getDomainOfValidity();
+                    if (domainOfValidity instanceof GeographicExtent) {
+                        territoryOfUse = (GeographicExtent) domainOfValidity;
+                    }
                 }
             }
         }

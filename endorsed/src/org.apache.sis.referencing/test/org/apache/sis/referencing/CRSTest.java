@@ -37,6 +37,9 @@ import org.apache.sis.system.Loggers;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.ObjectDomain;
+
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -243,7 +246,7 @@ public final class CRSTest extends TestCaseWithLogs {
                 default: throw new AssertionError(i);
             }
             properties.put(DefaultProjectedCRS.NAME_KEY, "CRS #" + i);
-            properties.put(DefaultProjectedCRS.DOMAIN_OF_VALIDITY_KEY, new DefaultExtent(
+            properties.put(ObjectDomain.DOMAIN_OF_VALIDITY_KEY, new DefaultExtent(
                     null, new DefaultGeographicBoundingBox(-1, +1, ymin, ymax), null, null));
             crs[i] = new DefaultProjectedCRS(properties, baseCRS.geographic(), HardCodedConversions.MERCATOR, cs);
         }

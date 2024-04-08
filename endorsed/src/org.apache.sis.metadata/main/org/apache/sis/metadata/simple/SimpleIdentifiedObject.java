@@ -21,7 +21,6 @@ import java.io.Serializable;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.metadata.privy.Identifiers;
 import org.apache.sis.util.LenientComparable;
@@ -86,44 +85,13 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
     }
 
     /**
-     * Method required by most {@link IdentifiedObject} sub-interfaces.
-     * Current implementation returns {@code null}.
-     *
-     * <p>If a future version allows this method to return a non-null value,
-     * revisit {@link #equals(Object, ComparisonMode)} in subclasses.</p>
-     *
-     * @return the domain of validity, or {@code null} if none.
-     *
-     * @deprecated Removed from ISO 19111:2019 (moved to {@code ObjectDomain}).
-     */
-    @Deprecated
-    public final Extent getDomainOfValidity() {
-        return null;
-    }
-
-    /**
-     * Method required by most {@link IdentifiedObject} sub-interfaces.
-     * Current implementation returns {@code null}.
-     *
-     * <p>If a future version allows this method to return a non-null value,
-     * revisit {@link #equals(Object, ComparisonMode)} in subclasses.</p>
-     *
-     * @return the scope, or {@code null} if none.
-     *
-     * @deprecated Removed from ISO 19111:2019 (moved to {@code ObjectDomain}).
-     */
-    @Deprecated
-    public final InternationalString getScope() {
-        return null;
-    }
-
-    /**
      * Returns a narrative explanation of the role of this object.
      * The default implementation returns {@link Identifier#getDescription()}.
      *
      * @return a narrative explanation of the role of this object, or {@code null} if none.
      */
     public InternationalString getDescription() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Identifier name = this.name;
         return (name != null) ? name.getDescription() : null;
     }

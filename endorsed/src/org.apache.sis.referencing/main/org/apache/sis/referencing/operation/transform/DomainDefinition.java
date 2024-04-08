@@ -60,7 +60,7 @@ import org.apache.sis.geometry.GeneralEnvelope;
  *
  * @see MathTransforms#getDomain(MathTransform)
  * @see AbstractMathTransform#getDomain(DomainDefinition)
- * @see org.opengis.referencing.operation.CoordinateOperation#getDomainOfValidity()
+ * @see org.opengis.referencing.operation.CoordinateOperation#getDomains()
  *
  * @since 1.3
  */

@@ -45,7 +45,6 @@ import javafx.stage.Window;
 import javafx.util.Duration;
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
-import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
@@ -71,6 +70,9 @@ import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Vocabulary;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.ObjectDomain;
+
 
 /**
  * A list of Coordinate Reference Systems (CRS) from which the user can select.
@@ -78,7 +80,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.5
  * @since   1.1
  */
 public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
@@ -317,7 +319,7 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
                 final CoordinateReferenceSystem crs = getValue();
                 type.setTextFill(Styles.NORMAL_TEXT);
                 type.setText(typeOf(crs, source.locale));
-                setDomainOfValidity(crs.getDomainOfValidity(), source.locale);
+                setDomainOfValidity(crs, source.locale);
             }
 
             /** Invoked in JavaFX thread on cancellation. */
@@ -345,17 +347,21 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
     /**
      * Sets the text that describes the domain of validity.
      */
-    private void setDomainOfValidity(final Extent domainOfValidity, final Locale locale) {
-        String text  = Extents.getDescription(domainOfValidity, locale);
-        String tip   = text;
+    private void setDomainOfValidity(CoordinateReferenceSystem crs, final Locale locale) {
+        String extent = null;
+        for (ObjectDomain c : crs.getDomains()) {
+            extent = Extents.getDescription(c.getDomainOfValidity(), locale);
+            if (extent != null) break;
+        }
+        String tip   = extent;
         Color  color = Styles.NORMAL_TEXT;
-        if (!Utils.intersects(areaOfInterest, domainOfValidity)) {
+        if (!Utils.intersects(areaOfInterest, crs)) {
             tip   = Resources.forLocale(locale).getString(Resources.Keys.DoesNotCoverAOI);
-            text  = Styles.WARNING_ICON + " " + (text != null ? text : tip);
+            extent  = Styles.WARNING_ICON + " " + (extent != null ? extent : tip);
             color = Styles.ERROR_TEXT;
         }
         domain.setTextFill(color);
-        domain.setText(text);
+        domain.setText(extent);
         domain.getTooltip().setText(tip);
     }
 

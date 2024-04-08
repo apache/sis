@@ -183,8 +183,8 @@ public abstract class Builder<B extends Builder<B>> {
      * {@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY} and
      * {@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY} keys.
      * Subclasses may add other entries like
-     * {@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY} and
-     * {@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY} keys.
+     * {@value org.opengis.referencing.ObjectDomain#DOMAIN_OF_VALIDITY_KEY} and
+     * {@value org.opengis.referencing.ObjectDomain#SCOPE_KEY} keys.
      *
      * <p>See <cite>Notes for subclass implementers</cite> in class javadoc for usage conditions.</p>
      *

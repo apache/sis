@@ -22,9 +22,7 @@ import java.util.Collection;
 import java.util.function.IntFunction;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
-import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
@@ -38,6 +36,8 @@ import org.opengis.referencing.ObjectDomain;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.metadata.Identifier;
+import org.opengis.metadata.extent.Extent;
+import org.opengis.util.InternationalString;
 
 
 /**
@@ -66,8 +66,8 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
         /*[ 2]*/ IdentifiedObject        .ALIAS_KEY,
         /*[ 3]*/ IdentifiedObject        .DOMAINS_KEY,
         /*[ 4]*/ IdentifiedObject        .REMARKS_KEY,
-        /*[ 5]*/ CoordinateOperation     .SCOPE_KEY,                    // same in Datum and ReferenceSystem
-        /*[ 6]*/ CoordinateOperation     .DOMAIN_OF_VALIDITY_KEY,       // same in Datum and ReferenceSystem
+        /*[ 5]*/ ObjectDomain            .SCOPE_KEY,
+        /*[ 6]*/ ObjectDomain            .DOMAIN_OF_VALIDITY_KEY,
         /*[ 7]*/ CoordinateOperation     .OPERATION_VERSION_KEY,
         /*[ 8]*/ CoordinateOperation     .COORDINATE_OPERATION_ACCURACY_KEY,
         /*[ 9]*/ OperationMethod         .FORMULA_KEY,
@@ -109,7 +109,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
      * Creates new properties from the specified identified object.
      */
     Properties(final IdentifiedObject object, final String[] excludes) {
-        this.object = object;
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         int excludeMask = 0;
         for (final String exclude : excludes) {
             final Integer i = INDICES.get(exclude);
@@ -118,6 +118,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
             }
         }
         this.excludeMask = excludeMask;
+        this.object = object;
     }
 
     /**
@@ -135,22 +136,16 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
                 case 3: return toArray(object.getDomains(),   ObjectDomain[]::new);     // DOMAINS_KEY
                 case 4: return         object.getRemarks();                             // REMARKS_KEY
                 case 5: {   // SCOPE_KEY
-                    if (object instanceof ReferenceSystem) {
-                        return ((ReferenceSystem) object).getScope();
-                    } else if (object instanceof Datum) {
-                        return ((Datum) object).getScope();
-                    } else if (object instanceof CoordinateOperation) {
-                        return ((CoordinateOperation) object).getScope();
+                    for (final ObjectDomain domain : object.getDomains()) {
+                        InternationalString scope = domain.getScope();
+                        if (scope != null) return scope;
                     }
                     break;
                 }
                 case 6: {   // DOMAIN_OF_VALIDITY_KEY
-                    if (object instanceof ReferenceSystem) {
-                        return ((ReferenceSystem) object).getDomainOfValidity();
-                    } else if (object instanceof Datum) {
-                        return ((Datum) object).getDomainOfValidity();
-                    } else if (object instanceof CoordinateOperation) {
-                        return ((CoordinateOperation) object).getDomainOfValidity();
+                    for (final ObjectDomain domain : object.getDomains()) {
+                        Extent extent = domain.getDomainOfValidity();
+                        if (extent != null) return extent;
                     }
                     break;
                 }

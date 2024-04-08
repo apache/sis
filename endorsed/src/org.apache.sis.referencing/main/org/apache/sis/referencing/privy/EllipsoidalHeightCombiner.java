@@ -40,6 +40,9 @@ import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.ObjectDomain;
+
 
 /**
  * A class in charges of combining two-dimensional geographic or projected CRS with an ellipsoidal height into a
@@ -217,11 +220,13 @@ public final class EllipsoidalHeightCombiner {
             ArgumentChecks.ensureNonNullElement("components", i, crs);
             if (i != 0) name.append(" + ");
             name.append(crs.getName().getCode());
-            domain = Extents.intersection(domain, crs.getDomainOfValidity());
+            for (ObjectDomain obj : crs.getDomains()) {
+                domain = Extents.intersection(domain, obj.getDomainOfValidity());
+            }
         }
-        final Map<String,Object> properties = new HashMap<>(2);
+        final var properties = new HashMap<String,Object>(4);
         properties.put(CoordinateReferenceSystem.NAME_KEY, name.toString());
-        properties.put(CoordinateReferenceSystem.DOMAIN_OF_VALIDITY_KEY, domain);
+        properties.put(ObjectDomain.DOMAIN_OF_VALIDITY_KEY, domain);
         return properties;
     }
 }

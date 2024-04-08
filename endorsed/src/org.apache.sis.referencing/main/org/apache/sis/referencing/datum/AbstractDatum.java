@@ -47,6 +47,12 @@ import static org.apache.sis.util.collection.Containers.property;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
 
+// Specific to the geoapi-4.0 branch:
+import org.opengis.annotation.UML;
+import static org.opengis.annotation.Obligation.*;
+import static org.opengis.annotation.Specification.*;
+import org.apache.sis.referencing.internal.Legacy;
+
 
 /**
  * Specifies the relationship of a {@linkplain org.apache.sis.referencing.cs.AbstractCS Coordinate System} to the earth.
@@ -168,11 +174,11 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
         super(properties);
         anchorDefinition = Types.toInternationalString(properties, ANCHOR_DEFINITION_KEY);
         if (anchorDefinition == null) {
-            anchorDefinition = Types.toInternationalString(properties, ANCHOR_POINT_KEY);
+            anchorDefinition = Types.toInternationalString(properties, "anchorPoint");      // Legacy name.
         }
         anchorEpoch = property(properties, ANCHOR_EPOCH_KEY, Temporal.class);
         if (anchorEpoch == null) {
-            Date date = property(properties, REALIZATION_EPOCH_KEY, Date.class);
+            Date date = property(properties, "realizationEpoch", Date.class);               // Legacy name.
             if (date != null) {
                 anchorEpoch = date.toInstant();
             }
@@ -261,20 +267,6 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     }
 
     /**
-     * Returns a description of the point(s) used to anchor the datum to the Earth.
-     *
-     * @deprecated Renamed {@link #getAnchorDefinition()} as of ISO 19111:2019.
-     *
-     * @return a description of the point(s) used to anchor the datum to the Earth.
-     */
-    @Override
-    @Deprecated(since = "1.5")
-    @XmlElement(name = "anchorDefinition")
-    public InternationalString getAnchorPoint() {
-        return anchorDefinition;
-    }
-
-    /**
      * Returns the epoch at which a static datum matches a dynamic datum from which it has been derived.
      * This time may be precise or merely a year (e.g. 1983 for NAD83).
      *
@@ -289,21 +281,6 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     @Override
     public Optional<Temporal> getAnchorEpoch() {
         return Optional.ofNullable(anchorEpoch);
-    }
-
-    /**
-     * The time after which this datum definition is valid.
-     *
-     * @return the time after which this datum definition is valid, or {@code null} if none.
-     *
-     * @deprecated Since ISO 19111:2019, replaced by {@link #getAnchorEpoch()}.
-     */
-    @Override
-    @Deprecated(since = "1.5")
-    @XmlSchemaType(name = "date")
-    @XmlElement(name = "realizationEpoch")
-    public Date getRealizationEpoch() {
-        return Datum.super.getRealizationEpoch();
     }
 
     /**
@@ -471,6 +448,15 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     }
 
     /**
+     * Returns a description of the point(s) used to anchor the datum to the Earth.
+     */
+    @XmlElement(name = "anchorDefinition")
+    @UML(identifier="anchorPoint", obligation=OPTIONAL, specification=ISO_19111, version=2003)
+    private InternationalString getAnchorPoint() {
+        return getAnchorDefinition().orElse(null);
+    }
+
+    /**
      * Invoked by JAXB only at unmarshalling time.
      *
      * @see #getAnchorPoint()
@@ -481,6 +467,16 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
         } else {
             ImplementationHelper.propertyAlreadySet(AbstractDatum.class, "setAnchorPoint", "anchorDefinition");
         }
+    }
+
+    /**
+     * The time after which this datum definition is valid.
+     */
+    @XmlSchemaType(name = "date")
+    @XmlElement(name = "realizationEpoch")
+    @UML(identifier="realizationEpoch", obligation=OPTIONAL, specification=ISO_19111, version=2007)
+    private Date getRealizationEpoch() {
+        return getAnchorEpoch().map(Legacy::toDate).orElse(null);
     }
 
     /**

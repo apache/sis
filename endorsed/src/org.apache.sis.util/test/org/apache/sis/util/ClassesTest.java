@@ -51,8 +51,6 @@ import java.io.Serializable;
 import java.awt.geom.Point2D;
 import javax.print.attribute.standard.PrinterStateReason;
 import javax.print.attribute.standard.PrinterStateReasons;
-import org.opengis.util.InternationalString;
-import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.cs.EllipsoidalCS;
@@ -147,12 +145,7 @@ public final class ClassesTest extends TestCase {
     /**
      * Dummy class for {@link #testGetLeafInterfaces()}.
      */
-    @SuppressWarnings("deprecation")
-    private abstract static class T1 implements GeographicCRS {
-        @Override public InternationalString getScope() {return null;}
-        @Override public Extent getDomainOfValidity() {return null;}
-    }
-    @SuppressWarnings("deprecation")
+    private abstract static class T1 implements GeographicCRS {}
     private abstract static class T2 extends T1 implements SingleCRS, CoordinateOperation {}
     private abstract static class T3 extends T2 implements Transformation {}
 

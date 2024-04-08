@@ -85,8 +85,7 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
  *       The late-binding approach allows the authority to define better suited operations than what
  *       we would get if we were transforming everything from and to a pivot system (e.g. WGS84).
  *       In addition, this approach provides useful information like the coordinate operation
- *       {@linkplain AbstractCoordinateOperation#getScope() scope} and
- *       {@linkplain AbstractCoordinateOperation#getDomainOfValidity() domain of validity},
+ *       {@linkplain AbstractCoordinateOperation#getDomains() domain of validity} and
  *       {@linkplain AbstractCoordinateOperation#getCoordinateOperationAccuracy() accuracy}.</div>
  *   </li>
  *   <li>If the above authority factory does not know about the specified CRS, then this class tries to

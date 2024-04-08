@@ -17,7 +17,6 @@
 package org.apache.sis.test.mock;
 
 import javax.measure.Unit;
-import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -25,7 +24,6 @@ import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
-import org.opengis.util.InternationalString;
 import org.apache.sis.measure.Units;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -133,8 +131,6 @@ public final class VerticalCRSMock extends IdentifiedObjectMock
     }
 
     @Override public String                      getAbbreviation()      {return up ? "h" : "d";}
-    @Override public InternationalString         getScope()             {return null;}
-    @Override public Extent                      getDomainOfValidity()  {return null;}
     @Override public Optional<RealizationMethod> getRealizationMethod() {return Optional.ofNullable(method);}
     @Override public VerticalDatumType           getVerticalDatumType() {return type;}
     @Override public VerticalDatum               getDatum()             {return this;}

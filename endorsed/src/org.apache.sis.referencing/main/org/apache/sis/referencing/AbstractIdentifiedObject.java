@@ -44,7 +44,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ObjectFactory;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.bind.ScopedIdentifier;
 import org.apache.sis.xml.bind.UseLegacyMetadata;
@@ -303,13 +302,13 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *     <td>{@link ObjectDomain} (optionally as array)</td>
      *     <td>{@link #getDomains()}</td>
      *   </tr><tr>
-     *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ObjectDomain#SCOPE_KEY}</td>
      *     <td>{@link String} or {@link InternationalString}</td>
-     *     <td>{@link ObjectDomain#getScope()} on the {@linkplain #getDomains() domain}</td>
+     *     <td>{@link DefaultObjectDomain#getScope()} on the {@linkplain #getDomains() domain}</td>
      *   </tr><tr>
-     *     <td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ObjectDomain#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link Extent}</td>
-     *     <td>{@link ObjectDomain#getDomainOfValidity()} on the {@linkplain #getDomains() domain}</td>
+     *     <td>{@link DefaultObjectDomain#getDomainOfValidity()} on the {@linkplain #getDomains() domain}</td>
      *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
      *     <td>{@link InternationalString} or {@link String}</td>
@@ -406,8 +405,8 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
             throw illegalPropertyType(properties, DOMAINS_KEY, value);
         } else {
             // Compatibility with previous way to specify domain.
-            final InternationalString scope = Types.toInternationalString(properties, ReferenceSystem.SCOPE_KEY);
-            final Extent domainOfValidity = Containers.property(properties, ReferenceSystem.DOMAIN_OF_VALIDITY_KEY, Extent.class);
+            final InternationalString scope = Types.toInternationalString(properties, ObjectDomain.SCOPE_KEY);
+            final Extent domainOfValidity = Containers.property(properties, ObjectDomain.DOMAIN_OF_VALIDITY_KEY, Extent.class);
             if (scope != null || domainOfValidity != null) {
                 domains = Collections.singleton(new DefaultObjectDomain(scope, domainOfValidity));
             }

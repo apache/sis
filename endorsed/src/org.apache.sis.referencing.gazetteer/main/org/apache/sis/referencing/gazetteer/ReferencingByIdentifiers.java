@@ -47,6 +47,7 @@ import org.apache.sis.util.resources.Vocabulary;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.citation.Party;
+import org.opengis.referencing.ObjectDomain;
 import org.opengis.referencing.gazetteer.Location;
 import org.opengis.referencing.gazetteer.LocationType;
 import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;
@@ -119,49 +120,40 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
      *     <th>Property name</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers#THEME_KEY}</td>
      *     <td>{@link String} or {@link InternationalString}</td>
      *     <td>{@link #getTheme()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers#OVERALL_OWNER_KEY}</td>
      *     <td>{@link Party}</td>
      *     <td>{@link #getOverallOwner()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <th colspan="3" class="hsep">Defined in parent class (reminder)</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
      *     <td>{@link org.opengis.metadata.Identifier} or {@link String}</td>
      *     <td>{@link #getName()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
      *     <td>{@link org.opengis.util.GenericName} or {@link CharSequence} (optionally as array)</td>
      *     <td>{@link #getAlias()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
      *     <td>{@link org.opengis.metadata.Identifier} (optionally as array)</td>
      *     <td>{@link #getIdentifiers()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getRemarks()}</td>
-     *   </tr>
-     *   <tr>
-     *     <td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
+     *   </tr><tr>
+     *     <td>{@value org.opengis.referencing.ObjectDomain#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link org.opengis.metadata.extent.Extent}</td>
-     *     <td>{@link #getDomainOfValidity()}</td>
-     *   </tr>
-     *   <tr>
-     *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
+     *     <td>{@link org.apache.sis.referencing.DefaultObjectDomain#getDomainOfValidity()}</td>
+     *   </tr><tr>
+     *     <td>{@value org.opengis.referencing.ObjectDomain#SCOPE_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
-     *     <td>{@link #getScope()}</td>
+     *     <td>{@link org.apache.sis.referencing.DefaultObjectDomain#getScope()}</td>
      *   </tr>
      * </table>
      *
@@ -197,7 +189,7 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
         final Map<String,Object> properties = new HashMap<>(8);
         properties.put(NAME_KEY, name);
         properties.put(IDENTIFIERS_KEY, new ImmutableIdentifier(Citations.SIS, Constants.SIS, id));
-        properties.put(DOMAIN_OF_VALIDITY_KEY, Extents.WORLD);
+        properties.put(ObjectDomain.DOMAIN_OF_VALIDITY_KEY, Extents.WORLD);
         properties.put(THEME_KEY, Vocabulary.formatInternational(Vocabulary.Keys.Mapping));
         properties.put(OVERALL_OWNER_KEY, party);
         return properties;

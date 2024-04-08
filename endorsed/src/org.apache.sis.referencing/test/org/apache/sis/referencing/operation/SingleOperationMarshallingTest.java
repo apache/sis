@@ -47,6 +47,8 @@ import org.opengis.test.Validators;
 import org.apache.sis.xml.bind.referencing.CC_OperationParameterGroupTest;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.TestUtilities.getScope;
+import static org.apache.sis.test.TestUtilities.getDomainOfValidity;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -153,10 +155,10 @@ public final class SingleOperationMarshallingTest extends TestCase.WithLogs {
         final DefaultConversion c = unmarshalFile(DefaultConversion.class, openTestFile(false));
         assertEquals("World Mercator", c.getName().getCode(), "name");
         assertEquals("3395", getSingleton(c.getIdentifiers()).getCode(), "identifier");
-        assertEquals("Very small scale mapping.", String.valueOf(c.getScope()), "scope");
+        assertEquals("Very small scale mapping.", getScope(c), "scope");
         assertNull  (c.getOperationVersion(), "operationVersion");
 
-        final var e = (GeographicBoundingBox) getSingleton(c.getDomainOfValidity().getGeographicElements());
+        final GeographicBoundingBox e = getDomainOfValidity(c);
         assertEquals(+180, e.getEastBoundLongitude(), "eastBoundLongitude");
         assertEquals(-180, e.getWestBoundLongitude(), "westBoundLongitude");
         assertEquals(  84, e.getNorthBoundLatitude(), "northBoundLatitude");
@@ -218,7 +220,7 @@ public final class SingleOperationMarshallingTest extends TestCase.WithLogs {
         final DefaultTransformation c = unmarshalFile(DefaultTransformation.class, openTestFile(true));
         assertEquals("NTF (Paris) to NTF (1)", c.getName().getCode(), "name");
         assertEquals("1763", getSingleton(c.getIdentifiers()).getCode(), "identifier");
-        assertEquals("Change of prime meridian.", String.valueOf(c.getScope()), "scope");
+        assertEquals("Change of prime meridian.", getScope(c), "scope");
         assertEquals("IGN-Fra", c.getOperationVersion(), "operationVersion");
 
         final OperationMethod method = c.getMethod();
@@ -244,13 +246,13 @@ public final class SingleOperationMarshallingTest extends TestCase.WithLogs {
         final CoordinateReferenceSystem sourceCRS = c.getSourceCRS();
         assertInstanceOf(GeodeticCRS.class, sourceCRS, "sourceCRS");
         assertEquals("NTF (Paris)", sourceCRS.getName().getCode(), "sourceCRS.name");
-        assertEquals("Geodetic survey.", sourceCRS.getScope().toString(), "sourceCRS.scope");
+        assertEquals("Geodetic survey.", getScope(sourceCRS), "sourceCRS.scope");
         assertEquals("4807", getSingleton(sourceCRS.getIdentifiers()).getCode(), "sourceCRS.identifier");
 
         final CoordinateReferenceSystem targetCRS = c.getTargetCRS();
         assertInstanceOf(GeodeticCRS.class,  targetCRS, "targetCRS");
         assertEquals("NTF", targetCRS.getName().getCode(), "targetCRS.name");
-        assertEquals("Geodetic survey.", targetCRS.getScope().toString(), "targetCRS.scope");
+        assertEquals("Geodetic survey.", getScope(targetCRS), "targetCRS.scope");
         assertEquals("4275", getSingleton(targetCRS.getIdentifiers()).getCode(), "targetCRS.identifier");
 
         final var tr = assertInstanceOf(LinearTransform.class, c.getMathTransform());

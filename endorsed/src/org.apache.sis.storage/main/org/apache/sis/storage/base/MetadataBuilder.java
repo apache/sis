@@ -519,8 +519,9 @@ public class MetadataBuilder {
     }
 
     /**
-     * Information about the events or source data used in constructing the data specified by the
-     * {@linkplain DefaultLineage#getScope() scope}.
+     * Information about the events or source data used in constructing the data specified by the scope.
+     *
+     * @see DefaultLineage#getScope()
      */
     private DefaultLineage lineage;
 

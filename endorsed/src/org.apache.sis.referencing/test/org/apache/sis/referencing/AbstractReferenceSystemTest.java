@@ -19,7 +19,7 @@ package org.apache.sis.referencing;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
-import static org.opengis.referencing.ReferenceSystem.*;
+import org.opengis.util.InternationalString;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
@@ -27,12 +27,17 @@ import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import static org.opengis.referencing.IdentifiedObject.*;
+import static org.opengis.referencing.ObjectDomain.*;
+
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.mock.VerticalCRSMock;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 
@@ -64,9 +69,11 @@ public final class AbstractReferenceSystemTest extends TestCase {
         final var reference = new AbstractReferenceSystem(properties);
         Validators.validate(reference);
 
-        assertEquals("This is a name",         reference.getName()   .getCode());
-        assertEquals("This is a scope",        reference.getScope()  .toString(Locale.ROOT));
-        assertEquals("Valide dans ce domaine", reference.getScope()  .toString(Locale.FRENCH));
+        final InternationalString scope = getSingleton(reference.getDomains()).getScope();
+
+        assertEquals("This is a name",         reference.getName().getCode());
+        assertEquals("This is a scope",        scope.toString(Locale.ROOT));
+        assertEquals("Valide dans ce domaine", scope.toString(Locale.FRENCH));
         assertEquals("There is remarks",       reference.getRemarks().toString(Locale.ENGLISH));
         assertEquals("Voici des remarques",    reference.getRemarks().toString(Locale.FRENCH));
     }

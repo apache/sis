@@ -124,6 +124,7 @@ import static org.apache.sis.referencing.internal.ServicesForMetadata.CONNECTION
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
+import org.opengis.referencing.ObjectDomain;
 
 
 /**
@@ -1219,9 +1220,9 @@ codes:  for (int i=0; i<codes.length; i++) {
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Map<String,Object> properties = createProperties(table, name, code, remarks, deprecated);
         if (domainCode != null) {
-            properties.put(Datum.DOMAIN_OF_VALIDITY_KEY, owner.createExtent(domainCode));
+            properties.put(ObjectDomain.DOMAIN_OF_VALIDITY_KEY, owner.createExtent(domainCode));
         }
-        properties.put(Datum.SCOPE_KEY, scope);
+        properties.put(ObjectDomain.SCOPE_KEY, scope);
         return properties;
     }
 
@@ -1696,7 +1697,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                         @SuppressWarnings("LocalVariableHidesMemberVariable")
                         final Calendar calendar = getCalendar();
                         calendar.set(year, month, day);
-                        properties.put(Datum.REALIZATION_EPOCH_KEY, calendar.getTime());
+                        properties.put(Datum.ANCHOR_EPOCH_KEY, calendar.getTime().toInstant());
                     }
                 } catch (NumberFormatException exception) {
                     unexpectedException("createDatum", exception);          // Not a fatal error.

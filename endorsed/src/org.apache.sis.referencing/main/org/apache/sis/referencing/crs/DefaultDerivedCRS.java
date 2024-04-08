@@ -211,9 +211,9 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      *     <td>{@link org.opengis.metadata.Identifier} (optionally as array)</td>
      *     <td>{@code this.getIdentifiers()}</td>
      *   </tr><tr>
-     *     <td>{@value org.opengis.referencing.operation.CoordinateOperation#DOMAIN_OF_VALIDITY_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ObjectDomain#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link org.opengis.metadata.extent.Extent}</td>
-     *     <td>{@code conversionFromBase.getDomainOfValidity()}</td>
+     *     <td>{@code domain.getDomainOfValidity()}</td>
      *   </tr>
      * </table>
      *
