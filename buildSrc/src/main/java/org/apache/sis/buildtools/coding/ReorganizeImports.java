@@ -59,28 +59,25 @@ import java.util.Set;
  *
  * {@snippet lang="shell" :
  *   cd geoapi-4.0
+ *   git diff
  *   git add --update
- *   git diff --staged
  *   gradle test
  *   git diff
  *   git add --update
- *   git commit
+ *   git commit --message "Post-merge automatic reorganization of imports order."
  *   }
  *
  * Then temporarily stash the changes in {@code geoapi-3.1}, merge, pop the stashed changes, test and commit:
  *
  * {@snippet lang="shell" :
  *   cd ../geoapi-3.1
+ *   git diff
  *   git add --update
- *   git diff --staged
- *   git stash --message "Import reordering"
  *   git merge geoapi-4.0 -s ours --no-commit
- *   git stash pop
- *   git add --update
  *   gradle test
  *   git diff
  *   git add --update
- *   git commit
+ *   git commit --message "Merge of automatic reorganization of imports order."
  *   }
  *
  * Finally apply the same pattern on the {@code main} branch.

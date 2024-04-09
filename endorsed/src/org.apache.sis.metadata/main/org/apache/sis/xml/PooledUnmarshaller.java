@@ -92,7 +92,7 @@ final class PooledUnmarshaller extends Pooled implements Unmarshaller {
      * @throws JAXBException if an error occurred while restoring a property.
      */
     @Override
-    @SuppressWarnings({"unchecked","rawtypes","deprecation"})
+    @SuppressWarnings({"unchecked","rawtypes"})
     protected void reset(final Object key, final Object value) throws JAXBException {
         if (key instanceof String) {
             unmarshaller.setProperty((String) key, value);

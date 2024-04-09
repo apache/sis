@@ -662,10 +662,10 @@ previous:   for (int i=components.size(); --i >= 0;) {
          * Possibly sets {@link #datum} and {@link #coordinateSystem} to predefined objects
          * matching the axes defined in the netCDF file.
          */
+        @SuppressWarnings("deprecation")
         @Override void setPredefinedComponents(final Decoder decoder) throws FactoryException {
             super.setPredefinedComponents(decoder);
             if (isPredefinedCS(Units.DEGREE)) {
-                @SuppressWarnings("deprecation")
                 GeocentricCRS crs = defaultCRS.spherical();
                 if (isLongitudeFirst) {
                     crs = DefaultGeocentricCRS.castOrCopy(crs).forConvention(AxesConvention.RIGHT_HANDED);
@@ -892,6 +892,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
         /**
          * Creates a {@link VerticalDatum} for <q>Unknown datum based on Mean Sea Level</q>.
          */
+        @SuppressWarnings("deprecation")
         @Override void createDatum(DatumFactory factory, Map<String,?> properties) throws FactoryException {
             datum = factory.createVerticalDatum(properties, VerticalDatumType.GEOIDAL);
         }

@@ -62,6 +62,7 @@ public final class DefaultRecordTypeTest extends TestCase {
     /**
      * Creates a new record type from the current values of private fields.
      */
+    @SuppressWarnings("removal")
     private DefaultRecordType create() throws IllegalArgumentException {
         final Type fieldType = new SimpleAttributeType<>(fieldTypeName, Integer.class);
         return new DefaultRecordType(recordTypeName, container, Map.of(fieldName, fieldType));

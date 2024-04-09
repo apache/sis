@@ -280,13 +280,16 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
     private Object predefined(String code, final int kind) throws NoSuchAuthorityCodeException {
         try {
             /*
-             * Parse the value after the last ':'. We do not bother to verify if the part before ':' is legal
-             * (e.g. "EPSG:4326", "EPSG::4326", "urn:ogc:def:crs:epsg::4326", etc.) because this analysis has
-             * already be done by MultiAuthoritiesFactory. We nevertheless skip the prefix in case this factory
-             * is used directly (not through MultiAuthoritiesFactory), which should be rare. The main case is
-             * when using the factory returned by AuthorityFactories.fallback(…).
+             * Parse the value after the last ':' for an URN of the form "urn:ogc:def:crs:epsg::4326",
+             * or after the last '#' for an URL of the form "http://www.opengis.net/gml/srs/epsg.xml#4326".
+             * We do not bother to verify if the part before ':' or '#' is legal because this analysis has
+             * already be done by `MultiAuthoritiesFactory`. The check for separator should be unnecessary,
+             * but we nevertheless do it because this factory is sometime invoked directly rather than through
+             * `MultiAuthoritiesFactory`. The direct invocation happens when `CRS.forCode(String)` fallbacks
+             * on `AuthorityFactories.fallback(…)`.
              */
-            code = CharSequences.trimWhitespaces(code, code.lastIndexOf(Constants.DEFAULT_SEPARATOR) + 1, code.length()).toString();
+            final int s = Math.max(code.lastIndexOf(Constants.DEFAULT_SEPARATOR), code.lastIndexOf('#'));
+            code = CharSequences.trimWhitespaces(code, s + 1, code.length()).toString();
             final short n = Short.parseShort(code);
             if ((kind & (ELLIPSOID | DATUM | CRS)) != 0) {
                 for (final CommonCRS crs : CommonCRS.values()) {
