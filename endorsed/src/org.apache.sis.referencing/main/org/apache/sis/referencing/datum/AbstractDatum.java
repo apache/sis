@@ -44,10 +44,12 @@ import org.apache.sis.io.wkt.Formatter;
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;
 
+// Specific to the main and geoapi-4.0 branches:
+import org.apache.sis.referencing.internal.Legacy;
+
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.metadata.extent.Extent;
-import org.apache.sis.referencing.internal.Legacy;
 
 
 /**

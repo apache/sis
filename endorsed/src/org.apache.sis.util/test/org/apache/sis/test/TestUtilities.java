@@ -49,14 +49,14 @@ import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.util.privy.X364;
 import static org.apache.sis.util.privy.StandardDateFormat.UTC;
 
-// Specific to the main branch:
-import org.opengis.metadata.extent.Extent;
-import org.opengis.referencing.datum.Datum;
-import org.opengis.referencing.ReferenceSystem;
-import org.opengis.referencing.operation.CoordinateOperation;
-
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceSystem;
+import org.opengis.metadata.extent.Extent;
+import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.operation.CoordinateOperation;
 
 
 /**

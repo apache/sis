@@ -43,7 +43,6 @@ import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
 import static org.opengis.referencing.IdentifiedObject.ALIAS_KEY;
 import static org.opengis.referencing.IdentifiedObject.REMARKS_KEY;
 import static org.opengis.referencing.IdentifiedObject.IDENTIFIERS_KEY;
-import static org.opengis.referencing.datum.Datum.DOMAIN_OF_VALIDITY_KEY;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.metadata.privy.AxisNames;
@@ -76,6 +75,7 @@ import static org.apache.sis.metadata.privy.ReferencingServices.AUTHALIC_RADIUS;
 
 // Specific to the main branch:
 import org.opengis.referencing.datum.VerticalDatumType;
+import static org.opengis.referencing.datum.Datum.DOMAIN_OF_VALIDITY_KEY;
 
 
 /**

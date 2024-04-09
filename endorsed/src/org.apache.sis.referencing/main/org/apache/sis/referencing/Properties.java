@@ -22,9 +22,7 @@ import java.util.Collection;
 import java.util.function.IntFunction;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
-import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
@@ -34,7 +32,9 @@ import org.apache.sis.util.privy.AbstractMap;
 import org.apache.sis.referencing.privy.CoordinateOperations;
 
 // Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.referencing.datum.Datum;
 
 // Specific to the main branch:
 import org.apache.sis.referencing.internal.Legacy;

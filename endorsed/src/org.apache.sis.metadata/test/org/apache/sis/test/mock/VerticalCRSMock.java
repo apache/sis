@@ -17,7 +17,6 @@
 package org.apache.sis.test.mock;
 
 import javax.measure.Unit;
-import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -25,8 +24,11 @@ import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
-import org.opengis.util.InternationalString;
 import org.apache.sis.measure.Units;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.metadata.extent.Extent;
+import org.opengis.util.InternationalString;
 
 // Specific to the main branch:
 import java.util.Date;

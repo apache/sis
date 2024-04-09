@@ -44,7 +44,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.ObjectFactory;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.xml.Namespaces;
 import org.apache.sis.xml.bind.ScopedIdentifier;
 import org.apache.sis.xml.bind.UseLegacyMetadata;
@@ -78,6 +77,7 @@ import static org.apache.sis.util.privy.CollectionsExt.immutableSet;
 import org.opengis.referencing.ReferenceIdentifier;
 
 // Specific to the main branch:
+import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.metadata.iso.DefaultIdentifier;
 import org.apache.sis.referencing.internal.Legacy;
 

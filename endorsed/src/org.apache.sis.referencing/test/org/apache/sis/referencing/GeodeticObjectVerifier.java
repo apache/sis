@@ -35,13 +35,13 @@ import org.opengis.referencing.crs.GeodeticCRS;
 import org.apache.sis.metadata.privy.AxisNames;
 import org.apache.sis.measure.Units;
 
-// Specific to the main branch:
-import org.opengis.referencing.datum.Datum;
-import org.opengis.referencing.ReferenceSystem;
-import org.opengis.referencing.operation.CoordinateOperation;
-
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceSystem;
+import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.operation.CoordinateOperation;
 
 
 /**

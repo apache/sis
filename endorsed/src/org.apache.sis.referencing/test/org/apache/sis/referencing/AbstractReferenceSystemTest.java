@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 import org.opengis.util.InternationalString;
-import static org.opengis.referencing.ReferenceSystem.*;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
@@ -37,6 +36,9 @@ import org.apache.sis.test.mock.VerticalCRSMock;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
+
+// Specific to the main branch:
+import static org.opengis.referencing.ReferenceSystem.*;
 
 
 /**

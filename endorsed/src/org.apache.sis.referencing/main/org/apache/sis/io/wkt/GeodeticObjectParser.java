@@ -44,7 +44,6 @@ import javax.measure.format.MeasurementParseException;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.ObjectFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.cs.*;
@@ -89,6 +88,7 @@ import org.apache.sis.util.iso.Types;
 import org.opengis.referencing.ReferenceIdentifier;
 
 // Specific to the main branch:
+import org.opengis.referencing.ReferenceSystem;
 import org.apache.sis.referencing.internal.ServicesForMetadata;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 

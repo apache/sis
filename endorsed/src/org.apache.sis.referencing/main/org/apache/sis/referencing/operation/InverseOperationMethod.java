@@ -41,8 +41,8 @@ import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.collection.Containers;
 
 // Specific to the main branch:
-import org.apache.sis.referencing.internal.Legacy;
 import org.apache.sis.referencing.DefaultObjectDomain;
+import org.apache.sis.referencing.internal.Legacy;
 
 
 /**
