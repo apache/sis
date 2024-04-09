@@ -923,8 +923,15 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * is assignable to {@link CodeList}, {@link Enum}, {@link String}, {@link Charset},
      * {@link Locale} or {@link Currency}, and <code>{@linkplain List}.class</code> otherwise.
      * Subclasses can override this method for choosing different kind of collections.
-     * <em>Note however that {@link Set} should be used only with immutable element types</em>,
-     * for {@linkplain Object#hashCode() hash code} stability.</p>
+     *
+     * <h4>Constraints</h4>
+     * Implementations should comply to the following constraints:
+     * <ul>
+     *   <li><em>This method may be invoked (indirectly) at construction time.</em>
+     *        Therefor, the implementation should not depend on the object state.</li>
+     *   <li><em>The {@link Set} type should be returned only when the set elements are immutable.</em>
+     *        This is needed for {@linkplain Object#hashCode() hash code} stability.</li>
+     * </ul>
      *
      * @param  <E>          the type of elements in the collection to be created.
      * @param  elementType  the type of elements in the collection to be created.

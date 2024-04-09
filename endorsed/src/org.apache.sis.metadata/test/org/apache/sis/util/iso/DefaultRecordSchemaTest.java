@@ -45,7 +45,7 @@ public final class DefaultRecordSchemaTest extends TestCase {
      * Tests {@link DefaultRecordSchema#createRecordType(CharSequence, Map)}.
      */
     @Test
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("removal")
     public void testCreateRecordType() {
         final var schema = new DefaultRecordSchema(null, null, "MySchema");
         final var fields = new LinkedHashMap<CharSequence,Class<?>>(8);

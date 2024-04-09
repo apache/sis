@@ -217,8 +217,8 @@ public final class Extents extends Static {
      *
      * <p>This is a convenience method for fetching the domain of validity of
      * {@link org.opengis.referencing.datum.Datum},
-     * {@link org.opengis.referencing.crs.CoordinateReferenceSystem} or
-     * {@link org.opengis.referencing.operation.CoordinateOperation} objects.</p>
+     * {@link CoordinateReferenceSystem} or
+     * {@link CoordinateOperation} objects.</p>
      *
      * @param  extents  the extents for which to get a single geographic bounding box.
      * @return the union of all geographic bounding boxes found in all extents.

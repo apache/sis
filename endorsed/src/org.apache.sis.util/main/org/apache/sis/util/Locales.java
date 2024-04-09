@@ -44,13 +44,15 @@ import static org.apache.sis.util.resources.IndexedResourceBundle.LOGGER;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 0.8
+ * @version 1.5
  * @since   0.3
  */
 public final class Locales extends Static {
     /**
      * A read-only map for canonicalizing the locales. Filled on class
      * initialization in order to avoid the need for synchronization.
+     *
+     * @see #unique(Locale)
      */
     private static final Map<Locale,Locale> POOL;
     static {
@@ -100,7 +102,6 @@ public final class Locales extends Static {
      */
     private static final short[] ISO3, ISO2;
     static {
-        final Short CONFLICT = 0;                           // Sentinel value for conflicts (paranoiac safety).
         final Map<Short,Short> map = new TreeMap<>();
         for (final Locale locale : POOL.values()) {
             short type = LANGUAGE;                          // 0 for language, or leftmost bit set for country.
@@ -118,13 +119,13 @@ public final class Locales extends Static {
                         if (p != null && p != alpha2) {
                             // We do not expect any conflict. But if it happen anyway, conservatively
                             // remember that we should not perform any substitution for that code.
-                            map.put(alpha3, CONFLICT);
+                            map.put(alpha3, (short) 0);
                         }
                     }
                 }
             } while ((type ^= COUNTRY) != LANGUAGE);
         }
-        while (map.values().remove(CONFLICT));              // Remove all conflicts that we may have found.
+        map.values().removeIf((v) -> v == (short) 0);   // Remove all conflicts that we may have found.
         ISO3 = new short[map.size()];
         ISO2 = new short[map.size()];
         int i = 0;
@@ -207,7 +208,6 @@ filter: for (final Locale locale : locales) {
      * @param  locales  the locales from which to get the languages.
      * @return the languages, without country or variant information.
      */
-    @SuppressWarnings("deprecation")
     private static Locale[] getLanguages(final Locale... locales) {
         final Set<String> codes = JDK19.newLinkedHashSet(locales.length);
         for (final Locale locale : locales) {
@@ -215,9 +215,9 @@ filter: for (final Locale locale : locales) {
         }
         int i=0;
         final Locale[] languages = new Locale[codes.size()];
+        final var builder = new Locale.Builder();
         for (final String code : codes) {
-            // TODO: replace by Locale.of(…) with JDK19.
-            languages[i++] = unique(new Locale(code));
+            languages[i++] = unique(builder.setLanguage(code).build());
         }
         return languages;
     }
@@ -358,7 +358,6 @@ filter: for (final Locale locale : locales) {
      * @return a unique instance of the given locale, or {@code locale} if the given locale is not cached.
      */
     public static Locale unique(final Locale locale) {
-        final Locale candidate = POOL.get(locale);
-        return (candidate != null) ? candidate : locale;
+        return POOL.getOrDefault(locale, locale);
     }
 }

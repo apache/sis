@@ -201,6 +201,7 @@ public final class HardCodedCRS {
      * A geocentric CRS with a spherical coordinate system.
      * Prime meridian is Greenwich, geodetic datum is WGS84 and linear units are metres.
      */
+    @SuppressWarnings("deprecation")
     public static final DefaultGeocentricCRS SPHERICAL = new DefaultGeocentricCRS(
             getProperties(HardCodedCS.SPHERICAL), HardCodedDatum.WGS84, HardCodedCS.SPHERICAL);
 
@@ -211,6 +212,7 @@ public final class HardCodedCRS {
      * The <var>Y</var> axis points East.
      * The <var>Z</var> axis points North.
      */
+    @SuppressWarnings("deprecation")
     public static final DefaultGeocentricCRS GEOCENTRIC = new DefaultGeocentricCRS(
             getProperties(HardCodedCS.GEOCENTRIC), HardCodedDatum.WGS84, HardCodedCS.GEOCENTRIC);
 
@@ -321,7 +323,7 @@ public final class HardCodedCRS {
      * <p>The {@code PixelInCell} attribute of the associated {@code ImageDatum}
      * is set to {@link PixelInCell#CELL_CENTER}.</p>
      */
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("removal")
     public static final DefaultImageCRS IMAGE = new DefaultImageCRS(
             getProperties(HardCodedDatum.IMAGE), HardCodedDatum.IMAGE, HardCodedCS.GRID);
 

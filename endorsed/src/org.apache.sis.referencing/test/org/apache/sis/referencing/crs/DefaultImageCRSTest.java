@@ -46,7 +46,7 @@ import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@SuppressWarnings("deprecation")
+@SuppressWarnings("removal")
 public final class DefaultImageCRSTest extends TestCase {
     /**
      * Creates a new test case.

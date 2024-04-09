@@ -93,7 +93,7 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
      *     @ResourceLock(value=LoggingWatcher.LOCK, mode=ResourceAccessMode.READ_WRITE)
      *     @Execution(ExecutionMode.SAME_THREAD)
      *     public class MyTest {
-     *         }
+     *     }
      *     }
      */
     public static final String LOCK = "Logging";
@@ -244,6 +244,7 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
             assertTrue(allFilters.remove(this));
             logger.setFilter(allFilters.peek());
             allFilters = null;
+            // Note: references to `allFilters` may still exist in other `LoggingWatcher` instances.
         }
     }
 
@@ -252,7 +253,7 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
      * This method adds the logging message to the {@link #messages} list.
      *
      * @param  record  the intercepted log record.
-     * @return {@code true} if verbose mode, or {@code false} is quiet mode.
+     * @return {@code true} if verbose mode, or {@code false} if quiet mode.
      */
     @Override
     public final boolean isLoggable(final LogRecord record) {
@@ -264,6 +265,9 @@ public final class LoggingWatcher implements BeforeEachCallback, AfterEachCallba
              */
             LoggingWatcher owner = null;
             synchronized (logger) {
+                if (allFilters == null) {   // Should never be null, but sometime happens for an unknown reason.
+                    return true;
+                }
                 for (final LoggingWatcher w : allFilters) {
                     if (w.isMultiThread || w.threadId == record.getLongThreadID()) {
                         owner = w;

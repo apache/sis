@@ -99,7 +99,6 @@ public class DefaultNonQuantitativeAttributeCorrectness extends AbstractThematic
      * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
-    @SuppressWarnings("deprecation")
     public static DefaultNonQuantitativeAttributeCorrectness castOrCopy(final NonQuantitativeAttributeAccuracy object) {
         if (object == null || object instanceof DefaultNonQuantitativeAttributeCorrectness) {
             return (DefaultNonQuantitativeAttributeCorrectness) object;

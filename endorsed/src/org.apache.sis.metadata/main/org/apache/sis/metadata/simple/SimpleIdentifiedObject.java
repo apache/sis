@@ -173,8 +173,9 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      */
     @Override
     public int hashCode() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final Identifier name = this.name;
         int code = (int) serialVersionUID;
-        final Identifier name = getName();
         if (name != null) {
             code ^= name.hashCode();
         }
@@ -238,9 +239,10 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      */
     @Override
     public String toString() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final ReferenceIdentifier name = this.name;
         final String code, codespace;
         final Citation authority;
-        final ReferenceIdentifier name = this.name;
         if (name != null) {
             code      = name.getCode();
             codespace = name.getCodeSpace();
