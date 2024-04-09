@@ -25,13 +25,13 @@ import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.datum.GeodeticDatumMock;
 import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.referencing.ObjectDomain.DOMAIN_OF_VALIDITY_KEY;
-
 // Test dependencies
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import static org.opengis.referencing.ObjectDomain.DOMAIN_OF_VALIDITY_KEY;
 
 
 /**

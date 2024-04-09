@@ -37,9 +37,6 @@ import org.apache.sis.system.Loggers;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.referencing.ObjectDomain;
-
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -49,6 +46,9 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
 import org.apache.sis.referencing.operation.HardCodedConversions;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.test.Assertions.assertMessageContains;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.ObjectDomain;
 
 
 /**
