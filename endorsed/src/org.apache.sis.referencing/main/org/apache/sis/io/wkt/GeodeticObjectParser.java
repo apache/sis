@@ -84,12 +84,12 @@ import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.ObjectDomain;
+
 // Specific to the geoapi-4.0 branch:
 import org.apache.sis.referencing.crs.DefaultImageCRS;
 import org.apache.sis.referencing.datum.DefaultImageDatum;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.referencing.ObjectDomain;
 
 
 /**

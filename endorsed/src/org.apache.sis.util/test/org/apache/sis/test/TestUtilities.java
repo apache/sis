@@ -38,7 +38,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Static;
@@ -50,11 +49,12 @@ import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.util.privy.X364;
 import static org.apache.sis.util.privy.StandardDateFormat.UTC;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.referencing.ObjectDomain;
-
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.ObjectDomain;
+import org.opengis.metadata.extent.GeographicExtent;
 
 
 /**

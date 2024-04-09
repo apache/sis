@@ -60,8 +60,8 @@ import org.apache.sis.io.wkt.Convention;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 import org.opengis.referencing.crs.ParametricCRS;
-import org.apache.sis.metadata.privy.Identifiers;
 import org.apache.sis.xml.NilObject;
+import org.apache.sis.metadata.privy.Identifiers;
 
 
 /**

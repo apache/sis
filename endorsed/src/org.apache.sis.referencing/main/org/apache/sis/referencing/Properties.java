@@ -35,9 +35,9 @@ import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.opengis.referencing.ObjectDomain;
 
 // Specific to the geoapi-4.0 branch:
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
-import org.opengis.util.InternationalString;
 
 
 /**

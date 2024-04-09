@@ -29,7 +29,7 @@ import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 
-// Specific to the geoapi-4.0 branch:
+// Specific to the main and geoapi-4.0 branches:
 import java.util.Date;
 import java.time.Instant;
 import java.time.Year;

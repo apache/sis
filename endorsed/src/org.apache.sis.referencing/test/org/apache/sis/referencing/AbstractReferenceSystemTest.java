@@ -27,10 +27,6 @@ import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import static org.opengis.referencing.IdentifiedObject.*;
-import static org.opengis.referencing.ObjectDomain.*;
-
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -40,6 +36,10 @@ import org.apache.sis.test.mock.VerticalCRSMock;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import static org.opengis.referencing.IdentifiedObject.*;
+import static org.opengis.referencing.ObjectDomain.*;
 
 
 /**

@@ -44,6 +44,9 @@ import org.apache.sis.io.wkt.Formatter;
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;
 
+// Specific to the main and geoapi-4.0 branches:
+import org.apache.sis.referencing.internal.Legacy;
+
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
 
@@ -51,7 +54,6 @@ import org.opengis.metadata.Identifier;
 import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.*;
 import static org.opengis.annotation.Specification.*;
-import org.apache.sis.referencing.internal.Legacy;
 
 
 /**

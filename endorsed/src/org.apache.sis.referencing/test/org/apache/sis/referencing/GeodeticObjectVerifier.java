@@ -20,6 +20,7 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -34,12 +35,11 @@ import org.opengis.referencing.crs.GeodeticCRS;
 import org.apache.sis.metadata.privy.AxisNames;
 import org.apache.sis.measure.Units;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.referencing.ObjectDomain;
-import org.opengis.referencing.IdentifiedObject;
-
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.ObjectDomain;
 
 
 /**
