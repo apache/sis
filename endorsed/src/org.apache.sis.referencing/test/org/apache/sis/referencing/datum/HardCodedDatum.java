@@ -118,6 +118,7 @@ public final class HardCodedDatum {
      * Ellipsoid for measurements of height above the ellipsoid.
      * This is not a valid datum according ISO 19111, but is used by Apache SIS for internal calculation.
      */
+    @SuppressWarnings("deprecation")
     public static final DefaultVerticalDatum ELLIPSOID = new DefaultVerticalDatum(
             properties("Ellipsoid", null, getScope(SPHERE)),
             VerticalDatumTypes.ELLIPSOIDAL);
@@ -153,7 +154,7 @@ public final class HardCodedDatum {
     /**
      * Image with {@link PixelInCell#CELL_CENTER}.
      */
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("removal")
     public static final DefaultImageDatum IMAGE = new DefaultImageDatum(
             properties("Image", null, null),
             PixelInCell.CELL_CENTER);

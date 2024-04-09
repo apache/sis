@@ -218,7 +218,7 @@ public final class GeodeticObjectVerifier {
      * @param  isExtentMandatory  {@code true} if the domain of validity is required to contain an
      *                            {@code Extent} element for the world, or {@code false} if optional.
      */
-    public static void assertIsWGS84(final GeodeticDatum datum, boolean isExtentMandatory) {
+    public static void assertIsWGS84(final GeodeticDatum datum, final boolean isExtentMandatory) {
         assertEquals("World Geodetic System 1984", datum.getName().getCode(), "name");
         assertIsWorld    (datum, isExtentMandatory);
         assertIsGreenwich(datum.getPrimeMeridian());

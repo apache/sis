@@ -44,7 +44,7 @@ import org.apache.sis.util.collection.Containers;
  * SIS typically references them as if they were immutable because of their <i>add-only</i> behavior.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.util.iso.Types#toInternationalString(Map, String)
  *
@@ -180,35 +180,27 @@ public class DefaultInternationalString extends AbstractInternationalString impl
 
     /**
      * Returns a string in the specified locale. If there is no string for that {@code locale},
-     * then this method search for a locale without the {@linkplain Locale#getVariant() variant}
-     * part. If no string are found, then this method search for a locale without the
-     * {@linkplain Locale#getCountry() country} part. If none are found, then this method returns
-     * {@code null}.
+     * then this method searches for a locale without the {@linkplain Locale#getVariant() variant} part.
+     * If no string are found, then searches for a locale without {@linkplain Locale#getCountry() country}.
+     * If none are found, then this method returns {@code null}.
      *
      * @param  locale  the locale to look for, or {@code null}.
      * @return the string in the specified locale, or {@code null} if none was found.
      */
-    @SuppressWarnings("deprecation")
     private String getString(Locale locale) {
+        Locale.Builder builder = null;
         while (locale != null) {
             final String text = localeMap.get(locale);
             if (text != null) {
                 return text;
             }
-            final String language = locale.getLanguage();
-            final String country  = locale.getCountry ();
-            final String variant  = locale.getVariant ();
-            if (!variant.isEmpty()) {
-                // TODO: replace by Locale.of(…) with JDK19.
-                locale = new Locale(language, country);
-                continue;
+            if (builder == null) {
+                builder = new Locale.Builder().setLanguage(locale.getLanguage()).setRegion(locale.getCountry());
+            } else {
+                if (locale.getCountry().isEmpty()) break;
+                builder.setRegion(null);
             }
-            if (!country.isEmpty()) {
-                // TODO: replace by Locale.of(…) with JDK19.
-                locale = new Locale(language);
-                continue;
-            }
-            break;
+            locale = builder.build();
         }
         return null;
     }

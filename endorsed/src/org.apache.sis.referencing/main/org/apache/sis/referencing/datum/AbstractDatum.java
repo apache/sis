@@ -171,7 +171,6 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *
      * @param  properties  the properties to be given to the identified object.
      */
-    @SuppressWarnings("deprecation")
     public AbstractDatum(final Map<String,?> properties) {
         super(properties);
         anchorDefinition = Types.toInternationalString(properties, ANCHOR_DEFINITION_KEY);

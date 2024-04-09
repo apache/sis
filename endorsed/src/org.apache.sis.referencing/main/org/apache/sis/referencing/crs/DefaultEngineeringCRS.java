@@ -346,7 +346,6 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      * The types for which a specialized method exists.
      * Not including {@link CartesianCS}, because this case is already covered by {@link AffineCS}.
      */
-    @SuppressWarnings("deprecation")
     private static final Class<?>[] SPECIALIZED_TYPES = {
         AffineCS.class, SphericalCS.class, CylindricalCS.class, PolarCS.class, LinearCS.class, DefaultUserDefinedCS.class
     };

@@ -152,6 +152,7 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
      * @param  areaOfInterest  geographic area for which to choose a CRS, or {@code null} if no restriction.
      * @param  locale          the preferred locale for displaying object name, or {@code null} for the default locale.
      */
+    @SuppressWarnings({"unchecked", "this-escape"})
     public CRSChooser(final CRSAuthorityFactory factory, final Envelope areaOfInterest, Locale locale) {
         this.areaOfInterest = Utils.toGeographic(CRSChooser.class, "<init>", areaOfInterest);
         if (locale == null)  locale     = Locale.getDefault();
@@ -347,7 +348,7 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
     /**
      * Sets the text that describes the domain of validity.
      */
-    private void setDomainOfValidity(CoordinateReferenceSystem crs, final Locale locale) {
+    private void setDomainOfValidity(final CoordinateReferenceSystem crs, final Locale locale) {
         String extent = null;
         for (ObjectDomain c : crs.getDomains()) {
             extent = Extents.getDescription(c.getDomainOfValidity(), locale);
@@ -356,9 +357,9 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
         String tip   = extent;
         Color  color = Styles.NORMAL_TEXT;
         if (!Utils.intersects(areaOfInterest, crs)) {
-            tip   = Resources.forLocale(locale).getString(Resources.Keys.DoesNotCoverAOI);
-            extent  = Styles.WARNING_ICON + " " + (extent != null ? extent : tip);
-            color = Styles.ERROR_TEXT;
+            tip    = Resources.forLocale(locale).getString(Resources.Keys.DoesNotCoverAOI);
+            extent = Styles.WARNING_ICON + " " + (extent != null ? extent : tip);
+            color  = Styles.ERROR_TEXT;
         }
         domain.setTextFill(color);
         domain.setText(extent);

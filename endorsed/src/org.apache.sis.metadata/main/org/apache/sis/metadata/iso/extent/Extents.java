@@ -214,14 +214,14 @@ public final class Extents extends Static {
      *
      * <p>This is a convenience method for fetching the domain of validity of
      * {@link org.opengis.referencing.datum.Datum},
-     * {@link org.opengis.referencing.crs.CoordinateReferenceSystem} or
-     * {@link org.opengis.referencing.operation.CoordinateOperation} objects.</p>
+     * {@link CoordinateReferenceSystem} or
+     * {@link CoordinateOperation} objects.</p>
      *
      * @param  extents  the extents for which to get a single geographic bounding box.
      * @return the union of all geographic bounding boxes found in all extents.
      * @throws InvalidMetadataException if an envelope cannot be transformed to a geographic bounding box.
      *
-     * @see org.opengis.referencing.crs.CoordinateReferenceSystem#getDomains()
+     * @see CoordinateReferenceSystem#getDomains()
      * @see org.apache.sis.referencing.CRS#getDomainOfValidity(CoordinateReferenceSystem)
      *
      * @since 1.4

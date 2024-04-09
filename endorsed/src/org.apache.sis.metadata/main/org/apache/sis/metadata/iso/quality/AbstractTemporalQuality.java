@@ -106,7 +106,6 @@ public class AbstractTemporalQuality extends AbstractElement implements Temporal
      * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
      */
-    @SuppressWarnings("deprecation")
     public static AbstractTemporalQuality castOrCopy(final TemporalQuality object) {
         if (object instanceof AccuracyOfATimeMeasurement) {
             return DefaultAccuracyOfATimeMeasurement.castOrCopy((AccuracyOfATimeMeasurement) object);

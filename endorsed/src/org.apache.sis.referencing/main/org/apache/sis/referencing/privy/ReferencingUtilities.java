@@ -218,6 +218,7 @@ public final class ReferencingUtilities extends Static {
      *
      * @see org.apache.sis.referencing.internal.VerticalDatumTypes#ELLIPSOIDAL
      */
+    @SuppressWarnings("deprecation")
     public static boolean isEllipsoidalHeight(final VerticalDatum datum) {
         if (datum != null) {
             final VerticalDatumType type = datum.getVerticalDatumType();
