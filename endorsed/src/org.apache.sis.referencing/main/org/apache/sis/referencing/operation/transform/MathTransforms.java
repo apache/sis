@@ -735,7 +735,7 @@ public final class MathTransforms extends Static {
      * @throws TransformException if the domain cannot be estimated.
      *
      * @see AbstractMathTransform#getDomain(DomainDefinition)
-     * @see org.opengis.referencing.operation.CoordinateOperation#getDomainOfValidity()
+     * @see org.opengis.referencing.operation.CoordinateOperation#getDomains()
      *
      * @since 1.3
      */

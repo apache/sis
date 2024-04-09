@@ -109,7 +109,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
      * Creates new properties from the specified identified object.
      */
     Properties(final IdentifiedObject object, final String[] excludes) {
-        this.object = object;
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         int excludeMask = 0;
         for (final String exclude : excludes) {
             final Integer i = INDICES.get(exclude);
@@ -118,6 +118,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
             }
         }
         this.excludeMask = excludeMask;
+        this.object = object;
     }
 
     /**

@@ -133,49 +133,40 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem {
      *     <th>Property name</th>
      *     <th>Value type</th>
      *     <th>Returned by</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>"theme"</td>
      *     <td>{@link String} or {@link InternationalString}</td>
      *     <td>{@link #getTheme()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>"overallOwner"</td>
      *     <td>{@code Party}</td>
      *     <td>{@link #getOverallOwner()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <th colspan="3" class="hsep">Defined in parent class (reminder)</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#NAME_KEY}</td>
      *     <td>{@link org.opengis.metadata.Identifier} or {@link String}</td>
      *     <td>{@link #getName()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#ALIAS_KEY}</td>
      *     <td>{@link org.opengis.util.GenericName} or {@link CharSequence} (optionally as array)</td>
      *     <td>{@link #getAlias()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#IDENTIFIERS_KEY}</td>
      *     <td>{@link org.opengis.metadata.Identifier} (optionally as array)</td>
      *     <td>{@link #getIdentifiers()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.IdentifiedObject#REMARKS_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
      *     <td>{@link #getRemarks()}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.ReferenceSystem#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link org.opengis.metadata.extent.Extent}</td>
-     *     <td>{@link #getDomainOfValidity()}</td>
-     *   </tr>
-     *   <tr>
+     *     <td>{@link org.apache.sis.referencing.DefaultObjectDomain#getDomainOfValidity()}</td>
+     *   </tr><tr>
      *     <td>{@value org.opengis.referencing.ReferenceSystem#SCOPE_KEY}</td>
      *     <td>{@link org.opengis.util.InternationalString} or {@link String}</td>
-     *     <td>{@link #getScope()}</td>
+     *     <td>{@link org.apache.sis.referencing.DefaultObjectDomain#getScope()}</td>
      *   </tr>
      * </table>
      *

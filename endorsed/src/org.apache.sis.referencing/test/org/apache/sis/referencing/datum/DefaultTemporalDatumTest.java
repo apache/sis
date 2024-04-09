@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Date;
-import java.util.Map;
 import java.util.HashMap;
 import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
@@ -32,8 +31,10 @@ import org.apache.sis.xml.test.TestCase;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
+import static org.apache.sis.test.TestUtilities.getScope;
 
 // Specific to the main branch:
+import static org.opengis.referencing.ReferenceSystem.*;
 import static org.apache.sis.test.GeoapiAssert.assertIdentifierEquals;
 
 
@@ -68,12 +69,12 @@ public final class DefaultTemporalDatumTest extends TestCase {
      * Creates the temporal datum to use for testing purpose.
      */
     private static DefaultTemporalDatum create() {
-        final Map<String,Object> properties = new HashMap<>(4);
-        assertNull(properties.put(DefaultTemporalDatum.IDENTIFIERS_KEY,
+        final var properties = new HashMap<String,Object>(4);
+        assertNull(properties.put(IDENTIFIERS_KEY,
                 new ImmutableIdentifier(HardCodedCitations.SIS, "SIS", "MJ")));
-        assertNull(properties.put(DefaultTemporalDatum.NAME_KEY, "Modified Julian"));
-        assertNull(properties.put(DefaultTemporalDatum.SCOPE_KEY, "History."));
-        assertNull(properties.put(DefaultTemporalDatum.REMARKS_KEY,
+        assertNull(properties.put(NAME_KEY, "Modified Julian"));
+        assertNull(properties.put(SCOPE_KEY, "History."));
+        assertNull(properties.put(REMARKS_KEY,
                 "Time measured as days since November 17, 1858 at 00:00 UTC."));
         return new DefaultTemporalDatum(properties, new Date(ORIGIN));
     }
@@ -125,7 +126,7 @@ public final class DefaultTemporalDatumTest extends TestCase {
                                getSingleton(datum.getIdentifiers()), "identifier");
         assertEquals("Modified Julian", datum.getName().getCode());
         assertEquals("Time measured as days since November 17, 1858 at 00:00 UTC.", datum.getRemarks().toString());
-        assertEquals("History.", datum.getScope().toString());
+        assertEquals("History.", getScope(datum));
         assertEquals(new Date(ORIGIN), datum.getOrigin());
     }
 }

@@ -178,7 +178,7 @@ final class GridExtentCRS {
         /*
          * Put everything together: parameters, conversion and finally the derived CRS.
          */
-        final HashMap<String,Object> properties = new HashMap<>(8);
+        final var properties = new HashMap<String,Object>(8);
         properties.put(IdentifiedObject.NAME_KEY, METHOD.getName());
         properties.put(DefaultConversion.LOCALE_KEY, locale);
         properties.put(Conversion.SCOPE_KEY, SCOPE);

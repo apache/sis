@@ -115,7 +115,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      *   </tr><tr>
      *     <td>{@value org.opengis.referencing.operation.CoordinateOperation#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link org.opengis.metadata.extent.Extent}</td>
-     *     <td>{@link #getDomainOfValidity()}</td>
+     *     <td>{@link org.apache.sis.referencing.DefaultObjectDomain#getDomainOfValidity()}</td>
      *   </tr>
      * </table>
      *

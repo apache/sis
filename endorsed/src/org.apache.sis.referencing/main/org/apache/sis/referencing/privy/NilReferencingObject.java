@@ -74,16 +74,26 @@ public final class NilReferencingObject implements NilObject, ReferenceSystem {
         return NilReason.TEMPLATE;
     }
 
-    /*
-     * Simple properties. Not all of them are optional, but SIS is tolerant to null values.
-     * Returning null for collection are okay in the particular case of SIS implementation,
-     * because the constructor will replace empty collections by null references anyway.
+    /**
+     * Returns the localized "unnamed" name because this property is mandatory.
      */
-    @Override public ReferenceIdentifier      getName()        {return UNNAMED;}
+    @Override
+    public ReferenceIdentifier getName() {
+        return UNNAMED;
+    }
+
+    /**
+     * For avoiding ambiguity.
+     */
+    @Override
+    @Deprecated
+    public InternationalString getScope() {
+        return null;
+    }
+
     @Override public Collection<GenericName>  getAlias()       {return null;}
     @Override public Set<ReferenceIdentifier> getIdentifiers() {return null;}
     @Override public InternationalString      getRemarks()     {return null;}
-    @Override public InternationalString      getScope()       {return null;}
     @Override public Extent getDomainOfValidity()              {return null;}
 
     /**

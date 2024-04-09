@@ -36,6 +36,9 @@ import java.text.Format;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import org.opengis.util.InternationalString;
+import org.opengis.referencing.IdentifiedObject;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
@@ -45,6 +48,12 @@ import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.util.privy.X364;
 import static org.apache.sis.util.privy.StandardDateFormat.UTC;
+
+// Specific to the main branch:
+import org.opengis.metadata.extent.Extent;
+import org.opengis.referencing.datum.Datum;
+import org.opengis.referencing.ReferenceSystem;
+import org.opengis.referencing.operation.CoordinateOperation;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -349,6 +358,49 @@ public final class TestUtilities extends Static {
         final E element = it.next();
         assertFalse(it.hasNext(), "The collection has more than one element.");
         return element;
+    }
+
+    /**
+     * Returns the scope of the given object. Exactly one scope shall exist.
+     *
+     * @param  object  the object for which to get the scope.
+     * @return the single scope of the given object.
+     */
+    public static String getScope(final IdentifiedObject object) {
+        final InternationalString scope;
+        if (object instanceof ReferenceSystem) {
+            scope = ((ReferenceSystem) object).getScope();
+        } else if (object instanceof Datum) {
+            scope = ((Datum) object).getScope();
+        } else if (object instanceof CoordinateOperation) {
+            scope = ((CoordinateOperation) object).getScope();
+        } else {
+            scope = null;
+        }
+        assertNotNull(scope, "Missing scope.");
+        return scope.toString();
+    }
+
+    /**
+     * Returns the domain of validity of the given object. Exactly one domain shall exist,
+     * and that domain shall be a geographic bounding box.
+     *
+     * @param  object  the object for which to get the domain of validity.
+     * @return the single domain of validity of the given object.
+     */
+    public static GeographicBoundingBox getDomainOfValidity(final IdentifiedObject object) {
+        final Extent extent;
+        if (object instanceof ReferenceSystem) {
+            extent = ((ReferenceSystem) object).getDomainOfValidity();
+        } else if (object instanceof Datum) {
+            extent = ((Datum) object).getDomainOfValidity();
+        } else if (object instanceof CoordinateOperation) {
+            extent = ((CoordinateOperation) object).getDomainOfValidity();
+        } else {
+            extent = null;
+        }
+        assertNotNull(extent, "Missing extent.");
+        return assertInstanceOf(GeographicBoundingBox.class, getSingleton(extent.getGeographicElements()));
     }
 
     /**

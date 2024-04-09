@@ -92,7 +92,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 
 // Specific to the main branch:
-import org.apache.sis.referencing.internal.Legacy;
 import org.apache.sis.pending.geoapi.referencing.DynamicReferenceFrame;
 import org.apache.sis.coordinate.DefaultCoordinateMetadata;
 
@@ -652,7 +651,7 @@ public final class CRS extends Static {
      * given target coordinate reference system. If an estimation of the geographic area containing the points
      * to transform is known, it can be specified for helping this method to find a better suited operation.
      * If no area of interest is specified, then the current default is the widest
-     * {@linkplain AbstractCoordinateOperation#getDomainOfValidity() domain of validity}.
+     * {@linkplain DefaultObjectDomain#getDomainOfValidity() domain of validity}.
      * A future Apache SIS version may also take the country of current locale in account.
      *
      * <div class="note"><b>Note:</b>
@@ -727,7 +726,7 @@ public final class CRS extends Static {
      * Finds mathematical operations that transform or convert coordinates from the given source to the
      * given target coordinate reference system. If at least one operation exists, they are returned in
      * preference order: the operation having the widest intersection between its
-     * {@linkplain AbstractCoordinateOperation#getDomainOfValidity() domain of validity}
+     * {@linkplain DefaultObjectDomain#getDomainOfValidity() domain of validity}
      * and the given area of interest are returned first.
      *
      * @param  sourceCRS       the CRS of source coordinates.
@@ -805,7 +804,7 @@ public final class CRS extends Static {
 
     /**
      * Returns the valid geographic area for the given coordinate operation, or {@code null} if unknown.
-     * This method explores the {@linkplain AbstractCoordinateOperation#getDomainOfValidity() domain of validity}
+     * This method explores the {@linkplain DefaultObjectDomain#getDomainOfValidity() domain of validity}
      * associated with the given operation. If more than one geographic bounding box is found, then this method
      * computes their {@linkplain DefaultGeographicBoundingBox#add(GeographicBoundingBox) union}.
      *
@@ -828,15 +827,15 @@ public final class CRS extends Static {
         if (operation == null) {
             return null;
         }
-        return getDomains(operation).orElseGet(
+        return IdentifiedObjects.getGeographicBoundingBox(operation).orElseGet(
                 () -> Extents.intersection(getGeographicBoundingBox(operation.getSourceCRS()),
                                            getGeographicBoundingBox(operation.getTargetCRS())));
     }
 
     /**
      * Returns the valid geographic area for the given coordinate reference system, or {@code null} if unknown.
-     * This method explores the {@linkplain org.apache.sis.referencing.crs.AbstractCRS#getDomainOfValidity() domain of
-     * validity} associated with the given CRS. If more than one geographic bounding box is found, then this method
+     * This method explores the {@linkplain DefaultObjectDomain#getDomainOfValidity() domain of validity}
+     * associated with the given CRS. If more than one geographic bounding box is found, then this method
      * computes their {@linkplain DefaultGeographicBoundingBox#add(GeographicBoundingBox) union}.
      * together.
      *
@@ -850,15 +849,7 @@ public final class CRS extends Static {
      */
     @OptionalCandidate
     public static GeographicBoundingBox getGeographicBoundingBox(final CoordinateReferenceSystem crs) {
-        return (crs != null) ? getDomains(crs).orElse(null) : null;
-    }
-
-    /**
-     * Returns the geographic bounding box computed from the domain of the given object. This method may be renamed and
-     * refactored as a replacement of {@link #getGeographicBoundingBox(CoordinateReferenceSystem)} in a future version.
-     */
-    private static Optional<GeographicBoundingBox> getDomains(final IdentifiedObject object) {
-        return Extents.getGeographicBoundingBox(Legacy.getDomains(object).stream().map(DefaultObjectDomain::getDomainOfValidity));
+        return IdentifiedObjects.getGeographicBoundingBox(crs).orElse(null);
     }
 
     /**

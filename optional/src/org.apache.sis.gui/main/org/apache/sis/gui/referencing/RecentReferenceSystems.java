@@ -623,7 +623,7 @@ public class RecentReferenceSystems {
             systems = new ArrayList<>(Math.min(NUM_SHOWN_ITEMS, n) + NUM_OTHER_ITEMS);
             for (int i=0; i<n; i++) {
                 final ReferenceSystem system = (ReferenceSystem) systemsOrCodes.get(i);
-                if (i >= NUM_CORE_ITEMS && !Utils.intersects(domain, system.getDomainOfValidity())) {
+                if (i >= NUM_CORE_ITEMS && !Utils.intersects(domain, system)) {
                     continue;
                 }
                 if (Utils.isIgnoreable(system)) {       // Ignore "Computer display" CRS.

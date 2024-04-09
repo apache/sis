@@ -44,6 +44,7 @@ import org.apache.sis.xml.NilReason;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
+import static org.apache.sis.test.TestUtilities.getScope;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Specific to the main branch:
@@ -161,10 +162,10 @@ public final class MetadataVerticalTest extends TestCase.WithLogs {
         assertEquals(10000, ve.getMaximumValue());
         final VerticalCRS crs = ve.getVerticalCRS();
         verifyIdentifiers("test1", crs);
-        assertEquals("World", crs.getScope().toString());
+        assertEquals("World", getScope(crs));
         final VerticalDatum datum = crs.getDatum();
         verifyIdentifiers("test2", datum);
-        assertEquals("World", datum.getScope().toString());
+        assertEquals("World", getScope(datum));
         assertEquals(VerticalDatumType.DEPTH, datum.getVerticalDatumType());    // Inferred from the name.
         final VerticalCS cs = crs.getCoordinateSystem();
         verifyIdentifiers("test3", cs);

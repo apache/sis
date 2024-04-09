@@ -278,8 +278,7 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
     /**
      * Compares this coordinate operation with the specified object for equality. If the {@code mode} argument
      * is {@link ComparisonMode#STRICT} or {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}, then all available
-     * properties are compared including the {@linkplain #getDomainOfValidity() domain of validity} and the
-     * {@linkplain #getScope() scope}.
+     * properties are compared including the {@linkplain #getDomains() domains} and the accuracy.
      *
      * @return {@inheritDoc}
      */

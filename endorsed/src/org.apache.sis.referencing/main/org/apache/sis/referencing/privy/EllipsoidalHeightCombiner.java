@@ -219,7 +219,7 @@ public final class EllipsoidalHeightCombiner {
             name.append(crs.getName().getCode());
             domain = Extents.intersection(domain, crs.getDomainOfValidity());
         }
-        final Map<String,Object> properties = new HashMap<>(2);
+        final var properties = new HashMap<String,Object>(4);
         properties.put(CoordinateReferenceSystem.NAME_KEY, name.toString());
         properties.put(CoordinateReferenceSystem.DOMAIN_OF_VALIDITY_KEY, domain);
         return properties;

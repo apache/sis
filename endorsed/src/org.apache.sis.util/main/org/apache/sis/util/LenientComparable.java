@@ -51,8 +51,7 @@ package org.apache.sis.util;
  *       <li>{@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} – The
  *           {@linkplain org.apache.sis.referencing.crs.AbstractCRS#getIdentifiers() identifiers},
  *           {@linkplain org.apache.sis.referencing.crs.AbstractCRS#getAlias() aliases},
- *           {@linkplain org.apache.sis.referencing.crs.AbstractCRS#getScope() scope},
- *           {@linkplain org.apache.sis.referencing.crs.AbstractCRS#getDomainOfValidity() domain of validity} and
+ *           {@linkplain org.apache.sis.referencing.crs.AbstractCRS#getDomains() domains} and
  *           {@linkplain org.apache.sis.referencing.crs.AbstractCRS#getRemarks() remarks}
  *           are ignored because they have no incidence on the coordinate values to be computed by
  *           {@linkplain org.opengis.referencing.operation.ConcatenatedOperation coordinate operations}.

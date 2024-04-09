@@ -22,18 +22,23 @@ import java.util.List;
 import java.util.LinkedHashSet;
 import java.util.Collection;
 import java.util.Locale;
+import java.util.Optional;
+import java.util.stream.Stream;
 import org.opengis.util.NameSpace;
 import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.metadata.extent.Extent;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.ConcatenatedOperation;
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.OptionalCandidate;
@@ -48,6 +53,7 @@ import org.apache.sis.metadata.privy.Identifiers;
 import org.apache.sis.metadata.privy.NameMeaning;
 import org.apache.sis.metadata.privy.NameToIdentifier;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
@@ -55,6 +61,7 @@ import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.referencing.internal.Legacy;
 
 
 /**
@@ -431,6 +438,50 @@ public final class IdentifiedObjects extends Static {
             }
         }
         return name;
+    }
+
+    /**
+     * Returns the domain of validity of the given object.
+     * If the object specifies more than one domain of validity,
+     * then this method computes their intersection (note that this is the opposite of
+     * {@link #getGeographicBoundingBox(IdentifiedObject)}, which computes the union).
+     * If there is no intersection, then the returned object implements {@link Emptiable}
+     * and the {@link Emptiable#isEmpty()} method returns {@code true}.
+     *
+     * @param  object  the object for which to get the domain of validity, or {@code null}.
+     * @return the domain of validity where the object is valid, or empty if unspecified.
+     *
+     * @since 1.5
+     */
+    public static Optional<Extent> getDomainOfValidity(final IdentifiedObject object) {
+        Extent domain = null;
+        if (object != null) {
+            for (DefaultObjectDomain obj : Legacy.getDomains(object)) {
+                domain = Extents.intersection(domain, obj.getDomainOfValidity());
+            }
+        }
+        return Optional.ofNullable(domain);
+    }
+
+    /**
+     * Returns the geographic bounding box computed from the domains of the given object.
+     * If the given object contains more than one domain, then this method computes their union.
+     * Note that this is the opposite of {@link #getDomainOfValidity(IdentifiedObject)},
+     * which computes the intersection.
+     *
+     * @param  object  the object for which to get the domain of validity, or {@code null}.
+     * @return the geographic area where the object is valid, or empty if unspecified.
+     *
+     * @see IdentifiedObject#getDomains()
+     * @see Extents#getGeographicBoundingBox(Stream)
+     *
+     * @since 1.5
+     */
+    public static Optional<GeographicBoundingBox> getGeographicBoundingBox(final IdentifiedObject object) {
+        if (object == null) {
+            return Optional.empty();
+        }
+        return Extents.getGeographicBoundingBox(Legacy.getDomains(object).stream().map(DefaultObjectDomain::getDomainOfValidity));
     }
 
     /**

@@ -49,9 +49,9 @@ public final class ReferencingByIdentifiersTest extends TestCase {
     private static ReferencingByIdentifiers create(final boolean inherit) {
         final Map<String,Object> properties = new HashMap<>();
         assertNull(properties.put(ReferencingByIdentifiers.NAME_KEY, "UK property addressing"));
-        assertNull(properties.put(ReferencingByIdentifiers.DOMAIN_OF_VALIDITY_KEY, new DefaultExtent("UK", null, null, null)));
         assertNull(properties.put(ReferencingByIdentifiers.THEME_KEY, "property"));
         assertNull(properties.put(ReferencingByIdentifiers.OVERALL_OWNER_KEY, new DefaultOrganisation("Office for National Statistics", null, null, null)));
+        assertNull(properties.put(ReferencingByIdentifiers.DOMAIN_OF_VALIDITY_KEY, new DefaultExtent("UK", null, null, null)));
         return new ReferencingByIdentifiers(properties, LocationTypeTest.create(inherit)) {
             @Override public ReferencingByIdentifiers.Coder createCoder() {
                 throw new UnsupportedOperationException();

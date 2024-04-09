@@ -96,7 +96,7 @@ import org.apache.sis.coordinate.AbstractCoordinateSet;
  *       for interpolating.</li>
  *   <li>In {@linkplain DefaultConversion conversion} and {@linkplain DefaultTransformation transformation} subclasses,
  *       a description of the {@linkplain DefaultOperationMethod operation method} together with the parameter values.</li>
- *   <li>The {@linkplain #getDomainOfValidity() domain of validity}.</li>
+ *   <li>The {@linkplain org.apache.sis.referencing.DefaultObjectDomain#getDomainOfValidity() domain of validity}.</li>
  *   <li>An estimation of the {@linkplain #getCoordinateOperationAccuracy() operation accuracy}.</li>
  * </ul>
  *
@@ -885,8 +885,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
     /**
      * Compares this coordinate operation with the specified object for equality. If the {@code mode} argument
      * is {@link ComparisonMode#STRICT} or {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}, then all available
-     * properties are compared including the {@linkplain #getDomainOfValidity() domain of validity} and the
-     * {@linkplain #getScope() scope}.
+     * properties are compared including the {@linkplain #getDomains() domains} and the accuracy.
      *
      * @param  object  the object to compare to {@code this}.
      * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
