@@ -66,8 +66,8 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
         /*[ 2]*/ IdentifiedObject        .ALIAS_KEY,
         /*[ 3]*/ IdentifiedObject        .DOMAINS_KEY,
         /*[ 4]*/ IdentifiedObject        .REMARKS_KEY,
-        /*[ 5]*/ CoordinateOperation     .SCOPE_KEY,                    // same in Datum and ReferenceSystem
-        /*[ 6]*/ CoordinateOperation     .DOMAIN_OF_VALIDITY_KEY,       // same in Datum and ReferenceSystem
+        /*[ 5]*/ ObjectDomain            .SCOPE_KEY,
+        /*[ 6]*/ ObjectDomain            .DOMAIN_OF_VALIDITY_KEY,
         /*[ 7]*/ CoordinateOperation     .OPERATION_VERSION_KEY,
         /*[ 8]*/ CoordinateOperation     .COORDINATE_OPERATION_ACCURACY_KEY,
         /*[ 9]*/ OperationMethod         .FORMULA_KEY,
@@ -109,7 +109,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
      * Creates new properties from the specified identified object.
      */
     Properties(final IdentifiedObject object, final String[] excludes) {
-        this.object = object;
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         int excludeMask = 0;
         for (final String exclude : excludes) {
             final Integer i = INDICES.get(exclude);
@@ -118,6 +118,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
             }
         }
         this.excludeMask = excludeMask;
+        this.object = object;
     }
 
     /**

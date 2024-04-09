@@ -21,6 +21,7 @@ import java.util.Locale;
 import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.extent.Extent;
+import org.opengis.util.InternationalString;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.apache.sis.measure.Units;
@@ -39,6 +40,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.test.TestStep;
 import org.apache.sis.xml.test.TestCase;
+import static org.apache.sis.test.TestUtilities.getScope;
+import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
@@ -101,9 +104,10 @@ public final class DefaultGeodeticDatumTest extends TestCase {
      */
     private static void validate(final DefaultGeodeticDatum datum) {
         Validators.validate(datum);
-        assertEquals("This is a name",        datum.getName   ().getCode());
-        assertEquals("This is a scope",       datum.getScope  ().toString(Locale.ROOT));
-        assertEquals("Valide pour tel usage", datum.getScope  ().toString(Locale.FRENCH));
+        InternationalString scope = getSingleton(datum.getDomains()).getScope();
+        assertEquals("This is a name",        datum.getName().getCode());
+        assertEquals("This is a scope",       scope.toString(Locale.ROOT));
+        assertEquals("Valide pour tel usage", scope.toString(Locale.FRENCH));
         assertEquals("There is remarks",      datum.getRemarks().toString(Locale.ROOT));
         assertEquals("Voici des remarques",   datum.getRemarks().toString(Locale.FRENCH));
         assertEquals("注です。",                datum.getRemarks().toString(Locale.JAPANESE));
@@ -300,7 +304,7 @@ public final class DefaultGeodeticDatumTest extends TestCase {
         assertEquals("No distinction between the original and subsequent WGS 84 frames.",
                 datum.getRemarks().toString());
         assertEquals("Satellite navigation.",
-                datum.getScope().toString());
+                getScope(datum));
         assertEquals("Station coordinates changed by a few centimetres in 1994, 1997, 2002 and 2012.",
                 datum.getAnchorDefinition().get().toString());
         assertEquals(xmlDate("1984-01-01 00:00:00").toInstant(),

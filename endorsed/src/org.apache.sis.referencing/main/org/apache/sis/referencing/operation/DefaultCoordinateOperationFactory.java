@@ -390,9 +390,9 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      *     <td>{@link org.opengis.metadata.Identifier} (optionally as array)</td>
      *     <td>{@link DefaultConversion#getIdentifiers()}</td>
      *   </tr><tr>
-     *     <td>{@value org.opengis.referencing.operation.CoordinateOperation#DOMAIN_OF_VALIDITY_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ObjectDomain#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link org.opengis.metadata.extent.Extent}</td>
-     *     <td>{@link DefaultConversion#getDomainOfValidity()}</td>
+     *     <td>{@link org.apache.sis.referencing.DefaultObjectDomain#getDomainOfValidity()}</td>
      *   </tr>
      * </table>
      *
@@ -480,9 +480,9 @@ next:   for (int i=components.size(); --i >= 0;) {
      *     <td>{@link org.opengis.metadata.Identifier} (optionally as array)</td>
      *     <td>{@link DefaultConversion#getIdentifiers()}</td>
      *   </tr><tr>
-     *     <td>{@value org.opengis.referencing.operation.CoordinateOperation#DOMAIN_OF_VALIDITY_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ObjectDomain#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link org.opengis.metadata.extent.Extent}</td>
-     *     <td>{@link DefaultConversion#getDomainOfValidity()}</td>
+     *     <td>{@link org.apache.sis.referencing.DefaultObjectDomain#getDomainOfValidity()}</td>
      *   </tr>
      * </table>
      *
@@ -732,8 +732,9 @@ next:   for (int i=components.size(); --i >= 0;) {
     /**
      * Finds or creates an operation for conversion or transformation between two coordinate reference systems.
      * If an operation exists, it is returned. If more than one operation exists, then the operation having the
-     * widest intersection between its {@linkplain AbstractCoordinateOperation#getDomainOfValidity() domain of
-     * validity} and the {@linkplain CoordinateOperationContext#getAreaOfInterest() area of interest} is returned.
+     * widest intersection between its {@linkplain org.apache.sis.referencing.DefaultObjectDomain#getDomainOfValidity()
+     * domain of validity} and the {@linkplain CoordinateOperationContext#getAreaOfInterest() area of interest}
+     * is returned.
      *
      * <p>The default implementation performs the following steps:</p>
      * <ul>
@@ -798,8 +799,9 @@ next:   for (int i=components.size(); --i >= 0;) {
     /**
      * Finds or creates operations for conversions or transformations between two coordinate reference systems.
      * If at least one operation exists, they are returned in preference order: the operation having the widest
-     * intersection between its {@linkplain AbstractCoordinateOperation#getDomainOfValidity() domain of validity}
-     * and the {@linkplain CoordinateOperationContext#getAreaOfInterest() area of interest} is returned.
+     * intersection between its {@linkplain org.apache.sis.referencing.DefaultObjectDomain#getDomainOfValidity()
+     * domain of validity} and the {@linkplain CoordinateOperationContext#getAreaOfInterest() area of interest}
+     * is returned.
      *
      * <p>The default implementation performs the following steps:</p>
      * <ul>

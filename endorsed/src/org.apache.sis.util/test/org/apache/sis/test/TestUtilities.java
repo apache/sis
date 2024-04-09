@@ -36,6 +36,10 @@ import java.text.Format;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import org.opengis.util.InternationalString;
+import org.opengis.referencing.IdentifiedObject;
+import org.opengis.metadata.extent.GeographicExtent;
+import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.CharSequences;
@@ -45,6 +49,9 @@ import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.util.privy.X364;
 import static org.apache.sis.util.privy.StandardDateFormat.UTC;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.ObjectDomain;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -349,6 +356,31 @@ public final class TestUtilities extends Static {
         final E element = it.next();
         assertFalse(it.hasNext(), "The collection has more than one element.");
         return element;
+    }
+
+    /**
+     * Returns the scope of the given object. Exactly one scope shall exist.
+     *
+     * @param  object  the object for which to get the scope.
+     * @return the single scope of the given object.
+     */
+    public static String getScope(final IdentifiedObject object) {
+        InternationalString scope = getSingleton(object.getDomains()).getScope();
+        assertNotNull(scope, "Missing scope.");
+        return scope.toString();
+    }
+
+    /**
+     * Returns the domain of validity of the given object. Exactly one domain shall exist,
+     * and that domain shall be a geographic bounding box.
+     *
+     * @param  object  the object for which to get the domain of validity.
+     * @return the single domain of validity of the given object.
+     */
+    public static GeographicBoundingBox getDomainOfValidity(final IdentifiedObject object) {
+        ObjectDomain domain = getSingleton(object.getDomains());
+        GeographicExtent extent = getSingleton(domain.getDomainOfValidity().getGeographicElements());
+        return assertInstanceOf(GeographicBoundingBox.class, extent);
     }
 
     /**

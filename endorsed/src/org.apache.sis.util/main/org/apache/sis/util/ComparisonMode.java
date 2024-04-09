@@ -95,9 +95,9 @@ public enum ComparisonMode {
      *
      * <h4>Application to coordinate reference systems</h4>
      * If the objects being compared are {@link org.opengis.referencing.crs.CoordinateReferenceSystem} instances,
-     * then only the properties relevant to the coordinate localization shall be compared.
+     * then only the properties impacting coordinate values shall be compared.
      * Metadata like the {@linkplain org.apache.sis.referencing.crs.AbstractCRS#getIdentifiers() identifiers}
-     * or the {@linkplain org.apache.sis.referencing.crs.AbstractCRS#getDomainOfValidity() domain of validity},
+     * or the {@linkplain org.apache.sis.referencing.crs.AbstractCRS#getDomains() domain of validity},
      * which have no impact on the coordinates being calculated, shall be ignored.
      *
      * <h4>Application to coordinate operations</h4>

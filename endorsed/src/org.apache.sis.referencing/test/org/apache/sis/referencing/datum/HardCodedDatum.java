@@ -21,11 +21,14 @@ import java.util.Map;
 import java.util.HashMap;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.datum.VerticalDatumType;
-import static org.opengis.referencing.datum.Datum.*;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.measure.Units;
 import static org.apache.sis.util.privy.StandardDateFormat.MILLISECONDS_PER_DAY;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import static org.opengis.referencing.IdentifiedObject.*;
+import static org.opengis.referencing.ObjectDomain.*;
 
 // Test dependencies
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
@@ -76,7 +79,7 @@ public final class HardCodedDatum {
      * {@code org.apache.sis.referencing.operation.transform.EarthGravitationalModel}.
      */
     public static final DefaultGeodeticDatum WGS72 = new DefaultGeodeticDatum(
-            properties("World Geodetic System 1972", "6322", WGS84.getScope()),
+            properties("World Geodetic System 1972", "6322", getScope(WGS84)),
             new DefaultEllipsoid(GeodeticDatumMock.WGS84.getEllipsoid()), GREENWICH);
 
     /**
@@ -100,7 +103,7 @@ public final class HardCodedDatum {
      * This is useful for testing datum shift from {@link #TOKYO}.
      */
     public static final DefaultGeodeticDatum JGD2000 = new DefaultGeodeticDatum(
-            properties("Japanese Geodetic Datum 2000", "6612", TOKYO.getScope()),
+            properties("Japanese Geodetic Datum 2000", "6612", getScope(TOKYO)),
             DefaultEllipsoid.createFlattenedSphere(properties("GRS 1980", "7019", null),
                     6378137, 298.257222101, Units.METRE), GREENWICH);
 
@@ -115,8 +118,9 @@ public final class HardCodedDatum {
      * Ellipsoid for measurements of height above the ellipsoid.
      * This is not a valid datum according ISO 19111, but is used by Apache SIS for internal calculation.
      */
+    @SuppressWarnings("deprecation")
     public static final DefaultVerticalDatum ELLIPSOID = new DefaultVerticalDatum(
-            properties("Ellipsoid", null, SPHERE.getScope()),
+            properties("Ellipsoid", null, getScope(SPHERE)),
             VerticalDatumTypes.ELLIPSOIDAL);
 
     /**
@@ -150,7 +154,7 @@ public final class HardCodedDatum {
     /**
      * Image with {@link PixelInCell#CELL_CENTER}.
      */
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings("removal")
     public static final DefaultImageDatum IMAGE = new DefaultImageDatum(
             properties("Image", null, null),
             PixelInCell.CELL_CENTER);
@@ -163,6 +167,10 @@ public final class HardCodedDatum {
 
     /**
      * Creates a map of properties for the given name and EPSG code.
+     *
+     * @param  name   the object primary name.
+     * @param  code   the object identifier code.
+     * @param  scope  the object scope, or {@code null} if none.
      */
     private static Map<String,?> properties(final String name, final String code, final CharSequence scope) {
         final Map<String,Object> properties = new HashMap<>(4);
@@ -174,6 +182,14 @@ public final class HardCodedDatum {
             properties.put(SCOPE_KEY, scope);
         }
         return properties;
+    }
+
+    /**
+     * Returns the scope of the given object.
+     */
+    @SuppressWarnings("deprecation")
+    private static CharSequence getScope(final AbstractDatum object) {
+        return object.getScope();
     }
 
     /**

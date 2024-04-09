@@ -148,6 +148,7 @@ public final class ReorganizeImports extends SimpleFileVisitor<Path> {
      */
     private static final String[] TEST_ELEMENTS = {
         "org.junit",
+        "org.opentest4j",
         "org.opengis.test",
         "org.apache.sis.image.TiledImageMock",
         "org.apache.sis.referencing.cs.HardCodedAxes",

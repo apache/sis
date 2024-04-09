@@ -18,7 +18,6 @@ package org.apache.sis.gui.referencing;
 
 import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
-import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.crs.SingleCRS;
@@ -32,6 +31,9 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.CRS;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.ObjectDomain;
 
 
 /**
@@ -76,19 +78,25 @@ final class Utils {
     }
 
     /**
-     * Returns {@code true} if the specified domain of validity (typically obtained from a CRS) intersects the
-     * area of interest. If any information is missing, then this method conservatively returns {@code true}.
+     * Returns {@code true} if the specified domain of object intersects the area of interest.
+     * If any information is missing, then this method conservatively returns {@code true}.
      * The reason for returning {@code true} is because it will usually result in no action from the caller,
      * while {@code false} results in warning emitted or CRS filtered out.
      */
-    static boolean intersects(final ImmutableEnvelope areaOfInterest, final Extent domainOfValidity) {
+    static boolean intersects(final ImmutableEnvelope areaOfInterest, final ReferenceSystem crs) {
+        boolean conservative = true;
         if (areaOfInterest != null) {
-            final GeographicBoundingBox bbox = Extents.getGeographicBoundingBox(domainOfValidity);
-            if (bbox != null) {
-                return areaOfInterest.intersects(new ImmutableEnvelope(bbox));
+            for (final ObjectDomain domain : crs.getDomains()) {
+                final GeographicBoundingBox bbox = Extents.getGeographicBoundingBox(domain.getDomainOfValidity());
+                if (bbox != null) {
+                    if (areaOfInterest.intersects(new ImmutableEnvelope(bbox))) {
+                        return true;
+                    }
+                    conservative = false;
+                }
             }
         }
-        return true;
+        return conservative;
     }
 
     /**

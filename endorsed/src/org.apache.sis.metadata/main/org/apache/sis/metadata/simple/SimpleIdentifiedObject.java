@@ -127,6 +127,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      * @return a narrative explanation of the role of this object, or {@code null} if none.
      */
     public InternationalString getDescription() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Identifier name = this.name;
         return (name != null) ? name.getDescription() : null;
     }

@@ -44,7 +44,6 @@ import javax.measure.format.MeasurementParseException;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.ObjectFactory;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.cs.*;
@@ -87,6 +86,9 @@ import org.apache.sis.util.iso.Types;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.ReferenceIdentifier;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.ObjectDomain;
 
 
 /**
@@ -474,7 +476,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
              */
             element = parent.pullElement(OPTIONAL, WKTKeywords.Scope);
             if (element != null) {
-                properties.put(ReferenceSystem.SCOPE_KEY, element.pullString("scope"));  // Other types like Datum use the same key.
+                properties.put(ObjectDomain.SCOPE_KEY, element.pullString("scope"));
                 element.close(ignoredElements);
             }
             /*
@@ -540,7 +542,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 }
             }
             if (extent != null) {
-                properties.put(ReferenceSystem.DOMAIN_OF_VALIDITY_KEY, extent);
+                properties.put(ObjectDomain.DOMAIN_OF_VALIDITY_KEY, extent);
             }
             /*
              * Example: REMARK["Замечание на русском языке"]

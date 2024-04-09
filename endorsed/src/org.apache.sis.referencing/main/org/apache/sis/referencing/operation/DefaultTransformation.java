@@ -87,9 +87,9 @@ public class DefaultTransformation extends AbstractSingleOperation implements Tr
      *     <td>{@link org.opengis.metadata.quality.PositionalAccuracy} (optionally as array)</td>
      *     <td>{@link #getCoordinateOperationAccuracy()}</td>
      *   </tr><tr>
-     *     <td>{@value org.opengis.referencing.operation.CoordinateOperation#DOMAIN_OF_VALIDITY_KEY}</td>
+     *     <td>{@value org.opengis.referencing.ObjectDomain#DOMAIN_OF_VALIDITY_KEY}</td>
      *     <td>{@link org.opengis.metadata.extent.Extent}</td>
-     *     <td>{@link #getDomainOfValidity()}</td>
+     *     <td>{@link org.apache.sis.referencing.DefaultObjectDomain#getDomainOfValidity()}</td>
      *   </tr>
      * </table>
      *

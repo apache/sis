@@ -32,6 +32,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.privy.DoubleDouble;
 import org.apache.sis.referencing.privy.WKTKeywords;
@@ -268,6 +269,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      *
      * @return the target datum for this set of parameters, or {@code null} if unknown.
      */
+    @OptionalCandidate
     public GeodeticDatum getTargetDatum() {
         return targetDatum;
     }
@@ -609,9 +611,10 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      *
      * @see org.apache.sis.metadata.iso.extent.DefaultExtent
      */
+    @OptionalCandidate
     public Extent getDomainOfValidity() {
         if (domainOfValidity == null && targetDatum != null) {
-            return targetDatum.getDomainOfValidity();
+            return IdentifiedObjects.getDomainOfValidity(targetDatum).orElse(null);
         }
         return domainOfValidity;
     }

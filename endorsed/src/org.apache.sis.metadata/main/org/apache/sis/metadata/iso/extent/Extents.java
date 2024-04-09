@@ -61,6 +61,7 @@ import org.apache.sis.measure.Range;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Vocabulary;
@@ -762,6 +763,9 @@ public final class Extents extends Static {
      *
      * <p>This method never modify the given extents, but may return directly one of the given
      * arguments if it already represents the intersection result.</p>
+     *
+     * <p>If there is no intersection, then the returned object implements {@link Emptiable}
+     * and the {@link Emptiable#isEmpty()} method returns {@code true}.</p>
      *
      * @param  e1  the first extent, or {@code null}.
      * @param  e2  the second extent, or {@code null}.

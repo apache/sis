@@ -61,6 +61,9 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.parameter.Parameters;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.ObjectDomain;
+
 
 /**
  * Helper methods for building Coordinate Reference Systems and related objects.
@@ -183,7 +186,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
         }
         if (description != null || bbox != null) {
             final DefaultExtent extent = new DefaultExtent(description, bbox, null, null);
-            properties.put(CoordinateReferenceSystem.DOMAIN_OF_VALIDITY_KEY, extent);
+            properties.put(ObjectDomain.DOMAIN_OF_VALIDITY_KEY, extent);
         }
         return this;
     }

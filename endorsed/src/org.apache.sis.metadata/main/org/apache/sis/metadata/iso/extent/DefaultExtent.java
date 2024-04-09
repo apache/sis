@@ -85,8 +85,7 @@ import org.apache.sis.xml.NilReason;
  * @version 1.4
  *
  * @see Extents#getGeographicBoundingBox(Extent)
- * @see org.apache.sis.referencing.AbstractReferenceSystem#getDomainOfValidity()
- * @see org.apache.sis.referencing.datum.AbstractDatum#getDomainOfValidity()
+ * @see org.apache.sis.referencing.DefaultObjectDomain#getDomainOfValidity()
  *
  * @since 0.3
  */

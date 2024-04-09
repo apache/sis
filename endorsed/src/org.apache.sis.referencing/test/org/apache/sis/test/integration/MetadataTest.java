@@ -71,6 +71,7 @@ import org.apache.sis.xml.test.DocumentComparator;
 import org.apache.sis.xml.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.ObjectDomain;
 import org.opengis.referencing.datum.RealizationMethod;
 
 
@@ -332,7 +333,7 @@ public final class MetadataTest extends TestCase.WithLogs {
         properties.put(DefaultVerticalDatum.NAME_KEY, new NamedIdentifier(null, name));
         properties.put(DefaultVerticalDatum.IDENTIFIERS_KEY, new NamedIdentifier(null, "test", identifier, null, null));
         if (scope != null) {
-            properties.put(DefaultVerticalDatum.SCOPE_KEY, scope);
+            properties.put(ObjectDomain.SCOPE_KEY, scope);
         }
         return properties;
     }

@@ -315,7 +315,7 @@ public class ModifiableLocationType extends AbstractLocationType {      // Not S
      * @return geographic area within which the location type occurs,
      *         or {@code null} if no value has been defined or can be inherited.
      *
-     * @see ReferencingByIdentifiers#getDomainOfValidity()
+     * @see ReferencingByIdentifiers#getDomains()
      */
     @Override
     public GeographicExtent getTerritoryOfUse() {

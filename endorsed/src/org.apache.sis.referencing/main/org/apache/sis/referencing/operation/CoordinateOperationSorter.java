@@ -54,8 +54,7 @@ final class CoordinateOperationSorter implements Comparable<CoordinateOperationS
      */
     private CoordinateOperationSorter(final CoordinateOperation operation, final GeographicBoundingBox areaOfInterest) {
         this.operation = operation;
-        area = -Extents.area(Extents.intersection(areaOfInterest,
-                             Extents.getGeographicBoundingBox(operation.getDomainOfValidity())));
+        area = -Extents.area(Extents.intersection(areaOfInterest, CRS.getGeographicBoundingBox(operation)));
         accuracy = CRS.getLinearAccuracy(operation);
     }
 

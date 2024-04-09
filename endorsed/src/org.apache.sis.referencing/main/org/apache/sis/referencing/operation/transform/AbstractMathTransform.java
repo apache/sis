@@ -189,7 +189,7 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @throws TransformException if the domain cannot be estimated.
      *
      * @see MathTransforms#getDomain(MathTransform)
-     * @see org.opengis.referencing.operation.CoordinateOperation#getDomainOfValidity()
+     * @see org.opengis.referencing.ObjectDomain#getDomainOfValidity()
      *
      * @since 1.3
      */

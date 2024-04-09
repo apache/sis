@@ -62,6 +62,9 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.measure.Units;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.ObjectDomain;
+
 
 /**
  * Builder for coordinate reference system which is derived from the coverage CRS by the inverse
@@ -178,12 +181,12 @@ final class GridExtentCRS {
         /*
          * Put everything together: parameters, conversion and finally the derived CRS.
          */
-        final HashMap<String,Object> properties = new HashMap<>(8);
+        final var properties = new HashMap<String,Object>(8);
         properties.put(IdentifiedObject.NAME_KEY, METHOD.getName());
         properties.put(DefaultConversion.LOCALE_KEY, locale);
-        properties.put(Conversion.SCOPE_KEY, SCOPE);
+        properties.put(ObjectDomain.SCOPE_KEY, SCOPE);
         gg.getGeographicExtent().ifPresent((domain) -> {
-            properties.put(Conversion.DOMAIN_OF_VALIDITY_KEY,
+            properties.put(ObjectDomain.DOMAIN_OF_VALIDITY_KEY,
                     new DefaultExtent(null, domain, null, null));
         });
         final ParameterValueGroup params = METHOD.getParameters().createValue();

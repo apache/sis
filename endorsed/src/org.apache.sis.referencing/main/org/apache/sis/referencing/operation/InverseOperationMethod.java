@@ -40,6 +40,9 @@ import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.collection.Containers;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.ObjectDomain;
+
 
 /**
  * Description of the inverse of another method. This class should be used only when no operation is defined
@@ -135,7 +138,7 @@ final class InverseOperationMethod extends DefaultOperationMethod {
      * @param target  where to store the properties of the inverse operation.
      */
     static void properties(final SingleOperation source, final Map<String,Object> target) {
-        target.put(SingleOperation.DOMAIN_OF_VALIDITY_KEY, source.getDomainOfValidity());
+        target.put(SingleOperation.DOMAINS_KEY, source.getDomains().toArray(ObjectDomain[]::new));
         final Collection<PositionalAccuracy> accuracy = source.getCoordinateOperationAccuracy();
         if (!Containers.isNullOrEmpty(accuracy)) {
             target.put(SingleOperation.COORDINATE_OPERATION_ACCURACY_KEY,
