@@ -20,17 +20,17 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
+import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.parameter.Parameterized;
-import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.privy.WKTUtilities;
+import org.apache.sis.io.wkt.FormattableObject;
+import org.apache.sis.io.wkt.Formatter;
 
 
 /**
@@ -43,7 +43,7 @@ import org.apache.sis.referencing.privy.WKTUtilities;
  * @see Geographic2Dto3D
  */
 @XmlTransient
-public final class Geographic3Dto2D extends GeographicRedimension {
+public final class Geographic3Dto2D extends AbstractProvider {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -56,38 +56,32 @@ public final class Geographic3Dto2D extends GeographicRedimension {
             .addIdentifier("9659").addName("Geographic3D to 2D conversion").createGroup();
 
     /**
-     * The providers for all combinations between 2D and 3D cases.
-     * Conceptually a field of {@link GeographicRedimension} parent class,
-     * but needs to be defined here because of class initialization order.
-     */
-    static final GeographicRedimension[] REDIMENSIONED = new GeographicRedimension[4];
-    static {
-        REDIMENSIONED[0] = new GeographicRedimension(0, "Identity 2D");
-        REDIMENSIONED[1] = new Geographic2Dto3D(1);
-        REDIMENSIONED[2] = new Geographic3Dto2D(2);
-        REDIMENSIONED[3] = new GeographicRedimension(3, "Identity 3D");
-    }
-
-    /**
-     * The unique transform instance, created when first needed.
-     */
-    private transient MathTransform transform;
-
-    /**
-     * Constructs a provider that can be resized.
-     */
-    private Geographic3Dto2D(final int indexOfDim) {
-        super(PARAMETERS, indexOfDim);
-    }
-
-    /**
-     * Constructs a provider with default parameters.
+     * The canonical instance of this operation method.
      *
-     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
+     * @see #provider()
      */
-    @Deprecated
+    private static final Geographic3Dto2D INSTANCE = new Geographic3Dto2D();
+
+    /**
+     * Returns the canonical instance of this operation method.
+     * This method is invoked by {@link java.util.ServiceLoader} using reflection.
+     *
+     * @return the canonical instance of this operation method.
+     */
+    public static Geographic3Dto2D provider() {
+        return INSTANCE;
+    }
+
+    /**
+     * Creates a new provider.
+     *
+     * @todo Make this constructor private after we stop class-path support.
+     */
     public Geographic3Dto2D() {
-        super(REDIMENSIONED[2]);
+        super(Conversion.class, PARAMETERS,
+              CoordinateSystem.class, false,
+              CoordinateSystem.class, false,
+              (byte) 3);
     }
 
     /**
@@ -95,7 +89,17 @@ public final class Geographic3Dto2D extends GeographicRedimension {
      */
     @Override
     public AbstractProvider inverse() {
-        return REDIMENSIONED[1];
+        return Geographic2Dto3D.provider();
+    }
+
+    /**
+     * Returns the operation method which is the closest match for the given transform.
+     * This is an adjustment based on the number of dimensions only, on the assumption
+     * that the given transform has been created by this provider or a compatible one.
+     */
+    @Override
+    public AbstractProvider variantFor(final MathTransform transform) {
+        return transform.getSourceDimensions() < transform.getTargetDimensions() ? Geographic2Dto3D.provider() : this;
     }
 
     /**
@@ -103,32 +107,46 @@ public final class Geographic3Dto2D extends GeographicRedimension {
      *
      * <h4>Implementation note</h4>
      * Creating a transform that drop a dimension is trivial. We even have a helper method for that:
-     * {@link Matrices#createDimensionSelect}  The difficulty is that the inverse of that transform
+     * {@link Matrices#createDimensionSelect}. The difficulty is that the inverse of that transform
      * will set the height to NaN, while we want zero. The trick is to first create the transform for
      * the inverse transform with the zero that we want, then get the inverse of that inverse transform.
      * The transform that we get will remember where it come from (its inverse).
      *
-     * <p>This work with SIS implementation, but is not guaranteed to work with other implementations.
-     * For that reason, this method does not use the given {@code factory}.</p>
+     * <p>This work with SIS implementation, but is not guaranteed to work with other implementations.</p>
      *
-     * @param  factory  ignored (can be null).
-     * @param  values   ignored.
+     * @param  context  the parameter values together with its context.
      * @return the math transform.
      * @throws FactoryException should never happen.
      */
     @Override
-    public synchronized MathTransform createMathTransform(MathTransformFactory factory, ParameterValueGroup values)
+    public MathTransform createMathTransform(final Context context) throws FactoryException {
+        return createMathTransform(context,
+                context.getSourceDimensions().orElse(3),
+                context.getTargetDimensions().orElse(2));
+    }
+
+    /**
+     * Implementation of {@link #createMathTransform(Context)} shared by {@link Geographic2Dto3D}.
+     */
+    static MathTransform createMathTransform(final Context context, int sourceDimensions, int targetDimensions)
             throws FactoryException
     {
-        if (transform == null) try {
-            final MatrixSIS m = Matrices.createDiagonal(4, 3);
-            m.setElement(2, 2, 0);                                  // Here is the height value that we want.
-            m.setElement(3, 2, 1);
-            transform = MathTransforms.linear(m).inverse();
+        final boolean inverse = (sourceDimensions > targetDimensions);
+        if (inverse) {
+            final int swap = sourceDimensions;
+            sourceDimensions = targetDimensions;
+            targetDimensions = swap;
+        }
+        final MatrixSIS m = Matrices.createDiagonal(targetDimensions + 1, sourceDimensions + 1);
+        m.setElement(sourceDimensions, sourceDimensions, 0);    // Here is the height value that we want.
+        m.setElement(targetDimensions, sourceDimensions, 1);    // Most be last in case the matrix is square.
+        MathTransform tr = context.getFactory().createAffineTransform(m);
+        if (inverse) try {
+            tr = tr.inverse();
         } catch (NoninvertibleTransformException e) {
             throw new FactoryException(e);                          // Should never happen.
         }
-        return transform;
+        return tr;
     }
 
     /**

@@ -29,10 +29,8 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.factory.MissingFactoryResourceException;
@@ -125,28 +123,26 @@ public final class NADCON extends AbstractProvider {
     public NADCON() {
         super(Transformation.class, PARAMETERS,
               EllipsoidalCS.class, false,
-              EllipsoidalCS.class, false);
+              EllipsoidalCS.class, false,
+              (byte) 2);
     }
 
     /**
      * Creates a transform from the specified group of parameter values.
      *
-     * @param  factory  the factory to use if this constructor needs to create other math transforms.
-     * @param  values   the group of parameter values.
+     * @param  context  the parameter values together with its context.
      * @return the created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
      * @throws FactoryException if an error occurred while loading the grid.
      */
     @Override
-    public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
-            throws ParameterNotFoundException, FactoryException
-    {
-        final Parameters pg = Parameters.castOrWrap(values);
+    public MathTransform createMathTransform(final Context context) throws FactoryException {
+        final Parameters pg = Parameters.castOrWrap(context.getCompletedParameters());
         final GridFile latitudeShifts  = new GridFile(pg, LATITUDE);
         final GridFile longitudeShifts = new GridFile(pg, LONGITUDE);
         try {
             LoadedGrid<Angle,Angle> grid = getOrLoad(latitudeShifts, longitudeShifts);
-            return LoadedGrid.createGeodeticTransformation(NADCON.class, factory, grid);
+            return LoadedGrid.createGeodeticTransformation(NADCON.class, context.getFactory(), grid);
         } catch (NoSuchFileException e) {
             throw new MissingFactoryResourceException(e.getMessage(), e);
         } catch (Exception e) {

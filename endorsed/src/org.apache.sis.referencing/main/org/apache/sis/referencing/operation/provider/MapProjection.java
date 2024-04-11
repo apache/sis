@@ -28,13 +28,11 @@ import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.GeneralParameterDescriptor;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Projection;
 import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
 import org.apache.sis.referencing.NamedIdentifier;
@@ -65,7 +63,7 @@ public abstract class MapProjection extends AbstractProvider {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 6280666068007678702L;
+    private static final long serialVersionUID = -601413094691431910L;
 
     /**
      * All names known to Apache SIS for the <i>semi-major</i> parameter.
@@ -129,6 +127,10 @@ public abstract class MapProjection extends AbstractProvider {
      * </ul>
      */
     public static final DefaultParameterDescriptor<Double> ECCENTRICITY;
+
+    /*
+     * Initializes all static fields.
+     */
     static {
         final MeasurementRange<Double> valueDomain = MeasurementRange.createGreaterThan(0, Units.METRE);
         final GenericName[] aliases = {
@@ -165,14 +167,6 @@ public abstract class MapProjection extends AbstractProvider {
     }
 
     /**
-     * The three-dimensional counterpart of this two-dimensional map projection.
-     * This is created when first needed.
-     *
-     * @see #redimension(int, int)
-     */
-    private AbstractProvider redimensioned;
-
-    /**
      * Constructs a math transform provider from a set of parameters. The provider
      * {@linkplain #getIdentifiers() identifiers} will be the same as the parameter ones.
      *
@@ -184,43 +178,8 @@ public abstract class MapProjection extends AbstractProvider {
     {
         super(operationType, parameters,
               EllipsoidalCS.class, true,
-              CartesianCS.class,   false);
-    }
-
-    /**
-     * Returns the number of source dimensions of the transforms created by this provider.
-     */
-    @Override
-    @SuppressWarnings("deprecation")
-    public final Integer getSourceDimensions() {
-        return 2;
-    }
-
-    /**
-     * Returns the number of target dimensions of the transforms created by this provider.
-     */
-    @Override
-    @SuppressWarnings("deprecation")
-    public final Integer getTargetDimensions() {
-        return 2;
-    }
-
-    /**
-     * Returns this operation method with the specified number of dimensions.
-     * The number of dimensions can be only 2 or 3, and must be the same for source and target CRS.
-     *
-     * @return the redimensioned projection method, or {@code this} if no change is needed.
-     */
-    @Override
-    public final AbstractProvider redimension(final int sourceDimensions, final int targetDimensions) {
-        if (sourceDimensions != 3 || targetDimensions != 3) {
-            return super.redimension(sourceDimensions, targetDimensions);
-        } else synchronized (this) {
-            if (redimensioned == null) {
-                redimensioned = new MapProjection3D(this);
-            }
-            return redimensioned;
-        }
+              CartesianCS.class, false,
+              (byte) 2);
     }
 
     /**
@@ -267,17 +226,33 @@ public abstract class MapProjection extends AbstractProvider {
     /**
      * Creates a map projection from the specified group of parameter values.
      *
-     * @param  factory     the factory to use for creating and concatenating the (de)normalization transforms.
-     * @param  parameters  the group of parameter values.
+     * @param  context  the parameter values together with its context.
      * @return the map projection created from the given parameter values.
      * @throws ParameterNotFoundException if a required parameter was not found.
      * @throws FactoryException if the map projection cannot be created.
      */
     @Override
-    public final MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup parameters)
-            throws ParameterNotFoundException, FactoryException
-    {
-        return createProjection(Parameters.castOrWrap(parameters)).createMapProjection(factory);
+    public final MathTransform createMathTransform(final Context context) throws FactoryException {
+        return maybe3D(context, createProjection(Parameters.castOrWrap(context.getCompletedParameters()))
+                               .createMapProjection(context.getFactory()));
+    }
+
+    /**
+     * Eventually adds a third dimensions to the given transform for ellipsoidal height.
+     * Any dimension other than 2 or 3 is invalid, but those values are not verified by this method:
+     * it is caller's responsibility to handle discrepancy between its request and legal transforms.
+     * We do not verify source dimensions for the same reason.
+     *
+     * @param  context  the parameter values together with its context.
+     * @param  mt       the map projection created by the provider.
+     * @return the given map projection, potentially with ellipsoidal height added.
+     * @throws FactoryException if the map projection cannot be created.
+     */
+    static MathTransform maybe3D(final Context context, MathTransform mt) throws FactoryException {
+        if (context.getTargetDimensions().orElse(2) >= 3) {
+            mt = context.getFactory().createPassThroughTransform(0, mt, 1);
+        }
+        return mt;
     }
 
     /**
@@ -287,7 +262,7 @@ public abstract class MapProjection extends AbstractProvider {
      * @return the map projection created from the given parameter values.
      * @throws ParameterNotFoundException if a required parameter was not found.
      */
-    protected abstract NormalizedProjection createProjection(final Parameters parameters) throws ParameterNotFoundException;
+    protected abstract NormalizedProjection createProjection(final Parameters parameters);
 
 
 

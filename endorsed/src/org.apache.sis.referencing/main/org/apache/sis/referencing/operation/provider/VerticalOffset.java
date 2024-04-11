@@ -17,13 +17,11 @@
 package org.apache.sis.referencing.operation.provider;
 
 import jakarta.xml.bind.annotation.XmlTransient;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
@@ -50,7 +48,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * @author  Martin Desruisseaux (Geomatys)
  */
 @XmlTransient
-public final class VerticalOffset extends GeodeticOperation {
+public final class VerticalOffset extends AbstractProvider {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -68,25 +66,33 @@ public final class VerticalOffset extends GeodeticOperation {
      * Constructs a provider with default parameters.
      */
     public VerticalOffset() {
-        super(Transformation.class, PARAMETERS, INDEX_OF_1D,
+        super(Transformation.class, PARAMETERS,
               VerticalCS.class, false,
-              VerticalCS.class, false);
+              VerticalCS.class, false,
+              (byte) 1);
+    }
+
+    /**
+     * The inverse of {@code VerticalOffset} is the same operation with parameter signs inverted.
+     *
+     * @return {@code this}.
+     */
+    @Override
+    public final AbstractProvider inverse() {
+        return this;
     }
 
     /**
      * Creates a transform from the specified group of parameter values.
      * The parameter value is unconditionally converted to metres.
      *
-     * @param  factory  ignored (can be null).
-     * @param  values   the group of parameter values.
+     * @param  context  the parameter values together with its context.
      * @return the created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
      */
     @Override
-    public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
-            throws ParameterNotFoundException
-    {
-        final Parameters pv = Parameters.castOrWrap(values);
+    public MathTransform createMathTransform(final Context context) {
+        final Parameters pv = Parameters.castOrWrap(context.getCompletedParameters());
         return MathTransforms.translation(pv.doubleValue(GeographicOffsets.TZ));
     }
 

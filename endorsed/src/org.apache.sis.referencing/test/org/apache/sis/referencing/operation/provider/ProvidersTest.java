@@ -19,17 +19,17 @@ package org.apache.sis.referencing.operation.provider;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
-import java.util.ServiceLoader;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
+import org.opengis.referencing.cs.VerticalCS;
+import org.opengis.referencing.operation.Projection;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.referencing.operation.OperationMethod;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.apache.sis.test.Assertions.assertMessageContains;
+import static org.opengis.test.Assertions.assertBetween;
 import org.apache.sis.test.TestCase;
 
 
@@ -123,34 +123,20 @@ public final class ProvidersTest extends TestCase {
     }
 
     /**
-     * Returns the subset of {@link #methods()} which are expected to support
-     * {@link AbstractProvider#redimension(int, int)}, not including map projections.
-     */
-    private static Class<?>[] redimensionables() {
-        return new Class<?>[] {
-            Affine.class,
-            LongitudeRotation.class,
-            GeographicOffsets.class,
-            GeographicOffsets2D.class,
-            GeographicAndVerticalOffsets.class,
-            CoordinateFrameRotation2D.class,
-            CoordinateFrameRotation3D.class,
-            PositionVector7Param2D.class,
-            PositionVector7Param3D.class,
-            GeocentricTranslation2D.class,
-            GeocentricTranslation3D.class,
-            Geographic3Dto2D.class,
-            Geographic2Dto3D.class,
-            Molodensky.class,
-            AbridgedMolodensky.class,
-            FranceGeocentricInterpolation.class
-        };
-    }
-
-    /**
      * Creates a new test case.
      */
     public ProvidersTest() {
+    }
+
+    /**
+     * Returns an instance of the operation method identified by the given class.
+     *
+     * @param  c  class of the operation method to instantiate.
+     * @return an instance of the specified class.
+     * @throws ReflectiveOperationException if the instantiation of a service provider failed.
+     */
+    private static AbstractProvider instance(final Class<?> c) throws ReflectiveOperationException {
+        return (AbstractProvider) c.getConstructor((Class[]) null).newInstance((Object[]) null);
     }
 
     /**
@@ -165,7 +151,7 @@ public final class ProvidersTest extends TestCase {
         final Map<GeneralParameterDescriptor, GeneralParameterDescriptor> parameters = new HashMap<>();
         final Map<Object, Object> namesAndIdentifiers = new HashMap<>();
         for (final Class<?> c : methods()) {
-            final OperationMethod method = (OperationMethod) c.getConstructor((Class[]) null).newInstance((Object[]) null);
+            final AbstractProvider method = instance(c);
             final ParameterDescriptorGroup group = method.getParameters();
             final String operationName = group.getName().getCode();
             for (final GeneralParameterDescriptor param : group.descriptors()) {
@@ -208,67 +194,32 @@ public final class ProvidersTest extends TestCase {
         }
     }
 
-    /** Temporary flag for disabling tests that require JDK9. */
-    private static final boolean JDK9 = false;
-
     /**
-     * Tests {@link AbstractProvider#redimension(int, int)} on all providers.
+     * Performs some consistency checks on {@link AbstractProvider#minSourceDimension}.
+     *
+     * @throws ReflectiveOperationException if the instantiation of a service provider failed.
      */
     @Test
-    @SuppressWarnings("deprecation")
-    public void testRedimension() {
-        final Map<Class<?>,Boolean> redimensionables = new HashMap<>(100);
-        for (final Class<?> type : methods()) {
-            assertNull(redimensionables.put(type, Boolean.FALSE), type.getName());
-        }
-        for (final Class<?> type : redimensionables()) {
-            assertEquals(Boolean.FALSE, redimensionables.put(type, Boolean.TRUE), type.getName());
-        }
-        for (final OperationMethod method : ServiceLoader.load(OperationMethod.class)) {
-            if (method instanceof ProviderMock) {
-                continue;                           // Skip the methods that were defined only for test purpose.
+    public void validateMinSourceDimension() throws ReflectiveOperationException {
+        for (final Class<?> c : methods()) {
+            final AbstractProvider method = instance(c);
+            final String name = c.getSimpleName();
+            final int expected;
+            if (method.sourceCSType == VerticalCS.class) {
+                expected = 1;
+            } else if (Projection.class.isAssignableFrom(method.getOperationType())) {
+                expected = 2;
+            } else if (name.endsWith("1D")) {
+                expected = 1;
+            } else if (name.endsWith("2D")) {
+                expected = name.contains("3D") ? 3 : 2;
+            } else if (name.endsWith("3D")) {
+                expected = name.contains("2D") ? 2 : 3;
+            } else {
+                assertBetween(1, 3, method.minSourceDimension, name);
+                continue;
             }
-            final AbstractProvider provider = (AbstractProvider) method;
-            final Integer sourceDimensions = provider.getSourceDimensions();
-            final Integer targetDimensions = provider.getTargetDimensions();
-            final Boolean isRedimensionable = redimensionables.get(provider.getClass());
-            assertNotNull(isRedimensionable, provider.getClass().getName());
-            if (isRedimensionable) {
-                assertNotNull(sourceDimensions);
-                assertNotNull(targetDimensions);
-                for (int newSource = 2; newSource <= 3; newSource++) {
-                    for (int newTarget = 2; newTarget <= 3; newTarget++) {
-                        final AbstractProvider redim = provider.redimension(newSource, newTarget);
-                        assertEquals(newSource, redim.getSourceDimensions().intValue());
-                        assertEquals(newTarget, redim.getTargetDimensions().intValue());
-                        if (provider instanceof Affine) {
-                            continue;
-                        }
-                        if (newSource == sourceDimensions && newTarget == targetDimensions) {
-                            assertSame(provider, redim, "When asking the original number of dimensions, expected the original instance.");
-                        } else {
-                            assertNotSame(provider, redim, "When asking a different number of dimensions, expected a different instance.");
-                        }
-                        if (JDK9)       // Temporarily disables next line. Will be removed soon.
-                        assertSame(provider, redim.redimension(sourceDimensions, targetDimensions),
-                                   "When asking the original number of dimensions, expected the original instance.");
-                    }
-                }
-            } else if (provider instanceof MapProjection) {
-                assertEquals(2, sourceDimensions.intValue());
-                assertEquals(2, targetDimensions.intValue());
-                final AbstractProvider proj3D = provider.redimension(sourceDimensions ^ 1, targetDimensions ^ 1);
-                assertNotSame(provider, proj3D, "redimension(3,3) should return a new method.");
-                assertSame(provider, proj3D.redimension(sourceDimensions, targetDimensions),
-                           "redimension(2,2) should give back the original method.");
-                assertSame(proj3D, ((MapProjection) provider).redimension(sourceDimensions ^ 1, targetDimensions ^ 1),
-                           "Value of redimension(3,3) should have been cached.");
-            } else if (sourceDimensions != null && targetDimensions != null) {
-                var e = assertThrows(IllegalArgumentException.class,
-                        () -> provider.redimension(sourceDimensions + 1, targetDimensions + 1),
-                        () -> "Type " + provider.getClass().getName() + " is not in our list of redimensionable methods.");
-                assertMessageContains(e, provider.getName().getCode());
-            }
+            assertEquals(expected, method.minSourceDimension, name);
         }
     }
 

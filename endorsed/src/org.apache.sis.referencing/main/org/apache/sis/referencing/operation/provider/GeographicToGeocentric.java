@@ -20,14 +20,12 @@ import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValue;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransform;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -44,7 +42,7 @@ import org.apache.sis.util.privy.Constants;
  *
  * @see GeocentricToGeographic
  */
-public final class GeographicToGeocentric extends GeodeticOperation {
+public final class GeographicToGeocentric extends AbstractProvider {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -61,7 +59,8 @@ public final class GeographicToGeocentric extends GeodeticOperation {
      * This parameter is practically the same as {@link GeocentricAffineBetweenGeographic#DIMENSION} except:
      *
      * <ul>
-     *   <li>The code space is {@code "SIS"} instead of {@code "OGC"} since this parameter is not defined in OGC 01-009.</li>
+     *   <li>The code space is {@code "SIS"} instead of {@code "OGC"}
+     *       because this parameter is not defined in OGC 01-009.</li>
      *   <li>The default number of dimensions is 3 instead of unspecified.</li>
      * </ul>
      *
@@ -97,53 +96,25 @@ public final class GeographicToGeocentric extends GeodeticOperation {
     }
 
     /**
-     * The providers for all combinations between 2D and 3D cases.
+     * Creates a new provider.
      */
-    private static final GeographicToGeocentric[] REDIMENSIONED = new GeographicToGeocentric[4];
-    static {
-        REDIMENSIONED[1] = new GeographicToGeocentric(1);     // 2D to 3D.
-        REDIMENSIONED[3] = new GeographicToGeocentric(3);
-    }
-
-    /**
-     * Returns the provider for the specified combination of source and target dimensions.
-     */
-    @Override
-    final GeodeticOperation redimensioned(int indexOfDim) {
-        return REDIMENSIONED[indexOfDim];
-    }
-
-    /**
-     * Creates a copy of this provider.
-     *
-     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
-     */
-    @Deprecated
     public GeographicToGeocentric() {
-        super(REDIMENSIONED[INDEX_OF_3D]);
-    }
-
-    /**
-     * Constructs a provider for the given dimensions.
-     *
-     * @param indexOfDim  number of dimensions as the index in {@link #redimensioned} array.
-     */
-    private GeographicToGeocentric(final int indexOfDim) {
-        super(Conversion.class, PARAMETERS, indexOfDim,
+        super(Conversion.class, PARAMETERS,
               EllipsoidalCS.class, true,
-              CartesianCS.class, false);
+              CartesianCS.class, false,
+              (byte) 2);
     }
 
     /**
      * If the user asked for the <q>Geographic/geocentric conversions</q> operation but the parameter types
-     * suggest that (s)he intended to convert in the opposite direction, return the name of operation method to use.
+     * suggest that (s)he intended to convert in the opposite direction, returns the name of operation method to use.
      * We need this check because EPSG defines a single operation method for both {@code "Ellipsoid_To_Geocentric"}
      * and {@code "Geocentric_To_Ellipsoid"} methods.
      *
-     * <p><b>Note:</b>  we do not define similar method in {@link GeocentricToGeographic} class because the only
+     * <p><b>Note:</b> we do not define similar method in {@link GeocentricToGeographic} class because the only
      * way to obtain that operation method is to ask explicitly for {@code "Geocentric_To_Ellipsoid"} operation.
-     * The ambiguity that we try to resolve here exists only if the user asked for the EPSG:9602 operation, which
-     * is defined only in this class.</p>
+     * The ambiguity that we try to resolve here exists only if the user asked for the EPSG:9602 operation,
+     * which is defined only in this class.</p>
      *
      * @return {@code "Geocentric_To_Ellipsoid"} if the user apparently wanted to get the inverse of this
      *         {@code "Ellipsoid_To_Geocentric"} operation, or {@code null} if none.
@@ -157,41 +128,27 @@ public final class GeographicToGeocentric extends GeodeticOperation {
     }
 
     /**
-     * Specifies that the inverse of this operation is a different kind of operation.
-     *
-     * @return {@code null}.
-     */
-    @Override
-    public AbstractProvider inverse() {
-        return null;
-    }
-
-    /**
      * Creates a transform from the specified group of parameter values.
      *
-     * @param  factory  the factory to use for creating the transform.
-     * @param  values   the parameter values that define the transform to create.
+     * @param  context  the parameter values together with its context.
      * @return the conversion from geographic to geocentric coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
      */
     @Override
-    public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
-            throws FactoryException
-    {
-        return create(factory, Parameters.castOrWrap(values));
+    public MathTransform createMathTransform(final Context context) throws FactoryException {
+        return create(context, context.getSourceDimensions().orElse(-1));
     }
 
     /**
-     * Implementation of {@link #createMathTransform(MathTransformFactory, ParameterValueGroup)}
-     * shared with {@link GeocentricToGeographic}.
+     * Implementation of {@link #createMathTransform(Context)} shared with {@link GeocentricToGeographic}.
      */
-    static MathTransform create(final MathTransformFactory factory, final Parameters values)
-            throws FactoryException
-    {
+    static MathTransform create(final Context context, int dimensions) throws FactoryException {
+        final Parameters values = Parameters.castOrWrap(context.getCompletedParameters());
+        if (dimensions < 0) dimensions = values.intValue(DIMENSION);
         final ParameterValue<?> semiMajor = values.parameter(Constants.SEMI_MAJOR);
         final Unit<Length> unit = semiMajor.getUnit().asType(Length.class);
-        return EllipsoidToCentricTransform.createGeodeticConversion(factory, semiMajor.doubleValue(),
-                values.parameter(Constants.SEMI_MINOR).doubleValue(unit), unit, values.intValue(DIMENSION) >= 3,
+        return EllipsoidToCentricTransform.createGeodeticConversion(context.getFactory(), semiMajor.doubleValue(),
+                values.parameter(Constants.SEMI_MINOR).doubleValue(unit), unit, dimensions >= 3,
                 EllipsoidToCentricTransform.TargetType.CARTESIAN);
     }
 }

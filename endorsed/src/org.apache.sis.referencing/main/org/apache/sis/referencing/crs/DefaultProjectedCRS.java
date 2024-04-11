@@ -38,7 +38,9 @@ import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.privy.WKTUtilities;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.Workaround;
 
 
 /**
@@ -132,7 +134,23 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
                                final CartesianCS   derivedCS)
             throws MismatchedDimensionException
     {
-        super(properties, baseCRS, conversion, derivedCS);
+        super(properties, checkDimensions(baseCRS, derivedCS), conversion, derivedCS);
+    }
+
+    /**
+     * Work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
+     */
+    @Workaround(library="JDK", version="1.7")
+    private static GeographicCRS checkDimensions(final GeographicCRS baseCRS, final CartesianCS derivedCS) {
+        int n = ReferencingUtilities.getDimension(baseCRS);
+        if (derivedCS != null) {
+            n = Math.max(n, derivedCS.getDimension());
+        }
+        n = Math.max(2, Math.min(3, n));
+        ArgumentChecks.ensureDimensionMatches("baseCRS",   n, baseCRS);
+        ArgumentChecks.ensureDimensionMatches("derivedCS", n, derivedCS);
+        return baseCRS;
     }
 
     /**

@@ -16,15 +16,11 @@
  */
 package org.apache.sis.referencing.operation.provider;
 
-import java.util.Arrays;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.parameter.Parameters;
 
 
 /**
@@ -66,53 +62,21 @@ public final class AbridgedMolodensky extends GeocentricAffineBetweenGeographic 
     }
 
     /**
-     * The providers for all combinations between 2D and 3D cases.
+     * Creates a new provider.
      */
-    private static final AbridgedMolodensky[] REDIMENSIONED = new AbridgedMolodensky[4];
-    static {
-        Arrays.setAll(REDIMENSIONED, AbridgedMolodensky::new);
-    }
-
-    /**
-     * Returns the provider for the specified combination of source and target dimensions.
-     */
-    @Override
-    final GeodeticOperation redimensioned(int indexOfDim) {
-        return REDIMENSIONED[indexOfDim];
-    }
-
-    /**
-     * Creates a copy of this provider.
-     *
-     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
-     */
-    @Deprecated
     public AbridgedMolodensky() {
-        super(REDIMENSIONED[INDEX_OF_3D]);
-    }
-
-    /**
-     * Constructs a provider for the given dimensions.
-     *
-     * @param indexOfDim  number of dimensions as the index in {@code redimensioned} array.
-     */
-    private AbridgedMolodensky(int indexOfDim) {
-        super(Type.MOLODENSKY, PARAMETERS, indexOfDim);
+        super(Type.MOLODENSKY, PARAMETERS, (byte) 2);
     }
 
     /**
      * Creates an Abridged Molodensky transform from the specified group of parameter values.
      *
-     * @param  factory  the factory to use for creating concatenated transforms.
-     * @param  values   the group of parameter values.
+     * @param  context  the parameter values together with its context.
      * @return the created Abridged Molodensky transform.
      * @throws FactoryException if a transform cannot be created.
      */
     @Override
-    public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
-            throws FactoryException
-    {
-        return Molodensky.createMathTransform(factory, Parameters.castOrWrap(values),
-                getSourceDimensions(), getTargetDimensions(), true);
+    public MathTransform createMathTransform(Context context) throws FactoryException {
+        return Molodensky.createMathTransform(context, true);
     }
 }

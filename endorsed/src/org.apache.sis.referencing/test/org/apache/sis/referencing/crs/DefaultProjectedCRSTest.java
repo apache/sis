@@ -22,6 +22,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.cs.AxisDirection;
+import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.operation.Projection;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -74,29 +75,63 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
     }
 
     /**
-     * Creates a projected CRS and verifies its parameters.
-     * Verifies also that the constructor does not accept invalid base CRS.
+     * Creates a two-dimensional projected CRS and verifies its parameters.
      *
      * @throws FactoryException if the CRS creation failed.
      */
     @Test
-    public void testConstructor() throws FactoryException {
+    public void testConstructor2D() throws FactoryException {
         final ProjectedCRS crs = create(HardCodedCRS.NTF);
         verifyParameters(crs.getConversionFromBase().getParameterValues());
-        var e = assertThrows(InvalidGeodeticParameterException.class, () -> create(HardCodedCRS.WGS84_3D),
-                             "Should not accept a three-dimensional base geodetic CRS.");
-        assertMessageContains(e, "Lambert Conic Conformal (1SP)");
+        assertEquals(2, crs.getCoordinateSystem().getDimension(), "dimension");
         loggings.assertNoUnexpectedLog();
     }
 
     /**
-     * Creates the "NTF (Paris) / Lambert zone II" CRS. The prime meridian is always in grads,
-     * but the axes can be in degrees or in grads depending if the {@code baseCRS} argument is
-     * {@link HardCodedCRS#NTF_NORMALIZED_AXES} or {@link HardCodedCRS#NTF} respectively.
+     * Creates a three-dimensional projected CRS and verifies its parameters.
+     *
+     * @throws FactoryException if the CRS creation failed.
+     */
+    @Test
+    public void testConstructor3D() throws FactoryException {
+        final ProjectedCRS crs = create(HardCodedCRS.WGS84_3D, HardCodedCS.PROJECTED_3D);
+        verifyParameters(crs.getConversionFromBase().getParameterValues());
+        assertEquals(3, crs.getCoordinateSystem().getDimension(), "dimension");
+        loggings.assertNoUnexpectedLog();
+    }
+
+    /**
+     * Verifies that the constructor does not accept inconsistent number of dimensions.
+     *
+     * @throws FactoryException if the CRS creation failed.
+     */
+    @Test
+    public void testInvalidDimensions() throws FactoryException {
+        var e = assertThrows(InvalidGeodeticParameterException.class, () -> create(HardCodedCRS.WGS84_3D),
+                             "Should not accept a three-dimensional base CRS with two-dimensional CS.");
+        assertMessageContains(e, "derivedCS");
+        loggings.assertNoUnexpectedLog();
+    }
+
+    /**
+     * Creates a two-dimensional "NTF (Paris) / Lambert zone II" CRS.
+     * The prime meridian is always in grads, but the axes can be in degrees or in grads depending on whether
+     * {@code baseCRS} is {@link HardCodedCRS#NTF_NORMALIZED_AXES} or {@link HardCodedCRS#NTF} respectively.
      *
      * @see HardCodedCRS#NTF
      */
     private static ProjectedCRS create(final GeographicCRS baseCRS) throws FactoryException {
+        return create(baseCRS, HardCodedCS.PROJECTED);
+    }
+
+    /**
+     * Creates a two- or three-dimensional "NTF (Paris) / Lambert zone II" CRS.
+     * The prime meridian is always in grads, but the axes can be in degrees or in grads depending on whether
+     * {@code baseCRS} is {@link HardCodedCRS#NTF_NORMALIZED_AXES} or {@link HardCodedCRS#NTF} respectively.
+     */
+    private static ProjectedCRS create(final GeographicCRS baseCRS, final CartesianCS derivedCS)
+            throws FactoryException
+    {
         return new GeodeticObjectBuilder()
                 .setConversionMethod("Lambert Conic Conformal (1SP)")
                 .setConversionName("Lambert zone II")
@@ -107,7 +142,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
                 .setCodeSpace(Citations.EPSG, Constants.EPSG)
                 .addName("NTF (Paris) / Lambert zone II")
                 .addIdentifier("27572")
-                .createProjectedCRS(baseCRS, HardCodedCS.PROJECTED);
+                .createProjectedCRS(baseCRS, derivedCS);
     }
 
     /**

@@ -21,6 +21,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.parameter.Parameters;
 
@@ -76,15 +77,21 @@ public final class Geographic3Dto2DTest extends TestCase {
     }
 
     /**
-     * Tests {@link Geographic3Dto2D#redimension(int, int)}.
+     * Tests {@link Geographic3Dto2D#variantFor(MathTransform)}.
      */
     @Test
-    public void testRedimension() {
+    public void testVariantFor() {
         final Geographic3Dto2D provider = new Geographic3Dto2D();
-        assertSame  (provider,                    provider.redimension(3, 2));
-        assertEquals(Geographic2Dto3D.class,      provider.redimension(2, 3).getClass());
-        assertEquals(GeographicRedimension.class, provider.redimension(3, 3).getClass());
-        assertEquals(GeographicRedimension.class, provider.redimension(2, 2).getClass());
+        assertSame  (provider,               provider.variantFor(dummy(3, 2)));
+        assertEquals(Geographic2Dto3D.class, provider.variantFor(dummy(2, 3)).getClass());
+    }
+
+    /**
+     * Returns a dummy transform with the given number of dimensions.
+     * Only the number of dimensions matter for this test.
+     */
+    private static MathTransform dummy(final int sourceDimensions, final int targetDimensions) {
+        return MathTransforms.linear(Matrices.createDiagonal(targetDimensions + 1, sourceDimensions + 1));
     }
 
     /**

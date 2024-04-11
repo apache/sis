@@ -22,9 +22,10 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
@@ -62,7 +63,7 @@ public final class Affine extends AbstractProvider {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 9061544057836352125L;
+    private static final long serialVersionUID = 6001828063655967608L;
 
     /**
      * The operation method name as defined in the EPSG database.
@@ -114,39 +115,40 @@ public final class Affine extends AbstractProvider {
     private static final Affine EPSG_METHOD = new Affine();
 
     /**
-     * Number of dimensions in the source or target CRS of this operation method.
-     */
-    private final int sourceDimensions, targetDimensions;
-
-    /**
-     * Creates a provider for affine transform with a default matrix size (standard EPSG:9624 instance).
-     * This constructor is public for the needs of {@link java.util.ServiceLoader} — do not invoke explicitly.
-     * If an instance of {@code Affine()} is desired, invoke {@code provider(EPSG_DIMENSION, EPSG_DIMENSION)}
-     * instead.
+     * Returns a provider for affine transform with a default matrix size (standard EPSG:9624 instance).
+     * This method is invoked by {@link java.util.ServiceLoader} using reflection.
      *
-     * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory
-     *
-     * @todo Delete this constructor after migration to JFK 9 modules. Replace by {@link #provider()} static method.
+     * @return the EPSG case of affine transform.
      */
-    public Affine() {
-        super(IDENTIFICATION_EPSG, new Descriptor(IDENTIFICATION_EPSG,
-                Arrays.copyOfRange( // Discards param 0 and 1, take only the ones in index range [2…7].
-                        TensorParameters.ALPHANUM.getAllDescriptors(EPSG_DIMENSION, EPSG_DIMENSION + 1), 2, 8)));
-        sourceDimensions = EPSG_DIMENSION;
-        targetDimensions = EPSG_DIMENSION;
+    public static Affine provider() {
+        return EPSG_METHOD;
     }
 
     /**
-     * Creates a provider for affine transform with the specified dimensions.
+     * Creates a provider for affine transform with a default matrix size (standard EPSG:9624 instance).
+     *
+     * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory
+     *
+     * @todo Delete this constructor after we stop class-path support.
+     *       Implementation will be moved to {@link #EPSG_METHOD}.
+     */
+    public Affine() {
+        this(IDENTIFICATION_EPSG, Arrays.copyOfRange(
+                // Discards param 0 and 1, take only the ones in index range [2…7].
+                TensorParameters.ALPHANUM.getAllDescriptors(EPSG_DIMENSION, EPSG_DIMENSION + 1), 2, 8));
+    }
+
+    /**
+     * Creates a provider for affine transform with the specified parameters.
      * This is created when first needed by {@link #provider(int, int, boolean)}.
      *
      * @see #provider(int, int, boolean)
      */
-    private Affine(final int sourceDimensions, final int targetDimensions) {
-        super(IDENTIFICATION_OGC, new Descriptor(IDENTIFICATION_OGC,
-                TensorParameters.WKT1.getAllDescriptors(targetDimensions + 1, sourceDimensions + 1)));
-        this.sourceDimensions = sourceDimensions;
-        this.targetDimensions = targetDimensions;
+    private Affine(final Map<String,?> properties, final ParameterDescriptor<?>[] parameters) {
+        super(SingleOperation.class, new Descriptor(properties, parameters),
+              CoordinateSystem.class, false,
+              CoordinateSystem.class, false,
+              (byte) 1);
     }
 
     /**
@@ -173,24 +175,6 @@ public final class Affine extends AbstractProvider {
         }
     }
 
-    /**
-     * Returns the number of source dimensions.
-     */
-    @Override
-    @Deprecated
-    public Integer getSourceDimensions() {
-        return sourceDimensions;
-    }
-
-    /**
-     * Returns the number of target dimensions.
-     */
-    @Override
-    @Deprecated
-    public Integer getTargetDimensions() {
-        return targetDimensions;
-    }
-
     /*
      * Do not override the `getOperationType()` method. We want to inherit the super-type value, which is
      * SingleOperation.class, because we do not know if this operation method will be used for a Conversion
@@ -209,15 +193,6 @@ public final class Affine extends AbstractProvider {
     }
 
     /**
-     * Returns an affine conversion with the specified number of dimensions,
-     * conservatively assuming a non-affine conversion.
-     */
-    @Override
-    public AbstractProvider redimension(final int sourceDimensions, final int targetDimensions) {
-        return provider(sourceDimensions, targetDimensions, false);
-    }
-
-    /**
      * The inverse of this operation can be described by the same operation with different parameter values.
      *
      * @return {@code this} for all {@code Affine}.
@@ -230,20 +205,17 @@ public final class Affine extends AbstractProvider {
     /**
      * Creates a projective transform from the specified group of parameter values.
      *
-     * @param  factory  ignored (can be null).
-     * @param  values   the group of parameter values.
+     * @param  context  the parameter values together with its context.
      * @return the created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
      */
     @Override
-    public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
-            throws ParameterNotFoundException
-    {
+    public MathTransform createMathTransform(final Context context) {
         /*
          * The TensorParameters constant used below (WKT1 or EPSG) does not matter,
          * since both of them understand the names of the other TensorParameters.
          */
-        return MathTransforms.linear(TensorParameters.WKT1.toMatrix(values));
+        return MathTransforms.linear(TensorParameters.WKT1.toMatrix(context.getCompletedParameters()));
     }
 
     /**
@@ -257,15 +229,6 @@ public final class Affine extends AbstractProvider {
             return sourceDimensions * MAX_CACHED_DIMENSION + targetDimensions;
         }
         return -1;
-    }
-
-    /**
-     * Returns the unique instance for the EPSG case of the affine transform.
-     *
-     * @return the EPSG case of affine transform.
-     */
-    public static Affine provider() {
-        return EPSG_METHOD;
     }
 
     /**
@@ -301,7 +264,8 @@ public final class Affine extends AbstractProvider {
              * At this point, no existing instance has been found in the cache.
              * Create a new instance and cache it if its dimension is not too large.
              */
-            method = new Affine(sourceDimensions, targetDimensions);
+            var parameters = TensorParameters.WKT1.getAllDescriptors(targetDimensions + 1, sourceDimensions + 1);
+            method = new Affine(IDENTIFICATION_OGC, parameters);
             if (index >= 0) {
                 synchronized (CACHED) {
                     final Affine other = CACHED[index];     // May have been created in another thread.

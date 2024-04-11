@@ -16,17 +16,14 @@
  */
 package org.apache.sis.referencing.operation.provider;
 
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.util.FactoryException;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.parameter.Parameters;
 
 
 /**
@@ -37,7 +34,7 @@ import org.apache.sis.parameter.Parameters;
  *
  * @see GeographicToGeocentric
  */
-public final class GeocentricToGeographic extends GeodeticOperation {
+public final class GeocentricToGeographic extends AbstractProvider {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -60,66 +57,25 @@ public final class GeocentricToGeographic extends GeodeticOperation {
     }
 
     /**
-     * The providers for all combinations between 2D and 3D cases.
+     * Creates a new provider.
      */
-    private static final GeocentricToGeographic[] REDIMENSIONED = new GeocentricToGeographic[4];
-    static {
-        REDIMENSIONED[2] = new GeocentricToGeographic(2);     // 3D to 2D.
-        REDIMENSIONED[3] = new GeocentricToGeographic(3);
-    }
-
-    /**
-     * Returns the provider for the specified combination of source and target dimensions.
-     */
-    @Override
-    final GeodeticOperation redimensioned(int indexOfDim) {
-        return REDIMENSIONED[indexOfDim];
-    }
-
-    /**
-     * Creates a copy of this provider.
-     *
-     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
-     */
-    @Deprecated
     public GeocentricToGeographic() {
-        super(REDIMENSIONED[INDEX_OF_3D]);
-    }
-
-    /**
-     * Constructs a provider for the given dimensions.
-     *
-     * @param indexOfDim  number of dimensions as the index in {@link #redimensioned} array.
-     */
-    private GeocentricToGeographic(final int indexOfDim) {
-        super(Conversion.class, PARAMETERS, indexOfDim,
-              CartesianCS.class,   false,
-              EllipsoidalCS.class, true);
-    }
-
-    /**
-     * Specifies that the inverse of this operation is a different kind of operation.
-     *
-     * @return {@code null}.
-     */
-    @Override
-    public AbstractProvider inverse() {
-        return null;
+        super(Conversion.class, PARAMETERS,
+              CartesianCS.class,  false,
+              EllipsoidalCS.class, true,
+              (byte) 3);
     }
 
     /**
      * Creates a transform from the specified group of parameter values.
      *
-     * @param  factory  the factory to use for creating the transform.
-     * @param  values   the parameter values that define the transform to create.
+     * @param  context  the parameter values together with its context.
      * @return the conversion from geocentric to geographic coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
      */
     @Override
-    public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
-            throws FactoryException
-    {
-        MathTransform tr = GeographicToGeocentric.create(factory, Parameters.castOrWrap(values));
+    public MathTransform createMathTransform(final Context context) throws FactoryException {
+        MathTransform tr = GeographicToGeocentric.create(context, context.getTargetDimensions().orElse(-1));
         try {
             tr = tr.inverse();
         } catch (NoninvertibleTransformException e) {

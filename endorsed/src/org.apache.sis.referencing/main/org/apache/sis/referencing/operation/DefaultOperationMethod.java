@@ -24,7 +24,6 @@ import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import jakarta.xml.bind.annotation.XmlSchemaType;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
@@ -116,7 +115,7 @@ import org.apache.sis.io.wkt.FormattableObject;
  * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see DefaultConversion
  * @see DefaultTransformation
@@ -127,8 +126,6 @@ import org.apache.sis.io.wkt.FormattableObject;
 @XmlType(name = "OperationMethodType", propOrder = {
     "formulaCitation",
     "formulaDescription",
-    "sourceDimensions",
-    "targetDimensions",
     "descriptors"
 })
 @XmlRootElement(name = "OperationMethod")
@@ -383,42 +380,6 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
     }
 
     /**
-     * Number of dimensions in the source CRS of this operation method.
-     * May be null if unknown, as in an <i>Affine Transform</i>.
-     *
-     * @return the dimension of source CRS, or {@code null} if unknown.
-     *
-     * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getSourceDimensions()
-     *
-     * @deprecated This attribute has been removed from ISO 19111:2019.
-     */
-    @Override
-    @Deprecated(since="1.1")
-    @XmlElement(name = "sourceDimensions")
-    @XmlSchemaType(name = "positiveInteger")
-    public Integer getSourceDimensions() {
-        return null;
-    }
-
-    /**
-     * Number of dimensions in the target CRS of this operation method.
-     * May be null if unknown, as in an <i>Affine Transform</i>.
-     *
-     * @return the dimension of target CRS, or {@code null} if unknown.
-     *
-     * @see org.apache.sis.referencing.operation.transform.AbstractMathTransform#getTargetDimensions()
-     *
-     * @deprecated This attribute has been removed from ISO 19111:2019.
-     */
-    @Override
-    @Deprecated(since="1.1")
-    @XmlElement(name = "targetDimensions")
-    @XmlSchemaType(name = "positiveInteger")
-    public Integer getTargetDimensions() {
-        return null;
-    }
-
-    /**
      * Returns the set of parameters.
      *
      * <h4>Departure from the ISO 19111 standard</h4>
@@ -492,9 +453,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
                 }
             }
             final OperationMethod that = (OperationMethod) object;
-            return Objects.equals(getSourceDimensions(), that.getSourceDimensions()) &&
-                   Objects.equals(getTargetDimensions(), that.getTargetDimensions()) &&
-                   Utilities.deepEquals(getParameters(), that.getParameters(), mode);
+            return Utilities.deepEquals(getParameters(), that.getParameters(), mode);
         }
         return false;
     }

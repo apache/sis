@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.ServiceLoader;
 import java.util.Objects;
+import java.util.OptionalInt;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicReference;
@@ -549,15 +550,22 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * This class is not thread-safe.
      *
      * @author  Martin Desruisseaux (Geomatys)
-     * @version 1.3
+     * @version 1.5
      * @since   0.7
      */
     @SuppressWarnings("serial")         // All field values are usually serializable instances.
-    public static class Context implements Serializable {
+    public static class Context implements MathTransformProvider.Context, Serializable {
         /**
          * For cross-version compatibility.
          */
         private static final long serialVersionUID = -239563539875674709L;
+
+        /**
+         * The factory to use if the provider needs to create other math transforms as operation steps.
+         *
+         * @see #getFactory()
+         */
+        private transient DefaultMathTransformFactory factory;
 
         /**
          * Coordinate system of the source or target points.
@@ -596,6 +604,18 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          */
         public Context() {
             contextualParameters = new HashMap<>();
+        }
+
+        /**
+         * Returns the factory to use if the provider needs to create other math transforms as operation steps.
+         * This is the factory on which {@link #createParameterizedTransform(ParameterValueGroup, Context)} is
+         * invoked, or the {@linkplain #provider() default factory} otherwise.
+         *
+         * @since 1.5
+         */
+        @Override
+        public MathTransformFactory getFactory() {
+            return (factory != null) ? factory : provider();
         }
 
         /**
@@ -686,6 +706,17 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         }
 
         /**
+         * Returns the desired number of source dimensions of the transform to create.
+         * This is inferred from the {@linkplain #getSourceCS() source coordinate system} if present.
+         *
+         * @since 1.5
+         */
+        @Override
+        public OptionalInt getSourceDimensions() {
+            return (sourceCS != null) ? OptionalInt.of(sourceCS.getDimension()) : OptionalInt.empty();
+        }
+
+        /**
          * Returns the target coordinate system, or {@code null} if unspecified.
          *
          * @return the target coordinate system, or {@code null}.
@@ -702,6 +733,17 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          */
         public Ellipsoid getTargetEllipsoid() {
             return targetEllipsoid;
+        }
+
+        /**
+         * Returns the desired number of target dimensions of the transform to create.
+         * This is inferred from the {@linkplain #getTargetCS() target coordinate system} if present.
+         *
+         * @since 1.5
+         */
+        @Override
+        public OptionalInt getTargetDimensions() {
+            return (targetCS != null) ? OptionalInt.of(targetCS.getDimension()) : OptionalInt.empty();
         }
 
         /**
@@ -827,6 +869,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * @throws IllegalStateException if {@link #createParameterizedTransform(ParameterValueGroup, Context)}
          *         has not yet been invoked.
          */
+        @Override
         public ParameterValueGroup getCompletedParameters() {
             if (parameters != null) {
                 return parameters;
@@ -1018,9 +1061,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * already exists in the given parameters.
          *
          * <p>The given method and parameters are stored in the {@link #provider} and {@link #parameters}
-         * fields respectively. The actual stored values may differ from the values given to this method.</p>
+         * fields respectively. The actual stored values may differ from the values given to this method.
+         * The {@link #factory} field must be set before this method is invoked.</p>
          *
-         * @param  factory  the enclosing factory.
          * @param  method   description of the transform to be created, or {@code null} if unknown.
          * @return the exception if the operation failed, or {@code null} if none. This exception is not thrown now
          *         because the caller may succeed in creating the transform anyway, or otherwise may produce a more
@@ -1030,8 +1073,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          *
          * @see #getCompletedParameters()
          */
-        final RuntimeException completeParameters(final DefaultMathTransformFactory factory, OperationMethod method,
-                final ParameterValueGroup userParams) throws FactoryException, IllegalArgumentException
+        final RuntimeException completeParameters(OperationMethod method, final ParameterValueGroup userParams)
+                throws FactoryException, IllegalArgumentException
         {
             /*
              * The "Geographic/geocentric conversions" conversion (EPSG:9602) can be either:
@@ -1049,24 +1092,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             }
             provider   = method;
             parameters = userParams;
-            /*
-             * Get the operation method for the appropriate number of dimensions. For example, the default Molodensky
-             * operation expects two-dimensional source and target CRS. If a given CRS is three-dimensional, we need
-             * a provider variant which will not concatenate a "geographic 3D to 2D" operation before the Molodensky
-             * one.
-             */
-            if (method instanceof AbstractProvider) {
-                @SuppressWarnings("deprecation")
-                final Integer sourceDim = (sourceCS != null) ? sourceCS.getDimension() : method.getSourceDimensions();
-                @SuppressWarnings("deprecation")
-                final Integer targetDim = (targetCS != null) ? targetCS.getDimension() : method.getTargetDimensions();
-                if (sourceDim != null && targetDim != null) {
-                    method = ((AbstractProvider) method).redimension(sourceDim, targetDim);
-                    if (method instanceof MathTransformProvider) {
-                        provider = method;
-                    }
-                }
-            }
             ensureCompatibleParameters(false);      // Invoke only after we set `provider` to its final instance.
             /*
              * Get a mask telling us if we need to set parameters for the source and/or target ellipsoid.
@@ -1076,7 +1101,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
              */
             final boolean sourceOnEllipsoid, targetOnEllipsoid;
             if (provider instanceof AbstractProvider) {
-                final AbstractProvider p = (AbstractProvider) provider;
+                final var p = (AbstractProvider) provider;
                 sourceOnEllipsoid = p.sourceOnEllipsoid;
                 targetOnEllipsoid = p.targetOnEllipsoid;
             } else {
@@ -1085,17 +1110,20 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             }
             /*
              * Set the ellipsoid axis-length parameter values. Those parameters may appear in the source ellipsoid,
-             * in the target ellipsoid or in both ellipsoids.
+             * in the target ellipsoid or in both ellipsoids. Only in the latter case, we also try to set the "dim"
+             * parameter, because OGC 01-009 defines this parameter only in operation between two geographic CRSs.
              */
             if (!(sourceOnEllipsoid | targetOnEllipsoid)) return null;
             if (!targetOnEllipsoid) return setEllipsoid(getSourceEllipsoid(), Constants.SEMI_MAJOR, Constants.SEMI_MINOR, true, null);
             if (!sourceOnEllipsoid) return setEllipsoid(getTargetEllipsoid(), Constants.SEMI_MAJOR, Constants.SEMI_MINOR, true, null);
+
             RuntimeException failure = null;
-            if (sourceCS != null) try {
+            final OptionalInt sourceDimensions = getSourceDimensions();
+            if (sourceDimensions.isPresent()) try {
                 ensureCompatibleParameters(true);
                 final ParameterValue<?> p = getContextualParameter(Constants.DIM);
                 if (p.getValue() == null) {
-                    p.setValue(sourceCS.getDimension());
+                    p.setValue(sourceDimensions.getAsInt());
                 }
             } catch (IllegalArgumentException | IllegalStateException e) {
                 failure = e;
@@ -1120,12 +1148,12 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                 "targetCS", targetCS, "targetEllipsoid", targetEllipsoid
             };
             for (int i=1; i<properties.length; i += 2) {
-                final IdentifiedObject value = (IdentifiedObject) properties[i];
+                final var value = (IdentifiedObject) properties[i];
                 if (value != null) properties[i] = value.getName();
             }
             String text = Strings.toString(getClass(), properties);
             if (!contextualParameters.isEmpty()) {
-                final StringBuilder b = new StringBuilder(text);
+                final var b = new StringBuilder(text);
                 boolean isContextual = true;
                 do {
                     boolean first = true;
@@ -1199,7 +1227,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @see #getLastMethodUsed()
      * @see org.apache.sis.parameter.ParameterBuilder#createGroupForMapProjection(ParameterDescriptor...)
      */
-    public MathTransform createParameterizedTransform(ParameterValueGroup parameters,
+    public MathTransform createParameterizedTransform(final ParameterValueGroup parameters,
             final Context context) throws NoSuchIdentifierException, FactoryException
     {
         OperationMethod  method  = null;
@@ -1244,11 +1272,13 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                  * since the standard place where to provide this information is in the ellipsoid object.
                  */
                 if (context != null) {
-                    failure    = context.completeParameters(this, method, parameters);
-                    parameters = context.parameters;
-                    method     = context.provider;
+                    context.factory = this;
+                    failure = context.completeParameters(method, parameters);
+                    method  = context.provider;
+                    transform = ((MathTransformProvider) method).createMathTransform(context);
+                } else {
+                    transform = ((MathTransformProvider) method).createMathTransform(this, parameters);
                 }
-                transform = ((MathTransformProvider) method).createMathTransform(this, parameters);
             } catch (IllegalArgumentException | IllegalStateException exception) {
                 throw new InvalidGeodeticParameterException(exception.getLocalizedMessage(), exception);
             }
@@ -1260,6 +1290,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             transform = unique(transform);
             if (method instanceof AbstractProvider) {
                 method = ((AbstractProvider) method).variantFor(transform);
+                if (context != null) {
+                    context.provider = method;
+                }
             }
             if (context != null) {
                 transform = swapAndScaleAxes(transform, context);

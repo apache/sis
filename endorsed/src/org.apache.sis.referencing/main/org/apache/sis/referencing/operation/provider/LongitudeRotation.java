@@ -16,13 +16,10 @@
  */
 package org.apache.sis.referencing.operation.provider;
 
-import java.util.Arrays;
 import jakarta.xml.bind.annotation.XmlTransient;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.privy.AffineTransform2D;
 import org.apache.sis.parameter.Parameters;
 
@@ -61,38 +58,10 @@ public final class LongitudeRotation extends GeographicOffsets {
     }
 
     /**
-     * The providers for all combinations between 2D and 3D cases.
+     * Creates a new provider.
      */
-    private static final LongitudeRotation[] REDIMENSIONED = new LongitudeRotation[4];
-    static {
-        Arrays.setAll(REDIMENSIONED, LongitudeRotation::new);
-    }
-
-    /**
-     * Returns the provider for the specified combination of source and target dimensions.
-     */
-    @Override
-    final GeodeticOperation redimensioned(int indexOfDim) {
-        return REDIMENSIONED[indexOfDim];
-    }
-
-    /**
-     * Creates a copy of this provider.
-     *
-     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
-     */
-    @Deprecated
     public LongitudeRotation() {
-        super(REDIMENSIONED[INDEX_OF_2D]);
-    }
-
-    /**
-     * Constructs a provider for the given dimensions.
-     *
-     * @param indexOfDim  number of dimensions as the index in {@code redimensioned} array (see above).
-     */
-    private LongitudeRotation(int indexOfDim) {
-        super(PARAMETERS, indexOfDim);
+        super(PARAMETERS, (byte) 2);
     }
 
     /**
@@ -106,16 +75,13 @@ public final class LongitudeRotation extends GeographicOffsets {
      * does not, so maybe our unconditional conversion to degrees would be more surprising for the user if the
      * operation was shown as a "Longitude rotation".</p>
      *
-     * @param  factory  ignored (can be null).
-     * @param  values   the group of parameter values.
+     * @param  context  ignored (can be null).
      * @return the created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
      */
     @Override
-    public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
-            throws ParameterNotFoundException
-    {
-        final Parameters pv = Parameters.castOrWrap(values);
+    public MathTransform createMathTransform(final Context context) {
+        final Parameters pv = Parameters.castOrWrap(context.getCompletedParameters());
         return new AffineTransform2D(1, 0, 0, 1, pv.doubleValue(TX), 0);
     }
 }
