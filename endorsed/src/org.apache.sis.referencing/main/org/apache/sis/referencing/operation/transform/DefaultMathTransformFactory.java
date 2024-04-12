@@ -1571,9 +1571,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                         context.targetEllipsoid = ellipsoid;
                     }
                     final ParameterValueGroup pg = getDefaultParameters(operation);
-                    if (cs.getDimension() < 3) {
-                        pg.parameter(Constants.DIM).setValue(2);        // Apache SIS specific parameter.
-                    }
                     return createParameterizedTransform(pg, context);
                 }
             }

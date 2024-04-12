@@ -60,7 +60,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import static org.apache.sis.referencing.operation.provider.MapProjection.SEMI_MAJOR;
 import static org.apache.sis.referencing.operation.provider.MapProjection.SEMI_MINOR;
 import static org.apache.sis.referencing.operation.provider.MapProjection.ECCENTRICITY;
-import static org.apache.sis.referencing.operation.provider.GeographicToGeocentric.DIMENSION;
+import static org.apache.sis.referencing.operation.provider.GeocentricAffineBetweenGeographic.DIMENSION;
 
 
 /**
@@ -276,9 +276,9 @@ public class EllipsoidToCentricTransform extends AbstractMathTransform implement
          * Copy parameters to the ContextualParameter. Those parameters are not used directly by
          * EllipsoidToCentricTransform, but we need to store them in case the user asks for them.
          *
-         * Note: we do not store the `DIMENSION` parameter because that parameter is not defined by OGC 01-009.
-         * Instead, this transform should be thought as always operating in 3 dimensions with a "2D to 3D" step
-         * prefixed if needed. The WKT is handled in a special way for inserting that step if needed.
+         * Note: There is no `DIMENSION` parameter here because no such parameter is defined by OGC 01-009.
+         * Instead, this transform should be thought as always operating in 3 dimensions with a "2D to 3D"
+         * step prefixed if needed. The WKT is handled in a special way for inserting that step if needed.
          */
         context = new ContextualParameters(GeographicToGeocentric.PARAMETERS, withHeight ? 3 : 2, 3);
         context.getOrCreate(SEMI_MAJOR).setValue(semiMajor, unit);

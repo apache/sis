@@ -35,7 +35,6 @@ import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.measure.Units;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -174,16 +173,8 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
      * @throws FactoryException if a transform cannot be created.
      */
     static MathTransform createMathTransform(final Context context, final boolean isAbridged) throws FactoryException {
-        int n = 2;    // Default number of dimensions.
         final Parameters values = Parameters.castOrWrap(context.getCompletedParameters());
-        final Integer dim = values.getValue(DIMENSION);
-        if (dim != null) {
-            n = dim;                      // Unboxing.
-            if (n != 2 && n != 3) {
-                throw new InvalidParameterValueException(Errors.format(
-                        Errors.Keys.IllegalArgumentValue_2, Constants.DIM, dim), Constants.DIM, dim);
-            }
-        }
+        final int dim = values.getValue(DIMENSION);
         /*
          * Following method calls implicitly convert parameter values to metres.
          * We do not try to match ellipsoid axis units because:
@@ -213,8 +204,8 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
         source.computeDifferences(values);
         return MolodenskyTransform.createGeodeticTransformation(
                 context.getFactory(),
-                source, context.getSourceDimensions().orElse(n) >= 3,
-                target, context.getTargetDimensions().orElse(n) >= 3,
+                source, context.getSourceDimensions().orElse(dim) >= 3,
+                target, context.getTargetDimensions().orElse(dim) >= 3,
                 values.doubleValue(TX),
                 values.doubleValue(TY),
                 values.doubleValue(TZ),

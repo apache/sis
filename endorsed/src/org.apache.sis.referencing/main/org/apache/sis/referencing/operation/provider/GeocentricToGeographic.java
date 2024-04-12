@@ -52,7 +52,7 @@ public final class GeocentricToGeographic extends AbstractProvider {
     static {
         PARAMETERS = builder()
                 .addName(Citations.OGC, NAME)
-                .createGroupForMapProjection(GeographicToGeocentric.DIMENSION);
+                .createGroupForMapProjection();
                 // Not really a map projection, but we leverage the same axis parameters.
     }
 
@@ -75,7 +75,7 @@ public final class GeocentricToGeographic extends AbstractProvider {
      */
     @Override
     public MathTransform createMathTransform(final Context context) throws FactoryException {
-        MathTransform tr = GeographicToGeocentric.create(context, context.getTargetDimensions().orElse(-1));
+        MathTransform tr = GeographicToGeocentric.create(context, context.getTargetDimensions());
         try {
             tr = tr.inverse();
         } catch (NoninvertibleTransformException e) {

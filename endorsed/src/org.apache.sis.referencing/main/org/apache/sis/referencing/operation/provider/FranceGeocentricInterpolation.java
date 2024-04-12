@@ -34,7 +34,6 @@ import javax.measure.quantity.Length;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
-import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.Transformation;
@@ -56,7 +55,6 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import static org.apache.sis.util.privy.Constants.DIM;
 
 
 /**
@@ -281,16 +279,8 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
      */
     @Override
     public MathTransform createMathTransform(final Context context) throws FactoryException {
-        int n = 2;                  // Default number of dimensions.
         final Parameters pg = Parameters.castOrWrap(context.getCompletedParameters());
-        final Integer dim = pg.getValue(Molodensky.DIMENSION);
-        if (dim != null) {
-            n = dim;                // Unboxing.
-            if (n < 2 || n > 3) {
-                throw new InvalidParameterValueException(Errors.format(
-                            Errors.Keys.IllegalArgumentValue_2, DIM, dim), DIM, dim);
-            }
-        }
+        final int dim = pg.getValue(Molodensky.DIMENSION);
         final GridFile file = new GridFile(pg, FILE);
         final LoadedGrid<Angle,Length> grid;
         try {
@@ -304,11 +294,11 @@ public final class FranceGeocentricInterpolation extends AbstractProvider {
                 createEllipsoid(pg, Molodensky.TGT_SEMI_MAJOR,
                                     Molodensky.TGT_SEMI_MINOR,
                                     CommonCRS.ETRS89.ellipsoid()),      // GRS 1980 ellipsoid
-                context.getTargetDimensions().orElse(n) >= 3,
+                context.getTargetDimensions().orElse(dim) >= 3,
                 createEllipsoid(pg, Molodensky.SRC_SEMI_MAJOR,
                                     Molodensky.SRC_SEMI_MINOR,
                                     null),                              // Clarke 1880 (IGN) ellipsoid
-                context.getSourceDimensions().orElse(n) >= 3,
+                context.getSourceDimensions().orElse(dim) >= 3,
                 grid);
         try {
             tr = tr.inverse();
