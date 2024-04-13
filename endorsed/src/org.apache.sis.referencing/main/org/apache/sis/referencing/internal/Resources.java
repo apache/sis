@@ -269,11 +269,6 @@ public class Resources extends IndexedResourceBundle {
         public static final short IllegalAxisDirection_2 = 20;
 
         /**
-         * Dimensions of “{0}” operation cannot be ({1} → {2}).
-         */
-        public static final short IllegalOperationDimension_3 = 21;
-
-        /**
          * This operation cannot be applied to values of class ‘{0}’.
          */
         public static final short IllegalOperationForValueClass_1 = 22;
@@ -312,7 +307,7 @@ public class Resources extends IndexedResourceBundle {
         /**
          * All dynamic components should have the same epoch, but found “{0}” and “{1}”.
          */
-        public static final short InconsistentEpochs_2 = 103;
+        public static final short InconsistentEpochs_2 = 21;
 
         /**
          * Inverse operation uses this parameter value with opposite sign.

@@ -41,9 +41,30 @@ public final class AxisOrderReversal3D extends AxisOrderReversal {
             .addIdentifier("9844").addName("Axis order reversal (geographic3D horizontal)").createGroup();
 
     /**
+     * The canonical instance of this operation method.
+     *
+     * @see #provider()
+     */
+    static final AxisOrderReversal3D INSTANCE = new AxisOrderReversal3D();
+
+    /**
+     * Returns the canonical instance of this operation method.
+     * This method is invoked by {@link java.util.ServiceLoader} using reflection.
+     *
+     * @return the canonical instance of this operation method.
+     */
+    public static AxisOrderReversal provider() {
+        return INSTANCE;
+    }
+
+    /**
      * Constructs a provider with default parameters.
+     *
+     * @todo Delete this constructor after we stop class-path support.
+     *       Implementation will be moved to {@link #INSTANCE}, and {@code AxisOrderReversal3D}
+     *       should no longer extend {@code AxisOrderReversal} (it would extend nothing).
      */
     public AxisOrderReversal3D() {
-        super(PARAMETERS, 4);
+        super(PARAMETERS, (byte) 3);
     }
 }

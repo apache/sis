@@ -239,8 +239,8 @@ public final class CoordinateOperationRegistryTest extends MathTransformTestCase
 
     /**
      * Tests <q>NTF (Paris) to WGS 84 (1)</q> operation with three-dimensional source and target CRS.
-     * {@link CoordinateOperationRegistry} should be able to find the operation despite the difference in
-     * number of dimensions.
+     * {@link CoordinateOperationRegistry} should be able to find the operation despite the difference
+     * in the number of dimensions.
      *
      * @throws ParseException if a CRS used in this test cannot be parsed.
      * @throws FactoryException if the operation cannot be created.

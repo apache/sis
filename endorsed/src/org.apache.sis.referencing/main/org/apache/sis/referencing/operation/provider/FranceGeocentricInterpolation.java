@@ -31,16 +31,13 @@ import static java.lang.Float.parseFloat;
 import jakarta.xml.bind.annotation.XmlTransient;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
-import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.CommonCRS;
@@ -58,7 +55,6 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import static org.apache.sis.util.privy.Constants.DIM;
 
 
 /**
@@ -87,7 +83,7 @@ import static org.apache.sis.util.privy.Constants.DIM;
  * @author  Martin Desruisseaux (Geomatys)
  */
 @XmlTransient
-public final class FranceGeocentricInterpolation extends GeodeticOperation {
+public final class FranceGeocentricInterpolation extends AbstractProvider {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -217,50 +213,13 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
     }
 
     /**
-     * The providers for all combinations between 2D and 3D cases.
+     * Creates a new provider.
      */
-    private static final FranceGeocentricInterpolation[] REDIMENSIONED = new FranceGeocentricInterpolation[4];
-    static {
-        Arrays.setAll(REDIMENSIONED, FranceGeocentricInterpolation::new);
-    }
-
-    /**
-     * Returns the provider for the specified combination of source and target dimensions.
-     */
-    @Override
-    final GeodeticOperation redimensioned(int indexOfDim) {
-        return REDIMENSIONED[indexOfDim];
-    }
-
-    /**
-     * Creates a copy of this provider.
-     *
-     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
-     */
-    @Deprecated
     public FranceGeocentricInterpolation() {
-        super(REDIMENSIONED[INDEX_OF_2D]);
-    }
-
-    /**
-     * Creates a copy of this provider.
-     *
-     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
-     */
-    @Deprecated
-    public FranceGeocentricInterpolation(FranceGeocentricInterpolation copy) {
-        super(copy);
-    }
-
-    /**
-     * Constructs a provider for the given number of dimensions.
-     *
-     * @param indexOfDim  number of dimensions as the index in {@code redimensioned} array.
-     */
-    FranceGeocentricInterpolation(int indexOfDim) {
-        super(Transformation.class, PARAMETERS, indexOfDim,
+        super(Transformation.class, PARAMETERS,
               EllipsoidalCS.class, true,
-              EllipsoidalCS.class, true);
+              EllipsoidalCS.class, true,
+              (byte) 2);
     }
 
     /**
@@ -276,16 +235,6 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
         final String filename = file.parameter.getPath();
         final int s = filename.lastIndexOf('/') + 1;
         return filename.regionMatches(true, s, DEFAULT, 0, 5);
-    }
-
-    /**
-     * The inverse of {@code FranceGeocentricInterpolation} is a different operation.
-     *
-     * @return {@code null}.
-     */
-    @Override
-    public AbstractProvider inverse() {
-        return null;
     }
 
     /**
@@ -323,25 +272,15 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
      * (which is the direction that use the interpolation grid directly without iteration),
      * then inverts the transform.
      *
-     * @param  factory  the factory to use if this constructor needs to create other math transforms.
-     * @param  values   the group of parameter values.
+     * @param  context  the parameter values together with its context.
      * @return the created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
      * @throws FactoryException if an error occurred while loading the grid.
      */
     @Override
-    public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
-            throws ParameterNotFoundException, FactoryException
-    {
-        boolean withHeights = false;
-        final Parameters pg = Parameters.castOrWrap(values);
-        final Integer dim = pg.getValue(Molodensky.DIMENSION);
-        if (dim != null) switch (dim) {
-            case 2:  break;
-            case 3:  withHeights = true; break;
-            default: throw new InvalidParameterValueException(Errors.format(
-                            Errors.Keys.IllegalArgumentValue_2, DIM, dim), DIM, dim);
-        }
+    public MathTransform createMathTransform(final Context context) throws FactoryException {
+        final Parameters pg = Parameters.castOrWrap(context.getCompletedParameters());
+        final int dim = pg.getValue(Molodensky.DIMENSION);
         final GridFile file = new GridFile(pg, FILE);
         final LoadedGrid<Angle,Length> grid;
         try {
@@ -350,11 +289,17 @@ public final class FranceGeocentricInterpolation extends GeodeticOperation {
             // NumberFormatException, ArithmeticException, NoSuchElementException, and more.
             throw file.canNotLoad(FranceGeocentricInterpolation.class, HEADER, e);
         }
-        MathTransform tr = InterpolatedGeocentricTransform.createGeodeticTransformation(factory,
+        MathTransform tr = InterpolatedGeocentricTransform.createGeodeticTransformation(
+                context.getFactory(),
                 createEllipsoid(pg, Molodensky.TGT_SEMI_MAJOR,
-                                    Molodensky.TGT_SEMI_MINOR, CommonCRS.ETRS89.ellipsoid()), withHeights,  // GRS 1980 ellipsoid
+                                    Molodensky.TGT_SEMI_MINOR,
+                                    CommonCRS.ETRS89.ellipsoid()),      // GRS 1980 ellipsoid
+                context.getTargetDimensions().orElse(dim) >= 3,
                 createEllipsoid(pg, Molodensky.SRC_SEMI_MAJOR,
-                                    Molodensky.SRC_SEMI_MINOR, null), withHeights, grid);                   // Clarke 1880 (IGN) ellipsoid
+                                    Molodensky.SRC_SEMI_MINOR,
+                                    null),                              // Clarke 1880 (IGN) ellipsoid
+                context.getSourceDimensions().orElse(dim) >= 3,
+                grid);
         try {
             tr = tr.inverse();
         } catch (NoninvertibleTransformException e) {

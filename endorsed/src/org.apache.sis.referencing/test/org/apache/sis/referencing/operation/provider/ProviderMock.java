@@ -44,11 +44,12 @@ abstract class ProviderMock extends AbstractProvider {
     ProviderMock(final ParameterDescriptorGroup parameters) {
         super(SingleOperation.class, parameters,
               CoordinateSystem.class, false,
-              CoordinateSystem.class, false);
+              CoordinateSystem.class, false,
+              (byte) 1);
     }
 
     /**
-     * Not yet supported.
+     * Returns the dummy transform.
      *
      * @param  factory     ignored.
      * @param  parameters  ignored.
@@ -64,5 +65,16 @@ abstract class ProviderMock extends AbstractProvider {
                 throw new UnsupportedOperationException();
             }
         };
+    }
+
+    /**
+     * Returns the dummy transform.
+     *
+     * @param  context  factory and parameters.
+     * @return a dummy math transform.
+     */
+    @Override
+    public final MathTransform createMathTransform(Context context) {
+        return createMathTransform(context.getFactory(), context.getCompletedParameters());
     }
 }

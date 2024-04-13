@@ -17,11 +17,9 @@
 package org.apache.sis.referencing.operation.provider;
 
 import jakarta.xml.bind.annotation.XmlTransient;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.privy.AffineTransform2D;
 import org.apache.sis.parameter.Parameters;
 
@@ -47,36 +45,52 @@ public final class GeographicOffsets2D extends GeographicOffsets {
     }
 
     /**
-     * Creates a copy of this provider.
+     * The canonical instance of this operation method.
      *
-     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
+     * @see #provider()
      */
-    @Deprecated
-    public GeographicOffsets2D() {
-        super(provider2D());
+    private static final GeographicOffsets INSTANCE = new GeographicOffsets();
+
+    /**
+     * Returns the canonical instance of this operation method.
+     * This method is invoked by {@link java.util.ServiceLoader} using reflection.
+     *
+     * @return the canonical instance of this operation method.
+     */
+    public static GeographicOffsets provider() {
+        return INSTANCE;
     }
 
     /**
-     * Constructs a provider that can be resized.
+     * Creates a new provider.
+     *
+     * @todo Make this constructor private after we stop class-path support.
      */
-    GeographicOffsets2D(final int indexOfDim) {
-        super(PARAMETERS, indexOfDim);
+    public GeographicOffsets2D() {
+        super(PARAMETERS, (byte) 2);
+    }
+
+    /**
+     * Returns the operation method which is the closest match for the given transform.
+     * This is an adjustment based on the number of dimensions only, on the assumption
+     * that the given transform has been created by this provider or a compatible one.
+     */
+    @Override
+    public AbstractProvider variantFor(final MathTransform transform) {
+        return maxDimension(transform) >= 3 ? GeographicOffsets.provider() : this;
     }
 
     /**
      * Creates a transform from the specified group of parameter values.
      * The parameter values are unconditionally converted to degrees.
      *
-     * @param  factory  ignored (can be null).
-     * @param  values   the group of parameter values.
+     * @param  context  the parameter values together with its context.
      * @return the created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
      */
     @Override
-    public MathTransform createMathTransform(MathTransformFactory factory, ParameterValueGroup values)
-            throws ParameterNotFoundException
-    {
-        final Parameters pv = Parameters.castOrWrap(values);
+    public MathTransform createMathTransform(final Context context) {
+        final Parameters pv = Parameters.castOrWrap(context.getCompletedParameters());
         return new AffineTransform2D(1, 0, 0, 1, pv.doubleValue(TX), pv.doubleValue(TY));
     }
 }

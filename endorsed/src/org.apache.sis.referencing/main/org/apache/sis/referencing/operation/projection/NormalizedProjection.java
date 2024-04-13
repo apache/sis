@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.OptionalInt;
 import java.util.regex.Pattern;
 import java.io.Serializable;
 import java.lang.reflect.Modifier;
@@ -586,7 +587,12 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
             method = CoordinateOperations.getOperationMethod(factory.getAvailableMethods(SingleOperation.class), name);
         }
         if (method instanceof MathTransformProvider) {
-            return ((MathTransformProvider) method).createMathTransform(factory, context);
+            return ((MathTransformProvider) method).createMathTransform(new MathTransformProvider.Context() {
+                @Override public MathTransformFactory getFactory() {return factory;}
+                @Override public OptionalInt getSourceDimensions() {return OptionalInt.of(DIMENSION);}
+                @Override public OptionalInt getTargetDimensions() {return OptionalInt.of(DIMENSION);}
+                @Override public ParameterValueGroup getCompletedParameters() {return context;}
+            });
         } else {
             throw new FactoryException(Errors.format(Errors.Keys.UnsupportedImplementation_1,
                     (method != null ? method : factory).getClass()));

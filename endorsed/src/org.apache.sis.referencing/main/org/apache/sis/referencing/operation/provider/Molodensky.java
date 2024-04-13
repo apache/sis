@@ -17,17 +17,14 @@
 package org.apache.sis.referencing.operation.provider;
 
 import java.util.Map;
-import java.util.Arrays;
 import jakarta.xml.bind.annotation.XmlTransient;
 import javax.measure.Unit;
 import org.opengis.util.FactoryException;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
@@ -38,7 +35,6 @@ import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.measure.Units;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -149,80 +145,36 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
     }
 
     /**
-     * The providers for all combinations between 2D and 3D cases.
+     * Creates a new provider.
      */
-    private static final Molodensky[] REDIMENSIONED = new Molodensky[4];
-    static {
-        Arrays.setAll(REDIMENSIONED, Molodensky::new);
-    }
-
-    /**
-     * Returns the provider for the specified combination of source and target dimensions.
-     */
-    @Override
-    final GeodeticOperation redimensioned(int indexOfDim) {
-        return REDIMENSIONED[indexOfDim];
-    }
-
-    /**
-     * Creates a copy of this provider.
-     *
-     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
-     */
-    @Deprecated
     public Molodensky() {
-        super(REDIMENSIONED[INDEX_OF_3D]);
-    }
-
-    /**
-     * Constructs a provider for the given dimensions.
-     *
-     * @param indexOfDim  number of dimensions as the index in {@code redimensioned} array.
-     */
-    private Molodensky(int indexOfDim) {
-        super(Type.MOLODENSKY, PARAMETERS, indexOfDim);
+        super(Type.MOLODENSKY, PARAMETERS, (byte) 2);
     }
 
     /**
      * Creates a Molodensky transform from the specified group of parameter values.
      *
-     * @param  factory  the factory to use for creating concatenated transforms.
-     * @param  values   the group of parameter values.
+     * @param  context  the parameter values together with its context.
      * @return the created Molodensky transform.
      * @throws FactoryException if a transform cannot be created.
      */
     @Override
-    public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
-            throws FactoryException
-    {
-        return createMathTransform(factory, Parameters.castOrWrap(values),
-                getSourceDimensions(), getTargetDimensions(), false);
+    public MathTransform createMathTransform(Context context) throws FactoryException {
+        return createMathTransform(context, false);
     }
 
     /**
      * Creates a (potentially abridged) Molodensky transform from the specified group of parameter values.
-     * The specified number of dimensions are <em>default</em> values; they may be overridden by user parameters.
+     * If a specified number of dimensions is absent, it will be overridden by user parameters.
      *
-     * @param  factory           the factory to use for creating concatenated transforms.
-     * @param  values            the group of parameter values specified by the users.
-     * @param  sourceDimensions  number of source dimensions (2 or 3) of the operation method.
-     * @param  targetDimensions  number of target dimensions (2 or 3) of the operation method.
-     * @param  isAbridged        {@code true} for the abridged form.
+     * @param  context     the parameter values together with its context.
+     * @param  isAbridged  {@code true} for the abridged form.
      * @return the created (abridged) Molodensky transform.
      * @throws FactoryException if a transform cannot be created.
      */
-    static MathTransform createMathTransform(final MathTransformFactory factory, final Parameters values,
-            int sourceDimensions, int targetDimensions, final boolean isAbridged) throws FactoryException
-    {
-        final Integer dim = values.getValue(DIMENSION);
-        if (dim != null) {
-            final int n = dim;                            // Unboxing.
-            if (n != 2 && n != 3) {
-                throw new InvalidParameterValueException(Errors.format(
-                        Errors.Keys.IllegalArgumentValue_2, Constants.DIM, dim), Constants.DIM, dim);
-            }
-            sourceDimensions = targetDimensions = n;
-        }
+    static MathTransform createMathTransform(final Context context, final boolean isAbridged) throws FactoryException {
+        final Parameters values = Parameters.castOrWrap(context.getCompletedParameters());
+        final int dim = values.getValue(DIMENSION);
         /*
          * Following method calls implicitly convert parameter values to metres.
          * We do not try to match ellipsoid axis units because:
@@ -250,9 +202,10 @@ public final class Molodensky extends GeocentricAffineBetweenGeographic {
         source.other = target;
         target.other = source;
         source.computeDifferences(values);
-        return MolodenskyTransform.createGeodeticTransformation(factory,
-                source, sourceDimensions >= 3,
-                target, targetDimensions >= 3,
+        return MolodenskyTransform.createGeodeticTransformation(
+                context.getFactory(),
+                source, context.getSourceDimensions().orElse(dim) >= 3,
+                target, context.getTargetDimensions().orElse(dim) >= 3,
                 values.doubleValue(TX),
                 values.doubleValue(TY),
                 values.doubleValue(TZ),

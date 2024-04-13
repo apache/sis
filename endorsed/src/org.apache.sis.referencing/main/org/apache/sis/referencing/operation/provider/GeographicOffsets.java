@@ -16,16 +16,13 @@
  */
 package org.apache.sis.referencing.operation.provider;
 
-import java.util.Arrays;
 import jakarta.xml.bind.annotation.XmlTransient;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -40,7 +37,7 @@ import org.apache.sis.measure.Units;
  * @author  Martin Desruisseaux (Geomatys)
  */
 @XmlTransient
-public class GeographicOffsets extends GeodeticOperation {
+public class GeographicOffsets extends AbstractProvider {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -92,90 +89,89 @@ public class GeographicOffsets extends GeodeticOperation {
     }
 
     /**
-     * The providers for all combinations between 2D and 3D cases.
-     */
-    private static final GeographicOffsets[] REDIMENSIONED = new GeographicOffsets[4];
-    static {
-        Arrays.setAll(REDIMENSIONED, (i) -> (i == INDEX_OF_2D)
-                ? new GeographicOffsets2D(i)
-                : new GeographicOffsets(i));
-    }
-
-    /**
-     * Returns the provider for the specified combination of source and target dimensions.
-     */
-    @Override
-    GeodeticOperation redimensioned(int indexOfDim) {
-        return REDIMENSIONED[indexOfDim];
-    }
-
-    /**
-     * Returns the two-dimensional case of this provider.
-     */
-    static GeographicOffsets provider2D() {
-        return REDIMENSIONED[INDEX_OF_2D];
-    }
-
-    /**
-     * Creates a copy of this provider.
+     * The canonical instance of this operation method.
      *
-     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
+     * @see #provider()
      */
-    @Deprecated
+    private static final GeographicOffsets INSTANCE = new GeographicOffsets();
+
+    /**
+     * Returns the canonical instance of this operation method.
+     * This method is invoked by {@link java.util.ServiceLoader} using reflection.
+     *
+     * @return the canonical instance of this operation method.
+     */
+    public static GeographicOffsets provider() {
+        return INSTANCE;
+    }
+
+    /**
+     * Creates a new provider.
+     *
+     * @todo Delete this constructor after we stop class-path support,
+     *       replaced by direct call to the constructor below.
+     */
     public GeographicOffsets() {
-        super(REDIMENSIONED[INDEX_OF_3D]);
-    }
-
-    /**
-     * Creates a copy of this provider.
-     *
-     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
-     */
-    @Deprecated
-    GeographicOffsets(final GeographicOffsets copy) {
-        super(copy);
-    }
-
-    /**
-     * Creates a provider with the parameters of this base class.
-     */
-    private GeographicOffsets(int indexOfDim) {
-        this(PARAMETERS, indexOfDim);
+        this(PARAMETERS, (byte) 3);
     }
 
     /**
      * For default constructors in this class and subclasses.
+     *
+     * @param parameters  description of parameters expected by this operation.
+     * @param dimension   number of source dimensions (2 or 3).
      */
-    GeographicOffsets(ParameterDescriptorGroup parameters, int indexOfDim) {
-        super(Transformation.class, parameters, indexOfDim,
+    GeographicOffsets(ParameterDescriptorGroup parameters, byte dimension) {
+        super(Transformation.class, parameters,
               EllipsoidalCS.class, false,
-              EllipsoidalCS.class, false);
+              EllipsoidalCS.class, false,
+              dimension);
     }
 
     /**
      * Returns the parameter descriptor for the vertical axis.
+     * This parameter is different in the case of {@link GeographicAndVerticalOffsets}.
      */
     ParameterDescriptor<Double> vertical() {
         return TZ;
     }
 
     /**
+     * The inverse of {@code GeographicOffsets} is the same operation with parameter signs inverted.
+     *
+     * @return {@code this}.
+     */
+    @Override
+    public final AbstractProvider inverse() {
+        return this;
+    }
+
+    /**
+     * Returns the operation method which is the closest match for the given transform.
+     * This is an adjustment based on the number of dimensions only, on the assumption
+     * that the given transform has been created by this provider or a compatible one.
+     */
+    @Override
+    public AbstractProvider variantFor(final MathTransform transform) {
+        if (getClass() == GeographicOffsets.class && maxDimension(transform) < 3) {
+            return GeographicOffsets2D.provider();
+        }
+        return this;
+    }
+
+    /**
      * Creates a transform from the specified group of parameter values.
      * The parameter values are unconditionally converted to degrees and metres.
      *
-     * @param  factory  ignored (can be null).
-     * @param  values   the group of parameter values.
+     * @param  context  the parameter values together with its context.
      * @return the created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
      */
     @Override
-    public MathTransform createMathTransform(MathTransformFactory factory, ParameterValueGroup values)
-            throws ParameterNotFoundException
-    {
-        final Parameters pv = Parameters.castOrWrap(values);
+    public MathTransform createMathTransform(final Context context) {
+        final Parameters pv = Parameters.castOrWrap(context.getCompletedParameters());
         return MathTransforms.translation(pv.doubleValue(TX),
                                           pv.doubleValue(TY),
                                           pv.doubleValue(vertical()));
-
     }
 }

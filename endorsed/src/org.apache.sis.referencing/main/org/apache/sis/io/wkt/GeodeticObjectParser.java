@@ -1269,14 +1269,11 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
     {
         int dimension = 2;
         String csType = WKTKeywords.ellipsoidal;
-        if (method != null) {
-            @SuppressWarnings("deprecation")
-            final Integer d = method.getSourceDimensions();
-            if (d != null) dimension = d;
-            if (method instanceof AbstractProvider) {
-                csType = WKTUtilities.toType(CoordinateSystem.class, ((AbstractProvider) method).sourceCSType);
-                if (csType == null) csType = WKTKeywords.ellipsoidal;
-            }
+        if (method instanceof AbstractProvider) {
+            var p = (AbstractProvider) method;
+            dimension = p.minSourceDimension;
+            csType = WKTUtilities.toType(CoordinateSystem.class, p.sourceCSType);
+            if (csType == null) csType = WKTKeywords.ellipsoidal;
         }
         return parseGeodeticCRS(mode, parent, dimension, csType);
     }

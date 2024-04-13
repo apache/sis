@@ -17,12 +17,10 @@
 package org.apache.sis.referencing.operation.provider;
 
 import jakarta.xml.bind.annotation.XmlTransient;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.metadata.iso.citation.Citations;
 
@@ -59,18 +57,21 @@ public final class PseudoPlateCarree extends AbstractProvider {
     public PseudoPlateCarree() {
         super(Conversion.class, PARAMETERS,
               EllipsoidalCS.class, false,
-              EllipsoidalCS.class, false);
+              EllipsoidalCS.class, false,
+              (byte) 2);
     }
 
     /**
      * Creates an Pseudo Plate Carrée projection from the specified group of parameter values.
+     * The number of dimensions is determined from the target number of dimensions only.
+     * This is a way to communicate to the caller what it needs for producing the requested output
+     * (same policy as in {@link MapProjection#maybe3D(Context, MathTransform)}).
      *
-     * @param  factory     ignored.
-     * @param  parameters  ignored.
+     * @param  context  ignored.
      * @return the identity transform.
      */
     @Override
-    public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup parameters) {
-        return MathTransforms.identity(2);
+    public MathTransform createMathTransform(final Context context) {
+        return MathTransforms.identity(context.getTargetDimensions().orElse(2));
     }
 }

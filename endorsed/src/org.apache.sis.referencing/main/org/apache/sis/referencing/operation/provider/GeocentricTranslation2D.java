@@ -18,6 +18,7 @@ package org.apache.sis.referencing.operation.provider;
 
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.metadata.iso.citation.Citations;
 
 
@@ -52,27 +53,38 @@ public final class GeocentricTranslation2D extends GeocentricAffineBetweenGeogra
     }
 
     /**
-     * Returns the provider for the specified combination of source and target dimensions.
+     * The canonical instance of this operation method.
+     *
+     * @see #provider()
+     */
+    private static final GeocentricTranslation2D INSTANCE = new GeocentricTranslation2D();
+
+    /**
+     * Returns the canonical instance of this operation method.
+     * This method is invoked by {@link java.util.ServiceLoader} using reflection.
+     *
+     * @return the canonical instance of this operation method.
+     */
+    public static GeocentricTranslation2D provider() {
+        return INSTANCE;
+    }
+
+    /**
+     * Creates a new provider.
+     *
+     * @todo Make this constructor private after we stop class-path support.
+     */
+    public GeocentricTranslation2D() {
+        super(Type.TRANSLATION, PARAMETERS, (byte) 2);
+    }
+
+    /**
+     * Returns the operation method which is the closest match for the given transform.
+     * This is an adjustment based on the number of dimensions only, on the assumption
+     * that the given transform has been created by this provider or a compatible one.
      */
     @Override
-    final GeodeticOperation redimensioned(int indexOfDim) {
-        return GeocentricTranslation3D.REDIMENSIONED[indexOfDim];
-    }
-
-    /**
-     * Creates a copy of this provider.
-     *
-     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
-     */
-    @Deprecated
-    public GeocentricTranslation2D() {
-        super(GeocentricTranslation3D.REDIMENSIONED[INDEX_OF_2D]);
-    }
-
-    /**
-     * Constructs a provider that can be resized.
-     */
-    GeocentricTranslation2D(int indexOfDim) {
-        super(Type.TRANSLATION, PARAMETERS, indexOfDim);
+    public AbstractProvider variantFor(final MathTransform transform) {
+        return maxDimension(transform) >= 3 ? GeocentricTranslation3D.provider() : this;
     }
 }

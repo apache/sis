@@ -106,14 +106,6 @@ public final class FranceGeocentricInterpolationTest extends DatumShiftTestCase 
     }
 
     /**
-     * Tests {@link FranceGeocentricInterpolation#redimension(int, int)}.
-     */
-    @Test
-    public void testRedimension() {
-        MolodenskyTest.testRedimension(new FranceGeocentricInterpolation());
-    }
-
-    /**
      * Tests a small grid file with interpolations in geocentric coordinates.
      *
      * @throws URISyntaxException if the URL to the test file is not valid.

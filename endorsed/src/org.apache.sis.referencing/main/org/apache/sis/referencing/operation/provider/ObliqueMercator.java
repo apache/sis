@@ -232,7 +232,7 @@ public class ObliqueMercator extends AbstractMercator {
     }
 
     /**
-     * {@inheritDoc}
+     * Creates an oblique Mercator projection on an ellipsoid having a semi-major axis length of 1.
      *
      * @return the map projection created from the given parameter values.
      */

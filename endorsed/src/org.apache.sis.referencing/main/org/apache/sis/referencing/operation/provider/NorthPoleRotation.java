@@ -18,13 +18,11 @@ package org.apache.sis.referencing.operation.provider;
 
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.transform.PoleRotation;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
@@ -137,23 +135,21 @@ public final class NorthPoleRotation extends AbstractProvider {
     public NorthPoleRotation() {
         super(Conversion.class, PARAMETERS,
               EllipsoidalCS.class, false,
-              EllipsoidalCS.class, false);
+              EllipsoidalCS.class, false,
+              (byte) 2);
     }
 
     /**
      * Creates a coordinate operation from the specified group of parameter values.
      *
-     * @param  factory     the factory to use for creating the transforms.
-     * @param  parameters  the group of parameter values.
+     * @param  context  the parameter values together with its context.
      * @return the coordinate operation created from the given parameter values.
      * @throws FactoryException if the coordinate operation cannot be created.
      */
     @Override
-    public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup parameters)
-            throws FactoryException
-    {
-        final Parameters p = Parameters.castOrWrap(parameters);
-        return PoleRotation.rotateNorthPole(factory,
+    public MathTransform createMathTransform(final Context context) throws FactoryException {
+        final Parameters p = Parameters.castOrWrap(context.getCompletedParameters());
+        return PoleRotation.rotateNorthPole(context.getFactory(),
                 p.getValue(POLE_LATITUDE),
                 p.getValue(POLE_LONGITUDE),
                 p.getValue(AXIS_ANGLE));

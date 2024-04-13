@@ -231,6 +231,7 @@ public class MolodenskyTransform extends DatumShiftTransform {
      *
      * @see #createGeodeticTransformation(MathTransformFactory, Ellipsoid, boolean, Ellipsoid, boolean, double, double, double, boolean)
      */
+    @SuppressWarnings("this-escape")
     public MolodenskyTransform(final Ellipsoid source, final boolean isSource3D,
                                final Ellipsoid target, final boolean isTarget3D,
                                final double tX, final double tY, final double tZ,

@@ -27,7 +27,6 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.CylindricalProjection;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -273,7 +272,8 @@ public final class Equirectangular extends AbstractProvider {
     public Equirectangular() {
         super(CylindricalProjection.class, PARAMETERS,
               EllipsoidalCS.class, true,
-              CartesianCS.class,   false);
+              CartesianCS.class,  false,
+              (byte) 2);
     }
 
     /**
@@ -304,16 +304,13 @@ public final class Equirectangular extends AbstractProvider {
      * reproduced in this method because we will create an affine transform instead of the usual projection
      * classes.
      *
-     * @param  factory     the factory to use if this constructor needs to create other math transforms.
-     * @param  parameters  the parameter values that define the transform to create.
+     * @param  c  the parameter values together with its context.
      * @return the map projection created from the given parameter values.
      * @throws FactoryException if an error occurred while creating the math transform.
      */
     @Override
-    public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup parameters)
-            throws FactoryException
-    {
-        final Parameters p = Parameters.castOrWrap(parameters);
+    public MathTransform createMathTransform(final Context c) throws FactoryException {
+        final Parameters p = Parameters.castOrWrap(c.getCompletedParameters());
         final ContextualParameters context = new ContextualParameters(PARAMETERS, 2, 2);
         double a  = getAndStore(p, context, MapProjection.SEMI_MAJOR);
         double b  = getAndStore(p, context, MapProjection.SEMI_MINOR);
@@ -355,10 +352,10 @@ public final class Equirectangular extends AbstractProvider {
          * Creates the ConcatenatedTransform, letting the factory returns the cached instance
          * if the caller already invoked this method previously (which usually do not happen).
          */
-        MathTransform mt = context.completeTransform(factory, MathTransforms.identity(2));
+        MathTransform mt = context.completeTransform(c.getFactory(), MathTransforms.identity(2));
         if (mt instanceof AffineTransform) {  // Always true in Apache SIS implementation.
             mt = new ParameterizedAffine((AffineTransform) mt, context, true);
         }
-        return mt;
+        return MapProjection.maybe3D(c, mt);
     }
 }

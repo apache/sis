@@ -626,21 +626,15 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             }
         } else if (identifier == GEOCENTRIC_CONVERSION) {
             /*
-             * Geographic ↔︎ Geocentric conversion. The "dim" parameter is Apache SIS specific but is guaranteed
-             * to be present since we use SIS parameter descriptors directly. The default number of dimension is 3,
-             * but we specify the value unconditionally anyway as a safety.
+             * Geographic ↔︎ Geocentric conversion.
              */
             final ParameterDescriptorGroup descriptor;
-            final GeodeticCRS geographic;
             if (isGeographicToGeocentric) {
-                geographic = sourceCRS;
                 descriptor = GeographicToGeocentric.PARAMETERS;
             } else {
-                geographic = targetCRS;
                 descriptor = GeocentricToGeographic.PARAMETERS;
             }
             parameters = descriptor.createValue();
-            parameters.parameter(Constants.DIM).setValue(geographic.getCoordinateSystem().getDimension());
         } else {
             /*
              * Coordinate system change (including change in the number of dimensions) without datum shift.
