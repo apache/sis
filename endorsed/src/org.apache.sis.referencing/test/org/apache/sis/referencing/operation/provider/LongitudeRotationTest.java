@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.provider;
 
+import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
@@ -46,9 +47,11 @@ public final class LongitudeRotationTest extends TestCase {
 
     /**
      * Tests {@code LongitudeRotation.createMathTransform(…)}.
+     *
+     * @throws FactoryException if an error occurred while creating the transform to test.
      */
     @Test
-    public void testCreateMathTransform() {
+    public void testCreateMathTransform() throws FactoryException {
         final LongitudeRotation provider = new LongitudeRotation();
         ParameterValueGroup p = provider.getParameters().createValue();
         p.parameter("Longitude offset").setValue(2.5969213, Units.GRAD);   // Paris meridian
@@ -69,9 +72,11 @@ public final class LongitudeRotationTest extends TestCase {
     /**
      * Tests WKT formatting. Note that we do not expect a {@code Param_MT[“Longitude rotation”, …]} text
      * since we want to make clear that Apache SIS implements longitude rotation by an affine transform.
+     *
+     * @throws FactoryException if an error occurred while creating the transform to test.
      */
     @Test
-    public void testWKT() {
+    public void testWKT() throws FactoryException {
         final LongitudeRotation provider = new LongitudeRotation();
         final ParameterValueGroup p = provider.getParameters().createValue();
         p.parameter("Longitude offset").setValue(2.5969213, Units.GRAD);

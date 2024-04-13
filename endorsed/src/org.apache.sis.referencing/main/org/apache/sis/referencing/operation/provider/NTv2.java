@@ -34,13 +34,11 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import org.opengis.util.FactoryException;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.operation.gridded.CompressedGrid;
@@ -111,48 +109,44 @@ public final class NTv2 extends AbstractProvider {
     public NTv2() {
         super(Transformation.class, PARAMETERS,
               EllipsoidalCS.class, false,
-              EllipsoidalCS.class, false);
+              EllipsoidalCS.class, false,
+              (byte) 2);
     }
 
     /**
      * Creates a transform from the specified group of parameter values.
      *
-     * @param  factory  the factory to use if this constructor needs to create other math transforms.
-     * @param  values   the group of parameter values.
+     * @param  context  the parameter values together with its context.
      * @return the created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
      * @throws FactoryException if an error occurred while loading the grid.
      */
     @Override
-    public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
-            throws ParameterNotFoundException, FactoryException
-    {
-        return createMathTransform(NTv2.class, factory, values, 2);
+    public MathTransform createMathTransform(final Context context) throws FactoryException {
+        return createMathTransform(NTv2.class, context, 2);
     }
 
     /**
      * Creates a transform from the specified group of parameter values.
      *
      * @param  provider  the provider which is creating a transform: {@link NTv2} or {@link NTv1}.
-     * @param  factory   the factory to use if this constructor needs to create other math transforms.
-     * @param  values    the group of parameter values.
+     * @param  context   the parameter values together with its context.
      * @param  version   the expected version (1 or 2).
      * @return the created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
      * @throws FactoryException if an error occurred while loading the grid.
      */
     static MathTransform createMathTransform(final Class<? extends AbstractProvider> provider,
-            final MathTransformFactory factory, final ParameterValueGroup values, final int version)
-            throws ParameterNotFoundException, FactoryException
+            final Context context, final int version) throws FactoryException
     {
-        final GridFile file = new GridFile(Parameters.castOrWrap(values), FILE);
+        final GridFile file = new GridFile(Parameters.castOrWrap(context.getCompletedParameters()), FILE);
         final LoadedGrid<Angle,Angle> grid;
         try {
             grid = getOrLoad(provider, file, version);
         } catch (Exception e) {
             throw file.canNotLoad(provider, provider.getSimpleName(), e);
         }
-        return LoadedGrid.createGeodeticTransformation(provider, factory, grid);
+        return LoadedGrid.createGeodeticTransformation(provider, context.getFactory(), grid);
     }
 
     /**

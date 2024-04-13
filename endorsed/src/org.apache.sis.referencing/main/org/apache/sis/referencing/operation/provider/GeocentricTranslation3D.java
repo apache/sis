@@ -16,9 +16,9 @@
  */
 package org.apache.sis.referencing.operation.provider;
 
-import java.util.Arrays;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.operation.MathTransform;
 
 
 /**
@@ -45,41 +45,39 @@ public final class GeocentricTranslation3D extends GeocentricAffineBetweenGeogra
                 .addName("Geocentric translations (geog3D domain)")
                 .createGroupWithSameParameters(GeocentricTranslation2D.PARAMETERS);
     }
+    /**
+     * The canonical instance of this operation method.
+     *
+     * @see #provider()
+     */
+    private static final GeocentricTranslation3D INSTANCE = new GeocentricTranslation3D();
 
     /**
-     * The providers for all combinations between 2D and 3D cases.
+     * Returns the canonical instance of this operation method.
+     * This method is invoked by {@link java.util.ServiceLoader} using reflection.
+     *
+     * @return the canonical instance of this operation method.
      */
-    static final GeocentricAffineBetweenGeographic[] REDIMENSIONED = new GeocentricAffineBetweenGeographic[4];
-    static {
-        Arrays.setAll(REDIMENSIONED, (i) -> (i == INDEX_OF_2D)
-                ? new GeocentricTranslation2D(i)
-                : new GeocentricTranslation3D(i));
+    public static GeocentricTranslation3D provider() {
+        return INSTANCE;
     }
 
     /**
-     * Returns the provider for the specified combination of source and target dimensions.
+     * Creates a new provider.
+     *
+     * @todo Make this constructor private after we stop class-path support.
+     */
+    public GeocentricTranslation3D() {
+        super(Type.TRANSLATION, PARAMETERS, (byte) 3);
+    }
+
+    /**
+     * Returns the operation method which is the closest match for the given transform.
+     * This is an adjustment based on the number of dimensions only, on the assumption
+     * that the given transform has been created by this provider or a compatible one.
      */
     @Override
-    final GeodeticOperation redimensioned(int indexOfDim) {
-        return REDIMENSIONED[indexOfDim];
-    }
-
-    /**
-     * Creates a copy of this provider.
-     *
-     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
-     */
-    @Deprecated
-    public GeocentricTranslation3D() {
-        super(REDIMENSIONED[INDEX_OF_3D]);
-    }
-
-    /**
-     * Constructs a provider for the given dimensions.
-     *
-     * @param indexOfDim  number of dimensions as the index in {@code redimensioned} array.
-     */
-    private GeocentricTranslation3D(int indexOfDim) {
-        super(Type.TRANSLATION, PARAMETERS, indexOfDim);
+    public AbstractProvider variantFor(final MathTransform transform) {
+        return maxDimension(transform) < 3 ? GeocentricTranslation2D.provider() : this;
     }
 }

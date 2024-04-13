@@ -64,7 +64,8 @@ final class PropertiesConverter extends SurjectiveConverter<String,String> {
     }
 
     /**
-     * Converts the given map.
+     * Converts the given map from parent ({@code IdentifiedObject}) property keys
+     * to child ({@code GenericName}) property keys.
      */
     @SuppressWarnings("unchecked")
     static Map<String,?> convert(final Map<String,?> properties) {

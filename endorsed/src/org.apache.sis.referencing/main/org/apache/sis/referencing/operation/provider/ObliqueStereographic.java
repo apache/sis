@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.provider;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.parameter.ParameterNotFoundException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
@@ -129,7 +128,7 @@ public final class ObliqueStereographic extends AbstractStereographic {
      * @return the map projection created from the given parameter values.
      */
     @Override
-    protected NormalizedProjection createProjection(Parameters parameters) throws ParameterNotFoundException {
+    protected NormalizedProjection createProjection(Parameters parameters) {
         return new org.apache.sis.referencing.operation.projection.ObliqueStereographic(this, parameters);
     }
 }

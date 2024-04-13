@@ -98,7 +98,8 @@ class AbstractMercator extends MapProjection {
     }
 
     /**
-     * {@inheritDoc}
+     * Creates a Mercator projection on an ellipsoid having a semi-major axis length of 1.
+     * This method is overridden for the oblique Mercator case.
      *
      * @return the map projection created from the given parameter values.
      */

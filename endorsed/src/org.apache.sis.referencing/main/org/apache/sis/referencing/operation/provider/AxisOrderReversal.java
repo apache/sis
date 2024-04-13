@@ -17,15 +17,13 @@
 package org.apache.sis.referencing.operation.provider;
 
 import jakarta.xml.bind.annotation.XmlTransient;
-import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
 
 
 /**
@@ -40,7 +38,7 @@ public class AxisOrderReversal extends AbstractProvider {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 7027181359241386097L;
+    private static final long serialVersionUID = -5657908757386024307L;
 
     /**
      * The group of all parameters expected by this coordinate operation (in this case, none).
@@ -49,53 +47,87 @@ public class AxisOrderReversal extends AbstractProvider {
             .addIdentifier("9843").addName("Axis order reversal (2D)").createGroup();
 
     /**
-     * The unique instance, created when first needed.
+     * The canonical instance of this operation method.
+     *
+     * @see #provider()
      */
-    private transient MathTransform transform;
+    private static final AxisOrderReversal INSTANCE = new AxisOrderReversal();
 
     /**
-     * The matrix size, which is the number of dimensions plus one.
+     * Returns the canonical instance of this operation method.
+     * This method is invoked by {@link java.util.ServiceLoader} using reflection.
+     *
+     * @return the canonical instance of this operation method.
      */
-    private final int size;
+    public static AxisOrderReversal provider() {
+        return INSTANCE;
+    }
 
     /**
      * Constructs a provider with default parameters.
+     *
+     * @todo Delete this constructor after we stop class-path support.
+     *       Implementation will be moved to {@link #INSTANCE}.
      */
     public AxisOrderReversal() {
-        this(PARAMETERS, 3);
+        this(PARAMETERS, (byte) 2);
     }
 
     /**
      * For {@link AxisOrderReversal3D} subclass only.
      *
      * @param parameters  description of parameters expected by this operation.
-     * @param size  the matrix size, which is the number of dimensions plus one.
+     * @param dimension   the number of dimensions (2 or 3).
      */
-    AxisOrderReversal(final ParameterDescriptorGroup parameters, final int size) {
+    AxisOrderReversal(final ParameterDescriptorGroup parameters, final byte dimension) {
         super(Conversion.class, parameters,
               CoordinateSystem.class, false,
-              CoordinateSystem.class, false);
-        this.size = size;
+              CoordinateSystem.class, false,
+              dimension);
+    }
+
+    /**
+     * Returns the operation method which is the closest match for the given transform.
+     * This is an adjustment based on the number of dimensions only, on the assumption
+     * that the given transform has been created by this provider or a compatible one.
+     */
+    @Override
+    public AbstractProvider variantFor(final MathTransform transform) {
+        final int dimension = maxDimension(transform);
+        if (dimension != minSourceDimension) {
+            return (dimension >= 3) ? AxisOrderReversal3D.INSTANCE : INSTANCE;
+        }
+        return this;
     }
 
     /**
      * Returns the transform.
      *
-     * @param  factory  ignored (can be null).
-     * @param  values   ignored.
-     * @return the math transform.
+     * @param  context  the parameter values together with its context.
+     * @return the created affine transform.
+     * @throws FactoryException if a transform cannot be created.
      */
     @Override
-    public synchronized MathTransform createMathTransform(MathTransformFactory factory, ParameterValueGroup values) {
-        if (transform == null) {
-            final MatrixSIS m = Matrices.createZero(size, size);
-            m.setElement(0, 1, 1);
-            m.setElement(1, 0, 1);
-            for (int i=2; i<size; i++) {
-                m.setElement(i, i, 1);
-            }
-            transform = MathTransforms.linear(m);
+    public MathTransform createMathTransform(final Context context) throws FactoryException {
+        final int sourceDimensions = context.getSourceDimensions().orElse(minSourceDimension);
+        final int targetDimensions = context.getTargetDimensions().orElse(minSourceDimension);
+        final MatrixSIS m = Matrices.createZero(targetDimensions + 1, sourceDimensions + 1);
+        m.setElement(0, 1, 1);
+        m.setElement(1, 0, 1);
+        m.setElement(targetDimensions, sourceDimensions, 1);
+        for (int i = Math.min(targetDimensions, sourceDimensions); --i >= 2;) {
+            m.setElement(i, i, 1);
         }
-        return transform;
+        return context.getFactory().createAffineTransform(m);
+    }
+
+    /**
+     * The inverse of this operation is itself.
+     *
+     * @return {@code this}.
+     */
+    @Override
+    public AbstractProvider inverse() {
+        return this;
     }
 }

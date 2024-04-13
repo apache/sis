@@ -18,17 +18,14 @@ package org.apache.sis.referencing.operation.provider;
 
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
-import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.util.privy.Constants;
 import org.apache.sis.parameter.ParameterBuilder;
-import org.apache.sis.parameter.Parameters;
+import org.apache.sis.util.privy.Constants;
 
 
 /**
@@ -44,7 +41,7 @@ import org.apache.sis.parameter.Parameters;
  * @see Geographic3Dto2D
  */
 @XmlTransient
-public final class Geographic2Dto3D extends GeographicRedimension {
+public final class Geographic2Dto3D extends AbstractProvider {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -72,20 +69,34 @@ public final class Geographic2Dto3D extends GeographicRedimension {
     }
 
     /**
-     * Constructs a provider that can be resized.
+     * The canonical instance of this operation method.
+     *
+     * @see #provider()
      */
-    Geographic2Dto3D(final int indexOfDim) {
-        super(PARAMETERS, indexOfDim);
+    private static final Geographic2Dto3D INSTANCE = new Geographic2Dto3D();
+
+    /**
+     * Returns the canonical instance of this operation method.
+     * This method is invoked by {@link java.util.ServiceLoader} using reflection.
+     *
+     * @return the canonical instance of this operation method.
+     */
+    public static Geographic2Dto3D provider() {
+        return INSTANCE;
     }
 
     /**
-     * Constructs a provider with default parameters.
+     * Creates a new provider.
      *
-     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
+     * @todo Make this constructor private after we stop class-path support.
+     *       Instantiate {@code Geographic3Dto2D} directly with the parameters.
+     *       Modify this {@code Geographic2Dto3D} so that it does not extent anything.
      */
-    @Deprecated
     public Geographic2Dto3D() {
-        super(Geographic3Dto2D.REDIMENSIONED[1]);
+        super(Conversion.class, PARAMETERS,
+              CoordinateSystem.class, false,
+              CoordinateSystem.class, false,
+              (byte) 2);
     }
 
     /**
@@ -93,25 +104,30 @@ public final class Geographic2Dto3D extends GeographicRedimension {
      */
     @Override
     public AbstractProvider inverse() {
-        return Geographic3Dto2D.REDIMENSIONED[2];
+        return Geographic3Dto2D.provider();
+    }
+
+    /**
+     * Returns the operation method which is the closest match for the given transform.
+     * This is an adjustment based on the number of dimensions only, on the assumption
+     * that the given transform has been created by this provider or a compatible one.
+     */
+    @Override
+    public AbstractProvider variantFor(final MathTransform transform) {
+        return transform.getSourceDimensions() > transform.getTargetDimensions() ? Geographic3Dto2D.provider() : this;
     }
 
     /**
      * Returns the transform.
      *
-     * @param  factory  the factory for creating affine transforms.
-     * @param  values   the parameter values.
+     * @param  context  the parameter values together with its context.
      * @return the math transform for the given parameter values.
      * @throws FactoryException if an error occurred while creating the transform.
      */
     @Override
-    public MathTransform createMathTransform(MathTransformFactory factory, ParameterValueGroup values)
-            throws FactoryException
-    {
-        final Parameters pv = Parameters.castOrWrap(values);
-        final MatrixSIS m = Matrices.createDiagonal(4, 3);
-        m.setElement(2, 2, pv.doubleValue(HEIGHT));
-        m.setElement(3, 2, 1);
-        return factory.createAffineTransform(m);
+    public MathTransform createMathTransform(final Context context) throws FactoryException {
+        return Geographic3Dto2D.createMathTransform(context,
+                context.getSourceDimensions().orElse(2),
+                context.getTargetDimensions().orElse(3));
     }
 }

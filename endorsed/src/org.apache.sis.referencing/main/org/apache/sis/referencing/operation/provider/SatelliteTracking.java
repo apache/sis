@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.provider;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.operation.Projection;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
@@ -199,7 +198,7 @@ public class SatelliteTracking extends MapProjection {
      * @return the map projection created from the given parameter values.
      */
     @Override
-    protected NormalizedProjection createProjection(final Parameters parameters) throws ParameterNotFoundException {
+    protected NormalizedProjection createProjection(final Parameters parameters) {
         return new org.apache.sis.referencing.operation.projection.SatelliteTracking(this, parameters);
     }
 }

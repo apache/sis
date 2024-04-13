@@ -27,7 +27,6 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Transformation;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -59,7 +58,7 @@ import org.apache.sis.util.logging.Logging;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
 @XmlTransient
-public abstract class GeocentricAffine extends GeodeticOperation {
+public abstract class GeocentricAffine extends AbstractProvider {
     /**
      * The transformation type (translation, frame rotation, <i>etc.</i>).
      *
@@ -217,44 +216,47 @@ public abstract class GeocentricAffine extends GeodeticOperation {
     private final Type type;
 
     /**
-     * Creates a copy of this provider.
-     *
-     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
-     */
-    @Deprecated
-    GeocentricAffine(final GeocentricAffine copy) {
-        super(copy);
-        type = copy.type;
-    }
-
-    /**
      * Constructs a provider with the specified parameters.
      *
-     * @param type               the operation type as an enumeration value.
-     * @param parameters         description of parameters expected by this operation.
-     * @param indexOfDim         number of dimensions as the index in {@link #redimensioned} array.
-     * @param sourceCSType       base interface of the coordinate system of source coordinates.
-     * @param sourceOnEllipsoid  whether the operation needs source ellipsoid axis lengths.
-     * @param targetCSType       base interface of the coordinate system of target coordinates.
-     * @param targetOnEllipsoid  whether the operation needs target ellipsoid axis lengths.
+     * @param operationType       the operation type as an enumeration value.
+     * @param parameters          description of parameters expected by this operation.
+     * @param sourceCSType        base interface of the coordinate system of source coordinates.
+     * @param sourceOnEllipsoid   whether the operation needs source ellipsoid axis lengths.
+     * @param targetCSType        base interface of the coordinate system of target coordinates.
+     * @param targetOnEllipsoid   whether the operation needs target ellipsoid axis lengths.
+     * @param minSourceDimension  minimum number of source dimensions (typically 1, 2 or 3).
      */
-    GeocentricAffine(Type operationType, ParameterDescriptorGroup parameters, int indexOfDim,
+    GeocentricAffine(Type operationType, ParameterDescriptorGroup parameters,
                      Class<? extends CoordinateSystem> sourceCSType, boolean sourceOnEllipsoid,
-                     Class<? extends CoordinateSystem> targetCSType, boolean targetOnEllipsoid)
+                     Class<? extends CoordinateSystem> targetCSType, boolean targetOnEllipsoid,
+                     final byte minSourceDimension)
+
     {
-        super((operationType == Type.CONVERSION) ? Conversion.class : Transformation.class, parameters, indexOfDim,
+        super((operationType == Type.CONVERSION) ? Conversion.class : Transformation.class, parameters,
               sourceCSType, sourceOnEllipsoid,
-              targetCSType, targetOnEllipsoid);
+              targetCSType, targetOnEllipsoid,
+              minSourceDimension);
         type = operationType;
     }
 
     /**
-     * Constructs a provider with the specified parameters for an operation in Cartesian space.
+     * Constructs a provider with the specified parameters for an operation in three-dimensional Cartesian space.
+     *
+     * @param operationType  the operation type as an enumeration value.
+     * @param parameters     description of parameters expected by this operation.
      */
     GeocentricAffine(Type operationType, ParameterDescriptorGroup parameters) {
-        this(operationType, parameters, INDEX_OF_3D,
-             CartesianCS.class, false,
-             CartesianCS.class, false);
+        this(operationType, parameters, CartesianCS.class, false, CartesianCS.class, false, (byte) 3);
+    }
+
+    /**
+     * The inverse of {@code GeocentricAffine} is the same operation with parameter signs inverted.
+     *
+     * @return {@code this}.
+     */
+    @Override
+    public final AbstractProvider inverse() {
+        return this;
     }
 
     /**
@@ -262,18 +264,15 @@ public abstract class GeocentricAffine extends GeodeticOperation {
      * The default implementation creates an affine transform, but some subclasses
      * will wrap that affine operation into Geographic/Geocentric conversions.
      *
-     * @param  factory  the factory to use for creating concatenated transforms.
-     * @param  values   the group of parameter values.
+     * @param  context  the parameter values together with its context.
      * @return the created math transform.
      * @throws FactoryException if a transform cannot be created.
      */
     @Override
     @SuppressWarnings("fallthrough")
-    public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
-            throws FactoryException
-    {
-        final BursaWolfParameters parameters = new BursaWolfParameters(null, null);
-        final Parameters pv = Parameters.castOrWrap(values);
+    public MathTransform createMathTransform(final Context context) throws FactoryException {
+        final var parameters = new BursaWolfParameters(null, null);
+        final Parameters pv = Parameters.castOrWrap(context.getCompletedParameters());
         boolean reverseRotation = false;
         switch (type) {
             default:             throw new AssertionError(type);
@@ -324,7 +323,7 @@ public abstract class GeocentricAffine extends GeodeticOperation {
      *
      * <p>This method does <strong>not</strong> change the coordinate system type.
      * The source and target coordinate systems can be both {@code EllipsoidalCS} or both {@code CartesianCS}.
-     * Any other type or mix of types (e.g. a {@code EllipsoidalCS} source and {@code CartesianCS} target)
+     * Any other type or mix of types (e.g., an {@code EllipsoidalCS} source and {@code CartesianCS} target)
      * will cause this method to return {@code null}. In such case, it is caller's responsibility to apply
      * the datum shift itself in Cartesian geocentric coordinates.</p>
      *

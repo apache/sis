@@ -1208,7 +1208,7 @@ class CoordinateOperationRegistry {
         }
         /*
          * The check for same class is a cheap way to ensure that the two CRS implement the same GeoAPI interface.
-         * This test is stricter than necessary, but the result should still not wrong if we miss an opportunity
+         * This test is stricter than necessary, but the result is still not wrong even if we miss an opportunity
          * to return the existing instance.
          */
         if (crs.getClass() == candidate.getClass() && candidate.getCoordinateSystem().getDimension() == 3) {

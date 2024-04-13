@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.operation.provider;
 
-import java.util.Arrays;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -71,36 +70,12 @@ public final class GeographicAndVerticalOffsets extends GeographicOffsets {
     }
 
     /**
-     * The providers for all combinations between 2D and 3D cases.
-     */
-    private static final GeographicAndVerticalOffsets[] REDIMENSIONED = new GeographicAndVerticalOffsets[4];
-    static {
-        Arrays.setAll(REDIMENSIONED, GeographicAndVerticalOffsets::new);
-    }
-
-    /**
-     * Returns the provider for the specified combination of source and target dimensions.
-     */
-    @Override
-    final GeodeticOperation redimensioned(int indexOfDim) {
-        return REDIMENSIONED[indexOfDim];
-    }
-
-    /**
-     * Creates a copy of this provider.
+     * Creates a new provider.
      *
-     * @deprecated This is a temporary constructor before replacement by a {@code provider()} method with JDK9.
+     * @todo Make this constructor private after we stop class-path support.
      */
-    @Deprecated
     public GeographicAndVerticalOffsets() {
-        super(REDIMENSIONED[INDEX_OF_3D]);
-    }
-
-    /**
-     * For default constructor only.
-     */
-    private GeographicAndVerticalOffsets(int indexOfDim) {
-        super(PARAMETERS, indexOfDim);
+        super(PARAMETERS, (byte) 3);
     }
 
     /**

@@ -23,7 +23,6 @@ import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValue;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.cs.CartesianCS;
@@ -131,65 +130,45 @@ public final class GeocentricToTopocentric extends AbstractProvider {
     public GeocentricToTopocentric() {
         super(Conversion.class, PARAMETERS,
               CartesianCS.class, true,
-              CartesianCS.class, false);
-    }
-
-    /**
-     * Returns the number of source dimensions.
-     */
-    @Override
-    @Deprecated
-    public Integer getSourceDimensions() {
-        return 3;
-    }
-
-    /**
-     * Returns the number of target dimensions.
-     */
-    @Override
-    @Deprecated
-    public Integer getTargetDimensions() {
-        return 3;
+              CartesianCS.class, false,
+              (byte) 3);
     }
 
     /**
      * Creates a transform from the specified group of parameter values.
      * The unit of measurement of input coordinates will be the units of the ellipsoid axes.
      *
-     * @param  factory  the factory to use for creating the transform.
-     * @param  values   the parameter values that define the transform to create.
+     * @param  context  the parameter values together with its context.
      * @return the conversion from geocentric to topocentric coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
      */
     @Override
-    public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
-            throws FactoryException
-    {
+    public MathTransform createMathTransform(final Context context) throws FactoryException {
         try {
-            return create(factory, Parameters.castOrWrap(values), false);
+            return create(context, false);
         } catch (TransformException e) {
             throw new FactoryException(e);
         }
     }
 
     /**
-     * Implementation of {@link #createMathTransform(MathTransformFactory, ParameterValueGroup)}
-     * shared with {@link GeographicToTopocentric}.
+     * Implementation of {@link #createMathTransform(Context)} shared with {@link GeographicToTopocentric}.
      *
-     * @param  factory     the factory to use for creating the transform.
-     * @param  values      the parameter values that define the transform to create.
+     * @param  context     the parameter values together with its context.
      * @param  geographic  {@code true} if the source coordinates are geographic, or
      *                     {@code false} if the source coordinates are geocentric.
      */
-    static MathTransform create(final MathTransformFactory factory, final Parameters values, final boolean geographic)
+    static MathTransform create(final Context context, final boolean geographic)
             throws FactoryException, TransformException
     {
+        final Parameters values = Parameters.castOrWrap(context.getCompletedParameters());
         final ParameterValue<?> ap = values.parameter(Constants.SEMI_MAJOR);
         final Unit<Length> unit = ap.getUnit().asType(Length.class);
         final double a = ap.doubleValue();
         final double b = values.parameter(Constants.SEMI_MINOR).doubleValue(unit);
         final double x, y, z, λ, φ;
         final MathTransform toGeocentric;
+        final MathTransformFactory factory = context.getFactory();
         if (geographic) {
             /*
              * Full conversion from (longitude, latitude, height) in degrees

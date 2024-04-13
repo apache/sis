@@ -16,19 +16,17 @@
  */
 package org.apache.sis.referencing.operation.provider;
 
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.util.privy.Constants;
-import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.parameter.Parameters;
+import org.apache.sis.util.privy.Constants;
 
 
 /**
@@ -73,40 +71,20 @@ public final class Interpolation1D extends AbstractProvider {
     public Interpolation1D() {
         super(Conversion.class, PARAMETERS,
               CoordinateSystem.class, false,
-              CoordinateSystem.class, false);
-    }
-
-    /**
-     * Returns the number of source dimensions.
-     */
-    @Override
-    @Deprecated
-    public Integer getSourceDimensions() {
-        return 1;
-    }
-
-    /**
-     * Returns the number of target dimensions.
-     */
-    @Override
-    @Deprecated
-    public Integer getTargetDimensions() {
-        return 1;
+              CoordinateSystem.class, false,
+              (byte) 1);
     }
 
     /**
      * Creates a transform from the specified group of parameter values.
      *
-     * @param  factory  ignored (can be null).
-     * @param  values   the group of parameter values.
+     * @param  context  the parameter values together with its context.
      * @return the created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
      */
     @Override
-    public MathTransform createMathTransform(MathTransformFactory factory, ParameterValueGroup values)
-            throws ParameterNotFoundException
-    {
-        final Parameters pv = Parameters.castOrWrap(values);
+    public MathTransform createMathTransform(final Context context) {
+        final Parameters pv = Parameters.castOrWrap(context.getCompletedParameters());
         return MathTransforms.interpolate(pv.getValue(PREIMAGE), pv.getValue(VALUES));
     }
 }

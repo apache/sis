@@ -116,7 +116,7 @@ import org.apache.sis.io.wkt.FormattableObject;
  * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory}.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see DefaultConversion
  * @see DefaultTransformation

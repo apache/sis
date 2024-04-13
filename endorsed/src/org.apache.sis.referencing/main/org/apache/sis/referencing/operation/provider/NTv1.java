@@ -18,12 +18,10 @@ package org.apache.sis.referencing.operation.provider;
 
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.util.FactoryException;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Transformation;
 import org.apache.sis.parameter.ParameterBuilder;
 
@@ -59,22 +57,20 @@ public final class NTv1 extends AbstractProvider {
     public NTv1() {
         super(Transformation.class, PARAMETERS,
               EllipsoidalCS.class, false,
-              EllipsoidalCS.class, false);
+              EllipsoidalCS.class, false,
+              (byte) 2);
     }
 
     /**
      * Creates a transform from the specified group of parameter values.
      *
-     * @param  factory  the factory to use if this constructor needs to create other math transforms.
-     * @param  values   the group of parameter values.
+     * @param  context  the parameter values together with its context.
      * @return the created math transform.
      * @throws ParameterNotFoundException if a required parameter was not found.
      * @throws FactoryException if an error occurred while loading the grid.
      */
     @Override
-    public MathTransform createMathTransform(final MathTransformFactory factory, final ParameterValueGroup values)
-            throws ParameterNotFoundException, FactoryException
-    {
-        return NTv2.createMathTransform(NTv1.class, factory, values, 1);
+    public MathTransform createMathTransform(final Context context) throws FactoryException {
+        return NTv2.createMathTransform(NTv1.class, context, 1);
     }
 }

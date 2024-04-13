@@ -273,29 +273,21 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     protected Map<String,?> complete(final Map<String,?> properties) {
         return new MergedProperties(Objects.requireNonNull(properties), defaultProperties) {
             /**
-             * Handles the {@code "mtFactory"} key in a special way since this is normally not needed for
-             * {@link GeodeticObjectFactory}, except when creating the SIS implementation of derived or
-             * projected CRS (because of the way we implemented derived CRS, but this is specific to SIS).
+             * Returns the value for an "invisible" entry providing the math transform factory to use.
+             * The enclosing factory handles the {@code "mtFactory"} differently than other properties
+             * because a math transform factory is normally not needed for {@link GeodeticObjectFactory}.
+             * However, an exception exists when creating the SIS implementation of derived or projected
+             * CRS, because of the way we implemented derived CRS. But this oddity is specific to SIS.
              */
             @Override
             protected Object invisibleEntry(final Object key) {
                 if (ReferencingFactoryContainer.MT_FACTORY.equals(key)) {
-                    return getMathTransformFactory();
+                    return DefaultMathTransformFactory.provider();
                 } else {
                     return super.invisibleEntry(key);
                 }
             }
         };
-    }
-
-    /**
-     * Returns the math transform factory for internal usage only.
-     * The {@code MathTransformFactory} is normally not needed by {@code GeodeticObjectFactory},
-     * except when constructing the Apache SIS implementation of derived and projected CRS.
-     * For this reason, we will fetch this dependency only if really requested.
-     */
-    final MathTransformFactory getMathTransformFactory() {
-        return DefaultMathTransformFactory.provider();
     }
 
     /**
@@ -1706,7 +1698,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
                 c.setAccessible(true);
                 parserConstructor = c;
             }
-            p = c.newInstance(defaultProperties, this, getMathTransformFactory());
+            p = c.newInstance(defaultProperties, this, DefaultMathTransformFactory.provider());
         } catch (ReflectiveOperationException e) {
             throw new FactoryException(e);
         }
