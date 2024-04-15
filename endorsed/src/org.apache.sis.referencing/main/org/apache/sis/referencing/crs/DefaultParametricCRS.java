@@ -127,6 +127,7 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
     {
         super(properties, cs);
         this.datum = Objects.requireNonNull(datum);
+        checkDimension(1, 1, cs);
     }
 
     /**

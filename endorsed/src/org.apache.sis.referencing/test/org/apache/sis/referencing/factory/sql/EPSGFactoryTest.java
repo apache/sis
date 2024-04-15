@@ -175,8 +175,7 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
     @Test
     public void testGeocentric() throws FactoryException {
         final EPSGFactory factory = dataEPSG.factory();
-        @SuppressWarnings("deprecation")
-        final GeocentricCRS crs = factory.createGeocentricCRS("epsg:4915");
+        final GeodeticCRS crs = factory.createGeodeticCRS("epsg:4915");
         assertEpsgNameAndIdentifierEqual("ITRF93", 4915, crs);
         assertEpsgNameAndIdentifierEqual("International Terrestrial Reference Frame 1993", 6652, crs.getDatum());
         assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.GEOCENTRIC_X, AxisDirection.GEOCENTRIC_Y, AxisDirection.GEOCENTRIC_Z);

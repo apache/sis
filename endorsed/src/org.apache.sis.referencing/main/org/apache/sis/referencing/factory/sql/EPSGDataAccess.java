@@ -1570,9 +1570,9 @@ codes:  for (int i=0; i<codes.length; i++) {
                         final Map<String,Object> properties = createProperties("Coordinate Reference System",
                                                                 name, epsg, area, scope, remarks, deprecated);
                         if (cs instanceof CartesianCS) {
-                            crs = crsFactory.createGeocentricCRS(properties, datum, (CartesianCS) cs);
+                            crs = crsFactory.createGeodeticCRS(properties, datum, (CartesianCS) cs);
                         } else if (cs instanceof SphericalCS) {
-                            crs = crsFactory.createGeocentricCRS(properties, datum, (SphericalCS) cs);
+                            crs = crsFactory.createGeodeticCRS(properties, datum, (SphericalCS) cs);
                         } else {
                             throw new FactoryDataException(error().getString(
                                     Errors.Keys.IllegalCoordinateSystem_1, cs.getName()));

@@ -18,20 +18,23 @@ package org.apache.sis.referencing.crs;
 
 import java.util.Map;
 import jakarta.xml.bind.annotation.XmlTransient;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.SphericalCS;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.io.wkt.Formatter;
 
 
 /**
- * A 3-dimensional coordinate reference system with the origin at the approximate centre of mass of the earth.
- * A geocentric CRS deals with the earth's curvature by taking a 3-dimensional spatial view, which obviates
- * the need to model the earth's curvature.
+ * A 2- or 3-dimensional coordinate reference system with the origin at the approximate centre of mass of the earth.
+ * This class is used for geodetic CRS that are not geographic, and is named "geocentric" for historical reasons.
+ * Note that ISO 19111 does not define a {@code GeocentricCRS} interface.
  *
  * <p><b>Used with datum type:</b>
  *   {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum Geodetic}.<br>
@@ -47,13 +50,13 @@ import org.apache.sis.io.wkt.Formatter;
  * The other choices provide more freedom.
  *
  * <ol>
- *   <li>Create a {@code GeocentricCRS} from one of the static convenience shortcuts listed in
+ *   <li>Create a {@code GeodeticCRS} from one of the static convenience shortcuts listed in
  *       {@link org.apache.sis.referencing.CommonCRS#geocentric()}.</li>
- *   <li>Create a {@code GeocentricCRS} from an identifier in a database by invoking
- *       {@link org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeocentricCRS(String)}.</li>
- *   <li>Create a {@code GeocentricCRS} by invoking the {@code CRSFactory.createGeocentricCRS(…)} method
+ *   <li>Create a {@code GeodeticCRS} from an identifier in a database by invoking
+ *       {@link org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeodeticCRS(String)}.</li>
+ *   <li>Create a {@code GeodeticCRS} by invoking the {@code CRSFactory.createGeodeticCRS(…)} method
  *       (implemented for example by {@link org.apache.sis.referencing.factory.GeodeticObjectFactory}).</li>
- *   <li>Create a {@code GeocentricCRS} by invoking the
+ *   <li>Create a {@code GeodeticCRS} by invoking the
  *       {@linkplain #DefaultGeocentricCRS(Map, GeodeticDatum, CartesianCS) constructor}.</li>
  * </ol>
  *
@@ -68,18 +71,15 @@ import org.apache.sis.io.wkt.Formatter;
  * the coordinate system and the datum instances given to the constructor are also immutable. Unless otherwise noted
  * in the javadoc, this condition holds if all components were created using only SIS factories and static constants.
  *
- * @deprecated ISO 19111:2019 does not define an explicit class for geocentric CRS.
- *             The {@code GeodeticCRS} parent class should be used instead.
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @version 1.5
  *
- * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeocentricCRS(String)
+ * @see org.apache.sis.referencing.factory.GeodeticAuthorityFactory#createGeodeticCRS(String)
  *
  * @since 0.4
  */
 @XmlTransient
-@Deprecated(since = "2.0")
+@SuppressWarnings("deprecation")
 public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements GeocentricCRS {
     /**
      * Serial number for inter-operability with different versions.
@@ -125,13 +125,14 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      * @param  datum       the datum.
      * @param  cs          the coordinate system, which must be three-dimensional.
      *
-     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeocentricCRS(Map, GeodeticDatum, CartesianCS)
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeodeticCRS(Map, GeodeticDatum, CartesianCS)
      */
     public DefaultGeocentricCRS(final Map<String,?> properties,
                                 final GeodeticDatum datum,
                                 final CartesianCS   cs)
     {
         super(properties, datum, cs);
+        checkDimension(3, 3, cs);
     }
 
     /**
@@ -143,13 +144,14 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      * @param  datum       the datum.
      * @param  cs          the coordinate system.
      *
-     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeocentricCRS(Map, GeodeticDatum, SphericalCS)
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeodeticCRS(Map, GeodeticDatum, SphericalCS)
      */
     public DefaultGeocentricCRS(final Map<String,?> properties,
                                 final GeodeticDatum datum,
                                 final SphericalCS   cs)
     {
         super(properties, datum, cs);
+        checkDimension(2, 3, cs);
     }
 
     /**
@@ -169,11 +171,19 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
      * @param  crs  the coordinate reference system to copy.
+     * @throws IllegalArgumentException if the coordinate system of the given CRS is not Cartesian or spherical.
      *
-     * @see #castOrCopy(GeocentricCRS)
+     * @see #castOrCopy(GeodeticCRS)
      */
-    protected DefaultGeocentricCRS(final GeocentricCRS crs) {
+    @SuppressWarnings("this-escape")
+    protected DefaultGeocentricCRS(final GeodeticCRS crs) {
         super(crs);
+        CoordinateSystem cs = super.getCoordinateSystem();
+        if (cs instanceof CartesianCS) {
+            ArgumentChecks.ensureDimensionMatches("crs.coordinateSystem", 3, cs);
+        } else if (!(cs instanceof SphericalCS)) {
+            throw illegalCoordinateSystemType(cs);
+        }
     }
 
     /**
@@ -185,8 +195,9 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      * @param  object  the object to get as a SIS implementation, or {@code null} if none.
      * @return a SIS implementation containing the values of the given object (may be the
      *         given object itself), or {@code null} if the argument was null.
+     * @throws IllegalArgumentException if the coordinate system of the given CRS is not Cartesian or spherical.
      */
-    public static DefaultGeocentricCRS castOrCopy(final GeocentricCRS object) {
+    public static DefaultGeocentricCRS castOrCopy(final GeodeticCRS object) {
         return (object == null) || (object instanceof DefaultGeocentricCRS)
                 ? (DefaultGeocentricCRS) object : new DefaultGeocentricCRS(object);
     }
@@ -194,11 +205,6 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
     /**
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code GeocentricCRS.class}.
-     *
-     * <h4>Note for implementers</h4>
-     * Subclasses usually do not need to override this method since GeoAPI does not define {@code GeocentricCRS}
-     * sub-interface. Overriding possibility is left mostly for implementers who wish to extend GeoAPI with their
-     * own set of interfaces.
      *
      * @return {@code GeocentricCRS.class} or a user-defined sub-interface.
      */

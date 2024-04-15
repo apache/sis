@@ -41,6 +41,7 @@ import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.privy.WKTUtilities;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.metadata.privy.ImplementationHelper;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
@@ -68,7 +69,7 @@ import org.apache.sis.measure.Units;
     "datum"
 })
 @XmlRootElement(name = "GeodeticCRS")
-class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made public, see comment in getDatum().
+class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {   // If made public, see comment in getDatum().
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -125,6 +126,18 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS { // If made
     protected DefaultGeodeticCRS(final GeodeticCRS crs) {
         super(crs);
         datum = crs.getDatum();
+    }
+
+    /**
+     * Creates an exception to throw for a coordinate system of illegal class.
+     * This is a helper method for sub-classes.
+     *
+     * @param cs the user-specified coordinate system.
+     * @return the exception to throw.
+     */
+    static IllegalArgumentException illegalCoordinateSystemType(final CoordinateSystem cs) {
+        return new IllegalArgumentException(Errors.format(Errors.Keys.IllegalCoordinateSystem_1,
+                ReferencingUtilities.getInterface(CoordinateSystem.class, cs)));
     }
 
     /**

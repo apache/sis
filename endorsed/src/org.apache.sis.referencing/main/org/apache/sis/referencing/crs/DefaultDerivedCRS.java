@@ -54,9 +54,11 @@ import org.apache.sis.xml.bind.referencing.CS_CoordinateSystem;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.privy.WKTUtilities;
 import org.apache.sis.referencing.privy.WKTKeywords;
+import static org.apache.sis.referencing.internal.Legacy.DERIVED_TYPE_KEY;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.collection.Containers;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.datum.DatumEnsemble;
@@ -281,7 +283,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             throws MismatchedDimensionException
     {
         if (baseCRS != null && derivedCS != null) {
-            final String type = getType(baseCRS, derivedCS);
+            final String type = getTypeKeyword(properties, baseCRS, derivedCS);
             if (type != null) switch (type) {
                 case WKTKeywords.GeodeticCRS:   return new Geodetic  (properties, (GeodeticCRS)   baseCRS, conversion,                derivedCS);
                 case WKTKeywords.VerticalCRS:   return new Vertical  (properties, (VerticalCRS)   baseCRS, conversion,   (VerticalCS) derivedCS);
@@ -293,8 +295,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
                      * But only the latter is associated to EngineeringDatum; the two formers are associated
                      * to GeodeticDatum. Consequently, we can implement the EngineeringCRS.getDatum() method
                      * only if the base CRS is itself of kind EngineeringCRS.  Otherwise we will return the
-                     * "type-neutral" DefaultDerivedCRS implementation.  Note that even in the latter case,
-                     * the WKT format will still be able to detect that the WKT keyword is "EngineeringCRS".
+                     * "type-neutral" DefaultDerivedCRS implementation.
                      */
                     if (baseCRS instanceof EngineeringCRS) {
                         return new Engineering(properties, (EngineeringCRS) baseCRS, conversion, derivedCS);
@@ -336,7 +337,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
                                            final CoordinateSystem          derivedCS)
     {
         if (baseCRS != null && derivedCS != null) {
-            final String type = getType(baseCRS, derivedCS);
+            final String type = getTypeKeyword(properties, baseCRS, derivedCS);
             if (type != null) switch (type) {
                 case WKTKeywords.GeodeticCRS:   return new Geodetic  (properties, (GeodeticCRS)   baseCRS, interpolationCRS, method, baseToDerived,                derivedCS);
                 case WKTKeywords.VerticalCRS:   return new Vertical  (properties, (VerticalCRS)   baseCRS, interpolationCRS, method, baseToDerived,  (VerticalCS)  derivedCS);
@@ -368,7 +369,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
         if (object == null || object instanceof DefaultDerivedCRS) {
             return (DefaultDerivedCRS) object;
         } else {
-            final String type = getType((SingleCRS) object.getBaseCRS(), object.getCoordinateSystem());
+            final String type = getTypeKeyword(null, (SingleCRS) object.getBaseCRS(), object.getCoordinateSystem());
             if (type != null) switch (type) {
                 case WKTKeywords.GeodeticCRS:    return new Geodetic   (object);
                 case WKTKeywords.VerticalCRS:    return new Vertical   (object);
@@ -566,12 +567,12 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
     }
 
     /**
-     * Return the WKT 2 keyword for this {@code DerivedCRS}, or {@code null} if unknown.
+     * Returns the WKT 2 keyword for this {@code DerivedCRS}, or {@code null} if unknown.
      * Inner subclasses will override this method for returning a constant value instead
      * than trying to infer it from the components.
      */
     String keyword(final Formatter formatter) {
-        final String longKeyword = getType(getBaseCRS(), getCoordinateSystem());
+        final String longKeyword = getTypeKeyword(null, getBaseCRS(), getCoordinateSystem());
         final String shortKeyword;
         if (longKeyword == null) {
             return null;
@@ -587,20 +588,28 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
 
     /**
      * Returns the WKT 2 keyword for a {@code DerivedCRS} having the given base CRS and derived coordinate system.
-     * If the type cannot be identifier, then this method returns {@code null}.
+     * If the type cannot be identified, then this method returns {@code null}.
+     *
+     * @param  properties  user-specified properties, or {@code null} if none.
+     * @param  baseCRS     the base CRS of the derived CRS to construct.
+     * @param  derivedCS   the coordinate system of the derived CRS to construct.
+     * @return the WKT keyword of the derived CRS type, or {@code null} if it cannot be inferred or if
+     *         the type specified in the properties map is incompatible with the given coordinate system.
      */
-    static String getType(final SingleCRS baseCRS, final CoordinateSystem derivedCS) {
-        final Class<?> type;
-        if (baseCRS instanceof AbstractIdentifiedObject) {
-            /*
-             * For avoiding ambiguity if a user chooses to implement more
-             * than 1 CRS interface (not recommended, but may happen).
-             */
-            type = ((AbstractIdentifiedObject) baseCRS).getInterface();
-        } else if (baseCRS != null) {
-            type = baseCRS.getClass();
-        } else {
-            return null;
+    static String getTypeKeyword(final Map<String,?> properties, final SingleCRS baseCRS, final CoordinateSystem derivedCS) {
+        Class<?> type = Containers.property(properties, DERIVED_TYPE_KEY, Class.class);
+        if (type == null) {
+            if (baseCRS instanceof AbstractIdentifiedObject) {
+                /*
+                 * For avoiding ambiguity if a user chooses to implement more
+                 * than 1 CRS interface (not recommended, but may happen).
+                 */
+                type = ((AbstractIdentifiedObject) baseCRS).getInterface();
+            } else if (baseCRS != null) {
+                type = baseCRS.getClass();
+            } else {
+                return null;
+            }
         }
         if (GeodeticCRS.class.isAssignableFrom(type) && CoordinateSystems.isGeodetic(derivedCS)) {
             return WKTKeywords.GeodeticCRS;
@@ -954,7 +963,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
      */
     @XmlElement(name = "derivedCRSType", required = true)
     SC_DerivedCRSType getType() {
-        return SC_DerivedCRSType.fromWKT(getType(getBaseCRS(), getCoordinateSystem()));
+        return SC_DerivedCRSType.fromWKT(getTypeKeyword(null, getBaseCRS(), getCoordinateSystem()));
     }
 
     /**

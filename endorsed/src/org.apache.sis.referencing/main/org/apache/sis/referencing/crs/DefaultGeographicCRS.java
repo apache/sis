@@ -32,7 +32,6 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Longitude;
-import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.util.privy.Constants.CRS;
 import static org.apache.sis.util.privy.Constants.EPSG;
 import static org.apache.sis.util.privy.Constants.CRS27;
@@ -155,6 +154,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
                                 final EllipsoidalCS cs)
     {
         super(properties, datum, cs);
+        checkDimension(2, 3, cs);
     }
 
     /**
@@ -163,6 +163,21 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      */
     private DefaultGeographicCRS(final DefaultGeographicCRS original, final Identifier id, final AbstractCS cs) {
         super(original, id, cs);
+    }
+
+    /**
+     * Constructs a new coordinate reference system with the same values as the specified geodetic CRS.
+     * This constructor is needed because GML does not have {@code GeographicCRS} or {@code GeocentricCRS} types.
+     * Instead, the unmarshalling process will give us a {@code GeodeticCRS} object with the constraint that the
+     * coordinate system shall be ellipsoidal. This constructor may be invoked for converting such
+     * {@code GeodeticCRS} instance to a {@code GeographicCRS} instance.
+     */
+    DefaultGeographicCRS(final GeodeticCRS crs) {
+        super(crs);
+        final CoordinateSystem cs = super.getCoordinateSystem();
+        if (!(cs instanceof EllipsoidalCS)) {
+            throw illegalCoordinateSystemType(cs);
+        }
     }
 
     /**
@@ -343,20 +358,5 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultGeographicCRS() {
-    }
-
-    /**
-     * For {@link SC_GeographicCRS} JAXB adapter only. This is needed because GML does not have "GeographicCRS" type.
-     * Instead, the unmarshalling process will give us a "GeodeticCRS" object with the constraint that the coordinate
-     * system shall be ellipsoidal. This constructor will be invoked for converting the GeodeticCRS instance to a
-     * GeographicCRS instance.
-     */
-    DefaultGeographicCRS(final GeodeticCRS crs) {
-        super(crs);
-        final CoordinateSystem cs = super.getCoordinateSystem();
-        if (!(cs instanceof EllipsoidalCS)) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalClass_2, EllipsoidalCS.class, cs.getClass()));
-        }
     }
 }

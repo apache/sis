@@ -335,10 +335,24 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      * @see org.apache.sis.referencing.crs.DefaultGeocentricCRS
      * @see org.apache.sis.referencing.CommonCRS#geocentric()
      *
-     * @deprecated ISO 19111:2019 does not define an explicit class for geocentric CRS.
-     *             The {@code GeodeticCRS} parent class should be used instead.
+     * @since 1.5
      */
-    @Deprecated(since = "2.0")
+    public GeodeticCRS createGeodeticCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
+        return cast(GeodeticCRS.class, createCoordinateReferenceSystem(code), code);
+    }
+
+    /**
+     * Creates a 3-dimensional coordinate reference system with the origin at the approximate centre of mass of the earth.
+     *
+     * @param  code  value allocated by authority.
+     * @return the coordinate reference system for the given code.
+     * @throws NoSuchAuthorityCodeException if the specified {@code code} was not found.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @deprecated ISO 19111:2019 does not define an explicit class for geocentric CRS.
+     * Use {@link #createGeodeticCRS(String)} instead.
+     */
+    @Deprecated(since = "1.5")
     public GeocentricCRS createGeocentricCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(GeocentricCRS.class, createCoordinateReferenceSystem(code), code);
     }

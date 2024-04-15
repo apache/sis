@@ -159,6 +159,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     {
         super(properties, cs);
         this.datum = Objects.requireNonNull(datum);
+        checkDimension(1, 1, cs);
         initializeConverter();
     }
 
