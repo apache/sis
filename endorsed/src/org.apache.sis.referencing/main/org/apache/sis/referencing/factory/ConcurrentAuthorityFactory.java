@@ -928,26 +928,22 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * The default implementation performs the following steps:
      * <ul>
      *   <li>Return the cached instance for the given code if such instance already exists.</li>
-     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createGeocentricCRS(String)}
+     *   <li>Otherwise if the Data Access Object (DAO) overrides the {@code createGeodeticCRS(String)}
      *       method, invoke that method and cache the result for future use.</li>
-     *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createGeocentricCRS(String)}
+     *   <li>Otherwise delegate to the {@link GeodeticAuthorityFactory#createGeodeticCRS(String)}
      *       method in the parent class. This allows to check if the more generic
      *       {@link #createCoordinateReferenceSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
      * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @deprecated ISO 19111:2019 does not define an explicit class for geocentric CRS.
-     *             The {@code GeodeticCRS} parent class should be used instead.
      */
     @Override
-    @Deprecated(since = "2.0")
-    public GeocentricCRS createGeocentricCRS(final String code) throws FactoryException {
-        if (isDefault(GeocentricCRS.class)) {
-            return super.createGeocentricCRS(code);
+    public GeodeticCRS createGeodeticCRS(final String code) throws FactoryException {
+        if (isDefault(GeodeticCRS.class)) {
+            return super.createGeodeticCRS(code);
         }
-        return create(AuthorityFactoryProxy.GEOCENTRIC_CRS, code);
+        return create(AuthorityFactoryProxy.GEODETIC_CRS, code);
     }
 
     /**

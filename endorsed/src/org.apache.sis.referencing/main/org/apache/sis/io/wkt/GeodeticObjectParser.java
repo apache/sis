@@ -1647,8 +1647,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final CRSFactory crsFactory = factories.getCRSFactory();
         try {
             final CoordinateSystem cs = parseCoordinateSystem(element, null, 1, isWKT1, unit, datum);
-            final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
+            final Map<String,Object> properties = parseMetadataAndClose(element, name, datum);
             if (baseCRS != null) {
+                properties.put(Legacy.DERIVED_TYPE_KEY, EngineeringCRS.class);
                 return crsFactory.createDerivedCRS(properties, baseCRS, fromBase, cs);
             }
             return crsFactory.createEngineeringCRS(properties, datum, cs);
@@ -1708,7 +1709,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  dimension  the minimal number of dimensions (usually 2).
      * @param  csType     the default coordinate system type, or {@code null} if unknown.
      *                    Should be non-null only when parsing a {@link GeneralDerivedCRS#getBaseCRS()} component.
-     * @return the {@code "GeodeticCRS"} element as a {@link GeographicCRS} or {@link GeocentricCRS} object.
+     * @return the {@code "GeodeticCRS"} element as a {@link GeographicCRS} or {@link GeodeticCRS} object.
      * @throws ParseException if the {@code "GeodeticCRS"} element cannot be parsed.
      *
      * @see org.apache.sis.referencing.crs.DefaultGeographicCRS#formatTo(Formatter)
@@ -1850,11 +1851,11 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 return crsFactory.createGeographicCRS(properties, datum, (EllipsoidalCS) cs);
             }
             if (cs instanceof CartesianCS) {                                    // The second most frequent case.
-                return crsFactory.createGeocentricCRS(properties, datum,
+                return crsFactory.createGeodeticCRS(properties, datum,
                         Legacy.forGeocentricCRS((CartesianCS) cs, false));
             }
             if (cs instanceof SphericalCS) {                                    // Not very common case.
-                return crsFactory.createGeocentricCRS(properties, datum, (SphericalCS) cs);
+                return crsFactory.createGeodeticCRS(properties, datum, (SphericalCS) cs);
             }
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);

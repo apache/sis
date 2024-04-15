@@ -61,14 +61,13 @@ final class TableInfo {
      *
      * The order is significant: it is the key for a {@code switch} statement.
      */
-    @SuppressWarnings("deprecation")
     static final TableInfo[] EPSG = {
         CRS = new TableInfo(CoordinateReferenceSystem.class,
                 "[Coordinate Reference System]",
                 "COORD_REF_SYS_CODE",
                 "COORD_REF_SYS_NAME",
                 "COORD_REF_SYS_KIND",
-                new Class<?>[] { ProjectedCRS.class,   GeographicCRS.class,   GeocentricCRS.class,
+                new Class<?>[] { ProjectedCRS.class,   GeographicCRS.class,   GeodeticCRS.class,
                                  VerticalCRS.class,    CompoundCRS.class,     EngineeringCRS.class,
                                  DerivedCRS.class,     TemporalCRS.class,     ParametricCRS.class},     // See comment below
                 new String[]   {"projected",          "geographic",          "geocentric",

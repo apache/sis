@@ -24,6 +24,7 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import javax.measure.Unit;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.cs.CartesianCS;
@@ -183,6 +184,28 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
+     * Verifies that the given coordinate system has a number of dimensions in the expected range.
+     *
+     * @param min  minimum number of dimensions, inclusive.
+     * @param max  maximum number of dimensions, inclusive.
+     * @param cs   the coordinate system for which to validate the number of dimensions.
+     * @throws MismatchedDimensionException if the actual number of dimension is out of bounds.
+     */
+    static void checkDimension(final int min, final int max, final CoordinateSystem cs) {
+        final int actual = cs.getDimension();
+        final int expected;
+        if (actual < min) {
+            expected = min;
+        } else if (actual > max) {
+            expected = max;
+        } else {
+            return;
+        }
+        throw new MismatchedDimensionException(Errors.format(
+                Errors.Keys.MismatchedDimension_3, "cs", expected, actual));
+    }
+
+    /**
      * Creates a new CRS derived from the specified one, but with different axis order or unit.
      *
      * @param original  the original coordinate system from which to derive a new one.
@@ -223,8 +246,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
      *   <li>Otherwise if the given object is an instance of
      *       {@link org.opengis.referencing.crs.GeodeticCRS} (including the
-     *       {@link org.opengis.referencing.crs.GeographicCRS} and
-     *       {@link org.opengis.referencing.crs.GeocentricCRS} subtypes),
+     *       {@link org.opengis.referencing.crs.GeographicCRS subtype}),
      *       {@link org.opengis.referencing.crs.VerticalCRS},
      *       {@link org.opengis.referencing.crs.TemporalCRS},
      *       {@link org.opengis.referencing.crs.EngineeringCRS} or

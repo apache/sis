@@ -52,6 +52,20 @@ import java.time.temporal.Temporal;
  */
 public final class Legacy {
     /**
+     * Key for the <code>{@value}</code> property to be given to {@code DerivedCRS} constructors.
+     * This is used for specifying which interface the derived CRS should implement.
+     * If no value is associated to this key, then the interface will be inferred
+     * from the type of the base CRS and the derived coordinate system.
+     *
+     * <p>Value shall be an instance of {@code Class} such as {@code EngineeringCRS.class}.
+     * This key can be used when the type of the CRS to create is potentially ambiguous.
+     * For example a CRS derived from a {@link GeodeticCRS} can be itself geodetic (which is the default),
+     * but could also be an {@link EngineeringCRS} if a change of datum type is allowed.
+     * The latter is normally not allowed, but was nevertheless done in older versions of ISO 19111.</p>
+     */
+    public static final String DERIVED_TYPE_KEY = "derivedType";
+
+    /**
      * A three-dimensional Cartesian CS with the legacy set of geocentric axes.
      * OGC 01-009 defines the default geocentric axes as:
      *

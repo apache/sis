@@ -152,13 +152,13 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createTemporalCRS(Map, TemporalDatum, TimeCS)
      */
-    @SuppressWarnings("this-escape")
     public DefaultTemporalCRS(final Map<String,?> properties,
                               final TemporalDatum datum,
                               final TimeCS        cs)
     {
         super(properties, cs);
         this.datum = Objects.requireNonNull(datum);
+        checkDimension(1, 1, cs);
         initializeConverter();
     }
 

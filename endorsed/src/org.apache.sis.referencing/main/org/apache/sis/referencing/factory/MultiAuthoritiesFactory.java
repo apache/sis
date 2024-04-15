@@ -956,14 +956,10 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *
      * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
-     *
-     * @deprecated ISO 19111:2019 does not define an explicit class for geocentric CRS.
-     *             The {@code GeodeticCRS} parent class should be used instead.
      */
     @Override
-    @Deprecated(since = "2.0")
-    public GeocentricCRS createGeocentricCRS(final String code) throws FactoryException {
-        return create(AuthorityFactoryProxy.GEOCENTRIC_CRS, code);
+    public GeodeticCRS createGeodeticCRS(final String code) throws FactoryException {
+        return create(AuthorityFactoryProxy.GEODETIC_CRS, code);
     }
 
     /**
@@ -1666,7 +1662,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             if (cs instanceof EllipsoidalCS) {
                 return factory.createGeographicCRS(properties, datum, (EllipsoidalCS) cs);
             } else if (cs instanceof SphericalCS) {
-                return factory.createGeocentricCRS(properties, datum, (SphericalCS) cs);
+                return factory.createGeodeticCRS(properties, datum, (SphericalCS) cs);
             }
         }
         return null;

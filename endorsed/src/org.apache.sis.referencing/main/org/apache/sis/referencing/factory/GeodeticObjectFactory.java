@@ -317,7 +317,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     /**
      * Creates a geocentric coordinate reference system from a {@linkplain CartesianCS Cartesian coordinate system}.
      * Geocentric CRS have their origin at the approximate centre of mass of the earth.
-     * An {@linkplain #createGeocentricCRS(Map, GeodeticDatum, SphericalCS) alternate method} allows creation of the
+     * An {@linkplain #createGeodeticCRS(Map, GeodeticDatum, SphericalCS) alternate method} allows creation of the
      * same kind of CRS with spherical coordinate system instead of a Cartesian one.
      *
      * <h4>Dependencies</h4>
@@ -340,15 +340,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  cs          the three-dimensional Cartesian coordinate system for the created CRS.
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createGeocentricCRS(String)
+     * @see GeodeticAuthorityFactory#createGeodeticCRS(String)
      * @see DefaultGeocentricCRS#DefaultGeocentricCRS(Map, GeodeticDatum, CartesianCS)
-     *
-     * @deprecated ISO 19111:2019 does not define an explicit class for geocentric CRS.
-     *             The {@code GeodeticCRS} parent class should be used instead.
      */
     @Override
-    @Deprecated(since = "2.0")
-    public GeocentricCRS createGeocentricCRS(final Map<String,?> properties,
+    public GeodeticCRS createGeodeticCRS(final Map<String,?> properties,
             final GeodeticDatum datum, final CartesianCS cs) throws FactoryException
     {
         final DefaultGeocentricCRS crs;
@@ -357,7 +353,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
         } catch (IllegalArgumentException exception) {
             throw new InvalidGeodeticParameterException(exception);
         }
-        return unique("createGeocentricCRS", crs);
+        return unique("createGeodeticCRS", crs);
     }
 
     /**
@@ -399,7 +395,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     /**
      * Creates a geocentric coordinate reference system from a {@linkplain SphericalCS spherical coordinate system}.
      * Geocentric CRS have their origin at the approximate centre of mass of the earth.
-     * An {@linkplain #createGeocentricCRS(Map, GeodeticDatum, CartesianCS) alternate method} allows creation of the
+     * An {@linkplain #createGeodeticCRS(Map, GeodeticDatum, CartesianCS) alternate method} allows creation of the
      * same kind of CRS with Cartesian coordinate system instead of a spherical one.
      *
      * <h4>Dependencies</h4>
@@ -423,14 +419,10 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultGeocentricCRS#DefaultGeocentricCRS(Map, GeodeticDatum, SphericalCS)
-     * @see GeodeticAuthorityFactory#createGeocentricCRS(String)
-     *
-     * @deprecated ISO 19111:2019 does not define an explicit class for geocentric CRS.
-     *             The {@code GeodeticCRS} parent class should be used instead.
+     * @see GeodeticAuthorityFactory#createGeodeticCRS(String)
      */
     @Override
-    @Deprecated(since = "2.0")
-    public GeocentricCRS createGeocentricCRS(final Map<String,?> properties,
+    public GeodeticCRS createGeodeticCRS(final Map<String,?> properties,
             final GeodeticDatum datum, final SphericalCS cs) throws FactoryException
     {
         final DefaultGeocentricCRS crs;
@@ -439,7 +431,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
         } catch (IllegalArgumentException exception) {
             throw new InvalidGeodeticParameterException(exception);
         }
-        return unique("createGeocentricCRS", crs);
+        return unique("createGeodeticCRS", crs);
     }
 
     /**

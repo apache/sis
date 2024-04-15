@@ -16,15 +16,12 @@
  */
 package org.apache.sis.referencing.crs;
 
-import java.util.Map;
 import java.util.Comparator;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
-import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
-import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
@@ -32,8 +29,6 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.SphericalCS;
-import org.opengis.referencing.datum.GeodeticDatum;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AxesConvention;
 
 
@@ -110,19 +105,6 @@ final class SubTypes implements Comparator<Object> {
             return DefaultDerivedCRS.castOrCopy((DerivedCRS) object);
         }
         if (object instanceof GeodeticCRS) {
-            if (object instanceof GeographicCRS) {
-                return DefaultGeographicCRS.castOrCopy((GeographicCRS) object);
-            }
-            if (object instanceof GeocentricCRS) {
-                return DefaultGeocentricCRS.castOrCopy((GeocentricCRS) object);
-            }
-            /*
-             * The GeographicCRS and GeocentricCRS types are not part of ISO 19111.
-             * ISO uses a single type, GeodeticCRS, for both of them and infer the
-             * geographic or geocentric type from the coordinate system. We do this
-             * check here for instantiating the most appropriate SIS type, but only
-             * if we need to create a new object anyway (see below for rational).
-             */
             if (object instanceof DefaultGeodeticCRS) {
                 /*
                  * Result of XML unmarshalling — keep as-is. We avoid creating a new object because it
@@ -131,17 +113,13 @@ final class SubTypes implements Comparator<Object> {
                  */
                 return (DefaultGeodeticCRS) object;
             }
-            final Map<String,?> properties = IdentifiedObjects.getProperties(object);
-            final GeodeticDatum datum = ((GeodeticCRS) object).getDatum();
-            final CoordinateSystem cs = object.getCoordinateSystem();
+            final var crs = (GeodeticCRS) object;
+            final CoordinateSystem cs = crs.getCoordinateSystem();
             if (cs instanceof EllipsoidalCS) {
-                return new DefaultGeographicCRS(properties, datum, (EllipsoidalCS) cs);
+                return new DefaultGeographicCRS(crs);
             }
-            if (cs instanceof SphericalCS) {
-                return new DefaultGeocentricCRS(properties, datum, (SphericalCS) cs);
-            }
-            if (cs instanceof CartesianCS) {
-                return new DefaultGeocentricCRS(properties, datum, (CartesianCS) cs);
+            if (cs instanceof CartesianCS || cs instanceof SphericalCS) {
+                return new DefaultGeocentricCRS(crs);
             }
         }
         if (object instanceof VerticalCRS) {

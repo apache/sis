@@ -28,7 +28,7 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
-import org.opengis.referencing.crs.GeocentricCRS;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.VerticalCRS;
@@ -131,15 +131,14 @@ final class EPSGFactoryFallback extends GeodeticAuthorityFactory
         final boolean ellipsoid  = type.isAssignableFrom(Ellipsoid    .class);
         final boolean datum      = type.isAssignableFrom(GeodeticDatum.class);
         final boolean geographic = type.isAssignableFrom(GeographicCRS.class);
-        @SuppressWarnings("deprecation")
-        final boolean geocentric = type.isAssignableFrom(GeocentricCRS.class);
+        final boolean geodetic   = type.isAssignableFrom(GeodeticCRS  .class);
         final boolean projected  = type.isAssignableFrom(ProjectedCRS .class);
         final Set<String> codes = new LinkedHashSet<>();
         if (pm) codes.add(StandardDefinitions.GREENWICH);
         for (final CommonCRS crs : CommonCRS.values()) {
-            if (ellipsoid)  add(codes, crs.ellipsoid);
-            if (datum)      add(codes, crs.datum);
-            if (geocentric) add(codes, crs.geocentric);
+            if (ellipsoid) add(codes, crs.ellipsoid);
+            if (datum)     add(codes, crs.datum);
+            if (geodetic)  add(codes, crs.geocentric);
             if (geographic) {
                 add(codes, crs.geographic);
                 add(codes, crs.geo3D);

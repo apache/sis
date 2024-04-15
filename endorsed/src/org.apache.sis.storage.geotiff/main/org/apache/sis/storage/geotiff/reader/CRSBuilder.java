@@ -42,7 +42,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
-import org.opengis.referencing.crs.GeocentricCRS;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.ProjectedCRS;
@@ -1121,8 +1121,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
      *
      * @see #createGeodeticDatum(String[], Unit, Unit)
      */
-    @SuppressWarnings("deprecation")
-    private GeocentricCRS createGeocentricCRS() throws FactoryException {
+    private GeodeticCRS createGeocentricCRS() throws FactoryException {
         final int epsg = getAsInteger(GeoKeys.GeodeticCRS);
         switch (epsg) {
             case GeoCodes.undefined: {
@@ -1142,7 +1141,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
                 if (!Units.METRE.equals(linearUnit)) {
                     cs = replaceLinearUnit(cs, linearUnit);
                 }
-                final GeocentricCRS crs = getCRSFactory().createGeocentricCRS(properties(getOrDefault(names, GCRS)), datum, cs);
+                final GeodeticCRS crs = getCRSFactory().createGeodeticCRS(properties(getOrDefault(names, GCRS)), datum, cs);
                 lastName = crs.getName();
                 return crs;
             }
@@ -1152,7 +1151,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
                  * But if the file also defines the components, verify that those components are consistent
                  * with what we would expect for a CRS of the given EPSG code.
                  */
-                final GeocentricCRS crs = getCRSAuthorityFactory().createGeocentricCRS(String.valueOf(epsg));
+                final GeodeticCRS crs = getCRSAuthorityFactory().createGeodeticCRS(String.valueOf(epsg));
                 verify(crs);
                 return crs;
             }
@@ -1166,8 +1165,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
      *
      * @param  crs  the CRS created from the EPSG geodetic dataset.
      */
-    @SuppressWarnings("deprecation")
-    private void verify(final GeocentricCRS crs) throws FactoryException {
+    private void verify(final GeodeticCRS crs) throws FactoryException {
         /*
          * Note: current createUnit(…) implementation does not allow us to distinguish whether METRE ou DEGREE units
          * were specified in the GeoTIFF file or if we got the default values. We do not compare units for that reason.

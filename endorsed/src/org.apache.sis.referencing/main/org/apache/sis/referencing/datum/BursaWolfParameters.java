@@ -237,7 +237,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * <p><b>Maintenance note:</b>
      * if the above policy regarding prime meridians is modified, then some {@code createOperationStep(…)} method
      * implementations in {@link org.apache.sis.referencing.operation.CoordinateOperationFinder} may need to be
-     * revisited. See especially the methods creating a transformation between a pair of {@code GeocentricCRS} or
+     * revisited. See especially the methods creating a transformation between a pair of geocentric CRS or
      * between a pair of {@code GeographicCRS} (tip: search for {@code DefaultGeodeticDatum}).</p>
      *
      * @param  pm  the prime meridian of the enclosing {@code GeodeticDatum}.

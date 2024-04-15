@@ -82,7 +82,6 @@ GCPCollection
 GeneralDerivedCRS
 GeneralParameterDescriptor
 GeneralParameterValue
-GeocentricCRS
 GeodeticCRS
 GeodeticDatum
 GeographicBoundingBox

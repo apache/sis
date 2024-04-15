@@ -34,7 +34,7 @@ import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.VerticalCRS;
-import org.opengis.referencing.crs.GeocentricCRS;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
@@ -421,7 +421,7 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
                        + "\">" + method.getName().getCode().replace('_', ' ') + "</a>";
             }
         }
-        if (crs instanceof GeocentricCRS) {
+        if (crs instanceof GeodeticCRS) {
             final CoordinateSystem cs = crs.getCoordinateSystem();
             if (cs instanceof CartesianCS) {
                 return "Geocentric (Cartesian coordinate system)";

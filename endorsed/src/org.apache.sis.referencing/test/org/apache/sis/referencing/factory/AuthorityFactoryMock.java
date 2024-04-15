@@ -24,7 +24,7 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
-import org.opengis.referencing.crs.GeocentricCRS;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.cs.EllipsoidalCS;
@@ -108,11 +108,10 @@ public final class AuthorityFactoryMock extends GeodeticAuthorityFactory impleme
      * @return the set of authority codes for referencing objects of the given type.
      */
     @Override
-    @SuppressWarnings("deprecation")
     public Set<String> getAuthorityCodes(Class<? extends IdentifiedObject> type) {
         assertFalse(isClosed());
         final Set<String> codes = new LinkedHashSet<>();
-        if (type.isAssignableFrom(GeocentricCRS.class)) add(codes, 4979);
+        if (type.isAssignableFrom(GeodeticCRS.class))   add(codes, 4979);
         if (type.isAssignableFrom(GeographicCRS.class)) add(codes, 84, 4326);
         if (type.isAssignableFrom(PrimeMeridian.class)) add(codes, 8901, 8903, 8914);
         if (type.isAssignableFrom(GeodeticDatum.class)) add(codes, 6326, 6322, 6807, 6301, 6612, 6047);

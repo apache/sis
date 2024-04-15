@@ -21,7 +21,7 @@ import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
-import org.opengis.referencing.crs.GeocentricCRS;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
@@ -79,9 +79,8 @@ public final class EPSGFactoryProxyCRS extends EPSGFactoryProxy implements CRSAu
     }
 
     @Override
-    @Deprecated(since = "2.0")
-    public GeocentricCRS createGeocentricCRS(String code) throws FactoryException {
-        return factory().createGeocentricCRS(code);
+    public GeodeticCRS createGeodeticCRS(String code) throws FactoryException {
+        return factory().createGeodeticCRS(code);
     }
 
     @Override

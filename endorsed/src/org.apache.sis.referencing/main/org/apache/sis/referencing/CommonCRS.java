@@ -33,7 +33,6 @@ import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.SingleCRS;
@@ -377,16 +376,14 @@ public enum CommonCRS {
      *
      * @see #geocentric()
      */
-    @SuppressWarnings("deprecation")
-    private transient volatile GeocentricCRS cachedGeocentric;
+    private transient volatile GeodeticCRS cachedGeocentric;
 
     /**
      * The geocentric CRS using spherical coordinate system, created when first needed.
      *
      * @see #spherical()
      */
-    @SuppressWarnings("deprecation")
-    private transient volatile GeocentricCRS cachedSpherical;
+    private transient volatile GeodeticCRS cachedSpherical;
 
     /**
      * The Universal Transverse Mercator (UTM) or Universal Polar Stereographic (UPS) projections,
@@ -748,14 +745,14 @@ public enum CommonCRS {
      * @see CRS#forCode(String)
      * @see DefaultGeocentricCRS
      */
-    public GeocentricCRS geocentric() {
-        GeocentricCRS object = cachedGeocentric;
+    public GeodeticCRS geocentric() {
+        GeodeticCRS object = cachedGeocentric;
         if (object == null) {
             if (geocentric != 0) {
                 final GeodeticAuthorityFactory factory = factory();
                 if (factory != null) try {
                     // Synchronization provided by the cache of the factory.
-                    cachedGeocentric = object = factory.createGeocentricCRS(String.valueOf(geocentric));
+                    cachedGeocentric = object = factory.createGeodeticCRS(String.valueOf(geocentric));
                     return object;
                 } catch (FactoryException e) {
                     failure(this, "geocentric", e, geocentric);
@@ -801,8 +798,8 @@ public enum CommonCRS {
      *
      * @since 0.7
      */
-    public GeocentricCRS spherical() {
-        GeocentricCRS object = cachedSpherical;
+    public GeodeticCRS spherical() {
+        GeodeticCRS object = cachedSpherical;
         if (object == null) {
             /*
              * All constants defined in this enumeration use the same coordinate system, EPSG:6404.

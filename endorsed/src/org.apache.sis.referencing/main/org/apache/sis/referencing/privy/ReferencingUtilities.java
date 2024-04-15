@@ -322,7 +322,7 @@ public final class ReferencingUtilities extends Static {
         }
         if (crs instanceof GeodeticCRS) {
             /*
-             * At this point we usually have a GeographicCRS, but it could also be a GeocentricCRS.
+             * At this point we usually have a GeographicCRS, but it could also be a geocentric CRS.
              * If we can let `forConvention` do its job, do that first since it may return a cached
              * instance. If the CRS is a `GeographicCRS` but not a `DefaultGeographicCRS`, create a
              * CRS in this code instead of invoking `DefaultGeographicCRS.castOrCopy(…)` in order

@@ -409,7 +409,6 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * @return {@code true} if both objects are equal.
      */
     @Override
-    @SuppressWarnings("deprecation")
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (object == this) {
             return true;                                                // Slight optimization.

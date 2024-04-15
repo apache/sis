@@ -69,50 +69,50 @@ public final class DefaultDerivedCRSTest extends TestCase {
     }
 
     /**
-     * Tests {@link DefaultDerivedCRS#getType(SingleCRS, CoordinateSystem)}.
+     * Tests {@link DefaultDerivedCRS#getTypeKeyword(Map, SingleCRS, CoordinateSystem)}.
      */
     @Test
     public void testGetType() {
         // Using consistent arguments.
         assertEquals(WKTKeywords.VerticalCRS,
-                DefaultDerivedCRS.getType(HardCodedCRS.ELLIPSOIDAL_HEIGHT, HardCodedCS.GRAVITY_RELATED_HEIGHT));
+                DefaultDerivedCRS.getTypeKeyword(null, HardCodedCRS.ELLIPSOIDAL_HEIGHT, HardCodedCS.GRAVITY_RELATED_HEIGHT));
 
         // Using inconsistent arguments.
-        assertNull(DefaultDerivedCRS.getType(HardCodedCRS.ELLIPSOIDAL_HEIGHT, HardCodedCS.SECONDS));
+        assertNull(DefaultDerivedCRS.getTypeKeyword(null, HardCodedCRS.ELLIPSOIDAL_HEIGHT, HardCodedCS.SECONDS));
 
         // Using consistent arguments.
         assertEquals(WKTKeywords.TimeCRS,
-                DefaultDerivedCRS.getType(HardCodedCRS.TIME, HardCodedCS.SECONDS));
+                DefaultDerivedCRS.getTypeKeyword(null, HardCodedCRS.TIME, HardCodedCS.SECONDS));
 
         // Using inconsistent arguments.
-        assertNull(DefaultDerivedCRS.getType(HardCodedCRS.TIME, HardCodedCS.GRAVITY_RELATED_HEIGHT));
+        assertNull(DefaultDerivedCRS.getTypeKeyword(null, HardCodedCRS.TIME, HardCodedCS.GRAVITY_RELATED_HEIGHT));
 
         // Using consistent arguments.
         assertEquals(WKTKeywords.GeodeticCRS,
-                DefaultDerivedCRS.getType(HardCodedCRS.WGS84, HardCodedCS.GEODETIC_2D));
+                DefaultDerivedCRS.getTypeKeyword(null, HardCodedCRS.WGS84, HardCodedCS.GEODETIC_2D));
 
         // Using consistent arguments but one more dimension.
         assertEquals(WKTKeywords.GeodeticCRS,
-                DefaultDerivedCRS.getType(HardCodedCRS.WGS84, HardCodedCS.GEODETIC_3D));
+                DefaultDerivedCRS.getTypeKeyword(null, HardCodedCRS.WGS84, HardCodedCS.GEODETIC_3D));
 
         // Using consistent arguments.
         assertEquals(WKTKeywords.GeodeticCRS,
-                DefaultDerivedCRS.getType(HardCodedCRS.GEOCENTRIC, HardCodedCS.CARTESIAN_3D));
+                DefaultDerivedCRS.getTypeKeyword(null, HardCodedCRS.GEOCENTRIC, HardCodedCS.CARTESIAN_3D));
 
         // Using consistent arguments but one less dimension.
         assertEquals(WKTKeywords.GeodeticCRS,
-                DefaultDerivedCRS.getType(HardCodedCRS.GEOCENTRIC, HardCodedCS.CARTESIAN_2D));
+                DefaultDerivedCRS.getTypeKeyword(null, HardCodedCRS.GEOCENTRIC, HardCodedCS.CARTESIAN_2D));
 
         // Using different coordinate system type.
         assertEquals(WKTKeywords.GeodeticCRS,
-                DefaultDerivedCRS.getType(HardCodedCRS.GEOCENTRIC, HardCodedCS.SPHERICAL));
+                DefaultDerivedCRS.getTypeKeyword(null, HardCodedCRS.GEOCENTRIC, HardCodedCS.SPHERICAL));
 
         // Using different coordinate system type.
         assertEquals(WKTKeywords.GeodeticCRS,
-                DefaultDerivedCRS.getType(HardCodedCRS.WGS84, HardCodedCS.CARTESIAN_2D));
+                DefaultDerivedCRS.getTypeKeyword(null, HardCodedCRS.WGS84, HardCodedCS.CARTESIAN_2D));
 
         // Using illegal coordinate system type.
-        assertNull(DefaultDerivedCRS.getType(HardCodedCRS.WGS84, HardCodedCS.GRAVITY_RELATED_HEIGHT));
+        assertNull(DefaultDerivedCRS.getTypeKeyword(null, HardCodedCRS.WGS84, HardCodedCS.GRAVITY_RELATED_HEIGHT));
     }
 
     /**
