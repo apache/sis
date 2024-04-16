@@ -342,6 +342,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * @see GeodeticAuthorityFactory#createGeodeticCRS(String)
      * @see DefaultGeocentricCRS#DefaultGeocentricCRS(Map, GeodeticDatum, CartesianCS)
+     *
+     * @since 1.5
      */
     @Override
     public GeodeticCRS createGeodeticCRS(final Map<String,?> properties,
@@ -420,6 +422,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      *
      * @see DefaultGeocentricCRS#DefaultGeocentricCRS(Map, GeodeticDatum, SphericalCS)
      * @see GeodeticAuthorityFactory#createGeodeticCRS(String)
+     *
+     * @since 1.5
      */
     @Override
     public GeodeticCRS createGeodeticCRS(final Map<String,?> properties,

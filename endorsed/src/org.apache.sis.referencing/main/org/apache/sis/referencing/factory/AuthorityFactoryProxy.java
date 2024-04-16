@@ -543,6 +543,7 @@ abstract class AuthorityFactoryProxy<T> {
     static final AuthorityFactoryProxy<?>[] PROXIES = new AuthorityFactoryProxy<?>[] {
         PROJECTED_CRS,      // Special kind of GeneralDerivedCRS.
         GEOGRAPHIC_CRS,     // Special kind of GeodeticCRS.
+        GEODETIC_CRS,
         VERTICAL_CRS,
         TEMPORAL_CRS,
         ENGINEERING_CRS,

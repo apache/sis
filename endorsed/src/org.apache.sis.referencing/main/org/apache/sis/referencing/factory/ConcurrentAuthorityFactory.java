@@ -937,6 +937,8 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *
      * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
+     *
+     * @since 1.5
      */
     @Override
     public GeodeticCRS createGeodeticCRS(final String code) throws FactoryException {

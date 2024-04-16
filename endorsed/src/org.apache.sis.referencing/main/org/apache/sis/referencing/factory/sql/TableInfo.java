@@ -21,9 +21,13 @@ import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.util.CharSequences;
+
+// Specific to the geoapi-4.0 branch:
+import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
 
 
 /**
@@ -60,6 +64,12 @@ final class TableInfo {
      * {@link EPSGDataAccess#createUnit(String)}
      *
      * The order is significant: it is the key for a {@code switch} statement.
+     *
+     * <h4>Ambiguity</h4>
+     * As of ISO 19111:2019, we have no standard way to identify the geocentric case from a {@link Class} argument
+     * because the standard does not provide the {@code GeocentricCRS} interface. This implementation fallbacks on
+     * the SIS-specific geocentric CRS class, with a {@link #where(IdentifiedObject, StringBuilder)} method which
+     * will substitute implementation-neutral objects by the Apache SIS class.
      */
     static final TableInfo[] EPSG = {
         CRS = new TableInfo(CoordinateReferenceSystem.class,
@@ -67,7 +77,7 @@ final class TableInfo {
                 "COORD_REF_SYS_CODE",
                 "COORD_REF_SYS_NAME",
                 "COORD_REF_SYS_KIND",
-                new Class<?>[] { ProjectedCRS.class,   GeographicCRS.class,   GeodeticCRS.class,
+                new Class<?>[] { ProjectedCRS.class,   GeographicCRS.class,   DefaultGeocentricCRS.class,
                                  VerticalCRS.class,    CompoundCRS.class,     EngineeringCRS.class,
                                  DerivedCRS.class,     TemporalCRS.class,     ParametricCRS.class},     // See comment below
                 new String[]   {"projected",          "geographic",          "geocentric",
@@ -250,6 +260,27 @@ final class TableInfo {
     }
 
     /**
+     * Appends a {@code WHERE} clause together with a condition for searching the specified object.
+     * This method delegates to {@link #where(Class, StringBuilder)} with the type of the given object,
+     * except that some object properties may be inspected for resolving ambiguities.
+     *
+     * @param  object  the object to search in the database.
+     * @param  buffer  where to append the {@code WHERE} clause.
+     */
+    final void where(final IdentifiedObject object, final StringBuilder buffer) {
+        Class<?> userType = object.getClass();
+        if (object instanceof GeodeticCRS) {
+            final CoordinateSystem cs = ((GeodeticCRS) object).getCoordinateSystem();
+            if (cs instanceof EllipsoidalCS) {
+                userType = GeographicCRS.class;
+            } else if (cs instanceof CartesianCS || cs instanceof SphericalCS) {
+                userType = DefaultGeocentricCRS.class;
+            }
+        }
+        where(userType, buffer);
+    }
+
+    /**
      * Appends a {@code WHERE} clause together with a condition for searching the most specific subtype,
      * if such condition can be added. The clause appended by this method looks like the following example
      * (details may vary because of enumeration values):
@@ -262,7 +293,7 @@ final class TableInfo {
      *
      * @param  userType  the type specified by the user.
      * @param  buffer    where to append the {@code WHERE} clause.
-     * @return the       subtype, or {@link #type} if no subtype was found.
+     * @return the subtype, or {@link #type} if no subtype was found.
      */
     final Class<?> where(final Class<?> userType, final StringBuilder buffer) {
         buffer.append(" WHERE ");

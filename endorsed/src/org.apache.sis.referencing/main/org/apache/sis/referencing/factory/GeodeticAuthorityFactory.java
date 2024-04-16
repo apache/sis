@@ -332,6 +332,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *
      * @see org.apache.sis.referencing.crs.DefaultGeocentricCRS
      * @see org.apache.sis.referencing.CommonCRS#geocentric()
+     *
+     * @since 1.5
      */
     public GeodeticCRS createGeodeticCRS(final String code) throws NoSuchAuthorityCodeException, FactoryException {
         return cast(GeodeticCRS.class, createCoordinateReferenceSystem(code), code);
