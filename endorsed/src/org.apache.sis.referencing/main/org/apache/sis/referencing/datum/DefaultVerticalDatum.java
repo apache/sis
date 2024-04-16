@@ -18,7 +18,6 @@ package org.apache.sis.referencing.datum;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;

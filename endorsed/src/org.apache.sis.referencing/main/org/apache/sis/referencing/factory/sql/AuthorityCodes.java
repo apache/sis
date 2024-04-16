@@ -28,6 +28,7 @@ import org.opengis.referencing.operation.Projection;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.IntegerList;
 import org.apache.sis.util.privy.AbstractMap;
+import org.apache.sis.util.privy.Strings;
 
 
 /**
@@ -336,17 +337,18 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
 
     /**
      * Returns a string representation of this map for debugging purpose.
-     * This method does not let the default implementation format all entry, since it would be a costly operation.
+     * This method does not let the default implementation formats all entries,
+     * because it would be a costly operation.
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder("AuthorityCodes[").append(type.getSimpleName());
+        String size = null;
         synchronized (factory) {
             if (codes != null) {
-                buffer.append(", size ").append(results != null ? ">= " : "= ").append(codes.size());
+                size = "size " + (results != null ? "≥ " : "= ") + codes.size();
             }
         }
-        return buffer.append(']').toString();
+        return Strings.toString(getClass(), "type", type.getSimpleName(), null, size);
     }
 
     /**

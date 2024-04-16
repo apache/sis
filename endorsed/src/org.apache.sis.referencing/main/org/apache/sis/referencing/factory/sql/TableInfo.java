@@ -21,6 +21,7 @@ import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.util.CharSequences;
@@ -255,6 +256,27 @@ final class TableInfo {
     }
 
     /**
+     * Appends a {@code WHERE} clause together with a condition for searching the specified object.
+     * This method delegates to {@link #where(Class, StringBuilder)} with the type of the given object,
+     * except that some object properties may be inspected for resolving ambiguities.
+     *
+     * @param  object  the object to search in the database.
+     * @param  buffer  where to append the {@code WHERE} clause.
+     */
+    final void where(final IdentifiedObject object, final StringBuilder buffer) {
+        Class<?> userType = object.getClass();
+        if (object instanceof GeodeticCRS) {
+            final CoordinateSystem cs = ((GeodeticCRS) object).getCoordinateSystem();
+            if (cs instanceof EllipsoidalCS) {
+                userType = GeographicCRS.class;
+            } else if (cs instanceof CartesianCS || cs instanceof SphericalCS) {
+                userType = GeocentricCRS.class;
+            }
+        }
+        where(userType, buffer);
+    }
+
+    /**
      * Appends a {@code WHERE} clause together with a condition for searching the most specific subtype,
      * if such condition can be added. The clause appended by this method looks like the following example
      * (details may vary because of enumeration values):
@@ -267,7 +289,7 @@ final class TableInfo {
      *
      * @param  userType  the type specified by the user.
      * @param  buffer    where to append the {@code WHERE} clause.
-     * @return the       subtype, or {@link #type} if no subtype was found.
+     * @return the subtype, or {@link #type} if no subtype was found.
      */
     final Class<?> where(final Class<?> userType, final StringBuilder buffer) {
         buffer.append(" WHERE ");

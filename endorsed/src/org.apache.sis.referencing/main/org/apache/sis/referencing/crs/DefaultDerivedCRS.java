@@ -86,9 +86,8 @@ import org.apache.sis.referencing.datum.DefaultParametricDatum;
  * <h2>Immutability and thread safety</h2>
  * This base class is immutable and thus thread-safe if the property <em>values</em> (not necessarily the map itself)
  * given to the constructor are also immutable. Most SIS subclasses and related classes are immutable under similar
- * conditions. This means that unless otherwise noted in the javadoc, {@code GeneralDerivedCRS} instances created
- * using only SIS factories and static constants can be shared by many objects and passed between threads without
- * synchronization.
+ * conditions. This means that unless otherwise noted in the javadoc, {@code DerivedCRS} instances created using only
+ * SIS factories and static constants can be shared by many objects and passed between threads without synchronization.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Johann Sorel (Geomatys)

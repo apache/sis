@@ -1124,8 +1124,8 @@ public final class CRS extends Static {
      *
      * In case of doubt, this method conservatively returns {@code false}.
      *
-     * @todo Future SIS implementation may extend the above conditions list. For example, a radar station could
-     *       use a polar coordinate system in a <code>DerivedCRS</code> instance based on a projected CRS.
+     * @todo Future SIS implementation may extend the above conditions list. For example, a radar station
+     *       could use a polar coordinate system in a {@code DerivedCRS} instance based on a projected CRS.
      *       Conversely, a future SIS versions may impose more conditions on <code>EngineeringCRS</code>.
      *       See <a href="http://issues.apache.org/jira/browse/SIS-161">SIS-161</a>.
      *
