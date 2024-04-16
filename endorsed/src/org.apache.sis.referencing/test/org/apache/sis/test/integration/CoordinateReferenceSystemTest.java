@@ -21,7 +21,6 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
-import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
 
@@ -69,7 +68,7 @@ public final class CoordinateReferenceSystemTest extends TestCase {
         assertInstanceOf(DerivedCRS .class, crs);
         assertInstanceOf(GeodeticCRS.class, crs);
         assertInstanceOf(CartesianCS.class, crs.getCoordinateSystem());
-        assertInstanceOf(CartesianCS.class, ((GeneralDerivedCRS) crs).getBaseCRS().getCoordinateSystem());
+        assertInstanceOf(CartesianCS.class, ((DerivedCRS) crs).getBaseCRS().getCoordinateSystem());
         /*
          * Some tests are disabled because `EPSGDataAccess` confuse this derived CRS
          * with a projected CRS. We are waiting for upgrade to EPSG database 10+
@@ -81,6 +80,6 @@ public final class CoordinateReferenceSystemTest extends TestCase {
 //      assertInstanceOf(DerivedCRS .class, crs);
 //      assertInstanceOf(GeodeticCRS.class, crs);
         assertInstanceOf(CartesianCS.class, crs.getCoordinateSystem());
-        assertInstanceOf(EllipsoidalCS.class, ((GeneralDerivedCRS) crs).getBaseCRS().getCoordinateSystem());
+        assertInstanceOf(EllipsoidalCS.class, ((DerivedCRS) crs).getBaseCRS().getCoordinateSystem());
     }
 }

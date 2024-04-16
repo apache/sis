@@ -110,6 +110,7 @@ final class CoordinateOperationSet extends IdentifiedObjectSet<CoordinateOperati
      * Creates a coordinate operation for the specified EPSG code.
      */
     @Override
+    @SuppressWarnings("deprecation")
     protected CoordinateOperation createObject(final String code) throws FactoryException {
         final Integer base = projections.get(code);
         if (base != null) {

@@ -252,6 +252,7 @@ public final class CoordinateOperations extends Static {
      * @param  target  the target of the coordinate operation.
      * @return target dimensions where "wrap around" may happen, or an empty set if none.
      */
+    @SuppressWarnings("deprecation")
     public static Set<Integer> wrapAroundChanges(CoordinateReferenceSystem source, final CoordinateSystem target) {
         long changes = changes(source.getCoordinateSystem(), target);
         while (source instanceof GeneralDerivedCRS) {

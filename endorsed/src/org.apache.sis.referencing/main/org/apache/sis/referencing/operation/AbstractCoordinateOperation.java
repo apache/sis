@@ -34,6 +34,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -485,8 +486,8 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * But SIS supports also defining conversions with non-null CRS provided that:
      *
      * <ul>
-     *   <li>{@link GeneralDerivedCRS#getBaseCRS()} is the {@linkplain #getSourceCRS() source CRS} of this operation, and</li>
-     *   <li>{@link GeneralDerivedCRS#getConversionFromBase()} is this operation instance.</li>
+     *   <li>{@link DerivedCRS#getBaseCRS()} is the {@linkplain #getSourceCRS() source CRS} of this operation, and</li>
+     *   <li>{@link DerivedCRS#getConversionFromBase()} is this operation instance.</li>
      * </ul>
      *
      * When this method returns {@code true}, the source and target CRS are not marshalled in XML documents.
@@ -498,7 +499,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         /*
          * Trick: we do not need to verify if (this instanceof Conversion) because:
          *   - Only DefaultConversion constructor accepts null source and target CRS.
-         *   - GeneralDerivedCRS.getConversionFromBase() return type is Conversion.
+         *   - DerivedCRS.getConversionFromBase() return type is Conversion.
          */
         return (sourceCRS == null && targetCRS == null)
                || ((targetCRS instanceof GeneralDerivedCRS)
@@ -768,8 +769,8 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * corresponding wraparound axis in the source CRS because the <em>easting</em> axis in projected CRS does not
      * have a wraparound range meaning. We could argue that
      * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getDirection() axis directions} match,
-     * but such matching is not guaranteed to exist since {@code ProjectedCRS} is a special case of
-     * {@code GeneralDerivedCRS} and derived CRS can have rotations.
+     * but such matching is not guaranteed to exist since {@code ProjectedCRS} is a special case of {@code DerivedCRS}
+     * and derived CRS can have rotations.
      *
      * <h4>Default implementation</h4>
      * The default implementation infers this set by inspecting the source and target coordinate system axes.

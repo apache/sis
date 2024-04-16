@@ -326,6 +326,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      *
      * @see org.apache.sis.referencing.crs.AbstractCRS#isBaseCRS(Formatter)
      */
+    @SuppressWarnings("deprecation")
     private static boolean isElementOfBaseCRS(final Formatter formatter) {
         return formatter.getEnclosingElement(2) instanceof GeneralDerivedCRS;
     }

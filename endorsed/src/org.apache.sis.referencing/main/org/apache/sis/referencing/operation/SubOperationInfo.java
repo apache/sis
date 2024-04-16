@@ -65,6 +65,7 @@ final class SubOperationInfo {
      * Returns the class of the given CRS after unwrapping derived and projected CRS.
      * The returned type is for use with {@link #COMPATIBLE_TYPES}.
      */
+    @SuppressWarnings("deprecation")
     private static Class<?> type(SingleCRS crs) {
         while (crs instanceof GeneralDerivedCRS) {
             crs = (SingleCRS) ((GeneralDerivedCRS) crs).getBaseCRS();

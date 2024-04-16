@@ -226,6 +226,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @since 1.0
      */
     @Override
+    @SuppressWarnings("deprecation")
     public List<CoordinateOperation> createOperations(final CoordinateReferenceSystem sourceCRS,
                                                       final CoordinateReferenceSystem targetCRS)
             throws FactoryException
@@ -277,7 +278,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         ////                                                                        ////
         ////////////////////////////////////////////////////////////////////////////////
         if (sourceCRS instanceof GeneralDerivedCRS) {
-            final GeneralDerivedCRS source = (GeneralDerivedCRS) sourceCRS;
+            final var source = (GeneralDerivedCRS) sourceCRS;
             if (targetCRS instanceof GeneralDerivedCRS) {
                 return createOperationStep(source, (GeneralDerivedCRS) targetCRS);
             }
@@ -291,7 +292,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         ////                                                                        ////
         ////////////////////////////////////////////////////////////////////////////////
         if (targetCRS instanceof GeneralDerivedCRS) {
-            final GeneralDerivedCRS target = (GeneralDerivedCRS) targetCRS;
+            final var target = (GeneralDerivedCRS) targetCRS;
             if (sourceCRS instanceof SingleCRS) {
                 return createOperationStep((SingleCRS) sourceCRS, target);
             }
@@ -367,13 +368,13 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     /**
      * Creates operations from an arbitrary single CRS to a derived coordinate reference system.
      * Conversions from {@code GeographicCRS} to {@code ProjectedCRS} are also handled by this method,
-     * since projected CRS are a special kind of {@code GeneralDerivedCRS}.
+     * since projected CRS are a special kind of {@code DerivedCRS}.
      *
      * <p>The default implementation constructs the following operation chain:</p>
-     * <blockquote><code>sourceCRS  →  {@linkplain GeneralDerivedCRS#getBaseCRS() baseCRS}  →  targetCRS</code></blockquote>
+     * <blockquote><code>sourceCRS  →  {@linkplain DerivedCRS#getBaseCRS() baseCRS}  →  targetCRS</code></blockquote>
      *
      * where the conversion from {@code baseCRS} to {@code targetCRS} is obtained from
-     * <code>targetCRS.{@linkplain GeneralDerivedCRS#getConversionFromBase() getConversionFromBase()}</code>.
+     * <code>targetCRS.{@linkplain DerivedCRS#getConversionFromBase() getConversionFromBase()}</code>.
      *
      * <p>This method returns only <em>one</em> step for a chain of concatenated operations (to be built by the caller).
      * But a list is returned because the same step may be implemented by different operation methods. Only one element
@@ -384,6 +385,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @return coordinate operations from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation cannot be constructed.
      */
+    @SuppressWarnings("deprecation")
     protected List<CoordinateOperation> createOperationStep(final SingleCRS sourceCRS,
                                                             final GeneralDerivedCRS targetCRS)
             throws FactoryException
@@ -403,13 +405,13 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     /**
      * Creates an operation from a derived CRS to an arbitrary single coordinate reference system.
      * Conversions from {@code ProjectedCRS} to {@code GeographicCRS} are also handled by this method,
-     * since projected CRS are a special kind of {@code GeneralDerivedCRS}.
+     * since projected CRS are a special kind of {@code DerivedCRS}.
      *
      * <p>The default implementation constructs the following operation chain:</p>
-     * <blockquote><code>sourceCRS  →  {@linkplain GeneralDerivedCRS#getBaseCRS() baseCRS}  →  targetCRS</code></blockquote>
+     * <blockquote><code>sourceCRS  →  {@linkplain DerivedCRS#getBaseCRS() baseCRS}  →  targetCRS</code></blockquote>
      *
      * where the conversion from {@code sourceCRS} to {@code baseCRS} is obtained from the inverse of
-     * <code>sourceCRS.{@linkplain GeneralDerivedCRS#getConversionFromBase() getConversionFromBase()}</code>.
+     * <code>sourceCRS.{@linkplain DerivedCRS#getConversionFromBase() getConversionFromBase()}</code>.
      *
      * <p>This method returns only <em>one</em> step for a chain of concatenated operations (to be built by the caller).
      * But a list is returned because the same step may be implemented by different operation methods. Only one element
@@ -420,6 +422,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation cannot be constructed.
      */
+    @SuppressWarnings("deprecation")
     protected List<CoordinateOperation> createOperationStep(final GeneralDerivedCRS sourceCRS,
                                                             final SingleCRS targetCRS)
             throws FactoryException
@@ -462,6 +465,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation cannot be constructed.
      */
+    @SuppressWarnings("deprecation")
     protected List<CoordinateOperation> createOperationStep(final GeneralDerivedCRS sourceCRS,
                                                             final GeneralDerivedCRS targetCRS)
             throws FactoryException
@@ -1282,6 +1286,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @param  crs  the CRS having a conversion that cannot be inverted.
      * @return a default error message.
      */
+    @SuppressWarnings("deprecation")
     private String canNotInvert(final GeneralDerivedCRS crs) {
         return resources().getString(Resources.Keys.NonInvertibleOperation_1, label(crs.getConversionFromBase()));
     }

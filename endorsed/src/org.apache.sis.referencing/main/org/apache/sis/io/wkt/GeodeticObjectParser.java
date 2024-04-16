@@ -1714,7 +1714,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @param  parent     the parent element.
      * @param  dimension  the minimal number of dimensions (usually 2).
      * @param  csType     the default coordinate system type, or {@code null} if unknown.
-     *                    Should be non-null only when parsing a {@link GeneralDerivedCRS#getBaseCRS()} component.
+     *                    Should be non-null only when parsing a {@link DerivedCRS#getBaseCRS()} component.
      * @return the {@code "GeodeticCRS"} element as a {@link GeographicCRS} or {@link GeocentricCRS} object.
      * @throws ParseException if the {@code "GeodeticCRS"} element cannot be parsed.
      *

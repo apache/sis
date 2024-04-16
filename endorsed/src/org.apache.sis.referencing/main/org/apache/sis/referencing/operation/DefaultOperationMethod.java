@@ -518,6 +518,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#118">WKT 2 specification §17.2.3</a>
      */
     @Override
+    @SuppressWarnings("deprecation")
     protected String formatTo(final Formatter formatter) {
         final boolean isWKT1 = formatter.getConvention().majorVersion() == 1;
         /*

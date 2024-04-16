@@ -568,6 +568,7 @@ abstract class AuthorityFactoryProxy<T> {
      * with a preference for those who are more likely to be requested.
      * This field can be declared only after all the above constants.
      */
+    @SuppressWarnings("deprecation")
     static final AuthorityFactoryProxy<?>[] PROXIES = new AuthorityFactoryProxy<?>[] {
         PROJECTED_CRS,      // Special kind of GeneralDerivedCRS.
         GEOGRAPHIC_CRS,     // Special kind of GeodeticCRS.

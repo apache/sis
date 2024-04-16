@@ -304,6 +304,7 @@ select: if (commonCRS == null) {
      * @throws TransformException if a coordinate conversion was required but failed.
      * @throws IncommensurableException if a coordinate system does not use the expected units.
      */
+    @SuppressWarnings("deprecation")
     private static CoordinateReferenceSystem usingSystemUnit(final GeometryWrapper           geometry,
                                                              final CoordinateReferenceSystem geometryCRS,
                                                                    CoordinateReferenceSystem targetCRS,
@@ -372,6 +373,7 @@ select: if (commonCRS == null) {
          * @throws TransformException if a coordinate conversion was required but failed.
          * @throws IncommensurableException if a coordinate system does not use the expected units.
          */
+        @SuppressWarnings("deprecation")
         ProjectedCRS create(final GeographicCRS baseCRS, DirectPosition centroid, CoordinateReferenceSystem geometryCRS)
                 throws FactoryException, TransformException, IncommensurableException
         {

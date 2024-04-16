@@ -307,6 +307,7 @@ public final class DefinitionVerifier {
      * The returned value is one of {@link #METHOD}, {@link #CONVERSION}, {@link #CS}, {@link #DATUM},
      * {@link #PRIME_MERIDIAN} or {@link #OTHER} constants.
      */
+    @SuppressWarnings("deprecation")
     private static int diffCode(final Iterator<SingleCRS> authoritative, final Iterator<SingleCRS> given) {
         while (authoritative.hasNext() && given.hasNext()) {
             final SingleCRS crsA = authoritative.next();

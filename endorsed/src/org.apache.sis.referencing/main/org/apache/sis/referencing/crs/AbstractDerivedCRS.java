@@ -60,6 +60,7 @@ import org.apache.sis.util.resources.Errors;
     DefaultDerivedCRS.class,
     DefaultProjectedCRS.class
 })
+@SuppressWarnings("deprecation")
 abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS implements GeneralDerivedCRS {
     /**
      * Serial number for inter-operability with different versions.
