@@ -26,7 +26,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.crs.GeocentricCRS;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -177,7 +177,7 @@ public final class CommonCRSTest extends TestCase {
      */
     @Test
     public void testGeocentric() {
-        final GeocentricCRS crs = CommonCRS.WGS72.geocentric();
+        final GeodeticCRS crs = CommonCRS.WGS72.geocentric();
         Validators.validate(crs);
         assertEquals ("WGS 72", crs.getName().getCode());
         assertSame   (CommonCRS.WGS72.geographic().getDatum(), crs.getDatum());
@@ -196,7 +196,7 @@ public final class CommonCRSTest extends TestCase {
      */
     @Test
     public void testSpherical() {
-        final GeocentricCRS crs = CommonCRS.ETRS89.spherical();
+        final GeodeticCRS crs = CommonCRS.ETRS89.spherical();
         Validators.validate(crs);
         assertEquals ("ETRS89", crs.getName().getCode());
         assertSame   (CommonCRS.ETRS89.geographic().getDatum(), crs.getDatum());

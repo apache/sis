@@ -33,8 +33,8 @@ import org.opengis.referencing.cs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CRSFactory;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
@@ -665,7 +665,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
         @Override void setPredefinedComponents(final Decoder decoder) throws FactoryException {
             super.setPredefinedComponents(decoder);
             if (isPredefinedCS(Units.DEGREE)) {
-                GeocentricCRS crs = defaultCRS.spherical();
+                GeodeticCRS crs = defaultCRS.spherical();
                 if (isLongitudeFirst) {
                     crs = DefaultGeocentricCRS.castOrCopy(crs).forConvention(AxesConvention.RIGHT_HANDED);
                 }

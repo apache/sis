@@ -126,6 +126,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
     {
         super(properties, cs);
         this.datum = Objects.requireNonNull(datum);
+        checkDimension(1, 1, cs);
     }
 
     /**

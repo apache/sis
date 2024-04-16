@@ -234,8 +234,9 @@ public final class WKTKeywords extends Static {
     private static final Map<Class<?>,String[]> TYPES = new HashMap<>(30);
     static {
         /*
-         * `SingleCRS` subtypes. The `GeodeticCRS` is a common parent of
-         * `GeographicCRS` and `GeocentricCRS`, repeated for both of them.
+         * `SingleCRS` subtypes. The `GeographicCRS` and `GeocentricCRS` types are handled separately
+         * because they are implied by the `GeodeticCRS` type in the `subtypes` array, so they do not
+         * need to be repeated there.
          */
         addType(org.opengis.referencing.crs.GeocentricCRS.class,  GeodeticCRS, GeodCRS, GeocCS);
         addType(org.opengis.referencing.crs.GeographicCRS.class,  GeodeticCRS, GeodCRS, GeogCS);

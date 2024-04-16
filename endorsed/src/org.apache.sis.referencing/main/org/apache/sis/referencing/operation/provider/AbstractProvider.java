@@ -278,7 +278,7 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      * This is a SIS-specific information which may be changed in any future SIS version.
      * Current implementation provides this information in a "all or nothing" way: either all parameter values
      * can have their sign reversed, or either the operation is considered not revertible at all.
-     * This is different than the EPSG dataset in two way:
+     * This is different than the EPSG dataset in two ways:
      *
      * <ul class="verbose">
      *   <li>EPSG provides an equivalent information in the {@code PARAM_SIGN_REVERSAL} column of the

@@ -741,6 +741,10 @@ public enum CommonCRS {
      *   <tr><td>WGS 84</td>                   <td>{@link #WGS84}</td>  <td>4978</td></tr>
      * </table></blockquote>
      *
+     * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed to the
+     * {@link GeodeticCRS} parent interface. This is because ISO 19111 does not defines specific interface
+     * for the geocentric case. Users should assign the return value to a {@code GeodeticCRS} type.</div>
+     *
      * @return the geocentric CRS associated to this enum.
      *
      * @see CRS#forCode(String)
@@ -792,6 +796,10 @@ public enum CommonCRS {
      *   <li>Spherical longitude in degrees oriented toward {@linkplain AxisDirection#EAST east}.</li>
      *   <li>Geocentric radius in metres oriented toward {@linkplain AxisDirection#UP up}.</li>
      * </ol>
+     *
+     * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed to the
+     * {@link GeodeticCRS} parent interface. This is because ISO 19111 does not defines specific interface
+     * for the geocentric case. Users should assign the return value to a {@code GeodeticCRS} type.</div>
      *
      * @return the geocentric CRS associated to this enum.
      *

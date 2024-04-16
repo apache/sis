@@ -47,7 +47,6 @@ import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.TemporalCRS;
@@ -372,8 +371,7 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
         final short key;
         final int expected;
              if (crs instanceof GeographicCRS)  {key = Vocabulary.Keys.Geographic;  expected = 2;}
-        else if (crs instanceof GeocentricCRS)  {key = Vocabulary.Keys.Geocentric;  expected = 3;}
-        else if (crs instanceof GeodeticCRS)    {key = Vocabulary.Keys.Geodetic;    expected = 0;}
+        else if (crs instanceof GeodeticCRS)    {key = Vocabulary.Keys.Geocentric;  expected = 2;}
         else if (crs instanceof VerticalCRS)    {key = Vocabulary.Keys.Vertical;    expected = 1;}
         else if (crs instanceof TemporalCRS)    {key = Vocabulary.Keys.Temporal;    expected = 1;}
         else if (crs instanceof ProjectedCRS)   {key = Vocabulary.Keys.Projected;   expected = 2;}

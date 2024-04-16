@@ -1664,8 +1664,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final CRSFactory crsFactory = factories.getCRSFactory();
         try {
             final CoordinateSystem cs = parseCoordinateSystem(element, null, 1, isWKT1, unit, datum);
-            final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
+            final Map<String,Object> properties = parseMetadataAndClose(element, name, datum);
             if (baseCRS != null) {
+                properties.put(Legacy.DERIVED_TYPE_KEY, EngineeringCRS.class);
                 return crsFactory.createDerivedCRS(properties, baseCRS, fromBase, cs);
             }
             return crsFactory.createEngineeringCRS(properties, datum, cs);

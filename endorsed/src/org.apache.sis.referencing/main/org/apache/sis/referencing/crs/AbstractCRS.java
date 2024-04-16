@@ -24,6 +24,7 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import javax.measure.Unit;
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.cs.CartesianCS;
@@ -180,6 +181,28 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
         super(properties);
         coordinateSystem = Objects.requireNonNull(cs);
         forConvention = forConvention(this);
+    }
+
+    /**
+     * Verifies that the given coordinate system has a number of dimensions in the expected range.
+     *
+     * @param min  minimum number of dimensions, inclusive.
+     * @param max  maximum number of dimensions, inclusive.
+     * @param cs   the coordinate system for which to validate the number of dimensions.
+     * @throws MismatchedDimensionException if the actual number of dimension is out of bounds.
+     */
+    static void checkDimension(final int min, final int max, final CoordinateSystem cs) {
+        final int actual = cs.getDimension();
+        final int expected;
+        if (actual < min) {
+            expected = min;
+        } else if (actual > max) {
+            expected = max;
+        } else {
+            return;
+        }
+        throw new MismatchedDimensionException(Errors.format(
+                Errors.Keys.MismatchedDimension_3, "cs", expected, actual));
     }
 
     /**

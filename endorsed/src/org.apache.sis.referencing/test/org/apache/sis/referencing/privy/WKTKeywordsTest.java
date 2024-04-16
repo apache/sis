@@ -72,10 +72,10 @@ public final class WKTKeywordsTest extends TestCase {
      */
     @Test
     public void verifyTypeHierarchy() {
-        verifyTypeHierarchy(SingleCRS.class, GeocentricCRS.class, GeographicCRS.class, ProjectedCRS.class,
+        verifyTypeHierarchy(SingleCRS.class, GeodeticCRS.class, GeographicCRS.class, ProjectedCRS.class,
                             VerticalCRS.class, TemporalCRS.class, EngineeringCRS.class);
         verifyTypeHierarchy(CoordinateReferenceSystem.class, SingleCRS.class, CompoundCRS.class,
-                            GeocentricCRS.class, GeographicCRS.class, ProjectedCRS.class,
+                            GeodeticCRS.class, GeographicCRS.class, ProjectedCRS.class,
                             VerticalCRS.class, TemporalCRS.class, EngineeringCRS.class);
         verifyTypeHierarchy(Datum.class, GeodeticDatum.class, VerticalDatum.class, TemporalDatum.class,
                             EngineeringDatum.class);

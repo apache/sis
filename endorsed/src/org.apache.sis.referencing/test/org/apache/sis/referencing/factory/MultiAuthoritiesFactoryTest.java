@@ -22,7 +22,6 @@ import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.VerticalCRS;
@@ -71,7 +70,6 @@ public final class MultiAuthoritiesFactoryTest extends TestCaseWithLogs {
     public void testAuthorityFactoryMock() throws FactoryException {
         final var factory = new AuthorityFactoryMock("MOCK", null);
         final Class<?>[] types = {
-            GeocentricCRS.class,
             GeographicCRS.class,
             GeodeticDatum.class,
             VerticalDatum.class,

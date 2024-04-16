@@ -24,7 +24,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.crs.GeocentricCRS;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.CompoundCRS;
@@ -367,7 +367,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
                 "    Axis[“(Z)”, geocentricZ],\n" +
                 "    Unit[“kilometre”, 1000]]");
 
-        final GeocentricCRS       targetCRS = CommonCRS.WGS84.geocentric();
+        final GeodeticCRS         targetCRS = CommonCRS.WGS84.geocentric();
         final CoordinateOperation operation = finder().createOperation(sourceCRS, targetCRS);
 
         assertSame(sourceCRS, operation.getSourceCRS());

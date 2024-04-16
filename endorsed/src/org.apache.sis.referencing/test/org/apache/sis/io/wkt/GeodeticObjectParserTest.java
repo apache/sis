@@ -242,7 +242,7 @@ public final class GeodeticObjectParserTest extends TestCase {
      */
     @Test
     public void testGeocentricCRS() throws ParseException {
-        final GeocentricCRS crs = parse(GeocentricCRS.class,
+        final GeodeticCRS crs = parse(GeodeticCRS.class,
                 "GEOCCS[“Geocentric”,\n" +
                 "  DATUM[“World Geodetic System 1984”,\n" +
                 "    SPHEROID[“WGS84”, 6378137.0, 298.257223563, AUTHORITY[“EPSG”, “7030”]],\n" +

@@ -24,7 +24,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.crs.GeocentricCRS;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -83,12 +83,18 @@ public final class EPSGFactoryFallbackTest extends TestCaseWithLogs {
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(SphericalCS.class));
         assertSetEquals(List.of("6500", "4400", "1026", "1027"),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(CartesianCS.class));
-        assertSetEquals(List.of("4978", "4984", "4936"),
-                EPSGFactoryFallback.INSTANCE.getAuthorityCodes(GeocentricCRS.class));
         assertSetEquals(List.of("4326", "4322", "4019", "4047", "4269", "4267", "4258", "4230", "4979", "4985", "4937"),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(GeographicCRS.class));
         assertSetEquals(List.of("5714", "5715", "5703"),
                 EPSGFactoryFallback.INSTANCE.getAuthorityCodes(VerticalCRS.class));
+        /*
+         * Geodetic CRS include geographic CRS with the addition of the following.
+         */
+        Set<String> geographic = EPSGFactoryFallback.INSTANCE.getAuthorityCodes(GeographicCRS.class);
+        Set<String> geodetic   = EPSGFactoryFallback.INSTANCE.getAuthorityCodes(GeodeticCRS.class);
+        assertTrue(geodetic.containsAll(geographic));
+        assertTrue(geodetic.removeAll(geographic));
+        assertSetEquals(List.of("4978", "4984", "4936"), geodetic);
         /*
          * There is too many ProjectedCRS codes for enumerating all of them, so test only a sampling.
          */
@@ -264,6 +270,7 @@ public final class EPSGFactoryFallbackTest extends TestCaseWithLogs {
         }
         loggings.skipNextLogIfContains("EPSG:4047");
         loggings.skipNextLogIfContains("EPSG:4019");        // Deprecated EPSG entry.
+        loggings.skipNextLogIfContains("EPSG:4047");        // Repeated because order may vary.
         loggings.assertNoUnexpectedLog();
     }
 }
