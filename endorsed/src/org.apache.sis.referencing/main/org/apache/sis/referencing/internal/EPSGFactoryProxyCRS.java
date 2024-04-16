@@ -82,7 +82,7 @@ public final class EPSGFactoryProxyCRS extends EPSGFactoryProxy implements CRSAu
         return factory().createGeographicCRS(code);
     }
 
-    @Deprecated(since = "1.5")
+    @Deprecated(since = "2.0")  // Temporary version number until this branch is released.
     public GeocentricCRS createGeocentricCRS(String code) throws FactoryException {
         return factory().createGeocentricCRS(code);
     }

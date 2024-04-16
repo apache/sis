@@ -973,7 +973,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * Use {@link #createGeodeticCRS(String)} instead.
      */
     @Override
-    @Deprecated(since = "1.5")
+    @Deprecated(since = "2.0")  // Temporary version number until this branch is released.
     public GeocentricCRS createGeocentricCRS(final String code) throws FactoryException {
         return create(AuthorityFactoryProxy.GEOCENTRIC_CRS, code);
     }

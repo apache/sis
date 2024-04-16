@@ -168,7 +168,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      *
      * @deprecated As of ISO 19111:2019, the {@code VerticalDatumType} argument is replaced by {@code RealizationMethod}.
      */
-    @Deprecated(since = "2.0")
+    @Deprecated(since = "2.0")  // Temporary version number until this branch is released.
     public DefaultVerticalDatum(final Map<String,?> properties, final VerticalDatumType type) {
         super(properties);
         this.type = Objects.requireNonNull(type);
@@ -289,7 +289,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * @deprecated As of ISO 19111:2019, the {@code VerticalDatumType} argument is replaced by {@code RealizationMethod}.
      */
     @Override
-    @Deprecated(since = "2.0")
+    @Deprecated(since = "2.0")  // Temporary version number until this branch is released.
     public VerticalDatumType getVerticalDatumType() {
         return type();
     }

@@ -460,7 +460,7 @@ abstract class AuthorityFactoryProxy<T> {
             }
     };
 
-    @Deprecated(since = "1.5")
+    @Deprecated(since = "2.0")  // Temporary version number until this branch is released.
     static final AuthorityFactoryProxy<GeocentricCRS> GEOCENTRIC_CRS =
         new AuthorityFactoryProxy<GeocentricCRS>(GeocentricCRS.class, AuthorityFactoryIdentifier.CRS) {
             @Override GeocentricCRS create(GeodeticAuthorityFactory factory, String code) throws FactoryException {
@@ -571,6 +571,8 @@ abstract class AuthorityFactoryProxy<T> {
     static final AuthorityFactoryProxy<?>[] PROXIES = new AuthorityFactoryProxy<?>[] {
         PROJECTED_CRS,      // Special kind of GeneralDerivedCRS.
         GEOGRAPHIC_CRS,     // Special kind of GeodeticCRS.
+        GEOCENTRIC_CRS,     // Special kind of GeodeticCRS.
+        GEODETIC_CRS,
         VERTICAL_CRS,
         TEMPORAL_CRS,
         IMAGE_CRS,          // Can be seen as a special kind of EngineeringCRS (even if not shown in hierarchy).

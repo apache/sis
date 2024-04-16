@@ -370,7 +370,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Use {@link #createGeodeticCRS(Map, GeodeticDatum, CartesianCS)} instead.
      */
     @Override
-    @Deprecated(since = "1.5")
+    @Deprecated(since = "2.0")  // Temporary version number until this branch is released.
     public GeocentricCRS createGeocentricCRS(final Map<String,?> properties,
             final GeodeticDatum datum, final CartesianCS cs) throws FactoryException
     {
@@ -475,7 +475,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Use {@link #createGeodeticCRS(Map, GeodeticDatum, SphericalCS)} instead.
      */
     @Override
-    @Deprecated(since = "1.5")
+    @Deprecated(since = "2.0")  // Temporary version number until this branch is released.
     public GeocentricCRS createGeocentricCRS(final Map<String,?> properties,
             final GeodeticDatum datum, final SphericalCS cs) throws FactoryException
     {
@@ -981,7 +981,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @deprecated As of ISO 19111:2019, the {@code VerticalDatumType} argument is replaced by {@code RealizationMethod}.
      */
     @Override
-    @Deprecated(since = "2.0")
+    @Deprecated(since = "2.0")  // Temporary version number until this branch is released.
     public VerticalDatum createVerticalDatum(final Map<String,?> properties,
             final VerticalDatumType type) throws FactoryException
     {

@@ -959,7 +959,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      * Use {@link #createGeodeticCRS(String)} instead.
      */
     @Override
-    @Deprecated(since = "1.5")
+    @Deprecated(since = "2.0")  // Temporary version number until this branch is released.
     public GeocentricCRS createGeocentricCRS(final String code) throws FactoryException {
         if (isDefault(GeocentricCRS.class)) {
             return super.createGeocentricCRS(code);
