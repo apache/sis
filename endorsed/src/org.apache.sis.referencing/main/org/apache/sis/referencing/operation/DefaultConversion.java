@@ -28,7 +28,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.crs.SingleCRS;
-import org.opengis.referencing.crs.GeneralDerivedCRS;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.Datum;
 import org.apache.sis.referencing.cs.CoordinateSystems;
@@ -223,7 +223,6 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * @param factory     the factory to use for creating a transform from the parameters or for performing axis changes.
      * @param actual      an array of length 1 where to store the actual operation method used by the math transform factory.
      */
-    @SuppressWarnings("deprecation")
     DefaultConversion(final Conversion definition,
                       final CoordinateReferenceSystem source,
                       final CoordinateReferenceSystem target,
@@ -250,7 +249,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                  * method in invoked, and attempts to use it can cause NullPointerException.
                  */
                 final DefaultMathTransformFactory.Context context;
-                if (target instanceof GeneralDerivedCRS) {
+                if (target instanceof DerivedCRS) {
                     context = ReferencingUtilities.createTransformContext(source, null);
                     context.setTarget(target.getCoordinateSystem());    // Using `target` would be unsafe here.
                 } else {
@@ -394,7 +393,6 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      *
      * @see DefaultMathTransformFactory#createParameterizedTransform(ParameterValueGroup, DefaultMathTransformFactory.Context)
      */
-    @SuppressWarnings("deprecation")
     public <T extends Conversion> T specialize(final Class<T> baseType,
             final CoordinateReferenceSystem sourceCRS, final CoordinateReferenceSystem targetCRS,
             MathTransformFactory factory) throws FactoryException
@@ -408,7 +406,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
          * a dedicated kind of operations, namely Transformation.
          */
         ensureCompatibleDatum("sourceCRS", super.getSourceCRS(), sourceCRS);
-        if (!(targetCRS instanceof GeneralDerivedCRS)) {
+        if (!(targetCRS instanceof DerivedCRS)) {
             ensureCompatibleDatum("targetCRS", super.getTargetCRS(), targetCRS);
         } else {
             /*

@@ -493,7 +493,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
      * (often indirectly trough WKT formatting of a {@code "ProjectedCRS"} element), then the above rule is slightly
      * relaxed: we ignore affine transforms in order to accept axis swapping or unit conversions. We do that in that
      * particular case only because the coordinate systems given with the enclosing {@code CoordinateOperation} or
-     * {@code GeneralDerivedCRS} specify the axis swapping and unit conversions.
+     * {@code DerivedCRS} specify the axis swapping and unit conversions.
      * This special case is internal to SIS implementation and should be unknown to users.</p>
      *
      * @return the parameterizable transform step, or {@code null} if none.

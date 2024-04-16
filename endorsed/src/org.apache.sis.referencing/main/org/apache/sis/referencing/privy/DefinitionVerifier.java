@@ -28,7 +28,7 @@ import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.GeneralDerivedCRS;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.referencing.CRS;
@@ -312,9 +312,9 @@ public final class DefinitionVerifier {
             final SingleCRS crsA = authoritative.next();
             final SingleCRS crsG = given.next();
             if (!Utilities.equalsApproximately(crsA, crsG)) {
-                if (crsA instanceof GeneralDerivedCRS && crsG instanceof GeneralDerivedCRS) {
-                    final Conversion cnvA = ((GeneralDerivedCRS) crsA).getConversionFromBase();
-                    final Conversion cnvG = ((GeneralDerivedCRS) crsG).getConversionFromBase();
+                if (crsA instanceof DerivedCRS && crsG instanceof DerivedCRS) {
+                    final Conversion cnvA = ((DerivedCRS) crsA).getConversionFromBase();
+                    final Conversion cnvG = ((DerivedCRS) crsG).getConversionFromBase();
                     if (!Utilities.equalsApproximately(cnvA, cnvG)) {
                         return Utilities.equalsApproximately(cnvA.getMethod(), cnvG.getMethod()) ? CONVERSION : METHOD;
                     }

@@ -528,7 +528,7 @@ class MathTransformParser extends AbstractParser {
 
     /**
      * Returns the operation method for the last math transform parsed. This is used by
-     * {@link GeodeticObjectParser} in order to built {@link org.opengis.referencing.crs.DerivedCRS}.
+     * {@link GeodeticObjectParser} in order to build {@link org.opengis.referencing.crs.DerivedCRS}.
      */
     final OperationMethod getOperationMethod() {
         if (lastMethod == null) {

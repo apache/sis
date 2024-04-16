@@ -1680,7 +1680,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * @return the combined CRS, or {@code null} if the given information are not sufficient.
      * @throws FactoryException if an error occurred while creating the combined CRS.
      */
-    private static GeneralDerivedCRS combine(final CoordinateReferenceSystem baseCRS, final Conversion fromBase,
+    private static DerivedCRS combine(final CoordinateReferenceSystem baseCRS, final Conversion fromBase,
             final CoordinateSystem cs) throws FactoryException
     {
         if (baseCRS != null && fromBase.getSourceCRS() == null && fromBase.getTargetCRS() == null) {

@@ -52,7 +52,7 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
-import org.opengis.referencing.crs.GeneralDerivedCRS;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.Conversion;
@@ -368,7 +368,6 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
     /**
      * Returns the text to show of right of the "type" label.
      */
-    @SuppressWarnings("deprecation")
     private static String typeOf(CoordinateReferenceSystem crs, final Locale locale) {
         while (crs instanceof CompoundCRS) {
             crs = ((CompoundCRS) crs).getComponents().get(0);
@@ -388,14 +387,14 @@ public class CRSChooser extends Dialog<CoordinateReferenceSystem> {
         String text = Vocabulary.forLocale(locale).getString(key);
         final int     dimension = ReferencingUtilities.getDimension(crs);
         final boolean addDimension = (dimension != expected && expected != 0);
-        final boolean isProjection = (crs instanceof GeneralDerivedCRS);
+        final boolean isProjection = (crs instanceof DerivedCRS);
         if (addDimension | isProjection) {
             final StringBuilder buffer = new StringBuilder(text);
             if (addDimension) {
                 buffer.append(" (").append(dimension).append("D)");
             }
             if (isProjection) {
-                final Conversion conversion = ((GeneralDerivedCRS) crs).getConversionFromBase();
+                final Conversion conversion = ((DerivedCRS) crs).getConversionFromBase();
                 if (conversion != null) {
                     final OperationMethod method = conversion.getMethod();
                     if (method != null) {

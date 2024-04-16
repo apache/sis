@@ -37,7 +37,7 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
-import org.opengis.referencing.crs.GeneralDerivedCRS;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.datum.Datum;
@@ -408,12 +408,11 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
     /**
      * Creates the text to show in the "Remarks" column for the given CRS.
      */
-    @SuppressWarnings("deprecation")
     private String getRemark(final CoordinateReferenceSystem crs) {
         if (crs instanceof GeographicCRS) {
             return (crs.getCoordinateSystem().getDimension() == 3) ? "Geographic 3D" : "Geographic";
         }
-        if (crs instanceof GeneralDerivedCRS derived) {
+        if (crs instanceof DerivedCRS derived) {
             final OperationMethod method = derived.getConversionFromBase().getMethod();
             final Identifier identifier = IdentifiedObjects.getIdentifier(method, Citations.EPSG);
             if (identifier != null) {

@@ -25,7 +25,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.crs.SingleCRS;
-import org.opengis.referencing.crs.GeneralDerivedCRS;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.OperationMethod;
@@ -60,7 +60,7 @@ import org.apache.sis.util.resources.Errors;
     DefaultDerivedCRS.class,
     DefaultProjectedCRS.class
 })
-abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS implements GeneralDerivedCRS {
+abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS implements DerivedCRS {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -68,7 +68,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
 
     /**
      * The conversion from the {@linkplain #getBaseCRS() base CRS} to this CRS.
-     * The base CRS of this {@code GeneralDerivedCRS} is {@link Conversion#getSourceCRS()}.
+     * The base CRS of this {@code DerivedCRS} is {@link Conversion#getSourceCRS()}.
      *
      * <p><b>Consider this field as final!</b>
      * This field is modified only at unmarshalling time by {@link #setConversionFromBase(Conversion)}</p>
@@ -147,7 +147,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      *
      * @param  crs  the coordinate reference system to copy.
      */
-    AbstractDerivedCRS(final GeneralDerivedCRS crs) {
+    AbstractDerivedCRS(final DerivedCRS crs) {
         super(crs);
         conversionFromBase = createConversionFromBase(null, crs.getBaseCRS(), crs.getConversionFromBase());
     }
@@ -187,7 +187,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      * Returns the GeoAPI interface implemented by this class.
      */
     @Override
-    public abstract Class<? extends GeneralDerivedCRS> getInterface();
+    public abstract Class<? extends DerivedCRS> getInterface();
 
     /**
      * Returns the datum of the {@linkplain #getBaseCRS() base CRS}.
@@ -241,7 +241,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
                 return Utilities.deepEquals(
                         strict ? conversionFromBase : getConversionFromBase(),
                         strict ? ((AbstractDerivedCRS) object).conversionFromBase
-                               :  ((GeneralDerivedCRS) object).getConversionFromBase(), mode);
+                               :  ((DerivedCRS) object).getConversionFromBase(), mode);
             } finally {
                 Semaphores.clear(Semaphores.CONVERSION_AND_CRS);
             }

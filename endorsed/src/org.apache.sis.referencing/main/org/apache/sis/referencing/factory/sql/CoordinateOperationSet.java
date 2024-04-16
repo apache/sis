@@ -21,7 +21,7 @@ import java.util.HashMap;
 import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.AuthorityFactory;
-import org.opengis.referencing.crs.GeneralDerivedCRS;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -122,8 +122,8 @@ final class CoordinateOperationSet extends IdentifiedObjectSet<CoordinateOperati
              */
             CoordinateReferenceSystem crs;
             crs = ((CRSAuthorityFactory) factory).createCoordinateReferenceSystem(String.valueOf(base));
-            if (crs instanceof GeneralDerivedCRS) {
-                return ((GeneralDerivedCRS) crs).getConversionFromBase();
+            if (crs instanceof DerivedCRS) {
+                return ((DerivedCRS) crs).getConversionFromBase();
             }
         }
         /*

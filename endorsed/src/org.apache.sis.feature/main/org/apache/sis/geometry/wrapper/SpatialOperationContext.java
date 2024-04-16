@@ -30,7 +30,7 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.crs.GeneralDerivedCRS;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
@@ -319,8 +319,8 @@ select: if (commonCRS == null) {
             if (Units.isLinear(systemUnit) && targetCRS instanceof GeographicCRS) {
                 return Projector.instance().create((GeographicCRS) targetCRS, geometry.getCentroid(), geometryCRS);
             }
-            if (targetCRS instanceof GeneralDerivedCRS) {
-                targetCRS = ((GeneralDerivedCRS) targetCRS).getBaseCRS();
+            if (targetCRS instanceof DerivedCRS) {
+                targetCRS = ((DerivedCRS) targetCRS).getBaseCRS();
             } else {
                 throw new IncommensurableException(Errors.format(Errors.Keys.InconsistentUnitsForCS_1, systemUnit));
             }
@@ -381,8 +381,8 @@ select: if (commonCRS == null) {
              * Note that a CRS can be both derived and geographic, so we need to do this check first in order to
              * avoid derived geographic CRS such as the ones having rotated poles.
              */
-            while (geometryCRS instanceof GeneralDerivedCRS) {
-                final GeneralDerivedCRS g = (GeneralDerivedCRS) geometryCRS;
+            while (geometryCRS instanceof DerivedCRS) {
+                final var g = (DerivedCRS) geometryCRS;
                 centroid = g.getConversionFromBase().getMathTransform().inverse().transform(centroid, centroid);
                 geometryCRS = g.getBaseCRS();
             }

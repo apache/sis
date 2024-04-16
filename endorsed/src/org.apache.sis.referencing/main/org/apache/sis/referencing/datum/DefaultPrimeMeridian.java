@@ -26,7 +26,7 @@ import javax.measure.quantity.Angle;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.datum.PrimeMeridian;
-import org.opengis.referencing.crs.GeneralDerivedCRS;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.privy.WKTUtilities;
@@ -327,7 +327,7 @@ public class DefaultPrimeMeridian extends AbstractIdentifiedObject implements Pr
      * @see org.apache.sis.referencing.crs.AbstractCRS#isBaseCRS(Formatter)
      */
     private static boolean isElementOfBaseCRS(final Formatter formatter) {
-        return formatter.getEnclosingElement(2) instanceof GeneralDerivedCRS;
+        return formatter.getEnclosingElement(2) instanceof DerivedCRS;
     }
 
     /**

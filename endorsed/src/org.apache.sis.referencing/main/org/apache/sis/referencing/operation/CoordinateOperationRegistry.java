@@ -41,7 +41,7 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.GeneralDerivedCRS;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CompoundCRS;
@@ -424,9 +424,8 @@ class CoordinateOperationRegistry {
      * axis order, we want to check also the coordinate operations using (latitude, longitude) axis order
      * because they may be the only ones available.</p>
      */
-    @SuppressWarnings("deprecation")
     private static boolean isEasySearch(final CoordinateReferenceSystem crs) {
-        if (crs instanceof GeneralDerivedCRS) {
+        if (crs instanceof DerivedCRS) {
             return false;
         }
         if (crs instanceof CompoundCRS) {

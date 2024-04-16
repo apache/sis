@@ -38,9 +38,9 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
@@ -479,7 +479,7 @@ public final class CRS extends Static {
      * Suggests a coordinate reference system which could be a common target for coordinate operations having the
      * given sources. This method compares the {@linkplain #getGeographicBoundingBox(CoordinateReferenceSystem)
      * domain of validity} of all given CRSs. If a CRS has a domain of validity that contains the domain of all other
-     * CRS, then that CRS is returned. Otherwise this method verifies if a {@linkplain GeneralDerivedCRS#getBaseCRS()
+     * CRS, then that CRS is returned. Otherwise this method verifies if a {@linkplain DerivedCRS#getBaseCRS()
      * base CRS} (usually a {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS} instance)
      * would be suitable. If no suitable CRS is found, then this method returns {@code null}.
      *
@@ -605,8 +605,8 @@ public final class CRS extends Static {
                 for (int i=0; i < derivedCRS.length; i++) {
                     GeographicBoundingBox bbox = null;
                     final CoordinateReferenceSystem crs = sourceCRS[i];
-                    if (crs instanceof GeneralDerivedCRS) {
-                        final SingleCRS baseCRS = ((GeneralDerivedCRS) crs).getBaseCRS();
+                    if (crs instanceof DerivedCRS) {
+                        final SingleCRS baseCRS = ((DerivedCRS) crs).getBaseCRS();
                         bbox = getGeographicBoundingBox(baseCRS);
                         if (bbox == null && bestCRS == null && baseCRS instanceof GeodeticCRS) {
                             bestCRS = baseCRS;      // Fallback to be used if we don't find anything better.
@@ -1170,8 +1170,8 @@ public final class CRS extends Static {
      *
      * In case of doubt, this method conservatively returns {@code false}.
      *
-     * @todo Future SIS implementation may extend the above conditions list. For example, a radar station could
-     *       use a polar coordinate system in a <code>DerivedCRS</code> instance based on a projected CRS.
+     * @todo Future SIS implementation may extend the above conditions list. For example, a radar station
+     *       could use a polar coordinate system in a {@code DerivedCRS} instance based on a projected CRS.
      *       Conversely, a future SIS versions may impose more conditions on <code>EngineeringCRS</code>.
      *       See <a href="http://issues.apache.org/jira/browse/SIS-161">SIS-161</a>.
      *

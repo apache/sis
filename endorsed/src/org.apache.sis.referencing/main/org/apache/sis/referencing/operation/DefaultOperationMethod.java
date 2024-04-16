@@ -33,7 +33,7 @@ import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
-import org.opengis.referencing.crs.GeneralDerivedCRS;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -502,8 +502,8 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
              * CRS is either the immediate parent in WKT 1, or the parent of the parent in WKT 2.
              */
             final FormattableObject parent = formatter.getEnclosingElement(isWKT1 ? 1 : 2);
-            if (parent instanceof GeneralDerivedCRS) {
-                final Conversion conversion = ((GeneralDerivedCRS) parent).getConversionFromBase();
+            if (parent instanceof DerivedCRS) {
+                final Conversion conversion = ((DerivedCRS) parent).getConversionFromBase();
                 if (conversion != null) {   // Should never be null, but let be safe.
                     final ParameterDescriptorGroup descriptor;
                     if (conversion instanceof Parameterized) {  // Usual case in SIS implementation.

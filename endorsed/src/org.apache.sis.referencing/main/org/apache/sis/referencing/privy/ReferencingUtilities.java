@@ -310,15 +310,14 @@ public final class ReferencingUtilities extends Static {
      * @param  allow3D  whether this method is allowed to return three-dimensional CRS (with ellipsoidal height).
      * @return a two-dimensional geographic CRS with standard axes, or {@code null} if none.
      */
-    @SuppressWarnings("deprecation")
     public static GeographicCRS toNormalizedGeographicCRS(CoordinateReferenceSystem crs, final boolean latlon, final boolean allow3D) {
         /*
          * ProjectedCRS instances always have a GeographicCRS as their base.
          * More generally, derived CRS are always derived from a base, which
          * is often (but not necessarily) geographic.
          */
-        while (crs instanceof GeneralDerivedCRS) {
-            crs = ((GeneralDerivedCRS) crs).getBaseCRS();
+        while (crs instanceof DerivedCRS) {
+            crs = ((DerivedCRS) crs).getBaseCRS();
         }
         if (crs instanceof GeodeticCRS) {
             /*

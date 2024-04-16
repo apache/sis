@@ -31,7 +31,7 @@ import org.opengis.parameter.*;
 import org.opengis.referencing.operation.*;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.GeneralDerivedCRS;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Numbers;
@@ -418,14 +418,14 @@ public class CoordinateOperationMethods extends HTMLGenerator {
             final CRSAuthorityFactory factory) throws FactoryException
     {
         final Map<String, DefaultGeographicBoundingBox> domainOfValidity = new HashMap<>();
-        for (final String code : factory.getAuthorityCodes(GeneralDerivedCRS.class)) {
+        for (final String code : factory.getAuthorityCodes(DerivedCRS.class)) {
             final CoordinateReferenceSystem crs;
             try {
                 crs = factory.createCoordinateReferenceSystem(code);
             } catch (FactoryException e) {
                 continue;                                                   // Ignore and inspect the next element.
             }
-            if (crs instanceof GeneralDerivedCRS derived) {
+            if (crs instanceof DerivedCRS derived) {
                 final GeographicBoundingBox candidate = CRS.getGeographicBoundingBox(derived);
                 if (candidate != null) {
                     final String name = derived.getConversionFromBase().getMethod().getName().getCode();

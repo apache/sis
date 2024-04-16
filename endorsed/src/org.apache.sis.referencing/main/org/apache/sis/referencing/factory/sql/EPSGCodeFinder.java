@@ -32,7 +32,7 @@ import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
-import org.opengis.referencing.crs.GeneralDerivedCRS;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.Ellipsoid;
@@ -317,8 +317,8 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
              *     ORDER BY COORD_REF_SYS_CODE
              */
             final Condition filter;
-            if (object instanceof GeneralDerivedCRS) {              // No need to use isInstance(Class, Object) from here.
-                filter = dependencies("SOURCE_GEOGCRS_CODE", SingleCRS.class, ((GeneralDerivedCRS) object).getBaseCRS(), true);
+            if (object instanceof DerivedCRS) {              // No need to use isInstance(Class, Object) from here.
+                filter = dependencies("SOURCE_GEOGCRS_CODE", SingleCRS.class, ((DerivedCRS) object).getBaseCRS(), true);
             } else if (object instanceof GeodeticCRS) {
                 filter = dependencies("DATUM_CODE", GeodeticDatum.class, ((GeodeticCRS) object).getDatum(), true);
             } else if (object instanceof VerticalCRS) {

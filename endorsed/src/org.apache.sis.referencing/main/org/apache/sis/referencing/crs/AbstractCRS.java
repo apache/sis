@@ -30,7 +30,7 @@ import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.SingleCRS;
-import org.opengis.referencing.crs.GeneralDerivedCRS;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.AbstractCS;
@@ -473,15 +473,14 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * {@link AbstractDerivedCRS}. In such case, the coordinate system axes shall not be formatted.
      *
      * <p>This method should return {@code true} when {@code this} CRS is the value returned by
-     * {@link GeneralDerivedCRS#getBaseCRS()} (typically {@link AbstractDerivedCRS#getBaseCRS()}).
+     * {@link DerivedCRS#getBaseCRS()} (typically {@link AbstractDerivedCRS#getBaseCRS()}).
      * Since the base CRS is the only CRS enclosed in derived CRS, we should have no ambiguity
      * (assuming that the user did not created some weird subclass).</p>
      *
      * <p>This method should be invoked for WKT 2 formatting only.</p>
      */
-    @SuppressWarnings("deprecation")
     static boolean isBaseCRS(final Formatter formatter) {
-        return formatter.getEnclosingElement(1) instanceof GeneralDerivedCRS;
+        return formatter.getEnclosingElement(1) instanceof DerivedCRS;
     }
 
     /**

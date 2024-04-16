@@ -68,8 +68,8 @@ final class SubOperationInfo {
      * The returned type is for use with {@link #COMPATIBLE_TYPES}.
      */
     private static Class<?> type(SingleCRS crs) {
-        while (crs instanceof GeneralDerivedCRS) {
-            crs = ((GeneralDerivedCRS) crs).getBaseCRS();
+        while (crs instanceof DerivedCRS) {
+            crs = ((DerivedCRS) crs).getBaseCRS();
         }
         return crs.getClass();
     }

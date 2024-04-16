@@ -29,7 +29,7 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.GeneralDerivedCRS;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -254,8 +254,8 @@ public final class CoordinateOperations extends Static {
      */
     public static Set<Integer> wrapAroundChanges(CoordinateReferenceSystem source, final CoordinateSystem target) {
         long changes = changes(source.getCoordinateSystem(), target);
-        while (source instanceof GeneralDerivedCRS) {
-            source = ((GeneralDerivedCRS) source).getBaseCRS();
+        while (source instanceof DerivedCRS) {
+            source = ((DerivedCRS) source).getBaseCRS();
             changes |= changes(source.getCoordinateSystem(), target);
         }
         final boolean useCache = (changes >= 0 && changes < CACHE.length);

@@ -541,7 +541,7 @@ abstract class AuthorityFactoryProxy<T> {
      * This field can be declared only after all the above constants.
      */
     static final AuthorityFactoryProxy<?>[] PROXIES = new AuthorityFactoryProxy<?>[] {
-        PROJECTED_CRS,      // Special kind of GeneralDerivedCRS.
+        PROJECTED_CRS,      // Special kind of DerivedCRS.
         GEOGRAPHIC_CRS,     // Special kind of GeodeticCRS.
         GEODETIC_CRS,
         VERTICAL_CRS,
