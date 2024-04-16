@@ -935,6 +935,10 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
      *       {@link #createCoordinateReferenceSystem(String)} method cached a value before to try that method.</li>
      * </ul>
      *
+     * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed to the
+     * {@link GeodeticCRS} parent interface. This is because ISO 19111 does not defines specific interface
+     * for the geocentric case. Users should assign the return value to a {@code GeodeticCRS} type.</div>
+     *
      * @return the coordinate reference system for the given code.
      * @throws FactoryException if the object creation failed.
      */

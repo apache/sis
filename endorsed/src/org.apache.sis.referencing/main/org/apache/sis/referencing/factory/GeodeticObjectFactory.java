@@ -320,6 +320,10 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * An {@linkplain #createGeocentricCRS(Map, GeodeticDatum, SphericalCS) alternate method} allows creation of the
      * same kind of CRS with spherical coordinate system instead of a Cartesian one.
      *
+     * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed to the
+     * {@link GeodeticCRS} parent interface. This is because ISO 19111 does not defines specific interface
+     * for the geocentric case. Users should assign the return value to a {@code GeodeticCRS} type.</div>
+     *
      * <h4>Dependencies</h4>
      * The components needed by this method can be created by the following methods:
      * <ol>
@@ -397,6 +401,10 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * Geocentric CRS have their origin at the approximate centre of mass of the earth.
      * An {@linkplain #createGeocentricCRS(Map, GeodeticDatum, CartesianCS) alternate method} allows creation of the
      * same kind of CRS with Cartesian coordinate system instead of a spherical one.
+     *
+     * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed to the
+     * {@link GeodeticCRS} parent interface. This is because ISO 19111 does not defines specific interface
+     * for the geocentric case. Users should assign the return value to a {@code GeodeticCRS} type.</div>
      *
      * <h4>Dependencies</h4>
      * The components needed by this method can be created by the following methods:

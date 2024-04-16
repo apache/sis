@@ -344,6 +344,10 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
      *   <tr><td>EPSG:4984</td> <td>World Geodetic System 1972</td></tr>
      * </table>
      *
+     * <div class="warning"><b>Warning:</b> In a future SIS version, the return type may be changed to the
+     * {@link GeodeticCRS} parent interface. This is because ISO 19111 does not defines specific interface
+     * for the geocentric case. Users should assign the return value to a {@code GeodeticCRS} type.</div>
+     *
      * <h4>Default implementation</h4>
      * The default implementation delegates to {@link #createCoordinateReferenceSystem(String)} and casts the result.
      * If the result cannot be casted, then a {@link NoSuchAuthorityCodeException} is thrown.
