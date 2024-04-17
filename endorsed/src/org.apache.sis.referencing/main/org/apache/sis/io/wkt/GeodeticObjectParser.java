@@ -2111,7 +2111,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final boolean   isWKT1 = element.getKeywordIndex() == 2;                // Index of "ProjCS" above.
         final String    name   = element.pullString("name");
         final SingleCRS geoCRS = parseGeodeticCRS(MANDATORY, element, 2, WKTKeywords.ellipsoidal);
-        if (!(geoCRS instanceof GeographicCRS)) {
+        if (!(geoCRS instanceof GeodeticCRS)) {
             throw new UnparsableObjectException(errorLocale, Errors.Keys.IllegalCRSType_1,
                     new Object[] {geoCRS.getClass()}, element.offset);
         }
@@ -2154,7 +2154,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             final Map<String,?> properties = parseMetadataAndClose(element, name, conversion);
             if (cs instanceof CartesianCS) {
                 final CRSFactory crsFactory = factories.getCRSFactory();
-                return crsFactory.createProjectedCRS(properties, (GeographicCRS) geoCRS, conversion, (CartesianCS) cs);
+                return crsFactory.createProjectedCRS(properties, (GeodeticCRS) geoCRS, conversion, (CartesianCS) cs);
             }
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);

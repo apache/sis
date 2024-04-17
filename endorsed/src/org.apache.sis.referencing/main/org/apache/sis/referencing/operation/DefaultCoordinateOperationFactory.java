@@ -28,7 +28,7 @@ import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.operation.*;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CRSFactory;
@@ -561,7 +561,7 @@ next:   for (int i=components.size(); --i >= 0;) {
          */
         if (baseType == SingleOperation.class) {
             if (isConversion(sourceCRS, targetCRS)) {
-                if (interpolationCRS == null && sourceCRS instanceof GeographicCRS
+                if (interpolationCRS == null && sourceCRS instanceof GeodeticCRS
                                              && targetCRS instanceof ProjectedCRS)
                 {
                     baseType = Projection.class;
@@ -586,13 +586,13 @@ next:   for (int i=components.size(); --i >= 0;) {
         if (Transformation.class.isAssignableFrom(baseType)) {
             op = new DefaultTransformation(properties, sourceCRS, targetCRS, interpolationCRS, method, transform);
         } else if (Projection.class.isAssignableFrom(baseType)) {
-            ArgumentChecks.ensureCanCast("sourceCRS", GeographicCRS.class, sourceCRS);
-            ArgumentChecks.ensureCanCast("targetCRS", ProjectedCRS .class, targetCRS);
+            ArgumentChecks.ensureCanCast("sourceCRS", GeodeticCRS .class, sourceCRS);
+            ArgumentChecks.ensureCanCast("targetCRS", ProjectedCRS.class, targetCRS);
             if (interpolationCRS != null) {
                 throw new IllegalArgumentException(Errors.format(
                         Errors.Keys.ForbiddenAttribute_2, "interpolationCRS", baseType));
             }
-            op = new DefaultProjection(properties, (GeographicCRS) sourceCRS, (ProjectedCRS) targetCRS, method, transform);
+            op = new DefaultProjection(properties, (GeodeticCRS) sourceCRS, (ProjectedCRS) targetCRS, method, transform);
         } else if (Conversion.class.isAssignableFrom(baseType)) {
             op = new DefaultConversion(properties, sourceCRS, targetCRS, interpolationCRS, method, transform);
         } else {  // See above comment about this last-resort fallback.

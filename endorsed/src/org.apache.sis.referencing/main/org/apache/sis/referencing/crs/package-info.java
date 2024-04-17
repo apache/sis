@@ -114,7 +114,7 @@
     @XmlJavaTypeAdapter(CS_UserDefinedCS.class),
     @XmlJavaTypeAdapter(CS_VerticalCS.class),
     @XmlJavaTypeAdapter(CC_Conversion.class),
-    @XmlJavaTypeAdapter(SC_GeographicCRS.class),
+//  @XmlJavaTypeAdapter(SC_GeodeticCRS.class),      // Causes an infinite loop. Replaced by direct instantiation.
     @XmlJavaTypeAdapter(StringAdapter.class),
     @XmlJavaTypeAdapter(InternationalStringConverter.class)
 })

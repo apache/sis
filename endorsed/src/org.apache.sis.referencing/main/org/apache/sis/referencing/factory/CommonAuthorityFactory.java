@@ -35,6 +35,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.TemporalCRS;
@@ -591,7 +592,7 @@ public class CommonAuthorityFactory extends GeodeticAuthorityFactory implements 
          * because the WMS specification does not said that we should.
          */
         final CommonCRS datum = CommonCRS.WGS84;
-        final GeographicCRS baseCRS;                // To be set, directly or indirectly, to WGS84.geographic().
+        final GeodeticCRS baseCRS;                  // To be set, directly or indirectly, to WGS84.geographic().
         final ProjectedCRS crs;                     // Temporary UTM projection, for extracting other properties.
         CartesianCS cs;                             // Coordinate system with (E,N) axes in metres.
         try {

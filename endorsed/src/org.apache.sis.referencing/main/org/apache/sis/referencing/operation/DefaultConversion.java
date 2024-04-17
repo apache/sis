@@ -65,8 +65,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * <p>After the source and target CRS become known, we can invoke the {@link #specialize specialize(…)} method for
  * {@linkplain DefaultMathTransformFactory#createParameterizedTransform creating a math transform from the parameters},
- * instantiate a new {@code Conversion} of a more specific type
- * ({@link org.opengis.referencing.operation.Projection}) if relevant,
+ * instantiate a new {@code Conversion} of a more specific type ({@link Projection}) if relevant,
  * and assign the source and target CRS to it.</p>
  *
  * <h2>Immutability and thread safety</h2>
@@ -360,8 +359,8 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      *
      * <p>The given {@code baseType} argument can be one of the following values:</p>
      * <ul>
-     *   <li><code>{@linkplain org.opengis.referencing.operation.Conversion}.class</code></li>
-     *   <li><code>{@linkplain org.opengis.referencing.operation.Projection}.class</code></li>
+     *   <li><code>{@linkplain Conversion}.class</code></li>
+     *   <li><code>{@linkplain Projection}.class</code></li>
      * </ul>
      *
      * This {@code specialize(…)} method returns a conversion which implement at least the given {@code baseType}

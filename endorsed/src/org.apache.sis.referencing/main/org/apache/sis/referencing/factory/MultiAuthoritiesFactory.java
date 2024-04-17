@@ -1686,8 +1686,8 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
         if (baseCRS != null && fromBase.getSourceCRS() == null && fromBase.getTargetCRS() == null) {
             final Map<String,?> properties = IdentifiedObjects.getProperties(fromBase, Datum.IDENTIFIERS_KEY);
             final CRSFactory factory = GeodeticObjectFactory.provider();
-            if (baseCRS instanceof GeographicCRS && cs instanceof CartesianCS) {
-                return factory.createProjectedCRS(properties, (GeographicCRS) baseCRS, fromBase, (CartesianCS) cs);
+            if (baseCRS instanceof GeodeticCRS && cs instanceof CartesianCS) {
+                return factory.createProjectedCRS(properties, (GeodeticCRS) baseCRS, fromBase, (CartesianCS) cs);
             } else {
                 return factory.createDerivedCRS(properties, baseCRS, fromBase, cs);
             }

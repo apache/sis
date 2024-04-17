@@ -427,7 +427,7 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
             } else if (cs instanceof SphericalCS) {
                 return "Geocentric (spherical coordinate system)";
             }
-            return "Geocentric";
+            return "Geodetic";
         }
         if (crs instanceof VerticalCRS vertical) {
             final Optional<RealizationMethod> method = vertical.getDatum().getRealizationMethod();

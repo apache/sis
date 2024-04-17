@@ -27,7 +27,6 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
-import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.referencing.privy.AxisDirections;
@@ -129,9 +128,9 @@ final class EllipsoidalHeightSeparator implements AxisFilter {
          * we also need to reduce the number of dimensions in the base CRS and in the conversion.
          */
         if (crs instanceof ProjectedCRS) {
-            GeographicCRS baseCRS = ((ProjectedCRS) crs).getBaseCRS();
+            GeodeticCRS baseCRS = ((ProjectedCRS) crs).getBaseCRS();
             if (ReferencingUtilities.getDimension(baseCRS) != 2) {
-                baseCRS = (GeographicCRS) separate(baseCRS);
+                baseCRS = (GeodeticCRS) separate(baseCRS);
             }
             Conversion projection = ((ProjectedCRS) crs).getConversionFromBase();
             /*

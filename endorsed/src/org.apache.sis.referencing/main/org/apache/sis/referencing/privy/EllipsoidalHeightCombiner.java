@@ -148,9 +148,9 @@ public final class EllipsoidalHeightCombiner {
                         crs = factories.getCRSFactory().createGeographicCRS(crsProps, ((GeodeticCRS) crs).getDatum(), (EllipsoidalCS) cs);
                     } else {
                         final ProjectedCRS proj = (ProjectedCRS) crs;
-                        GeographicCRS base = proj.getBaseCRS();
+                        GeodeticCRS base = proj.getBaseCRS();
                         if (base.getCoordinateSystem().getDimension() == 2) {
-                            base = (GeographicCRS) createCompoundCRS(
+                            base = (GeodeticCRS) createCompoundCRS(
                                     IdentifiedObjects.getProperties(base, GeographicCRS.IDENTIFIERS_KEY), base, vertical);
                         }
                         /*

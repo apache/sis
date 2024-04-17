@@ -17,12 +17,12 @@
 package org.apache.sis.referencing.crs;
 
 import jakarta.xml.bind.annotation.XmlElement;
-import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.apache.sis.xml.bind.gco.PropertyType;
 
 
 /**
- * JAXB adapter for {@link GeographicCRS}, in order to integrate the value in an element
+ * JAXB adapter for {@link GeodeticCRS}, in order to integrate the value in an element
  * complying with OGC/ISO standard.
  *
  * <p><b>Note:</b> JAXB adapters are usually declared in the {@link org.apache.sis.xml.bind.referencing} package,
@@ -30,11 +30,11 @@ import org.apache.sis.xml.bind.gco.PropertyType;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class SC_GeographicCRS extends PropertyType<SC_GeographicCRS, GeographicCRS> {
+final class SC_GeodeticCRS extends PropertyType<SC_GeodeticCRS, GeodeticCRS> {
     /**
      * Empty constructor for JAXB only.
      */
-    public SC_GeographicCRS() {
+    public SC_GeodeticCRS() {
     }
 
     /**
@@ -42,30 +42,30 @@ final class SC_GeographicCRS extends PropertyType<SC_GeographicCRS, GeographicCR
      * This method is indirectly invoked by the private constructor
      * below, so it shall not depend on the state of this object.
      *
-     * @return {@code GeographicCRS.class}
+     * @return {@code GeodeticCRS.class}
      */
     @Override
-    protected Class<GeographicCRS> getBoundType() {
-        return GeographicCRS.class;
+    protected Class<GeodeticCRS> getBoundType() {
+        return GeodeticCRS.class;
     }
 
     /**
      * Constructor for the {@link #wrap} method only.
      */
-    private SC_GeographicCRS(final GeographicCRS cs) {
-        super(cs);
+    SC_GeodeticCRS(final GeodeticCRS crs) {
+        super(crs);
     }
 
     /**
      * Invoked by {@link PropertyType} at marshalling time for wrapping the given value
      * in a {@code <gml:GeodeticCRS>} XML element.
      *
-     * @param  cs  the element to marshal.
+     * @param  crs  the element to marshal.
      * @return a {@code PropertyType} wrapping the given the element.
      */
     @Override
-    protected SC_GeographicCRS wrap(final GeographicCRS cs) {
-        return new SC_GeographicCRS(cs);
+    protected SC_GeodeticCRS wrap(final GeodeticCRS crs) {
+        return new SC_GeodeticCRS(crs);
     }
 
     /**
@@ -77,7 +77,8 @@ final class SC_GeographicCRS extends PropertyType<SC_GeographicCRS, GeographicCR
      */
     @XmlElement(name = "GeodeticCRS")
     public DefaultGeodeticCRS getElement() {
-        final GeographicCRS metadata = this.metadata;
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final GeodeticCRS metadata = this.metadata;
         if (metadata == null || metadata instanceof DefaultGeodeticCRS) {
             return (DefaultGeodeticCRS) metadata;
         } else {
@@ -88,13 +89,9 @@ final class SC_GeographicCRS extends PropertyType<SC_GeographicCRS, GeographicCR
     /**
      * Invoked by JAXB at unmarshalling time for storing the result temporarily.
      *
-     * @param  cs  the unmarshalled element.
+     * @param  crs  the unmarshalled element.
      */
-    public void setElement(final DefaultGeodeticCRS cs) {
-        if (cs == null || cs instanceof GeographicCRS) {
-            metadata = (GeographicCRS) cs;
-        } else {
-            metadata = new DefaultGeographicCRS(cs);
-        }
+    public void setElement(final DefaultGeodeticCRS crs) {
+        metadata = crs;
     }
 }

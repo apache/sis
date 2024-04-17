@@ -539,7 +539,7 @@ public final class GeodeticObjectParserTest extends TestCase {
 
         assertNameAndIdentifierEqual("Mercator test", 0, crs);
         verifyProjectedCS(crs.getCoordinateSystem(), Units.METRE);
-        verifyGeographicCRS(0, crs.getBaseCRS());
+        verifyGeographicCRS(0, assertInstanceOf(GeographicCRS.class, crs.getBaseCRS()));
 
         final GeodeticDatum datum = crs.getDatum();
         assertNameAndIdentifierEqual("World Geodetic System 1984", 0, datum);
@@ -824,7 +824,7 @@ public final class GeodeticObjectParserTest extends TestCase {
 
         assertNameAndIdentifierEqual("FRANCE/NTF/Lambert III", 0, crs);
         verifyProjectedCS(crs.getCoordinateSystem(), Units.METRE);
-        final GeographicCRS geoCRS = crs.getBaseCRS();
+        final GeographicCRS geoCRS = assertInstanceOf(GeographicCRS.class, crs.getBaseCRS());
         assertNameAndIdentifierEqual("NTF=GR3DF97A", 0, geoCRS);    // Inherited the datum name.
 
         final GeodeticDatum datum = geoCRS.getDatum();

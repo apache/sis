@@ -24,8 +24,8 @@ import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
-import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.ArgumentChecks;
 
@@ -67,7 +67,7 @@ final class DefaultProjection extends DefaultConversion implements Projection {
      * @param  transform   transform from positions in the source CRS to positions in the target CRS.
      */
     public DefaultProjection(final Map<String,?>   properties,
-                             final GeographicCRS   sourceCRS,
+                             final GeodeticCRS     sourceCRS,
                              final ProjectedCRS    targetCRS,
                              final OperationMethod method,
                              final MathTransform   transform)
@@ -94,8 +94,8 @@ final class DefaultProjection extends DefaultConversion implements Projection {
                       final OperationMethod[] actual) throws FactoryException
     {
         super(definition, sourceCRS, targetCRS, factory, actual);
-        ArgumentChecks.ensureCanCast("sourceCRS", GeographicCRS.class, sourceCRS);
-        ArgumentChecks.ensureCanCast("targetCRS", ProjectedCRS .class, targetCRS);
+        ArgumentChecks.ensureCanCast("sourceCRS", GeodeticCRS.class,  sourceCRS);
+        ArgumentChecks.ensureCanCast("targetCRS", ProjectedCRS.class, targetCRS);
     }
 
     /**
@@ -125,8 +125,8 @@ final class DefaultProjection extends DefaultConversion implements Projection {
      * Returns the source CRS, which must be geographic or {@code null}.
      */
     @Override
-    public final GeographicCRS getSourceCRS() {
-        return (GeographicCRS) super.getSourceCRS();
+    public final GeodeticCRS getSourceCRS() {
+        return (GeodeticCRS) super.getSourceCRS();
     }
 
     /**

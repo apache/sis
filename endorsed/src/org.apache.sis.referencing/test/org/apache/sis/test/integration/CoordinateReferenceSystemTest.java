@@ -20,7 +20,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.crs.DerivedCRS;
-import org.opengis.referencing.crs.GeodeticCRS;
+import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
 
@@ -65,14 +65,14 @@ public final class CoordinateReferenceSystemTest extends TestCase {
     public void testDerivedCRS() throws FactoryException {
         assertTrue(TestFactorySource.getSharedFactory() != null);
         CoordinateReferenceSystem crs = CRS.forCode("EPSG:5820");
-        assertInstanceOf(DerivedCRS .class, crs);
-        assertInstanceOf(GeodeticCRS.class, crs);
-        assertInstanceOf(CartesianCS.class, crs.getCoordinateSystem());
-        assertInstanceOf(CartesianCS.class, ((DerivedCRS) crs).getBaseCRS().getCoordinateSystem());
+        assertInstanceOf(DerivedCRS  .class, crs);
+        assertInstanceOf(ProjectedCRS.class, crs);
+        assertInstanceOf(CartesianCS .class, crs.getCoordinateSystem());
+        assertInstanceOf(CartesianCS .class, ((DerivedCRS) crs).getBaseCRS().getCoordinateSystem());
         /*
-         * Some tests are disabled because `EPSGDataAccess` confuse this derived CRS
-         * with a projected CRS. We are waiting for upgrade to EPSG database 10+
-         * before to re-evaluate how to fix this issue.
+         * Some tests are disabled because `EPSGDataAccess` confuses CRS type.
+         * We are waiting for upgrade to EPSG database 10+ before to re-evaluate
+         * how to fix this issue.
          *
          * https://issues.apache.org/jira/browse/SIS-518
          */

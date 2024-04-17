@@ -23,7 +23,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import org.opengis.referencing.crs.ProjectedCRS;
-import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;                 // For javadoc
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -68,7 +68,7 @@ import org.apache.sis.util.Workaround;
  * @since 0.6
  */
 @XmlType(name = "ProjectedCRSType", propOrder = {
-    "baseCRS",
+    "baseGeodeticCRS",
     "coordinateSystem"
 })
 @XmlRootElement(name = "ProjectedCRS")
@@ -126,10 +126,10 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * @throws MismatchedDimensionException if the source and target dimensions of {@code baseToDerived}
      *         do not match the dimensions of {@code base} and {@code derivedCS} respectively.
      *
-     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createProjectedCRS(Map, GeographicCRS, Conversion, CartesianCS)
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createProjectedCRS(Map, GeodeticCRS, Conversion, CartesianCS)
      */
     public DefaultProjectedCRS(final Map<String,?> properties,
-                               final GeographicCRS baseCRS,
+                               final GeodeticCRS   baseCRS,
                                final Conversion    conversion,
                                final CartesianCS   derivedCS)
             throws MismatchedDimensionException
@@ -142,7 +142,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @Workaround(library="JDK", version="1.7")
-    private static GeographicCRS checkDimensions(final GeographicCRS baseCRS, final CartesianCS derivedCS) {
+    private static GeodeticCRS checkDimensions(final GeodeticCRS baseCRS, final CartesianCS derivedCS) {
         int n = ReferencingUtilities.getDimension(baseCRS);
         if (derivedCS != null) {
             n = Math.max(n, derivedCS.getDimension());
@@ -235,8 +235,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * @return the base coordinate reference system, which must be geographic.
      */
     @Override
-    @XmlElement(name = "baseGeodeticCRS", required = true)        // Note: older GML version used "baseGeographicCRS".
-    public GeographicCRS getBaseCRS() {
+    public GeodeticCRS getBaseCRS() {
         final Projection projection = super.getConversionFromBase();
         return (projection != null) ? projection.getSourceCRS() : null;
     }
@@ -389,14 +388,14 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
             return super.formatTo(formatter);
         }
         WKTUtilities.appendName(this, formatter, null);
-        final Convention    convention  = formatter.getConvention();
-        final boolean       isWKT1      = (convention.majorVersion() == 1);
-        final CartesianCS   cs          = getCoordinateSystem();
-        final GeographicCRS baseCRS     = getBaseCRS();
-        final Unit<?>       lengthUnit  = ReferencingUtilities.getUnit(cs);
-        final Unit<Angle>   angularUnit = AxisDirections.getAngularUnit(baseCRS.getCoordinateSystem(), null);
-        final Unit<Angle>   oldAngle    = formatter.addContextualUnit(angularUnit);
-        final Unit<?>       oldLength   = formatter.addContextualUnit(lengthUnit);
+        final Convention  convention  = formatter.getConvention();
+        final boolean     isWKT1      = (convention.majorVersion() == 1);
+        final CartesianCS cs          = getCoordinateSystem();
+        final GeodeticCRS baseCRS     = getBaseCRS();
+        final Unit<?>     lengthUnit  = ReferencingUtilities.getUnit(cs);
+        final Unit<Angle> angularUnit = AxisDirections.getAngularUnit(baseCRS.getCoordinateSystem(), null);
+        final Unit<Angle> oldAngle    = formatter.addContextualUnit(angularUnit);
+        final Unit<?>     oldLength   = formatter.addContextualUnit(lengthUnit);
         /*
          * Format the enclosing base CRS. Note that WKT 1 formats a full GeographicCRS while WKT 2 formats only
          * the datum with the prime meridian (no coordinate system) and uses a different keyword ("BaseGeodCRS"
@@ -453,12 +452,19 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
     }
 
     /**
-     * Used by JAXB only (invoked by reflection).
-     *
-     * @see #getBaseCRS()
+     * Used by JAXB only (invoked by reflection). We do not use adapter because,
+     * for an unknown reason, doing so cause an infinite loop in Glassfish JAXB.
      */
-    private void setBaseCRS(final GeographicCRS crs) {
-        setBaseCRS("baseGeodeticCRS", crs);
+    @XmlElement(name = "baseGeodeticCRS", required = true)    // Note: older GML version used "baseGeographicCRS".
+    private SC_GeodeticCRS getBaseGeodeticCRS() {
+        return new SC_GeodeticCRS(getBaseCRS());
+    }
+
+    /**
+     * Used by JAXB only (invoked by reflection).
+     */
+    private void setBaseGeodeticCRS(final SC_GeodeticCRS crs) {
+        setBaseCRS("baseGeodeticCRS", crs.getElement());
     }
 
     /**

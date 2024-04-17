@@ -781,7 +781,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      */
     @Override
     public ProjectedCRS createProjectedCRS(final Map<String,?> properties,
-            final GeographicCRS baseCRS, final Conversion conversion,
+            final GeodeticCRS baseCRS, final Conversion conversion,
             final CartesianCS derivedCS) throws FactoryException
     {
         final DefaultProjectedCRS crs;

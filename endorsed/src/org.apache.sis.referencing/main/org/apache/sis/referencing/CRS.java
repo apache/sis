@@ -1298,8 +1298,8 @@ public final class CRS extends Static {
                  * for letting SIS create or associate new ones, which will be two-dimensional now.
                  */
                 if (crs instanceof ProjectedCRS) {
-                    final ProjectedCRS  proj = (ProjectedCRS) crs;
-                    final GeographicCRS base = (GeographicCRS) getHorizontalComponent(proj.getBaseCRS());
+                    final ProjectedCRS proj = (ProjectedCRS) crs;
+                    final GeodeticCRS  base = (GeodeticCRS) getHorizontalComponent(proj.getBaseCRS());
                     Conversion fromBase = proj.getConversionFromBase();
                     fromBase = new DefaultConversion(IdentifiedObjects.getProperties(fromBase),
                             fromBase.getMethod(), null, fromBase.getParameterValues());

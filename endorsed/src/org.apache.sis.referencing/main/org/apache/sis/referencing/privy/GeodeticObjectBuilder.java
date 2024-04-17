@@ -33,6 +33,7 @@ import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
@@ -466,7 +467,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * @return the projected CRS.
      * @throws FactoryException if an error occurred while building the projected CRS.
      */
-    public ProjectedCRS createProjectedCRS(final GeographicCRS baseCRS, CartesianCS derivedCS) throws FactoryException {
+    public ProjectedCRS createProjectedCRS(final GeodeticCRS baseCRS, CartesianCS derivedCS) throws FactoryException {
         ensureConversionMethodSet();
         onCreate(false);
         try {
