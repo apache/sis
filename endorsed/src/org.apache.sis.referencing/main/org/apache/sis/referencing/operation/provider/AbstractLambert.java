@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.provider;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.referencing.operation.ConicProjection;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.projection.LambertConicConformal;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
@@ -75,7 +74,7 @@ class AbstractLambert extends MapProjection {
      * For subclass constructors only.
      */
     AbstractLambert(final ParameterDescriptorGroup parameters) {
-        super(ConicProjection.class, parameters);
+        super(parameters);
     }
 
     /**

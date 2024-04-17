@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.provider;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.referencing.operation.Projection;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 import org.apache.sis.parameter.Parameters;
@@ -165,7 +164,7 @@ public class CassiniSoldner extends MapProjection {
      * Constructs a provider from a set of parameters.
      */
     CassiniSoldner(final ParameterDescriptorGroup parameters) {
-        super(Projection.class, parameters);
+        super(parameters);
     }
 
     /**

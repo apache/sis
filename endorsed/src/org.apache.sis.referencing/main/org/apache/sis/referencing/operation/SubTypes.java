@@ -53,7 +53,7 @@ final class SubTypes {
             return DefaultTransformation.castOrCopy((Transformation) object);
         }
         if (object instanceof Conversion) {
-            return forConversion((Conversion) object);
+            return DefaultConversion.castOrCopy((Conversion) object);
         }
         if (object instanceof PassThroughOperation) {
             return DefaultPassThroughOperation.castOrCopy((PassThroughOperation) object);
@@ -78,37 +78,7 @@ final class SubTypes {
     }
 
     /**
-     * Returns a SIS implementation for the given conversion.
-     *
-     * @see DefaultConversion#castOrCopy(Conversion)
-     */
-    static DefaultConversion forConversion(final Conversion object) {
-        if (object instanceof CylindricalProjection) {
-            return (object instanceof DefaultCylindricalProjection) ? ((DefaultCylindricalProjection) object)
-                   : new DefaultCylindricalProjection((CylindricalProjection) object);
-        }
-        if (object instanceof ConicProjection) {
-            return (object instanceof DefaultConicProjection) ? ((DefaultConicProjection) object)
-                   : new DefaultConicProjection((ConicProjection) object);
-        }
-        if (object instanceof PlanarProjection) {
-            return (object instanceof DefaultPlanarProjection) ? ((DefaultPlanarProjection) object)
-                   : new DefaultPlanarProjection((PlanarProjection) object);
-        }
-        if (object instanceof Projection) {
-            return (object instanceof DefaultProjection) ? ((DefaultProjection) object)
-                   : new DefaultProjection((Projection) object);
-        }
-        if (object == null || object instanceof DefaultConversion) {
-            return (DefaultConversion) object;
-        }
-        return new DefaultConversion(object);
-    }
-
-    /**
      * Returns a conversion from the specified defining conversion.
-     * The new conversion will be a more specific type like a {@linkplain PlanarProjection planar},
-     * {@linkplain CylindricalProjection cylindrical} or {@linkplain ConicProjection conic projection}.
      * The returned conversion will implement at least the {@code baseType} interface, but may implement
      * a more specific GeoAPI interface if this method has been able to infer the type from the
      * {@code conversion} argument.
@@ -153,13 +123,7 @@ final class SubTypes {
             boolean tryAgain;
             do {
                 tryAgain = false;
-                if (CylindricalProjection.class.isAssignableFrom(type)) {
-                    conversion = new DefaultCylindricalProjection(definition, sourceCRS, targetCRS, factory, actual);
-                } else if (ConicProjection.class.isAssignableFrom(type)) {
-                    conversion = new DefaultConicProjection(definition, sourceCRS, targetCRS, factory, actual);
-                } else if (PlanarProjection.class.isAssignableFrom(type)) {
-                    conversion = new DefaultPlanarProjection(definition, sourceCRS, targetCRS, factory, actual);
-                } else if (Projection.class.isAssignableFrom(type)) {
+                if (Projection.class.isAssignableFrom(type)) {
                     conversion = new DefaultProjection(definition, sourceCRS, targetCRS, factory, actual);
                 } else {
                     conversion = new DefaultConversion(definition, sourceCRS, targetCRS, factory, actual);
