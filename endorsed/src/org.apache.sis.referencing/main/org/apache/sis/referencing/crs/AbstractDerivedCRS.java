@@ -51,8 +51,6 @@ import org.apache.sis.util.resources.Errors;
  * A coordinate reference system that is defined by its coordinate conversion from another CRS.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- *
- * @param <C>  the conversion type, either {@code Conversion} or {@code Projection}.
  */
 @XmlType(name = "AbstractGeneralDerivedCRSType")
 @XmlRootElement(name = "AbstractGeneralDerivedCRS")
@@ -60,7 +58,7 @@ import org.apache.sis.util.resources.Errors;
     DefaultDerivedCRS.class,
     DefaultProjectedCRS.class
 })
-abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS implements DerivedCRS {
+abstract class AbstractDerivedCRS extends AbstractCRS implements DerivedCRS {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -76,7 +74,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      * @see #getConversionFromBase()
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    private C conversionFromBase;
+    private Conversion conversionFromBase;
 
     /**
      * Creates a derived CRS from a defining conversion.
@@ -111,7 +109,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      * Creates a new CRS derived from the specified one, but with different axis order or unit.
      * This is for implementing the {@link #createSameType(AbstractCS)} method only.
      */
-    AbstractDerivedCRS(final AbstractDerivedCRS<C> original, final AbstractCS derivedCS) {
+    AbstractDerivedCRS(final AbstractDerivedCRS original, final AbstractCS derivedCS) {
         super(original, null, derivedCS);
         final Conversion conversion = original.conversionFromBase;
         conversionFromBase = createConversionFromBase(null, (SingleCRS) conversion.getSourceCRS(), conversion);
@@ -134,8 +132,8 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
         ArgumentChecks.ensureNonNull("baseCRS", baseCRS);
         ArgumentChecks.ensureNonNull("method", method);
         ArgumentChecks.ensureNonNull("baseToDerived", baseToDerived);
-        conversionFromBase = (C) new DefaultConversion(   // Cast to (C) is valid only for DefaultDerivedCRS.
-                ConversionKeys.unprefix(properties), baseCRS, this, interpolationCRS, method, baseToDerived);
+        conversionFromBase = new DefaultConversion(ConversionKeys.unprefix(properties),
+                baseCRS, this, interpolationCRS, method, baseToDerived);
     }
 
     /**
@@ -161,13 +159,13 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      * instance is advanced enough for allowing the {@code getCoordinateSystem()} method to execute.
      * Subclasses should make their {@code getCoordinateSystem()} method final for better guarantees.</p>
      */
-    private C createConversionFromBase(final Map<String,?> properties, final SingleCRS baseCRS, final Conversion conversion) {
+    private Conversion createConversionFromBase(final Map<String,?> properties, final SingleCRS baseCRS, final Conversion conversion) {
         MathTransformFactory factory = null;
         if (properties != null) {
             factory = (MathTransformFactory) properties.get(ReferencingFactoryContainer.MT_FACTORY);
         }
         try {
-            return DefaultConversion.castOrCopy(conversion).specialize(getConversionType(), baseCRS, this, factory);
+            return DefaultConversion.castOrCopy(conversion).specialize(baseCRS, this, factory);
         } catch (FactoryException e) {
             throw new IllegalArgumentException(Errors.forProperties(properties).getString(
                     Errors.Keys.IllegalArgumentValue_2, "conversion", conversion.getName()), e);
@@ -175,22 +173,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
     }
 
     /**
-     * Returns the type of conversion associated to this {@code AbstractDerivedCRS}.
-     *
-     * <p><b>WARNING:</b> this method is invoked (indirectly) at construction time.
-     * Consequently, it shall return a constant value - this method is not allowed to
-     * depend on the object state.</p>
-     */
-    abstract Class<C> getConversionType();
-
-    /**
-     * Returns the GeoAPI interface implemented by this class.
-     */
-    @Override
-    public abstract Class<? extends DerivedCRS> getInterface();
-
-    /**
-     * Returns the datum of the {@linkplain #getBaseCRS() base CRS}.
+     * Returns the datum of the base CRS.
      *
      * @return the datum of the base CRS.
      */
@@ -198,13 +181,13 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
     public abstract Datum getDatum();
 
     /**
-     * Returns the conversion from the {@linkplain #getBaseCRS() base CRS} to this CRS.
+     * Returns the conversion from the base CRS to this CRS.
      *
      * @return the conversion to this CRS.
      */
     @Override
     @XmlElement(name = "conversion", required = true)
-    public C getConversionFromBase() {
+    public Conversion getConversionFromBase() {
         return conversionFromBase;
     }
 
@@ -297,7 +280,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      * At this state, the given conversion has null {@code sourceCRS} and {@code targetCRS}.
      * Those CRS will be set later, in {@link #afterUnmarshal(Unmarshaller, Object)}.
      */
-    private void setConversionFromBase(final C conversion) {
+    private void setConversionFromBase(final Conversion conversion) {
         if (conversionFromBase == null) {
             conversionFromBase = conversion;
         } else {

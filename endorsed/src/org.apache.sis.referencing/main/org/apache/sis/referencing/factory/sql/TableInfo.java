@@ -139,8 +139,8 @@ final class TableInfo {
                 "COORD_OP_CODE",
                 "COORD_OP_NAME",
                 "COORD_OP_TYPE",
-                new Class<?>[] { Projection.class, Conversion.class, Transformation.class},
-                new String[]   {"conversion",     "conversion",     "transformation"},
+                new Class<?>[] { Conversion.class, Transformation.class},
+                new String[]   {"conversion",     "transformation"},
                 "SHOW_OPERATION"),
                 // Note: Projection is handled in a special way.
 

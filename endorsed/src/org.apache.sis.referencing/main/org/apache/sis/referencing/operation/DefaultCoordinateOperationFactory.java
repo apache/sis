@@ -28,8 +28,6 @@ import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.operation.*;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.GeodeticCRS;
-import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.cs.CSFactory;
@@ -553,22 +551,12 @@ next:   for (int i=components.size(); --i >= 0;) {
          *
          *   - If the two CRS uses the same datum (ignoring metadata), assume that we have a Conversion.
          *   - Otherwise we have a datum change, which implies that we have a Transformation.
-         *
-         * In the case of Conversion, we can specialize one step more if the conversion is going from a geographic CRS
-         * to a projected CRS. It may seems that we should check if ProjectedCRS.getBaseCRS() is equal (ignoring meta
-         * data) to source CRS. But we already checked the datum, which is the important part. The axis order and unit
-         * could be different, which we want to allow.
          */
         if (baseType == SingleOperation.class) {
             if (isConversion(sourceCRS, targetCRS)) {
-                if (interpolationCRS == null && sourceCRS instanceof GeodeticCRS
-                                             && targetCRS instanceof ProjectedCRS)
-                {
-                    baseType = Projection.class;
-                } else {
-                    baseType = Conversion.class;
-                }
+                baseType = Conversion.class;
             } else {
+                // TODO: handle point motion operation.
                 baseType = Transformation.class;
             }
         }
@@ -585,14 +573,6 @@ next:   for (int i=components.size(); --i >= 0;) {
         final AbstractSingleOperation op;
         if (Transformation.class.isAssignableFrom(baseType)) {
             op = new DefaultTransformation(properties, sourceCRS, targetCRS, interpolationCRS, method, transform);
-        } else if (Projection.class.isAssignableFrom(baseType)) {
-            ArgumentChecks.ensureCanCast("sourceCRS", GeodeticCRS .class, sourceCRS);
-            ArgumentChecks.ensureCanCast("targetCRS", ProjectedCRS.class, targetCRS);
-            if (interpolationCRS != null) {
-                throw new IllegalArgumentException(Errors.format(
-                        Errors.Keys.ForbiddenAttribute_2, "interpolationCRS", baseType));
-            }
-            op = new DefaultProjection(properties, (GeodeticCRS) sourceCRS, (ProjectedCRS) targetCRS, method, transform);
         } else if (Conversion.class.isAssignableFrom(baseType)) {
             op = new DefaultConversion(properties, sourceCRS, targetCRS, interpolationCRS, method, transform);
         } else {  // See above comment about this last-resort fallback.

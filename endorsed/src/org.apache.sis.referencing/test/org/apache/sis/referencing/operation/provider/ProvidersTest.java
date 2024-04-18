@@ -22,7 +22,6 @@ import java.util.IdentityHashMap;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.cs.VerticalCS;
-import org.opengis.referencing.operation.Projection;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 
@@ -207,7 +206,7 @@ public final class ProvidersTest extends TestCase {
             final int expected;
             if (method.sourceCSType == VerticalCS.class) {
                 expected = 1;
-            } else if (Projection.class.isAssignableFrom(method.getOperationType())) {
+            } else if (method instanceof MapProjection) {
                 expected = 2;
             } else if (name.endsWith("1D")) {
                 expected = 1;

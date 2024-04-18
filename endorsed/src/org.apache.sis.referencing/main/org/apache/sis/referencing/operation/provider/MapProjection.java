@@ -33,7 +33,7 @@ import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.Projection;
+import org.opengis.referencing.operation.Conversion;
 import static org.opengis.metadata.Identifier.AUTHORITY_KEY;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -173,7 +173,7 @@ public abstract class MapProjection extends AbstractProvider {
      * @param  parameters  the set of parameters (never {@code null}).
      */
     protected MapProjection(final ParameterDescriptorGroup parameters) {
-        super(Projection.class, parameters,
+        super(Conversion.class, parameters,
               EllipsoidalCS.class, true,
               CartesianCS.class, false,
               (byte) 2);

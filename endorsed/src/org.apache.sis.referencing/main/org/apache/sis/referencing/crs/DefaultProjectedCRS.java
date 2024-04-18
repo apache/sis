@@ -28,7 +28,6 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;                 // For javadoc
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Conversion;
-import org.opengis.referencing.operation.Projection;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
@@ -72,7 +71,7 @@ import org.apache.sis.util.Workaround;
     "coordinateSystem"
 })
 @XmlRootElement(name = "ProjectedCRS")
-public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implements ProjectedCRS {
+public class DefaultProjectedCRS extends AbstractDerivedCRS implements ProjectedCRS {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -192,15 +191,6 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
     }
 
     /**
-     * Returns the type of conversion associated to this {@code DefaultProjectedCRS}.
-     * Must be a hard-coded, constant value (not dependent on object state).
-     */
-    @Override
-    final Class<Projection> getConversionType() {
-        return Projection.class;
-    }
-
-    /**
      * Returns the GeoAPI interface implemented by this class.
      * The SIS implementation returns {@code ProjectedCRS.class}.
      *
@@ -236,8 +226,8 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      */
     @Override
     public GeodeticCRS getBaseCRS() {
-        final Projection projection = super.getConversionFromBase();
-        return (projection != null) ? projection.getSourceCRS() : null;
+        final Conversion projection = super.getConversionFromBase();
+        return (projection != null) ? (GeodeticCRS) projection.getSourceCRS() : null;
     }
 
     /**
@@ -257,7 +247,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * @return the map projection from base CRS to this CRS.
      */
     @Override
-    public Projection getConversionFromBase() {
+    public Conversion getConversionFromBase() {
         return super.getConversionFromBase();
     }
 

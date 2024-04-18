@@ -24,7 +24,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import org.opengis.referencing.operation.Projection;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.IntegerList;
 import org.apache.sis.util.privy.AbstractMap;
@@ -78,11 +77,6 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
      * May be a super-interface of the type specified to the constructor.
      */
     final Class<?> type;
-
-    /**
-     * {@code true} if {@link #type} is assignable to {@link Projection}.
-     */
-    private final transient boolean isProjection;
 
     /**
      * The SQL commands that this {@code AuthorityCodes} may need to execute.
@@ -165,7 +159,6 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
          * Other information opportunistically computed from above search.
          */
         this.type = tableType;
-        isProjection = Projection.class.isAssignableFrom(tableType);
     }
 
     /**
@@ -175,14 +168,6 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
      */
     final CloseableReference createReference() {
         return new CloseableReference(this, factory, statements);
-    }
-
-    /**
-     * Returns {@code true} if the specified code should be included in this map.
-     */
-    private boolean filter(final int code) throws SQLException {
-        assert Thread.holdsLock(factory);
-        return !isProjection || factory.isProjection(code);
     }
 
     /**
@@ -216,10 +201,8 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
                         return -1;
                     }
                     code = r.getInt(1);
-                    if (filter(code)) {
-                        codes.addInt(code);
-                        more--;
-                    }
+                    codes.addInt(code);
+                    more--;
                 } while (more >= 0);
             }
         }
@@ -273,19 +256,17 @@ final class AuthorityCodes extends AbstractMap<String,String> implements Seriali
             }
             try {
                 synchronized (factory) {
-                    if (filter(n)) {
-                        PreparedStatement statement = (PreparedStatement) statements[ONE];
-                        if (statement == null) {
-                            statements[ONE] = statement = factory.connection.prepareStatement(sql[ONE]);
-                            sql[ONE] = null;    // Not needed anymore.
-                        }
-                        statement.setInt(1, n);
-                        try (ResultSet r = statement.executeQuery()) {
-                            while (r.next()) {
-                                String name = r.getString(1);
-                                if (name != null) {
-                                    return name;
-                                }
+                    PreparedStatement statement = (PreparedStatement) statements[ONE];
+                    if (statement == null) {
+                        statements[ONE] = statement = factory.connection.prepareStatement(sql[ONE]);
+                        sql[ONE] = null;    // Not needed anymore.
+                    }
+                    statement.setInt(1, n);
+                    try (ResultSet r = statement.executeQuery()) {
+                        while (r.next()) {
+                            String name = r.getString(1);
+                            if (name != null) {
+                                return name;
                             }
                         }
                     }

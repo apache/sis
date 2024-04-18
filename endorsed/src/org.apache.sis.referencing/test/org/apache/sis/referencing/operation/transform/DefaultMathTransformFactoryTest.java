@@ -24,20 +24,20 @@ import java.util.ServiceLoader;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.referencing.operation.Conversion;
-import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.parameter.Parameterized;
+import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.crs.DefaultProjectedCRS;
-import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.operation.provider.Mercator1SP;
+import org.apache.sis.referencing.operation.provider.MapProjection;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.measure.Units;
 
@@ -149,19 +149,16 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
         final DefaultMathTransformFactory factory = factory();
         final Set<OperationMethod> transforms  = factory.getAvailableMethods(SingleOperation.class);
         final Set<OperationMethod> conversions = factory.getAvailableMethods(Conversion.class);
-        final Set<OperationMethod> projections = factory.getAvailableMethods(Projection.class);
         /*
          * Following tests should not cause loading of more classes than needed.
          */
         assertFalse(transforms .isEmpty());
         assertFalse(conversions.isEmpty());
-        assertFalse(projections.isEmpty());
         assertTrue (transforms.contains(factory.getOperationMethod(Constants.AFFINE)));
         /*
          * Following tests will force instantiation of all remaining OperationMethod.
          */
-        assertTrue(transforms .containsAll(conversions), "Conversions should be a subset of transforms.");
-        assertTrue(conversions.containsAll(projections), "Projections should be a subset of conversions.");
+        assertTrue(transforms.containsAll(conversions), "Conversions should be a subset of transforms.");
     }
 
     /**
@@ -213,8 +210,12 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
          */
         final MathTransformFactory factory = factory();
         final Map<String,?> dummyName = Map.of(DefaultProjectedCRS.NAME_KEY, "Test");
-        final Collection<OperationMethod> methods = factory.getAvailableMethods(Projection.class);
+        final Collection<OperationMethod> methods = factory.getAvailableMethods(Conversion.class);
+        int count = 0;
         for (final OperationMethod method : methods) {
+            if (!(method instanceof MapProjection)) {
+                continue;
+            }
             final String classification = method.getName().getCode();
             ParameterValueGroup pg = factory.getDefaultParameters(classification);
             pg.parameter("semi_major").setValue(6377563.396);
@@ -295,7 +296,9 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
             final Conversion projection = crs.getConversionFromBase();
             assertSame(mt, projection.getMathTransform(), classification);
             assertEquals(projection.getMethod().getName().getCode(), classification);
+            count++;
         }
+        assertTrue(count >= 15, "Map projection methods not found.");
     }
 
     /**

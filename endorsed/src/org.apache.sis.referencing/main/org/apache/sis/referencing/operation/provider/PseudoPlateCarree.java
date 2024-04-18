@@ -30,9 +30,6 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * The semi-major and semi-minor axis lengths are ignored (they could be fixed to 1) but nevertheless declared
  * for allowing netCDF file encoding to declare the ellipsoid in pseudo-projection parameters.
  *
- * <p>We do not declare that operation method as a {@link org.opengis.referencing.operation.Projection} because
- * axis units are degrees.</p>
- *
  * @author  Martin Desruisseaux (Geomatys)
  *
  * @see Equirectangular

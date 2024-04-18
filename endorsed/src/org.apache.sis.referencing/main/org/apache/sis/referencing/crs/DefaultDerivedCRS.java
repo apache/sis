@@ -105,7 +105,7 @@ import org.opengis.referencing.cs.ParametricCS;
     "coordinateSystem"
 })
 @XmlRootElement(name = "DerivedCRS")
-public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements DerivedCRS {
+public class DefaultDerivedCRS extends AbstractDerivedCRS implements DerivedCRS {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -378,15 +378,6 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS<Conversion> implements
             }
             return new DefaultDerivedCRS(object);
         }
-    }
-
-    /**
-     * Returns the type of conversion associated to this {@code DefaultDerivedCRS}.
-     * Must be a hard-coded, constant value (not dependent on object state).
-     */
-    @Override
-    final Class<Conversion> getConversionType() {
-        return Conversion.class;
     }
 
     /**

@@ -22,7 +22,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.referencing.cs.EllipsoidalCS;
-import org.opengis.referencing.operation.Projection;
+import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.Longitude;
@@ -104,7 +104,7 @@ public final class ZonedTransverseMercator extends AbstractProvider {
      * because of the discontinuities between zones.
      */
     public ZonedTransverseMercator() {
-        super(Projection.class, PARAMETERS,
+        super(Conversion.class, PARAMETERS,
               EllipsoidalCS.class, true,
               EllipsoidalCS.class, false,
               (byte) 2);

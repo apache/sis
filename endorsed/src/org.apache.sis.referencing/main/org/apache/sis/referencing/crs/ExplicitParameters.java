@@ -59,7 +59,7 @@ final class ExplicitParameters extends FormattableObject {
     /**
      * Creates a new temporary {@code Conversion} elements for the parameters of the given CRS.
      */
-    ExplicitParameters(final AbstractDerivedCRS<?> crs, final String keyword) {
+    ExplicitParameters(final AbstractDerivedCRS crs, final String keyword) {
         conversion = crs.getConversionFromBase();
         final Datum datum = crs.getDatum();
         ellipsoid = (datum instanceof GeodeticDatum) ? ((GeodeticDatum) datum).getEllipsoid() : null;

@@ -60,9 +60,9 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
     /**
      * The base interface of the {@code CoordinateOperation} instances that use this method.
      * Value can be {@link org.opengis.referencing.operation.SingleOperation},
-     * {@link org.opengis.referencing.operation.Transformation},
-     * {@link org.opengis.referencing.operation.Conversion} or
-     * {@link org.opengis.referencing.operation.Projection}.
+     * {@link org.opengis.referencing.operation.Conversion},
+     * {@link org.opengis.referencing.operation.Transformation} or
+     * {@link org.opengis.referencing.operation.PointMotionOperation}.
      *
      * @see #getOperationType()
      */
