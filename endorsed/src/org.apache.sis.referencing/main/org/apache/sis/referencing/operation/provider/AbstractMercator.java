@@ -21,7 +21,6 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
-import org.opengis.referencing.operation.CylindricalProjection;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.projection.Mercator;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
@@ -94,7 +93,7 @@ class AbstractMercator extends MapProjection {
      * For subclass constructors only.
      */
     AbstractMercator(final ParameterDescriptorGroup parameters) {
-        super(CylindricalProjection.class, parameters);
+        super(parameters);
     }
 
     /**

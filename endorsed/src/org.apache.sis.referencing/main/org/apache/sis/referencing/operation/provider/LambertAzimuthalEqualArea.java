@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.provider;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.referencing.operation.PlanarProjection;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
@@ -157,7 +156,7 @@ public class LambertAzimuthalEqualArea extends MapProjection {
      * @param  parameters  the set of parameters (never {@code null}).
      */
     LambertAzimuthalEqualArea(final ParameterDescriptorGroup parameters) {
-        super(PlanarProjection.class, parameters);
+        super(parameters);
     }
 
     /**

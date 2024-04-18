@@ -19,7 +19,7 @@ package org.apache.sis.portrayal;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
@@ -201,7 +201,7 @@ final class CanvasContext extends CoordinateOperationContext {
                     }
                     combined[j] = m;
                 }
-                final Ellipsoid ellipsoid = ((GeographicCRS) objectiveToGeographic.getTargetCRS()).getDatum().getEllipsoid();
+                final Ellipsoid ellipsoid = ((GeodeticCRS) objectiveToGeographic.getTargetCRS()).getDatum().getEllipsoid();
                 double radius = Formulas.radiusOfConformalSphere(ellipsoid, combined[1]);
                 radius = ellipsoid.getAxisUnit().getConverterTo(Units.METRE).convert(radius);
                 resolution = MathFunctions.magnitude(combined) * radius;

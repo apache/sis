@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.provider;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.referencing.operation.ConicProjection;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
@@ -246,7 +245,7 @@ public final class AlbersEqualArea extends MapProjection {
      * Constructs a new provider.
      */
     public AlbersEqualArea() {
-        super(ConicProjection.class, PARAMETERS);
+        super(PARAMETERS);
     }
 
     /**

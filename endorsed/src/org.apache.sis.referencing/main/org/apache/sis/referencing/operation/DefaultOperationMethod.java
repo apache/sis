@@ -346,10 +346,7 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      *     point arithmetic (including rounding errors) and the approximations implied by finite series expansions.</li>
      *   <li>{@link org.opengis.referencing.operation.Projection}
      *     if the coordinate operation is a conversion (as defined above) converting geodetic latitudes and longitudes
-     *     to plane (map) coordinates. This type can optionally be refined with one of the
-     *     {@link org.opengis.referencing.operation.CylindricalProjection},
-     *     {@link org.opengis.referencing.operation.ConicProjection} or
-     *     {@link org.opengis.referencing.operation.PlanarProjection} subtypes.</li>
+     *     to plane (map) coordinates.</li>
      * </ul>
      *
      * In case of doubt, {@code getOperationType()} can conservatively return the base type.

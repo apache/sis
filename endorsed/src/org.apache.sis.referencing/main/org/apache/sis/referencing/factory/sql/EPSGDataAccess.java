@@ -1487,7 +1487,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                             }
                             try {
                                 /*
-                                 * For a ProjectedCRS, the baseCRS is always geographic. So in theory we would not
+                                 * For a ProjectedCRS, the baseCRS is always geodetic. So in theory we would not
                                  * need the `instanceof` check. However, the EPSG dataset version 8.9 also uses the
                                  * "projected" type for CRS that are actually derived CRS. See EPSG:5820 and 5821.
                                  *

@@ -25,7 +25,7 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
-import org.opengis.referencing.operation.CylindricalProjection;
+import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
@@ -270,7 +270,7 @@ public final class Equirectangular extends AbstractProvider {
      * @see MapProjection#MapProjection(Class, ParameterDescriptorGroup)
      */
     public Equirectangular() {
-        super(CylindricalProjection.class, PARAMETERS,
+        super(Projection.class, PARAMETERS,
               EllipsoidalCS.class, true,
               CartesianCS.class,  false,
               (byte) 2);

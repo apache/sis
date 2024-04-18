@@ -24,6 +24,7 @@ import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;                 // For javadoc
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -142,7 +143,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * ("Relax constraint on placement of this()/super() call in constructors").
      */
     @Workaround(library="JDK", version="1.7")
-    private static GeographicCRS checkDimensions(final GeographicCRS baseCRS, final CartesianCS derivedCS) {
+    private static GeodeticCRS checkDimensions(final GeodeticCRS baseCRS, final CartesianCS derivedCS) {
         int n = ReferencingUtilities.getDimension(baseCRS);
         if (derivedCS != null) {
             n = Math.max(n, derivedCS.getDimension());
@@ -389,14 +390,14 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
             return super.formatTo(formatter);
         }
         WKTUtilities.appendName(this, formatter, null);
-        final Convention    convention  = formatter.getConvention();
-        final boolean       isWKT1      = (convention.majorVersion() == 1);
-        final CartesianCS   cs          = getCoordinateSystem();
-        final GeographicCRS baseCRS     = getBaseCRS();
-        final Unit<?>       lengthUnit  = ReferencingUtilities.getUnit(cs);
-        final Unit<Angle>   angularUnit = AxisDirections.getAngularUnit(baseCRS.getCoordinateSystem(), null);
-        final Unit<Angle>   oldAngle    = formatter.addContextualUnit(angularUnit);
-        final Unit<?>       oldLength   = formatter.addContextualUnit(lengthUnit);
+        final Convention  convention  = formatter.getConvention();
+        final boolean     isWKT1      = (convention.majorVersion() == 1);
+        final CartesianCS cs          = getCoordinateSystem();
+        final GeodeticCRS baseCRS     = getBaseCRS();
+        final Unit<?>     lengthUnit  = ReferencingUtilities.getUnit(cs);
+        final Unit<Angle> angularUnit = AxisDirections.getAngularUnit(baseCRS.getCoordinateSystem(), null);
+        final Unit<Angle> oldAngle    = formatter.addContextualUnit(angularUnit);
+        final Unit<?>     oldLength   = formatter.addContextualUnit(lengthUnit);
         /*
          * Format the enclosing base CRS. Note that WKT 1 formats a full GeographicCRS while WKT 2 formats only
          * the datum with the prime meridian (no coordinate system) and uses a different keyword ("BaseGeodCRS"

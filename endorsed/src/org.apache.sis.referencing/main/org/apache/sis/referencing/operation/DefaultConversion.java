@@ -23,6 +23,7 @@ import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.Conversion;
+import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -64,10 +65,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * <p>After the source and target CRS become known, we can invoke the {@link #specialize specialize(…)} method for
  * {@linkplain DefaultMathTransformFactory#createParameterizedTransform creating a math transform from the parameters},
- * instantiate a new {@code Conversion} of a more specific type
- * ({@link org.opengis.referencing.operation.ConicProjection},
- *  {@link org.opengis.referencing.operation.CylindricalProjection} or
- *  {@link org.opengis.referencing.operation.PlanarProjection}) if possible,
+ * instantiate a new {@code Conversion} of a more specific type ({@link Projection}) if relevant,
  * and assign the source and target CRS to it.</p>
  *
  * <h2>Immutability and thread safety</h2>
@@ -320,15 +318,6 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      *
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
-     *   <li>Otherwise if the given object is an instance of
-     *       {@link org.opengis.referencing.operation.Conversion},
-     *       {@link org.opengis.referencing.operation.Projection},
-     *       {@link org.opengis.referencing.operation.CylindricalProjection},
-     *       {@link org.opengis.referencing.operation.ConicProjection} or
-     *       {@link org.opengis.referencing.operation.PlanarProjection},
-     *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.
-     *       Note that if the given object implements more than one of the above-cited interfaces,
-     *       then the {@code castOrCopy(…)} method to be used is unspecified.</li>
      *   <li>Otherwise if the given object is already an instance of
      *       {@code DefaultConversion}, then it is returned unchanged.</li>
      *   <li>Otherwise a new {@code DefaultConversion} instance is created using the
@@ -342,13 +331,19 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultConversion castOrCopy(final Conversion object) {
-        return SubTypes.forConversion(object);
+        if (object == null || object instanceof DefaultConversion) {
+            return (DefaultConversion) object;
+        }
+        if (object instanceof Projection) {
+            return new DefaultProjection((Projection) object);
+        } else {
+            return new DefaultConversion(object);
+        }
     }
 
     /**
      * Returns the GeoAPI interface implemented by this class.
      * The default implementation returns {@code Conversion.class}.
-     * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
      * @return the conversion interface implemented by this class.
      */
@@ -358,23 +353,21 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
     }
 
     /**
-     * Returns a specialization of this conversion with a more specific type, source and target CRS.
+     * Returns a specialization of this conversion with a more specific type and non-null <abbr>CRS</abbr>s.
      * This {@code specialize(…)} method is typically invoked on {@linkplain #DefaultConversion(Map,
      * OperationMethod, MathTransform, ParameterValueGroup) defining conversion} instances,
      * when more information become available about the conversion to create.
      *
      * <p>The given {@code baseType} argument can be one of the following values:</p>
      * <ul>
-     *   <li><code>{@linkplain org.opengis.referencing.operation.Conversion}.class</code></li>
-     *   <li><code>{@linkplain org.opengis.referencing.operation.Projection}.class</code></li>
-     *   <li><code>{@linkplain org.opengis.referencing.operation.CylindricalProjection}.class</code></li>
-     *   <li><code>{@linkplain org.opengis.referencing.operation.ConicProjection}.class</code></li>
-     *   <li><code>{@linkplain org.opengis.referencing.operation.PlanarProjection}.class</code></li>
+     *   <li><code>{@linkplain Conversion}.class</code></li>
+     *   <li><code>{@linkplain Projection}.class</code></li>
      * </ul>
      *
      * This {@code specialize(…)} method returns a conversion which implement at least the given {@code baseType}
-     * interface, but may also implement a more specific GeoAPI interface if {@code specialize(…)} has been able
-     * to infer the type from the {@linkplain #getMethod() operation method}.
+     * interface, but may also implement a more specific interface if {@code specialize(…)} has been able to infer
+     * the type from the {@linkplain #getMethod() operation method}.
+     * The list of interfaces supported by this method may change in any version of Apache SIS.
      *
      * @param  <T>        compile-time type of the {@code baseType} argument.
      * @param  baseType   the base GeoAPI interface to be implemented by the conversion to return.
@@ -382,7 +375,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * @param  targetCRS  the target CRS.
      * @param  factory    the factory to use for creating a transform from the parameters or for performing axis changes,
      *                    or {@code null} for the default factory.
-     * @return the conversion of the given type between the given CRS.
+     * @return conversion of the given type which declares the given <abbr>CRS</abbr>s as the source and target.
      * @throws ClassCastException if a contradiction is found between the given {@code baseType},
      *         the defining {@linkplain DefaultConversion#getInterface() conversion type} and
      *         the {@linkplain DefaultOperationMethod#getOperationType() method operation type}.

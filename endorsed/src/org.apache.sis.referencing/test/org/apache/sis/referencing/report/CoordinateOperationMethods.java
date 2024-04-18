@@ -100,8 +100,7 @@ public class CoordinateOperationMethods extends HTMLGenerator {
     /**
      * Values returned by {@link #category(OperationMethod)}.
      */
-    private static final int CYLINDRICAL_PROJECTION = 1, CONIC_PROJECTION = 2,
-            PLANAR_PROJECTION = 3, CONVERSION = 4, TRANSFORMATION = 5;
+    private static final int PROJECTION = 1, CONVERSION = 2, TRANSFORMATION = 3;
 
     /**
      * Parameters to default to the latitude of origin. We can hardly detect those cases
@@ -193,11 +192,9 @@ public class CoordinateOperationMethods extends HTMLGenerator {
                 closeTags(innerUL);
                 reopenTag("li");
                 switch (nc) {
-                    case CYLINDRICAL_PROJECTION: println("Cylindrical projections"); break;
-                    case CONIC_PROJECTION:       println("Conic projections");       break;
-                    case PLANAR_PROJECTION:      println("Planar projections");      break;
-                    case CONVERSION:             println("Conversions");             break;
-                    case TRANSFORMATION:         println("Tranformations");          break;
+                    case PROJECTION:     println("Projections");    break;
+                    case CONVERSION:     println("Conversions");    break;
+                    case TRANSFORMATION: println("Tranformations"); break;
                     default: throw new AssertionError(category);
                 }
                 innerUL = openTag("ul");
@@ -525,11 +522,9 @@ public class CoordinateOperationMethods extends HTMLGenerator {
      */
     private static int category(final OperationMethod method) {
         final Class<?> c = getOperationType((DefaultOperationMethod) method);
-        if (CylindricalProjection.class.isAssignableFrom(c)) return CYLINDRICAL_PROJECTION;
-        if (ConicProjection      .class.isAssignableFrom(c)) return CONIC_PROJECTION;
-        if (PlanarProjection     .class.isAssignableFrom(c)) return PLANAR_PROJECTION;
-        if (Conversion           .class.isAssignableFrom(c)) return CONVERSION;
-        if (Transformation       .class.isAssignableFrom(c)) return TRANSFORMATION;
+        if (Projection    .class.isAssignableFrom(c)) return PROJECTION;
+        if (Conversion    .class.isAssignableFrom(c)) return CONVERSION;
+        if (Transformation.class.isAssignableFrom(c)) return TRANSFORMATION;
         return 0;
     }
 

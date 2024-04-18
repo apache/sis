@@ -220,7 +220,6 @@ SC_EngineeringCRS
 SC_GeneralDerivedCRS
 SC_GeocentricCRS
 SC_GeodeticCRS
-SC_GeographicCRS
 SC_ImageCRS
 SC_ProjectedCRS
 SC_SingleCRS

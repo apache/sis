@@ -51,7 +51,7 @@ import org.apache.sis.util.ArgumentChecks;
  * @see org.apache.sis.referencing.crs.DefaultProjectedCRS
  */
 @XmlTransient
-class DefaultProjection extends DefaultConversion implements Projection {
+final class DefaultProjection extends DefaultConversion implements Projection {
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -77,14 +77,15 @@ class DefaultProjection extends DefaultConversion implements Projection {
 
     /**
      * Creates a new projection with the same values as the specified one, together with the
-     * specified source and target CRS. While the source conversion can be an arbitrary one, it
-     * is typically a defining conversion.
+     * specified source and target CRS. While the source conversion can be an arbitrary one,
+     * it is typically a defining conversion.
      *
      * @param  definition  the defining conversion.
      * @param  sourceCRS   the source CRS.
      * @param  targetCRS   the target CRS.
      * @param  factory     the factory to use for creating a transform from the parameters or for performing axis changes.
      * @param  actual      an array of length 1 where to store the actual operation method used by the math transform factory.
+     * @throws IllegalArgumentException if the source or targe CRS is not of the requested type.
      */
     DefaultProjection(final Conversion definition,
                       final CoordinateReferenceSystem sourceCRS,
@@ -99,8 +100,8 @@ class DefaultProjection extends DefaultConversion implements Projection {
 
     /**
      * Creates a new coordinate operation with the same values as the specified one.
-     * This copy constructor provides a way to convert an arbitrary implementation into a SIS one
-     * or a user-defined one (as a subclass), usually in order to leverage some implementation-specific API.
+     * This copy constructor provides a way to convert an arbitrary implementation
+     * into a SIS one, usually in order to leverage some implementation-specific API.
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
@@ -112,8 +113,6 @@ class DefaultProjection extends DefaultConversion implements Projection {
 
     /**
      * Returns the GeoAPI interface implemented by this class.
-     * The default implementation returns {@code Projection.class}.
-     * Subclasses implementing a more specific GeoAPI interface shall override this method.
      *
      * @return the conversion interface implemented by this class.
      */

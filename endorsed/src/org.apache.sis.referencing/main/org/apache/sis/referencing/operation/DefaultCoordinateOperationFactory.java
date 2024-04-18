@@ -456,8 +456,7 @@ next:   for (int i=components.size(); --i >= 0;) {
     /**
      * Creates a transformation or conversion from the given properties.
      * This method infers by itself if the operation to create is a
-     * {@link Transformation}, a {@link Conversion} or a {@link Projection} sub-type
-     * ({@link CylindricalProjection}, {@link ConicProjection} or {@link PlanarProjection})
+     * {@link Transformation}, a {@link Conversion} or a {@link Projection}
      * using the {@linkplain DefaultOperationMethod#getOperationType() information provided by the given method}.
      *
      * <p>The properties given in argument follow the same rules as for the
@@ -593,17 +592,7 @@ next:   for (int i=components.size(); --i >= 0;) {
                 throw new IllegalArgumentException(Errors.format(
                         Errors.Keys.ForbiddenAttribute_2, "interpolationCRS", baseType));
             }
-            final GeographicCRS baseCRS = (GeographicCRS) sourceCRS;
-            final ProjectedCRS  crs     =  (ProjectedCRS) targetCRS;
-            if (CylindricalProjection.class.isAssignableFrom(baseType)) {
-                op = new DefaultCylindricalProjection(properties, baseCRS, crs, method, transform);
-            } else if (ConicProjection.class.isAssignableFrom(baseType)) {
-                op = new DefaultConicProjection(properties, baseCRS, crs, method, transform);
-            } else if (PlanarProjection.class.isAssignableFrom(baseType)) {
-                op = new DefaultPlanarProjection(properties, baseCRS, crs, method, transform);
-            } else {
-                op = new DefaultProjection(properties, baseCRS, crs, method, transform);
-            }
+            op = new DefaultProjection(properties, (GeographicCRS) sourceCRS, (ProjectedCRS) targetCRS, method, transform);
         } else if (Conversion.class.isAssignableFrom(baseType)) {
             op = new DefaultConversion(properties, sourceCRS, targetCRS, interpolationCRS, method, transform);
         } else {  // See above comment about this last-resort fallback.
