@@ -41,6 +41,10 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.ProjectedCRS;
+
 
 /**
  * A parameterized mathematical operation that converts coordinates to another CRS without any change of
@@ -64,8 +68,7 @@ import org.apache.sis.util.resources.Errors;
  * MathTransform, ParameterValueGroup) constructor} for such defining conversions.
  *
  * <p>After the source and target CRS become known, we can invoke the {@link #specialize specialize(…)} method for
- * {@linkplain DefaultMathTransformFactory#createParameterizedTransform creating a math transform from the parameters},
- * instantiate a new {@code Conversion} of a more specific type ({@link Projection}) if relevant,
+ * {@linkplain DefaultMathTransformFactory#createParameterizedTransform creating a math transform from the parameters}
  * and assign the source and target CRS to it.</p>
  *
  * <h2>Immutability and thread safety</h2>
@@ -130,8 +133,8 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * {@linkplain org.apache.sis.referencing.crs.DefaultDerivedCRS derived CRS} construction.</p>
      *
      * <h4>Example</h4>
-     * Converting time instants from a {@linkplain org.apache.sis.referencing.crs.DefaultTemporalCRS temporal CRS} using
-     * the <i>January 1st, 1950</i> epoch to another temporal CRS using the <i>January 1st, 1970</i> epoch
+     * Converting time instants from a {@linkplain org.apache.sis.referencing.crs.DefaultTemporalCRS temporal CRS}
+     * using the <i>January 1st, 1950</i> epoch to another temporal CRS using the <i>January 1st, 1970</i> epoch
      * is a datum change, since the epoch is part of {@linkplain org.apache.sis.referencing.datum.DefaultTemporalDatum
      * temporal datum} definition. However, such operation does not have all the accuracy issues of transformations
      * between geodetic datum (empirically determined, over-determined systems, stochastic nature of the parameters).
@@ -219,14 +222,12 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * @param source      the new source CRS.
      * @param target      the new target CRS.
      * @param factory     the factory to use for creating a transform from the parameters or for performing axis changes.
-     * @param actual      an array of length 1 where to store the actual operation method used by the math transform factory.
      */
     @SuppressWarnings("deprecation")
     DefaultConversion(final Conversion definition,
                       final CoordinateReferenceSystem source,
                       final CoordinateReferenceSystem target,
-                      final MathTransformFactory factory,
-                      final OperationMethod[] actual) throws FactoryException
+                      final MathTransformFactory factory) throws FactoryException
     {
         super(definition);
         int interpDim = ReferencingUtilities.getDimension(super.getInterpolationCRS().orElse(null));
@@ -255,7 +256,6 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                     context = ReferencingUtilities.createTransformContext(source, target);
                 }
                 transform = ((DefaultMathTransformFactory) factory).createParameterizedTransform(parameters, context);
-                actual[0] = context.getMethodUsed();
                 setParameterValues(context.getCompletedParameters(), context.getContextualParameters());
             } else {
                 /*
@@ -264,7 +264,6 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                  * the code should work anyway.
                  */
                 transform = factory.createBaseToDerived(source, parameters, target.getCoordinateSystem());
-                actual[0] = factory.getLastMethodUsed();
             }
         } else {
             /*
@@ -274,7 +273,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
              * method for this job.
              */
             if (sourceCRS == null && targetCRS == null && factory instanceof DefaultMathTransformFactory) {
-                final DefaultMathTransformFactory.Context context = new DefaultMathTransformFactory.Context();
+                final var context = new DefaultMathTransformFactory.Context();
                 context.setSource(source.getCoordinateSystem());
                 context.setTarget(target.getCoordinateSystem());    // See comment on the other setTarget(…) call.
                 transform = ((DefaultMathTransformFactory) factory).swapAndScaleAxes(transform, context);
@@ -353,32 +352,16 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
     }
 
     /**
-     * Returns a specialization of this conversion with a more specific type and non-null <abbr>CRS</abbr>s.
+     * Returns a specialization of this conversion with non-null <abbr>CRS</abbr>s.
      * This {@code specialize(…)} method is typically invoked on {@linkplain #DefaultConversion(Map,
      * OperationMethod, MathTransform, ParameterValueGroup) defining conversion} instances,
      * when more information become available about the conversion to create.
      *
-     * <p>The given {@code baseType} argument can be one of the following values:</p>
-     * <ul>
-     *   <li><code>{@linkplain Conversion}.class</code></li>
-     *   <li><code>{@linkplain Projection}.class</code></li>
-     * </ul>
-     *
-     * This {@code specialize(…)} method returns a conversion which implement at least the given {@code baseType}
-     * interface, but may also implement a more specific interface if {@code specialize(…)} has been able to infer
-     * the type from the {@linkplain #getMethod() operation method}.
-     * The list of interfaces supported by this method may change in any version of Apache SIS.
-     *
-     * @param  <T>        compile-time type of the {@code baseType} argument.
-     * @param  baseType   the base GeoAPI interface to be implemented by the conversion to return.
      * @param  sourceCRS  the source CRS.
      * @param  targetCRS  the target CRS.
-     * @param  factory    the factory to use for creating a transform from the parameters or for performing axis changes,
-     *                    or {@code null} for the default factory.
-     * @return conversion of the given type which declares the given <abbr>CRS</abbr>s as the source and target.
-     * @throws ClassCastException if a contradiction is found between the given {@code baseType},
-     *         the defining {@linkplain DefaultConversion#getInterface() conversion type} and
-     *         the {@linkplain DefaultOperationMethod#getOperationType() method operation type}.
+     * @param  factory    the factory to use for creating a transform from the parameters
+     *         or for performing axis changes, or {@code null} for the default factory.
+     * @return conversion which declares the given <abbr>CRS</abbr>s as the source and target.
      * @throws MismatchedDatumException if the given CRS do not use the same datum as the source and target CRS
      *         of this conversion.
      * @throws FactoryException if the creation of a {@link MathTransform} from the {@linkplain #getParameterValues()
@@ -386,17 +369,18 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      *         failed.
      *
      * @see DefaultMathTransformFactory#createParameterizedTransform(ParameterValueGroup, DefaultMathTransformFactory.Context)
+     *
+     * @since 1.5
      */
     @SuppressWarnings("deprecation")
-    public <T extends Conversion> T specialize(final Class<T> baseType,
-            final CoordinateReferenceSystem sourceCRS, final CoordinateReferenceSystem targetCRS,
-            MathTransformFactory factory) throws FactoryException
+    public Conversion specialize(final CoordinateReferenceSystem sourceCRS,
+                                 final CoordinateReferenceSystem targetCRS,
+                                 MathTransformFactory factory) throws FactoryException
     {
-        ArgumentChecks.ensureNonNull("baseType",  baseType);
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
         /*
-         * Conceptual consistency check: verify that the new CRS use the same datum as the previous ones,
+         * Conceptual consistency check: verify that the new CRSs use the same datum as the previous ones,
          * since the purpose of this method is not to apply datum changes. Datum changes are the purpose of
          * a dedicated kind of operations, namely Transformation.
          */
@@ -413,14 +397,23 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
              * datum for source and target CRS, since DerivedCRS and ProjectedCRS are expected to have the same
              * datum than their source CRS.
              */
-            if (super.getTargetCRS() != null) {
-                ensureCompatibleDatum("targetCRS", sourceCRS, super.getTargetCRS());
-            }
+            ensureCompatibleDatum("targetCRS", sourceCRS, super.getTargetCRS());
+        }
+        final boolean isProjection = (targetCRS instanceof ProjectedCRS) && (sourceCRS instanceof GeographicCRS);
+        if (super.getSourceCRS() == sourceCRS &&
+            super.getTargetCRS() == targetCRS &&
+            super.getMathTransform() != null &&
+            isProjection == (this instanceof Projection))
+        {
+            return this;
         }
         if (factory == null) {
             factory = DefaultMathTransformFactory.provider();
         }
-        return SubTypes.create(baseType, this, sourceCRS, targetCRS, factory);
+        if (isProjection) {
+            return new DefaultProjection(this, sourceCRS, targetCRS, factory);
+        }
+        return new DefaultConversion(this, sourceCRS, targetCRS, factory);
     }
 
     /**

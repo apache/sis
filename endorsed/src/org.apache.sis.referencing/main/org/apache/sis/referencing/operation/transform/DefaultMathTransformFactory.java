@@ -394,12 +394,12 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * {@code OperationMethod}s. The argument is usually (but not restricted to) one of the following types:
      *
      * <ul>
+     *   <li>{@link org.opengis.referencing.operation.Conversion}
+     *       for coordinate operations described by definitions (including map projections).</li>
      *   <li>{@link org.opengis.referencing.operation.Transformation}
      *       for coordinate operations described by empirically derived parameters.</li>
-     *   <li>{@link org.opengis.referencing.operation.Conversion}
-     *       for coordinate operations described by definitions.</li>
-     *   <li>{@link org.opengis.referencing.operation.Projection}
-     *       for conversions from geodetic latitudes and longitudes to plane (map) coordinates.</li>
+     *   <li>{@link org.opengis.referencing.operation.PointMotionOperation}
+     *       for changes due to the motion of the point between two coordinate epochs.</li>
      *   <li>{@link SingleOperation} for all coordinate operations.</li>
      * </ul>
      *
@@ -407,8 +407,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * if this {@code MathTransformFactory} does not support filtering by the given type.
      *
      * @param  type  <code>{@linkplain SingleOperation}.class</code> for fetching all operation methods,
-     *               <code>{@linkplain org.opengis.referencing.operation.Projection}.class</code> for
-     *               fetching only map projection methods, <i>etc</i>.
+     *               <code>{@linkplain org.opengis.referencing.operation.Transformation}.class</code>
+     *               for operations defined by empirical parameters, <i>etc</i>.
      * @return methods available in this factory for coordinate operations of the given type.
      *
      * @see #getDefaultParameters(String)

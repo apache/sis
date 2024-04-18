@@ -398,6 +398,7 @@ public class XLink implements Serializable {
         if (hashCode != 0) {
             throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnmodifiableObject_1, "XLink"));
         }
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Type type = this.type;
         if (type != null) {
             if (value != null) {

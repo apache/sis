@@ -437,9 +437,9 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * <ul>
      *   <li>If the given object is {@code null}, then this method returns {@code null}.</li>
      *   <li>Otherwise if the given object is an instance of
-     *       {@link org.opengis.referencing.operation.Transformation},
      *       {@link org.opengis.referencing.operation.Conversion},
-     *       {@link org.opengis.referencing.operation.Projection},
+     *       {@link org.opengis.referencing.operation.Transformation},
+     *       {@link org.opengis.referencing.operation.PointMotionOperation},
      *       {@link org.opengis.referencing.operation.PassThroughOperation} or
      *       {@link org.opengis.referencing.operation.ConcatenatedOperation},
      *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.
