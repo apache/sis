@@ -43,7 +43,7 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform2D;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
-import org.opengis.referencing.operation.Projection;
+import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
@@ -1516,7 +1516,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
             this.datum = datum;
             if (horizontal instanceof ProjectedCRS) {
                 ProjectedCRS  projCRS = (ProjectedCRS) horizontal;
-                Projection projection = projCRS.getConversionFromBase();
+                Conversion projection = projCRS.getConversionFromBase();
                 final OperationMethod method = projection.getMethod();
                 if (IdentifiedObjects.isHeuristicMatchForName(method, TransverseMercator.NAME)) {
                     crsZone = ZONER.zone(projection.getParameterValues());

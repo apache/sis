@@ -21,11 +21,11 @@ import java.util.Map;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.referencing.operation.Projection;
-import org.opengis.referencing.operation.ConicProjection;
-import org.opengis.referencing.operation.PlanarProjection;
-import org.opengis.referencing.operation.CylindricalProjection;
+import org.opengis.referencing.operation.Conversion;
+import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.SingleOperation;
+import org.opengis.referencing.operation.PassThroughOperation;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
@@ -56,7 +56,7 @@ public final class OperationMethodSetTest extends TestCase {
      * @return the operation method.
      */
     @SuppressWarnings("serial")
-    private static DefaultOperationMethod createMethod(final Class<? extends Projection> type, final String method) {
+    private static DefaultOperationMethod createMethod(final Class<? extends SingleOperation> type, String method) {
         Map<String,?> properties = Map.of(DefaultOperationMethod.NAME_KEY, method);
         final ParameterDescriptorGroup parameters = new DefaultParameterDescriptorGroup(properties, 1, 1);
         /*
@@ -65,7 +65,7 @@ public final class OperationMethodSetTest extends TestCase {
          */
         properties = Map.of(DefaultOperationMethod.NAME_KEY, parameters.getName());
         return new DefaultOperationMethod(properties, parameters) {
-            @Override public Class<? extends Projection> getOperationType() {
+            @Override public Class<? extends SingleOperation> getOperationType() {
                 return type;
             }
         };
@@ -78,7 +78,9 @@ public final class OperationMethodSetTest extends TestCase {
      * @param  type     the type of coordinate operation for which to retain methods.
      * @param  methods  the {@link DefaultMathTransformFactory#methods} used for fetching the initial methods.
      */
-    private static OperationMethodSet create(final Class<? extends Projection> type, final DefaultOperationMethod... methods) {
+    private static OperationMethodSet create(final Class<? extends SingleOperation> type,
+                                             final DefaultOperationMethod... methods)
+    {
         @SuppressWarnings("serial")
         final Iterable<DefaultOperationMethod> asList = new UnmodifiableArrayList<DefaultOperationMethod>(methods) {
             private boolean isIterationDone;
@@ -100,7 +102,7 @@ public final class OperationMethodSetTest extends TestCase {
      */
     @Test
     public void testEmpty() {
-        assertEmpty(create(Projection.class));
+        assertEmpty(create(Conversion.class));
     }
 
     /**
@@ -120,18 +122,18 @@ public final class OperationMethodSetTest extends TestCase {
      */
     @Test
     public void testMixedCases() {
-        final DefaultOperationMethod merA = createMethod(CylindricalProjection.class, "Mercator (variant A)");
-        final DefaultOperationMethod merB = createMethod(CylindricalProjection.class, "Mercator (variant B)");
-        final DefaultOperationMethod merC = createMethod(CylindricalProjection.class, "Mercator (variant C)");
-        final DefaultOperationMethod dup  = createMethod(CylindricalProjection.class, "Mercator (variant B)");
-        final DefaultOperationMethod lamb = createMethod(ConicProjection.class, "Lambert");
-        final DefaultOperationMethod[] methods = new DefaultOperationMethod[] {merA, merB, merC, dup, lamb};
-        final OperationMethodSet mercators = create(CylindricalProjection.class, methods);
-        final OperationMethodSet lambert   = create(      ConicProjection.class, methods);
-        final OperationMethodSet all       = create(           Projection.class, methods);
+        final DefaultOperationMethod merA = createMethod(Conversion.class, "Mercator (variant A)");
+        final DefaultOperationMethod merB = createMethod(Conversion.class, "Mercator (variant B)");
+        final DefaultOperationMethod merC = createMethod(Conversion.class, "Mercator (variant C)");
+        final DefaultOperationMethod dup  = createMethod(Conversion.class, "Mercator (variant B)");
+        final DefaultOperationMethod nad  = createMethod(Transformation.class, "NADCON");
+        final var methods = new DefaultOperationMethod[] {merA, merB, merC, dup, nad};
+        final OperationMethodSet mercators = create(Conversion.class, methods);
+        final OperationMethodSet shifts    = create(Transformation.class, methods);
+        final OperationMethodSet all       = create(SingleOperation.class, methods);
         /*
          * Mercator case.
-         *   - Intentionally start the iteration without checking 'hasNext()' - the iterator shall be robust to that.
+         *   - Intentionally start the iteration without checking `hasNext()` - the iterator shall be robust to that.
          *   - Intentionally start another iteration (indirectly) in the middle of the first one.
          */
         final Iterator<OperationMethod> iterator = mercators.iterator();
@@ -143,19 +145,19 @@ public final class OperationMethodSetTest extends TestCase {
         assertFalse (mercators.isEmpty());
         assertEquals(3, mercators.size());
         /*
-         * Lambert case. Test twice since the two excecutions will take different code paths.
+         * NADCON case. Test twice because the two excecutions will take different code paths.
          */
-        assertEquals(Set.of(lamb), lambert);
-        assertEquals(Set.of(lamb), lambert);
+        assertEquals(Set.of(nad), shifts);
+        assertEquals(Set.of(nad), shifts);
         /*
-         * Test filtering: the test should not contain any conic projection.
+         * Test filtering: the test should not contain any pass-through operation.
          */
-        assertEmpty(create(PlanarProjection.class, methods));
+        assertEmpty(create(PassThroughOperation.class, methods));
         /*
          * Opportunist tests.
          */
-        assertFalse(lambert.containsAll(all));
-        assertTrue(all.containsAll(lambert));
+        assertFalse(shifts.containsAll(all));
+        assertTrue(all.containsAll(shifts));
         assertTrue(all.containsAll(mercators));
     }
 }

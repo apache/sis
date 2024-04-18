@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation.provider;
 
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.referencing.operation.PlanarProjection;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
@@ -56,7 +55,7 @@ public final class AzimuthalEquidistantSpherical extends MapProjection {
      * Constructs a new provider.
      */
     public AzimuthalEquidistantSpherical() {
-        super(PlanarProjection.class, PARAMETERS);
+        super(PARAMETERS);
     }
 
     /**

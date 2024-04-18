@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.provider;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.referencing.operation.PlanarProjection;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 import org.apache.sis.referencing.operation.projection.PolarStereographic;
@@ -75,7 +74,7 @@ abstract class AbstractStereographic extends MapProjection {
      * For subclass constructors only.
      */
     AbstractStereographic(final ParameterDescriptorGroup parameters) {
-        super(PlanarProjection.class, parameters);
+        super(parameters);
     }
 
     /**

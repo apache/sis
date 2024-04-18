@@ -1098,7 +1098,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
      * @param  crs          the CRS created from the EPSG geodetic dataset.
      * @param  angularUnit  the angular unit of the latitude and longitude values.
      */
-    private void verify(final GeographicCRS crs, final Unit<Angle> angularUnit) throws FactoryException {
+    private void verify(final GeodeticCRS crs, final Unit<Angle> angularUnit) throws FactoryException {
         /*
          * Note: current createUnit(…) implementation does not allow us to distinguish whether METRE ou DEGREE units
          * were specified in the GeoTIFF file or if we got the default values. We do not compare units for that reason.
@@ -1308,7 +1308,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
     private void verify(final ProjectedCRS crs) throws FactoryException {
         final Unit<Length> linearUnit  = createLinearUnit(UnitKey.PROJECTED);
         final Unit<Angle>  angularUnit = createAngularUnit(UnitKey.ANGULAR);
-        final GeographicCRS baseCRS = crs.getBaseCRS();
+        final GeodeticCRS  baseCRS = crs.getBaseCRS();
         verifyIdentifier(crs, baseCRS, GeoKeys.GeodeticCRS);
         verify(baseCRS, angularUnit);
         final Conversion projection = crs.getConversionFromBase();

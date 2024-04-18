@@ -445,9 +445,6 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      *       {@link org.opengis.referencing.operation.Transformation},
      *       {@link org.opengis.referencing.operation.Conversion},
      *       {@link org.opengis.referencing.operation.Projection},
-     *       {@link org.opengis.referencing.operation.CylindricalProjection},
-     *       {@link org.opengis.referencing.operation.ConicProjection},
-     *       {@link org.opengis.referencing.operation.PlanarProjection},
      *       {@link org.opengis.referencing.operation.PassThroughOperation} or
      *       {@link org.opengis.referencing.operation.ConcatenatedOperation},
      *       then this method delegates to the {@code castOrCopy(…)} method of the corresponding SIS subclass.

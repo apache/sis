@@ -71,9 +71,9 @@ public final class CoordinateReferenceSystemTest extends TestCase {
         assertInstanceOf(CartesianCS.class, crs.getCoordinateSystem());
         assertInstanceOf(CartesianCS.class, ((GeneralDerivedCRS) crs).getBaseCRS().getCoordinateSystem());
         /*
-         * Some tests are disabled because `EPSGDataAccess` confuse this derived CRS
-         * with a projected CRS. We are waiting for upgrade to EPSG database 10+
-         * before to re-evaluate how to fix this issue.
+         * Some tests are disabled because `EPSGDataAccess` confuses CRS type.
+         * We are waiting for upgrade to EPSG database 10+ before to re-evaluate
+         * how to fix this issue.
          *
          * https://issues.apache.org/jira/browse/SIS-518
          */

@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.provider;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.referencing.operation.PlanarProjection;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -168,7 +167,7 @@ public class Orthographic extends MapProjection {
      * Constructs a new provider.
      */
     public Orthographic() {
-        super(PlanarProjection.class, PARAMETERS);
+        super(PARAMETERS);
     }
 
     /**

@@ -18,6 +18,7 @@ package org.apache.sis.geometry;
 
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -95,7 +96,7 @@ public abstract class TransformTestCase<G> extends TestCase {
     @Test
     public final void testTransform() throws FactoryException, TransformException {
         final ProjectedCRS    targetCRS  = CommonCRS.WGS84.universal(10, -123.5);
-        final GeographicCRS   sourceCRS  = targetCRS.getBaseCRS();
+        final GeodeticCRS     sourceCRS  = targetCRS.getBaseCRS();
         final Conversion      conversion = targetCRS.getConversionFromBase();
         final MathTransform2D transform  = (MathTransform2D) conversion.getMathTransform();
         /*
@@ -130,7 +131,7 @@ public abstract class TransformTestCase<G> extends TestCase {
     @Test
     public final void testTransformOverPole() throws FactoryException, TransformException {
         final ProjectedCRS    sourceCRS  = HardCodedConversions.createCRS(HardCodedConversions.POLAR_STEREOGRAPHIC);
-        final GeographicCRS   targetCRS  = sourceCRS.getBaseCRS();
+        final GeodeticCRS     targetCRS  = sourceCRS.getBaseCRS();
         final Conversion      conversion = inverse(sourceCRS.getConversionFromBase());
         final MathTransform2D transform  = (MathTransform2D) conversion.getMathTransform();
         /*
@@ -193,7 +194,7 @@ public abstract class TransformTestCase<G> extends TestCase {
     @Test
     public final void testTransformNotOverPole() throws FactoryException, TransformException {
         final ProjectedCRS  sourceCRS  = CommonCRS.WGS84.universal(10, -3.5);
-        final GeographicCRS targetCRS  = sourceCRS.getBaseCRS();
+        final GeodeticCRS   targetCRS  = sourceCRS.getBaseCRS();
         final Conversion    conversion = inverse(sourceCRS.getConversionFromBase());
         final G rectangle = createFromExtremums(sourceCRS, 199980, 4490220, 309780, 4600020);
         final G expected  = createFromExtremums(targetCRS,
@@ -213,7 +214,7 @@ public abstract class TransformTestCase<G> extends TestCase {
     @Test
     public final void testTransformOverAntiMeridian() throws TransformException {
         final ProjectedCRS  sourceCRS  = HardCodedConversions.mercator();
-        final GeographicCRS targetCRS  = sourceCRS.getBaseCRS();
+        final GeodeticCRS   targetCRS  = sourceCRS.getBaseCRS();
         final Conversion    conversion = inverse(sourceCRS.getConversionFromBase());
         final G expected  = createFromExtremums(targetCRS, 179, 40, 181, 50);
         final G rectangle = createFromExtremums(sourceCRS,
@@ -233,9 +234,9 @@ public abstract class TransformTestCase<G> extends TestCase {
      */
     @Test
     public void testProjectionOutsideLongitudeRange() throws FactoryException, TransformException {
-        final ProjectedCRS    sourceCRS  = HardCodedConversions.createCRS(HardCodedConversions.UTM);
-        final GeographicCRS   targetCRS  = sourceCRS.getBaseCRS();
-        final Conversion      conversion = inverse(sourceCRS.getConversionFromBase());
+        final ProjectedCRS  sourceCRS  = HardCodedConversions.createCRS(HardCodedConversions.UTM);
+        final GeodeticCRS   targetCRS  = sourceCRS.getBaseCRS();
+        final Conversion    conversion = inverse(sourceCRS.getConversionFromBase());
         final G rectangle = createFromExtremums(sourceCRS,
                 -402748, 7965673,                               // Computed by SIS (not validated by external authority).
                 1312383, 9912935);

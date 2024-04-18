@@ -173,13 +173,10 @@ public abstract class MapProjection extends AbstractProvider {
      * Constructs a math transform provider from a set of parameters. The provider
      * {@linkplain #getIdentifiers() identifiers} will be the same as the parameter ones.
      *
-     * @param  operationType  interface of the {@code CoordinateOperation} instances that use this projection.
-     * @param  parameters     the set of parameters (never {@code null}).
+     * @param  parameters  the set of parameters (never {@code null}).
      */
-    protected MapProjection(final Class<? extends Projection> operationType,
-                            final ParameterDescriptorGroup parameters)
-    {
-        super(operationType, parameters,
+    protected MapProjection(final ParameterDescriptorGroup parameters) {
+        super(Projection.class, parameters,
               EllipsoidalCS.class, true,
               CartesianCS.class, false,
               (byte) 2);

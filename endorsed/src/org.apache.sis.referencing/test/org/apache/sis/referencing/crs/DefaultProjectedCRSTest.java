@@ -23,7 +23,7 @@ import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CartesianCS;
-import org.opengis.referencing.operation.Projection;
+import org.opengis.referencing.operation.Conversion;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.CommonCRS;
@@ -502,7 +502,7 @@ public final class DefaultProjectedCRSTest extends TestCase.WithLogs {
         assertAxisDirectionsEqual(crs.getBaseCRS().getCoordinateSystem(), AxisDirection.NORTH, AxisDirection.EAST);
         assertAxisDirectionsEqual(crs.getCoordinateSystem(), AxisDirection.EAST, AxisDirection.NORTH);
 
-        final Projection conversion = crs.getConversionFromBase();
+        final Conversion conversion = crs.getConversionFromBase();
         assertEpsgNameAndIdentifierEqual("Lambert zone II", 18082, conversion);
         assertEpsgNameAndIdentifierEqual("Lambert Conic Conformal (1SP)", 9801, conversion.getMethod());
         assertNotNull(conversion.getMathTransform());

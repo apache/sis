@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation.provider;
 
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.referencing.operation.CylindricalProjection;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 import org.apache.sis.referencing.operation.projection.CylindricalEqualArea;
@@ -61,7 +60,7 @@ public final class LambertCylindricalEqualAreaSpherical extends MapProjection {
      * Constructs a new provider.
      */
     public LambertCylindricalEqualAreaSpherical() {
-        super(CylindricalProjection.class, PARAMETERS);
+        super(PARAMETERS);
     }
 
     /**

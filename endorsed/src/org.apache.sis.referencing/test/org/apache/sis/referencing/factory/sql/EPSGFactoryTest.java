@@ -40,7 +40,6 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.CoordinateOperation;
-import org.opengis.referencing.operation.CylindricalProjection;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
@@ -753,7 +752,7 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         assertNotSame(projection, operation,
                 "The defining conversion and the actual conversion should differ " +
                 "because the actual conversion should have semi-axis length values.");
-        assertInstanceOf(CylindricalProjection.class, projection);
+        assertInstanceOf(Projection.class, projection);
         assertNotNull(projection.getSourceCRS());
         assertNotNull(projection.getTargetCRS());
         assertNotNull(projection.getMathTransform());
