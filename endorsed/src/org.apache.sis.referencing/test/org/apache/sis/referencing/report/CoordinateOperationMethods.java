@@ -100,7 +100,7 @@ public class CoordinateOperationMethods extends HTMLGenerator {
     /**
      * Values returned by {@link #category(OperationMethod)}.
      */
-    private static final int PROJECTION = 1, CONVERSION = 2, TRANSFORMATION = 3;
+    private static final int CONVERSION = 1, TRANSFORMATION = 3;
 
     /**
      * Parameters to default to the latitude of origin. We can hardly detect those cases
@@ -192,7 +192,6 @@ public class CoordinateOperationMethods extends HTMLGenerator {
                 closeTags(innerUL);
                 reopenTag("li");
                 switch (nc) {
-                    case PROJECTION:     println("Projections");    break;
                     case CONVERSION:     println("Conversions");    break;
                     case TRANSFORMATION: println("Tranformations"); break;
                     default: throw new AssertionError(category);
@@ -522,7 +521,6 @@ public class CoordinateOperationMethods extends HTMLGenerator {
      */
     private static int category(final OperationMethod method) {
         final Class<?> c = getOperationType((DefaultOperationMethod) method);
-        if (Projection    .class.isAssignableFrom(c)) return PROJECTION;
         if (Conversion    .class.isAssignableFrom(c)) return CONVERSION;
         if (Transformation.class.isAssignableFrom(c)) return TRANSFORMATION;
         return 0;

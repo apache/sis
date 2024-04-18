@@ -288,14 +288,6 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     private final Map<Integer,AxisName> axisNames = new HashMap<>();
 
     /**
-     * Cache for whether conversions are projections. This service is not provided by {@code ConcurrentAuthorityFactory}
-     * since the check for conversion type is used internally in this class.
-     *
-     * @see #isProjection(Integer)
-     */
-    private final Map<Integer,Boolean> isProjection = new HashMap<>();
-
-    /**
      * Cache of naming systems other than EPSG. There is usually few of them (at most 15).
      * This is used for aliases.
      *
@@ -1449,7 +1441,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                             } catch (ClassCastException e) {
                                 // Should never happen in a well-formed EPSG database.
                                 // If happen anyway, the ClassCastException cause will give more hints than just the message.
-                                throw (NoSuchAuthorityCodeException) noSuchAuthorityCode(Projection.class, opCode).initCause(e);
+                                throw (NoSuchAuthorityCodeException) noSuchAuthorityCode(Conversion.class, opCode).initCause(e);
                             }
                             final CoordinateReferenceSystem baseCRS;
                             final boolean suspendParamChecks;
@@ -3131,28 +3123,6 @@ next:                   while (r.next()) {
         } catch (SQLException exception) {
             throw new FactoryException(exception.getLocalizedMessage(), exception);
         }
-    }
-
-    /**
-     * Returns {@code true} if the {@link CoordinateOperation} for the specified code is a {@link Projection}.
-     * The caller must have verified that the designed operation is a {@link Conversion} before to invoke this method.
-     *
-     * @throws SQLException if an error occurred while querying the database.
-     */
-    final boolean isProjection(final Integer code) throws SQLException {
-        Boolean projection = isProjection.get(code);
-        if (projection == null) {
-            try (ResultSet result = executeQuery("isProjection",
-                    "SELECT COORD_REF_SYS_CODE" +
-                    " FROM [Coordinate Reference System]" +
-                    " WHERE PROJECTION_CONV_CODE = ?" +
-                      " AND CAST(COORD_REF_SYS_KIND AS " + TableInfo.ENUM_REPLACEMENT + ") LIKE 'projected%'", code))
-            {
-                projection = result.next();
-            }
-            isProjection.put(code, projection);
-        }
-        return projection;
     }
 
     /**

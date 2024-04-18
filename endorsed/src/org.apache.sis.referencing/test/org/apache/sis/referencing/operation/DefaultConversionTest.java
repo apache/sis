@@ -239,13 +239,12 @@ public final class DefaultConversionTest extends TestCase {
          * Now create a normal conversion from the defining one,
          * but add a swapping of (latitude, longitude) axes.
          */
-        final DefaultConversion completed = definingConversion.specialize(
-                DefaultConversion.class,    // In normal use, this would be 'Conversion.class'.
+        final Conversion completed = definingConversion.specialize(
                 changeCS(reference.getSourceCRS(), HardCodedCS.GEODETIC_φλ),
                 reference.getTargetCRS(),
                 null);
 
-        verifyProperties(completed, true);
+        verifyProperties(assertInstanceOf(DefaultConversion.class, completed), true);
     }
 
     /**
@@ -270,17 +269,16 @@ public final class DefaultConversionTest extends TestCase {
          * When asking for a "specialization" with the same properties,
          * we should get the existing instance since no change is needed.
          */
-        assertSame(op, op.specialize(Conversion.class, op.getSourceCRS(), op.getTargetCRS(), null));
+        assertSame(op, op.specialize(op.getSourceCRS(), op.getTargetCRS(), null));
         /*
          * Reducing the number of dimensions to 2 and swapping (latitude, longitude) axes.
          */
-        op = op.specialize(DefaultConversion.class, op.getSourceCRS(),
-                changeCS(op.getTargetCRS(), HardCodedCS.GEODETIC_φλ), null);
+        Conversion c = op.specialize(op.getSourceCRS(), changeCS(op.getTargetCRS(), HardCodedCS.GEODETIC_φλ), null);
         assertMatrixEquals(Matrices.create(3, 4, new double[] {
                     0, 1, 0, 0,
                     1, 0, 0, OFFSET,
                     0, 0, 0, 1
-                }), MathTransforms.getMatrix(op.getMathTransform()), STRICT,
+                }), MathTransforms.getMatrix(c.getMathTransform()), STRICT,
                 "Longitude rotation of a two-dimensional CRS");
     }
 
@@ -310,8 +308,7 @@ public final class DefaultConversionTest extends TestCase {
                 MathTransforms.getMatrix(op.getMathTransform()), STRICT,
                 "Longitude rotation of a time-varying CRS");
 
-        op = op.specialize(
-                DefaultConversion.class,    // In normal use, this would be 'Conversion.class'.
+        Conversion c = op.specialize(
                 op.getSourceCRS(),          // Keep the same source CRS.
                 changeCS(op.getTargetCRS(), HardCodedCS.GEODETIC_φλ),   // Swap axis order.
                 null);
@@ -320,7 +317,7 @@ public final class DefaultConversionTest extends TestCase {
                                        0, 0, 1, 0,
                                        0, 1, 0, OFFSET,
                                        0, 0, 0, 1),
-                MathTransforms.getMatrix(op.getMathTransform()), STRICT,
+                MathTransforms.getMatrix(c.getMathTransform()), STRICT,
                 "Longitude rotation of a time-varying CRS");
     }
 
@@ -334,12 +331,12 @@ public final class DefaultConversionTest extends TestCase {
         final DefaultConversion op = createLongitudeRotation(true);
         IllegalArgumentException e;
         e = assertThrows(IllegalArgumentException.class,
-                () -> op.specialize(Conversion.class, HardCodedCRS.WGS84, HardCodedCRS.NTF_NORMALIZED_AXES, null),
+                () -> op.specialize(HardCodedCRS.WGS84, HardCodedCRS.NTF_NORMALIZED_AXES, null),
                 "Should not have accepted to change the geodetic datum.");
         assertMessageContains(e, "sourceCRS", "Nouvelle Triangulation Française");
 
         e = assertThrows(IllegalArgumentException.class,
-                () -> op.specialize(Conversion.class, HardCodedCRS.NTF_NORMALIZED_AXES, HardCodedCRS.WGS84, null),
+                () -> op.specialize(HardCodedCRS.NTF_NORMALIZED_AXES, HardCodedCRS.WGS84, null),
                 "Should not have accepted to change the geodetic datum.");
         assertMessageContains(e, "targetCRS", "Nouvelle Triangulation Française");
     }

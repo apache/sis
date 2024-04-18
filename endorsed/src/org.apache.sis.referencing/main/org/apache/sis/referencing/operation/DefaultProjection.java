@@ -34,18 +34,6 @@ import org.apache.sis.util.ArgumentChecks;
  * A conversion from (<var>longitude</var>, <var>latitude</var>) coordinates to Cartesian coordinates
  * (<var>x</var>,<var>y</var>).
  *
- * <p>An unofficial list of projections and their parameters can be found
- * <a href="http://geotiff.maptools.org/proj_list/">there</a>.
- * Most projections expect the following parameters:</p>
- *
- * <ul>
- *   <li>{@code "central_meridian"} (default to 0),
- *   <li>{@code "latitude_of_origin"} (default to 0),
- *   <li>{@code "scale_factor"} (default to 1),
- *   <li>{@code "false_easting"} (default to 0) and
- *   <li>{@code "false_northing"} (default to 0).
- * </ul>
- *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  *
  * @see org.apache.sis.referencing.crs.DefaultProjectedCRS
@@ -84,16 +72,14 @@ final class DefaultProjection extends DefaultConversion implements Projection {
      * @param  sourceCRS   the source CRS.
      * @param  targetCRS   the target CRS.
      * @param  factory     the factory to use for creating a transform from the parameters or for performing axis changes.
-     * @param  actual      an array of length 1 where to store the actual operation method used by the math transform factory.
-     * @throws IllegalArgumentException if the source or targe CRS is not of the requested type.
+     * @throws IllegalArgumentException if the source or targe CRS is not of the expected types.
      */
     DefaultProjection(final Conversion definition,
                       final CoordinateReferenceSystem sourceCRS,
                       final CoordinateReferenceSystem targetCRS,
-                      final MathTransformFactory factory,
-                      final OperationMethod[] actual) throws FactoryException
+                      final MathTransformFactory factory) throws FactoryException
     {
-        super(definition, sourceCRS, targetCRS, factory, actual);
+        super(definition, sourceCRS, targetCRS, factory);
         ArgumentChecks.ensureCanCast("sourceCRS", GeographicCRS.class, sourceCRS);
         ArgumentChecks.ensureCanCast("targetCRS", ProjectedCRS .class, targetCRS);
     }
@@ -119,21 +105,5 @@ final class DefaultProjection extends DefaultConversion implements Projection {
     @Override
     public Class<? extends Projection> getInterface() {
         return Projection.class;
-    }
-
-    /**
-     * Returns the source CRS, which must be geographic or {@code null}.
-     */
-    @Override
-    public final GeographicCRS getSourceCRS() {
-        return (GeographicCRS) super.getSourceCRS();
-    }
-
-    /**
-     * Returns the target CRS, which must be projected or {@code null}.
-     */
-    @Override
-    public final ProjectedCRS getTargetCRS() {
-        return (ProjectedCRS) super.getTargetCRS();
     }
 }

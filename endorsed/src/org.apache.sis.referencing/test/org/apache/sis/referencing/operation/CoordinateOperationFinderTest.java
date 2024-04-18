@@ -33,7 +33,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.Conversion;
-import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.ConcatenatedOperation;
@@ -455,7 +454,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         assertSame(sourceCRS, operation.getSourceCRS());
         assertSame(targetCRS, operation.getTargetCRS());
         assertEquals("TM", operation.getName().getCode());
-        assertInstanceOf(Projection.class, operation);
+        assertInstanceOf(Conversion.class, operation);
 
         final ParameterValueGroup param = ((SingleOperation) operation).getParameterValues();
         assertEquals(6370997, param.parameter("semi_major"        ).doubleValue());

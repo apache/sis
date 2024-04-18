@@ -30,7 +30,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.operation.Formula;
 import org.opengis.referencing.operation.Conversion;
-import org.opengis.referencing.operation.Projection;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
@@ -337,16 +336,15 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
      * The base {@code CoordinateOperation} interface is usually one of the following subtypes:
      *
      * <ul class="verbose">
+     *   <li class="verbose">{@link org.opengis.referencing.operation.Conversion}
+     *     if the coordinate operation is theoretically of infinite precision, ignoring the limitations of floating
+     *     point arithmetic (including rounding errors) and the approximations implied by finite series expansions.</li>
      *   <li>{@link org.opengis.referencing.operation.Transformation}
      *     if the coordinate operation has some errors (typically of a few metres) because of the empirical process by
      *     which the operation parameters were determined. Those errors do not depend on the floating point precision
      *     or the accuracy of the implementation algorithm.</li>
-     *   <li class="verbose">{@link org.opengis.referencing.operation.Conversion}
-     *     if the coordinate operation is theoretically of infinite precision, ignoring the limitations of floating
-     *     point arithmetic (including rounding errors) and the approximations implied by finite series expansions.</li>
-     *   <li>{@link org.opengis.referencing.operation.Projection}
-     *     if the coordinate operation is a conversion (as defined above) converting geodetic latitudes and longitudes
-     *     to plane (map) coordinates.</li>
+     *   <li>{@link org.opengis.referencing.operation.PointMotionOperation}
+     *     if the coordinate operation applies changes due to the motion of points between two coordinate epochs.</li>
      * </ul>
      *
      * In case of doubt, {@code getOperationType()} can conservatively return the base type.
@@ -564,8 +562,8 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
         if (isWKT1) {
             /*
              * The WKT 1 keyword is "PROJECTION", which imply that the operation method should be of type
-             * org.opengis.referencing.operation.Projection. So strictly speaking only the first check in
-             * the following 'if' statement is relevant.
+             * org.opengis.referencing.operation.Conversion. So strictly speaking only the first check in
+             * the following 'if' statement is relevant, and we should also check CRS types.
              *
              * Unfortunately in many cases we do not know the operation type, because the method that we
              * invoked - getOperationType() - is not a standard OGC/ISO property, so this information is
@@ -576,10 +574,10 @@ public class DefaultOperationMethod extends AbstractIdentifiedObject implements 
              *
              * In other words, the combination of those two checks exclude the following operation types:
              * Transformation, ConcatenatedOperation, PassThroughOperation, or any user-defined type that
-             * do not extend Projection. All other operation types are accepted.
+             * do not extend Conversion. All other operation types are accepted.
              */
             final Class<? extends SingleOperation> type = getOperationType();
-            if (Projection.class.isAssignableFrom(type) || type.isAssignableFrom(Projection.class)) {
+            if (Conversion.class.isAssignableFrom(type) || type.isAssignableFrom(Conversion.class)) {
                 return WKTKeywords.Projection;
             }
             formatter.setInvalidWKT(this, null);

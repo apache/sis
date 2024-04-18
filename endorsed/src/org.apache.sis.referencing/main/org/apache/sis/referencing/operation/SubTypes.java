@@ -16,10 +16,7 @@
  */
 package org.apache.sis.referencing.operation;
 
-import org.opengis.util.FactoryException;
 import org.opengis.referencing.operation.*;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.referencing.AbstractIdentifiedObject;
 
 
 /**
@@ -30,8 +27,6 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
  * <p>This class currently provides implementation for the following methods:</p>
  * <ul>
  *   <li>{@link AbstractCoordinateOperation#castOrCopy(CoordinateOperation)}</li>
- *   <li>{@link DefaultConversion#castOrCopy(Conversion)}</li>
- *   <li>{@link DefaultConversion#specialize(Class, CoordinateReferenceSystem, CoordinateReferenceSystem, MathTransformFactory)}</li>
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -86,75 +81,5 @@ final class SubTypes {
             return (AbstractCoordinateOperation) object;
         }
         return new AbstractCoordinateOperation(object);
-    }
-
-    /**
-     * Returns a conversion from the specified defining conversion.
-     * The returned conversion will implement at least the {@code baseType} interface, but may implement
-     * a more specific GeoAPI interface if this method has been able to infer the type from the
-     * {@code conversion} argument.
-     *
-     * @param  baseType    the base GeoAPI interface to be implemented by the conversion to return.
-     * @param  definition  the defining conversion.
-     * @param  sourceCRS   the source CRS.
-     * @param  targetCRS   the target CRS.
-     * @param  factory     the factory to use for creating a transform from the parameters or for performing axis changes.
-     * @return the conversion of the given type between the given CRS.
-     * @throws ClassCastException if a contradiction is found between the given {@code baseType},
-     *         the defining {@linkplain DefaultConversion#getInterface() conversion type} and
-     *         the {@linkplain DefaultOperationMethod#getOperationType() method operation type}.
-     */
-    static <T extends Conversion> T create(final Class<T> baseType, Conversion definition,
-            final CoordinateReferenceSystem sourceCRS, final CoordinateReferenceSystem targetCRS,
-            final MathTransformFactory factory) throws FactoryException
-    {
-        Class<? extends T> type = baseType;
-        if (definition instanceof AbstractIdentifiedObject) {
-            final Class<?> c = ((AbstractIdentifiedObject) definition).getInterface();
-            if (!c.isAssignableFrom(baseType)) {                        // Do nothing if c is a parent type.
-                type = c.asSubclass(type);
-            }
-        }
-        final OperationMethod method = definition.getMethod();
-        if (method instanceof DefaultOperationMethod) {
-            final Class<? extends SingleOperation> c = ((DefaultOperationMethod) method).getOperationType();
-            if (!c.isAssignableFrom(baseType)) {                        // Do nothing if c is a parent type.
-                type = c.asSubclass(type);
-            }
-        }
-        Conversion conversion;
-        if (type.isInstance(definition)
-                && definition.getSourceCRS() == sourceCRS
-                && definition.getTargetCRS() == targetCRS
-                && definition.getMathTransform() != null)
-        {
-            conversion = definition;
-        } else {
-            final OperationMethod[] actual = new OperationMethod[1];
-            boolean tryAgain;
-            do {
-                tryAgain = false;
-                if (Projection.class.isAssignableFrom(type)) {
-                    conversion = new DefaultProjection(definition, sourceCRS, targetCRS, factory, actual);
-                } else {
-                    conversion = new DefaultConversion(definition, sourceCRS, targetCRS, factory, actual);
-                }
-                /*
-                 * The DefaultConversion constructor may have used MathTransformFactory for creating the actual
-                 * MathTransform object. In such case, we can use the knownledge that the factory has about the
-                 * coordinate operation for refining again the type of the object to be returned.
-                 */
-                final OperationMethod m = actual[0];
-                if (m instanceof DefaultOperationMethod) {
-                    final Class<?> t = ((DefaultOperationMethod) m).getOperationType();
-                    if (t != null && t != type && type.isAssignableFrom(t)) {
-                        type = t.asSubclass(type);
-                        definition = conversion;
-                        tryAgain = true;
-                    }
-                }
-            } while (tryAgain);
-        }
-        return type.cast(conversion);
     }
 }

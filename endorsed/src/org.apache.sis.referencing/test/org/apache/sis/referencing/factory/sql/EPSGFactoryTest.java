@@ -43,7 +43,6 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.Projection;
 import org.opengis.util.FactoryException;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.referencing.CRS;
@@ -651,34 +650,26 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         final Set<String> parameters      = factory.getAuthorityCodes(ParameterDescriptor.class);
         final Set<String> operations      = factory.getAuthorityCodes(SingleOperation    .class);
         final Set<String> conversions     = factory.getAuthorityCodes(Conversion         .class);
-        final Set<String> projections     = factory.getAuthorityCodes(Projection         .class);
         final Set<String> transformations = factory.getAuthorityCodes(Transformation     .class);
 
         assertFalse(methods        .isEmpty(), "Methods not found.");
         assertFalse(parameters     .isEmpty(), "Parameters not found.");
         assertFalse(operations     .isEmpty(), "Operations not found.");
         assertFalse(conversions    .isEmpty(), "Conversions not found.");
-        assertFalse(projections    .isEmpty(), "Projections not found.");
         assertFalse(transformations.isEmpty(), "Transformations not found.");
 
         assertTrue (methods        .contains("9804"),  "Shall contain “Mercator 1SP”");
         assertTrue (parameters     .contains("8805"),  "Shall contain “Scale factor”");
         assertTrue (operations     .contains("1133"),  "Shall contain “ED50 to WGS 84 (1)”");
         assertFalse(conversions    .contains("1133"),  "Shall not contain “ED50 to WGS 84 (1)”");
-        assertFalse(projections    .contains("1133"),  "Shall not contain “ED50 to WGS 84 (1)”");
         assertTrue (transformations.contains("1133"),  "Shall contain “ED50 to WGS 84 (1)”");
         assertTrue (operations     .contains("16001"), "Shall contain “UTM zone 1N”");
         assertTrue (conversions    .contains("16001"), "Shall contain “UTM zone 1N”");
-        assertTrue (projections    .contains("16001"), "Shall contain “UTM zone 1N”");
         assertFalse(transformations.contains("16001"), "Shall not contain “UTM zone 1N”");
 
         if (RUN_EXTENSIVE_TESTS) {
             assertTrue (conversions    .size() < operations .size(), "Conversions shall be a subset of operations.");
-            assertTrue (projections    .size() < operations .size(), "Projections shall be a subset of operations.");
-            assertTrue (projections    .size() < conversions.size(), "Projections shall be a subset of conversions.");
             assertTrue (transformations.size() < operations .size(), "Transformations shall be a subset of operations.");
-            assertFalse(projections.containsAll(conversions),        "Projections shall be a subset of conversions.");
-            assertTrue (conversions.containsAll(projections),        "Projections shall be a subset of conversions.");
             assertTrue (operations .containsAll(conversions),        "Conversion shall be a subset of operations.");
             assertTrue (operations .containsAll(transformations),    "Transformations shall be a subset of operations.");
             assertTrue (Collections.disjoint(conversions, transformations), "Conversions cannot be transformations.");
@@ -752,7 +743,7 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         assertNotSame(projection, operation,
                 "The defining conversion and the actual conversion should differ " +
                 "because the actual conversion should have semi-axis length values.");
-        assertInstanceOf(Projection.class, projection);
+        assertInstanceOf(Conversion.class, projection);
         assertNotNull(projection.getSourceCRS());
         assertNotNull(projection.getTargetCRS());
         assertNotNull(projection.getMathTransform());

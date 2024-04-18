@@ -167,7 +167,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
             factory = (MathTransformFactory) properties.get(ReferencingFactoryContainer.MT_FACTORY);
         }
         try {
-            return DefaultConversion.castOrCopy(conversion).specialize(getConversionType(), baseCRS, this, factory);
+            return getConversionType().cast(DefaultConversion.castOrCopy(conversion).specialize(baseCRS, this, factory));
         } catch (FactoryException e) {
             throw new IllegalArgumentException(Errors.forProperties(properties).getString(
                     Errors.Keys.IllegalArgumentValue_2, "conversion", conversion.getName()), e);
@@ -184,12 +184,6 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
     abstract Class<C> getConversionType();
 
     /**
-     * Returns the GeoAPI interface implemented by this class.
-     */
-    @Override
-    public abstract Class<? extends GeneralDerivedCRS> getInterface();
-
-    /**
      * Returns the datum of the {@linkplain #getBaseCRS() base CRS}.
      *
      * @return the datum of the base CRS.
@@ -198,7 +192,7 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
     public abstract Datum getDatum();
 
     /**
-     * Returns the conversion from the {@linkplain #getBaseCRS() base CRS} to this CRS.
+     * Returns the conversion from the base CRS to this CRS.
      *
      * @return the conversion to this CRS.
      */

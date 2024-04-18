@@ -403,6 +403,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
          * State validation. The `missing` string will be used in exception message
          * at the end of this method if a required component is reported missing.
          */
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final int[] modifiedCoordinates = this.modifiedCoordinates;
         FactoryException cause = null;
         String missing = "modifiedCoordinate";
@@ -426,7 +427,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
                                 if (sourceSub == null) sourceSub = CRS.selectDimensions(sourceCRS, modifiedCoordinates);
                                 if (targetSub == null) targetSub = CRS.selectDimensions(targetCRS, modifiedCoordinates);
                                 operation = DefaultConversion.castOrCopy((Conversion) operation)
-                                            .specialize(Conversion.class, sourceSub, targetSub, null);
+                                            .specialize(sourceSub, targetSub, null);
                                 subTransform = operation.getMathTransform();
                             } catch (FactoryException e) {
                                 cause = e;
