@@ -468,8 +468,8 @@ public final class HardCodedAxes {
      * and the unit is dimensionless. This constant is sometimes used as a placeholder
      * for axes that were not properly defined.
      */
-    public static final DefaultCoordinateSystemAxis UNDEFINED = create("Undefined", "z",
-            AxisDirection.OTHER, Units.UNITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
+    public static final DefaultCoordinateSystemAxis UNDEFINED = create("Undefined", "m",
+            AxisDirection.UNSPECIFIED, Units.UNITY, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, null);
 
     /**
      * Creates a new axis of the given name, abbreviation, direction and unit.

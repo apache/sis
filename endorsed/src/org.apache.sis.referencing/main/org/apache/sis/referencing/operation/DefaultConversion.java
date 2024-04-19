@@ -326,8 +326,9 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
     public static DefaultConversion castOrCopy(final Conversion object) {
         if (object == null || object instanceof DefaultConversion) {
             return (DefaultConversion) object;
+        } else {
+            return new DefaultConversion(object);
         }
-        return new DefaultConversion(object);
     }
 
     /**

@@ -228,11 +228,11 @@ public class AbstractCS extends AbstractIdentifiedObject implements CoordinateSy
              * more than one time axis. Such case happen in meteorological models.
              */
             final AxisDirection dir = AxisDirections.absolute(direction);
-            if (!dir.equals(AxisDirection.OTHER)) {
+            if (dir != AxisDirection.UNSPECIFIED && !AxisDirections.isLegacyOther(dir)) {
                 for (int j=i; --j>=0;) {
                     final AxisDirection other = axes[j].getDirection();
                     final AxisDirection abs = AxisDirections.absolute(other);
-                    if (dir.equals(abs) && !abs.equals(AxisDirection.FUTURE)) {
+                    if (dir == abs && abs != AxisDirection.FUTURE) {
                         throw new IllegalArgumentException(Resources.forProperties(properties).getString(
                                 Resources.Keys.ColinearAxisDirections_2, direction, other));
                     }

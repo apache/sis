@@ -867,7 +867,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                     if (defaultUnit == null) {
                         throw parent.missingComponent(WKTKeywords.ParametricUnit);
                     }
-                    direction = AxisDirection.OTHER;
+                    direction = AxisDirection.UNSPECIFIED;
                     nz = "Parametric";
                     z = "p";
                     break;
@@ -2213,7 +2213,6 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @return the {@code "FITTED_CS"} element as a {@link CompoundCRS} object.
      * @throws ParseException if the {@code "COMPD_CS"} element cannot be parsed.
      */
-    @SuppressWarnings("deprecation")
     private DerivedCRS parseFittedCS(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.Fitted_CS);
         if (element == null) {
@@ -2243,7 +2242,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 buffer.append(number);
                 axes[i] = csFactory.createCoordinateSystemAxis(
                         singletonMap(CoordinateSystemAxis.NAME_KEY, buffer.toString()),
-                        number, AxisDirection.OTHER, Units.UNITY);
+                        number, AxisDirection.UNSPECIFIED, Units.UNITY);
             }
             final Map<String,Object> properties = parseMetadataAndClose(element, name, baseCRS);
             final Map<String,Object> axisName = singletonMap(CoordinateSystem.NAME_KEY, AxisDirections.appendTo(new StringBuilder("CS"), axes));

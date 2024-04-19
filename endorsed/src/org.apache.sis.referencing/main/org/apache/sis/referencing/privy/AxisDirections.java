@@ -72,9 +72,9 @@ public final class AxisDirections extends Static {
      * For each direction, the opposite direction.
      * This map shall be immutable after construction.
      */
-    private static final Map<AxisDirection,AxisDirection> OPPOSITES = new HashMap<>(20);
+    private static final Map<AxisDirection,AxisDirection> OPPOSITES = new HashMap<>(24);
     static {
-        put(OTHER,             OTHER);
+        put(UNSPECIFIED,       UNSPECIFIED);
         put(NORTH,             SOUTH);
         put(NORTH_NORTH_EAST,  SOUTH_SOUTH_WEST);
         put(NORTH_EAST,        SOUTH_WEST);
@@ -109,7 +109,7 @@ public final class AxisDirections extends Static {
             ROW_POSITIVE,      "j",
             DISPLAY_RIGHT,     "x",
             DISPLAY_UP,        "y",
-            OTHER,             "z",     // Arbitrary abbreviation, may change in any future SIS version.
+            UNSPECIFIED,       "m",     // Arbitrary abbreviation, may change in any future SIS version.
             AWAY_FROM,         "r",
             COUNTER_CLOCKWISE, "θ");
 
@@ -254,6 +254,21 @@ public final class AxisDirections extends Static {
      */
     public static boolean isGeocentric(final AxisDirection dir) {
         return dir == GEOCENTRIC_X || dir == GEOCENTRIC_Y || dir == GEOCENTRIC_Z;
+    }
+
+    /**
+     * Returns {@code true} if the given direction is the legacy "other" code list value.
+     * The "other" direction was used in Well Known Text (WKT) 1 but is no longer declared
+     * in recent standards.
+     *
+     * @param  dir  the direction to test, or {@code null}.
+     * @return {@code true} if the given direction is the legacy "other" direction.
+     *
+     * @see org.apache.sis.referencing.internal.Legacy#OTHER
+     */
+    public static boolean isLegacyOther(final AxisDirection dir) {
+        // Compare "other" as string for avoiding class loading.
+        return (dir != null) && "OTHER".equalsIgnoreCase(dir.name());
     }
 
     /**
@@ -712,6 +727,9 @@ next:       for (int i=0; i <= limit; i++) {
             final String abbreviation = ABBREVIATIONS.get(absolute(direction));
             if (abbreviation != null) {
                 return abbreviation;
+            }
+            if (isLegacyOther(direction)) {
+                return "m";             // Arbitrary abbreviation, may change in any future SIS version.
             }
         }
         final String id = direction.identifier();   // UML identifier, or null if none.

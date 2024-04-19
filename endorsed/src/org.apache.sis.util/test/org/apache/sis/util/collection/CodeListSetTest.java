@@ -46,7 +46,7 @@ public final class CodeListSetTest extends TestCase {
 
     /**
      * Creates a new set filled with up to 4 axis directions.
-     * The directions are (NORTH, EAST, UP, FUTURE) in that order.
+     * The directions are (NORTH_NORTH_EAST, EAST, UP, FUTURE) in that order.
      *
      * @param n Number of code list to add.
      */
@@ -59,7 +59,7 @@ public final class CodeListSetTest extends TestCase {
             case 4: assertTrue(c.add(FUTURE));              // Fallthrough everywhere.
             case 3: assertTrue(c.add(UP));
             case 2: assertTrue(c.add(EAST));
-            case 1: assertTrue(c.add(NORTH));
+            case 1: assertTrue(c.add(NORTH_NORTH_EAST));
             case 0: break;
         }
         assertEquals(n, c.size());
@@ -68,12 +68,12 @@ public final class CodeListSetTest extends TestCase {
 
     /**
      * Creates a code list of another kind. The returned set contains a code list having
-     * the same ordinal value as {@link AxisDirection#NORTH}, so we can detect if the
-     * {@code SortedSet} confuses the code list types.
+     * the same ordinal value as {@link AxisDirection#NORTH_NORTH_EAST}, so we can detect
+     * if the {@code SortedSet} confuses the code list types.
      */
     private CodeListSet<OnLineFunction> createOtherKind() {
         // For the validity of the tests, ordinal value must be the same.
-        assertEquals(NORTH.ordinal(), OnLineFunction.INFORMATION.ordinal());
+        assertEquals(NORTH_NORTH_EAST.ordinal(), OnLineFunction.INFORMATION.ordinal());
         final CodeListSet<OnLineFunction> c = new CodeListSet<>(OnLineFunction.class);
         assertTrue(c.add(OnLineFunction.INFORMATION));
         return c;
@@ -86,7 +86,7 @@ public final class CodeListSetTest extends TestCase {
     @Test
     public void testToArray() {
         final CodeListSet<AxisDirection> c = create(4);
-        assertArrayEquals(new Object[] {NORTH, EAST, UP, FUTURE}, c.toArray());
+        assertArrayEquals(new Object[] {NORTH_NORTH_EAST, EAST, UP, FUTURE}, c.toArray());
     }
 
     /**
@@ -106,7 +106,7 @@ public final class CodeListSetTest extends TestCase {
     @Test
     public void testContains() {
         final CodeListSet<AxisDirection> c = create(4);
-        assertTrue (c.contains(NORTH));
+        assertTrue (c.contains(NORTH_NORTH_EAST));
         assertFalse(c.contains(SOUTH));
         assertTrue (c.contains(FUTURE));
         assertFalse(c.contains(PAST));
@@ -128,9 +128,9 @@ public final class CodeListSetTest extends TestCase {
         assertFalse(c.remove(null), "Should be null-safe.");
         assertFalse(c.remove(OnLineFunction.INFORMATION), "Code list of other kind should not be included.");
 
-        assertTrue (c.remove  (NORTH));
+        assertTrue (c.remove  (NORTH_NORTH_EAST));
         assertFalse(c.remove  (SOUTH));
-        assertFalse(c.contains(NORTH));
+        assertFalse(c.contains(NORTH_NORTH_EAST));
         assertEquals(3, c.size());
 
         assertTrue (c.remove  (FUTURE));
@@ -151,7 +151,7 @@ public final class CodeListSetTest extends TestCase {
         final CodeListSet<AxisDirection> c = create(4);
         final CodeListSet<AxisDirection> o = create(4);
         assertTrue (c.containsAll(o));
-        assertTrue (o.remove(NORTH));
+        assertTrue (o.remove(NORTH_NORTH_EAST));
         assertTrue (o.remove(FUTURE));
         assertTrue (c.containsAll(o));
         assertTrue (o.add(NORTH_EAST));
@@ -185,7 +185,7 @@ public final class CodeListSetTest extends TestCase {
         assertTrue(o.add(NORTH_EAST));      // Extra value shall be ignored.
 
         assertTrue(c.retainAll(o));
-        assertArrayEquals(new Object[] {NORTH, EAST}, c.toArray());
+        assertArrayEquals(new Object[] {NORTH_NORTH_EAST, EAST}, c.toArray());
         assertFalse(c.retainAll(o));        // Invoking a second time should not make any difference.
         assertEquals(2, c.size());
         assertTrue(c.retainAll(createOtherKind()));
@@ -202,7 +202,7 @@ public final class CodeListSetTest extends TestCase {
         assertTrue(c.add(NORTH_EAST));
 
         assertTrue(c.addAll(o));
-        assertArrayEquals(new Object[] {NORTH, NORTH_EAST, EAST, UP}, c.toArray());
+        assertArrayEquals(new Object[] {NORTH_NORTH_EAST, NORTH_EAST, EAST, UP}, c.toArray());
         assertFalse(c.addAll(o));       // Invoking a second time should not make any difference.
     }
 
@@ -213,7 +213,7 @@ public final class CodeListSetTest extends TestCase {
     public void testFill() {
         final CodeListSet<AxisDirection> c = new CodeListSet<>(AxisDirection.class, true);
         assertTrue(c.size() >= 32, "Expect at least 32 elements as of GeoAPI 3.0.");
-        assertTrue(c.toString().startsWith("[AxisDirection.OTHER, AxisDirection.NORTH, "));
+        assertTrue(c.toString().startsWith("[AxisDirection.NORTH, AxisDirection.NORTH_NORTH_EAST, "));
         /*
          * Testing the full array would be too long and may change in future GeoAPI version
          * anyway. Actually the main interest of this test is to ensure that the toString()

@@ -23,6 +23,7 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import static org.opengis.referencing.cs.AxisDirection.*;
+import org.apache.sis.referencing.internal.Legacy;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
@@ -102,15 +103,15 @@ public final class AxisDirectionsTest extends TestCase {
      */
     @Test
     public void testIsOpposite() {
-        assertFalse(AxisDirections.isOpposite(NORTH ));
-        assertTrue (AxisDirections.isOpposite(SOUTH ));
-        assertFalse(AxisDirections.isOpposite(EAST  ));
-        assertTrue (AxisDirections.isOpposite(WEST  ));
-        assertFalse(AxisDirections.isOpposite(UP    ));
-        assertTrue (AxisDirections.isOpposite(DOWN  ));
+        assertFalse(AxisDirections.isOpposite(NORTH));
+        assertTrue (AxisDirections.isOpposite(SOUTH));
+        assertFalse(AxisDirections.isOpposite(EAST));
+        assertTrue (AxisDirections.isOpposite(WEST));
+        assertFalse(AxisDirections.isOpposite(UP));
+        assertTrue (AxisDirections.isOpposite(DOWN));
         assertFalse(AxisDirections.isOpposite(FUTURE));
-        assertTrue (AxisDirections.isOpposite(PAST  ));
-        assertFalse(AxisDirections.isOpposite(OTHER ));
+        assertTrue (AxisDirections.isOpposite(PAST));
+        assertFalse(AxisDirections.isOpposite(UNSPECIFIED));
     }
 
     /**
@@ -136,7 +137,7 @@ public final class AxisDirectionsTest extends TestCase {
         assertFalse(AxisDirections.isCardinal(NORTH_NORTH_WEST));
         assertFalse(AxisDirections.isCardinal(UP));
         assertFalse(AxisDirections.isCardinal(FUTURE));
-        assertFalse(AxisDirections.isCardinal(OTHER));
+        assertFalse(AxisDirections.isCardinal(UNSPECIFIED));
     }
 
     /**
@@ -162,7 +163,7 @@ public final class AxisDirectionsTest extends TestCase {
         assertTrue (AxisDirections.isIntercardinal(NORTH_NORTH_WEST));
         assertFalse(AxisDirections.isIntercardinal(UP));
         assertFalse(AxisDirections.isIntercardinal(FUTURE));
-        assertFalse(AxisDirections.isIntercardinal(OTHER));
+        assertFalse(AxisDirections.isIntercardinal(UNSPECIFIED));
     }
 
     /**
@@ -197,6 +198,15 @@ public final class AxisDirectionsTest extends TestCase {
         assertFalse(AxisDirections.isGeocentric(UP));
         assertFalse(AxisDirections.isGeocentric(DOWN));
         assertFalse(AxisDirections.isGeocentric(FUTURE));
+    }
+
+    /**
+     * Tests {@link AxisDirections#isLegacyOther(AxisDirection)}.
+     */
+    @Test
+    public void testIsLegacyOther() {
+        assertFalse(AxisDirections.isLegacyOther(NORTH));
+        assertTrue (AxisDirections.isLegacyOther(Legacy.OTHER));
     }
 
     /**

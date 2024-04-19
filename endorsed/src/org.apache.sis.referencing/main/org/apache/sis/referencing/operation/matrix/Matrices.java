@@ -451,7 +451,7 @@ public final class Matrices extends Static {
         if (Arrays.equals(srcAxes, dstAxes)) {
             /*
              * createTransform(…) may fail if the arrays contain two axes with the same direction, for example
-             * AxisDirection.OTHER. This check prevents that failure for the common case of an identity transform.
+             * AxisDirection.UNSPECIFIED. This check prevents that failure for the case of identity transform.
              * The returned matrix must use extended precision for reason documented in `createTransform(…)`.
              */
             final int n = srcAxes.length + 1;

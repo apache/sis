@@ -24,6 +24,7 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import static org.opengis.referencing.cs.CoordinateSystem.NAME_KEY;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.internal.Legacy;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.measure.Units;
 
@@ -115,12 +116,12 @@ public final class NormalizerTest extends TestCase {
     @Test
     public void testSortWKT1() {
         assertOrdered(new AxisDirection[] {
-            AxisDirection.OTHER,
+            Legacy.OTHER,
             AxisDirection.EAST,
             AxisDirection.NORTH
         }, new AxisDirection[] {
             AxisDirection.NORTH,
-            AxisDirection.OTHER,
+            Legacy.OTHER,
             AxisDirection.EAST
         });
     }

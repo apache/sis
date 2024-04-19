@@ -630,7 +630,7 @@ public final class Axis extends NamedElement {
             } else switch (order) {
                 case 0:  dir = AxisDirection.COLUMN_POSITIVE; break;
                 case 1:  dir = AxisDirection.ROW_POSITIVE;    break;
-                default: dir = AxisDirection.OTHER;           break;
+                default: dir = AxisDirection.UNSPECIFIED;     break;
             }
         }
         final String abbr;
