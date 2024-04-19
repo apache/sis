@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.internal;
 
+import org.opengis.referencing.datum.RealizationMethod;
 import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.util.ArraysExt;
 
@@ -43,9 +44,9 @@ public final class VerticalDatumTypesTest extends TestCase {
      */
     @Test
     public void testFromLegacy() {
-        assertEquals(VerticalDatumTypes.ELLIPSOIDAL, VerticalDatumTypes.fromLegacy(2002));
-        assertEquals(VerticalDatumType .GEOIDAL,     VerticalDatumTypes.fromLegacy(2005));
-        assertEquals(VerticalDatumType .DEPTH,       VerticalDatumTypes.fromLegacy(2006));
+        assertEquals(VerticalDatumTypes.ellipsoidal(), VerticalDatumTypes.fromLegacy(2002));
+        assertEquals(RealizationMethod .GEOID,         VerticalDatumTypes.fromLegacy(2005));
+        assertEquals(RealizationMethod .TIDAL,         VerticalDatumTypes.fromLegacy(2006));
     }
 
     /**
@@ -53,19 +54,19 @@ public final class VerticalDatumTypesTest extends TestCase {
      */
     @Test
     public void testToLegacy() {
-        assertEquals(2002, VerticalDatumTypes.toLegacy(VerticalDatumTypes.ELLIPSOIDAL));
-        assertEquals(2005, VerticalDatumTypes.toLegacy(VerticalDatumType .GEOIDAL));
-        assertEquals(2006, VerticalDatumTypes.toLegacy(VerticalDatumType .DEPTH));
+        assertEquals(2002, VerticalDatumTypes.toLegacy(VerticalDatumType.valueOf("ELLIPSOIDAL")));
+        assertEquals(2005, VerticalDatumTypes.toLegacy(VerticalDatumType.GEOIDAL));
+        assertEquals(2006, VerticalDatumTypes.toLegacy(VerticalDatumType.DEPTH));
     }
 
     /**
-     * Tests the list of vertical datum types. Note that {@link #testFromLegacy()} must be executed
-     * first for ensuring {@link VerticalDatumTypes} class initialization prior this test.
+     * Verifies the list of realization methods.
      */
     @Test
-    public void testVerticalDatumTypes() {
-        final VerticalDatumType[] types = VerticalDatumType.values();
-        assertEquals(VerticalDatumType.OTHER_SURFACE, types[0]);
-        assertTrue(ArraysExt.contains(types, VerticalDatumTypes.ELLIPSOIDAL));
+    public void verifyCodeList() {
+        final RealizationMethod expected = VerticalDatumTypes.ellipsoidal();    // Must be first.
+        final RealizationMethod[] types = RealizationMethod.values();
+        assertEquals(RealizationMethod.LEVELLING, types[0]);
+        assertTrue(ArraysExt.contains(types, expected));
     }
 }

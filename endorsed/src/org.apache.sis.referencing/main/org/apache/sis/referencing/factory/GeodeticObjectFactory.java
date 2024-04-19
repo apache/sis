@@ -941,7 +941,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * <ol>
      *   <li>{@link #createCoordinateSystemAxis(Map, String, AxisDirection, Unit)}</li>
      *   <li>{@link #createVerticalCS(Map, CoordinateSystemAxis)}</li>
-     *   <li>{@link #createVerticalDatum(Map, VerticalDatumType)}</li>
+     *   <li>{@link #createVerticalDatum(Map, RealizationMethod)}</li>
      * </ol>
      *
      * The default implementation creates a {@link DefaultVerticalCRS} instance.
@@ -965,6 +965,32 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
             throw new InvalidGeodeticParameterException(exception);
         }
         return unique("createVerticalCRS", crs);
+    }
+
+    /**
+     * Creates a vertical datum from an enumerated type value.
+     * The default implementation creates a {@link DefaultVerticalDatum} instance.
+     *
+     * @param  properties  name and other properties to give to the new object.
+     * @param  method      the realization method the vertical datum, or {@code null} if none.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @see DefaultVerticalDatum#DefaultVerticalDatum(Map, RealizationMethod)
+     * @see GeodeticAuthorityFactory#createVerticalDatum(String)
+     *
+     * @since 2.0
+     */
+    @Override
+    public VerticalDatum createVerticalDatum(final Map<String,?> properties,
+            final RealizationMethod method) throws FactoryException
+    {
+        final DefaultVerticalDatum datum;
+        try {
+            datum = new DefaultVerticalDatum(complete(properties), method);
+        } catch (IllegalArgumentException exception) {
+            throw new InvalidGeodeticParameterException(exception);
+        }
+        return unique("createVerticalDatum", datum);
     }
 
     /**

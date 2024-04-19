@@ -113,6 +113,7 @@ public final class NormalizerTest extends TestCase {
      * with axes of legacy (WKT 1) axes.
      */
     @Test
+    @SuppressWarnings("deprecation")
     public void testSortWKT1() {
         assertOrdered(new AxisDirection[] {
             AxisDirection.OTHER,

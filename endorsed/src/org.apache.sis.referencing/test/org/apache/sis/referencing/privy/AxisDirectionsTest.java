@@ -102,15 +102,15 @@ public final class AxisDirectionsTest extends TestCase {
      */
     @Test
     public void testIsOpposite() {
-        assertFalse(AxisDirections.isOpposite(NORTH ));
-        assertTrue (AxisDirections.isOpposite(SOUTH ));
-        assertFalse(AxisDirections.isOpposite(EAST  ));
-        assertTrue (AxisDirections.isOpposite(WEST  ));
-        assertFalse(AxisDirections.isOpposite(UP    ));
-        assertTrue (AxisDirections.isOpposite(DOWN  ));
+        assertFalse(AxisDirections.isOpposite(NORTH));
+        assertTrue (AxisDirections.isOpposite(SOUTH));
+        assertFalse(AxisDirections.isOpposite(EAST));
+        assertTrue (AxisDirections.isOpposite(WEST));
+        assertFalse(AxisDirections.isOpposite(UP));
+        assertTrue (AxisDirections.isOpposite(DOWN));
         assertFalse(AxisDirections.isOpposite(FUTURE));
-        assertTrue (AxisDirections.isOpposite(PAST  ));
-        assertFalse(AxisDirections.isOpposite(OTHER ));
+        assertTrue (AxisDirections.isOpposite(PAST));
+        assertFalse(AxisDirections.isOpposite(UNSPECIFIED));
     }
 
     /**
@@ -136,7 +136,7 @@ public final class AxisDirectionsTest extends TestCase {
         assertFalse(AxisDirections.isCardinal(NORTH_NORTH_WEST));
         assertFalse(AxisDirections.isCardinal(UP));
         assertFalse(AxisDirections.isCardinal(FUTURE));
-        assertFalse(AxisDirections.isCardinal(OTHER));
+        assertFalse(AxisDirections.isCardinal(UNSPECIFIED));
     }
 
     /**
@@ -162,7 +162,7 @@ public final class AxisDirectionsTest extends TestCase {
         assertTrue (AxisDirections.isIntercardinal(NORTH_NORTH_WEST));
         assertFalse(AxisDirections.isIntercardinal(UP));
         assertFalse(AxisDirections.isIntercardinal(FUTURE));
-        assertFalse(AxisDirections.isIntercardinal(OTHER));
+        assertFalse(AxisDirections.isIntercardinal(UNSPECIFIED));
     }
 
     /**

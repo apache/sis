@@ -20,7 +20,7 @@ import java.util.Date;
 import java.util.Map;
 import java.util.HashMap;
 import org.opengis.referencing.datum.PixelInCell;
-import org.opengis.referencing.datum.VerticalDatumType;
+import org.opengis.referencing.datum.RealizationMethod;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.measure.Units;
@@ -121,7 +121,7 @@ public final class HardCodedDatum {
     @SuppressWarnings("deprecation")
     public static final DefaultVerticalDatum ELLIPSOID = new DefaultVerticalDatum(
             properties("Ellipsoid", null, getScope(SPHERE)),
-            VerticalDatumTypes.ELLIPSOIDAL);
+            VerticalDatumTypes.ellipsoidal());
 
     /**
      * Mean sea level, which can be used as an approximation of geoid.
@@ -129,7 +129,7 @@ public final class HardCodedDatum {
     @SuppressWarnings("deprecation")
     public static final DefaultVerticalDatum MEAN_SEA_LEVEL = new DefaultVerticalDatum(
             properties("Mean Sea Level", "5100", "Hydrography."),
-            VerticalDatumType.GEOIDAL);
+            RealizationMethod.GEOID);
 
     /**
      * Default datum for time measured since January 1st, 1970 at 00:00 UTC.

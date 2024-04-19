@@ -39,7 +39,6 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.VerticalDatum;
-import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.logging.Logging;
@@ -354,12 +353,6 @@ crs:    if (isInstance(CoordinateReferenceSystem.class, object)) {
                     return Set.of();
                 }
             } else {
-                if (isInstance(VerticalDatum.class, object)) {
-                    final VerticalDatumType type = ((VerticalDatum) object).getVerticalDatumType();
-                    if (type != null && !type.equals(EPSGDataAccess.VERTICAL_DATUM_TYPE)) {
-                        return Set.of();
-                    }
-                }
                 filters = new Condition[] {
                     Condition.NAME
                 };

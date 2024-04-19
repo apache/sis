@@ -23,7 +23,6 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.datum.VerticalDatum;
-import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.measure.Units;
 
 // Specific to the main and geoapi-3.1 branches:
@@ -48,46 +47,36 @@ public final class VerticalCRSMock extends IdentifiedObjectMock
      * Height in metres.
      */
     public static final VerticalCRS HEIGHT = new VerticalCRSMock("Height",
-            RealizationMethod.GEOID,
-            VerticalDatumType.GEOIDAL, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Units.METRE, true);
+            RealizationMethod.GEOID, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Units.METRE, true);
 
     /**
      * Height in feet.
      */
     public static final VerticalCRS HEIGHT_ft = new VerticalCRSMock("Height",
-            RealizationMethod.GEOID,
-            VerticalDatumType.GEOIDAL, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Units.FOOT, true);
+            RealizationMethod.GEOID, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, Units.FOOT, true);
 
     /**
      * Height estimated from hPa.
      */
     public static final VerticalCRS BAROMETRIC_HEIGHT = new VerticalCRSMock("Barometric height",
-            RealizationMethod.LEVELLING,
-            VerticalDatumType.BAROMETRIC, 0, Double.POSITIVE_INFINITY, Units.HECTOPASCAL, true);
+            RealizationMethod.LEVELLING, 0, Double.POSITIVE_INFINITY, Units.HECTOPASCAL, true);
 
     /**
      * Depth in metres.
      */
     public static final VerticalCRS DEPTH = new VerticalCRSMock("Depth",
-            RealizationMethod.TIDAL,
-            VerticalDatumType.DEPTH, 0, Double.POSITIVE_INFINITY, Units.METRE, false);
+            RealizationMethod.TIDAL, 0, Double.POSITIVE_INFINITY, Units.METRE, false);
 
     /**
      * Depth as a fraction of the sea floor depth at the location of the point for which the depth is evaluated.
      */
     public static final VerticalCRS SIGMA_LEVEL = new VerticalCRSMock("Sigma level",
-            null,
-            VerticalDatumType.OTHER_SURFACE, 0, 1, Units.UNITY, false);
+            null, 0, 1, Units.UNITY, false);
 
     /**
      * The realization method (geoid, tidal, <i>etc.</i>), or {@code null} if unspecified.
      */
     private final RealizationMethod method;
-
-    /**
-     * The datum type (geoidal, barometric, etc.).
-     */
-    private final VerticalDatumType type;
 
     /**
      * The minimum and maximum values.
@@ -114,11 +103,10 @@ public final class VerticalCRSMock extends IdentifiedObjectMock
      * @param unit          the unit of measurement.
      * @param up            {@code true} if the axis direction is up, or {@code false} if down.
      */
-    private VerticalCRSMock(final String name, final RealizationMethod method, VerticalDatumType type,
+    private VerticalCRSMock(final String name, final RealizationMethod method,
             final double minimumValue, final double maximumValue, final Unit<?> unit, final boolean up)
     {
         super(name);
-        this.type         = type;
         this.method       = method;
         this.minimumValue = minimumValue;
         this.maximumValue = maximumValue;
@@ -138,7 +126,6 @@ public final class VerticalCRSMock extends IdentifiedObjectMock
     @Override public InternationalString         getScope()             {return null;}
     @Override public Extent                      getDomainOfValidity()  {return null;}
     @Override public Optional<RealizationMethod> getRealizationMethod() {return Optional.ofNullable(method);}
-    @Override public VerticalDatumType           getVerticalDatumType() {return type;}
     @Override public VerticalDatum               getDatum()             {return this;}
     @Override public VerticalCS                  getCoordinateSystem()  {return this;}
     @Override public int                         getDimension()         {return 1;}

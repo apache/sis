@@ -63,7 +63,8 @@ public final class Legacy {
      * the ISO 19111's ones (ISO names are "Geocentric X", "Geocentric Y" and "Geocentric Z"). This constant uses
      * the invalid names and directions for WKT 1 parsing/formatting purposes.
      */
-    private static final CartesianCS LEGACY = new DefaultCartesianCS(Map.of(NAME_KEY, "Legacy geocentric"),
+    @SuppressWarnings("deprecation")
+    private static final CartesianCS GEOCENTRIC = new DefaultCartesianCS(Map.of(NAME_KEY, "Legacy geocentric"),
             new DefaultCoordinateSystemAxis(Map.of(NAME_KEY, "X"), "X", AxisDirection.OTHER, Units.METRE),
             new DefaultCoordinateSystemAxis(Map.of(NAME_KEY, "Y"), "Y", AxisDirection.EAST,  Units.METRE),
             new DefaultCoordinateSystemAxis(Map.of(NAME_KEY, "Z"), "Z", AxisDirection.NORTH, Units.METRE));
@@ -95,7 +96,7 @@ public final class Legacy {
      *         or {@code cs} if the CS axes should be used as-is.
      */
     public static CartesianCS forGeocentricCRS(final CartesianCS cs, final boolean toLegacy) {
-        final CartesianCS check = toLegacy ? standard(null) : LEGACY;
+        final CartesianCS check = toLegacy ? standard(null) : GEOCENTRIC;
         final int dimension = check.getDimension();
         if (cs.getDimension() != dimension) {
             return cs;
@@ -106,7 +107,7 @@ public final class Legacy {
             }
         }
         final Unit<?> unit = ReferencingUtilities.getUnit(cs);
-        return toLegacy ? replaceUnit(LEGACY, unit) : standard(unit);
+        return toLegacy ? replaceUnit(GEOCENTRIC, unit) : standard(unit);
     }
 
     /**

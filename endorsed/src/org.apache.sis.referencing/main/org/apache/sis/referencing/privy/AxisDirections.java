@@ -72,9 +72,9 @@ public final class AxisDirections extends Static {
      * For each direction, the opposite direction.
      * This map shall be immutable after construction.
      */
-    private static final Map<AxisDirection,AxisDirection> OPPOSITES = new HashMap<>(20);
+    private static final Map<AxisDirection,AxisDirection> OPPOSITES = new HashMap<>(24);
     static {
-        put(OTHER,             OTHER);
+        put(UNSPECIFIED,       UNSPECIFIED);
         put(NORTH,             SOUTH);
         put(NORTH_NORTH_EAST,  SOUTH_SOUTH_WEST);
         put(NORTH_EAST,        SOUTH_WEST);
@@ -103,13 +103,15 @@ public final class AxisDirections extends Static {
     /**
      * Proposed abbreviations for some axis directions.
      */
+    @SuppressWarnings("deprecation")
     private static final Map<AxisDirection,String> ABBREVIATIONS = Map.of(
             FUTURE,            "t",
             COLUMN_POSITIVE,   "i",
             ROW_POSITIVE,      "j",
             DISPLAY_RIGHT,     "x",
             DISPLAY_UP,        "y",
-            OTHER,             "z",     // Arbitrary abbreviation, may change in any future SIS version.
+            UNSPECIFIED,       "m",     // Arbitrary abbreviation, may change in any future SIS version.
+            OTHER,             "m",     // Idem.
             AWAY_FROM,         "r",
             COUNTER_CLOCKWISE, "θ");
 

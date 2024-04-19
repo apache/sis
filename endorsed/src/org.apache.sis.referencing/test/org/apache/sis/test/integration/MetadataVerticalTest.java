@@ -35,7 +35,6 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.datum.VerticalDatum;
-import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
@@ -169,7 +168,6 @@ public final class MetadataVerticalTest extends TestCase.WithLogs {
         final VerticalDatum datum = crs.getDatum();
         verifyIdentifiers("test2", datum);
         assertEquals("World", getScope(datum));
-        assertEquals(VerticalDatumType.DEPTH, datum.getVerticalDatumType());    // Inferred from the name.
         final VerticalCS cs = crs.getCoordinateSystem();
         verifyIdentifiers("test3", cs);
         final CoordinateSystemAxis axis = cs.getAxis(0);

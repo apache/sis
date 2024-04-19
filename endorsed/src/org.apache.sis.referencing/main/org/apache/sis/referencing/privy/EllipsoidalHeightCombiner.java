@@ -115,7 +115,7 @@ public final class EllipsoidalHeightCombiner {
             final CoordinateReferenceSystem vertical = components[i];
             if (vertical instanceof VerticalCRS) {
                 final VerticalDatum datum = ((VerticalCRS) vertical).getDatum();
-                if (datum != null && datum.getVerticalDatumType() == VerticalDatumTypes.ELLIPSOIDAL) {
+                if (datum != null && VerticalDatumTypes.ellipsoidal(datum.getRealizationMethod().orElse(null))) {
                     int axisPosition = 0;
                     CoordinateSystem cs = null;
                     CoordinateReferenceSystem crs = null;
