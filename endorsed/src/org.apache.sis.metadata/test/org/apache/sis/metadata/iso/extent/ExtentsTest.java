@@ -31,6 +31,9 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.measure.MeasurementRange;
 import static org.apache.sis.metadata.privy.ReferencingServices.NAUTICAL_MILE;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.datum.RealizationMethod;
+
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -70,7 +73,7 @@ public final class ExtentsTest extends TestCase {
                 new DefaultVerticalExtent( -200,  -100, VerticalCRSMock.HEIGHT),
                 new DefaultVerticalExtent(  150,   300, VerticalCRSMock.DEPTH),
                 new DefaultVerticalExtent(  0.1,   0.2, VerticalCRSMock.SIGMA_LEVEL),
-                new DefaultVerticalExtent( -600,  -300, VerticalCRSMock.HEIGHT_ft), // [91.44 … 182.88] metres
+                new DefaultVerticalExtent( -600,  -300, VerticalCRSMock.HEIGHT_ft),         // [91.44 … 182.88] metres
                 new DefaultVerticalExtent(10130, 20260, VerticalCRSMock.BAROMETRIC_HEIGHT)
         );
         Collections.shuffle(extents, TestUtilities.createRandomNumberGenerator());
@@ -82,7 +85,7 @@ public final class ExtentsTest extends TestCase {
         Unit<?> unit = null;
         for (final DefaultVerticalExtent e : extents) {
             unit = e.getVerticalCRS().getCoordinateSystem().getAxis(0).getUnit();
-            if (Units.isLinear(unit)) break;
+            if (e.getVerticalCRS().getDatum().getRealizationMethod().orElse(null) == RealizationMethod.GEOID) break;
         }
         final UnitConverter c = unit.getConverterToAny(Units.METRE);
         /*
@@ -93,7 +96,7 @@ public final class ExtentsTest extends TestCase {
         final MeasurementRange<Double> range = Extents.getVerticalRange(extent);
         assertNotNull(range);
         assertSame   (unit,   range.unit());
-        assertEquals (-300,   c.convert(range.getMinDouble()), 0.001);
+        assertEquals (-200,   c.convert(range.getMinDouble()), 0.001);
         assertEquals (-91.44, c.convert(range.getMaxDouble()), 0.001);
     }
 

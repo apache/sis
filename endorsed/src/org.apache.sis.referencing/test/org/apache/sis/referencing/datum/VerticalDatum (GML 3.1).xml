@@ -48,5 +48,5 @@
     </gml:boundingBox>
   </gml:validArea>
   <gml:scope>Hydrography.</gml:scope>
-  <gml:verticalDatumType codeSpace="EPSG">geoidal</gml:verticalDatumType>
+  <gml:verticalDatumType codeSpace="OGC">geoidal</gml:verticalDatumType>
 </gml:VerticalDatum>

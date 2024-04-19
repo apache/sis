@@ -991,8 +991,8 @@ public final class CRS extends Static {
      * of the domain of validity of all components.
      *
      * <h4>Ellipsoidal height</h4>
-     * If a two-dimensional geographic or projected CRS if followed or preceded by a vertical CRS with ellipsoidal
-     * {@linkplain org.apache.sis.referencing.datum.DefaultVerticalDatum#getVerticalDatumType() datum type}, then
+     * If a two-dimensional geographic or projected CRS is followed or preceded by a vertical CRS with ellipsoidal
+     * {@linkplain org.apache.sis.referencing.datum.DefaultVerticalDatum#getRealizationMethod() realization method},
      * this method combines them in a single three-dimensional geographic or projected CRS.  Note that standalone
      * ellipsoidal heights are not allowed according ISO 19111. But if such situation is nevertheless found, then
      * the action described here fixes the issue. This is the reverse of <code>{@linkplain #getVerticalComponent

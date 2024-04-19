@@ -49,7 +49,7 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.VerticalDatum;
-import org.opengis.referencing.datum.VerticalDatumType;
+import org.opengis.referencing.datum.RealizationMethod;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.metadata.InvalidMetadataException;
@@ -87,7 +87,7 @@ import org.opengis.geometry.MismatchedReferenceSystemException;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.geometry.Envelopes
  *
@@ -357,37 +357,29 @@ public final class Extents extends Static {
     }
 
     /**
-     * Returns the union of chosen vertical ranges found in the given extent, or {@code null} if none.
-     * This method gives preference to heights above the Mean Sea Level when possible.
-     * Depths have negative height values: if the
-     * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis#getDirection() axis direction}
-     * is toward down, then this method reverses the sign of minimum and maximum values.
-     *
-     * <h4>Multi-occurrences</h4>
+     * Returns the union of a subset of vertical ranges found in the given extent, or {@code null} if none.
      * If the given {@code Extent} object contains more than one vertical extent, then this method
      * performs a choice based on the vertical datum and the unit of measurement:
      *
      * <ul class="verbose">
-     *   <li><p><b>Choice based on vertical datum</b><br>
-     *   Only the extents associated (indirectly, through their CRS) to the same non-null {@link VerticalDatumType}
-     *   will be taken in account. If all datum types are null, then this method conservatively uses only the first
-     *   vertical extent. Otherwise the datum type used for filtering the vertical extents is:</p>
+     *   <li><p><b>Choice based on realization method</b><br>
+     *   Only the extents associated (indirectly, through their CRS) to the same non-null {@link RealizationMethod}
+     *   will be taken in account. If all realization methods are absent, then this method conservatively uses only
+     *   the first vertical extent. Otherwise the realization method used for filtering the vertical extents is:</p>
      *
      *   <ul>
-     *     <li>{@link VerticalDatumType#GEOIDAL} or {@link VerticalDatumType#DEPTH DEPTH} if at least one extent
-     *         uses those datum types. For this method, {@code DEPTH} is considered as equivalent to {@code GEOIDAL}
-     *         except for the axis direction.</li>
-     *     <li>Otherwise, the first non-null datum type found in iteration order.</li>
+     *     <li>{@link RealizationMethod#GEOID} if at least one extent uses this realization method.</li>
+     *     <li>Otherwise, {@link RealizationMethod#TIDAL} if at least one extent uses this realization method.</li>
+     *     <li>Otherwise, the first non-null realization type found in iteration order.</li>
      *   </ul>
      *
      *   <div class="note"><b>Rational:</b> like {@linkplain #getGeographicBoundingBox(Extent) geographic bounding box},
      *   the vertical range is an approximated information; the range returned by this method does not carry any
      *   information about the vertical CRS and this method does not attempt to perform coordinate transformation.
-     *   But this method is more useful if the returned ranges are close to a frequently used surface, like the
-     *   Mean Sea Level. The same simplification is applied in the
-     *   <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html#31">{@code VerticalExtent} element of
-     *   Well Known Text (WKT) format</a>, which specifies that <q>Vertical extent is an approximate description
-     *   of location; heights are relative to an unspecified mean sea level.</q></div></li>
+     *   But this method is more useful if the returned ranges are close to a frequently used surface, like the geoid.
+     *   The same simplification is applied in the {@code VerticalExtent} element of Well Known Text (WKT) format,
+     *   which specifies that <q>Vertical extent is an approximate description of location;
+     *   heights are relative to an unspecified mean sea level.</q></div></li>
      *
      *   <li><p><b>Choice based on units of measurement</b><br>
      *   If, after the choice based on the vertical datum described above, there is still more than one vertical
@@ -420,21 +412,18 @@ public final class Extents extends Static {
     @SuppressWarnings("deprecation")
     public static MeasurementRange<Double> getVerticalRange(final Extent extent) {
         MeasurementRange<Double> range = null;
-        VerticalDatumType selectedType = null;
+        RealizationMethod selectedMethod = null;
         if (extent != null) {
             for (final VerticalExtent element : nonNull(extent.getVerticalElements())) {
                 double min = element.getMinimumValue();
                 double max = element.getMaximumValue();
                 final VerticalCRS crs = element.getVerticalCRS();
-                VerticalDatumType type = null;
+                RealizationMethod method = null;
                 Unit<?> unit = null;
                 if (crs != null) {
                     final VerticalDatum datum = crs.getDatum();
                     if (datum != null) {
-                        type = datum.getVerticalDatumType();
-                        if (type == VerticalDatumType.DEPTH) {
-                            type = VerticalDatumType.GEOIDAL;
-                        }
+                        method = datum.getRealizationMethod().orElse(method);
                     }
                     final CoordinateSystemAxis axis = crs.getCoordinateSystem().getAxis(0);
                     unit = axis.getUnit();
@@ -446,22 +435,25 @@ public final class Extents extends Static {
                 }
                 if (range != null) {
                     /*
-                     * If the new range does not specify any datum type or unit, then we do not know how to
-                     * convert the values before to perform the union operation. Conservatively do nothing.
+                     * If the new range does not specify any realization method or unit, we do not know how
+                     * to convert the values before to perform the union operation. Conservatively do nothing.
                      */
-                    if (type == null || unit == null) {
+                    if (method == null || unit == null) {
                         continue;
                     }
                     /*
                      * If the new range is not measured relative to the same kind of surface than the previous range,
-                     * then we do not know how to combine those ranges. Do nothing, unless the new range is a Mean Sea
-                     * Level Height in which case we forget all previous ranges and use the new one instead.
+                     * then we do not know how to combine those ranges. Do nothing, unless the new range is a geoidal
+                     * height in which case we forget all previous ranges and use the new one instead.
                      */
-                    if (!type.equals(selectedType)) {
-                        if (!type.equals(VerticalDatumType.GEOIDAL)) {
+                    if (method != selectedMethod) {
+                        if (selectedMethod == RealizationMethod.GEOID ||
+                                   (method != RealizationMethod.GEOID &&
+                                    method != RealizationMethod.TIDAL))
+                        {
                             continue;
                         }
-                    } else if (selectedType != null) {
+                    } else if (selectedMethod != null) {
                         /*
                          * If previous range did not specify any unit, then unconditionally replace it by
                          * the new range since it provides more information. If both ranges specify units,
@@ -478,7 +470,7 @@ public final class Extents extends Static {
                     }
                 }
                 range = MeasurementRange.create(min, true, max, true, unit);
-                selectedType = type;
+                selectedMethod = method;
             }
         }
         return range;

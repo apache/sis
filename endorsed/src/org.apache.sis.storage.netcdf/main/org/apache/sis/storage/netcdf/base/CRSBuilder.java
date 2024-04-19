@@ -893,7 +893,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
          */
         @SuppressWarnings("deprecation")
         @Override void createDatum(DatumFactory factory, Map<String,?> properties) throws FactoryException {
-            datum = factory.createVerticalDatum(properties, VerticalDatumType.GEOIDAL);
+            datum = factory.createVerticalDatum(properties, RealizationMethod.GEOID);
         }
 
         /**

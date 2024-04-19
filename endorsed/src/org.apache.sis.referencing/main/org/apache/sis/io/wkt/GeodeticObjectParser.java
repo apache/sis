@@ -832,15 +832,15 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                     nz        = "Height";
                     direction = AxisDirection.UP;
                     if (datum instanceof VerticalDatum) {
-                        final VerticalDatumType vt = ((VerticalDatum) datum).getVerticalDatumType();
-                        if (vt == VerticalDatumType.GEOIDAL) {
+                        final RealizationMethod vt = ((VerticalDatum) datum).getRealizationMethod().orElse(null);
+                        if (vt == RealizationMethod.GEOID) {
                             nz = AxisNames.GRAVITY_RELATED_HEIGHT;
                             z  = "H";
-                        } else if (vt == VerticalDatumType.DEPTH) {
+                        } else if (vt == RealizationMethod.TIDAL) {
                             direction = AxisDirection.DOWN;
                             nz = AxisNames.DEPTH;
                             z  = "D";
-                        } else if (vt == VerticalDatumTypes.ELLIPSOIDAL) {
+                        } else if (VerticalDatumTypes.ellipsoidal(vt)) {
                             // Not allowed by ISO 19111 as a standalone axis, but SIS is
                             // tolerant to this case since it is sometimes hard to avoid.
                             nz = AxisNames.ELLIPSOIDAL_HEIGHT;
@@ -1449,16 +1449,16 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         }
         final String name = element.pullString("name");
         @SuppressWarnings("deprecation")
-        VerticalDatumType type = null;
+        RealizationMethod method = null;
         if (isWKT1) {
-            type = VerticalDatumTypes.fromLegacy(element.pullInteger("datum"));
+            method = VerticalDatumTypes.fromLegacy(element.pullInteger("datum"));
         }
-        if (type == null) {
-            type = VerticalDatumTypes.guess(name, null, null);
+        if (method == null) {
+            method = VerticalDatumTypes.guess(name, null, null);
         }
         final DatumFactory datumFactory = factories.getDatumFactory();
         try {
-            return datumFactory.createVerticalDatum(parseAnchorAndClose(element, name), type);
+            return datumFactory.createVerticalDatum(parseAnchorAndClose(element, name), method);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
@@ -1930,13 +1930,13 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                     return crsFactory.createDerivedCRS(properties, baseCRS, fromBase, cs);
                 }
                 /*
-                 * The `parseVerticalDatum(…)` method may have been unable to resolve the datum type.
+                 * The `parseVerticalDatum(…)` method may have been unable to resolve the realization method.
                  * But sometimes the axis (which was not available when we created the datum) provides
                  * more information. Verify if we can have a better type now, and if so rebuild the datum.
                  */
-                if (datum.getVerticalDatumType() == VerticalDatumType.OTHER_SURFACE) {
+                if (datum.getRealizationMethod().isEmpty()) {
                     var type = VerticalDatumTypes.guess(datum.getName().getCode(), datum.getAlias(), cs.getAxis(0));
-                    if (type != VerticalDatumType.OTHER_SURFACE) {
+                    if (type != null) {
                         final DatumFactory datumFactory = factories.getDatumFactory();
                         datum = datumFactory.createVerticalDatum(IdentifiedObjects.getProperties(datum), type);
                     }

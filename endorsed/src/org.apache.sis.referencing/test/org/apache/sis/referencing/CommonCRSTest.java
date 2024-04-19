@@ -33,7 +33,7 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.VerticalDatum;
-import org.opengis.referencing.datum.VerticalDatumType;
+import org.opengis.referencing.datum.RealizationMethod;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.privy.AxisNames;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
@@ -217,15 +217,15 @@ public final class CommonCRSTest extends TestCase {
     @SuppressWarnings("deprecation")
     public void testVertical() {
         for (final CommonCRS.Vertical e : CommonCRS.Vertical.values()) {
-            final VerticalDatumType datumType;
+            final RealizationMethod method;
             final String axisName, datumName;
             switch (e) {
-                case NAVD88:         axisName = AxisNames.GRAVITY_RELATED_HEIGHT; datumName = "North American Vertical Datum 1988"; datumType = VerticalDatumType. GEOIDAL;       break;
-                case BAROMETRIC:     axisName = "Barometric altitude";            datumName = "Constant pressure surface";          datumType = VerticalDatumType. BAROMETRIC;    break;
-                case MEAN_SEA_LEVEL: axisName = AxisNames.GRAVITY_RELATED_HEIGHT; datumName = "Mean Sea Level";                     datumType = VerticalDatumType. GEOIDAL;       break;
-                case DEPTH:          axisName = AxisNames.DEPTH;                  datumName = "Mean Sea Level";                     datumType = VerticalDatumType. GEOIDAL;       break;
-                case ELLIPSOIDAL:    axisName = AxisNames.ELLIPSOIDAL_HEIGHT;     datumName = "Ellipsoid";                          datumType = VerticalDatumTypes.ELLIPSOIDAL;   break;
-                case OTHER_SURFACE:  axisName = "Height";                         datumName = "Other surface";                      datumType = VerticalDatumType. OTHER_SURFACE; break;
+                case NAVD88:         axisName = AxisNames.GRAVITY_RELATED_HEIGHT; datumName = "North American Vertical Datum 1988"; method = RealizationMethod. GEOID; break;
+                case BAROMETRIC:     axisName = "Barometric altitude";            datumName = "Constant pressure surface";          method = RealizationMethod.valueOf("BAROMETRIC"); break;
+                case MEAN_SEA_LEVEL: axisName = AxisNames.GRAVITY_RELATED_HEIGHT; datumName = "Mean Sea Level";                     method = RealizationMethod. TIDAL; break;
+                case DEPTH:          axisName = AxisNames.DEPTH;                  datumName = "Mean Sea Level";                     method = RealizationMethod. TIDAL; break;
+                case ELLIPSOIDAL:    axisName = AxisNames.ELLIPSOIDAL_HEIGHT;     datumName = "Ellipsoid";                          method = VerticalDatumTypes.ellipsoidal(); break;
+                case OTHER_SURFACE:  axisName = "Height";                         datumName = "Other surface";                      method = null; break;
                 default: throw new AssertionError(e);
             }
             final String        name  = e.name();
@@ -233,16 +233,18 @@ public final class CommonCRSTest extends TestCase {
             final VerticalCRS   crs   = e.crs();
             if (e.isEPSG) {
                 /*
-                 * BAROMETRIC, ELLIPSOIDAL and OTHER_SURFACE uses an axis named "Height", which is not
-                 * a valid axis name according ISO 19111. We skip the validation test for those enums.
+                 * BAROMETRIC and ELLIPSOIDAL uses an axis named "Height", which is not a valid
+                 * axis name according ISO 19111. We skip the validation test for those enums.
                  */
                 Validators.validate(crs);
             }
             assertSame(datum, e.datum(), name);                         // Datum before CRS creation.
             assertSame(crs.getDatum(), e.datum(), name);                // Datum after CRS creation.
             assertEquals(datumName, datum.getName().getCode(), name);
-            assertEquals(datumType, datum.getVerticalDatumType(), name);
             assertEquals(axisName,  crs.getCoordinateSystem().getAxis(0).getName().getCode(), name);
+            if (!e.isEPSG) {  // Because the information is not in EPSG database 9.x.
+                assertEquals(method, datum.getRealizationMethod().orElse(null), name);
+            }
         }
     }
 
