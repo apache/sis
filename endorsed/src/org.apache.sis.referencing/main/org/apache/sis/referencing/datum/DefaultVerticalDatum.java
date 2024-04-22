@@ -18,14 +18,12 @@ package org.apache.sis.referencing.datum;
 
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.datum.VerticalDatum;
-import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.xml.bind.Context;
@@ -34,7 +32,11 @@ import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.metadata.privy.ImplementationHelper;
 
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.datum.VerticalDatumType;
+
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.Optional;
 import org.opengis.referencing.datum.RealizationMethod;
 import org.opengis.metadata.Identifier;
 

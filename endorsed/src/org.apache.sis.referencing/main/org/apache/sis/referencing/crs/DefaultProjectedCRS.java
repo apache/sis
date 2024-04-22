@@ -23,13 +23,11 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import org.opengis.referencing.crs.ProjectedCRS;
-import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;                 // For javadoc
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Conversion;
-import org.opengis.referencing.operation.Projection;
 import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
@@ -42,6 +40,10 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Workaround;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.crs.GeographicCRS;
+import org.opengis.referencing.operation.Projection;
 
 
 /**

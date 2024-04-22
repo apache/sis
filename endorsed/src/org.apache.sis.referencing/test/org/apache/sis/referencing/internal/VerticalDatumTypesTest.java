@@ -16,8 +16,6 @@
  */
 package org.apache.sis.referencing.internal;
 
-import org.opengis.referencing.datum.RealizationMethod;
-import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.util.ArraysExt;
 
@@ -25,6 +23,12 @@ import org.apache.sis.util.ArraysExt;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.datum.VerticalDatumType;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.datum.RealizationMethod;
 
 
 /**

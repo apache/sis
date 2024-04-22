@@ -29,8 +29,8 @@ import org.apache.sis.util.privy.Constants;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 
 // Specific to the main and geoapi-3.1 branches:
-import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.metadata.extent.Extent;
 
 
 /**

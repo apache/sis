@@ -74,8 +74,10 @@ import org.apache.sis.measure.Units;
 import static org.apache.sis.metadata.privy.ReferencingServices.AUTHALIC_RADIUS;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.referencing.datum.RealizationMethod;
 import static org.opengis.referencing.ObjectDomain.DOMAIN_OF_VALIDITY_KEY;
+
+// Specific to the geoapi-3.1 branch:
+import org.opengis.referencing.datum.RealizationMethod;
 
 
 /**
