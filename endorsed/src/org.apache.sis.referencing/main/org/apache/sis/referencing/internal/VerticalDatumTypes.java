@@ -41,24 +41,36 @@ public final class VerticalDatumTypes {
     /**
      * A pseudo-realization method for ellipsoidal heights that are measured along
      * the normal to the ellipsoid used in the definition of horizontal datum.
+     * <strong>The use of this method is deprecated</strong> as ellipsoidal height
+     * should never be separated from the horizontal components according ISO 19111.
      *
-     * <p>Identifier: {@code CS_DatumType.CS_VD_Ellipsoidal}</p>
+     * <h4>Legacy</h4>
+     * This type was associated to code 2000 in the {@code Vert_Datum} element of the legacy WKT 1 format.
+     * The UML identifier was {@code CS_DatumType.CS_VD_Ellipsoidal}.
+     *
+     * @see org.apache.sis.referencing.CommonCRS.Vertical#ELLIPSOIDAL
      */
-    private static final String ELLIPSOIDAL = "ELLIPSOIDAL";
+    static final String ELLIPSOIDAL = "ELLIPSOIDAL";
 
     /**
-     * A vertical datum for orthometric heights that are measured along the plumb line.
+     * A vertical datum type for orthometric heights that are measured along the plumb line.
      *
-     * <p>Identifier: {@code CS_DatumType.CS_VD_Orthometric}</p>
+     * <h4>Legacy</h4>
+     * This type was associated to code 2001 in the {@code Vert_Datum} element of the legacy WKT 1 format.
+     * The UML identifier was {@code CS_DatumType.CS_VD_Orthometric}.
      */
     private static final String ORTHOMETRIC = "ORTHOMETRIC";
 
     /**
-     * A vertical datum for origin of the vertical axis based on atmospheric pressure.
+     * A vertical datum type for origin of the vertical axis based on atmospheric pressure.
      *
-     * <p>Identifier: {@code CS_DatumType.CS_VD_AltitudeBarometric}</p>
+     * <h4>Legacy</h4>
+     * This type was associated to code 2003 in the {@code Vert_Datum} element of the legacy WKT 1 format.
+     * The UML identifier was {@code CS_DatumType.CS_VD_AltitudeBarometric}.
+     *
+     * @see org.apache.sis.referencing.CommonCRS.Vertical#BAROMETRIC
      */
-    private static final String BAROMETRIC = "BAROMETRIC";
+    static final String BAROMETRIC = "BAROMETRIC";
 
     /**
      * Do not allow instantiation of this class.
@@ -68,6 +80,13 @@ public final class VerticalDatumTypes {
 
     /**
      * Returns a pseudo-realization method for ellipsoidal heights.
+     * <strong>The use of this method is deprecated</strong> as ellipsoidal height
+     * should never be separated from the horizontal components according ISO 19111.
+     *
+     * <h4>Maintenance note</h4>
+     * If the implementation of this method is modified, search for {@code RealizationMethod.valueOf}
+     * at least in {@link org.apache.sis.referencing.CommonCRS.Vertical#datum()} and make sure that
+     * the code is equivalent.
      *
      * @return the ellipsoidal pseudo-realization method.
      */
@@ -115,7 +134,7 @@ public final class VerticalDatumTypes {
     @SuppressWarnings("deprecation")
     public static int toLegacy(final VerticalDatumType type) {
         if (type != null) {
-            switch (type.name()) {
+            switch (type.name().toUpperCase(Locale.US)) {
                 case ORTHOMETRIC: return 2001;      // CS_VD_Orthometric
                 case ELLIPSOIDAL: return 2002;      // CS_VD_Ellipsoidal
                 case BAROMETRIC:  return 2003;      // CS_VD_AltitudeBarometric
@@ -130,6 +149,7 @@ public final class VerticalDatumTypes {
      * Returns the vertical datum type from a realization method.
      * If the given method cannot be mapped to a legacy type, then this method returns "other surface".
      * This is because the vertical datum type was a mandatory property in legacy OGC/ISO standards.
+     * This method is used for writing GML documents older than GML 3.2.
      *
      * @param  method  the realization method, or {@code null}.
      * @return the vertical datum type (never null).
@@ -145,7 +165,8 @@ public final class VerticalDatumTypes {
     }
 
     /**
-     * Returns the realization method from a name.
+     * Returns the realization method from a vertical datum type.
+     * This method is used for reading GML documents older than GML 3.2.
      *
      * @param  type  the vertical datum type, or {@code null}.
      * @return the realization method, or {@code null} if none.

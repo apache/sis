@@ -76,7 +76,7 @@ public final class Legacy {
     }
 
     /**
-     * The standard three-dimensional Cartesian CS as defined by ISO 19111.
+     * The standard three-dimensional geocentric Cartesian CS as defined by ISO 19111.
      *
      * @param  unit  the linear unit of the desired coordinate system, or {@code null} for metres.
      * @return the ISO 19111 coordinate system.

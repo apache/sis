@@ -1196,7 +1196,7 @@ class CoordinateOperationRegistry {
     }
 
     /**
-     * If the given CRS is two-dimensional, append an ellipsoidal height to it.
+     * If the given CRS is two-dimensional, appends an ellipsoidal height to it.
      * It is caller's responsibility to ensure that the given CRS is geographic.
      */
     private CoordinateReferenceSystem toGeodetic3D(CoordinateReferenceSystem crs,

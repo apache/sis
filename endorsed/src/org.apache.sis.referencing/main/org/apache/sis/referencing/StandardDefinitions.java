@@ -348,7 +348,7 @@ final class StandardDefinitions {
             case 5103: name = "North American Vertical Datum 1988"; alias = "NAVD88"; break;
             default:   throw new AssertionError(code);
         }
-        return new DefaultVerticalDatum(properties(code, name, alias, true), RealizationMethod.GEOID);
+        return new DefaultVerticalDatum(properties(code, name, alias, true), (RealizationMethod) null);
     }
 
     /**

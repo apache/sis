@@ -18,6 +18,7 @@ package org.apache.sis.referencing.internal;
 
 import org.opengis.referencing.datum.RealizationMethod;
 import org.opengis.referencing.datum.VerticalDatumType;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.util.ArraysExt;
 
 // Test dependencies
@@ -37,6 +38,17 @@ public final class VerticalDatumTypesTest extends TestCase {
      * Creates a new test case.
      */
     public VerticalDatumTypesTest() {
+    }
+
+    /**
+     * Verifies name constraint with values defined in {@link org.apache.sis.referencing.CommonCRS.Vertical}.
+     * Some enumeration values must have the same names as the constants defined in {@link VerticalDatumTypes},
+     * because the realization method is obtained by a call to {@link RealizationMethod#valueOf(String)}.
+     */
+    @Test
+    public void verifyNameConstraint() {
+        assertEquals(VerticalDatumTypes.ELLIPSOIDAL, CommonCRS.Vertical.ELLIPSOIDAL.name());
+        assertEquals(VerticalDatumTypes.BAROMETRIC,  CommonCRS.Vertical.BAROMETRIC.name());
     }
 
     /**
