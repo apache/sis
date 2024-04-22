@@ -35,7 +35,6 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -115,7 +114,7 @@ public final class EllipsoidalHeightCombiner {
             final CoordinateReferenceSystem vertical = components[i];
             if (vertical instanceof VerticalCRS) {
                 final VerticalDatum datum = ((VerticalCRS) vertical).getDatum();
-                if (datum != null && VerticalDatumTypes.ellipsoidal(datum.getRealizationMethod().orElse(null))) {
+                if (ReferencingUtilities.isEllipsoidalHeight(datum)) {
                     int axisPosition = 0;
                     CoordinateSystem cs = null;
                     CoordinateReferenceSystem crs = null;

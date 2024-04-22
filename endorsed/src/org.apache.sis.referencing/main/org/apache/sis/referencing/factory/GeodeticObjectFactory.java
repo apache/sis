@@ -918,11 +918,11 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     }
 
     /**
-     * Creates a vertical datum from an enumerated type value.
+     * Creates a vertical datum from a realization method.
      * The default implementation creates a {@link DefaultVerticalDatum} instance.
      *
      * @param  properties  name and other properties to give to the new object.
-     * @param  method      the realization method the vertical datum, or {@code null} if none.
+     * @param  method      the realization method of the vertical datum, or {@code null} if none.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultVerticalDatum#DefaultVerticalDatum(Map, RealizationMethod)

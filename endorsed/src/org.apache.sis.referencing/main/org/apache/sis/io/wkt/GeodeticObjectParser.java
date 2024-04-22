@@ -689,7 +689,6 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @throws ParseException if an element cannot be parsed.
      * @throws FactoryException if the factory cannot create the coordinate system.
      */
-    @SuppressWarnings("deprecation")
     private CoordinateSystem parseCoordinateSystem(final Element parent, String type, int dimension,
             final boolean isWKT1, final Unit<?> defaultUnit, final Datum datum) throws ParseException, FactoryException
     {
@@ -772,8 +771,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             Unit<?> unit = defaultUnit;                     // Depth, height or time axis unit.
             switch (type) {
                 /*
-                 * Cartesian — we can create axes only for geodetic datum, in which case the axes are for
-                 * two-dimensional Projected or three-dimensional Geocentric CRS.
+                 * Cartesian — we can create axes only for geodetic datum, in which case the axes
+                 * are for two- or three-dimensional Projected or three-dimensional Geocentric CRS.
                  */
                 case WKTKeywords.Cartesian: {
                     if (datum != null && !(datum instanceof GeodeticDatum)) {

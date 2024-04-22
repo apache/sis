@@ -74,7 +74,6 @@ import org.apache.sis.measure.Units;
 import static org.apache.sis.metadata.privy.ReferencingServices.AUTHALIC_RADIUS;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.referencing.datum.RealizationMethod;
 import static org.opengis.referencing.ObjectDomain.DOMAIN_OF_VALIDITY_KEY;
 
 
@@ -348,7 +347,7 @@ final class StandardDefinitions {
             case 5103: name = "North American Vertical Datum 1988"; alias = "NAVD88"; break;
             default:   throw new AssertionError(code);
         }
-        return new DefaultVerticalDatum(properties(code, name, alias, true), RealizationMethod.GEOID);
+        return new DefaultVerticalDatum(properties(code, name, alias, true), null);
     }
 
     /**

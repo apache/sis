@@ -1467,7 +1467,11 @@ public enum CommonCRS {
                         if (isEPSG) {
                             object = StandardDefinitions.createVerticalDatum(datum);
                         } else {
-                            // BAROMETRIC and ELLIPSOIDAL cases.
+                            /*
+                             * All cases where the first constructor argument is `false`, currently BAROMETRIC and
+                             * ELLIPSOIDAL. The way to construct the ellipsoidal pseudo-method shall be equivalent
+                             * to a call to `VerticalDatumTypes.ellipsoidal()`.
+                             */
                             RealizationMethod method = null;
                             if (this != OTHER_SURFACE) {
                                 method = RealizationMethod.valueOf(name());
