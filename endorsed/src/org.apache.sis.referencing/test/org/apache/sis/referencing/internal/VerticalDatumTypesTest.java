@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.internal;
 
 import org.opengis.referencing.datum.VerticalDatumType;
+import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.util.ArraysExt;
 
 // Test dependencies
@@ -38,13 +39,24 @@ public final class VerticalDatumTypesTest extends TestCase {
     }
 
     /**
+     * Verifies name constraint with values defined in {@link org.apache.sis.referencing.CommonCRS.Vertical}.
+     * Some enumeration values must have the same names as the constants defined in {@link VerticalDatumTypes},
+     * because the realization method is obtained by a call to {@link VerticalDatumType#valueOf(String)}.
+     */
+    @Test
+    public void verifyNameConstraint() {
+        assertEquals(VerticalDatumTypes.ELLIPSOIDAL, CommonCRS.Vertical.ELLIPSOIDAL.name());
+        assertEquals(VerticalDatumTypes.BAROMETRIC,  CommonCRS.Vertical.BAROMETRIC.name());
+    }
+
+    /**
      * Tests the {@link VerticalDatumTypes#fromLegacy(int)} method.
      */
     @Test
     public void testFromLegacy() {
-        assertEquals(VerticalDatumTypes.ELLIPSOIDAL, VerticalDatumTypes.fromLegacy(2002));
-        assertEquals(VerticalDatumType .GEOIDAL,     VerticalDatumTypes.fromLegacy(2005));
-        assertEquals(VerticalDatumType .DEPTH,       VerticalDatumTypes.fromLegacy(2006));
+        assertEquals(VerticalDatumTypes.ellipsoidal(), VerticalDatumTypes.fromLegacy(2002));
+        assertEquals(VerticalDatumType .GEOIDAL,       VerticalDatumTypes.fromLegacy(2005));
+        assertEquals(VerticalDatumType .DEPTH,         VerticalDatumTypes.fromLegacy(2006));
     }
 
     /**
@@ -52,19 +64,19 @@ public final class VerticalDatumTypesTest extends TestCase {
      */
     @Test
     public void testToLegacy() {
-        assertEquals(2002, VerticalDatumTypes.toLegacy(VerticalDatumTypes.ELLIPSOIDAL));
-        assertEquals(2005, VerticalDatumTypes.toLegacy(VerticalDatumType .GEOIDAL));
-        assertEquals(2006, VerticalDatumTypes.toLegacy(VerticalDatumType .DEPTH));
+        assertEquals(2002, VerticalDatumTypes.toLegacy(VerticalDatumType.valueOf("ELLIPSOIDAL")));
+        assertEquals(2005, VerticalDatumTypes.toLegacy(VerticalDatumType.GEOIDAL));
+        assertEquals(2006, VerticalDatumTypes.toLegacy(VerticalDatumType.DEPTH));
     }
 
     /**
-     * Tests the list of vertical datum types. Note that {@link #testFromLegacy()} must be executed
-     * first for ensuring {@link VerticalDatumTypes} class initialization prior this test.
+     * Verifies the list of realization methods.
      */
     @Test
-    public void testVerticalDatumTypes() {
+    public void verifyCodeList() {
+        final VerticalDatumType expected = VerticalDatumTypes.ellipsoidal();    // Must be first.
         final VerticalDatumType[] types = VerticalDatumType.values();
         assertEquals(VerticalDatumType.OTHER_SURFACE, types[0]);
-        assertTrue(ArraysExt.contains(types, VerticalDatumTypes.ELLIPSOIDAL));
+        assertTrue(ArraysExt.contains(types, expected));
     }
 }

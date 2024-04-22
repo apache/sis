@@ -36,7 +36,6 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
-import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.util.Static;
@@ -53,6 +52,7 @@ import org.apache.sis.referencing.datum.DefaultPrimeMeridian;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
+import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory.Context;
 
@@ -272,10 +272,7 @@ public final class ReferencingUtilities extends Static {
      */
     public static boolean isEllipsoidalHeight(final VerticalDatum datum) {
         if (datum != null) {
-            final VerticalDatumType type = datum.getVerticalDatumType();
-            if (type != null) {
-                return "ELLIPSOIDAL".equalsIgnoreCase(type.name());
-            }
+            return VerticalDatumTypes.ellipsoidal(datum.getVerticalDatumType());
         }
         return false;
     }

@@ -216,15 +216,15 @@ public final class CommonCRSTest extends TestCase {
     @Test
     public void testVertical() {
         for (final CommonCRS.Vertical e : CommonCRS.Vertical.values()) {
-            final VerticalDatumType datumType;
+            final VerticalDatumType method;
             final String axisName, datumName;
             switch (e) {
-                case NAVD88:         axisName = AxisNames.GRAVITY_RELATED_HEIGHT; datumName = "North American Vertical Datum 1988"; datumType = VerticalDatumType. GEOIDAL;       break;
-                case BAROMETRIC:     axisName = "Barometric altitude";            datumName = "Constant pressure surface";          datumType = VerticalDatumType. BAROMETRIC;    break;
-                case MEAN_SEA_LEVEL: axisName = AxisNames.GRAVITY_RELATED_HEIGHT; datumName = "Mean Sea Level";                     datumType = VerticalDatumType. GEOIDAL;       break;
-                case DEPTH:          axisName = AxisNames.DEPTH;                  datumName = "Mean Sea Level";                     datumType = VerticalDatumType. GEOIDAL;       break;
-                case ELLIPSOIDAL:    axisName = AxisNames.ELLIPSOIDAL_HEIGHT;     datumName = "Ellipsoid";                          datumType = VerticalDatumTypes.ELLIPSOIDAL;   break;
-                case OTHER_SURFACE:  axisName = "Height";                         datumName = "Other surface";                      datumType = VerticalDatumType. OTHER_SURFACE; break;
+                case NAVD88:         axisName = AxisNames.GRAVITY_RELATED_HEIGHT; datumName = "North American Vertical Datum 1988"; method = VerticalDatumType. GEOIDAL;       break;
+                case BAROMETRIC:     axisName = "Barometric altitude";            datumName = "Constant pressure surface";          method = VerticalDatumType. BAROMETRIC;    break;
+                case MEAN_SEA_LEVEL: axisName = AxisNames.GRAVITY_RELATED_HEIGHT; datumName = "Mean Sea Level";                     method = VerticalDatumType. GEOIDAL;       break;
+                case DEPTH:          axisName = AxisNames.DEPTH;                  datumName = "Mean Sea Level";                     method = VerticalDatumType. GEOIDAL;       break;
+                case ELLIPSOIDAL:    axisName = AxisNames.ELLIPSOIDAL_HEIGHT;     datumName = "Ellipsoid";                          method = VerticalDatumTypes.ellipsoidal(); break;
+                case OTHER_SURFACE:  axisName = "Height";                         datumName = "Other surface";                      method = VerticalDatumType. OTHER_SURFACE; break;
                 default: throw new AssertionError(e);
             }
             final String        name  = e.name();
@@ -232,15 +232,15 @@ public final class CommonCRSTest extends TestCase {
             final VerticalCRS   crs   = e.crs();
             if (e.isEPSG && !name.startsWith("NAV")) {
                 /*
-                 * BAROMETRIC, ELLIPSOIDAL and OTHER_SURFACE uses an axis named "Height", which is not
-                 * a valid axis name according ISO 19111. We skip the validation test for those enums.
+                 * BAROMETRIC and ELLIPSOIDAL uses an axis named "Height", which is not a valid
+                 * axis name according ISO 19111. We skip the validation test for those enums.
                  */
                 Validators.validate(crs);
             }
             assertSame(datum, e.datum(), name);                         // Datum before CRS creation.
             assertSame(crs.getDatum(), e.datum(), name);                // Datum after CRS creation.
             assertEquals(datumName, datum.getName().getCode(), name);
-            assertEquals(datumType, datum.getVerticalDatumType(), name);
+            assertEquals(method, datum.getVerticalDatumType(), name);
             assertEquals(axisName,  crs.getCoordinateSystem().getAxis(0).getName().getCode(), name);
         }
     }

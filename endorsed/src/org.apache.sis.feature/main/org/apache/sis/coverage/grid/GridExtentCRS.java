@@ -296,7 +296,7 @@ final class GridExtentCRS {
                     abbreviation = "t"; direction = AxisDirection.FUTURE; hasTime = true;
                 } else {
                     abbreviation = abbreviation(target);
-                    direction = AxisDirection.OTHER;
+                    direction = AxisDirections.UNSPECIFIED;
                     hasOther = true;
                 }
                 /*
@@ -308,7 +308,7 @@ final class GridExtentCRS {
                     final CoordinateSystemAxis previous = axes[k];
                     if (previous != null) {
                         if (direction.equals(AxisDirections.absolute(previous.getDirection()))) {
-                            direction = AxisDirection.OTHER;
+                            direction = AxisDirections.UNSPECIFIED;
                             hasOther = true;
                         }
                         if (abbreviation.equals(previous.getAbbreviation())) {
@@ -331,7 +331,7 @@ final class GridExtentCRS {
             if (axes[j] == null) {
                 final String name = Vocabulary.forLocale(locale).getString(Vocabulary.Keys.Dimension_1, j);
                 final String abbreviation = abbreviation(j);
-                axes[j] = axis(csFactory, name, abbreviation, AxisDirection.OTHER);
+                axes[j] = axis(csFactory, name, abbreviation, AxisDirections.UNSPECIFIED);
             }
         }
         /*

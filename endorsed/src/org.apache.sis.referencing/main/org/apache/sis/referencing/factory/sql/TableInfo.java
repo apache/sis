@@ -138,7 +138,6 @@ final class TableInfo {
                 new Class<?>[] { Conversion.class, Transformation.class},
                 new String[]   {"conversion",     "transformation"},
                 "SHOW_OPERATION"),
-                // Note: Projection is handled in a special way.
 
         new TableInfo(OperationMethod.class,
                 "[Coordinate_Operation Method]",

@@ -780,8 +780,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             Unit<?> unit = defaultUnit;                     // Depth, height or time axis unit.
             switch (type) {
                 /*
-                 * Cartesian — we can create axes only for geodetic datum, in which case the axes are for
-                 * two-dimensional Projected or three-dimensional Geocentric CRS.
+                 * Cartesian — we can create axes only for geodetic datum, in which case the axes
+                 * are for two- or three-dimensional Projected or three-dimensional Geocentric CRS.
                  */
                 case WKTKeywords.Cartesian: {
                     if (datum != null && !(datum instanceof GeodeticDatum)) {
@@ -848,7 +848,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                             direction = AxisDirection.DOWN;
                             nz = AxisNames.DEPTH;
                             z  = "D";
-                        } else if (vt == VerticalDatumTypes.ELLIPSOIDAL) {
+                        } else if (VerticalDatumTypes.ellipsoidal(vt)) {
                             // Not allowed by ISO 19111 as a standalone axis, but SIS is
                             // tolerant to this case since it is sometimes hard to avoid.
                             nz = AxisNames.ELLIPSOIDAL_HEIGHT;
@@ -875,7 +875,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                     if (defaultUnit == null) {
                         throw parent.missingComponent(WKTKeywords.ParametricUnit);
                     }
-                    direction = AxisDirection.OTHER;
+                    direction = AxisDirections.UNSPECIFIED;
                     nz = "Parametric";
                     z = "p";
                     break;
@@ -1461,16 +1461,16 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             return null;
         }
         final String name = element.pullString("name");
-        VerticalDatumType type = null;
+        VerticalDatumType method = null;
         if (isWKT1) {
-            type = VerticalDatumTypes.fromLegacy(element.pullInteger("datum"));
+            method = VerticalDatumTypes.fromLegacy(element.pullInteger("datum"));
         }
-        if (type == null) {
-            type = VerticalDatumTypes.guess(name, null, null);
+        if (method == null) {
+            method = VerticalDatumTypes.guess(name, null, null);
         }
         final DatumFactory datumFactory = factories.getDatumFactory();
         try {
-            return datumFactory.createVerticalDatum(parseAnchorAndClose(element, name), type);
+            return datumFactory.createVerticalDatum(parseAnchorAndClose(element, name), method);
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
@@ -1946,7 +1946,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                     return crsFactory.createDerivedCRS(properties, baseCRS, fromBase, cs);
                 }
                 /*
-                 * The `parseVerticalDatum(…)` method may have been unable to resolve the datum type.
+                 * The `parseVerticalDatum(…)` method may have been unable to resolve the realization method.
                  * But sometimes the axis (which was not available when we created the datum) provides
                  * more information. Verify if we can have a better type now, and if so rebuild the datum.
                  */
@@ -2258,7 +2258,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 buffer.append(number);
                 axes[i] = csFactory.createCoordinateSystemAxis(
                         singletonMap(CoordinateSystemAxis.NAME_KEY, buffer.toString()),
-                        number, AxisDirection.OTHER, Units.UNITY);
+                        number, AxisDirections.UNSPECIFIED, Units.UNITY);
             }
             final Map<String,Object> properties = parseMetadataAndClose(element, name, baseCRS);
             final Map<String,Object> axisName = singletonMap(CoordinateSystem.NAME_KEY, AxisDirections.appendTo(new StringBuilder("CS"), axes));

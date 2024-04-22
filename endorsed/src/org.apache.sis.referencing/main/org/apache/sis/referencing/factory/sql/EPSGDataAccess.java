@@ -178,12 +178,6 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
     static final Logger LOGGER = Logger.getLogger(Loggers.CRS_FACTORY);
 
     /**
-     * The vertical datum type, which is fixed to a hard-coded value for all vertical datum for now.
-     * Note that vertical datum type is no longer part of ISO 19111:2007.
-     */
-    static final VerticalDatumType VERTICAL_DATUM_TYPE = VerticalDatumType.GEOIDAL;
-
-    /**
      * EPSG codes of parameters containing the EPSG code of another object.
      * Those parameters are integers (stored as {@code double} in the database)
      * without unit (associated to {@link Units#UNITY} in the database).
@@ -1719,14 +1713,8 @@ codes:  for (int i=0; i<codes.length; i++) {
                         datum = datumFactory.createGeodeticDatum(properties, ellipsoid, meridian);
                         break;
                     }
-                    /*
-                     * Vertical datum type is hard-coded to geoidal. It would be possible to infer other
-                     * types by looking at the coordinate system, but it could result in different datum
-                     * associated to the same EPSG code.  Since vertical datum type is no longer part of
-                     * ISO 19111:2007, it is probably not worth to handle such cases.
-                     */
                     case "vertical": {
-                        datum = datumFactory.createVerticalDatum(properties, VERTICAL_DATUM_TYPE);
+                        datum = datumFactory.createVerticalDatum(properties, VerticalDatumType.GEOIDAL);
                         break;
                     }
                     /*

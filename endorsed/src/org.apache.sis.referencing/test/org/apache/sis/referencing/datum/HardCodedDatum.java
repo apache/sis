@@ -120,7 +120,7 @@ public final class HardCodedDatum {
     @SuppressWarnings("deprecation")
     public static final DefaultVerticalDatum ELLIPSOID = new DefaultVerticalDatum(
             properties("Ellipsoid", null, getScope(SPHERE)),
-            VerticalDatumTypes.ELLIPSOIDAL);
+            VerticalDatumTypes.ellipsoidal());
 
     /**
      * Mean sea level, which can be used as an approximation of geoid.

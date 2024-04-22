@@ -48,9 +48,9 @@ import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
+import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.datum.VerticalDatumType;
-import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.EngineeringDatum;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
@@ -1223,7 +1223,6 @@ public enum CommonCRS {
      *   <tr><td>Mean Sea Level height</td>              <td>CRS</td>         <td>{@link #MEAN_SEA_LEVEL}</td></tr>
      *   <tr><td>NAVD88 height</td>                      <td>CRS</td>         <td>{@link #NAVD88}</td></tr>
      *   <tr><td>North American Vertical Datum 1988</td> <td>Datum</td>       <td>{@link #NAVD88}</td></tr>
-     *   <tr><td>Other surface</td>                      <td>CRS, Datum</td>  <td>{@link #OTHER_SURFACE}</td></tr>
      * </table></blockquote>
      *
      * <div class="note"><b>Note:</b>
@@ -1243,8 +1242,6 @@ public enum CommonCRS {
          * Height measured by atmospheric pressure in hectopascals (hPa).
          * Hectopascals are the units of measurement used by the worldwide meteorological community.
          * The datum is not specific to any location or epoch.
-         *
-         * @see VerticalDatumType#BAROMETRIC
          */
         BAROMETRIC(false, Vocabulary.Keys.BarometricAltitude, Vocabulary.Keys.ConstantPressureSurface),
 
@@ -1259,8 +1256,6 @@ public enum CommonCRS {
          *   <tr><th>Direction:</th>            <td>{@link AxisDirection#UP}</td></tr>
          *   <tr><th>Unit:</th>                 <td>{@link Units#METRE}</td></tr>
          * </table></blockquote>
-         *
-         * @see VerticalDatumType#GEOIDAL
          */
         MEAN_SEA_LEVEL(true, (short) 5714, (short) 5100),
 
@@ -1274,8 +1269,6 @@ public enum CommonCRS {
          *   <tr><th>Direction:</th>            <td>{@link AxisDirection#DOWN}</td></tr>
          *   <tr><th>Unit:</th>                 <td>{@link Units#METRE}</td></tr>
          * </table></blockquote>
-         *
-         * @see VerticalDatumType#GEOIDAL
          */
         DEPTH(true, (short) 5715, (short) 5100),
 
@@ -1312,8 +1305,9 @@ public enum CommonCRS {
          * Height measured above other kind of surface, for example a geological feature.
          * The unit of measurement is metres.
          *
-         * @see VerticalDatumType#OTHER_SURFACE
+         * @deprecated More specific vertical datum should be used.
          */
+        @Deprecated(since = "1.5", forRemoval = true)
         OTHER_SURFACE(false, Vocabulary.Keys.Height, Vocabulary.Keys.OtherSurface);
 
         /**
@@ -1343,9 +1337,8 @@ public enum CommonCRS {
          * Creates a new enumeration value of the given name.
          *
          * <h4>API design note</h4>
-         * This constructor does not expect {@link VerticalDatumType} constant in order to avoid too
-         * early class initialization. In particular, we do not want early dependency to the SIS-specific
-         * {@code VerticalDatumTypes.ELLIPSOIDAL} constant.
+         * This constructor does not expect {@link VerticalDatumType} constant in order to avoid
+         * the creation of non-standard code list value before they are actually needed.
          */
         private Vertical(final boolean isEPSG, final short crs, final short datum) {
             this.isEPSG = isEPSG;
@@ -1386,7 +1379,6 @@ public enum CommonCRS {
          *   <!-- <del>Ellipsoidal height</del> intentionally omitted -->
          *   <tr><td>Mean Sea Level depth</td>      <td>{@link #DEPTH}</td>              <td>5715</td></tr>
          *   <tr><td>Mean Sea Level height</td>     <td>{@link #MEAN_SEA_LEVEL}</td>     <td>5714</td></tr>
-         *   <tr><td>Other surface</td>             <td>{@link #OTHER_SURFACE}</td>      <td></td></tr>
          * </table></blockquote>
          *
          * @return the CRS associated to this enum.
@@ -1455,7 +1447,6 @@ public enum CommonCRS {
          *   <tr><td>Barometric altitude</td>       <td>{@link #BAROMETRIC}</td>         <td></td></tr>
          *   <!-- <del>Ellipsoidal height</del> intentionally omitted -->
          *   <tr><td>Mean Sea Level</td>            <td>{@link #MEAN_SEA_LEVEL}</td>     <td>5100</td></tr>
-         *   <tr><td>Other surface</td>             <td>{@link #OTHER_SURFACE}</td>      <td></td></tr>
          * </table></blockquote>
          *
          * @return the datum associated to this enum.
@@ -1481,6 +1472,11 @@ public enum CommonCRS {
                         if (isEPSG) {
                             object = StandardDefinitions.createVerticalDatum(datum);
                         } else {
+                            /*
+                             * All cases where the first constructor argument is `false`, currently BAROMETRIC and
+                             * ELLIPSOIDAL. The way to construct the ellipsoidal pseudo-method shall be equivalent
+                             * to a call to `VerticalDatumTypes.ellipsoidal()`.
+                             */
                             object = new DefaultVerticalDatum(properties(datum), VerticalDatumType.valueOf(name()));
                         }
                         cached = object;

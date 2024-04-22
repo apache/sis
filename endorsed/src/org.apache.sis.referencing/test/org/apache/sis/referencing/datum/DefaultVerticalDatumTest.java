@@ -78,7 +78,7 @@ public final class DefaultVerticalDatumTest extends TestCase {
         typeField.setAccessible(true);
         assertEquals(VerticalDatumType .GEOIDAL,       typeForName(typeField, "Geoidal height"));
         assertEquals(VerticalDatumType .DEPTH,         typeForName(typeField, "Some depth measurement"));
-        assertEquals(VerticalDatumTypes.ELLIPSOIDAL,   typeForName(typeField, "Ellipsoidal height"));
+        assertEquals(VerticalDatumTypes.ellipsoidal(), typeForName(typeField, "Ellipsoidal height"));
         assertEquals(VerticalDatumType .OTHER_SURFACE, typeForName(typeField, "NotADepth"));
     }
 
@@ -104,7 +104,7 @@ public final class DefaultVerticalDatumTest extends TestCase {
         assertWktEquals(Convention.WKT2, "VDATUM[“Geoidal”]", datum);
         assertWktEquals(Convention.WKT2_SIMPLIFIED, "VerticalDatum[“Geoidal”]", datum);
 
-        datum = new DefaultVerticalDatum(Map.of(DefaultVerticalDatum.NAME_KEY, "Ellipsoidal"), VerticalDatumTypes.ELLIPSOIDAL);
+        datum = new DefaultVerticalDatum(Map.of(DefaultVerticalDatum.NAME_KEY, "Ellipsoidal"), VerticalDatumTypes.ellipsoidal());
         assertWktEquals(Convention.WKT1, "VERT_DATUM[“Ellipsoidal”, 2002]", datum);
         assertWktEquals(Convention.WKT2, "VDATUM[“Ellipsoidal”]", datum);
         assertWktEquals(Convention.WKT2_SIMPLIFIED, "VerticalDatum[“Ellipsoidal”]", datum);

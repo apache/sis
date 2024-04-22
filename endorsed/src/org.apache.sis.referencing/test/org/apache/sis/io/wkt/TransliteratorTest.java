@@ -21,6 +21,7 @@ import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.metadata.privy.AxisNames;
+import org.apache.sis.referencing.privy.AxisDirections;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -98,12 +99,12 @@ public final class TransliteratorTest extends TestCase {
     @Test
     public void testToUnicodeAbbreviation() {
         final Transliterator t = Transliterator.DEFAULT;
-        assertEquals("φ",  t.toUnicodeAbbreviation("ellipsoidal", AxisDirection.NORTH, "P"), "P");
-        assertEquals("φ",  t.toUnicodeAbbreviation("ellipsoidal", AxisDirection.NORTH, "B"), "B");
-        assertEquals("λ",  t.toUnicodeAbbreviation("ellipsoidal", AxisDirection.EAST,  "L"), "L");
-        assertEquals("θ",  t.toUnicodeAbbreviation("polar",       AxisDirection.OTHER, "U"), "U");
-        assertEquals("Ω",  t.toUnicodeAbbreviation("spherical",   AxisDirection.NORTH, "U"), "U");
-        assertEquals("θ",  t.toUnicodeAbbreviation("spherical",   AxisDirection.EAST,  "V"), "V");
+        assertEquals("φ",  t.toUnicodeAbbreviation("ellipsoidal", AxisDirection.NORTH,     "P"), "P");
+        assertEquals("φ",  t.toUnicodeAbbreviation("ellipsoidal", AxisDirection.NORTH,     "B"), "B");
+        assertEquals("λ",  t.toUnicodeAbbreviation("ellipsoidal", AxisDirection.EAST,      "L"), "L");
+        assertEquals("θ",  t.toUnicodeAbbreviation("polar",       AxisDirections.CLOCKWISE,"U"), "U");
+        assertEquals("Ω",  t.toUnicodeAbbreviation("spherical",   AxisDirection.NORTH,     "U"), "U");
+        assertEquals("θ",  t.toUnicodeAbbreviation("spherical",   AxisDirection.EAST,      "V"), "V");
     }
 
     /**

@@ -38,7 +38,7 @@ import static org.apache.sis.util.CharSequences.*;
 // Specific to the main branch:
 import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.CONDITIONAL;
-import static org.opengis.annotation.Specification.UNSPECIFIED;
+import static org.opengis.annotation.Specification.ISO_19111;
 
 
 /**
@@ -78,7 +78,7 @@ public final class AxisDirections extends Static {
      * For an observer at the centre of the object this is will be towards its front, bow or nose.
      * Added in ISO 19111:2019 (was not in ISO 19111:2007).
      */
-    @UML(identifier="forward", obligation=CONDITIONAL, specification=UNSPECIFIED)
+    @UML(identifier="forward", obligation=CONDITIONAL, specification=ISO_19111)
     public static final AxisDirection FORWARD = AxisDirection.valueOf("FORWARD");
 
     /**
@@ -86,7 +86,7 @@ public final class AxisDirections extends Static {
      * For an observer at the centre of the object this will be towards its right.
      * Added in ISO 19111:2019 (was not in ISO 19111:2007).
      */
-    @UML(identifier="starboard", obligation=CONDITIONAL, specification=UNSPECIFIED)
+    @UML(identifier="starboard", obligation=CONDITIONAL, specification=ISO_19111)
     public static final AxisDirection STARBOARD = AxisDirection.valueOf("STARBOARD");
 
     /**
@@ -94,37 +94,43 @@ public final class AxisDirections extends Static {
      * For an observer at the centre of the object this will be towards its left.
      * Added in ISO 19111:2019 (was not in ISO 19111:2007).
      */
-    @UML(identifier="port", obligation=CONDITIONAL, specification=UNSPECIFIED)
+    @UML(identifier="port", obligation=CONDITIONAL, specification=ISO_19111)
     public static final AxisDirection PORT = AxisDirection.valueOf("PORT");
 
     /**
      * Direction of geographic angles (bearing).
      * Added in ISO 19111:2019 (was not in ISO 19111:2007).
      */
-    @UML(identifier="clockwise", obligation=CONDITIONAL, specification=UNSPECIFIED)
+    @UML(identifier="clockwise", obligation=CONDITIONAL, specification=ISO_19111)
     public static final AxisDirection CLOCKWISE = AxisDirection.valueOf("CLOCKWISE");
 
     /**
      * Direction of arithmetic angles. Used in polar coordinate systems.
      * Added in ISO 19111:2019 (was not in ISO 19111:2007).
      */
-    @UML(identifier="counterClockwise", obligation=CONDITIONAL, specification=UNSPECIFIED)
+    @UML(identifier="counterClockwise", obligation=CONDITIONAL, specification=ISO_19111)
     public static final AxisDirection COUNTER_CLOCKWISE = AxisDirection.valueOf("COUNTER_CLOCKWISE");
 
     /**
      * Distance from the origin in a polar coordinate system.
      * Added in ISO 19111:2019 (was not in ISO 19111:2007).
      */
-    @UML(identifier="awayFrom", obligation=CONDITIONAL, specification=UNSPECIFIED)
+    @UML(identifier="awayFrom", obligation=CONDITIONAL, specification=ISO_19111)
     public static final AxisDirection AWAY_FROM = AxisDirection.valueOf("AWAY_FROM");
+
+    /**
+     * Axis positive direction is unspecified.
+     */
+    @UML(identifier="unspecified", obligation=CONDITIONAL, specification=ISO_19111)
+    public static final AxisDirection UNSPECIFIED = AxisDirection.valueOf("UNSPECIFIED");
 
     /**
      * For each direction, the opposite direction.
      * This map shall be immutable after construction.
      */
-    private static final Map<AxisDirection,AxisDirection> OPPOSITES = new HashMap<>(20);
+    private static final Map<AxisDirection,AxisDirection> OPPOSITES = new HashMap<>(24);
     static {
-        put(OTHER,             OTHER);
+        put(UNSPECIFIED,       UNSPECIFIED);
         put(NORTH,             SOUTH);
         put(NORTH_NORTH_EAST,  SOUTH_SOUTH_WEST);
         put(NORTH_EAST,        SOUTH_WEST);
@@ -159,7 +165,8 @@ public final class AxisDirections extends Static {
             ROW_POSITIVE,      "j",
             DISPLAY_RIGHT,     "x",
             DISPLAY_UP,        "y",
-            OTHER,             "z",     // Arbitrary abbreviation, may change in any future SIS version.
+            UNSPECIFIED,       "m",     // Arbitrary abbreviation, may change in any future SIS version.
+            OTHER,             "m",     // Idem.
             AWAY_FROM,         "r",
             COUNTER_CLOCKWISE, "θ");
 

@@ -18,6 +18,7 @@ package org.apache.sis.referencing.cs;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.OptionalInt;
 import javax.measure.Unit;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.measure.Units;
@@ -66,21 +67,21 @@ final class Codes {
     /**
      * Packs the given axis directions in a single integer.
      *
-     * @return the packed directions, or 0 if the given directions cannot be packed.
+     * @return the packed directions, or empty if the given directions cannot be packed.
      */
-    private static int pack(final AxisDirection[] directions) {
+    private static OptionalInt pack(final AxisDirection[] directions) {
         int packed = 0;
         int i = directions.length;
         if (i <= Integer.BYTES) {
             while (--i >= 0) {
                 final int ordinal = directions[i].ordinal();
-                if (ordinal <= 0 || ordinal > Byte.MAX_VALUE) {
-                    return 0;
+                if (ordinal < 0 || ordinal > Byte.MAX_VALUE) {
+                    return OptionalInt.empty();
                 }
                 packed = (packed << Byte.SIZE) | ordinal;
             }
         }
-        return packed;
+        return OptionalInt.of(packed);
     }
 
     /**
@@ -92,9 +93,9 @@ final class Codes {
     static short lookup(final Unit<?> unit, final AxisDirection[] directions) {
         final Integer uc = Units.getEpsgCode(unit, true);
         if (uc != null) {
-            final int p = pack(directions);
-            if (p != 0) {
-                Codes m = new Codes(p, uc.shortValue(), (short) 0);
+            final OptionalInt p = pack(directions);
+            if (p.isPresent()) {
+                Codes m = new Codes(p.getAsInt(), uc.shortValue(), (short) 0);
                 m = EPSG.get(m);
                 if (m != null) {
                     return m.epsg;
@@ -133,7 +134,7 @@ final class Codes {
     static {
         final AxisDirection[] directions = new AxisDirection[] {AxisDirection.EAST, AxisDirection.NORTH};
         final int addVertical = AxisDirection.UP.ordinal() << (2 * Byte.SIZE);
-        int packed = pack(directions);
+        OptionalInt packed = pack(directions);
         short unit = EPSG_METRE;
 loop:   for (int i=0; ; i++) {
             final short epsg;
@@ -168,7 +169,8 @@ loop:   for (int i=0; ; i++) {
                          epsg = 6501; break;                                             //  Cartesian [S,W] in metres
                 default: break loop;
             }
-            Codes m = new Codes(packed, unit, epsg);
+            final int p = packed.getAsInt();
+            Codes m = new Codes(p, unit, epsg);
             if (EPSG.put(m, m) != null) {
                 throw new AssertionError(m.epsg);
             }
@@ -177,7 +179,7 @@ loop:   for (int i=0; ; i++) {
              * (this is encoded in CodesTest.VERTICAL_UNIT constant).
              */
             if (to3D != 0) {
-                m = new Codes(packed | addVertical, unit, to3D);
+                m = new Codes(p | addVertical, unit, to3D);
                 if (EPSG.put(m, m) != null) {
                     throw new AssertionError(m.epsg);
                 }

@@ -202,8 +202,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * The latter case occurs after unmarshalling, since GML 3.2 does not contain any attribute for the datum type.
      * It may also happen if the datum were created using reflection.
      *
-     * <p>This method uses heuristic rules and may be changed in any future SIS version. If the type cannot be
-     * determined, default on the ellipsoidal type since it will usually implies no additional calculation.</p>
+     * <p>This method uses heuristic rules and may be changed in any future SIS version.</p>
      *
      * <p>No synchronization needed; this is not a problem if this value is computed twice.
      * This method returns only existing immutable instances.</p>
@@ -266,8 +265,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
                 /*
                  * VerticalDatumType is considered as metadata because it is related to the anchor definition,
                  * which is itself considered as metadata. Furthermore, GeodeticObjectParser and EPSGDataAccess
-                 * do not always set this property to the same value: the former uses the information provided
-                 * by the coordinate system axis while the other does not.
+                 * do not always set this property to the same value, because of historical changes in the WKT.
                  */
                 return true;
             }
@@ -290,10 +288,10 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * Formats this datum as a <i>Well Known Text</i> {@code VerticalDatum[…]} element.
      *
      * <h4>Compatibility note</h4>
-     * OGC 01-009 defined numerical codes for various vertical datum types, for example 2005 for geoidal height
-     * and 2002 for ellipsoidal height. Such codes were formatted for all {@code Datum} subtypes in WKT 1.
-     * Datum types became provided only for vertical datum in the ISO 19111:2003 specification, then removed
-     * completely in ISO 19111:2007.
+     * OGC 01-009 defined numerical codes for various vertical datum types, for example 2005 for geoidal height.
+     * Such codes were formatted for all {@code Datum} subtypes in WKT 1. Datum types became specified only for
+     * vertical datum in the ISO 19111:2003 standard, then removed completely in the ISO 19111:2007 standard.
+     * They were reintroduced in a different form ({@code RealizationMethod}) in the ISO 19111:2019 standard.
      *
      * @return {@code "VerticalDatum"} (WKT 2) or {@code "Vert_Datum"} (WKT 1).
      *

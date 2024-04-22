@@ -97,7 +97,7 @@ final class Normalizer implements Comparable<Normalizer> {
 
     /**
      * Number of bits by which to shift the {@link AxisDirection#ordinal()} value in order to make room for
-     * inserting intermediate values between them. A shift of 2 make room for {@literal 1 << 2} intermediate
+     * inserting intermediate values between them. A shift of 3 makes room for {@literal 1 << 3} intermediate
      * values. Those intermediate values are declared in the {@link #ORDER} map.
      *
      * @see #order(AxisDirection)
@@ -109,7 +109,7 @@ final class Normalizer implements Comparable<Normalizer> {
      *
      * @see #order(AxisDirection)
      */
-    private static final Map<AxisDirection,Integer> ORDER = new HashMap<>();
+    private static final Map<AxisDirection,Integer> ORDER = new HashMap<>(12);
     static {
         // Get ordinal of last compass direction defined by GeoAPI. We will continue on the horizontal plane.
         int code = (AxisDirection.NORTH.ordinal() + (AxisDirections.COMPASS_COUNT - 1)) << SHIFT;
