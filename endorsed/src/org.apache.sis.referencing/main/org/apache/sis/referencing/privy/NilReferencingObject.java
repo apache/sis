@@ -23,8 +23,8 @@ import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.util.resources.Vocabulary;
 
 // Specific to the main and geoapi-3.1 branches:
-import org.opengis.util.InternationalString;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.util.InternationalString;
 
 // Specific to the main branch:
 import java.util.Set;

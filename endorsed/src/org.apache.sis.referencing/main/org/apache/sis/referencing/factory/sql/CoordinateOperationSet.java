@@ -21,7 +21,6 @@ import java.util.HashMap;
 import org.opengis.metadata.Identifier;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.AuthorityFactory;
-import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -29,6 +28,9 @@ import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.factory.IdentifiedObjectSet;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.crs.GeneralDerivedCRS;
 
 
 /**

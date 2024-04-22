@@ -33,7 +33,6 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.VerticalDatum;
-import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.privy.AxisNames;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
@@ -49,6 +48,7 @@ import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.TestUtilities.*;
 
 // Specific to the main branch:
+import org.opengis.referencing.datum.VerticalDatumType;
 import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
 
 

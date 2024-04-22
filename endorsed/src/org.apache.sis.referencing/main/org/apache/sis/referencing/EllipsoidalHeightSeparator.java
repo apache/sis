@@ -27,7 +27,6 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
-import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.referencing.privy.AxisDirections;
@@ -39,6 +38,9 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import static org.apache.sis.referencing.privy.ReferencingUtilities.getPropertiesForModifiedCRS;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.crs.GeographicCRS;
 
 
 /**

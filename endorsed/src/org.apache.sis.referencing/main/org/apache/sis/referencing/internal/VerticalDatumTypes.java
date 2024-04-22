@@ -18,18 +18,22 @@ package org.apache.sis.referencing.internal;
 
 import java.util.Locale;
 import java.util.Collection;
-import java.util.function.Predicate;
 import javax.measure.Unit;
-import org.opengis.util.CodeList;
 import org.opengis.util.GenericName;
-import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.measure.Units;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.datum.VerticalDatumType;
+
+// Specific to the main branch:
+import java.util.function.Predicate;
+import org.opengis.util.CodeList;
 import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.privy.CodeLists;
-import org.apache.sis.measure.Units;
 
 
 /**

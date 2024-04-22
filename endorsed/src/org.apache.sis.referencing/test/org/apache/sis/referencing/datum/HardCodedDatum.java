@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.HashMap;
 import org.opengis.referencing.datum.PixelInCell;
-import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.measure.Units;
@@ -30,6 +29,7 @@ import static org.apache.sis.util.privy.StandardDateFormat.MILLISECONDS_PER_DAY;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 
 // Specific to the main branch:
+import org.opengis.referencing.datum.VerticalDatumType;
 import static org.opengis.referencing.datum.Datum.*;
 
 

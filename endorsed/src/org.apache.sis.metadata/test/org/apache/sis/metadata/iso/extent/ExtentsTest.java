@@ -31,15 +31,15 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.measure.MeasurementRange;
 import static org.apache.sis.metadata.privy.ReferencingServices.NAUTICAL_MILE;
 
-// Specific to the main branch:
-import org.opengis.referencing.datum.VerticalDatumType;
-
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.mock.VerticalCRSMock;
+
+// Specific to the main branch:
+import org.opengis.referencing.datum.VerticalDatumType;
 
 
 /**

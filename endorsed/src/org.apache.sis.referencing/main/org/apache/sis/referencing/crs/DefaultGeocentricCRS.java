@@ -22,13 +22,15 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.crs.GeodeticCRS;
-import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.io.wkt.Formatter;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.crs.GeocentricCRS;
 
 
 /**

@@ -33,7 +33,6 @@ import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
-import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.crs.SingleCRS;
@@ -50,7 +49,6 @@ import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.opengis.referencing.datum.VerticalDatum;
-import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.datum.EngineeringDatum;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import static org.opengis.referencing.IdentifiedObject.NAME_KEY;
@@ -87,6 +85,10 @@ import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
 import static org.apache.sis.util.privy.StandardDateFormat.MILLISECONDS_PER_DAY;
+
+// Specific to the main branch:
+import org.opengis.referencing.crs.GeocentricCRS;
+import org.opengis.referencing.datum.VerticalDatumType;
 
 
 /**

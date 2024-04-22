@@ -25,7 +25,6 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.Transformation;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
-import org.opengis.referencing.operation.PassThroughOperation;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
@@ -34,6 +33,9 @@ import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
+
+// Specific to the main branch:
+import org.opengis.referencing.operation.PassThroughOperation;
 
 
 /**

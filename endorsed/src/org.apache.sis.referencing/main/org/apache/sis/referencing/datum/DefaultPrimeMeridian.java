@@ -26,7 +26,6 @@ import javax.measure.quantity.Angle;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.datum.PrimeMeridian;
-import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.privy.WKTUtilities;
@@ -40,6 +39,9 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.measure.Units;
 import static org.apache.sis.util.ArgumentChecks.ensureFinite;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.crs.GeneralDerivedCRS;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;

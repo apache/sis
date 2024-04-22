@@ -49,7 +49,6 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.VerticalDatum;
-import org.opengis.referencing.datum.VerticalDatumType;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.apache.sis.metadata.InvalidMetadataException;
@@ -72,6 +71,7 @@ import static org.apache.sis.metadata.privy.ReferencingServices.AUTHALIC_RADIUS;
 
 // Specific to the main branch:
 import org.opengis.metadata.identification.DataIdentification;
+import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.pending.geoapi.evolution.Interim;
 
 

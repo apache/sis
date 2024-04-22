@@ -21,7 +21,6 @@ import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
-import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
@@ -30,6 +29,7 @@ import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.CRS;
 
 // Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.crs.ImageCRS;
 
 

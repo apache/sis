@@ -21,13 +21,15 @@ import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.apache.sis.metadata.privy.AxisNames;
-import org.apache.sis.referencing.privy.AxisDirections;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.test.mock.CoordinateSystemAxisMock;
+
+// Specific to the main branch:
+import org.apache.sis.referencing.privy.AxisDirections;
 
 
 /**

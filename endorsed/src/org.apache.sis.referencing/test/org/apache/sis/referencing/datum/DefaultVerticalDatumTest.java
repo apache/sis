@@ -18,11 +18,9 @@ package org.apache.sis.referencing.datum;
 
 import java.util.Map;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
 import jakarta.xml.bind.JAXBException;
-import org.opengis.referencing.datum.VerticalDatumType;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.MarshallerPool;
@@ -38,6 +36,10 @@ import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getScope;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
+
+// Specific to the main branch:
+import java.lang.reflect.Field;
+import org.opengis.referencing.datum.VerticalDatumType;
 
 
 /**

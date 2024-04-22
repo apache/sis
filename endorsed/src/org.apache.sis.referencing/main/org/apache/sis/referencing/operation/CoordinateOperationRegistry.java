@@ -41,7 +41,6 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CompoundCRS;
@@ -80,6 +79,9 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Vocabulary;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.crs.GeneralDerivedCRS;
 
 
 /**

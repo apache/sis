@@ -52,7 +52,6 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
-import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.Conversion;
@@ -68,6 +67,9 @@ import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Vocabulary;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.crs.GeneralDerivedCRS;
 
 
 /**

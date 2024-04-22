@@ -20,8 +20,6 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.crs.DerivedCRS;
-import org.opengis.referencing.crs.GeodeticCRS;
-import org.opengis.referencing.crs.GeneralDerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.CRS;
 
@@ -30,6 +28,12 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import org.apache.sis.referencing.factory.TestFactorySource;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.crs.GeodeticCRS;
+
+// Specific to the main branch:
+import org.opengis.referencing.crs.GeneralDerivedCRS;
 
 
 /**
