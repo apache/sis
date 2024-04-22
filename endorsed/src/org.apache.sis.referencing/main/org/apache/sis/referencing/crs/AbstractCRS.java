@@ -30,7 +30,6 @@ import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.SingleCRS;
-import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.AbstractCS;
@@ -46,6 +45,9 @@ import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.referencing.crs.DerivedCRS;
 
 
 /**

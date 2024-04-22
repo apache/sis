@@ -33,7 +33,6 @@ import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.TemporalCRS;
@@ -64,6 +63,9 @@ import org.apache.sis.parameter.Parameters;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.ObjectDomain;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.referencing.crs.GeodeticCRS;
 
 
 /**

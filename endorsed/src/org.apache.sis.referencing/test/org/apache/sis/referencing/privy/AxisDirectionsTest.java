@@ -23,7 +23,6 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import static org.opengis.referencing.cs.AxisDirection.*;
-import org.apache.sis.referencing.internal.Legacy;
 import org.apache.sis.measure.Units;
 
 // Test dependencies
@@ -32,6 +31,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.referencing.cs.HardCodedAxes;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.test.TestCase;
+
+// Specific to the geoapi-4.0 branch:
+import org.apache.sis.referencing.internal.Legacy;
 
 
 /**

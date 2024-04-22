@@ -34,7 +34,6 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.ConcatenatedOperation;
@@ -76,6 +75,7 @@ import org.apache.sis.system.Loggers;
 import static org.apache.sis.util.Utilities.deepEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.coordinate.CoordinateSet;
 
 

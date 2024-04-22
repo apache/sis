@@ -32,7 +32,6 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
-import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.parameter.GeneralParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterDescriptor;
@@ -57,6 +56,9 @@ import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.FormattableObject;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.referencing.crs.DerivedCRS;
 
 
 /**

@@ -28,7 +28,6 @@ import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.operation.Conversion;
 import org.apache.sis.referencing.CRS;
@@ -42,6 +41,9 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.referencing.crs.DerivedCRS;
 
 
 /**

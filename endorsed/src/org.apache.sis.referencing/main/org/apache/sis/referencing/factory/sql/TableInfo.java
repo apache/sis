@@ -17,11 +17,11 @@
 package org.apache.sis.referencing.factory.sql;
 
 import javax.measure.Unit;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
-import org.opengis.referencing.IdentifiedObject;
 import org.opengis.parameter.ParameterDescriptor;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.util.CharSequences;

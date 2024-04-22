@@ -28,8 +28,10 @@ import org.opengis.parameter.ParameterDescriptorGroup;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.opengis.test.Assertions.assertBetween;
 import org.apache.sis.test.TestCase;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import static org.opengis.test.Assertions.assertBetween;
 
 
 /**

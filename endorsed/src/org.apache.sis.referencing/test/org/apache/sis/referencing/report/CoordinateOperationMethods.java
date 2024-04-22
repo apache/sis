@@ -31,7 +31,6 @@ import org.opengis.parameter.*;
 import org.opengis.referencing.operation.*;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.DerivedCRS;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.Numbers;
@@ -54,6 +53,7 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
+import org.opengis.referencing.crs.DerivedCRS;
 
 
 /**

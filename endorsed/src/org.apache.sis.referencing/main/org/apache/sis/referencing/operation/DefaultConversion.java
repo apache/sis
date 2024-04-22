@@ -28,7 +28,6 @@ import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.crs.SingleCRS;
-import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.Datum;
 import org.apache.sis.referencing.cs.CoordinateSystems;
@@ -39,6 +38,9 @@ import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.referencing.crs.DerivedCRS;
 
 
 /**

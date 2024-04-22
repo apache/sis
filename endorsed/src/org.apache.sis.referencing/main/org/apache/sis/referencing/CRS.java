@@ -38,7 +38,6 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
-import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
@@ -94,6 +93,7 @@ import org.apache.sis.util.logging.Logging;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.geometry.Geometry;
 import org.opengis.referencing.ObjectDomain;
+import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.datum.DynamicReferenceFrame;
 import org.opengis.metadata.extent.BoundingPolygon;
 import org.opengis.metadata.extent.GeographicExtent;

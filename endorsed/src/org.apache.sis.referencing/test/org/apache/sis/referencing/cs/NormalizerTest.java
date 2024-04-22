@@ -24,7 +24,6 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import static org.opengis.referencing.cs.CoordinateSystem.NAME_KEY;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.internal.Legacy;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.measure.Units;
 
@@ -34,6 +33,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.referencing.Assertions.assertAxisEquals;
+
+// Specific to the geoapi-4.0 branch:
+import org.apache.sis.referencing.internal.Legacy;
 
 
 /**

@@ -28,7 +28,6 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
-import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
 import org.opengis.referencing.crs.VerticalCRS;
@@ -53,6 +52,9 @@ import org.apache.sis.util.privy.URLs;
 import org.apache.sis.setup.InstallationResources;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.referencing.crs.GeodeticCRS;
 
 
 /**
