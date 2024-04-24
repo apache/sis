@@ -231,7 +231,7 @@ public abstract class MapProjection extends AbstractProvider {
     @Override
     public final MathTransform createMathTransform(final Context context) throws FactoryException {
         return maybe3D(context, createProjection(Parameters.castOrWrap(context.getCompletedParameters()))
-                               .createMapProjection(context.getFactory()));
+                               .createMapProjection(context));
     }
 
     /**

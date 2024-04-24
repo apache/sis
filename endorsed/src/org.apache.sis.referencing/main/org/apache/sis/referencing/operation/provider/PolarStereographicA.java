@@ -140,7 +140,26 @@ public final class PolarStereographicA extends AbstractStereographic {
     }
 
     /**
+     * The canonical instance of this map projection.
+     *
+     * @see #provider()
+     */
+    private static final PolarStereographicA INSTANCE = new PolarStereographicA();
+
+    /**
+     * Returns the canonical instance of this map projection.
+     * This method is invoked by {@link java.util.ServiceLoader} using reflection.
+     *
+     * @return the canonical instance of this map projection.
+     */
+    public static PolarStereographicA provider() {
+        return INSTANCE;
+    }
+
+    /**
      * Constructs a new provider.
+     *
+     * @todo Make this constructor private after we stop class-path support.
      */
     public PolarStereographicA() {
         super(PARAMETERS);

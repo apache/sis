@@ -23,12 +23,15 @@ import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
+import org.opengis.referencing.operation.MathTransformFactory;
+import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
+import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.datum.GeodeticDatumMock;
 
@@ -99,6 +102,29 @@ abstract class MapProjectionTestCase extends MathTransformTestCase {
             }
         }
         return new Tester(provider);
+    }
+
+    /**
+     * Creates a context with the given factory and parameters, used for map projection construction.
+     * The given parameters should not be {@code null}, but this method nevertheless accepts null when
+     * the caller knows that the tested code will not use parameters.
+     *
+     * @param  factory     the factory to use, or {@code null} for the default one.
+     * @param  parameters  the parameters. Should not be null, but null is nevertheless accepted for testing purposes.
+     * @return the context to use in map projection construction.
+     */
+    static MathTransformProvider.Context context(final MathTransformFactory factory, final ParameterValueGroup parameters) {
+        return new MathTransformProvider.Context() {
+            /** Returns the specified factory, or the default one if none. */
+            @Override public MathTransformFactory getFactory() {
+                return (factory != null) ? factory : MathTransformProvider.Context.super.getFactory();
+            }
+
+            /** Returns the specified parameters (possible null). */
+            @Override public ParameterValueGroup getCompletedParameters() {
+                return parameters;
+            }
+        };
     }
 
     /**

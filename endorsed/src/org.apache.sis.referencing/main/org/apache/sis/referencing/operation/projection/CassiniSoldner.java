@@ -22,12 +22,12 @@ import static java.lang.Math.*;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
+import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.referencing.operation.provider.HyperbolicCassiniSoldner;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.parameter.Parameters;
@@ -209,23 +209,23 @@ public class CassiniSoldner extends MeridianArcBased {
     }
 
     /**
-     * Returns the sequence of <i>normalization</i> → {@code this} → <i>denormalization</i> transforms
-     * as a whole. The transform returned by this method expects (<var>longitude</var>, <var>latitude</var>)
-     * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
+     * Returns the sequence of <i>normalization</i> → {@code this} → <i>denormalization</i> transforms as a whole.
+     * The transform returned by this method expects (<var>longitude</var>, <var>latitude</var>) coordinates
+     * in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
      * The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
-     * is spherical. In the latter case, {@code this} transform may be replaced by a simplified implementation.
+     * is spherical. In the latter case, {@code this} transform is replaced by a simplified implementation.
      *
-     * @param  factory  the factory to use for creating the transform.
+     * @param  parameters  parameters and the factory to use for creating the transform.
      * @return the map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
      */
     @Override
-    public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
+    public MathTransform createMapProjection(final MathTransformProvider.Context parameters) throws FactoryException {
         CassiniSoldner kernel = this;
         if (eccentricity == 0 && variant == null) {
             kernel = new Spherical(this);
         }
-        return context.completeTransform(factory, kernel);
+        return context.completeTransform(parameters.getFactory(), kernel);
     }
 
     /**
