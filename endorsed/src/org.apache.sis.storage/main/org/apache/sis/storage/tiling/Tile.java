@@ -16,12 +16,13 @@
  */
 package org.apache.sis.storage.tiling;
 
+import java.util.Optional;
+import org.opengis.metadata.Metadata;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.Resource;
-import org.opengis.metadata.Metadata;
 
 
 /**
@@ -33,7 +34,7 @@ import org.opengis.metadata.Metadata;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.5
  *
  * @see TileMatrix#getTiles(GridExtent, boolean)
  *
@@ -66,16 +67,20 @@ public interface Tile {
 
     /**
      * Returns information about this tile.
+     * The returned metadata may differ from the {@linkplain #getResource() tile resource} metadata.
+     * For example, it may be a subset containing only the information available without reading the resource.
+     * The tile metadata may be absent if it does not contain any information that are not already provided by
+     * the {@link TileMatrix} or {@link TileMatrixSet} metadata.
      *
-     * Tile metadata may differ from the tile resource metadata.
-     * It may be a subset of the resource metadata or it may be unrelated.
-     * The tile metadata may be null if it does not contain any revelant information or
-     * that are already in the tile matrix or tile matrix set metadata.
+     * @return information about this tile.
      *
-     * @return information about this tile. Can be {@code null}.
-     * @throws DataStoreException if an error occurred while reading the metadata.
+     * @see Resource#getMetadata()
+     *
+     * @since 1.5
      */
-    Metadata getMetadata() throws DataStoreException;
+    default Optional<Metadata> getMetadata() {
+        return Optional.empty();
+    }
 
     /**
      * Returns information about whether the tile failed to load.

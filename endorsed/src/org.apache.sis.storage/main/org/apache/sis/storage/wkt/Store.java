@@ -152,12 +152,12 @@ final class Store extends URIDataStore {
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) {
             parse();
-            final MetadataBuilder builder = new MetadataBuilder();
+            final var builder = new MetadataBuilder();
             InternationalString name = null;
             int count = 0;
             for (final Object object : objects) {
                 if (object instanceof ReferenceSystem) {
-                    final ReferenceSystem rs = (ReferenceSystem) object;
+                    final var rs = (ReferenceSystem) object;
                     builder.addReferenceSystem(rs);
                     name = IdentifiedObjects.getDisplayName(rs);
                     count++;
