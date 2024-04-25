@@ -18,7 +18,9 @@ package org.apache.sis.storage.tiling;
 
 import java.util.Optional;
 import java.util.SortedMap;
+import org.apache.sis.storage.DataStoreException;
 import org.opengis.geometry.Envelope;
+import org.opengis.metadata.Metadata;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.GenericName;
 
@@ -57,6 +59,17 @@ public interface TileMatrixSet {
      * @return a unique (within {@link TiledResource}) identifier.
      */
     GenericName getIdentifier();
+
+    /**
+     * Returns information about this tile matrix set.
+     *
+     * Returned metadata should contain a description of the tile format at path :
+     * {@code Metadata/identificationInfo/resourceFormat}.
+     *
+     * @return information about this tile matrix set. Should not be {@code null}.
+     * @throws DataStoreException if an error occurred while reading the metadata.
+     */
+    Metadata getMetadata() throws DataStoreException;
 
     /**
      * Returns the coordinate reference system of all {@code TileMatrix} instances in this set.

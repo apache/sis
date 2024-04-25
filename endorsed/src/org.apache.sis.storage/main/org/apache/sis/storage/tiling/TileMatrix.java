@@ -24,6 +24,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.NoSuchDataException;
+import org.opengis.metadata.Metadata;
 
 
 /**
@@ -48,6 +49,19 @@ public interface TileMatrix {
      * @return a unique (within {@link TileMatrixSet}) identifier.
      */
     GenericName getIdentifier();
+
+    /**
+     * Returns information about this tile matrix.
+     *
+     * Returned metadata should contain a description of the tile format at path :
+     * {@code Metadata/identificationInfo/resourceFormat}.
+     * The tile metadata may be null if it does not contain any revelant information or
+     * that are already in the tile matrix set metadata.
+     *
+     * @return information about this tile matrix. Can be {@code null}.
+     * @throws DataStoreException if an error occurred while reading the metadata.
+     */
+    Metadata getMetadata() throws DataStoreException;
 
     /*
      * There is no `getTileSize()` method because tiles are not necessarily for grid coverages.

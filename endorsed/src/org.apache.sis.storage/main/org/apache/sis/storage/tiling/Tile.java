@@ -21,6 +21,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.Resource;
+import org.opengis.metadata.Metadata;
 
 
 /**
@@ -62,6 +63,19 @@ public interface Tile {
      * @see TileMatrix#getTile(long...)
      */
     long[] getIndices();
+
+    /**
+     * Returns information about this tile.
+     *
+     * Tile metadata may differ from the tile resource metadata.
+     * It may be a subset of the resource metadata or it may be unrelated.
+     * The tile metadata may be null if it does not contain any revelant information or
+     * that are already in the tile matrix or tile matrix set metadata.
+     *
+     * @return information about this tile. Can be {@code null}.
+     * @throws DataStoreException if an error occurred while reading the metadata.
+     */
+    Metadata getMetadata() throws DataStoreException;
 
     /**
      * Returns information about whether the tile failed to load.
