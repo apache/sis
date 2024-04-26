@@ -718,11 +718,12 @@ public abstract class NormalizedProjection extends AbstractMathTransform2D imple
      * If this assumption is not applicable to a particular subclass, then it is implementer responsibility to check
      * the range.
      *
-     * @param  srcPts    the array containing the source point coordinates, as (<var>longitude</var>, <var>latitude</var>)
-     *                   angles in <strong>radians</strong>.
+     * @param  srcPts    the array containing the source point coordinates,
+     *                   as (<var>longitude</var>, <var>latitude</var>) angles in <strong>radians</strong>.
      * @param  srcOff    the offset of the single coordinate tuple to be converted in the source array.
      * @param  dstPts    the array into which the converted coordinates is returned (may be the same as {@code srcPts}).
      *                   Coordinates will be expressed in a dimensionless unit, as a linear distance on a unit sphere or ellipse.
+     *                   This array may be {@code null} if the caller is interested only in the derivative.
      * @param  dstOff    the offset of the location of the converted coordinates that is stored in the destination array.
      * @param  derivate  {@code true} for computing the derivative, or {@code false} if not needed.
      * @return the matrix of the projection derivative at the given source position,

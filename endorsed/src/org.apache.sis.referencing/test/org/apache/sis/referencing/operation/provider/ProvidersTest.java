@@ -106,6 +106,7 @@ public final class ProvidersTest extends TestCase {
             Orthographic.class,
             ModifiedAzimuthalEquidistant.class,
             AzimuthalEquidistantSpherical.class,
+            EquidistantCylindrical.class,
             ZonedTransverseMercator.class,
             SatelliteTracking.class,
             Sinusoidal.class,

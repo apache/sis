@@ -127,6 +127,7 @@ module org.apache.sis.referencing {
              org.apache.sis.referencing.operation.provider.Orthographic,
              org.apache.sis.referencing.operation.provider.ModifiedAzimuthalEquidistant,
              org.apache.sis.referencing.operation.provider.AzimuthalEquidistantSpherical,
+             org.apache.sis.referencing.operation.provider.EquidistantCylindrical,
              org.apache.sis.referencing.operation.provider.ZonedTransverseMercator,
              org.apache.sis.referencing.operation.provider.Sinusoidal,
              org.apache.sis.referencing.operation.provider.PseudoSinusoidal,

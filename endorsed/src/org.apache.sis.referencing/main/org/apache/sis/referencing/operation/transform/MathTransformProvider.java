@@ -122,7 +122,7 @@ public interface MathTransformProvider {
     {
         return createMathTransform(new MathTransformProvider.Context() {
             @Override public MathTransformFactory getFactory() {
-                return (factory != null) ? factory : DefaultMathTransformFactory.provider();
+                return (factory != null) ? factory : Context.super.getFactory();
             }
             @Override public ParameterValueGroup getCompletedParameters() {
                 return parameters;

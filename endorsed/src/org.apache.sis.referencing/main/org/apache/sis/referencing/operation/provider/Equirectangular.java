@@ -248,14 +248,11 @@ public final class Equirectangular extends AbstractProvider {
 
         // Do not declare the ESRI "Equidistant_Cylindrical" projection name below,
         // for avoiding confusion with EPSG "Equidistant Cylindrical" ellipsoidal projection.
-        PARAMETERS = addIdentifierAndLegacy(builder, "1029", "9823")  // 9823 uses deprecated parameter names
+        PARAMETERS = addIdentifierAndLegacy(builder, "1029", "9823")    // 9823 uses deprecated parameter names.
                 .addName(                   NAME)
                 .addName(                   "Plate Carrée")  // Not formally defined by EPSG, but cited in documentation.
                 .addName(Citations.OGC,     "Equirectangular")
                 .addName(Citations.ESRI,    "Plate_Carree")
-                .addName(Citations.GEOTIFF, "CT_Equirectangular")
-                .addName(Citations.PROJ4,   "eqc")
-                .addIdentifier(Citations.GEOTIFF, "17")
                 .createGroupForMapProjection(
                         STANDARD_PARALLEL,
                         LATITUDE_OF_ORIGIN,     // Not formally an Equirectangular parameter.
@@ -265,9 +262,28 @@ public final class Equirectangular extends AbstractProvider {
     }
 
     /**
+     * The canonical instance of this map projection.
+     *
+     * @see #provider()
+     */
+    private static final Equirectangular INSTANCE = new Equirectangular();
+
+    /**
+     * Returns the canonical instance of this map projection.
+     * This method is invoked by {@link java.util.ServiceLoader} using reflection.
+     *
+     * @return the canonical instance of this map projection.
+     */
+    public static Equirectangular provider() {
+        return INSTANCE;
+    }
+
+    /**
      * Constructs a new provider.
      *
      * @see MapProjection#MapProjection(Class, ParameterDescriptorGroup)
+     *
+     * @todo Make this constructor private after we stop class-path support.
      */
     public Equirectangular() {
         super(Conversion.class, PARAMETERS,

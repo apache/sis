@@ -55,7 +55,15 @@ import org.apache.sis.pending.jdk.JDK21;
  * <a href="https://svn.apache.org/repos/asf/sis/analysis/Map%20projection%20formulas.ods">Subversion</a>.
  * This class is used for more complex formulas where the use of spreadsheet become too difficult.
  *
+ * <h2>Limitations</h2>
+ * Current implementation can handle a maximum of 6 terms in the trigonometric series (see {@link #compute()}).
+ * This limit is too short for {@link org.apache.sis.referencing.operation.projection.EquidistantCylindrical}.
+ * It would be possible to generalize using an iterative algorithm. Given that {@code EquidistantCylindrical}
+ * is used less often than Mercator or Lambert projections, we have not done this optimization yet.
+ *
  * @author  Martin Desruisseaux (Geomatys)
+ *
+ * @see <a href="https://issues.apache.org/jira/browse/SIS-465">SIS-465</a>
  */
 public final class ClenshawSummation {
     /**
@@ -339,7 +347,8 @@ public final class ClenshawSummation {
 
     /**
      * Performs the Clenshaw summation. Current implementation uses hard-coded coefficients for 6 terms.
-     * See Karney (2010) equation 59 if generalization to an arbitrary number of coefficients is desired.
+     * See Charles F. F. Karney, Geodesics on an ellipsoid of revolution (2011) equation 59
+     * if generalization to an arbitrary number of coefficients is desired.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-465">SIS-465</a>
      */

@@ -122,8 +122,8 @@ public class CylindricalEqualArea extends AuthalicConversion {
     /**
      * Creates a Cylindrical Equal Area projection from the given parameters.
      *
-     * @param method     Description of the projection parameters.
-     * @param parameters The parameter values of the projection to create.
+     * @param method     description of the projection parameters.
+     * @param parameters the parameter values of the projection to create.
      */
     public CylindricalEqualArea(final OperationMethod method, final Parameters parameters) {
         this(initializer(method, parameters));
