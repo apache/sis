@@ -101,7 +101,7 @@ public final class ClenshawSummation {
      * Each {@code Coefficient} is itself defined by a sum of terms, for example:
      *
      * <pre class="math">
-     *     A  =  -1/2⋅ε  +  3/16⋅ε³  +  -1/32⋅ε⁵</pre>
+     *     A  =  -1/2⋅η  +  3/16⋅η³  +  -1/32⋅η⁵</pre>
      */
     private static final class Coefficient {
         /**
@@ -111,7 +111,7 @@ public final class ClenshawSummation {
 
         /**
          * Creates a new coefficient defined by the sum of the given term. Each term is intended to be multiplied
-         * by some ε value raised to a different power. Those ε values and their powers do not matter for this class
+         * by some η value raised to a different power. Those η values and their powers do not matter for this class
          * provided that all {@code Coefficient} instances associate the same values and powers at the same indices.
          */
         Coefficient(final Term... terms) {
@@ -160,7 +160,7 @@ public final class ClenshawSummation {
                         b.append("  +  ");
                     }
                     t.appendTo(b);
-                    b.append(" * ε");
+                    b.append(" * η");
                     if (i != 0) {
                         b.append(i+1);
                     }
@@ -186,7 +186,7 @@ public final class ClenshawSummation {
      * For example, a {@code Coefficient} may be defined as below:
      *
      * <pre class="math">
-     *     A  =  -1/2⋅ε  +  3/16⋅ε³  +  -1/32⋅ε⁵</pre>
+     *     A  =  -1/2⋅η  +  3/16⋅η³  +  -1/32⋅η⁵</pre>
      *
      * In above example each of -1/2, 3/16 and -1/32 fraction is a {@code Term} instance.
      * However, this class allows a term to be defined by an array of fractions if each term
