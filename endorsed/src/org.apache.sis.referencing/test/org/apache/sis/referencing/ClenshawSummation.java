@@ -353,17 +353,140 @@ public final class ClenshawSummation {
      * @see <a href="https://issues.apache.org/jira/browse/SIS-465">SIS-465</a>
      */
     private void compute() {
-        if (sineCoefficients.length > 6) {
+        cosineCoefficients = new Coefficient[] {
+            sum(1,  0, -1,  0,   1,   0,  -1      ),        // A′ =    A -    C +   E -  G
+            sum(0,  2,  0, -4,   0,   6,   0,   -8),        // B′ =   2B -   4D +  6F - 8H
+            sum(0,  0,  4,  0, -12,   0,  24      ),        // C′ =   4C -  12E + 24G
+            sum(0,  0,  0,  8,   0, -32,   0,   80),        // D′ =   8D -  32F + 80H
+            sum(0,  0,  0,  0,  16,   0, -80      ),        // E′ =  16E -  80G
+            sum(0,  0,  0,  0,   0,  32,   0, -192),        // F′ =  32F - 192H
+            sum(0,  0,  0,  0,   0,   0,  64      ),        // G′ =  64G
+            sum(0,  0,  0,  0,   0,   0,   0,  128),        // H′ = 128H
+        };
+        if (sineCoefficients.length > cosineCoefficients.length) {
             throw new UnsupportedOperationException("Too many coefficients for current implementation.");
         }
-        cosineCoefficients = new Coefficient[] {
-            sum(1,  0, -1,  0,   1    ),            // A′ =   A -   C +  E
-            sum(0,  2,  0, -4,   0,  6),            // B′ =  2B -  4D + 6F
-            sum(0,  0,  4,  0, -12    ),            // C′ =  4C - 12E
-            sum(0,  0,  0,  8,  0, -32),            // D′ =  8D - 32F
-            sum(0,  0,  0,  0,  16    ),            // E′ = 16E
-            sum(0,  0,  0,  0,  0,  32),            // F′ = 32F
-        };
+    }
+
+    /**
+     * Computes the coefficients that are hard-coded in the {@link #compute()} method.
+     * This class needs to be executed only when the maximal number of terms increased.
+     * The formula is given by Charles F. F. Karney, Geodesics on an ellipsoid of revolution (2011) equation 59:
+     *
+     * <blockquote>f(θ) = ∑(aₙ⋅sin(n⋅θ)</blockquote>
+     *
+     * where the sum is from <var>n</var>=1 to <var>N</var> and <var>N</var> is the maximum number of terms.
+     * The equation can be rewritten as:
+     *
+     * <blockquote>f(θ) = b₁⋅sin(θ)</blockquote>
+     *
+     * where bₙ =
+     * <ul>
+     *   <li>0                             for <var>n</var> &gt; <var>N</var>,</li>
+     *   <li>aₙ + 2⋅bₙ₊₁⋅cos(θ) − bₙ₊₂     otherwise.</li>
+     * </ul>
+     *
+     * This class computes b₁.
+     */
+    public static final class Precomputation {
+        /**
+         * The factors by which to multiply the aₙ terms.
+         * The first array index identifies the factors which is multiplied, in reverse order.
+         * For example, if there is 4 terms to compute, then the factors are in the following order:
+         *
+         * <ul>
+         *   <li>{@code multiplicands[0]} = factors by which to multiply <var>D</var> (a₄).</li>
+         *   <li>{@code multiplicands[1]} = factors by which to multiply <var>C</var> (a₃).</li>
+         *   <li>{@code multiplicands[2]} = factors by which to multiply <var>B</var> (a₂).</li>
+         *   <li>{@code multiplicands[3]} = factors by which to multiply <var>A</var> (a₁).</li>
+         * </ul>
+         *
+         * The second array index is the power by which to multiply {@code cos(θ)}.
+         */
+        private final int[][] multiplicands;
+
+        /**
+         * Creates a new step in the iteration process for computing the factors.
+         * This constructor shall be invoked with decreasing <var>n</var> values,
+         * with b₁ computed last.
+         *
+         * @param  b1  result from the step at <var>n</var> + 1, or {@code null} if zero.
+         * @param  b2  result from the step at <var>n</var> + 2, or {@code null} if zero.
+         */
+        private Precomputation(final Precomputation b1, final Precomputation b2) {
+            final int length = (b1 != null) ? b1.multiplicands.length + 1 : 1;
+            multiplicands = new int[length][length];
+            multiplicands[length - 1][0] = 1;
+            if (b2 != null) {
+                // Add −bₙ₊₂ — we add terms at the same power of cos(θ), therefor all indices match.
+                for (int term=0; term < b2.multiplicands.length; term++) {
+                    final int max = b2.multiplicands[term].length;
+                    for (int power=0; power<max; power++) {
+                        multiplicands[term][power] -= b2.multiplicands[term][power];
+                    }
+                }
+            }
+            if (b1 != null) {
+                // Add +2⋅bₙ₊₁⋅cos(θ) — because of cos(θ), power indices are offset by one.
+                for (int term=0; term < b1.multiplicands.length; term++) {
+                    final int max = b1.multiplicands[term].length;
+                    for (int power=0; power<max; power++) {
+                        multiplicands[term][power+1] += 2*b1.multiplicands[term][power];
+                    }
+                }
+            }
+        }
+
+        /**
+         * Returns the factors for Clenshaw summation.
+         *
+         * @return string representation of the factors for Clenshaw summation.
+         */
+        @Override
+        public String toString() {
+            final var sb = new StringBuilder();
+            for (int power=0; power < multiplicands[0].length; power++) {
+                String separator = "sum(";
+                for (int term=multiplicands.length; --term >= 0;) {
+                    sb.append(separator).append(multiplicands[term][power]);
+                    separator = ", ";
+                }
+                sb.append("),        // ").append((char) ('A' + power)).append("′ = ");
+                char symbol = 'A';
+                boolean more = false;
+                for (int term=multiplicands.length; --term >= 0; symbol++) {
+                    int m = multiplicands[term][power];
+                    if (m != 0) {
+                        if (more) {
+                            sb.append(' ').append(m < 0 ? '-' : '+');
+                            m = Math.abs(m);
+                        }
+                        sb.append(' ');
+                        if (m != 1) sb.append(m);
+                        sb.append(symbol);
+                        more = true;
+                    }
+                }
+                sb.append(System.lineSeparator());
+            }
+            return sb.toString();
+        }
+
+        /**
+         * Computes and prints the factors for Clenshaw summation with the given number of terms.
+         *
+         * @param n  the desired number of terms.
+         */
+        public static void run(int n) {
+            Precomputation b2, b1 = null;
+            Precomputation result = null;
+            while (--n >= 0) {
+                b2 = b1;
+                b1 = result;
+                result = new Precomputation(b1, b2);
+                System.out.println(result);
+            }
+        }
     }
 
     /**
