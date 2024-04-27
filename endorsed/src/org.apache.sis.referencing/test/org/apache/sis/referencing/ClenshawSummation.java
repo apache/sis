@@ -56,10 +56,16 @@ import org.apache.sis.pending.jdk.JDK21;
  * This class is used for more complex formulas where the use of spreadsheet become too difficult.
  *
  * <h2>Limitations</h2>
- * Current implementation can handle a maximum of 6 terms in the trigonometric series (see {@link #compute()}).
- * This limit is too short for {@link org.apache.sis.referencing.operation.projection.EquidistantCylindrical}.
- * It would be possible to generalize using an iterative algorithm. Given that {@code EquidistantCylindrical}
- * is used less often than Mercator or Lambert projections, we have not done this optimization yet.
+ * Current implementation can handle a maximum of 8 terms in the trigonometric series.
+ * This limit is hard-coded in the {@link #compute()} method, but can be expanded by using
+ * the {@link Precomputation} inner class for generating the {@code compute()} code.
+ *
+ * <h4>Possible future evolution</h4>
+ * Maybe we should generate series expansions automatically for a given precision and eccentricity,
+ * adding more terms until the last added term adds a correction smaller than the desired precision.
+ * Then we could use {@link Precomputation} for generating the corresponding Clenshaw summation.
+ * This improvement would be needed for planetary CRS, where map projections may be applied on planet
+ * with higher eccentricity than Earth.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
@@ -346,9 +352,13 @@ public final class ClenshawSummation {
     }
 
     /**
-     * Performs the Clenshaw summation. Current implementation uses hard-coded coefficients for 6 terms.
-     * See Charles F. F. Karney, Geodesics on an ellipsoid of revolution (2011) equation 59
-     * if generalization to an arbitrary number of coefficients is desired.
+     * Performs the Clenshaw summation. Current implementation uses hard-coded coefficients for 8 terms.
+     * If more terms are needed, use {@link Precomputation} for generating the code of this method.
+     *
+     * <h4>Possible future evolution</h4>
+     * It would be possible to compute those terms dynamically using {@link Precomputation}.
+     * It would be useful if a future Apache SIS version generates series expansion on-the-fly
+     * for a specified precision and eccentricity.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-465">SIS-465</a>
      */
