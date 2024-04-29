@@ -24,6 +24,7 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.pending.jdk.JDK15;
 
 
 /**
@@ -292,7 +293,7 @@ public final class Strings extends Static {
             int count = 0;
             for (int i=0; i<lines.length; i++) {
                 CharSequence line = CharSequences.trimWhitespaces(lines[i]);
-                if (line.length() != 0) lines[count++] = line;          // TODO: use !line.isEmpty() with JDK15.
+                if (!JDK15.isEmpty(line)) lines[count++] = line;
             }
             switch (count) {
                 case 0:  break;

@@ -17,10 +17,12 @@
 package org.apache.sis.math;
 
 import java.io.Serializable;
+import static java.lang.Math.multiplyFull;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.pending.jdk.JDK15;
 import static org.apache.sis.pending.jdk.JDK19.DOUBLE_PRECISION;
 
 
@@ -239,16 +241,12 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * Above result still slightly smaller in magnitude than {@code Long.MIN_VALUE}.
      */
     private static Fraction simplify(final Fraction f, long num, long den) {
-        if (num == Long.MIN_VALUE || den == Long.MIN_VALUE) {
-            // TODO: replace by use of Math.absExact(…) in JDK15.
-            throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Long.SIZE));
-        }
         if (num == 0) {
             den = Long.signum(den);             // Simplify  0/x  as  0/±1 or 0/0.
         } else if (den == 0) {
-            num = Long.signum(num);             // Simplify  x/0  as  ±1/0
+            num = Long.signum(num);             // Simplify  x/0  as  ±1/0.
         } else if (den % num == 0) {
-            den /= num;                         // Simplify  x/xy  as  1/y
+            den /= num;                         // Simplify  x/xy  as  1/y.
             if (den < 0) {
                 den = -den;                     // Math.negateExact(long) not needed - see javadoc.
                 num = -1;
@@ -256,11 +254,11 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
                 num = 1;
             }
         } else {
-            long a   = Math.abs(num);
-            long gcd = Math.abs(den);
+            long a   = JDK15.absExact(num);
+            long gcd = JDK15.absExact(den);
             long remainder = a % gcd;
             if (remainder == 0) {
-                num /= den;                     // Simplify  xy/x  as  y/1
+                num /= den;                     // Simplify  xy/x  as  y/1.
                 den = 1;
             } else {
                 do {                            // Search for greatest common divisor with Euclid's algorithm.
@@ -326,10 +324,9 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * @throws ArithmeticException if the result overflows.
      */
     public Fraction add(final Fraction other) {
-        // Intermediate result must be computed in a type wider that the 'numerator' and 'denominator' type.
-        final long td = this .denominator;
-        final long od = other.denominator;
-        return simplify(this, Math.addExact(od * numerator, td * other.numerator), od * td);
+        long a = multiplyFull(other.denominator, numerator);
+        long b = multiplyFull(denominator, other.numerator);
+        return simplify(this, Math.addExact(a, b), multiplyFull(other.denominator, denominator));
     }
 
     /**
@@ -342,10 +339,9 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * @see #negate()
      */
     public Fraction subtract(final Fraction other) {
-        // Intermediate result must be computed in a type wider that the 'numerator' and 'denominator' type.
-        final long td = this .denominator;
-        final long od = other.denominator;
-        return simplify(this, Math.subtractExact(od * numerator, td * other.numerator), od * td);
+        long a = multiplyFull(other.denominator, numerator);
+        long b = multiplyFull(denominator, other.numerator);
+        return simplify(this, Math.subtractExact(a, b), multiplyFull(other.denominator, denominator));
     }
 
     /**
@@ -356,8 +352,8 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * @throws ArithmeticException if the result overflows.
      */
     public Fraction multiply(final Fraction other) {
-        return simplify(this, Math.multiplyFull(numerator,   other.numerator),
-                              Math.multiplyFull(denominator, other.denominator));
+        return simplify(this, multiplyFull(numerator,   other.numerator),
+                              multiplyFull(denominator, other.denominator));
     }
 
     /**
@@ -370,8 +366,8 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      * @see #inverse()
      */
     public Fraction divide(final Fraction other) {
-        return simplify(this, Math.multiplyFull(numerator,   other.denominator),
-                              Math.multiplyFull(denominator, other.numerator));
+        return simplify(this, multiplyFull(numerator,   other.denominator),
+                              multiplyFull(denominator, other.numerator));
     }
 
     /**
@@ -553,8 +549,8 @@ public final class Fraction extends Number implements Comparable<Fraction>, Seri
      */
     @Override
     public int compareTo(final Fraction other) {
-        return Long.signum(Math.multiplyFull(numerator, other.denominator)
-                         - Math.multiplyFull(other.numerator, denominator));
+        return Long.signum(multiplyFull(numerator, other.denominator)
+                         - multiplyFull(other.numerator, denominator));
     }
 
     /**
