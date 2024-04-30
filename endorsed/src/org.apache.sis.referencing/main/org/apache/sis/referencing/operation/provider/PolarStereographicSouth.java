@@ -51,7 +51,7 @@ public final class PolarStereographicSouth extends AbstractStereographic {
         final ParameterDescriptor<?>[] parameters = {
             standardParallel,
             ESRI.CENTRAL_MERIDIAN,
-            PolarStereographicB.SCALE_FACTOR,                       // Not formally a parameter of this projection.
+            PolarStereographicB.SCALE_FACTOR,       // Not formally a parameter of this projection.
             ESRI.FALSE_EASTING,
             ESRI.FALSE_NORTHING
         };

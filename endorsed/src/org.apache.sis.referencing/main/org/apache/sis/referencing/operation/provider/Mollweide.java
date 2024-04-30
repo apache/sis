@@ -52,9 +52,10 @@ public final class Mollweide extends MapProjection {
      *   <tr><td> OGC:     </td><td> central_meridian </td></tr>
      *   <tr><td> GeoTIFF: </td><td> CenterLong </td></tr>
      *   <tr><td> Proj4:   </td><td> lon_0 </td></tr>
+     *   <tr><td> EPSG:    </td><td> Longitude of projection centre </td></tr>
      * </table>
      */
-    public static final ParameterDescriptor<Double> CENTRAL_MERIDIAN = ESRI.CENTRAL_MERIDIAN;
+    public static final ParameterDescriptor<Double> CENTRAL_MERIDIAN = Sinusoidal.CENTRAL_MERIDIAN;
 
     /**
      * The operation parameter descriptor for the <cite>False easting</cite> (FE) parameter value.
@@ -69,7 +70,7 @@ public final class Mollweide extends MapProjection {
      *   <tr><td> Proj4:   </td><td> x_0 </td></tr>
      * </table>
      */
-    public static final ParameterDescriptor<Double> FALSE_EASTING = ESRI.FALSE_EASTING;
+    public static final ParameterDescriptor<Double> FALSE_EASTING = Sinusoidal.FALSE_EASTING;
 
     /**
      * The operation parameter descriptor for the <cite>False northing</cite> (FN) parameter value.
@@ -84,7 +85,7 @@ public final class Mollweide extends MapProjection {
      *   <tr><td> Proj4:   </td><td> y_0 </td></tr>
      * </table>
      */
-    public static final ParameterDescriptor<Double> FALSE_NORTHING = ESRI.FALSE_NORTHING;
+    public static final ParameterDescriptor<Double> FALSE_NORTHING = Sinusoidal.FALSE_NORTHING;
 
     /**
      * The group of all parameters expected by this coordinate operation.

@@ -20,7 +20,7 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.util.privy.Constants;
+import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
@@ -53,9 +53,10 @@ public class Sinusoidal extends MapProjection {
      *   <tr><td> OGC:     </td><td> central_meridian </td></tr>
      *   <tr><td> GeoTIFF: </td><td> CenterLong </td></tr>
      *   <tr><td> Proj4:   </td><td> lon_0 </td></tr>
+     *   <tr><td> EPSG:    </td><td> Longitude of projection centre </td></tr>
      * </table>
      */
-    public static final ParameterDescriptor<Double> CENTRAL_MERIDIAN = ESRI.CENTRAL_MERIDIAN;
+    public static final ParameterDescriptor<Double> CENTRAL_MERIDIAN;
 
     /**
      * The operation parameter descriptor for the <cite>False easting</cite> (FE) parameter value.
@@ -92,7 +93,11 @@ public class Sinusoidal extends MapProjection {
      */
     static final ParameterDescriptorGroup PARAMETERS;
     static {
-        PARAMETERS = builder().setCodeSpace(Citations.OGC, Constants.OGC)
+        final var builder = new ParameterBuilder().setRequired(true);
+        CENTRAL_MERIDIAN = createLongitude(builder.addNamesAndIdentifiers(ESRI.CENTRAL_MERIDIAN)
+                .addName(ObliqueMercator.LONGITUDE_OF_CENTRE.getName()));
+
+        PARAMETERS = builder
                 .addName      ("Sinusoidal")
                 .addName      ("Sanson-Flamsteed")
                 .addName      (Citations.GEOTIFF,  "CT_Sinusoidal")
