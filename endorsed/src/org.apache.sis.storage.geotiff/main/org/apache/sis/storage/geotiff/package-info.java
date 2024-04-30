@@ -25,7 +25,7 @@
  *   <li><a href="https://www.awaresystems.be/imaging/tiff/tifftags.html">TIFF Tag Reference</a></li>
  *   <li><a href="https://www.iso.org/standard/34342.html">ISO 12639:2004 — Tag image file format for image technology (TIFF/IT)</a></li>
  *   <li><a href="http://docs.opengeospatial.org/is/19-008r4/19-008r4.html">OGC GeoTIFF standard</a></li>
- *   <li><a href="http://geotiff.maptools.org/proj_list/">GeoTIFF projections list</a></li>
+ *   <li><a href="https://gdal.org/proj_list/">GeoTIFF projections list</a></li>
  * </ul>
  *
  * @author  Rémi Maréchal (Geomatys)

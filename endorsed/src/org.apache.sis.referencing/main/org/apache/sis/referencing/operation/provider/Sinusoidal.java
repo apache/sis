@@ -33,7 +33,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * @author  Martin Desruisseaux (Geomatys)
  *
  * @see <a href="https://en.wikipedia.org/wiki/Sinusoidal_projection">Sinusoidal projection on Wikipedia</a>
- * @see <a href="http://geotiff.maptools.org/proj_list/sinusoidal.html">GeoTIFF parameters for Sinusoidal</a>
+ * @see <a href="https://gdal.org/proj_list/sinusoidal.html">GeoTIFF parameters for Sinusoidal</a>
  */
 @XmlTransient
 public class Sinusoidal extends MapProjection {

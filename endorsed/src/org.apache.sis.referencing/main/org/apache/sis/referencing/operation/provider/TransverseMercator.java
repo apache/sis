@@ -38,7 +38,7 @@ import org.apache.sis.math.MathFunctions;
  * @author  Martin Desruisseaux (MPO, IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
  *
- * @see <a href="http://geotiff.maptools.org/proj_list/transverse_mercator.html">GeoTIFF parameters for Transverse Mercator</a>
+ * @see <a href="https://gdal.org/proj_list/transverse_mercator.html">GeoTIFF parameters for Transverse Mercator</a>
  */
 @XmlTransient
 public final class TransverseMercator extends AbstractMercator {

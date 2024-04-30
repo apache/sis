@@ -63,7 +63,7 @@ import org.apache.sis.util.privy.Constants;
  * @author  Martin Desruisseaux (Geomatys)
  *
  * @see PseudoPlateCarree
- * @see <a href="http://geotiff.maptools.org/proj_list/equirectangular.html">GeoTIFF parameters for Equirectangular</a>
+ * @see <a href="https://gdal.org/proj_list/equirectangular.html">GeoTIFF parameters for Equirectangular</a>
  */
 @XmlTransient
 public final class Equirectangular extends AbstractProvider {

@@ -31,7 +31,7 @@ import org.apache.sis.parameter.ParameterBuilder;
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
  *
- * @see <a href="http://geotiff.maptools.org/proj_list/polar_stereographic.html">GeoTIFF parameters for Polar Stereographic</a>
+ * @see <a href="https://gdal.org/proj_list/polar_stereographic.html">GeoTIFF parameters for Polar Stereographic</a>
  * @see <a href="https://issues.apache.org/jira/browse/SIS-572">SIS-512</a>
  */
 @XmlTransient
