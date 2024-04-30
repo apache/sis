@@ -25,6 +25,7 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.OperationMethod;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.privy.DoubleDouble;
 import org.apache.sis.parameter.Parameters;
@@ -50,19 +51,24 @@ public class EquidistantCylindrical extends NormalizedProjection {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 6598912212024442670L;
+    private static final long serialVersionUID = -8049874881401710767L;
+
+    /**
+     * Whether to allow the use of Clenshaw summation. This flag should be {@code true} for performance reason,
+     * as it reduces the number of calls to trigonometric functions. A value of {@code false} causes this class
+     * to use the formulas as published by EPSG guidance notes instead, which may be useful if we suspect a bug
+     * in our application of Clenshaw summation.
+     */
+    @Debug
+    private static final boolean ALLOW_TRIGONOMETRIC_IDENTITIES = true;
 
     /**
      * Coefficients for the forward (f) and inverse (i) projection.
      * This is used in a trigonometric series with multiple angles.
-     *
-     * <h4>Missed optimization</h4>
-     * We should replace the multiple angles by power polynomials using the Clenshaw summation algorithm.
-     * However the {@code org.apache.sis.referencing.ClenshawSummation} class (in test packages) that we
-     * used for this purpose in other map projections is limited to 6 terms, and we have 7 terms here.
      */
-    private final double cf0, cf2, cf4, cf6, cf8, cf10, cf12, cf14,
-                              ci2, ci4, ci6, ci8, ci10, ci12, ci14;
+    private final double c0,
+            cf1, cf2, cf3, cf4, cf5, cf6, cf7,
+            ci1, ci2, ci3, ci4, ci5, ci6, ci7;
 
     /**
      * Creates an Equidistant Cylindrical projection from the given parameters.
@@ -99,33 +105,71 @@ public class EquidistantCylindrical extends NormalizedProjection {
         final DoubleDouble sx = initializer.rν2(sin(φ1)).sqrt().multiply(cos(φ1), false);
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         denormalize.convertBefore(0, sx, null);
-
-        // Coefficients for the forward projection.
-        final double e2 = eccentricitySquared;
-        final double e4 = e2*e2;
-        final double e6 = e2*e4;
-        final double e8 = e4*e4;
-        cf0  = 1 - e2*(1./4 + e2*( 3./64  + e2*( 5./256  + e2*(175./16384  + e2*( 441./65536   + e2*(  4851./1048576 + e2*( 14157./4194304 )))))));
-        cf2  =   - e2*(3./8 + e2*( 3./32  + e2*(45./1024 + e2*(105./4096   + e2*(2205./131072  + e2*(  6237./524288  + e2*(297297./33554432)))))));
-        cf4  =                e4*(15./256 + e2*(45./1024 + e2*(525./16384  + e2*(1575./65536   + e2*(155925./8388608 + e2*(495495./33554432))))));
-        cf6  =                            - e6*(35./3072 + e2*(175./12288  + e2*(3675./262144  + e2*( 13475./1048576 + e2*(385385./33554432)))));
-        cf8  =                                           + e8*(315./131072 + e2*(2205./524288  + e2*( 43659./8388608 + e2*(189189./33554432))));
-        cf10 =                                                        - (e4*e6)*( 693./1310720 + e2*(  6237./5242880 + e2*(297297./167772160)));
-        cf12 =                                                                              (e6*e6)*(  1001./8388608 + e2*( 11011./33554432));
-        cf14 =                                                                                                  - (e6*e8)*(  6435./234881024);
-
-        // Coefficients for the inverse projection.
-        final double n = initializer.axisLengthRatio().ratio_1m_1p().doubleValue();
-        final double n2 = n*n;
-        final double n3 = n*n2;
+        /*
+         * Coefficients for the forward projection. The formulas are available in two variants:
+         * as published by EPSG guidance notes, or modified with Clenshaw summation for reducing
+         * the number of calls to trigonometric functions. Coefficients for the modified form were
+         * computed by `org.apache.sis.referencing.ClenshawSummation.equidistantCylindrical(boolean)`
+         * in the test packages.
+         */
+        final double e2  = eccentricitySquared;
+        final double e4  = e2*e2;
+        final double e6  = e2*e4;
+        final double e8  = e4*e4;
+        final double e10 = e4*e6;
+        final double e12 = e6*e6;
+        final double e14 = e6*e8;
+        if (ALLOW_TRIGONOMETRIC_IDENTITIES) {
+            // Formulas modified with Clenshaw summation.
+            c0  = ( -14157./ 4194304)*e14 + (-4851./1048576)*e12 + ( -441./ 65536)*e10 + (-175./16384)*e8 + ( -5./256)*e6 + (-3./ 64)*e4 + (-1./4)*e2 + 1;
+            cf1 = (  16159./18350080)*e14 + (  -77./ 327680)*e12 + ( -273./ 81920)*e10 + ( -35./ 3072)*e8 + (-25./768)*e6 + (-3./ 32)*e4 + (-3./8)*e2;
+            cf2 = (  75075./ 8388608)*e14 + (35805./2097152)*e12 + ( 4095./131072)*e10 + (1785./32768)*e8 + ( 45./512)*e6 + (15./128)*e4;
+            cf3 = (-464893./18350080)*e14 + (-6083./ 163840)*e12 + (-2037./ 40960)*e10 + (-175./ 3072)*e8 + (-35./768)*e6;
+            cf4 = ( 145145./ 4194304)*e14 + (39655./1048576)*e12 + ( 2205./ 65536)*e10 + ( 315./16384)*e8;
+            cf5 = (-480051./18350080)*e14 + (-6237./ 327680)*e12 + ( -693./ 81920)*e10;
+            cf6 = (  11011./ 1048576)*e14 + ( 1001./ 262144)*e12;
+            cf7 = (  -6435./ 3670016)*e14;
+        } else {
+            // Formulas as published by EPSG guidance notes.
+            c0  = 1 + (-1./4)*e2 + (-3./ 64)*e4 + ( -5./ 256)*e6 + (-175./ 16384)*e8 + ( -441./  65536)*e10 + ( -4851./1048576)*e12 + ( -14157./  4194304)*e14;
+            cf1 =   + (-3./8)*e2 + (-3./ 32)*e4 + (-45./1024)*e6 + (-105./  4096)*e8 + (-2205./ 131072)*e10 + ( -6237./ 524288)*e12 + (-297297./ 33554432)*e14;
+            cf2 =                  (15./256)*e4 + ( 45./1024)*e6 + ( 525./ 16384)*e8 + ( 1575./  65536)*e10 + (155925./8388608)*e12 + ( 495495./ 33554432)*e14;
+            cf3 =                                 (-35./3072)*e6 + (-175./ 12288)*e8 + (-3675./ 262144)*e10 + (-13475./1048576)*e12 + (-385385./ 33554432)*e14;
+            cf4 =                                                + ( 315./131072)*e8 + ( 2205./ 524288)*e10 + ( 43659./8388608)*e12 + ( 189189./ 33554432)*e14;
+            cf5 =                                                                      ( -693./1310720)*e10 + ( -6237./5242880)*e12 + (-297297./167772160)*e14;
+            cf6 =                                                                                             (  1001./8388608)*e12 + (  11011./ 33554432)*e14;
+            cf7 =                                                                                                                     (  -6435./234881024)*e14;
+        }
+        /*
+         * Coefficients for the inverse projection, available in two variants.
+         * See the forward case above.
+         */
+        final double n1 = initializer.axisLengthRatio().ratio_1m_1p().doubleValue();
+        final double n2 = n1*n1;
+        final double n3 = n1*n2;
         final double n4 = n2*n2;
-        ci2  = n*(3./2 + n2*(-27./32 + n2*(269./512   + n2*(  -6607./24576))));
-        ci4  =           n2*( 21./16 + n2*( -55./32   + n2*(   6759./4096)));
-        ci6  =           n3*(151./96 + n2*(-417./128  + n2*(  87963./20480)));
-        ci8  =                         n4*(1097./512  + n2*( -15543./2560));
-        ci10 =                    (n3*n2)*(8011./2560 + n2*( -69119./6144));
-        ci12 =                                     (n3*n3)*( 293393./61440);
-        ci14 =                                     (n3*n4)*(6845701./860160);
+        final double n5 = n2*n3;
+        final double n6 = n3*n3;
+        final double n7 = n3*n4;
+        if (ALLOW_TRIGONOMETRIC_IDENTITIES) {
+            // Formulas modified with Clenshaw summation.
+            ci1 = (-5112013./215040)*n7  +  (   553./ 80)*n5  +  (-29./12)*n3  +  (3./2)*n1;
+            ci2 = (  143969./  2560)*n6  +  ( -1537./128)*n4  +  ( 21./ 8)*n2;
+            ci3 = ( 3074943./  8960)*n7  +  (-32373./640)*n5  +  (151./24)*n3;
+            ci4 = ( -386651./  1920)*n6  +  (  1097./ 64)*n4;
+            ci5 = (-2927011./  3584)*n7  +  (  8011./160)*n5;
+            ci6 = (  293393./  1920)*n6;
+            ci7 = ( 6845701./ 13440)*n7;
+        } else {
+            // Formulas as published by EPSG guidance notes.
+            ci1 = (3./2)*n1 + (-27./32)*n3 + ( 269./ 512)*n5 + (  -6607./ 24576)*n7;
+            ci2 =             ( 21./16)*n2 + ( -55./  32)*n4 + (   6759./  4096)*n6;
+            ci3 =             (151./96)*n3 + (-417./ 128)*n5 + (  87963./ 20480)*n7;
+            ci4 =                            (1097./ 512)*n4 + ( -15543./  2560)*n6;
+            ci5 =                            (8011./2560)*n5 + ( -69119./  6144)*n7;
+            ci6 =                                              ( 293393./ 61440)*n6;
+            ci7 =                                              (6845701./860160)*n7;
+        }
     }
 
     /**
@@ -161,17 +205,32 @@ public class EquidistantCylindrical extends NormalizedProjection {
                             final boolean derivate) throws ProjectionException
     {
         final double φ = srcPts[srcOff+1];
+        final double sinθ = sin(2*φ);
+        final double cosθ = cos(2*φ);
         if (dstPts != null) {
-            dstPts[dstOff] = srcPts[srcOff];
-            dstPts[dstOff+1] = cf14*sin(14*φ) + cf12*sin(12*φ) + cf10*sin(10*φ) + cf8*sin(8*φ)
-                             +  cf6*sin( 6*φ)  + cf4*sin( 4*φ) +  cf2*sin( 2*φ) + cf0*φ;
+            final double y;
+            if (ALLOW_TRIGONOMETRIC_IDENTITIES) {
+                y = ((((((cf7*cosθ + cf6)*cosθ + cf5)*cosθ + cf4)*cosθ + cf3)*cosθ + cf2)*cosθ + cf1)*sinθ + c0*φ;
+            } else {
+                y = cf7*sin(14*φ) + cf6*sin(12*φ) + cf5*sin(10*φ) + cf4*sin(8*φ)
+                  + cf3*sin( 6*φ) + cf2*sin( 4*φ) + cf1*sinθ      + c0*φ;
+            }
+            dstPts[dstOff  ] = srcPts[srcOff];
+            dstPts[dstOff+1] = y;
         }
         if (!derivate) {
             return null;
         }
         final var derivative = new Matrix2();
-        derivative.m11 = cf14*cos(14*φ)*14 + cf12*cos(12*φ)*12 + cf10*cos(10*φ)*10 + cf8*cos(8*φ)*8
-                       +  cf6*cos( 6*φ)*6  +  cf4*cos( 4*φ)*4  +  cf2*cos( 2*φ)*2  + cf0;
+        final double d;
+        if (ALLOW_TRIGONOMETRIC_IDENTITIES) {
+            d = (((((( cf7*cosθ +   cf6)*cosθ +   cf5)*cosθ +   cf4)*cosθ +   cf3)*cosθ + cf2)*cosθ + cf1)*cosθ
+              - (((((6*cf7*cosθ + 5*cf6)*cosθ + 4*cf5)*cosθ + 3*cf4)*cosθ + 2*cf3)*cosθ + cf2)*(sinθ*sinθ);
+        } else {
+            d = 7*cf7*cos(14*φ) + 6*cf6*cos(12*φ) + 5*cf5*cos(10*φ) + 4*cf4*cos(8*φ)
+              + 3*cf3*cos( 6*φ) + 2*cf2*cos( 4*φ) +   cf1*cosθ;
+        }
+        derivative.m11 = 2*d + c0;
         return derivative;
     }
 
@@ -186,9 +245,17 @@ public class EquidistantCylindrical extends NormalizedProjection {
                                     final double[] dstPts, final int dstOff)
             throws ProjectionException
     {
-        final double μ = srcPts[srcOff+1] / cf0;
-        dstPts[dstOff] = srcPts[srcOff];
-        dstPts[dstOff+1] = ci14*sin(14*μ) + ci12*sin(12*μ) + ci10*sin(10*μ) + ci8*sin(8*μ)
-                         +  ci6*sin( 6*μ) +  ci4*sin( 4*μ) +  ci2*sin( 2*μ) + μ;
+        final double μ = srcPts[srcOff+1] / c0;
+        final double sinθ = sin(2*μ);
+        final double cosθ = cos(2*μ);
+        final double y;
+        if (ALLOW_TRIGONOMETRIC_IDENTITIES) {
+            y = ((((((ci7*cosθ + ci6)*cosθ + ci5)*cosθ + ci4)*cosθ + ci3)*cosθ + ci2)*cosθ + ci1)*sinθ;
+        } else {
+            y = ci7*sin(14*μ) + ci6*sin(12*μ) + ci5*sin(10*μ) + ci4*sin(8*μ)
+              + ci3*sin( 6*μ) + ci2*sin( 4*μ) + ci1*sinθ;
+        }
+        dstPts[dstOff  ] = srcPts[srcOff];
+        dstPts[dstOff+1] = y + μ;
     }
 }

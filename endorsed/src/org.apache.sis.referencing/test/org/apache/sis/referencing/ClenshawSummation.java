@@ -159,16 +159,16 @@ public final class ClenshawSummation {
          */
         final void appendTo(final StringBuilder b) {
             boolean more = false;
-            for (int i=terms.length; --i >= 0;) {
-                final Term t = terms[i];
+            for (int p = terms.length; --p >= 0;) {       // `p` is power minus one.
+                final Term t = terms[p];
                 if (t != null) {
                     if (more) {
                         b.append("  +  ");
                     }
                     t.appendTo(b);
-                    b.append(" * η");
-                    if (i != 0) {
-                        b.append(i+1);
+                    b.append("*η");
+                    if (p != 0) {
+                        b.append(p+1);
                     }
                     more = true;
                 }
@@ -299,9 +299,9 @@ public final class ClenshawSummation {
     }
 
     /**
-     * Returns a string representation for debugging purpose.
+     * Returns a string representation of this object, for debugging purposes or for showing the result.
      *
-     * @return a string representation of this object before summation.
+     * @return a string representation of this object before or after summation.
      */
     @Override
     public String toString() {
@@ -571,6 +571,36 @@ public final class ClenshawSummation {
             new Coefficient(t(-3, 8), t(-3,  32), t(-45, 1024)),
             new Coefficient(null,     t(15, 256), t( 45, 1024)),
             new Coefficient(null,     null,       t(-35, 3072))
+        );
+    }
+
+    /**
+     * Coefficients for Equidistant Cylindrical (EPSG:1028) map projection.
+     *
+     * @param inverse {@code false} for the forward projection, or {@code true} for the inverse projection.
+     *
+     * @return Equidistant Cylindrical equation.
+     */
+    public static ClenshawSummation equidistantCylindrical(final boolean inverse) {
+        if (inverse) {
+            return new ClenshawSummation(
+                new Coefficient(t(3, 2), null, t(-27, 32), null, t(269, 512), null, t(-6607, 24576)),
+                new Coefficient(null, t(21, 16), null, t( -55, 32), null, t(6759, 4096)),
+                new Coefficient(null, null, t(151, 96), null, t(-417, 128), null, t(87963, 20480)),
+                new Coefficient(null, null, null, t(1097, 512), null, t(-15543, 2560)),
+                new Coefficient(null, null, null, null, t(8011, 2560), null, t(-69119, 6144)),
+                new Coefficient(null, null, null, null, null, t( 293393, 61440)),
+                new Coefficient(null, null, null, null, null, null, t(6845701, 860160))
+            );
+        }
+        return new ClenshawSummation(
+            new Coefficient(t(-3, 8), t(-3,  32), t(-45, 1024), t(-105,    4096), t(-2205,   131072), t(  -6237,    524288), t(-297297,  33554432)),
+            new Coefficient(null,     t(15, 256), t( 45, 1024), t( 525,   16384), t( 1575,    65536), t( 155925,   8388608), t(495495,   33554432)),
+            new Coefficient(null,     null,       t(-35, 3072), t(-175,   12288), t(-3675,   262144), t( -13475,   1048576), t(-385385,  33554432)),
+            new Coefficient(null,     null,       null,         t( 315,  131072), t( 2205,   524288), t(  43659,   8388608), t(189189,   33554432)),
+            new Coefficient(null,     null,       null,         null,             t(-693, 1310720),   t(-6237,  5242880),    t(-297297, 167772160)),
+            new Coefficient(null,     null,       null,         null,             null,               t( 1001,  8388608),    t(  11011,  33554432)),
+            new Coefficient(null,     null,       null,         null,             null,               null,                  t(  -6435, 234881024))
         );
     }
 
