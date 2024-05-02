@@ -20,26 +20,24 @@ import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.apache.sis.parameter.Parameters;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
 
 /**
- * The provider for <q>Mollweide</q> (also known as <q>Homalographic</q>) projection.
- * As of version 9.4 of EPSG geodetic dataset, there is no known EPSG code for this projection.
+ * The provider for <q>Robinson</q> projection.
  *
- * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  *
- * @see <a href="https://mathworld.wolfram.com/MollweideProjection.html">Mathworld formulas</a>
- * @see <a href="https://gdal.org/proj_list/mollweide.html">GeoTIFF parameters for Mollweide</a>
+ * @see <a href="https://gdal.org/proj_list/robinson.html">GeoTIFF parameters for Robinson</a>
  */
 @XmlTransient
-public final class Mollweide extends MapProjection {
+public final class Robinson extends MapProjection {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = -6434031854504431260L;
+    private static final long serialVersionUID = -4027297503846506501L;
 
     /**
      * The operation parameter descriptor for the <cite>Longitude of projection centre</cite> (λ₀) parameter value.
@@ -92,12 +90,12 @@ public final class Mollweide extends MapProjection {
      */
     private static final ParameterDescriptorGroup PARAMETERS;
     static {
-        PARAMETERS = builder().setCodeSpace(Citations.ESRI, "ESRI")
-                .addName("Mollweide")
-                .addName(null, "Homalographic")
-                .addName(null, "Homolographic")
-                .addName(null, "Elliptical")
-                .addName(null, "Babinet")
+        PARAMETERS = builder().setCodeSpace(Citations.OGC, Constants.OGC)
+                .addName(                   "Robinson")
+                .addName(Citations.ESRI,    "Robinson")
+                .addName(Citations.GEOTIFF, "CT_Robinson")
+                .addName(Citations.PROJ4,   "robin")
+                .addIdentifier(Citations.GEOTIFF, "23")
                 .createGroupForMapProjection(
                         CENTRAL_MERIDIAN,
                         FALSE_EASTING,
@@ -107,17 +105,17 @@ public final class Mollweide extends MapProjection {
     /**
      * Constructs a new provider.
      */
-    public Mollweide() {
+    public Robinson() {
         super(PARAMETERS);
     }
 
     /**
-     * {@inheritDoc}
+     * Creates a map projection on an ellipsoid having a semi-major axis length of 1.
      *
      * @return the map projection created from the given parameter values.
      */
     @Override
     protected NormalizedProjection createProjection(final Parameters parameters) {
-        return new org.apache.sis.referencing.operation.projection.Mollweide(this, parameters);
+        return new org.apache.sis.referencing.operation.projection.Robinson(this, parameters);
     }
 }

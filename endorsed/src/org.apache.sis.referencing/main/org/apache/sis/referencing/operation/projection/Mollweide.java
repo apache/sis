@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.operation.projection;
 
 import java.util.EnumMap;
-import java.util.regex.Pattern;
 import static java.lang.Math.*;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
@@ -63,16 +62,6 @@ public class Mollweide extends NormalizedProjection {
     private enum Variant implements ProjectionVariant {
         /** The spherical case. */
         SPHERICAL;
-
-        /** The expected name pattern of an operation method for this variant. */
-        @Override public Pattern getOperationNamePattern() {
-            return null;
-        }
-
-        /** EPSG identifier of an operation method for this variant. */
-        @Override public String getIdentifier() {
-            return null;
-        }
 
         /** Requests the use of authalic radius. */
         @Override public boolean useAuthalicRadius() {

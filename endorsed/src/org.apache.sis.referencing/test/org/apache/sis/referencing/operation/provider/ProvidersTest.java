@@ -113,6 +113,7 @@ public final class ProvidersTest extends TestCase {
             PseudoSinusoidal.class,
             Polyconic.class,
             Mollweide.class,
+            Robinson.class,
             SouthPoleRotation.class,
             NorthPoleRotation.class,
             NTv2.class,

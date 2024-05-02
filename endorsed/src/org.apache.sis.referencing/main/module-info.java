@@ -133,6 +133,7 @@ module org.apache.sis.referencing {
              org.apache.sis.referencing.operation.provider.PseudoSinusoidal,
              org.apache.sis.referencing.operation.provider.Polyconic,
              org.apache.sis.referencing.operation.provider.Mollweide,
+             org.apache.sis.referencing.operation.provider.Robinson,
              org.apache.sis.referencing.operation.provider.SouthPoleRotation,
              org.apache.sis.referencing.operation.provider.NorthPoleRotation,
              org.apache.sis.referencing.operation.provider.NTv2,

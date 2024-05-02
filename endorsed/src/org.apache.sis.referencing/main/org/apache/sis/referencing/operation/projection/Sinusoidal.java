@@ -73,11 +73,6 @@ public class Sinusoidal extends MeridianArcBased {
         @Override public Pattern getOperationNamePattern() {
             return operationName;
         }
-
-        /** EPSG identifier of an operation method for this variant. */
-        @Override public String getIdentifier() {
-            return null;
-        }
     }
 
     /**
