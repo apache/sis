@@ -520,7 +520,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @return smallest resolvable temporal period in a resource.
      *
-     * @since 0.5
+     * @since 2.0
      */
     @Override
     // @XmlElement at the end of this class.
@@ -533,7 +533,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @param  newValues  the new temporal resolutions.
      *
-     * @since 0.5
+     * @since 2.0
      */
     public void setTemporalResolutions(final Collection<? extends Duration> newValues) {
         temporalResolutions = writeCollection(newValues, temporalResolutions, Duration.class);
