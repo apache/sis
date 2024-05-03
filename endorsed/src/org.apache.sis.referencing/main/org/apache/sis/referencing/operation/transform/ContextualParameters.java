@@ -282,15 +282,15 @@ public class ContextualParameters extends Parameters implements Serializable {
             values = forward.values;
         } else {
             final List<GeneralParameterDescriptor> descriptors = desc.descriptors();
-            final ParameterValue<?>[] values = new ParameterValue<?>[descriptors.size()];
+            final var copy = new ParameterValue<?>[descriptors.size()];
             int count = 0;
-            for (int i=0; i < values.length; i++) {
-                final ContextualParameter<?> p = new ContextualParameter<>((ParameterDescriptor<?>) descriptors.get(i));
+            for (int i=0; i < copy.length; i++) {
+                final var p = new ContextualParameter<>((ParameterDescriptor<?>) descriptors.get(i));
                 if (mapper.test(forward, p)) {
-                    values[count++] = p;
+                    copy[count++] = p;
                 }
             }
-            this.values = ArraysExt.resize(values, count);
+            values = ArraysExt.resize(copy, count);
         }
         isFrozen = true;
     }
@@ -402,8 +402,9 @@ public class ContextualParameters extends Parameters implements Serializable {
      * @since 0.7
      */
     public final MatrixSIS getMatrix(MatrixRole role) {
-        final Matrix fallback;
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ContextualParameters inverse;
+        final Matrix fallback;
         synchronized (this) {
             switch (role) {
                 default:                      throw new AssertionError(role);
@@ -455,6 +456,7 @@ public class ContextualParameters extends Parameters implements Serializable {
         if (λ0 != 0) {
             offset = DoubleDouble.of(-λ0, true).multiply(toRadians);
         }
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final MatrixSIS normalize = (MatrixSIS) this.normalize;         // Must be the same instance, not a copy.
         normalize.convertBefore(0, toRadians, offset);
         normalize.convertBefore(1, toRadians, null);
@@ -479,8 +481,9 @@ public class ContextualParameters extends Parameters implements Serializable {
      */
     public synchronized MatrixSIS denormalizeGeographicOutputs(final double λ0) {
         ensureModifiable();
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final var denormalize = (MatrixSIS) this.denormalize;           // Must be the same instance, not a copy.
         final DoubleDouble toDegrees = DoubleDouble.RADIANS_TO_DEGREES;
-        final MatrixSIS denormalize = (MatrixSIS) this.denormalize;         // Must be the same instance, not a copy.
         denormalize.convertAfter(0, toDegrees, (λ0 != 0) ? λ0 : null);
         denormalize.convertAfter(1, toDegrees, null);
         return denormalize;

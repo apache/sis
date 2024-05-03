@@ -30,7 +30,7 @@ import org.apache.sis.referencing.operation.projection.CylindricalEqualArea;
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
- * @see <a href="http://geotiff.maptools.org/proj_list/cylindrical_equal_area.html">GeoTIFF parameters for Cylindrical Equal Area</a>
+ * @see <a href="https://gdal.org/proj_list/cylindrical_equal_area.html">GeoTIFF parameters for Cylindrical Equal Area</a>
  */
 @XmlTransient
 public final class LambertCylindricalEqualArea extends MapProjection {

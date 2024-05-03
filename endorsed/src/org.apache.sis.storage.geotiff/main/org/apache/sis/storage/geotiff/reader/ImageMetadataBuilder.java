@@ -182,7 +182,7 @@ public final class ImageMetadataBuilder extends MetadataBuilder {
          * Destination: metadata/identificationInfo/spatialResolution/distance
          */
         if (!Double.isNaN(resolution) && resolutionUnit != null) {
-            addResolution(resolutionUnit.getConverterTo(Units.METRE).convert(resolution));
+            addLinearResolution(resolutionUnit.getConverterTo(Units.METRE).convert(resolution));
         }
         /*
          * Cell size is relevant only if the Threshholding TIFF tag value is 2. By convention in

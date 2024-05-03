@@ -18,12 +18,15 @@ package org.apache.sis.storage.tiling;
 
 import java.util.Optional;
 import java.util.stream.Stream;
-import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.util.GenericName;
+import org.opengis.metadata.Metadata;
+import org.opengis.referencing.datum.PixelInCell;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.NoSuchDataException;
+import org.apache.sis.storage.base.MetadataBuilder;
 
 
 /**
@@ -36,7 +39,7 @@ import org.apache.sis.storage.NoSuchDataException;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.5
  * @since   1.2
  */
 public interface TileMatrix {
@@ -48,6 +51,70 @@ public interface TileMatrix {
      * @return a unique (within {@link TileMatrixSet}) identifier.
      */
     GenericName getIdentifier();
+
+    /**
+     * Returns information about this tile matrix.
+     * The metadata should contain at least the following information:
+     *
+     * <ul class="verbose">
+     *   <li>{@code metadata} /
+     *       {@link org.apache.sis.metadata.iso.DefaultMetadata#getIdentificationInfo() identificationInfo} /
+     *       {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getCitation() citation} /
+     *       {@link org.apache.sis.metadata.iso.citation.DefaultCitation#getTitle() title}:<br>
+     *       a human-readable designation for this tile matrix.</li>
+     *   <li>{@code metadata} /
+     *       {@link org.apache.sis.metadata.iso.DefaultMetadata#getIdentificationInfo() identificationInfo} /
+     *       {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getCitation() citation} /
+     *       {@link org.apache.sis.metadata.iso.citation.DefaultCitation#getIdentifier() identifier}:<br>
+     *       this {@code TileMatrix} {@linkplain #getIdentifier() identifier}.</li>
+     *   <li>{@code metadata} /
+     *       {@link org.apache.sis.metadata.iso.DefaultMetadata#getIdentificationInfo() identificationInfo} /
+     *       {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getExtents() extent}:<br>
+     *       this {@code TileMatrix} envelope.</li>
+     *   <li>{@code metadata} /
+     *       {@link org.apache.sis.metadata.iso.DefaultMetadata#getIdentificationInfo() identificationInfo} /
+     *       {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getSpatialResolutions() spatialResolution}:<br>
+     *       this {@code TileMatrix} resolution along spatial dimensions.</li>
+     *   <li>{@code metadata} /
+     *       {@link org.apache.sis.metadata.iso.DefaultMetadata#getIdentificationInfo() identificationInfo} /
+     *       {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getTemporalResolutions() temporalResolution}:<br>
+     *       this {@code TileMatrix} resolution along the temporal dimension.</li>
+     *   <li>{@code metadata} /
+     *       {@link org.apache.sis.metadata.iso.DefaultMetadata#getReferenceSystemInfo() referenceSystemInfo}:<br>
+     *       this {@code TileMatrix} coordinate reference system.</li>
+     *   <li>{@code metadata} /
+     *       {@link org.apache.sis.metadata.iso.DefaultMetadata#getIdentificationInfo() identificationInfo} /
+     *       {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getResourceFormats() resourceFormat}:<br>
+     *       a description of the tile format.</li>
+     * </ul>
+     *
+     * <h4>Note for implementers</h4>
+     * The default implementation creates a modifiable {@link org.apache.sis.metadata.iso.DefaultMetadata} instance
+     * with values derived from {@link #getIdentifier()}, {@link #getTilingScheme()} and {@link #getResolution()}.
+     * Subclasses (not users) can cast and complete those metadata.
+     * In particular, implementations are encouraged to add the {@code title} and {@code resourceFormat} information.
+     *
+     * @return information about this tile matrix.
+     *
+     * @since 1.5
+     */
+    default Metadata getMetadata() {
+        final var mb = new MetadataBuilder();
+        mb.addIdentifier(getIdentifier(), MetadataBuilder.Scope.RESOURCE);
+        final GridGeometry gg = getTilingScheme();
+        if (gg != null) {
+            if (gg.isDefined(GridGeometry.ENVELOPE)) {
+                mb.addExtent(gg.getEnvelope(), null);
+            }
+            if (gg.isDefined(GridGeometry.CRS)) {
+                CoordinateReferenceSystem crs = gg.getCoordinateReferenceSystem();
+                mb.addReferenceSystem(crs);
+                mb.addSpatioTemporalResolution(getResolution(), crs.getCoordinateSystem());
+                // Do not add `gg.getResolution()` because this is not the pixel resolution.
+            }
+        }
+        return mb.build();
+    }
 
     /*
      * There is no `getTileSize()` method because tiles are not necessarily for grid coverages.

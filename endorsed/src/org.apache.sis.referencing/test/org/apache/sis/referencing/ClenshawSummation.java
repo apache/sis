@@ -55,7 +55,21 @@ import org.apache.sis.pending.jdk.JDK21;
  * <a href="https://svn.apache.org/repos/asf/sis/analysis/Map%20projection%20formulas.ods">Subversion</a>.
  * This class is used for more complex formulas where the use of spreadsheet become too difficult.
  *
+ * <h2>Limitations</h2>
+ * Current implementation can handle a maximum of 8 terms in the trigonometric series.
+ * This limit is hard-coded in the {@link #compute()} method, but can be expanded by using
+ * the {@link Precomputation} inner class for generating the {@code compute()} code.
+ *
+ * <h4>Possible future evolution</h4>
+ * Maybe we should generate series expansions automatically for a given precision and eccentricity,
+ * adding more terms until the last added term adds a correction smaller than the desired precision.
+ * Then we could use {@link Precomputation} for generating the corresponding Clenshaw summation.
+ * This improvement would be needed for planetary CRS, where map projections may be applied on planet
+ * with higher eccentricity than Earth.
+ *
  * @author  Martin Desruisseaux (Geomatys)
+ *
+ * @see <a href="https://issues.apache.org/jira/browse/SIS-465">SIS-465</a>
  */
 public final class ClenshawSummation {
     /**
@@ -93,7 +107,7 @@ public final class ClenshawSummation {
      * Each {@code Coefficient} is itself defined by a sum of terms, for example:
      *
      * <pre class="math">
-     *     A  =  -1/2⋅ε  +  3/16⋅ε³  +  -1/32⋅ε⁵</pre>
+     *     A  =  -1/2⋅η  +  3/16⋅η³  +  -1/32⋅η⁵</pre>
      */
     private static final class Coefficient {
         /**
@@ -103,7 +117,7 @@ public final class ClenshawSummation {
 
         /**
          * Creates a new coefficient defined by the sum of the given term. Each term is intended to be multiplied
-         * by some ε value raised to a different power. Those ε values and their powers do not matter for this class
+         * by some η value raised to a different power. Those η values and their powers do not matter for this class
          * provided that all {@code Coefficient} instances associate the same values and powers at the same indices.
          */
         Coefficient(final Term... terms) {
@@ -145,16 +159,16 @@ public final class ClenshawSummation {
          */
         final void appendTo(final StringBuilder b) {
             boolean more = false;
-            for (int i=terms.length; --i >= 0;) {
-                final Term t = terms[i];
+            for (int p = terms.length; --p >= 0;) {       // `p` is power minus one.
+                final Term t = terms[p];
                 if (t != null) {
                     if (more) {
                         b.append("  +  ");
                     }
                     t.appendTo(b);
-                    b.append(" * ε");
-                    if (i != 0) {
-                        b.append(i+1);
+                    b.append("*η");
+                    if (p != 0) {
+                        b.append(p+1);
                     }
                     more = true;
                 }
@@ -178,7 +192,7 @@ public final class ClenshawSummation {
      * For example, a {@code Coefficient} may be defined as below:
      *
      * <pre class="math">
-     *     A  =  -1/2⋅ε  +  3/16⋅ε³  +  -1/32⋅ε⁵</pre>
+     *     A  =  -1/2⋅η  +  3/16⋅η³  +  -1/32⋅η⁵</pre>
      *
      * In above example each of -1/2, 3/16 and -1/32 fraction is a {@code Term} instance.
      * However, this class allows a term to be defined by an array of fractions if each term
@@ -285,9 +299,9 @@ public final class ClenshawSummation {
     }
 
     /**
-     * Returns a string representation for debugging purpose.
+     * Returns a string representation of this object, for debugging purposes or for showing the result.
      *
-     * @return a string representation of this object before summation.
+     * @return a string representation of this object before or after summation.
      */
     @Override
     public String toString() {
@@ -338,23 +352,151 @@ public final class ClenshawSummation {
     }
 
     /**
-     * Performs the Clenshaw summation. Current implementation uses hard-coded coefficients for 6 terms.
-     * See Karney (2010) equation 59 if generalization to an arbitrary number of coefficients is desired.
+     * Performs the Clenshaw summation. Current implementation uses hard-coded coefficients for 8 terms.
+     * If more terms are needed, use {@link Precomputation} for generating the code of this method.
+     *
+     * <h4>Possible future evolution</h4>
+     * It would be possible to compute those terms dynamically using {@link Precomputation}.
+     * It would be useful if a future Apache SIS version generates series expansion on-the-fly
+     * for a specified precision and eccentricity.
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-465">SIS-465</a>
      */
     private void compute() {
-        if (sineCoefficients.length > 6) {
+        cosineCoefficients = new Coefficient[] {
+            sum(1,  0, -1,  0,   1,   0,  -1      ),        // A′ =    A -    C +   E -  G
+            sum(0,  2,  0, -4,   0,   6,   0,   -8),        // B′ =   2B -   4D +  6F - 8H
+            sum(0,  0,  4,  0, -12,   0,  24      ),        // C′ =   4C -  12E + 24G
+            sum(0,  0,  0,  8,   0, -32,   0,   80),        // D′ =   8D -  32F + 80H
+            sum(0,  0,  0,  0,  16,   0, -80      ),        // E′ =  16E -  80G
+            sum(0,  0,  0,  0,   0,  32,   0, -192),        // F′ =  32F - 192H
+            sum(0,  0,  0,  0,   0,   0,  64      ),        // G′ =  64G
+            sum(0,  0,  0,  0,   0,   0,   0,  128),        // H′ = 128H
+        };
+        if (sineCoefficients.length > cosineCoefficients.length) {
             throw new UnsupportedOperationException("Too many coefficients for current implementation.");
         }
-        cosineCoefficients = new Coefficient[] {
-            sum(1,  0, -1,  0,   1    ),            // A′ =   A -   C +  E
-            sum(0,  2,  0, -4,   0,  6),            // B′ =  2B -  4D + 6F
-            sum(0,  0,  4,  0, -12    ),            // C′ =  4C - 12E
-            sum(0,  0,  0,  8,  0, -32),            // D′ =  8D - 32F
-            sum(0,  0,  0,  0,  16    ),            // E′ = 16E
-            sum(0,  0,  0,  0,  0,  32),            // F′ = 32F
-        };
+    }
+
+    /**
+     * Computes the coefficients that are hard-coded in the {@link #compute()} method.
+     * This class needs to be executed only when the maximal number of terms increased.
+     * The formula is given by Charles F. F. Karney, Geodesics on an ellipsoid of revolution (2011) equation 59:
+     *
+     * <blockquote>f(θ) = ∑(aₙ⋅sin(n⋅θ)</blockquote>
+     *
+     * where the sum is from <var>n</var>=1 to <var>N</var> and <var>N</var> is the maximum number of terms.
+     * The equation can be rewritten as:
+     *
+     * <blockquote>f(θ) = b₁⋅sin(θ)</blockquote>
+     *
+     * where bₙ =
+     * <ul>
+     *   <li>0                             for <var>n</var> &gt; <var>N</var>,</li>
+     *   <li>aₙ + 2⋅bₙ₊₁⋅cos(θ) − bₙ₊₂     otherwise.</li>
+     * </ul>
+     *
+     * This class computes b₁.
+     */
+    public static final class Precomputation {
+        /**
+         * The factors by which to multiply the aₙ terms.
+         * The first array index identifies the factors which is multiplied, in reverse order.
+         * For example, if there is 4 terms to compute, then the factors are in the following order:
+         *
+         * <ul>
+         *   <li>{@code multiplicands[0]} = factors by which to multiply <var>D</var> (a₄).</li>
+         *   <li>{@code multiplicands[1]} = factors by which to multiply <var>C</var> (a₃).</li>
+         *   <li>{@code multiplicands[2]} = factors by which to multiply <var>B</var> (a₂).</li>
+         *   <li>{@code multiplicands[3]} = factors by which to multiply <var>A</var> (a₁).</li>
+         * </ul>
+         *
+         * The second array index is the power by which to multiply {@code cos(θ)}.
+         */
+        private final int[][] multiplicands;
+
+        /**
+         * Creates a new step in the iteration process for computing the factors.
+         * This constructor shall be invoked with decreasing <var>n</var> values,
+         * with b₁ computed last.
+         *
+         * @param  b1  result from the step at <var>n</var> + 1, or {@code null} if zero.
+         * @param  b2  result from the step at <var>n</var> + 2, or {@code null} if zero.
+         */
+        private Precomputation(final Precomputation b1, final Precomputation b2) {
+            final int length = (b1 != null) ? b1.multiplicands.length + 1 : 1;
+            multiplicands = new int[length][length];
+            multiplicands[length - 1][0] = 1;
+            if (b2 != null) {
+                // Add −bₙ₊₂ — we add terms at the same power of cos(θ), therefor all indices match.
+                for (int term=0; term < b2.multiplicands.length; term++) {
+                    final int max = b2.multiplicands[term].length;
+                    for (int power=0; power<max; power++) {
+                        multiplicands[term][power] -= b2.multiplicands[term][power];
+                    }
+                }
+            }
+            if (b1 != null) {
+                // Add +2⋅bₙ₊₁⋅cos(θ) — because of cos(θ), power indices are offset by one.
+                for (int term=0; term < b1.multiplicands.length; term++) {
+                    final int max = b1.multiplicands[term].length;
+                    for (int power=0; power<max; power++) {
+                        multiplicands[term][power+1] += 2*b1.multiplicands[term][power];
+                    }
+                }
+            }
+        }
+
+        /**
+         * Returns the factors for Clenshaw summation.
+         *
+         * @return string representation of the factors for Clenshaw summation.
+         */
+        @Override
+        public String toString() {
+            final var sb = new StringBuilder();
+            for (int power=0; power < multiplicands[0].length; power++) {
+                String separator = "sum(";
+                for (int term=multiplicands.length; --term >= 0;) {
+                    sb.append(separator).append(multiplicands[term][power]);
+                    separator = ", ";
+                }
+                sb.append("),        // ").append((char) ('A' + power)).append("′ = ");
+                char symbol = 'A';
+                boolean more = false;
+                for (int term=multiplicands.length; --term >= 0; symbol++) {
+                    int m = multiplicands[term][power];
+                    if (m != 0) {
+                        if (more) {
+                            sb.append(' ').append(m < 0 ? '-' : '+');
+                            m = Math.abs(m);
+                        }
+                        sb.append(' ');
+                        if (m != 1) sb.append(m);
+                        sb.append(symbol);
+                        more = true;
+                    }
+                }
+                sb.append(System.lineSeparator());
+            }
+            return sb.toString();
+        }
+
+        /**
+         * Computes and prints the factors for Clenshaw summation with the given number of terms.
+         *
+         * @param n  the desired number of terms.
+         */
+        public static void run(int n) {
+            Precomputation b2, b1 = null;
+            Precomputation result = null;
+            while (--n >= 0) {
+                b2 = b1;
+                b1 = result;
+                result = new Precomputation(b1, b2);
+                System.out.println(result);
+            }
+        }
     }
 
     /**
@@ -429,6 +571,36 @@ public final class ClenshawSummation {
             new Coefficient(t(-3, 8), t(-3,  32), t(-45, 1024)),
             new Coefficient(null,     t(15, 256), t( 45, 1024)),
             new Coefficient(null,     null,       t(-35, 3072))
+        );
+    }
+
+    /**
+     * Coefficients for Equidistant Cylindrical (EPSG:1028) map projection.
+     *
+     * @param inverse {@code false} for the forward projection, or {@code true} for the inverse projection.
+     *
+     * @return Equidistant Cylindrical equation.
+     */
+    public static ClenshawSummation equidistantCylindrical(final boolean inverse) {
+        if (inverse) {
+            return new ClenshawSummation(
+                new Coefficient(t(3, 2), null, t(-27, 32), null, t(269, 512), null, t(-6607, 24576)),
+                new Coefficient(null, t(21, 16), null, t( -55, 32), null, t(6759, 4096)),
+                new Coefficient(null, null, t(151, 96), null, t(-417, 128), null, t(87963, 20480)),
+                new Coefficient(null, null, null, t(1097, 512), null, t(-15543, 2560)),
+                new Coefficient(null, null, null, null, t(8011, 2560), null, t(-69119, 6144)),
+                new Coefficient(null, null, null, null, null, t( 293393, 61440)),
+                new Coefficient(null, null, null, null, null, null, t(6845701, 860160))
+            );
+        }
+        return new ClenshawSummation(
+            new Coefficient(t(-3, 8), t(-3,  32), t(-45, 1024), t(-105,    4096), t(-2205,   131072), t(  -6237,    524288), t(-297297,  33554432)),
+            new Coefficient(null,     t(15, 256), t( 45, 1024), t( 525,   16384), t( 1575,    65536), t( 155925,   8388608), t(495495,   33554432)),
+            new Coefficient(null,     null,       t(-35, 3072), t(-175,   12288), t(-3675,   262144), t( -13475,   1048576), t(-385385,  33554432)),
+            new Coefficient(null,     null,       null,         t( 315,  131072), t( 2205,   524288), t(  43659,   8388608), t(189189,   33554432)),
+            new Coefficient(null,     null,       null,         null,             t(-693, 1310720),   t(-6237,  5242880),    t(-297297, 167772160)),
+            new Coefficient(null,     null,       null,         null,             null,               t( 1001,  8388608),    t(  11011,  33554432)),
+            new Coefficient(null,     null,       null,         null,             null,               null,                  t(  -6435, 234881024))
         );
     }
 

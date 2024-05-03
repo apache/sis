@@ -30,7 +30,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * @author  Simon Reynard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  *
- * @see <a href="http://geotiff.maptools.org/proj_list/polyconic.html">GeoTIFF parameters for Polyconic</a>
+ * @see <a href="https://gdal.org/proj_list/polyconic.html">GeoTIFF parameters for Polyconic</a>
  */
 @XmlTransient
 public class Polyconic extends MapProjection {

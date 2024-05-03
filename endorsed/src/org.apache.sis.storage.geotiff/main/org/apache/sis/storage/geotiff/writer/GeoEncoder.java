@@ -69,6 +69,7 @@ import org.apache.sis.storage.geotiff.base.GeoCodes;
 import org.apache.sis.storage.geotiff.base.Resources;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.pending.jdk.JDK15;
 
 
 /**
@@ -677,8 +678,7 @@ public final class GeoEncoder {
      * {@return the values to write in the "GeoTIFF ASCII strings" tag}.
      */
     public List<String> asciiParams() {
-        if (asciiParams.length() == 0) return null;     // TODO: replace by isEmpty() with JDK15.
-        return List.of(asciiParams.toString());
+        return JDK15.isEmpty(asciiParams) ? null : List.of(asciiParams.toString());
     }
 
     /**

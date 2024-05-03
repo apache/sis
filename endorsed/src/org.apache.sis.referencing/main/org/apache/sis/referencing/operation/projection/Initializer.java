@@ -195,7 +195,12 @@ final class Initializer {
          * Set meridian rotation, scale factor, false easting and false northing parameter values
          * in the (de)normalization matrices.
          */
-        context.normalizeGeographicInputs(λ0);
+        if (variant == null || variant.useRadians()) {
+            context.normalizeGeographicInputs(λ0);
+        } else if (λ0 != 0) {
+            context.getMatrix(ContextualParameters.MatrixRole.NORMALIZATION)
+                    .convertBefore(0, null, DoubleDouble.of(-λ0, true));
+        }
         final MatrixSIS denormalize = context.getMatrix(ContextualParameters.MatrixRole.DENORMALIZATION);
         denormalize.convertAfter(0, k, DoubleDouble.of(fe, true));
         denormalize.convertAfter(1, k, DoubleDouble.of(fn, true));

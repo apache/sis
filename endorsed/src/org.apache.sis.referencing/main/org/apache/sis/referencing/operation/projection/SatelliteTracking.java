@@ -23,13 +23,13 @@ import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.InvalidParameterValueException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
+import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.util.Workaround;
@@ -215,20 +215,20 @@ public class SatelliteTracking extends NormalizedProjection {
     }
 
     /**
-     * Returns the sequence of <i>normalization</i> → {@code this} → <i>denormalization</i> transforms
-     * as a whole. The transform returned by this method expects (<var>longitude</var>, <var>latitude</var>)
-     * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
+     * Returns the sequence of <i>normalization</i> → {@code this} → <i>denormalization</i> transforms as a whole.
+     * The transform returned by this method expects (<var>longitude</var>, <var>latitude</var>) coordinates
+     * in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
      *
-     * @param  factory The factory to use for creating the transform.
+     * @param  parameters  parameters and the factory to use for creating the transform.
      * @return the map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
      */
     @Override
-    public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
+    public MathTransform createMapProjection(final MathTransformProvider.Context parameters) throws FactoryException {
         if (isConic) {
-            return completeWithWraparound(factory);
+            return completeWithWraparound(parameters);
         } else {
-            return super.createMapProjection(factory);
+            return super.createMapProjection(parameters);
         }
     }
 

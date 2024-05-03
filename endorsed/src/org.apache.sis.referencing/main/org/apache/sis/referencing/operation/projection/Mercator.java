@@ -26,7 +26,6 @@ import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.geometry.Envelope2D;
@@ -43,6 +42,7 @@ import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.DomainDefinition;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
+import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.math.MathFunctions.isPositive;
@@ -334,19 +334,18 @@ public class Mercator extends ConformalProjection {
     }
 
     /**
-     * Returns the sequence of <i>normalization</i> → {@code this} → <i>denormalization</i> transforms
-     * as a whole. The transform returned by this method expects (<var>longitude</var>, <var>latitude</var>)
-     * coordinates in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
+     * Returns the sequence of <i>normalization</i> → {@code this} → <i>denormalization</i> transforms as a whole.
+     * The transform returned by this method expects (<var>longitude</var>, <var>latitude</var>) coordinates
+     * in <em>degrees</em> and returns (<var>x</var>,<var>y</var>) coordinates in <em>metres</em>.
+     * The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
+     * is spherical. In the latter case, {@code this} transform is replaced by a simplified implementation.
      *
-     * <p>The non-linear part of the returned transform will be {@code this} transform, except if the ellipsoid
-     * is spherical. In the latter case, {@code this} transform may be replaced by a simplified implementation.</p>
-     *
-     * @param  factory  the factory to use for creating the transform.
+     * @param  parameters  parameters and the factory to use for creating the transform.
      * @return the map projection from (λ,φ) to (<var>x</var>,<var>y</var>) coordinates.
      * @throws FactoryException if an error occurred while creating a transform.
      */
     @Override
-    public MathTransform createMapProjection(final MathTransformFactory factory) throws FactoryException {
+    public MathTransform createMapProjection(final MathTransformProvider.Context parameters) throws FactoryException {
         NormalizedProjection kernel = this;
 subst:  if (variant.spherical || eccentricity == 0) {
             if (variant == Variant.AUXILIARY && eccentricity != 0) {
@@ -358,7 +357,7 @@ subst:  if (variant.spherical || eccentricity == 0) {
             }
             kernel = new Spherical(this);
         }
-        return kernel.completeWithWraparound(factory);
+        return kernel.completeWithWraparound(parameters);
     }
 
     /**

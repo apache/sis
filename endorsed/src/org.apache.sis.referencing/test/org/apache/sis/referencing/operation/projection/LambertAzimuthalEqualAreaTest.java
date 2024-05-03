@@ -78,7 +78,7 @@ public final class LambertAzimuthalEqualAreaTest extends MapProjectionTestCase {
         parameters.parameter("latitude_of_origin").setValue(latitudeOfOrigin);
         LambertAzimuthalEqualArea projection = new LambertAzimuthalEqualArea(provider, parameters);
         if (complete) {
-            transform = projection.createMapProjection(new MathTransformFactoryMock(provider));
+            transform = projection.createMapProjection(context(new MathTransformFactoryMock(provider), parameters));
         } else {
             transform = projection;
         }

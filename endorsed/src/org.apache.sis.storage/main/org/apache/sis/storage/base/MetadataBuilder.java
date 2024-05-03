@@ -30,11 +30,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.BiConsumer;
 import java.util.logging.Level;
 import java.net.URI;
 import java.nio.charset.Charset;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
+import javax.measure.IncommensurableException;
 import org.opengis.util.MemberName;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
@@ -55,6 +57,7 @@ import org.opengis.metadata.quality.Element;
 import org.opengis.metadata.spatial.*;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
@@ -67,7 +70,6 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.metadata.ModifiableMetadata;
 import org.apache.sis.metadata.iso.*;
 import org.apache.sis.metadata.iso.acquisition.*;
@@ -83,6 +85,9 @@ import org.apache.sis.metadata.iso.spatial.*;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.metadata.sql.MetadataSource;
 import org.apache.sis.metadata.privy.Merger;
+import org.apache.sis.referencing.NamedIdentifier;
+import org.apache.sis.referencing.privy.AxisDirections;
+import org.apache.sis.geometry.AbstractEnvelope;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.AbstractFeatureSet;
@@ -964,6 +969,20 @@ public class MetadataBuilder {
             id = (Identifier) sharedValues.getOrDefault(id, id);
             if (scope != Scope.RESOURCE) metadata().setMetadataIdentifier(id);
             if (scope != Scope.METADATA) addIfNotPresent(citation().getIdentifiers(), id);
+        }
+    }
+
+    /**
+     * Adds a data and/or metadata identifier provided as a generic name.
+     *
+     * @param  id     the identifier, or {@code null} if none.
+     * @param  scope  whether the date applies to data, to metadata or to both.
+     *
+     * @see #addIdentifier(CharSequence, String, Scope)
+     */
+    public final void addIdentifier(final GenericName id, final Scope scope) {
+        if (id != null) {
+            addIdentifier((id instanceof Identifier) ? (Identifier) id : new NamedIdentifier(id), scope);
         }
     }
 
@@ -1869,6 +1888,8 @@ public class MetadataBuilder {
      *   <li>{@code metadata/spatialRepresentationInfo/axisDimensionProperties/dimensionName}</li>
      *   <li>{@code metadata/spatialRepresentationInfo/axisDimensionProperties/dimensionSize}</li>
      *   <li>{@code metadata/spatialRepresentationInfo/axisDimensionProperties/resolution}</li>
+     *   <li>{@code metadata/identificationInfo/spatialResolution/distance}</li>
+     *   <li>{@code metadata/identificationInfo/temporalResolution}</li>
      *   <li>{@code metadata/identificationInfo/spatialRepresentationType}</li>
      *   <li>{@code metadata/referenceSystemInfo}</li>
      * </ul>
@@ -1921,9 +1942,62 @@ public class MetadataBuilder {
                 for (int i=0; i<resolution.length; i++) {
                     setAxisResolution(i, resolution[i], (cs != null) ? cs.getAxis(i).getUnit() : null);
                 }
+                addSpatioTemporalResolution(resolution, cs);
             }
         }
         return true;
+    }
+
+    /**
+     * Adds linear and temporal resolutions computed from an array of resolutions for each CRS axis.
+     * This method tries to separate the horizontal, vertical and temporal components.
+     * The horizontal components can be linear or angular.
+     * Storage locations are:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/spatialResolution/distance}</li>
+     *   <li>{@code metadata/identificationInfo/temporalResolution}</li>
+     * </ul>
+     *
+     * @param  resolution  the resolution for each coordinate system axis, or {@code null} if unknown.
+     * @param  cs          the coordinate system, or {@code null} if unknown.
+     */
+    public final void addSpatioTemporalResolution(final double[] resolution, final CoordinateSystem cs) {
+        if (resolution != null && cs != null) try {
+            final int dimension = Math.min(resolution.length, cs.getDimension());
+            for (int i=0; i<dimension; i++) {
+                final CoordinateSystemAxis axis = cs.getAxis(i);
+                final Unit<?> unit = axis.getUnit();
+                final Unit<?> targetUnit;
+                final BiConsumer<DefaultResolution,Double> setter;
+                if (Units.isLinear(unit)) {
+                    targetUnit = Units.METRE;
+                    if (AxisDirections.isVertical(axis.getDirection())) {
+                        setter = DefaultResolution::setVertical;
+                    } else {
+                        setter = DefaultResolution::setDistance;
+                    }
+                } else if (Units.isAngular(unit)) {
+                    targetUnit = Units.DEGREE;
+                    setter = DefaultResolution::setAngularDistance;
+                } else {
+                    continue;
+                }
+                final double distance = unit.getConverterToAny(targetUnit).convert(resolution[i]);
+                /*
+                 * Handling of temporal units is not available in this branch,
+                 * because `Duration` is not available in GeoAPI 3.0 interfaces.
+                 */
+                if (Double.isFinite(distance)) {
+                    var r = new DefaultResolution();
+                    setter.accept(r, shared(distance));
+                    addIfNotPresent(identification().getSpatialResolutions(), r);
+                }
+            }
+        } catch (IncommensurableException e) {
+            // Should never happen because we verified that the unit was linear or temporal.
+            Logging.unexpectedException(StoreUtilities.LOGGER, MetadataBuilder.class, "addSpatioTemporalResolution", e);
+        }
     }
 
     /**
@@ -1936,8 +2010,8 @@ public class MetadataBuilder {
      *
      * @param  distance  the resolution in metres, or {@code NaN} for no-operation.
      */
-    public final void addResolution(final double distance) {
-        if (!Double.isNaN(distance)) {
+    public final void addLinearResolution(final double distance) {
+        if (Double.isFinite(distance)) {
             final var r = new DefaultResolution();
             r.setDistance(shared(distance));
             addIfNotPresent(identification().getSpatialResolutions(), r);

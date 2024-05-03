@@ -122,7 +122,7 @@ public interface MathTransformProvider {
     {
         return createMathTransform(new MathTransformProvider.Context() {
             @Override public MathTransformFactory getFactory() {
-                return (factory != null) ? factory : DefaultMathTransformFactory.provider();
+                return (factory != null) ? factory : Context.super.getFactory();
             }
             @Override public ParameterValueGroup getCompletedParameters() {
                 return parameters;
@@ -158,9 +158,13 @@ public interface MathTransformProvider {
          * This is often the factory which is invoking the {@link #createMathTransform(Context)} method,
          * but not necessarily.
          *
+         * <p>The default implementation returns the {@link DefaultMathTransformFactory}.</p>
+         *
          * @return the factory to use if the provider needs to create other math transforms.
          */
-        MathTransformFactory getFactory();
+        default MathTransformFactory getFactory() {
+            return DefaultMathTransformFactory.provider();
+        }
 
         /**
          * Returns the desired number of source dimensions.

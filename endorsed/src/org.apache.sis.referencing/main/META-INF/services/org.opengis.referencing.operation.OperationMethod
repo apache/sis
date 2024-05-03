@@ -60,11 +60,13 @@ org.apache.sis.referencing.operation.provider.ObliqueMercatorTwoPointsCenter
 org.apache.sis.referencing.operation.provider.Orthographic
 org.apache.sis.referencing.operation.provider.ModifiedAzimuthalEquidistant
 org.apache.sis.referencing.operation.provider.AzimuthalEquidistantSpherical
+org.apache.sis.referencing.operation.provider.EquidistantCylindrical
 org.apache.sis.referencing.operation.provider.ZonedTransverseMercator
 org.apache.sis.referencing.operation.provider.Sinusoidal
 org.apache.sis.referencing.operation.provider.PseudoSinusoidal
 org.apache.sis.referencing.operation.provider.Polyconic
 org.apache.sis.referencing.operation.provider.Mollweide
+org.apache.sis.referencing.operation.provider.Robinson
 org.apache.sis.referencing.operation.provider.SouthPoleRotation
 org.apache.sis.referencing.operation.provider.NorthPoleRotation
 org.apache.sis.referencing.operation.provider.NTv2

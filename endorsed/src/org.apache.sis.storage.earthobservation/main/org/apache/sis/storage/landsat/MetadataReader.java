@@ -569,7 +569,7 @@ final class MetadataReader extends MetadataBuilder {
             case "GRID_CELL_SIZE_PANCHROMATIC":
             case "GRID_CELL_SIZE_REFLECTIVE":
             case "GRID_CELL_SIZE_THERMAL": {
-                addResolution(Double.parseDouble(value));
+                addLinearResolution(Double.parseDouble(value));
                 break;
             }
             /*

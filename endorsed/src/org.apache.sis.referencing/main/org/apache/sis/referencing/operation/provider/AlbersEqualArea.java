@@ -31,7 +31,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
  *
- * @see <a href="http://geotiff.maptools.org/proj_list/albers_equal_area_conic.html">GeoTIFF parameters for Albers Equal-Area Conic</a>
+ * @see <a href="https://gdal.org/proj_list/albers_equal_area_conic.html">GeoTIFF parameters for Albers Equal-Area Conic</a>
  */
 @XmlTransient
 public final class AlbersEqualArea extends MapProjection {
