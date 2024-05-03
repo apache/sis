@@ -27,7 +27,6 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.transform.WraparoundTransform;
-import org.apache.sis.util.privy.Constants;
 
 
 /**
@@ -98,8 +97,10 @@ public final class Wraparound extends AbstractProvider {
     public static final ParameterDescriptorGroup PARAMETERS;
     static {
         final ParameterBuilder builder = builder().setCodeSpace(Citations.SIS, "SIS");
-        DIMENSION = builder.addName(Constants.DIM).createBounded(Integer.class, 1, null, null);
-        WRAPAROUND_DIMENSION = builder.addName("wraparound_dim").createBounded(Integer.class, 0, null, null);
+        DIMENSION = builder.addName(GeocentricAffineBetweenGeographic.DIMENSION.getName())
+                .createBounded(Integer.class, 1, null, null);
+        WRAPAROUND_DIMENSION = builder.addName("wraparound_dim")
+                .createBounded(Integer.class, 0, null, null);
         PERIOD = builder.addName("period").createStrictlyPositive(Double.NaN, null);
         PARAMETERS = builder.addName("Wraparound")
                 .createGroup(DIMENSION,

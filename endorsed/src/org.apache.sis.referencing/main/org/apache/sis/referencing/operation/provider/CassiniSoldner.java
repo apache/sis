@@ -30,7 +30,7 @@ import org.apache.sis.parameter.Parameters;
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
- * @see <a href="http://geotiff.maptools.org/proj_list/cassini_soldner.html">GeoTIFF parameters for Cassini-Soldner</a>
+ * @see <a href="https://gdal.org/proj_list/cassini_soldner.html">GeoTIFF parameters for Cassini-Soldner</a>
  */
 @XmlTransient
 public class CassiniSoldner extends MapProjection {

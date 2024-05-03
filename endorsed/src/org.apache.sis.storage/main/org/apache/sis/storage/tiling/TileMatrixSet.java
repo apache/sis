@@ -18,9 +18,11 @@ package org.apache.sis.storage.tiling;
 
 import java.util.Optional;
 import java.util.SortedMap;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.GenericName;
+import org.opengis.geometry.Envelope;
+import org.opengis.metadata.Metadata;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.apache.sis.storage.base.MetadataBuilder;
 
 
 /**
@@ -45,7 +47,7 @@ import org.opengis.util.GenericName;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.2
+ * @version 1.5
  * @since   1.2
  */
 public interface TileMatrixSet {
@@ -57,6 +59,52 @@ public interface TileMatrixSet {
      * @return a unique (within {@link TiledResource}) identifier.
      */
     GenericName getIdentifier();
+
+    /**
+     * Returns information about this tile matrix set.
+     * The metadata should contain at least the following information:
+     *
+     * <ul class="verbose">
+     *   <li>{@code metadata} /
+     *       {@link org.apache.sis.metadata.iso.DefaultMetadata#getIdentificationInfo() identificationInfo} /
+     *       {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getCitation() citation} /
+     *       {@link org.apache.sis.metadata.iso.citation.DefaultCitation#getTitle() title}:<br>
+     *       a human-readable designation for this tile matrix set.</li>
+     *   <li>{@code metadata} /
+     *       {@link org.apache.sis.metadata.iso.DefaultMetadata#getIdentificationInfo() identificationInfo} /
+     *       {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getCitation() citation} /
+     *       {@link org.apache.sis.metadata.iso.citation.DefaultCitation#getIdentifier() identifier}:<br>
+     *       this {@code TileMatrixSet} {@linkplain #getIdentifier() identifier}.</li>
+     *   <li>{@code metadata} /
+     *       {@link org.apache.sis.metadata.iso.DefaultMetadata#getIdentificationInfo() identificationInfo} /
+     *       {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getExtents() extent}:<br>
+     *       this {@code TileMatrixSet} {@linkplain #getEnvelope() envelope}.</li>
+     *   <li>{@code metadata} /
+     *       {@link org.apache.sis.metadata.iso.DefaultMetadata#getReferenceSystemInfo() referenceSystemInfo}:<br>
+     *       this {@code TileMatrixSet} {@linkplain #getCoordinateReferenceSystem() coordinate reference system}.</li>
+     *   <li>{@code metadata} /
+     *       {@link org.apache.sis.metadata.iso.DefaultMetadata#getIdentificationInfo() identificationInfo} /
+     *       {@link org.apache.sis.metadata.iso.identification.AbstractIdentification#getResourceFormats() resourceFormat}:<br>
+     *       a description of the tile format.</li>
+     * </ul>
+     *
+     * <h4>Note for implementers</h4>
+     * The default implementation creates a modifiable {@link org.apache.sis.metadata.iso.DefaultMetadata} instance with
+     * values derived from {@link #getIdentifier()}, {@link #getEnvelope()} and {@link #getCoordinateReferenceSystem()}.
+     * Subclasses (not users) can cast and complete those metadata.
+     * In particular, implementations are encouraged to add the {@code title} and {@code resourceFormat} information.
+     *
+     * @return information about this tile matrix set. Should not be {@code null}.
+     *
+     * @since 1.5
+     */
+    default Metadata getMetadata() {
+        final var mb = new MetadataBuilder();
+        mb.addIdentifier(getIdentifier(), MetadataBuilder.Scope.RESOURCE);
+        getEnvelope().ifPresent((envelope) -> mb.addExtent(envelope, null));
+        mb.addReferenceSystem(getCoordinateReferenceSystem());
+        return mb.build();
+    }
 
     /**
      * Returns the coordinate reference system of all {@code TileMatrix} instances in this set.

@@ -86,7 +86,7 @@ public final class CassiniSoldnerTest extends MapProjectionTestCase {
          * Fix φ=45°, which implies tan(φ)=1.
          * Test using the CassiniSoldner spherical equation.
          */
-        final DirectPosition2D point = new DirectPosition2D();
+        final var point = new DirectPosition2D();
         final double domain = toRadians(5);
         final double step   = domain / 20;
         for (double λ = -domain; λ <= domain; λ += step) {
@@ -122,7 +122,7 @@ public final class CassiniSoldnerTest extends MapProjectionTestCase {
 
         final double λ = -62;
         final double φ =  10;
-        final DirectPosition2D p = new DirectPosition2D(λ, φ);
+        final var p = new DirectPosition2D(λ, φ);
         assertSame(p, transform.transform(p, p));
         assertEquals(66644.94, p.x, 0.005);
         assertEquals(82536.22, p.y, 0.005);
@@ -155,7 +155,7 @@ public final class CassiniSoldnerTest extends MapProjectionTestCase {
 
         final double λ =  179 + (59 + 39.6115/60)/60;   // 179°59′39.6115″E
         final double φ = -(16 + (50 + 29.2435/60)/60);  //  16°50′29.2435″S
-        final DirectPosition2D p = new DirectPosition2D(λ, φ);
+        final var p = new DirectPosition2D(λ, φ);
         assertSame(p, transform.transform(p, p));
         assertEquals(16015.2890, p.x, 0.00005);
         assertEquals(13369.6601, p.y, 0.00005);

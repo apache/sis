@@ -30,7 +30,7 @@ import org.opengis.referencing.operation.MathTransform;
  *   <li>The {@code "GeoKey"} suffix is omitted for all keys<.</li>
  *   <li>The {@code "Proj"} prefix is omitted for all map projection parameters.
  *       The resulting map projection parameter names are the same as published on
- *       <a href="http://geotiff.maptools.org/proj_list/">Map Tools projection list</a>.</li>
+ *       <a href="https://gdal.org/proj_list/">Map Tools projection list</a>.</li>
  *   <li>The ellipsoid axis lengths and inverse flattening factor have the {@code Ellipsoid} prefix omitted.</li>
  * </ul>
  *

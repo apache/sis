@@ -30,7 +30,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Rueben Schulz (UBC)
  *
- * @see <a href="http://geotiff.maptools.org/proj_list/lambert_conic_conformal_2sp.html">GeoTIFF parameters for Lambert Conic Conformal 2SP</a>
+ * @see <a href="https://gdal.org/proj_list/lambert_conic_conformal_2sp.html">GeoTIFF parameters for Lambert Conic Conformal 2SP</a>
  */
 @XmlTransient
 public final class LambertConformal2SP extends AbstractLambert {

@@ -29,7 +29,6 @@ import org.junit.jupiter.api.Test;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.util.FactoryException;
-import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.opengis.test.ToleranceModifier;
 
 
@@ -113,7 +112,7 @@ public final class ObliqueMercatorTest extends MapProjectionTestCase {
     @Test
     public void testPole() throws TransformException, FactoryException {
         tolerance = 0.01;
-        transform = create(179.8, 89.8, -174).createMapProjection(DefaultMathTransformFactory.provider());
+        transform = create(179.8, 89.8, -174).createMapProjection(context(null, null));
         transform = transform.inverse();
         validate();
         /*

@@ -28,7 +28,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
- * @see <a href="http://geotiff.maptools.org/proj_list/azimuthal_equidistant.html">GeoTIFF parameters for Azimuthal Equidistant</a>
+ * @see <a href="https://gdal.org/proj_list/azimuthal_equidistant.html">GeoTIFF parameters for Azimuthal Equidistant</a>
  */
 @XmlTransient
 public final class AzimuthalEquidistantSpherical extends MapProjection {

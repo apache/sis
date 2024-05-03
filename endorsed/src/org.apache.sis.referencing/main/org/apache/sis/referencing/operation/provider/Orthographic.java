@@ -32,7 +32,7 @@ import static org.apache.sis.referencing.operation.provider.AbstractProvider.bui
  * @author  Rueben Schulz (UBC)
  * @author  Martin Desruisseaux (Geomatys)
  *
- * @see <a href="http://geotiff.maptools.org/proj_list/orthographic.html">GeoTIFF parameters for Orthographic</a>
+ * @see <a href="https://gdal.org/proj_list/orthographic.html">GeoTIFF parameters for Orthographic</a>
  */
 @XmlTransient
 public class Orthographic extends MapProjection {

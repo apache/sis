@@ -122,7 +122,7 @@ final class ESRI extends Static {
      */
     static final ParameterDescriptor<Double> FALSE_NORTHING;
     static {
-        final ParameterBuilder builder = MapProjection.builder();
+        final var builder = new ParameterBuilder().setRequired(true);
         CENTRAL_MERIDIAN    = MapProjection.createLongitude(copyNames(builder, Equirectangular.LONGITUDE_OF_ORIGIN));
         LATITUDE_OF_ORIGIN  = MapProjection.createLatitude (copyNames(builder, Equirectangular.LATITUDE_OF_ORIGIN), true);
         STANDARD_PARALLEL_1 = MapProjection.createLatitude (copyNames(builder, LambertConformal2SP.STANDARD_PARALLEL_1), true);

@@ -30,7 +30,7 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
- * @see <a href="http://geotiff.maptools.org/proj_list/lambert_azimuthal_equal_area.html">GeoTIFF parameters for Lambert Azimuthal Equal Area</a>
+ * @see <a href="https://gdal.org/proj_list/lambert_azimuthal_equal_area.html">GeoTIFF parameters for Lambert Azimuthal Equal Area</a>
  */
 @XmlTransient
 public class LambertAzimuthalEqualArea extends MapProjection {

@@ -23,7 +23,6 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.measure.Units;
@@ -147,8 +146,7 @@ public final class ObliqueStereographicTest extends MapProjectionTestCase {
      * created by above {@link #createNormalizedProjection(boolean)} method.
      */
     private void createCompleteTransform(final OperationMethod op, final ParameterValueGroup p) throws FactoryException {
-        transform = new ObliqueStereographic(op, (Parameters) p).createMapProjection(
-                DefaultMathTransformFactory.provider());
+        transform = new ObliqueStereographic(op, (Parameters) p).createMapProjection(context(null, p));
     }
 
     /**

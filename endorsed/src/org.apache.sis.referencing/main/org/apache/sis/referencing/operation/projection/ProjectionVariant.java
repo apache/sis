@@ -32,7 +32,9 @@ interface ProjectionVariant {
      *
      * @return the operation name pattern for this variant, or {@code null} if none.
      */
-    Pattern getOperationNamePattern();
+    default Pattern getOperationNamePattern() {
+        return null;
+    }
 
     /**
      * Returns the EPSG identifier to compare against the operation method.
@@ -40,7 +42,9 @@ interface ProjectionVariant {
      *
      * @return EPSG identifier for this variant, or {@code null} if none.
      */
-    String getIdentifier();
+    default String getIdentifier() {
+        return null;
+    }
 
     /**
      * Whether this variant is a spherical variant using authalic radius.
@@ -57,5 +61,16 @@ interface ProjectionVariant {
      */
     default boolean useAuthalicRadius() {
         return false;
+    }
+
+    /**
+     * Whether this variant uses longitude and latitude values in radians.
+     * This is the case of almost all map projections.
+     * A value of {@code false} will cause the map projection to work in degrees instead.
+     *
+     * @return whether this variant uses longitude and latitude values in radians.
+     */
+    default boolean useRadians() {
+        return true;
     }
 }
