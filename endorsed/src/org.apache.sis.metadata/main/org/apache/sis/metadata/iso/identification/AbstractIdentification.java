@@ -49,8 +49,8 @@ import org.apache.sis.xml.privy.LegacyNamespaces;
 import org.apache.sis.util.iso.Types;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.time.temporal.TemporalAmount;
 import org.opengis.metadata.identification.AssociatedResource;
-import org.opengis.temporal.Duration;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.metadata.citation.Responsibility;
@@ -86,7 +86,7 @@ import org.opengis.metadata.citation.Responsibility;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @XmlType(name = "AbstractMD_Identification_Type", propOrder = {
@@ -127,7 +127,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = -1132210324047663554L;
+    private static final long serialVersionUID = 157053637951213015L;
 
     /**
      * Citation for the resource(s).
@@ -182,7 +182,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * Smallest resolvable temporal period in a resource.
      */
     @SuppressWarnings("serial")
-    private Collection<Duration> temporalResolutions;
+    private Collection<TemporalAmount> temporalResolutions;
 
     /**
      * Main theme(s) of the resource.
@@ -277,6 +277,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @see #castOrCopy(Identification)
      */
+    @SuppressWarnings("this-escape")
     public AbstractIdentification(final Identification object) {
         super(object);
         if (object != null) {
@@ -288,7 +289,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
             pointOfContacts            = copyCollection(object.getPointOfContacts(), Responsibility.class);
             spatialRepresentationTypes = copyCollection(object.getSpatialRepresentationTypes(), SpatialRepresentationType.class);
             spatialResolutions         = copyCollection(object.getSpatialResolutions(), Resolution.class);
-            temporalResolutions        = copyCollection(object.getTemporalResolutions(), Duration.class);
+            temporalResolutions        = copyCollection(object.getTemporalResolutions(), TemporalAmount.class);
             topicCategories            = copyCollection(object.getTopicCategories(), TopicCategory.class);
             extents                    = copyCollection(object.getExtents(), Extent.class);
             additionalDocumentations   = copyCollection(object.getAdditionalDocumentations(), Citation.class);
@@ -520,12 +521,12 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @return smallest resolvable temporal period in a resource.
      *
-     * @since 2.0
+     * @since 1.5
      */
     @Override
     // @XmlElement at the end of this class.
-    public Collection<Duration> getTemporalResolutions() {
-        return temporalResolutions = nonNullCollection(temporalResolutions, Duration.class);
+    public Collection<TemporalAmount> getTemporalResolutions() {
+        return temporalResolutions = nonNullCollection(temporalResolutions, TemporalAmount.class);
     }
 
     /**
@@ -533,10 +534,10 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @param  newValues  the new temporal resolutions.
      *
-     * @since 2.0
+     * @since 1.5
      */
-    public void setTemporalResolutions(final Collection<? extends Duration> newValues) {
-        temporalResolutions = writeCollection(newValues, temporalResolutions, Duration.class);
+    public void setTemporalResolutions(final Collection<? extends TemporalAmount> newValues) {
+        temporalResolutions = writeCollection(newValues, temporalResolutions, TemporalAmount.class);
     }
 
     /**
@@ -852,7 +853,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *       into {@code PeriodDuration} objects. Need to add support for {@code IntervalLength} in the future.
      */
     @XmlElement(name = "temporalResolution")
-    private Collection<Duration> getTemporalResolution() {
+    private Collection<TemporalAmount> getTemporalResolution() {
         return FilterByVersion.CURRENT_METADATA.accept() ? getTemporalResolutions() : null;
     }
 

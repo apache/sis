@@ -17,6 +17,8 @@
 package org.apache.sis.storage.base;
 
 import java.time.Instant;
+import java.time.Duration;
+import java.time.temporal.TemporalAmount;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Optional;
@@ -68,6 +70,7 @@ import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.privy.StandardDateFormat;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.metadata.ModifiableMetadata;
@@ -102,9 +105,7 @@ import org.apache.sis.pending.jdk.JDK21;
 import org.apache.sis.measure.Units;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.temporal.Duration;
 import org.opengis.feature.FeatureType;
-import org.apache.sis.metadata.simple.SimpleDuration;
 
 
 /**
@@ -2026,7 +2027,8 @@ public class MetadataBuilder {
      */
     public final void addTemporalResolution(final double duration) {
         if (Double.isFinite(duration)) {
-            addIfNotPresent(identification().getTemporalResolutions(), new SimpleDuration(duration));
+            addIfNotPresent(identification().getTemporalResolutions(),
+                    Duration.ofMillis(Math.round(duration * StandardDateFormat.MILLISECONDS_PER_DAY)));
         }
     }
 
@@ -3189,7 +3191,7 @@ public class MetadataBuilder {
             for (Resolution r : info.getSpatialResolutions()) {
                 addIfNotPresent(identification.getSpatialResolutions(), r);
             }
-            for (Duration r : info.getTemporalResolutions()) {
+            for (TemporalAmount r : info.getTemporalResolutions()) {
                 addIfNotPresent(identification.getTemporalResolutions(), r);
             }
             for (Format r : info.getResourceFormats()) {

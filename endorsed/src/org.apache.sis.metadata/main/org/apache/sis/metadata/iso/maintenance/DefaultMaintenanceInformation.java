@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
+import java.time.temporal.TemporalAmount;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -29,7 +30,6 @@ import org.opengis.metadata.maintenance.MaintenanceFrequency;
 import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.maintenance.ScopeDescription;
-import org.opengis.temporal.PeriodDuration;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
@@ -69,7 +69,7 @@ import org.opengis.metadata.citation.Responsibility;
  * @author  Guilhem Legal (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @XmlType(name = "MD_MaintenanceInformation_Type", propOrder = {
@@ -88,7 +88,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -8736825706141936429L;
+    private static final long serialVersionUID = -7934472150551882812L;
 
     /**
      * Frequency with which changes and additions are made to the resource after the
@@ -106,7 +106,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      * Maintenance period other than those defined, in milliseconds.
      */
     @SuppressWarnings("serial")
-    private PeriodDuration userDefinedMaintenanceFrequency;
+    private TemporalAmount userDefinedMaintenanceFrequency;
 
     /**
      * Type of resource and / or extent to which the maintenance information applies.
@@ -307,7 +307,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      */
     @Override
     @XmlElement(name = "userDefinedMaintenanceFrequency")
-    public PeriodDuration getUserDefinedMaintenanceFrequency() {
+    public TemporalAmount getUserDefinedMaintenanceFrequency() {
         return userDefinedMaintenanceFrequency;
     }
 
@@ -316,7 +316,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *
      * @param  newValue  the new user defined maintenance frequency.
      */
-    public void setUserDefinedMaintenanceFrequency(final PeriodDuration newValue) {
+    public void setUserDefinedMaintenanceFrequency(final TemporalAmount newValue) {
         checkWritePermission(userDefinedMaintenanceFrequency);
         userDefinedMaintenanceFrequency = newValue;
     }

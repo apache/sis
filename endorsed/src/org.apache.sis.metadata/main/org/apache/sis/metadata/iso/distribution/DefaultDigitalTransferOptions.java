@@ -17,12 +17,12 @@
 package org.apache.sis.metadata.iso.distribution;
 
 import java.util.Collection;
+import java.time.temporal.TemporalAmount;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
-import org.opengis.temporal.PeriodDuration;
 import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.distribution.DigitalTransferOptions;
 import org.opengis.metadata.distribution.Format;
@@ -32,7 +32,7 @@ import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.measure.ValueRange;
 import org.apache.sis.metadata.internal.Dependencies;
 import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.xml.bind.gts.TM_PeriodDuration;
+import org.apache.sis.xml.bind.gts.TM_Duration;
 import org.apache.sis.util.privy.CollectionsExt;
 import static org.apache.sis.metadata.privy.ImplementationHelper.ensurePositive;
 
@@ -53,7 +53,7 @@ import static org.apache.sis.metadata.privy.ImplementationHelper.ensurePositive;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @XmlType(name = "MD_DigitalTransferOptions_Type", propOrder = {
@@ -69,7 +69,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -2901375920581273330L;
+    private static final long serialVersionUID = -7094568309031595844L;
 
     /**
      * Tiles, layers, geographic areas, etc., in which data is available.
@@ -99,7 +99,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      * Rate of occurrence of distribution.
      */
     @SuppressWarnings("serial")
-    private PeriodDuration transferFrequency;
+    private TemporalAmount transferFrequency;
 
     /**
      * Formats of distribution.
@@ -128,6 +128,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      *
      * @see #castOrCopy(DigitalTransferOptions)
      */
+    @SuppressWarnings("this-escape")
     public DefaultDigitalTransferOptions(final DigitalTransferOptions object) {
         super(object);
         if (object != null) {
@@ -297,8 +298,8 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      */
     @Override
     @XmlElement(name = "transferFrequency")
-    @XmlJavaTypeAdapter(TM_PeriodDuration.Since2014.class)
-    public PeriodDuration getTransferFrequency() {
+    @XmlJavaTypeAdapter(TM_Duration.Since2014.class)
+    public TemporalAmount getTransferFrequency() {
         return transferFrequency;
     }
 
@@ -309,7 +310,7 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      *
      * @since 0.5
      */
-    public void setTransferFrequency(final PeriodDuration newValue) {
+    public void setTransferFrequency(final TemporalAmount newValue) {
         checkWritePermission(transferFrequency);
         transferFrequency = newValue;
     }

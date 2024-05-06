@@ -66,9 +66,9 @@ import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 import org.opengis.metadata.content.AttributeGroup;
 import org.opengis.referencing.ObjectDomain;
 import org.opengis.referencing.datum.DatumEnsemble;
-import org.opengis.temporal.Duration;
 
 // Specific to the geoapi-4.0 branch:
+import java.time.temporal.TemporalAmount;
 import org.opengis.metadata.citation.Responsibility;
 
 
@@ -215,7 +215,7 @@ public final class PropertyAccessorTest extends TestCase {
             Identification.class, "getPointOfContacts",            "pointOfContacts",            "pointOfContact",            "Point of contacts",            Responsibility[].class,
             Identification.class, "getSpatialRepresentationTypes", "spatialRepresentationTypes", "spatialRepresentationType", "Spatial representation types", SpatialRepresentationType[].class,
             Identification.class, "getSpatialResolutions",         "spatialResolutions",         "spatialResolution",         "Spatial resolutions",          Resolution[].class,
-            Identification.class, "getTemporalResolutions",        "temporalResolutions",        "temporalResolution",        "Temporal resolutions",         Duration[].class,
+            Identification.class, "getTemporalResolutions",        "temporalResolutions",        "temporalResolution",        "Temporal resolutions",         TemporalAmount[].class,
             Identification.class, "getTopicCategories",            "topicCategories",            "topicCategory",             "Topic categories",             TopicCategory[].class,
             Identification.class, "getExtents",                    "extents",                    "extent",                    "Extents",                      Extent[].class,
             Identification.class, "getAdditionalDocumentations",   "additionalDocumentations",   "additionalDocumentation",   "Additional documentations",    Citation[].class,

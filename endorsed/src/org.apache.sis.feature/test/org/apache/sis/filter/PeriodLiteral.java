@@ -27,13 +27,13 @@ import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 import org.opengis.filter.Literal;
 import org.opengis.temporal.Period;
-import org.opengis.temporal.Duration;
 import org.opengis.temporal.RelativePosition;
 import org.opengis.temporal.TemporalPosition;
 import org.opengis.temporal.TemporalPrimitive;
 import org.opengis.temporal.TemporalGeometricPrimitive;
 
 // Specific to the geoapi-4.0 branch:
+import java.time.temporal.TemporalAmount;
 import org.opengis.metadata.Identifier;
 
 
@@ -75,16 +75,16 @@ final class PeriodLiteral implements Period, Literal<Feature,Period>, Serializab
             @Override public Identifier       getName()                              {throw new UnsupportedOperationException();}
             @Override public TemporalPosition getTemporalPosition()                  {throw new UnsupportedOperationException();}
             @Override public RelativePosition relativePosition(TemporalPrimitive o)  {throw new UnsupportedOperationException();}
-            @Override public Duration         distance(TemporalGeometricPrimitive o) {throw new UnsupportedOperationException();}
-            @Override public Duration         length()                               {throw new UnsupportedOperationException();}
+            @Override public TemporalAmount   distance(TemporalGeometricPrimitive o) {throw new UnsupportedOperationException();}
+            @Override public TemporalAmount   length()                               {throw new UnsupportedOperationException();}
         };
     }
 
     /** Not needed for the tests. */
     @Override public Identifier       getName()                              {throw new UnsupportedOperationException();}
     @Override public RelativePosition relativePosition(TemporalPrimitive o)  {throw new UnsupportedOperationException();}
-    @Override public Duration         distance(TemporalGeometricPrimitive o) {throw new UnsupportedOperationException();}
-    @Override public Duration         length()                               {throw new UnsupportedOperationException();}
+    @Override public TemporalAmount   distance(TemporalGeometricPrimitive o) {throw new UnsupportedOperationException();}
+    @Override public TemporalAmount   length()                               {throw new UnsupportedOperationException();}
     @Override public <N> Expression<Feature,N> toValueType(Class<N> target)  {throw new UnsupportedOperationException();}
 
     /**

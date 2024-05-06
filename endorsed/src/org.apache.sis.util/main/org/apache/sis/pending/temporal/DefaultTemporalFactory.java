@@ -58,15 +58,6 @@ public final class DefaultTemporalFactory implements TemporalFactory {
         return new DefaultPeriod(begin, end);
     }
 
-    /** Creates a period duration. */
-    @Override public PeriodDuration createPeriodDuration(
-            InternationalString years, InternationalString months,
-            InternationalString week,  InternationalString days,
-            InternationalString hours, InternationalString minutes, InternationalString seconds)
-    {
-        return new DefaultPeriodDuration(years, months, week, days, hours, minutes, seconds);
-    }
-
     /** Returns the exception to be thrown by all unsupported methods. */
     static UnsupportedOperationException unsupported() {
         return new UnsupportedOperationException(Errors.format(Errors.Keys.MissingRequiredModule_1, "sis-temporal"));
@@ -104,12 +95,6 @@ public final class DefaultTemporalFactory implements TemporalFactory {
 
     /** Unsupported. */
     @Override public DateAndTime createDateAndTime(TemporalReferenceSystem frame, IndeterminateValue indeterminatePosition, InternationalString calendarEraName, int[] calendarDate, Number[] clockTime) {
-        throw unsupported();
-    }
-
-    /** Unsupported. */
-    @SuppressWarnings("rawtypes")
-    @Override public IntervalLength createIntervalLenght(Unit unit, int radix, int factor, int value) {
         throw unsupported();
     }
 
