@@ -17,15 +17,10 @@
 package org.apache.sis.pending.temporal;
 
 import java.util.Date;
-import org.opengis.util.InternationalString;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import java.util.Collection;
-import javax.measure.Unit;
-import javax.measure.quantity.Time;
 import org.opengis.temporal.*;
-import org.opengis.metadata.Identifier;
-import org.opengis.metadata.extent.Extent;
+import org.opengis.referencing.crs.TemporalCRS;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -64,77 +59,7 @@ public final class DefaultTemporalFactory implements TemporalFactory {
     }
 
     /** Unsupported. */
-    @Override public Calendar createCalendar(Identifier name, Extent domainOfValidity) {
-        throw unsupported();
-    }
-
-    /** Unsupported. */
-    @Override public Calendar createCalendar(Identifier name, Extent domainOfValidity, Collection<CalendarEra> referenceFrame, Clock timeBasis) {
-        throw unsupported();
-    }
-
-    /** Unsupported. */
-    @Override public CalendarDate createCalendarDate(TemporalReferenceSystem frame, IndeterminateValue indeterminatePosition, InternationalString calendarEraName, int[] calendarDate) {
-        throw unsupported();
-    }
-
-    /** Unsupported. */
-    @Override public CalendarEra createCalendarEra(InternationalString name, InternationalString referenceEvent, CalendarDate referenceDate, JulianDate julianReference, Period epochOfUse) {
-        throw unsupported();
-    }
-
-    /** Unsupported. */
-    @Override public Clock createClock(Identifier name, Extent domainOfValidity, InternationalString referenceEvent, ClockTime referenceTime, ClockTime utcReference) {
-        throw unsupported();
-    }
-
-    /** Unsupported. */
-    @Override public ClockTime createClockTime(TemporalReferenceSystem frame, IndeterminateValue indeterminatePosition, Number[] clockTime) {
-        throw unsupported();
-    }
-
-    /** Unsupported. */
-    @Override public DateAndTime createDateAndTime(TemporalReferenceSystem frame, IndeterminateValue indeterminatePosition, InternationalString calendarEraName, int[] calendarDate, Number[] clockTime) {
-        throw unsupported();
-    }
-
-    /** Unsupported. */
-    @Override public JulianDate createJulianDate(TemporalReferenceSystem frame, IndeterminateValue indeterminatePosition, Number coordinateValue) {
-        throw unsupported();
-    }
-
-    /** Unsupported. */
-    @Override public OrdinalEra createOrdinalEra(InternationalString name, Date beginning, Date end, Collection<OrdinalEra> member) {
-        throw unsupported();
-    }
-
-    /** Unsupported. */
-    @Override public OrdinalPosition createOrdinalPosition(TemporalReferenceSystem frame, IndeterminateValue indeterminatePosition, OrdinalEra ordinalPosition) {
-        throw unsupported();
-    }
-
-    /** Unsupported. */
-    @Override public OrdinalReferenceSystem createOrdinalReferenceSystem(Identifier name, Extent domainOfValidity, Collection<OrdinalEra> ordinalEraSequence) {
-        throw unsupported();
-    }
-
-    /** Unsupported. */
-    @Override public TemporalCoordinate createTemporalCoordinate(TemporalReferenceSystem frame, IndeterminateValue indeterminatePosition, Number coordinateValue) {
-        throw unsupported();
-    }
-
-    /** Unsupported. */
-    @Override public TemporalCoordinateSystem createTemporalCoordinateSystem(Identifier name, Extent domainOfValidity, Date origin, Unit<Time> interval) {
-        throw unsupported();
-    }
-
-    /** Unsupported. */
-    @Override public TemporalPosition createTemporalPosition(TemporalReferenceSystem frame, IndeterminateValue indeterminatePosition) {
-        throw unsupported();
-    }
-
-    /** Unsupported. */
-    @Override public TemporalReferenceSystem createTemporalReferenceSystem(Identifier name, Extent domainOfValidity) {
+    @Override public TemporalPosition createTemporalPosition(TemporalCRS tcrs, IndeterminateValue iv) {
         throw unsupported();
     }
 }
