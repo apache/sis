@@ -49,7 +49,6 @@ import org.apache.sis.util.collection.DefaultTreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.XML;
-import static org.apache.sis.metadata.privy.TemporalUtilities.toDate;
 
 
 /**
@@ -503,7 +502,7 @@ public final class XMLMetadata implements Filter {
          * Writes to {@link MetadataBuilder} all information that were pending parsing completion.
          */
         void flush() {
-            metadata.addTemporalExtent(toDate(startTime), toDate(endTime));
+            metadata.addTemporalExtent(startTime, endTime);
         }
     }
 

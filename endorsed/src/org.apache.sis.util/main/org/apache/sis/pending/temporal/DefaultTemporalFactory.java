@@ -16,7 +16,7 @@
  */
 package org.apache.sis.pending.temporal;
 
-import java.util.Date;
+import java.time.Instant;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.temporal.*;
@@ -41,11 +41,6 @@ public final class DefaultTemporalFactory implements TemporalFactory {
 
     /** Creates the singleton instance. */
     private DefaultTemporalFactory() {
-    }
-
-    /** Creates an {@link Instant} for the given date. */
-    @Override public Instant createInstant(Date date) {
-        return new DefaultInstant(date);
     }
 
     /** Creates a period for the two given instants. */

@@ -18,6 +18,7 @@ package org.apache.sis.storage.base;
 
 import java.time.Instant;
 import java.time.Duration;
+import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAmount;
 import java.util.Date;
 import java.util.Locale;
@@ -1780,6 +1781,21 @@ public class MetadataBuilder {
             addIfNotPresent(extent().getVerticalElements(),
                             new DefaultVerticalExtent(minimumValue, maximumValue, verticalCRS));
         }
+    }
+
+    /**
+     * Adds a temporal extent covered by the data.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/extent/temporalElement}</li>
+     * </ul>
+     *
+     * @param  startTime  when the data begins, or {@code null} if unbounded.
+     * @param  endTime    when the data ends, or {@code null} if unbounded.
+     */
+    public final void addTemporalExtent(final Temporal startTime, final Temporal endTime) {
+        addTemporalExtent(StandardDateFormat.toDate(startTime), StandardDateFormat.toDate(endTime));
     }
 
     /**

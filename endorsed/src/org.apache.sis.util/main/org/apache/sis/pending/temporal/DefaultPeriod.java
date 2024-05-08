@@ -19,7 +19,7 @@ package org.apache.sis.pending.temporal;
 import java.util.Objects;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.temporal.Instant;
+import java.time.Instant;
 import org.opengis.temporal.Period;
 
 

@@ -25,7 +25,7 @@ import org.apache.sis.system.SystemListener;
 import org.apache.sis.pending.temporal.DefaultTemporalFactory;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.temporal.Instant;
+import java.time.Instant;
 import org.opengis.temporal.Period;
 import org.opengis.temporal.TemporalFactory;
 
@@ -67,7 +67,7 @@ public final class TemporalUtilities extends SystemListener {
      *
      * @return the temporal factory.
      */
-    public static TemporalFactory getTemporalFactory() {
+    private static TemporalFactory getTemporalFactory() {
         TemporalFactory factory = implementation;
         if (factory == null) {
             factory = ServiceLoader.load(TemporalFactory.class, Reflect.getContextClassLoader())
@@ -78,36 +78,50 @@ public final class TemporalUtilities extends SystemListener {
     }
 
     /**
-     * Creates an instant for the given date using the given factory.
-     */
-    private static Instant createInstant(final TemporalFactory factory, final Date date) {
-        return factory.createInstant(date);
-    }
-
-    /**
      * Creates an instant for the given date.
      *
      * @param  time  the date for which to create instant, or {@code null}.
      * @return the instant, or {@code null} if the given time was null.
      * @throws UnsupportedOperationException if the temporal factory is not available on the module path.
      */
-    public static Instant createInstant(final Date time) throws UnsupportedOperationException {
-        return (time != null) ? createInstant(getTemporalFactory(), time) : null;
+    public static TemporalPrimitive createInstant(final Date time) throws UnsupportedOperationException {
+        if (time == null) return null;
+        final Instant t = time.toInstant();
+        return getTemporalFactory().createPeriod(t, t);
     }
 
     /**
      * Creates a period for the given begin and end dates. The given arguments can be null if the
-     * {@link TemporalFactory#createInstant(Date)} method accepts null dates, which stand for
-     * undetermined position.
+     * {@link TemporalFactory} methods accept null instants, which stand for undetermined position.
      *
      * @param  begin  the begin date, inclusive.
      * @param  end    the end date, inclusive.
-     * @return the period.
+     * @return the period, or {@code null} if both arguments are null.
      * @throws UnsupportedOperationException if the temporal factory is not available on the module path.
      */
-    public static Period createPeriod(final Date begin, final Date end) throws UnsupportedOperationException {
-        final TemporalFactory factory = getTemporalFactory();
-        return factory.createPeriod(createInstant(factory, begin), createInstant(factory, end));
+    public static TemporalPrimitive createPeriod(final Date begin, final Date end) throws UnsupportedOperationException {
+        if (begin == null && end == null) return null;
+        return getTemporalFactory().createPeriod(
+                (begin != null) ? begin.toInstant() : null,
+                  (end != null) ?   end.toInstant() : null);
+    }
+
+    /**
+     * Returns the given value as an instant if the period is a single point in time, or {@code null} otherwis.
+     *
+     * @param  time  the instant or period for which to get a date, or {@code null}.
+     * @return the instant, or {@code null} if none.
+     */
+    public static Instant getInstant(final TemporalPrimitive time) {
+        if (time instanceof Period) {
+            var p = (Period) time;
+            final Instant begin = p.getBeginning();
+            final Instant end = p.getEnding();
+            if (begin == null) return end;
+            if (end == null) return begin;
+            if (begin.equals(end)) return end;
+        }
+        return null;
     }
 
     /**
@@ -117,28 +131,14 @@ public final class TemporalUtilities extends SystemListener {
      * @param  time  the instant or period for which to get a date, or {@code null}.
      * @return the requested time as a Java date, or {@code null} if none.
      */
-    public static Date getDate(final TemporalPrimitive time) {
-        Instant instant;
-        if (time instanceof Instant) {
-            instant = (Instant) time;
-        } else if (time instanceof Period) {
-            instant = ((Period) time).getEnding();
-            if (instant == null) {
-                instant = ((Period) time).getBeginning();
+    public static Date getAnyDate(final TemporalPrimitive time) {
+        if (time instanceof Period) {
+            var p = (Period) time;
+            Instant instant;
+            if ((instant = p.getEnding()) != null || (instant = p.getBeginning()) != null) {
+                return Date.from(instant);
             }
-        } else {
-            return null;
         }
-        return instant.getDate();
-    }
-
-    /**
-     * Temporary method, to be removed after we upgraded metadata to {@link java.time}.
-     *
-     * @param  instant  the Java instant, or {@code null}.
-     * @return the legacy Java date, or {@code null}.
-     */
-    public static Date toDate(final java.time.Instant instant) {
-        return (instant != null) ? Date.from(instant) : null;
+        return null;
     }
 }

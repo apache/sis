@@ -33,8 +33,8 @@ import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.time.Instant;
 import org.opengis.temporal.Period;
-import org.opengis.temporal.Instant;
 
 
 /**
@@ -64,7 +64,7 @@ import org.opengis.temporal.Instant;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @XmlType(name = "EX_TemporalExtent_Type")
@@ -168,15 +168,14 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * @return the requested time as a Java date, or {@code null} if none.
      */
     static Date getTime(final TemporalPrimitive extent, final boolean begin) {
-        final Instant instant;
-        if (extent instanceof Instant) {
-            instant = (Instant) extent;
-        } else if (extent instanceof Period) {
-            instant = begin ? ((Period) extent).getBeginning() : ((Period) extent).getEnding();
-        } else {
-            return null;
+        if (extent instanceof Period) {
+            var p = (Period) extent;
+            Instant time = begin ? p.getBeginning() : p.getEnding();
+            if (time != null) {
+                return Date.from(time);
+            }
         }
-        return instant.getDate();
+        return null;
     }
 
     /**
@@ -209,13 +208,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
     public void setBounds(final Date startTime, final Date endTime) throws UnsupportedOperationException {
         TemporalPrimitive value = null;
         if (startTime != null || endTime != null) {
-            if (endTime == null || endTime.equals(startTime)) {
-                value = TemporalUtilities.createInstant(startTime);
-            } else if (startTime == null) {
-                value = TemporalUtilities.createInstant(endTime);
-            } else {
-                value = TemporalUtilities.createPeriod(startTime, endTime);
-            }
+            value = TemporalUtilities.createPeriod(startTime, endTime);
         }
         setExtent(value);
     }

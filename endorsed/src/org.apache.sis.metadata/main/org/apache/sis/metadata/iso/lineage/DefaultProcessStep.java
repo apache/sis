@@ -180,6 +180,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      *
      * @see #castOrCopy(ProcessStep)
      */
+    @SuppressWarnings("this-escape")
     public DefaultProcessStep(final ProcessStep object) {
         super(object);
         if (object != null) {
@@ -299,7 +300,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     @Deprecated(since="1.0")
     @XmlElement(name = "dateTime", namespace = LegacyNamespaces.GMD)
     public Date getDate() {
-        return FilterByVersion.LEGACY_METADATA.accept() ? TemporalUtilities.getDate(getStepDateTime()) : null;
+        return FilterByVersion.LEGACY_METADATA.accept() ? TemporalUtilities.getAnyDate(getStepDateTime()) : null;
     }
 
     /**
