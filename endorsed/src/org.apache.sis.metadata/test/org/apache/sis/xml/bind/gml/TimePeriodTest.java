@@ -18,6 +18,7 @@ package org.apache.sis.xml.bind.gml;
 
 import java.util.HashMap;
 import java.util.Locale;
+import java.time.Instant;
 import javax.xml.datatype.DatatypeConfigurationException;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.Unmarshaller;
@@ -36,9 +37,6 @@ import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.test.TestUtilities.date;
 import static org.apache.sis.test.TestUtilities.format;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import java.time.Instant;
 
 
 /**

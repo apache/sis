@@ -16,12 +16,12 @@
  */
 package org.apache.sis.pending.temporal;
 
+import java.time.temporal.TemporalAmount;
 import org.opengis.temporal.RelativePosition;
 import org.opengis.temporal.TemporalGeometricPrimitive;
 import org.opengis.temporal.TemporalPrimitive;
 
 // Specific to the geoapi-4.0 branch:
-import java.time.temporal.TemporalAmount;
 import org.opengis.metadata.Identifier;
 
 

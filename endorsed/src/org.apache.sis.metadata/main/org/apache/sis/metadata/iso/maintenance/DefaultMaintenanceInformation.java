@@ -20,7 +20,6 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
-import java.time.temporal.TemporalAmount;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -44,6 +43,7 @@ import static org.apache.sis.metadata.privy.ImplementationHelper.valueIfDefined;
 import org.opengis.metadata.maintenance.Scope;
 
 // Specific to the geoapi-4.0 branch:
+import java.time.temporal.TemporalAmount;
 import org.opengis.metadata.citation.Responsibility;
 
 

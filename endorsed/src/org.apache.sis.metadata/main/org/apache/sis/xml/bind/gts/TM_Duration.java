@@ -18,6 +18,10 @@ package org.apache.sis.xml.bind.gts;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.Period;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAmount;
+import java.time.temporal.TemporalUnit;
 import javax.xml.datatype.Duration;
 import javax.xml.datatype.DatatypeConfigurationException;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -25,12 +29,6 @@ import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.privy.XmlUtilities;
 import org.apache.sis.xml.bind.gco.PropertyType;
 import org.apache.sis.util.resources.Errors;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import java.time.Period;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalAmount;
-import java.time.temporal.TemporalUnit;
 
 
 /**

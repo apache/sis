@@ -17,6 +17,7 @@
 package org.apache.sis.xml.bind.gml;
 
 import java.util.Date;
+import java.time.Instant;
 import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.temporal.TemporalPrimitive;
 import org.apache.sis.xml.privy.XmlUtilities;
@@ -26,7 +27,6 @@ import org.apache.sis.pending.temporal.TemporalUtilities;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import java.time.Instant;
 import org.opengis.temporal.Period;
 
 

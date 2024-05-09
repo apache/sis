@@ -17,6 +17,7 @@
 package org.apache.sis.xml.bind.gml;
 
 import java.util.Date;
+import java.time.Instant;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeConfigurationException;
 import jakarta.xml.bind.annotation.XmlType;
@@ -25,9 +26,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.xml.privy.XmlUtilities;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import java.time.Instant;
 
 
 /**

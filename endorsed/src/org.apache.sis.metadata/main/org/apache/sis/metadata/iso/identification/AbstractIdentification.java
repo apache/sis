@@ -17,6 +17,7 @@
 package org.apache.sis.metadata.iso.identification;
 
 import java.util.Collection;
+import java.time.temporal.TemporalAmount;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -49,7 +50,6 @@ import org.apache.sis.xml.privy.LegacyNamespaces;
 import org.apache.sis.util.iso.Types;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import java.time.temporal.TemporalAmount;
 import org.opengis.metadata.identification.AssociatedResource;
 
 // Specific to the geoapi-4.0 branch:

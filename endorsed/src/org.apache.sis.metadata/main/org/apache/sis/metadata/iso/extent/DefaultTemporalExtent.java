@@ -17,6 +17,7 @@
 package org.apache.sis.metadata.iso.extent;
 
 import java.util.Date;
+import java.time.Instant;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -33,7 +34,6 @@ import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import java.time.Instant;
 import org.opengis.temporal.Period;
 
 
