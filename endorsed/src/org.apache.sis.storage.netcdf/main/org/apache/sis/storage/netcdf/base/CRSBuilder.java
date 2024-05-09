@@ -18,6 +18,7 @@ package org.apache.sis.storage.netcdf.base;
 
 import java.util.Map;
 import java.util.List;
+import java.util.Date;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.StringJoiner;
@@ -51,7 +52,6 @@ import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.provider.Equirectangular;
-import org.apache.sis.metadata.privy.TemporalUtilities;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.netcdf.internal.Resources;
@@ -967,7 +967,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
                     datum = c.datum();
                 } else {
                     properties = properties("Time since " + epoch);
-                    datum = factory.createTemporalDatum(properties, TemporalUtilities.toDate(epoch));
+                    datum = factory.createTemporalDatum(properties, Date.from(epoch));
                 }
             }
         }

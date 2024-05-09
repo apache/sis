@@ -23,13 +23,13 @@ import java.io.Serializable;
 import org.apache.sis.test.TestUtilities;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.time.Instant;
+import java.time.temporal.TemporalAmount;
 import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 import org.opengis.filter.Literal;
 import org.opengis.temporal.Period;
-import org.opengis.temporal.Duration;
 import org.opengis.temporal.RelativePosition;
-import org.opengis.temporal.TemporalPosition;
 import org.opengis.temporal.TemporalPrimitive;
 import org.opengis.temporal.TemporalGeometricPrimitive;
 
@@ -62,29 +62,14 @@ final class PeriodLiteral implements Period, Literal<Feature,Period>, Serializab
     @Override public Period getValue() {return this;}
 
     /** Returns a bound of this period. */
-    @Override public org.opengis.temporal.Instant getBeginning() {return instant(begin);}
-    @Override public org.opengis.temporal.Instant getEnding()    {return instant(end);}
-
-    /** Wraps the value that defines a period. */
-    private static org.opengis.temporal.Instant instant(final long t) {
-        return new org.opengis.temporal.Instant() {
-            @Override public Date   getDate()  {return new Date(t);}
-            @Override public String toString() {return "Instant[" + TestUtilities.format(getDate()) + '[';}
-
-            /** Not needed for the tests. */
-            @Override public ReferenceIdentifier getName()                           {throw new UnsupportedOperationException();}
-            @Override public TemporalPosition getTemporalPosition()                  {throw new UnsupportedOperationException();}
-            @Override public RelativePosition relativePosition(TemporalPrimitive o)  {throw new UnsupportedOperationException();}
-            @Override public Duration         distance(TemporalGeometricPrimitive o) {throw new UnsupportedOperationException();}
-            @Override public Duration         length()                               {throw new UnsupportedOperationException();}
-        };
-    }
+    @Override public Instant getBeginning() {return Instant.ofEpochMilli(begin);}
+    @Override public Instant getEnding()    {return Instant.ofEpochMilli(end);}
 
     /** Not needed for the tests. */
     @Override public ReferenceIdentifier getName()                           {throw new UnsupportedOperationException();}
     @Override public RelativePosition relativePosition(TemporalPrimitive o)  {throw new UnsupportedOperationException();}
-    @Override public Duration         distance(TemporalGeometricPrimitive o) {throw new UnsupportedOperationException();}
-    @Override public Duration         length()                               {throw new UnsupportedOperationException();}
+    @Override public TemporalAmount   distance(TemporalGeometricPrimitive o) {throw new UnsupportedOperationException();}
+    @Override public TemporalAmount   length()                               {throw new UnsupportedOperationException();}
     @Override public <N> Expression<Feature,N> toValueType(Class<N> target)  {throw new UnsupportedOperationException();}
 
     /**

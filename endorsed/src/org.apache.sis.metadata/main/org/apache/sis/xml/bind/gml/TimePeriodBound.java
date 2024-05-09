@@ -23,7 +23,7 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlTransient;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.temporal.Instant;
+import java.time.Instant;
 
 
 /**

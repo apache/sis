@@ -16,12 +16,12 @@
  */
 package org.apache.sis.pending.temporal;
 
-import org.opengis.temporal.Duration;
 import org.opengis.temporal.RelativePosition;
 import org.opengis.temporal.TemporalGeometricPrimitive;
 import org.opengis.temporal.TemporalPrimitive;
 
 // Specific to the geoapi-3.1 branch:
+import java.time.temporal.TemporalAmount;
 import org.opengis.referencing.ReferenceIdentifier;
 
 
@@ -31,7 +31,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-class Primitive implements TemporalGeometricPrimitive, ReferenceIdentifier {
+abstract class Primitive implements TemporalGeometricPrimitive, ReferenceIdentifier {
     /**
      * For sub-class constructors.
      */
@@ -57,18 +57,13 @@ class Primitive implements TemporalGeometricPrimitive, ReferenceIdentifier {
         return toString();
     }
 
-    /** position of this primitive relative to another primitive. */
+    /** Position of this primitive relative to another primitive. */
     @Override public final RelativePosition relativePosition(TemporalPrimitive other) {
-        throw DefaultTemporalFactory.unsupported();
+        throw new UnsupportedOperationException();
     }
 
     /** Absolute value of the difference between temporal positions. */
-    @Override public final Duration distance(TemporalGeometricPrimitive other) {
-        throw DefaultTemporalFactory.unsupported();
-    }
-
-    /** Duration of this temporal geometric primitive. */
-    @Override public final Duration length() {
-        return null;    // Do not throw an exception here; this is invoked by reflection.
+    @Override public final TemporalAmount distance(TemporalGeometricPrimitive other) {
+        throw new UnsupportedOperationException();
     }
 }

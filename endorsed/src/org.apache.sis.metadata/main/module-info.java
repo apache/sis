@@ -52,7 +52,6 @@ module org.apache.sis.metadata {
     uses org.apache.sis.metadata.sql.privy.Initializer;
     uses org.apache.sis.xml.bind.AdapterReplacement;
     uses org.apache.sis.xml.bind.TypeRegistration;
-    uses org.opengis.temporal.TemporalFactory;
 
     /*
      * Public API open to everyone.

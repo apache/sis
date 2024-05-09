@@ -27,7 +27,7 @@ import org.apache.sis.util.privy.Strings;
 import org.apache.sis.xml.privy.XmlUtilities;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.temporal.Instant;
+import java.time.Instant;
 
 
 /**
@@ -78,18 +78,15 @@ public final class TimeInstant extends GMLAdapter {
      */
     static XMLGregorianCalendar toXML(final Instant instant) {
         if (instant != null) {
-            final Date date = instant.getDate();
-            if (date != null) {
-                final Context context = Context.current();
-                try {
-                    final XMLGregorianCalendar gc = XmlUtilities.toXML(context, date);
-                    if (gc != null) {
-                        XmlUtilities.trimTime(gc, false);
-                        return gc;
-                    }
-                } catch (DatatypeConfigurationException e) {
-                    Context.warningOccured(context, TimeInstant.class, "toXML", e, true);
+            final Context context = Context.current();
+            try {
+                final XMLGregorianCalendar gc = XmlUtilities.toXML(context, Date.from(instant));
+                if (gc != null) {
+                    XmlUtilities.trimTime(gc, false);
+                    return gc;
                 }
+            } catch (DatatypeConfigurationException | IllegalArgumentException e) {
+                Context.warningOccured(context, TimeInstant.class, "toXML", e, true);
             }
         }
         return null;
