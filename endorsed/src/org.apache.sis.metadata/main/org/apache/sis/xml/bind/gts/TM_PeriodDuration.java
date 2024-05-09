@@ -16,35 +16,21 @@
  */
 package org.apache.sis.xml.bind.gts;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
+import java.time.temporal.TemporalAmount;
 import javax.xml.datatype.Duration;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.DatatypeConfigurationException;
 import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.temporal.PeriodDuration;
-import org.opengis.util.InternationalString;
-import org.apache.sis.xml.bind.Context;
-import org.apache.sis.xml.privy.XmlUtilities;
+import org.apache.sis.pending.temporal.DefaultPeriodDuration;
 import org.apache.sis.xml.bind.gco.PropertyType;
-import org.apache.sis.metadata.privy.TemporalUtilities;
-import org.apache.sis.util.SimpleInternationalString;
-
-// Specific to the main branch:
-import org.apache.sis.pending.geoapi.temporal.TemporalFactory;
 
 
 /**
  * Wraps a {@code gts:TM_PeriodDuration} element.
  *
- * @todo The work done in the {@link #getElement()} and {@link #setElement(Duration)} methods should move
- *       to {@link org.apache.sis.xml.ValueConverter}. However, they rely on the {@link org.opengis.temporal}
- *       API in geoapi-pending, which is not very clear... We prefer to hide this for now.
- *
  * @author  Guilhem Legal (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-public class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, PeriodDuration> {
+public final class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, PeriodDuration> {
     /**
      * Empty constructor for JAXB.
      */
@@ -89,50 +75,8 @@ public class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, PeriodDur
      */
     @XmlElement(name = "TM_PeriodDuration")
     public final Duration getElement() {
-        return toXML(metadata);
-    }
-
-    /**
-     * Converts the given ISO 19108 duration into a Java XML duration.
-     */
-    static Duration toXML(final PeriodDuration duration) {
-        if (duration instanceof org.apache.sis.pending.geoapi.temporal.PeriodDuration) try {
-            final org.apache.sis.pending.geoapi.temporal.PeriodDuration metadata =
-                    (org.apache.sis.pending.geoapi.temporal.PeriodDuration) duration;
-            /*
-             * Get the DatatypeFactory first because if not available, then we don't need to parse
-             * the calendar fields. This has the side effect of not validating the calendar fields
-             * syntax (which should be integer values), but maybe this is what the user wants.
-             */
-            final DatatypeFactory factory = XmlUtilities.getDatatypeFactory();
-            InternationalString value;
-            BigInteger years = null;
-            if ((value = metadata.getYears()) != null) {
-                years = new BigInteger(value.toString());
-            }
-            BigInteger months = null;
-            if ((value = metadata.getMonths()) != null) {
-                months = new BigInteger(value.toString());
-            }
-            BigInteger days = null;
-            if ((value = metadata.getDays()) != null) {
-                days = new BigInteger(value.toString());
-            }
-            BigInteger hours = null;
-            if ((value = metadata.getHours()) != null) {
-                hours = new BigInteger(value.toString());
-            }
-            BigInteger minutes = null;
-            if ((value = metadata.getMinutes()) != null) {
-                minutes = new BigInteger(value.toString());
-            }
-            BigDecimal seconds = null;
-            if ((value = metadata.getSeconds()) != null) {
-                seconds = new BigDecimal(value.toString());
-            }
-            return factory.newDuration(true, years, months, days, hours, minutes, seconds);
-        } catch (DatatypeConfigurationException e) {
-            Context.warningOccured(Context.current(), TM_PeriodDuration.class, "toXML", e, true);
+        if (metadata instanceof TemporalAmount) {
+            return new TM_Duration((TemporalAmount) metadata).getElement();
         }
         return null;
     }
@@ -144,62 +88,13 @@ public class TM_PeriodDuration extends PropertyType<TM_PeriodDuration, PeriodDur
      * @param  duration  the adapter to set.
      */
     public final void setElement(final Duration duration) {
-        metadata = toISO(duration);
-    }
-
-    /**
-     * Converts the given Java XML duration into an ISO 19108 duration.
-     */
-    static PeriodDuration toISO(final Duration duration) {
-        if (duration != null) {
-            final TemporalFactory factory = TemporalUtilities.getTemporalFactory();
-            InternationalString years = null;
-            int value;
-            if ((value = duration.getYears()) != 0) {
-                years = new SimpleInternationalString(Integer.toString(value));
-            }
-            InternationalString months = null;
-            if ((value = duration.getMonths()) != 0) {
-                months = new SimpleInternationalString(Integer.toString(value));
-            }
-            InternationalString weeks = null;                   // No weeks in javax.xml.datatype.Duration
-            InternationalString days = null;
-            if ((value = duration.getDays()) != 0) {
-                days = new SimpleInternationalString(Integer.toString(value));
-            }
-            InternationalString hours = null;
-            if ((value = duration.getHours()) != 0) {
-                hours = new SimpleInternationalString(Integer.toString(value));
-            }
-            InternationalString minutes = null;
-            if ((value = duration.getMinutes()) != 0) {
-                minutes = new SimpleInternationalString(Integer.toString(value));
-            }
-            InternationalString seconds = null;
-            if ((value = duration.getSeconds()) != 0) {
-                seconds = new SimpleInternationalString(Integer.toString(value));
-            }
-            return factory.createPeriodDuration(years, months, weeks, days, hours, minutes, seconds);
-        }
-        return null;
-    }
-
-    /**
-     * Wraps the value only if marshalling an element from the ISO 19115:2014 metadata model.
-     * Otherwise (i.e. if marshalling according legacy ISO 19115:2003 model), omits the element.
-     */
-    public static final class Since2014 extends TM_PeriodDuration {
-        /** Empty constructor used only by JAXB. */
-        public Since2014() {
-        }
-
-        /**
-         * Wraps the given value in an ISO 19115-3 element, unless we are marshalling an older document.
-         *
-         * @return a non-null value only if marshalling ISO 19115-3 or newer.
-         */
-        @Override protected TM_PeriodDuration wrap(final PeriodDuration value) {
-            return accept2014() ? super.wrap(value) : null;
+        var p = new TM_Duration();
+        p.setElement(duration);
+        TemporalAmount t = p.get();
+        if (t == null || t instanceof PeriodDuration) {
+            metadata = (PeriodDuration) t;
+        } else {
+            metadata = new DefaultPeriodDuration(t);
         }
     }
 }

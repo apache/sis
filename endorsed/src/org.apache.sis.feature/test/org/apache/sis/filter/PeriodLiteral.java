@@ -17,6 +17,7 @@
 package org.apache.sis.filter;
 
 import java.util.Date;
+import java.time.Instant;
 import java.io.Serializable;
 
 // Test dependencies
@@ -54,16 +55,8 @@ final class PeriodLiteral implements Period, Literal<AbstractFeature,Period>, Se
     @Override public Period apply(AbstractFeature input) {return this;}
 
     /** Returns a bound of this period. */
-    @Override public org.apache.sis.pending.geoapi.temporal.Instant getBeginning() {return instant(begin);}
-    @Override public org.apache.sis.pending.geoapi.temporal.Instant getEnding()    {return instant(end);}
-
-    /** Wraps the value that defines a period. */
-    private static org.apache.sis.pending.geoapi.temporal.Instant instant(final long t) {
-        return new org.apache.sis.pending.geoapi.temporal.Instant() {
-            @Override public Date   getDate()  {return new Date(t);}
-            @Override public String toString() {return "Instant[" + TestUtilities.format(getDate()) + '[';}
-        };
-    }
+    @Override public Instant getBeginning() {return Instant.ofEpochMilli(begin);}
+    @Override public Instant getEnding()    {return Instant.ofEpochMilli(end);}
 
     /** Not needed for the tests. */
     @Override public <N> Expression<AbstractFeature,N> toValueType(Class<N> target) {throw new UnsupportedOperationException();}

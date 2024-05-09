@@ -37,7 +37,7 @@ import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.privy.LegacyNamespaces;
 import org.apache.sis.xml.bind.gml.TM_Primitive;
 import org.apache.sis.xml.bind.metadata.MD_Scope;
-import org.apache.sis.metadata.privy.TemporalUtilities;
+import org.apache.sis.pending.temporal.TemporalUtilities;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.metadata.citation.ResponsibleParty;
@@ -183,6 +183,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      *
      * @see #castOrCopy(ProcessStep)
      */
+    @SuppressWarnings("this-escape")
     public DefaultProcessStep(final ProcessStep object) {
         super(object);
         if (object != null) {
@@ -304,7 +305,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     @Deprecated(since="1.0")
     @XmlElement(name = "dateTime", namespace = LegacyNamespaces.GMD)
     public Date getDate() {
-        return FilterByVersion.LEGACY_METADATA.accept() ? TemporalUtilities.getDate(getStepDateTime()) : null;
+        return FilterByVersion.LEGACY_METADATA.accept() ? TemporalUtilities.getAnyDate(getStepDateTime()) : null;
     }
 
     /**

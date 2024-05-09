@@ -16,7 +16,6 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Date;
 import java.time.Instant;
 
 // Specific to the main branch:
@@ -61,80 +60,27 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
     }
 
     /**
-     * Converts a GeoAPI instant to a Java instant. This is a temporary method
-     * to be removed after we revisited {@link org.apache.sis.pending.geoapi.temporal} package.
-     *
-     * @param  instant  the GeoAPI instant, or {@code null}.
-     * @return the Java instant, or {@code null}.
-     */
-    private static Instant toInstant(final org.apache.sis.pending.geoapi.temporal.Instant instant) {
-        if (instant != null) {
-            final Date t = instant.getDate();
-            if (t != null) {
-                return t.toInstant();
-            }
-        }
-        return null;
-    }
-
-    /**
      * Returns {@code true} if {@code self} is non null and before {@code other}.
      * This is an helper function for {@code evaluate(…)} methods implementations.
      */
-    private static boolean isBefore(final org.apache.sis.pending.geoapi.temporal.Instant self, final Instant other) {
-        final Instant t = toInstant(self);
-        return (t != null) && t.isBefore(other);
+    private static boolean isBefore(final Instant self, final Instant other) {
+        return (self != null) && (other != null) && self.isBefore(other);
     }
 
     /**
      * Returns {@code true} if {@code self} is non null and after {@code other}.
      * This is an helper function for {@code evaluate(…)} methods implementations.
      */
-    private static boolean isAfter(final org.apache.sis.pending.geoapi.temporal.Instant self, final Instant other) {
-        final Instant t = toInstant(self);
-        return (t != null) && t.isAfter(other);
+    private static boolean isAfter(final Instant self, final Instant other) {
+        return (self != null) && (other != null) && self.isAfter(other);
     }
 
     /**
      * Returns {@code true} if {@code self} is non null and equal to {@code other}.
      * This is an helper function for {@code evaluate(…)} methods implementations.
      */
-    private static boolean isEqual(final org.apache.sis.pending.geoapi.temporal.Instant self, final Instant other) {
-        final Instant t = toInstant(self);
-        return (t != null) && t.equals(other);
-    }
-
-    /**
-     * Returns {@code true} if {@code self} is non null and before {@code other}.
-     * This is an helper function for {@code evaluate(…)} methods implementations.
-     */
-    private static boolean isBefore(final org.apache.sis.pending.geoapi.temporal.Instant self,
-                                    final org.apache.sis.pending.geoapi.temporal.Instant other)
-    {
-        final Instant t, o;
-        return ((t = toInstant(self)) != null) && ((o = toInstant(other)) != null) && t.isBefore(o);
-    }
-
-    /**
-     * Returns {@code true} if {@code self} is non null and after {@code other}.
-     * This is an helper function for {@code evaluate(…)} methods implementations.
-     */
-    private static boolean isAfter(final org.apache.sis.pending.geoapi.temporal.Instant self,
-                                   final org.apache.sis.pending.geoapi.temporal.Instant other)
-    {
-        final Instant t, o;
-        return ((t = toInstant(self)) != null) && ((o = toInstant(other)) != null) && t.isAfter(o);
-    }
-
-    /**
-     * Returns {@code true} if {@code self} is non null and equal to {@code other}.
-     * This is an helper function for {@code evaluate(…)} methods implementations.
-     */
-    private static boolean isEqual(final org.apache.sis.pending.geoapi.temporal.Instant self,
-                                   final org.apache.sis.pending.geoapi.temporal.Instant other)
-    {
-        final Instant t = toInstant(self);
-        return (t != null) && t.equals(toInstant(other));
+    private static boolean isEqual(final Instant self, final Instant other) {
+        return (self != null) && self.equals(other);
     }
 
     /**
@@ -732,11 +678,11 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Period other) {
-            final Instant selfEnd, otherBegin;
-            return ((selfEnd    = toInstant(self .getEnding()))    != null) &&
-                   ((otherBegin = toInstant(other.getBeginning())) != null) && selfEnd.isAfter(otherBegin) &&
-                   isBefore(self.getBeginning(), otherBegin) &&
-                   isAfter(other.getEnding(),    selfEnd);
+            final Instant selfBegin, selfEnd, otherBegin, otherEnd;
+            return ((otherBegin = other.getBeginning()) != null) &&
+                   ((selfBegin  = self .getBeginning()) != null) && selfBegin.isBefore(otherBegin) &&
+                   ((selfEnd    = self .getEnding())    != null) && selfEnd  .isAfter (otherBegin) &&
+                   ((otherEnd   = other.getEnding())    != null) && otherEnd .isAfter (selfEnd);
         }
     }
 
@@ -772,11 +718,11 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Period other) {
-            final Instant selfBegin, otherEnd;
-            return ((selfBegin = toInstant(self .getBeginning())) != null) &&
-                   ((otherEnd  = toInstant(other.getEnding()))    != null) && selfBegin.isBefore(otherEnd) &&
-                   isBefore(other.getBeginning(), selfBegin) &&
-                   isAfter (self .getEnding(),    otherEnd);
+            final Instant selfBegin, selfEnd, otherBegin, otherEnd;
+            return ((selfBegin  = self .getBeginning()) != null) &&
+                   ((otherBegin = other.getBeginning()) != null) && otherBegin.isBefore(selfBegin) &&
+                   ((otherEnd   = other.getEnding())    != null) && selfBegin .isBefore(otherEnd)  &&
+                   ((selfEnd    = self .getEnding())    != null) && selfEnd   .isAfter (otherEnd);
         }
     }
 
@@ -811,10 +757,10 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
         /** Condition defined by OGC filter specification. */
         @Override public boolean evaluate(final Period self, final Period other) {
             final Instant selfBegin, selfEnd, otherBegin, otherEnd;
-            return ((selfBegin  = toInstant(self .getBeginning())) != null) &&
-                   ((otherEnd   = toInstant(other.getEnding()))    != null) && selfBegin.isBefore(otherEnd) &&
-                   ((selfEnd    = toInstant(self .getEnding()))    != null) &&
-                   ((otherBegin = toInstant(other.getBeginning())) != null) && selfEnd.isAfter(otherBegin);
+            return ((selfBegin  = self .getBeginning()) != null) &&
+                   ((otherEnd   = other.getEnding())    != null) && selfBegin.isBefore(otherEnd) &&
+                   ((selfEnd    = self .getEnding())    != null) &&
+                   ((otherBegin = other.getBeginning()) != null) && selfEnd.isAfter(otherBegin);
         }
     }
 }

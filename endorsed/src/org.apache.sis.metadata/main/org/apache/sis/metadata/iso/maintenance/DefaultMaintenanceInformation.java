@@ -72,7 +72,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Guilhem Legal (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @XmlType(name = "MD_MaintenanceInformation_Type", propOrder = {
@@ -91,7 +91,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -8736825706141936429L;
+    private static final long serialVersionUID = -7934472150551882812L;
 
     /**
      * New code list item defined in ISO 19115:2014.
@@ -318,6 +318,11 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
     /**
      * Returns the maintenance period other than those defined.
      *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * The return type may be changed to {@link java.time.temporal.TemporalAmount} in Apache SIS 2.0.
+     * This change depend on a corresponding change in GeoAPI interfaces.
+     * </div>
+     *
      * @return the maintenance period, or {@code null}.
      */
     @Override
@@ -328,6 +333,11 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
 
     /**
      * Sets the maintenance period other than those defined.
+     *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * The parameter type may be changed to {@link java.time.temporal.TemporalAmount} in Apache SIS 2.0.
+     * This change depend on a corresponding change in GeoAPI interfaces.
+     * </div>
      *
      * @param  newValue  the new user defined maintenance frequency.
      */

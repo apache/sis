@@ -17,6 +17,7 @@
 package org.apache.sis.xml.bind.gml;
 
 import java.util.Date;
+import java.time.Instant;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeConfigurationException;
 import jakarta.xml.bind.annotation.XmlType;
@@ -25,9 +26,6 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.xml.privy.XmlUtilities;
-
-// Specific to the main branch:
-import org.apache.sis.pending.geoapi.temporal.Instant;
 
 
 /**
@@ -78,18 +76,15 @@ public final class TimeInstant extends GMLAdapter {
      */
     static XMLGregorianCalendar toXML(final Instant instant) {
         if (instant != null) {
-            final Date date = instant.getDate();
-            if (date != null) {
-                final Context context = Context.current();
-                try {
-                    final XMLGregorianCalendar gc = XmlUtilities.toXML(context, date);
-                    if (gc != null) {
-                        XmlUtilities.trimTime(gc, false);
-                        return gc;
-                    }
-                } catch (DatatypeConfigurationException e) {
-                    Context.warningOccured(context, TimeInstant.class, "toXML", e, true);
+            final Context context = Context.current();
+            try {
+                final XMLGregorianCalendar gc = XmlUtilities.toXML(context, Date.from(instant));
+                if (gc != null) {
+                    XmlUtilities.trimTime(gc, false);
+                    return gc;
                 }
+            } catch (DatatypeConfigurationException | IllegalArgumentException e) {
+                Context.warningOccured(context, TimeInstant.class, "toXML", e, true);
             }
         }
         return null;

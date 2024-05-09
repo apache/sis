@@ -38,14 +38,24 @@ import static org.apache.sis.referencing.operation.provider.Robinson.*;
  * by interpolations of tabulated values instead of analytic function.
  * The table is indexed by latitude at a constant interval.
  *
- * <p>While the current implementation supports only the Robinson projection,
+ * <h2>Note on possible code reuse</h2>
+ * While the current implementation supports only the Robinson projection,
  * it could be generalized to any projection using interpolations in a similar way.
  * For example, the "Natural Earth" projection was initially defined by interpolations.
- * See {@link Variant} for a note about how to generalize.</p>
+ * See {@link Variant} for a note about how to generalize.
  *
  * <h2>References</h2>
  * <p>Snyder, J. P. (1990). <u>The Robinson projection: A computation algorithm.</u>
  * Cartography and Geographic Information Systems, 17 (4), p. 301-305.</p>
+ *
+ * <h3>Changes compared to the reference</h3>
+ * The Snyder's article gives a program in the ANSI Fortran language. That program has been translated
+ * to Java in this class and adapted for SIS architecture (constants moved to normalization matrices).
+ * Robinson did not specify a particular interpolation method, but Snyder's program uses the Stirling's
+ * central-difference formula, while PROJ uses cubic splices. Some other software use Aitken interpolation.
+ * The Fortran program translated to Java did not converged well for the inverse projection of points near
+ * a pole (maybe it is the reason why PROJ uses cubic splines instead). We modified the algorithm with the
+ * use of derivative (∂y/∂φ) for faster convergence.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
@@ -167,6 +177,9 @@ public class Robinson extends NormalizedProjection {
      * The units of measurement are implementation-specific (see super-class javadoc).
      * The results must be multiplied by the denormalization matrix before to get linear distances.
      *
+     * <p>Robinson did not specify a particular interpolation method. This class uses the
+     * Stirling's central-difference formula as published in Snyder (1990) article.</p>
+     *
      * @return the matrix of the projection derivative at the given source position,
      *         or {@code null} if the {@code derivate} argument is {@code false}.
      * @throws ProjectionException if the coordinates cannot be converted.
@@ -209,6 +222,9 @@ public class Robinson extends NormalizedProjection {
     /**
      * Converts the specified (<var>x</var>,<var>y</var>) coordinates
      * and stores the result in {@code dstPts} (angles in radians).
+     *
+     * <p>Snyder's algorithm has been modified in this method with the use of derivative (∂y/∂φ)
+     * for faster convergence. It is particularly important for points near the poles.</p>
      */
     @Override
     protected void inverseTransform(final double[] srcPts, final int srcOff,

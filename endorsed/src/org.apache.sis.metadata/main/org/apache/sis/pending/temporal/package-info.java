@@ -16,8 +16,10 @@
  */
 
 /**
- * Place-holder for a future "sis-temporal" module. This is a temporary package;
- * the temporal GeoAPI interfaces are expected to change a lot in a future revision.
+ * Place-holder for a future implementation of {@code org.opengis.temporal} interfaces.
+ * Those interfaces should be derived from ISO 19108, but they overlap with {@code java.time} standard API.
+ * Furthermore, the ISO 19108 standard also overlaps with ISO 19111. How to resolve those overlaps has not
+ * yet been decided.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

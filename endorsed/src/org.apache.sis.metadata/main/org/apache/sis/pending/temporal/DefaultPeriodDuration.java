@@ -16,44 +16,44 @@
  */
 package org.apache.sis.pending.temporal;
 
-import java.util.Date;
-
-// Specific to the main branch:
-import org.apache.sis.pending.geoapi.temporal.Instant;
+import java.time.temporal.TemporalAmount;
+import org.opengis.temporal.PeriodDuration;
 
 
 /**
- * Default implementation of GeoAPI instant. This is a temporary class;
+ * Default implementation of GeoAPI period duration. This is a temporary class;
  * GeoAPI temporal interfaces are expected to change a lot in a future revision.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class DefaultInstant implements Instant {
-    /** The date in milliseconds since epoch. */
-    private final long millis;
+public final class DefaultPeriodDuration implements PeriodDuration {
+    /**
+     * The temporal object providing the duration value.
+     */
+    public final TemporalAmount duration;
 
-    /** Creates a new instant for the given date. */
-    DefaultInstant(final Date time) {
-        millis = time.getTime();
+    /**
+     * Creates a new duration.
+     */
+    public DefaultPeriodDuration(final TemporalAmount duration) {
+        this.duration = duration;
     }
 
-    /** Returns the date used for describing temporal position. */
-    @Override public Date getDate() {
-        return new Date(millis);
-    }
-
-    /** String representation in ISO format. */
+    /** String representation. */
     @Override public String toString() {
-        return java.time.Instant.ofEpochMilli(millis).toString();
+        return duration.toString();
     }
 
     /** Hash code value of the time position. */
     @Override public int hashCode() {
-        return Long.hashCode(millis) ^ 57;
+        return duration.hashCode() ^ 879337943;
     }
 
     /** Compares with given object for equality. */
     @Override public boolean equals(final Object obj) {
-        return (obj instanceof DefaultInstant) && ((DefaultInstant) obj).millis == millis;
+        if (obj instanceof DefaultPeriodDuration) {
+            duration.equals(((DefaultPeriodDuration) obj).duration);
+        }
+        return false;
     }
 }

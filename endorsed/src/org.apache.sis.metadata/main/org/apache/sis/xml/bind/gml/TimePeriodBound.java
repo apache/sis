@@ -16,14 +16,12 @@
  */
 package org.apache.sis.xml.bind.gml;
 
+import java.time.Instant;
 import javax.xml.datatype.XMLGregorianCalendar;
 import jakarta.xml.bind.annotation.XmlValue;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlTransient;
-
-// Specific to the main branch:
-import org.apache.sis.pending.geoapi.temporal.Instant;
 
 
 /**

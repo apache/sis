@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Date;
+import java.time.temporal.TemporalAmount;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Series;
@@ -216,7 +217,7 @@ public final class PropertyAccessorTest extends TestCase {
             Identification.class, "getPointOfContacts",            "pointOfContacts",            "pointOfContact",            "Point of contacts",            ResponsibleParty[].class,
         DataIdentification.class, "getSpatialRepresentationTypes", "spatialRepresentationTypes", "spatialRepresentationType", "Spatial representation types", SpatialRepresentationType[].class,
         DataIdentification.class, "getSpatialResolutions",         "spatialResolutions",         "spatialResolution",         "Spatial resolutions",          Resolution[].class,
-//          Identification.class, "getTemporalResolutions",        "temporalResolutions",        "temporalResolution",        "Temporal resolutions",         Duration[].class,
+    AbstractIdentification.class, "getTemporalResolutions",        "temporalResolutions",        "temporalResolution",        "Temporal resolutions",         TemporalAmount[].class,
         DataIdentification.class, "getTopicCategories",            "topicCategories",            "topicCategory",             "Topic categories",             TopicCategory[].class,
         DataIdentification.class, "getExtents",                    "extents",                    "extent",                    "Extents",                      Extent[].class,
     AbstractIdentification.class, "getAdditionalDocumentations",   "additionalDocumentations",   "additionalDocumentation",   "Additional documentations",    Citation[].class,

@@ -17,6 +17,7 @@
 package org.apache.sis.metadata.iso.extent;
 
 import java.util.Date;
+import java.time.Instant;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -27,14 +28,13 @@ import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.extent.SpatialTemporalExtent;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.metadata.privy.TemporalUtilities;
 import org.apache.sis.metadata.privy.ReferencingServices;
+import org.apache.sis.pending.temporal.TemporalUtilities;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
 
 // Specific to the main branch:
 import org.apache.sis.pending.geoapi.temporal.Period;
-import org.apache.sis.pending.geoapi.temporal.Instant;
 
 
 /**
@@ -64,7 +64,7 @@ import org.apache.sis.pending.geoapi.temporal.Instant;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @XmlType(name = "EX_TemporalExtent_Type")
@@ -168,15 +168,14 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * @return the requested time as a Java date, or {@code null} if none.
      */
     static Date getTime(final TemporalPrimitive extent, final boolean begin) {
-        final Instant instant;
-        if (extent instanceof Instant) {
-            instant = (Instant) extent;
-        } else if (extent instanceof Period) {
-            instant = begin ? ((Period) extent).getBeginning() : ((Period) extent).getEnding();
-        } else {
-            return null;
+        if (extent instanceof Period) {
+            var p = (Period) extent;
+            Instant time = begin ? p.getBeginning() : p.getEnding();
+            if (time != null) {
+                return Date.from(time);
+            }
         }
-        return instant.getDate();
+        return null;
     }
 
     /**
@@ -209,13 +208,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
     public void setBounds(final Date startTime, final Date endTime) throws UnsupportedOperationException {
         TemporalPrimitive value = null;
         if (startTime != null || endTime != null) {
-            if (endTime == null || endTime.equals(startTime)) {
-                value = TemporalUtilities.createInstant(startTime);
-            } else if (startTime == null) {
-                value = TemporalUtilities.createInstant(endTime);
-            } else {
-                value = TemporalUtilities.createPeriod(startTime, endTime);
-            }
+            value = TemporalUtilities.createPeriod(startTime, endTime);
         }
         setExtent(value);
     }
@@ -249,8 +242,6 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * If either this extent or the specified extent has nil primitive, then the intersection result will also be nil.
      *
      * @param  other  the temporal extent to intersect with this extent.
-     * @throws UnsupportedOperationException if no implementation of {@code TemporalFactory} has been found
-     *         on the module path.
      *
      * @see Extents#intersection(TemporalExtent, TemporalExtent)
      * @see org.apache.sis.geometry.GeneralEnvelope#intersect(Envelope)

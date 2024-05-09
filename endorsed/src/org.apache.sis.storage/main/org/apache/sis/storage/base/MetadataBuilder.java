@@ -17,6 +17,9 @@
 package org.apache.sis.storage.base;
 
 import java.time.Instant;
+import java.time.Duration;
+import java.time.temporal.Temporal;
+import java.time.temporal.TemporalAmount;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Optional;
@@ -68,6 +71,7 @@ import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.privy.StandardDateFormat;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.metadata.ModifiableMetadata;
@@ -1796,6 +1800,21 @@ public class MetadataBuilder {
      *
      * @param  startTime  when the data begins, or {@code null} if unbounded.
      * @param  endTime    when the data ends, or {@code null} if unbounded.
+     */
+    public final void addTemporalExtent(final Temporal startTime, final Temporal endTime) {
+        addTemporalExtent(StandardDateFormat.toDate(startTime), StandardDateFormat.toDate(endTime));
+    }
+
+    /**
+     * Adds a temporal extent covered by the data.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/extent/temporalElement}</li>
+     * </ul>
+     *
+     * @param  startTime  when the data begins, or {@code null} if unbounded.
+     * @param  endTime    when the data ends, or {@code null} if unbounded.
      *
      * @see #addAcquisitionTime(Date)
      */
@@ -1980,15 +1999,16 @@ public class MetadataBuilder {
                 } else if (Units.isAngular(unit)) {
                     targetUnit = Units.DEGREE;
                     setter = DefaultResolution::setAngularDistance;
+                } else if (Units.isTemporal(unit) && AxisDirections.isTemporal(axis.getDirection())) {
+                    targetUnit = Units.DAY;
+                    setter = null;
                 } else {
                     continue;
                 }
                 final double distance = unit.getConverterToAny(targetUnit).convert(resolution[i]);
-                /*
-                 * Handling of temporal units is not available in this branch,
-                 * because `Duration` is not available in GeoAPI 3.0 interfaces.
-                 */
-                if (Double.isFinite(distance)) {
+                if (setter == null) {
+                    addTemporalResolution(distance);
+                } else if (Double.isFinite(distance)) {
                     var r = new DefaultResolution();
                     setter.accept(r, shared(distance));
                     addIfNotPresent(identification().getSpatialResolutions(), r);
@@ -2015,6 +2035,23 @@ public class MetadataBuilder {
             final var r = new DefaultResolution();
             r.setDistance(shared(distance));
             addIfNotPresent(identification().getSpatialResolutions(), r);
+        }
+    }
+
+    /**
+     * Adds a temporal resolution in days.
+     * Storage location is:
+     *
+     * <ul>
+     *   <li>{@code metadata/identificationInfo/temporalResolution}</li>
+     * </ul>
+     *
+     * @param  duration  the resolution in days, or {@code NaN} for no-operation.
+     */
+    public final void addTemporalResolution(final double duration) {
+        if (Double.isFinite(duration)) {
+            addIfNotPresent(identification().getTemporalResolutions(),
+                    Duration.ofMillis(Math.round(duration * StandardDateFormat.MILLISECONDS_PER_DAY)));
         }
     }
 
@@ -3180,7 +3217,7 @@ public class MetadataBuilder {
                 addIfNotPresent(identification.getResourceConstraints(), r);
             }
             if (info instanceof DataIdentification) {
-                final DataIdentification di = (DataIdentification) info;
+                final var di = (DataIdentification) info;
                 for (Extent e : di.getExtents()) {
                     addIfNotPresent(identification.getExtents(), e);
                 }
@@ -3189,6 +3226,12 @@ public class MetadataBuilder {
                 }
                 identification.getTopicCategories().addAll(di.getTopicCategories());
                 identification.getSpatialRepresentationTypes().addAll(di.getSpatialRepresentationTypes());
+            }
+            if (info instanceof AbstractIdentification) {
+                final var di = (AbstractIdentification) info;
+                for (TemporalAmount r : di.getTemporalResolutions()) {
+                    addIfNotPresent(identification.getTemporalResolutions(), r);
+                }
             }
         }
         @SuppressWarnings("LocalVariableHidesMemberVariable")

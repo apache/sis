@@ -17,6 +17,7 @@
 package org.apache.sis.metadata.iso.identification;
 
 import java.util.Collection;
+import java.time.temporal.TemporalAmount;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -90,7 +91,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @XmlType(name = "AbstractMD_Identification_Type", propOrder = {
@@ -102,6 +103,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
     "pointOfContacts",
     "spatialRepresentationTypes",       // Here in ISO 19115:2014 (was after 'aggregationInfo' in ISO 19115:2003)
     "spatialResolutions",               // Shall be kept next to 'spatialRepresentationTypes'
+    "temporalResolution",               // ISO 19115-3 only
     "topicCategories",                  // Here in ISO 19115:2014 (was in subclasses in ISO 19115:2003)
     "extents",                          // Here in ISO 19115:2014 (was in subclasses in ISO 19115:2003)
     "additionalDocumentation",          // ISO 19115:2014 only
@@ -180,6 +182,12 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      */
     @SuppressWarnings("serial")
     private Collection<Resolution> spatialResolutions;
+
+    /**
+     * Smallest resolvable temporal period in a resource.
+     */
+    @SuppressWarnings("serial")
+    private Collection<TemporalAmount> temporalResolutions;
 
     /**
      * Main theme(s) of the resource.
@@ -274,6 +282,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @see #castOrCopy(Identification)
      */
+    @SuppressWarnings("this-escape")
     public AbstractIdentification(final Identification object) {
         super(object);
         if (object != null) {
@@ -293,6 +302,7 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
                 final AbstractIdentification c = (AbstractIdentification) object;
                 spatialRepresentationTypes = copyCollection(c.getSpatialRepresentationTypes(), SpatialRepresentationType.class);
                 spatialResolutions         = copyCollection(c.getSpatialResolutions(), Resolution.class);
+                temporalResolutions        = copyCollection(c.getTemporalResolutions(), TemporalAmount.class);
                 topicCategories            = copyCollection(c.getTopicCategories(), TopicCategory.class);
                 extents                    = copyCollection(c.getExtents(), Extent.class);
                 additionalDocumentations   = copyCollection(c.getAdditionalDocumentations(), Citation.class);
@@ -532,6 +542,30 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      */
     public void setSpatialResolutions(final Collection<? extends Resolution> newValues) {
         spatialResolutions = writeCollection(newValues, spatialResolutions, Resolution.class);
+    }
+
+    /**
+     * Returns the smallest resolvable temporal period in a resource.
+     *
+     * @return smallest resolvable temporal period in a resource.
+     *
+     * @since 1.5
+     */
+    // @XmlElement at the end of this class.
+    @UML(identifier="temporalResolution", obligation=OPTIONAL, specification=ISO_19115)
+    public Collection<TemporalAmount> getTemporalResolutions() {
+        return temporalResolutions = nonNullCollection(temporalResolutions, TemporalAmount.class);
+    }
+
+    /**
+     * Sets the smallest resolvable temporal period in a resource.
+     *
+     * @param  newValues  the new temporal resolutions.
+     *
+     * @since 1.5
+     */
+    public void setTemporalResolutions(final Collection<? extends TemporalAmount> newValues) {
+        temporalResolutions = writeCollection(newValues, temporalResolutions, TemporalAmount.class);
     }
 
     /**
@@ -870,6 +904,11 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      * This attribute has been added by ISO 19115:2014 standard.
      * If (and only if) marshalling an older standard version, we omit this attribute.
      */
+    @XmlElement(name = "temporalResolution")
+    private Collection<TemporalAmount> getTemporalResolution() {
+        return FilterByVersion.CURRENT_METADATA.accept() ? getTemporalResolutions() : null;
+    }
+
     @XmlElement(name = "additionalDocumentation")
     private Collection<Citation> getAdditionalDocumentation() {
         return FilterByVersion.CURRENT_METADATA.accept() ? getAdditionalDocumentations() : null;

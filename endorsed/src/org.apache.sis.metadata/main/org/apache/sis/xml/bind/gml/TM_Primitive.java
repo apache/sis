@@ -17,17 +17,17 @@
 package org.apache.sis.xml.bind.gml;
 
 import java.util.Date;
+import java.time.Instant;
 import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.temporal.TemporalPrimitive;
 import org.apache.sis.xml.privy.XmlUtilities;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.gco.PropertyType;
-import org.apache.sis.metadata.privy.TemporalUtilities;
+import org.apache.sis.pending.temporal.TemporalUtilities;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the main branch:
 import org.apache.sis.pending.geoapi.temporal.Period;
-import org.apache.sis.pending.geoapi.temporal.Instant;
 
 
 /**
@@ -82,6 +82,7 @@ public class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimitive> 
      */
     @XmlElement(name = "TimePeriod")
     public final TimePeriod getTimePeriod() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final TemporalPrimitive metadata = this.metadata;
         return (metadata instanceof Period) ? new TimePeriod((Period) metadata) : null;
     }
@@ -94,8 +95,8 @@ public class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimitive> 
      */
     @XmlElement(name = "TimeInstant")
     public final TimeInstant getTimeInstant() {
-        final TemporalPrimitive metadata = this.metadata;
-        return (metadata instanceof Instant) ? new TimeInstant((Instant) metadata) : null;
+        Instant time = TemporalUtilities.getInstant(metadata);
+        return (time != null) ? new TimeInstant(time) : null;
     }
 
     /**

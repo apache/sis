@@ -16,6 +16,7 @@
  */
 package org.apache.sis.pending.geoapi.temporal;
 
+import java.time.Instant;
 import org.opengis.temporal.TemporalPrimitive;
 
 
@@ -24,7 +25,7 @@ import org.opengis.temporal.TemporalPrimitive;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 1.5
  */
 public interface Period extends TemporalPrimitive {
     /**

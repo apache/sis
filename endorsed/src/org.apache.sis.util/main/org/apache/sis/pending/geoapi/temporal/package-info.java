@@ -25,6 +25,6 @@
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @since   0.3
- * @version 0.3
+ * @version 1.5
  */
 package org.apache.sis.pending.geoapi.temporal;
