@@ -29,7 +29,6 @@ import org.opengis.metadata.maintenance.MaintenanceFrequency;
 import org.opengis.metadata.maintenance.MaintenanceInformation;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.metadata.maintenance.ScopeDescription;
-import org.opengis.temporal.PeriodDuration;
 import org.opengis.util.InternationalString;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
@@ -42,6 +41,7 @@ import static org.apache.sis.metadata.privy.ImplementationHelper.valueIfDefined;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.metadata.citation.ResponsibleParty;
+import org.opengis.temporal.PeriodDuration;
 
 // Specific to the main branch:
 import org.opengis.metadata.quality.Scope;

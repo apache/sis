@@ -16,6 +16,7 @@
  */
 package org.apache.sis.pending.temporal;
 
+import java.io.Serializable;
 import java.time.temporal.TemporalAmount;
 import org.opengis.temporal.PeriodDuration;
 
@@ -26,7 +27,8 @@ import org.opengis.temporal.PeriodDuration;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class DefaultPeriodDuration implements PeriodDuration {
+@SuppressWarnings("serial")
+public final class DefaultPeriodDuration implements PeriodDuration, Serializable {
     /**
      * The temporal object providing the duration value.
      */
