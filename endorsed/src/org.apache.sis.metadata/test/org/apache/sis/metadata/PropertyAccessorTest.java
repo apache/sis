@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Locale;
 import java.util.Date;
+import java.time.temporal.TemporalAmount;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Series;
@@ -67,7 +68,6 @@ import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.referencing.ReferenceIdentifier;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import java.time.temporal.TemporalAmount;
 import org.opengis.metadata.content.AttributeGroup;
 import org.opengis.referencing.ObjectDomain;
 import org.opengis.referencing.datum.DatumEnsemble;

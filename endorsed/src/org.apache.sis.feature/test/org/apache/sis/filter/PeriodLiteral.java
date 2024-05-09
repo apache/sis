@@ -17,13 +17,13 @@
 package org.apache.sis.filter;
 
 import java.util.Date;
+import java.time.Instant;
 import java.io.Serializable;
 
 // Test dependencies
 import org.apache.sis.test.TestUtilities;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import java.time.Instant;
 import java.time.temporal.TemporalAmount;
 import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;

@@ -17,10 +17,10 @@
 package org.apache.sis.pending.temporal;
 
 import java.util.Date;
+import java.time.Instant;
 import org.opengis.temporal.TemporalPrimitive;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import java.time.Instant;
 import org.opengis.temporal.Period;
 
 

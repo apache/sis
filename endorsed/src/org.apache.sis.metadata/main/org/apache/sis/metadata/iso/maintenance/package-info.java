@@ -106,4 +106,6 @@ import org.apache.sis.xml.privy.LegacyNamespaces;
 import org.apache.sis.xml.bind.gco.*;
 import org.apache.sis.xml.bind.metadata.*;
 import org.apache.sis.xml.bind.metadata.code.*;
+
+// Specific to the main and geoapi-3.1 branches:
 import org.apache.sis.xml.bind.gts.TM_PeriodDuration;
