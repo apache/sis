@@ -14,67 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.metadata.privy;
+package org.apache.sis.pending.temporal;
 
 import java.util.Date;
-import java.util.ServiceLoader;
 import org.opengis.temporal.TemporalPrimitive;
-import org.apache.sis.system.Modules;
-import org.apache.sis.system.Reflect;
-import org.apache.sis.system.SystemListener;
-import org.apache.sis.pending.temporal.DefaultTemporalFactory;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.time.Instant;
 import org.opengis.temporal.Period;
-import org.opengis.temporal.TemporalFactory;
 
 
 /**
- * Utilities related to ISO 19108 objects. This class may disappear after we reviewed
- * the GeoAPI-pending temporal interfaces.
+ * Utilities related to ISO 19108 objects.
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  */
-public final class TemporalUtilities extends SystemListener {
+public final class TemporalUtilities {
     /**
-     * The default factory to use for implementations.
-     */
-    private static volatile TemporalFactory implementation;
-
-    static {
-        SystemListener.add(new TemporalUtilities());
-    }
-
-    /**
-     * For the singleton system listener only.
+     * Do not allow instantiation of this class.
      */
     private TemporalUtilities() {
-        super(Modules.METADATA);
-    }
-
-    /**
-     * Discards the cached factory when the module path has changed.
-     */
-    @Override
-    protected void classpathChanged() {
-        implementation = null;
-    }
-
-    /**
-     * Returns a temporal factory, or a default implementation if none.
-     *
-     * @return the temporal factory.
-     */
-    private static TemporalFactory getTemporalFactory() {
-        TemporalFactory factory = implementation;
-        if (factory == null) {
-            factory = ServiceLoader.load(TemporalFactory.class, Reflect.getContextClassLoader())
-                    .findFirst().orElseGet(DefaultTemporalFactory::provider);
-            implementation = factory;
-        }
-        return factory;
     }
 
     /**
@@ -87,21 +47,20 @@ public final class TemporalUtilities extends SystemListener {
     public static TemporalPrimitive createInstant(final Date time) throws UnsupportedOperationException {
         if (time == null) return null;
         final Instant t = time.toInstant();
-        return getTemporalFactory().createPeriod(t, t);
+        return new DefaultPeriod(t, t);
     }
 
     /**
-     * Creates a period for the given begin and end dates. The given arguments can be null if the
-     * {@link TemporalFactory} methods accept null instants, which stand for undetermined position.
+     * Creates a period for the given begin and end dates.
      *
-     * @param  begin  the begin date, inclusive.
-     * @param  end    the end date, inclusive.
+     * @param  begin  the begin date (inclusive), or {@code null}.
+     * @param  end    the end date (inclusive), or {@code null}.
      * @return the period, or {@code null} if both arguments are null.
      * @throws UnsupportedOperationException if the temporal factory is not available on the module path.
      */
     public static TemporalPrimitive createPeriod(final Date begin, final Date end) throws UnsupportedOperationException {
         if (begin == null && end == null) return null;
-        return getTemporalFactory().createPeriod(
+        return new DefaultPeriod(
                 (begin != null) ? begin.toInstant() : null,
                   (end != null) ?   end.toInstant() : null);
     }

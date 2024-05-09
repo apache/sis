@@ -31,7 +31,7 @@ import org.opengis.metadata.Identifier;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-class Primitive implements TemporalGeometricPrimitive, Identifier {
+abstract class Primitive implements TemporalGeometricPrimitive, Identifier {
     /**
      * For sub-class constructors.
      */
@@ -57,18 +57,13 @@ class Primitive implements TemporalGeometricPrimitive, Identifier {
         return toString();
     }
 
-    /** position of this primitive relative to another primitive. */
+    /** Position of this primitive relative to another primitive. */
     @Override public final RelativePosition relativePosition(TemporalPrimitive other) {
-        throw DefaultTemporalFactory.unsupported();
+        throw new UnsupportedOperationException();
     }
 
     /** Absolute value of the difference between temporal positions. */
     @Override public final TemporalAmount distance(TemporalGeometricPrimitive other) {
-        throw DefaultTemporalFactory.unsupported();
-    }
-
-    /** Duration of this temporal geometric primitive. */
-    @Override public final TemporalAmount length() {
-        return null;    // Do not throw an exception here; this is invoked by reflection.
+        throw new UnsupportedOperationException();
     }
 }

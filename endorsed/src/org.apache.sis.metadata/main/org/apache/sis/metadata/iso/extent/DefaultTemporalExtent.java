@@ -27,8 +27,8 @@ import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.extent.SpatialTemporalExtent;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.metadata.privy.TemporalUtilities;
 import org.apache.sis.metadata.privy.ReferencingServices;
+import org.apache.sis.pending.temporal.TemporalUtilities;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
 
@@ -242,8 +242,6 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * If either this extent or the specified extent has nil primitive, then the intersection result will also be nil.
      *
      * @param  other  the temporal extent to intersect with this extent.
-     * @throws UnsupportedOperationException if no implementation of {@code TemporalFactory} has been found
-     *         on the module path.
      *
      * @see Extents#intersection(TemporalExtent, TemporalExtent)
      * @see org.apache.sis.geometry.GeneralEnvelope#intersect(Envelope)

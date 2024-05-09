@@ -323,8 +323,6 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      * @throws IllegalArgumentException if two elements to intersect are not compatible (e.g. mismatched
      *         {@linkplain DefaultGeographicBoundingBox#getInclusion() bounding box inclusion status} or
      *         mismatched {@linkplain DefaultVerticalExtent#getVerticalCRS() vertical datum}).
-     * @throws UnsupportedOperationException if a {@code TemporalFactory} is required but no implementation
-     *         has been found on the module path.
      *
      * @see Extents#intersection(Extent, Extent)
      * @see org.apache.sis.geometry.GeneralEnvelope#intersect(Envelope)
