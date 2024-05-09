@@ -83,7 +83,7 @@
     @XmlJavaTypeAdapter(MD_Scope.class),
     @XmlJavaTypeAdapter(MD_ScopeCode.class),
     @XmlJavaTypeAdapter(MD_ScopeDescription.class),
-    @XmlJavaTypeAdapter(TM_Duration.class),
+    @XmlJavaTypeAdapter(TM_PeriodDuration.class),
 
     // Java types, primitive types and basic OGC types handling
     @XmlJavaTypeAdapter(FeatureTypeAdapter.class),
@@ -106,4 +106,4 @@ import org.apache.sis.xml.privy.LegacyNamespaces;
 import org.apache.sis.xml.bind.gco.*;
 import org.apache.sis.xml.bind.metadata.*;
 import org.apache.sis.xml.bind.metadata.code.*;
-import org.apache.sis.xml.bind.gts.TM_Duration;
+import org.apache.sis.xml.bind.gts.TM_PeriodDuration;

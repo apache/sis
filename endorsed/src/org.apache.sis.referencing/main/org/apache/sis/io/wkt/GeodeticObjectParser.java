@@ -1446,7 +1446,6 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             return null;
         }
         final String name = element.pullString("name");
-        @SuppressWarnings("deprecation")
         RealizationMethod method = null;
         if (isWKT1) {
             method = VerticalDatumTypes.fromLegacy(element.pullInteger("datum"));
@@ -1884,7 +1883,6 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @return the {@code "VerticalCRS"} element as a {@link VerticalCRS} object.
      * @throws ParseException if the {@code "VerticalCRS"} element cannot be parsed.
      */
-    @SuppressWarnings("deprecation")
     private SingleCRS parseVerticalCRS(final int mode, final Element parent, final boolean isBaseCRS)
             throws ParseException
     {
