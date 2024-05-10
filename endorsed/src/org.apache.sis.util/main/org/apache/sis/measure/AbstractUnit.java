@@ -266,9 +266,10 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      */
     final <R extends Quantity<R>> Unit<R> inferSymbol(Unit<R> result, final char operation, final Unit<?> other) {
         if (result instanceof ConventionalUnit<?> && result.getSymbol() == null) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final String symbol = inferSymbol(operation, other);
             if (symbol != null) {
-                result = ((ConventionalUnit<R>) result).forSymbol(symbol);
+                result = ((ConventionalUnit<R>) result).alternate(symbol);
             }
         }
         return result;
@@ -597,7 +598,7 @@ abstract class AbstractUnit<Q extends Quantity<Q>> implements Unit<Q>, LenientCo
      * @see #getSymbol()
      */
     @Override
-    public final String toString() {
+    public String toString() {
         if (symbol != null) {
             return symbol;
         } else {

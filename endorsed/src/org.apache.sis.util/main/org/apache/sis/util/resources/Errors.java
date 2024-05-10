@@ -166,7 +166,7 @@ public class Errors extends IndexedResourceBundle {
         /**
          * Cannot resolve “{0}” as an absolute path.
          */
-        public static final short CanNotResolveAsAbsolutePath_1 = 205;
+        public static final short CanNotResolveAsAbsolutePath_1 = 106;
 
         /**
          * Cannot set a value for parameter “{0}”.
@@ -723,11 +723,6 @@ public class Errors extends IndexedResourceBundle {
          * “{0}” is not a scale unit.
          */
         public static final short NonScaleUnit_1 = 105;
-
-        /**
-         * “{0}” is not a fundamental or derived unit.
-         */
-        public static final short NonSystemUnit_1 = 106;
 
         /**
          * “{0}” is not a time unit.

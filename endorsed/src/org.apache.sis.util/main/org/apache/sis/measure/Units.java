@@ -1622,6 +1622,28 @@ public final class Units extends Static {
     }
 
     /**
+     * Creates an unit for values computed by the logarithm in base 10 of values in the given unit.
+     * Conversions from the given unit to the returned unit is done by {@link Math#log10(double)}.
+     *
+     * <p><strong>The given unit should be dimensionless.</strong>
+     * However, this method does not enforce this constraint in order to allow the creation of
+     * units such as <a href="https://en.wikipedia.org/wiki/Decibel_watt">decibel watt</a>.
+     * For example:</p>
+     *
+     * {@snippet lang="java" :
+     * Unit<Power> dBW = Units.logarithm(Units.WATT).divide(10);
+     * }
+     *
+     * @param  unit  the unit from which to convert.
+     * @return an unit which is the logarithm in base 10 of the given unit.
+     *
+     * @since 1.5
+     */
+    public static <Q extends Quantity<Q>> Unit<Q> logarithm(final Unit<Q> unit) {
+        return unit.transform(PowerOf10.INSTANCE);
+    }
+
+    /**
      * Returns the factor by which to multiply the standard unit in order to get the given unit.
      * The "standard" unit is usually the SI unit on which the given unit is based, as given by
      * {@link Unit#getSystemUnit()}.

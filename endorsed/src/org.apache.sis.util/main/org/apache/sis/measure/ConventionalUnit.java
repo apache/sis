@@ -358,26 +358,22 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
      * Returns a new unit identical to this unit except for the symbol, which is set to the given value.
      * This is used by {@link UnitFormat} mostly; we do not provide public API for setting a unit symbol
      * on a conventional unit.
-     */
-    final ConventionalUnit<Q> forSymbol(final String symbol) {
-        if (symbol.equals(getSymbol())) {
-            return this;
-        }
-        return new ConventionalUnit<>(target, toTarget, symbol, scope, epsg);
-    }
-
-    /**
-     * Unsupported operation for conventional units, as required by JSR-385 specification.
+     *
+     * <h4>Departure from JSR-385 specification</h4>
+     * The JSR-385 specification requires that we throw a {@link MeasurementException} because this unit
+     * is not an unscaled standard unit. This implementation relaxes that restriction.
      *
      * @param  symbol  the new symbol for the alternate unit.
      * @return the alternate unit.
-     * @throws MeasurementException always thrown because this unit is not an unscaled standard unit.
      *
      * @see SystemUnit#alternate(String)
      */
     @Override
     public Unit<Q> alternate(final String symbol) {
-        throw new MeasurementException(Errors.format(Errors.Keys.NonSystemUnit_1, this));
+        if (symbol.equals(getSymbol())) {
+            return this;
+        }
+        return new ConventionalUnit<>(target, toTarget, symbol, scope, epsg);
     }
 
     /**
@@ -505,5 +501,23 @@ final class ConventionalUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> {
     @Override
     public int hashCode() {
         return super.hashCode() + 37 * (target.hashCode() + 31 * toTarget.hashCode());
+    }
+
+    /**
+     * Returns a string representation of this unit of measurement.
+     *
+     * @return a string representation.
+     */
+    @Override
+    public String toString() {
+        if (toTarget instanceof LinearConverter || toTarget.isLinear()) {
+            return super.toString();
+        }
+        final String symbol = getSymbol();
+        if (symbol != null) {
+            return symbol;
+        } else {
+            return "f(" + target + ')';
+        }
     }
 }
