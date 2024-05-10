@@ -561,7 +561,7 @@ public class MilitaryGridReferenceSystem extends ReferencingByIdentifiers {
         }
 
         /**
-         * Returns the ellipsoid of the geodetic datum of MGRS identifiers.
+         * Returns the ellipsoid of the geodetic reference frame of MGRS identifiers.
          */
         final Ellipsoid getEllipsoid() {
             return datum.geographic().getDatum().getEllipsoid();

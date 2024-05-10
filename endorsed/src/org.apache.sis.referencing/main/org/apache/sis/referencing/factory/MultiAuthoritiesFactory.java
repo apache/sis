@@ -115,7 +115,7 @@ import org.apache.sis.util.collection.BackingStoreException;
  * Given such URIs, {@code MultiAuthoritiesFactory} invokes {@link #createObject(String)} for each component
  * and combines the result as described by the {@link CRS#compound(CoordinateReferenceSystem...)} method.
  * URNs (but not URLs) can also combine a
- * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum} with an
+ * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic reference frame} with an
  * {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS ellipsoidal coordinate system} for creating a new
  * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}, or a base geographic CRS with a
  * {@linkplain org.apache.sis.referencing.operation.DefaultConversion conversion} and a

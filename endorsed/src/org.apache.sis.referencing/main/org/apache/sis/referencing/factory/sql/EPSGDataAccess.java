@@ -1767,8 +1767,8 @@ codes:  for (int i=0; i<codes.length; i++) {
     }
 
     /**
-     * Returns Bursa-Wolf parameters for a geodetic datum. If the specified datum has no conversion information,
-     * then this method returns {@code null}.
+     * Returns Bursa-Wolf parameters for a geodetic reference frame.
+     * If the specified datum has no conversion information, then this method returns {@code null}.
      *
      * <p>This method is for compatibility with <i>Well Known Text</i> (WKT) version 1 formatting.
      * That legacy format had a {@code TOWGS84} element which needs the information provided by this method.

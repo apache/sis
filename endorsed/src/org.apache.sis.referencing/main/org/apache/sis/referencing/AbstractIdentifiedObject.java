@@ -84,7 +84,7 @@ import org.apache.sis.referencing.internal.Legacy;
 
 /**
  * Base class for objects identified by a name or a code. Those objects are typically
- * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum}   (e.g. <q>World Geodetic System 1984</q>),
+ * {@linkplain org.apache.sis.referencing.datum.AbstractDatum datum} (e.g. <q>World Geodetic System 1984</q>),
  * {@linkplain org.apache.sis.referencing.crs.AbstractCRS Coordinate Reference System} (e.g. <q>WGS 84 / World Mercator</q>) or
  * {@linkplain org.apache.sis.referencing.operation.DefaultConversion map projection}  (e.g. <q>Mercator (variant A)</q>).
  * Those names, or a code (e.g. {@code "EPSG:3395"}), can be used for fetching an object from a database.
@@ -678,7 +678,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *       Comparisons of datum names} ignore the {@code "D_"} prefix, if any.
      *       This prefix appears in ESRI datum name (e.g. {@code "D_WGS_1984"}).</li>
      *   <li>{@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum#isHeuristicMatchForName(String)
-     *       Comparisons of geodetic datum names} may ignore the prime meridian name, if any.
+     *       Comparisons of geodetic reference frame names} may ignore the prime meridian name, if any.
      *       Example: <q>(Paris)</q> in <q>Nouvelle Triangulation Française (Paris)</q>.</li>
      * </ul>
      *

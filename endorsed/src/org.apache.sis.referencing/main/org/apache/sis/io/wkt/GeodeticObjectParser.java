@@ -412,7 +412,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * <h4>Fallback</h4>
      * The name is a mandatory property, but some invalid WKT with an empty string exist. In such case,
      * we will use the name of the enclosed datum. Indeed, it is not uncommon to have the same name for
-     * a geographic CRS and its geodetic datum.
+     * a geographic CRS and its geodetic reference frame.
      *
      * @param  parent    the parent element.
      * @param  name      the name of the parent object being parsed.
@@ -780,7 +780,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             Unit<?> unit = defaultUnit;                     // Depth, height or time axis unit.
             switch (type) {
                 /*
-                 * Cartesian — we can create axes only for geodetic datum, in which case the axes
+                 * Cartesian — we can create axes only if the datum is geodetic, in which case the axes
                  * are for two- or three-dimensional Projected or three-dimensional Geocentric CRS.
                  */
                 case WKTKeywords.Cartesian: {

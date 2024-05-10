@@ -236,7 +236,7 @@ public final class CRS extends Static {
      * </ul>
      *
      * <p>URNs (but not URLs) can also combine a
-     * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum} with an
+     * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic reference frame} with an
      * {@linkplain org.apache.sis.referencing.cs.DefaultEllipsoidalCS ellipsoidal coordinate system} for creating a new
      * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}, or a base geographic CRS with a
      * {@linkplain org.apache.sis.referencing.operation.DefaultConversion conversion} and a

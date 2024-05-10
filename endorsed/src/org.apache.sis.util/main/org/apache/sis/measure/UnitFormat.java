@@ -427,7 +427,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
         }
         Unit<?> labeledUnit = unit;
         if (labeledUnit instanceof ConventionalUnit<?>) {
-            labeledUnit = ((ConventionalUnit<?>) labeledUnit).forSymbol(label);
+            labeledUnit = ((ConventionalUnit<?>) labeledUnit).alternate(label);
         }
         final Unit<?> unitForOldLabel = labelToUnit.remove(unitToLabel.put(unit, label));
         final Unit<?> oldUnitForLabel = labelToUnit.put(label, labeledUnit);
@@ -443,7 +443,7 @@ public class UnitFormat extends Format implements javax.measure.format.UnitForma
              * Assuming there is no bug in our algorithm, this exception should never happen
              * unless this UnitFormat has been modified concurrently in another thread.
              * We compared system units because the units may not be strictly equal
-             * as a result of the call to ConventionalUnit.forSymbol(label).
+             * as a result of the call to ConventionalUnit.alternate(label).
              */
             throw new CorruptedObjectException("labelToUnit");
         }
@@ -889,7 +889,7 @@ appPow: if (unit == null) {
                 return;
             }
         }
-        toAppendTo.append('?');
+        toAppendTo.append(SystemUnit.UNFORMATTABLE);
     }
 
     /**

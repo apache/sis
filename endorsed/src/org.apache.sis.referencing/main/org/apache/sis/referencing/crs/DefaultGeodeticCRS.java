@@ -51,7 +51,7 @@ import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**
- * A 2- or 3-dimensional coordinate reference system based on a geodetic datum.
+ * A 2- or 3-dimensional coordinate reference system based on a geodetic reference frame.
  * The CRS is geographic if associated with an ellipsoidal coordinate system,
  * or geocentric if associated with a spherical or Cartesian coordinate system.
  *

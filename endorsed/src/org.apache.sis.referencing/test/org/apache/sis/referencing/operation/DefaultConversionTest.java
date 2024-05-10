@@ -332,12 +332,12 @@ public final class DefaultConversionTest extends TestCase {
         IllegalArgumentException e;
         e = assertThrows(IllegalArgumentException.class,
                 () -> op.specialize(HardCodedCRS.WGS84, HardCodedCRS.NTF_NORMALIZED_AXES, null),
-                "Should not have accepted to change the geodetic datum.");
+                "Should not have accepted to change the geodetic reference frame.");
         assertMessageContains(e, "sourceCRS", "Nouvelle Triangulation Française");
 
         e = assertThrows(IllegalArgumentException.class,
                 () -> op.specialize(HardCodedCRS.NTF_NORMALIZED_AXES, HardCodedCRS.WGS84, null),
-                "Should not have accepted to change the geodetic datum.");
+                "Should not have accepted to change the geodetic reference frame.");
         assertMessageContains(e, "targetCRS", "Nouvelle Triangulation Française");
     }
 

@@ -340,7 +340,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * The default implementation creates a {@link DefaultGeocentricCRS} instance.
      *
      * @param  properties  name and other properties to give to the new object.
-     * @param  datum       the geodetic datum to use in created CRS.
+     * @param  datum       the geodetic reference frame to use in created CRS.
      * @param  cs          the three-dimensional Cartesian coordinate system for the created CRS.
      * @throws FactoryException if the object creation failed.
      *
@@ -422,7 +422,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * The default implementation creates a {@link DefaultGeocentricCRS} instance.
      *
      * @param  properties  name and other properties to give to the new object.
-     * @param  datum       geodetic datum to use in created CRS.
+     * @param  datum       geodetic reference frame to use in created CRS.
      * @param  cs          the spherical coordinate system for the created CRS.
      * @throws FactoryException if the object creation failed.
      *
@@ -535,7 +535,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * The default implementation creates a {@link DefaultGeographicCRS} instance.
      *
      * @param  properties  name and other properties to give to the new object.
-     * @param  datum       geodetic datum to use in created CRS.
+     * @param  datum       geodetic reference frame to use in created CRS.
      * @param  cs          the two- or three-dimensional ellipsoidal coordinate system for the created CRS.
      * @throws FactoryException if the object creation failed.
      *
@@ -556,8 +556,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     }
 
     /**
-     * Creates geodetic datum from ellipsoid and (optionally) Bursa-Wolf parameters.
-     * Geodetic datum defines the location and orientation of an ellipsoid that approximates the shape of the earth.
+     * Creates a geodetic reference frame from ellipsoid and (optionally) Bursa-Wolf parameters.
+     * Geodetic reference frame defines the location and orientation of an ellipsoid that approximates the shape of the earth.
      * This datum can be used with geographic, geocentric and engineering CRS.
      *
      * <h4>Dependencies</h4>
@@ -573,8 +573,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * The default implementation creates a {@link DefaultGeodeticDatum} instance.
      *
      * @param  properties     name and other properties to give to the new object.
-     * @param  ellipsoid      the ellipsoid to use in new geodetic datum.
-     * @param  primeMeridian  the prime meridian to use in new geodetic datum.
+     * @param  ellipsoid      the ellipsoid to use in new geodetic reference frame.
+     * @param  primeMeridian  the prime meridian to use in new geodetic reference frame.
      * @throws FactoryException if the object creation failed.
      *
      * @see DefaultGeodeticDatum#DefaultGeodeticDatum(Map, Ellipsoid, PrimeMeridian)

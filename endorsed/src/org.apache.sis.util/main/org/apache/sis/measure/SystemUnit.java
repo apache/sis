@@ -58,6 +58,11 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
     static final String ONE = "1";
 
     /**
+     * The symbol for unformattable units.
+     */
+    static final String UNFORMATTABLE = "?";
+
+    /**
      * The type of quantity that uses this unit, or {@code null} if unknown.
      * This field should be null only when this unit is the result of an arithmetic
      * operation and that result cannot be mapped to a known {@link Quantity} subtype.
@@ -308,7 +313,7 @@ final class SystemUnit<Q extends Quantity<Q>> extends AbstractUnit<Q> implements
         }
         if (!dimension.equals(unit.dimension)) {
             throw new ClassCastException(Errors.format(Errors.Keys.IncompatibleUnitDimension_5, new Object[] {
-                    this, (quantity != null) ? quantity.getSimpleName() : "?", dimension,
+                    this, (quantity != null) ? quantity.getSimpleName() : UNFORMATTABLE, dimension,
                     type.getSimpleName(), unit.dimension}));
         }
         return unit;

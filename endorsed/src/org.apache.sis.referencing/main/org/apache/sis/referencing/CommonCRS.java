@@ -117,7 +117,7 @@ import org.opengis.referencing.datum.VerticalDatumType;
  *
  * <h2>Example</h2>
  * The following code fetches a geographic Coordinate Reference System
- * using (<var>longitude</var>, <var>latitude</var>) axis order on the {@link #WGS84} geodetic datum:
+ * using (<var>longitude</var>, <var>latitude</var>) axis order on the {@link #WGS84} geodetic reference frame:
  *
  * {@snippet lang="java" :
  *     GeographicCRS crs = CommonCRS.WGS84.normalizedGeographic();
@@ -270,7 +270,7 @@ public enum CommonCRS {
 
     /**
      * Unknown datum based upon the GRS 1980 ellipsoid.
-     * Use only in cases where geodetic datum is unknown.
+     * Use only in cases where geodetic reference frame is unknown.
      *
      * <blockquote><table class="compact">
      * <caption>GRS1980 properties</caption>
@@ -469,7 +469,7 @@ public enum CommonCRS {
      *       or an instance of {@link org.opengis.referencing.crs.CompoundCRS}
      *       with an {@linkplain CRS#getHorizontalComponent horizontal component}.</li>
      *   <li>The {@code crs} or the horizontal component of {@code crs} is associated to a {@link GeodeticDatum}.</li>
-     *   <li>The geodetic datum either<ul>
+     *   <li>The geodetic reference frame either<ul>
      *     <li>has the same EPSG code as one of the {@code CommonCRS} enumeration values, or</li>
      *     <li>has no EPSG code but is {@linkplain Utilities#equalsIgnoreMetadata equal, ignoring metadata},
      *       to the {@link #datum()} value of one of the {@code CommonCRS} enumeration values.</li>
@@ -481,7 +481,7 @@ public enum CommonCRS {
      * supported by {@code CommonCRS} is known to be sufficient.
      *
      * @param  crs  the coordinate reference system for which to get a {@code CommonCRS} value.
-     * @return the {@code CommonCRS} value for the geodetic datum of the given CRS.
+     * @return the {@code CommonCRS} value for the geodetic reference frame of the given CRS.
      * @throws IllegalArgumentException if no {@code CommonCRS} value can be found for the given CRS.
      *
      * @see #datum()
@@ -846,12 +846,12 @@ public enum CommonCRS {
     }
 
     /**
-     * Returns the geodetic datum associated to this geodetic object.
+     * Returns the geodetic reference frame associated to this geodetic object.
      * The following table summarizes the datums known to this class,
      * together with an enumeration value that can be used for fetching that datum:
      *
      * <blockquote><table class="sis">
-     *   <caption>Commonly used geodetic datums</caption>
+     *   <caption>Commonly used geodetic reference frames</caption>
      *   <tr><th>Name or alias</th>                                     <th>Enum</th>            <th>EPSG</th></tr>
      *   <tr><td>European Datum 1950</td>                               <td>{@link #ED50}</td>   <td>6230</td></tr>
      *   <tr><td>European Terrestrial Reference System 1989</td>        <td>{@link #ETRS89}</td> <td>6258</td></tr>
@@ -863,7 +863,7 @@ public enum CommonCRS {
      *   <tr><td>World Geodetic System 1984</td>                        <td>{@link #WGS84}</td>  <td>6326</td></tr>
      * </table></blockquote>
      *
-     * @return the geodetic datum associated to this enum.
+     * @return the geodetic reference frame associated to this enum.
      *
      * @see #forDatum(CoordinateReferenceSystem)
      * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum

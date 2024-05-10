@@ -128,7 +128,7 @@ public final class CoordinateSystems extends Static {
      *
      * <h4>Reference meridian</h4>
      * The reference meridian depends on the context. It is usually the prime meridian of the
-     * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum} of the
+     * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic reference frame} of the
      * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS} instance
      * that contains (through its coordinate system) the axes having those directions.
      * This policy is consistent with

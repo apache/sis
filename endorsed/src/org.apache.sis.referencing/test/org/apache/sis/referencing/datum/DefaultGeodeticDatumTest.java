@@ -63,7 +63,7 @@ public final class DefaultGeodeticDatumTest extends TestCase {
     }
 
     /**
-     * Opens the stream to the XML file in this package containing a geodetic datum definition.
+     * Opens the stream to the XML file in this package containing a geodetic reference frame definition.
      *
      * @return stream opened on the XML document to use for testing purpose.
      */

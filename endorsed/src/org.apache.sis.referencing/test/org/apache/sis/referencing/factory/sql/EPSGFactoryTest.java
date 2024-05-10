@@ -585,10 +585,10 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
         assertTrue (datum.contains("5100"), "Shall contain MSL.");
 
         final Set<String> geodeticDatum = factory.getAuthorityCodes(GeodeticDatum.class);
-        assertFalse(geodeticDatum.isEmpty(),          "Geodetic datums not found.");
+        assertFalse(geodeticDatum.isEmpty(),          "Geodetic reference frames not found.");
         assertTrue (geodeticDatum.contains("6326"),   "Shall contain WGS84.");
         assertFalse(geodeticDatum.contains("5100"),   "Shall not contain vertical datum.");
-        assertFalse(geodeticDatum.containsAll(datum), "Geodetic datum should be a subset of datum.");  // Iteration should stop at the first mismatch.
+        assertFalse(geodeticDatum.containsAll(datum), "Geodetic reference frame should be a subset of datum.");  // Iteration should stop at the first mismatch.
 
         final Set<String> verticalDatum = factory.getAuthorityCodes(VerticalDatum.class);
         assertFalse(verticalDatum.isEmpty(),          "Vertical datums not found.");
@@ -600,9 +600,9 @@ public final class EPSGFactoryTest extends TestCaseWithLogs {
 
         if (RUN_EXTENSIVE_TESTS) {
             assertTrue(geodeticDatum.size() >= 445,         "size() consistency check.");
-            assertTrue(datum.size() > geodeticDatum.size(), "Geodetic datum should be a subset of datum.");
+            assertTrue(datum.size() > geodeticDatum.size(), "Geodetic reference frame should be a subset of datum.");
             assertTrue(datum.size() > verticalDatum.size(), "Vertical datum should be a subset of datum.");
-            assertTrue(datum.containsAll(geodeticDatum),    "Geodetic datum should be a subset of datum.");
+            assertTrue(datum.containsAll(geodeticDatum),    "Geodetic reference frame should be a subset of datum.");
         }
 
         /*

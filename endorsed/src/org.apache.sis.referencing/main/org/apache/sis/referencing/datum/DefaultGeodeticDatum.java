@@ -61,19 +61,21 @@ import org.opengis.referencing.ReferenceIdentifier;
 
 /**
  * Defines the location and orientation of an ellipsoid that approximates the shape of the earth.
- * Geodetic datum are used together with ellipsoidal coordinate system, and also with Cartesian
- * coordinate system centered in the ellipsoid (or sphere).
+ * This concept, known as <q>geodetic datum</q> in traditional geodesy,
+ * is now better known as <q>geodetic reference frame</q>.
+ * Geodetic reference frames are used together with ellipsoidal coordinate system,
+ * and also with Cartesian coordinate system centered in the ellipsoid (or sphere).
  *
  * <h2>Bursa-Wolf parameters</h2>
  * One or many {@link BursaWolfParameters} can optionally be associated to each {@code DefaultGeodeticDatum} instance.
  * This association is not part of the ISO 19111 model, but still a common practice (especially in older standards).
- * Associating Bursa-Wolf parameters to geodetic datum is known as the <i>early-binding</i> approach.
+ * Associating Bursa-Wolf parameters to a geodetic reference frame is known as the <i>early-binding</i> approach.
  * A recommended alternative, discussed below, is the <i>late-binding</i> approach.
  *
  * <p>The Bursa-Wolf parameters serve two purposes:</p>
  * <ol class="verbose">
  *   <li><b>Fallback for datum shifts</b><br>
- *     There is different methods for transforming coordinates from one geodetic datum to another datum,
+ *     There is different methods for transforming coordinates from one geodetic reference frame to another frame,
  *     and Bursa-Wolf parameters are used with some of them. However, different set of parameters may exist
  *     for the same pair of (<var>source</var>, <var>target</var>) datum, so it is often not sufficient to
  *     know those datum. The (<var>source</var>, <var>target</var>) pair of CRS are often necessary,
@@ -98,10 +100,10 @@ import org.opengis.referencing.ReferenceIdentifier;
  *   </li>
  * </ol>
  *
- * <h2>Creating new geodetic datum instances</h2>
+ * <h2>Creating new geodetic reference frame instances</h2>
  * New instances can be created either directly by specifying all information to a factory method (choices 3
  * and 4 below), or indirectly by specifying the identifier of an entry in a database (choices 1 and 2 below).
- * Choice 1 in the following list is the easiest but most restrictive way to get a geodetic datum.
+ * Choice 1 in the following list is the easiest but most restrictive way to get a geodetic reference frame.
  * The other choices provide more freedom.
  *
  * <ol>
@@ -194,7 +196,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     private final BursaWolfParameters[] bursaWolf;
 
     /**
-     * Creates a geodetic datum from the given properties. The properties map is given
+     * Creates a geodetic reference frame from the given properties. The properties map is given
      * unchanged to the {@linkplain AbstractDatum#AbstractDatum(Map) super-class constructor}.
      * In addition to the properties documented in the parent constructor,
      * the following properties are understood by this constructor:
@@ -630,7 +632,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *   }
      *
      * Note that the {@linkplain #getPrimeMeridian() prime meridian} shall be formatted by the caller
-     * as a separated element after the geodetic datum (for compatibility with WKT 1).
+     * as a separated element after the geodetic reference frame (for compatibility with WKT 1).
      *
      * @return {@code "Datum"} or {@code "GeodeticDatum"}.
      *
@@ -645,7 +647,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         if (isWKT1) {
             /*
              * Note that at the different of other datum (in particular vertical datum),
-             * WKT of geodetic datum do not have a numerical code for the datum type.
+             * WKT of geodetic reference frame do not have a numerical code for the datum type.
              */
             if (bursaWolf != null) {
                 for (final BursaWolfParameters candidate : bursaWolf) {
