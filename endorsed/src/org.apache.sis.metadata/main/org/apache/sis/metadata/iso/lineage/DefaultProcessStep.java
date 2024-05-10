@@ -271,6 +271,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      *
      * @since 1.0
      */
+    @Override
     @XmlElement(name = "stepDateTime")
     @XmlJavaTypeAdapter(TM_Primitive.Since2014.class)
     public TemporalPrimitive getStepDateTime() {
@@ -300,7 +301,14 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     @Deprecated(since="1.0")
     @XmlElement(name = "dateTime", namespace = LegacyNamespaces.GMD)
     public Date getDate() {
-        return FilterByVersion.LEGACY_METADATA.accept() ? TemporalUtilities.getAnyDate(getStepDateTime()) : null;
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            Date date = TemporalUtilities.getAnyDate(getStepDateTime());
+            if (date == null) {
+                date = ProcessStep.super.getDate();
+            }
+            return date;
+        }
+        return null;
     }
 
     /**

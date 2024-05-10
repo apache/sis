@@ -406,12 +406,6 @@ public abstract class AnnotationConsistencyCheck extends TestCaseWithLogs {
     protected String getExpectedXmlElementName(final Class<?> enclosing, final UML uml) {
         String name = firstIdentifier(uml);
         switch (name) {
-            case "stepDateTime": {
-                if (org.opengis.metadata.lineage.ProcessStep.class.isAssignableFrom(enclosing)) {
-                    name = "dateTime";
-                }
-                break;
-            }
             case "satisfiedPlan": {
                 if (org.opengis.metadata.acquisition.Requirement.class.isAssignableFrom(enclosing)) {
                     name = "satisifiedPlan";                // Misspelling in ISO 19115-3:2016
