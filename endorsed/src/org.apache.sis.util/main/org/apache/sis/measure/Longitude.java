@@ -28,7 +28,7 @@ import org.apache.sis.math.MathFunctions;
  *
  * <p>Longitudes are not necessarily relative to the Greenwich meridian. The
  * {@linkplain org.apache.sis.referencing.datum.DefaultPrimeMeridian prime meridian}
- * depends on the context, typically specified through the geodetic datum of a
+ * depends on the context, typically specified through the geodetic reference frame of a
  * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS}.</p>
  *
  * <h2>Immutability and thread safety</h2>

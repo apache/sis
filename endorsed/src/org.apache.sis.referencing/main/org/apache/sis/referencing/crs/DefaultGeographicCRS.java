@@ -227,10 +227,10 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     }
 
     /**
-     * Returns the geodetic datum associated to this geographic CRS.
+     * Returns the geodetic reference frame associated to this geographic CRS.
      * This is the datum given at construction time.
      *
-     * @return the geodetic datum associated to this geographic CRS.
+     * @return the geodetic reference frame associated to this geographic CRS.
      */
     @Override
     public final GeodeticDatum getDatum() {

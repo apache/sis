@@ -82,7 +82,7 @@
  * The <var>type</var> specifies which {@link org.opengis.referencing.AuthorityFactory} method to invoke, while
  * the <var>code</var> specifies the argument value to give to that method in order to get the EPSG object.
  * For example, the {@link org.apache.sis.referencing.CommonCRS#WGS84} documentation said that object
- * of type <i>geodetic datum</i> is associated to code {@code EPSG:6326}.
+ * of type <i>geodetic reference frame</i> is associated to code {@code EPSG:6326}.
  * This means that the EPSG object could be obtained by the following code:
  *
  * {@snippet lang="java" :

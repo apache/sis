@@ -337,7 +337,7 @@ public final class MultiAuthoritiesFactoryTest extends TestCaseWithLogs {
         assertTrue(codes.contains(" mock :: 84"));   // A geographic CRS.
         assertTrue(codes.contains("http://www.opengis.net/gml/srs/mock.xml#4326"));
 
-        assertFalse(codes.contains("MOCK:6326"));      // A geodetic datum.
+        assertFalse(codes.contains("MOCK:6326"));    // A geodetic reference frame.
         assertFalse(codes.isEmpty());
         assertArrayEquals(new String[] {"MOCK:4979", "MOCK:84", "MOCK:4326", "MOCK:5714", "MOCK:9905"}, codes.toArray());
         loggings.assertNoUnexpectedLog();

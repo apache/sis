@@ -248,7 +248,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * Also known as the "origin", especially for Engineering and Image Datums.
      *
      * <ul>
-     *   <li>For a {@linkplain DefaultGeodeticDatum geodetic datum}, the anchor may be the point(s) where the
+     *   <li>For a {@linkplain DefaultGeodeticDatum geodetic reference frame}, the anchor may be the point(s) where the
      *       relationship between geoid and ellipsoid is defined.</li>
      *
      *   <li>For an {@linkplain DefaultEngineeringDatum engineering datum}, the anchor may be an identified

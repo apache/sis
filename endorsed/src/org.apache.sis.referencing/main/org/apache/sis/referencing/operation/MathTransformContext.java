@@ -36,9 +36,9 @@ import org.apache.sis.measure.Units;
 /**
  * Information about the context in which a {@code MathTransform} is created.
  * This class performs the same normalization as the super-class (namely axis swapping and unit conversions),
- * with the addition of longitude rotation for supporting change of prime meridian.  This latter change is not
- * applied by the super-class because prime meridian is part of geodetic datum, and the public math transform
- * factory know nothing about datum (on design, for separation of concerns).
+ * with the addition of longitude rotation for supporting change of prime meridian.
+ * This latter change is not applied by the super-class because prime meridian is part of geodetic reference frame,
+ * and the public math transform factory knows nothing about datum (on design, for separation of concerns).
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

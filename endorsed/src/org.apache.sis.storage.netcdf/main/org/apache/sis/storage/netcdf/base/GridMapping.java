@@ -363,7 +363,7 @@ final class GridMapping {
             ellipsoid = defaultDefinitions.ellipsoid();
         }
         /*
-         * Geodetic datum built from "towgs84" and above properties.
+         * Geodetic reference frame built from "towgs84" and above properties.
          */
         final Object bursaWolf = definition.remove(Convention.TOWGS84);
         final GeodeticDatum datum;

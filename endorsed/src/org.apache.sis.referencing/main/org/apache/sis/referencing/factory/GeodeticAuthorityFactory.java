@@ -559,8 +559,8 @@ public abstract class GeodeticAuthorityFactory extends AbstractFactory implement
 
     /**
      * Creates a datum defining the location and orientation of an ellipsoid that approximates the shape of the earth.
-     * Geodetic datum are used together with ellipsoidal coordinate system, and also with Cartesian coordinate system
-     * centered in the ellipsoid (or sphere).
+     * Geodetic reference frame are used together with ellipsoidal coordinate system,
+     * and also with Cartesian coordinate system centered in the ellipsoid (or sphere).
      *
      * <h4>Examples</h4>
      * The {@linkplain #getAuthorityCodes(Class) set of available codes} depends on the defining

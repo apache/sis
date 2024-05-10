@@ -199,7 +199,7 @@ public final class HardCodedCRS {
 
     /**
      * A geocentric CRS with a spherical coordinate system.
-     * Prime meridian is Greenwich, geodetic datum is WGS84 and linear units are metres.
+     * Prime meridian is Greenwich, geodetic reference frame is WGS84 and linear units are metres.
      */
     @SuppressWarnings("deprecation")
     public static final DefaultGeocentricCRS SPHERICAL = new DefaultGeocentricCRS(
@@ -207,7 +207,7 @@ public final class HardCodedCRS {
 
     /**
      * A geocentric CRS with a Cartesian coordinate system.
-     * Prime meridian is Greenwich, geodetic datum is WGS84 and linear units are metres.
+     * Prime meridian is Greenwich, geodetic reference frame is WGS84 and linear units are metres.
      * The <var>X</var> axis points towards the prime meridian.
      * The <var>Y</var> axis points East.
      * The <var>Z</var> axis points North.

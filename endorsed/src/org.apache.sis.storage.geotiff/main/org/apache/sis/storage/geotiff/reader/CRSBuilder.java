@@ -849,7 +849,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
     }
 
     /**
-     * Creates a geodetic datum from an EPSG code or from user-defined parameters.
+     * Creates a geodetic reference frame from an EPSG code or from user-defined parameters.
      * The GeoTIFF values used by this method are:
      *
      * <ul>
@@ -861,7 +861,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
      *   </ul></li>
      * </ul>
      *
-     * @param  names        the component names to use if the geodetic datum is user-defined.
+     * @param  names        the component names to use if the geodetic reference frame is user-defined.
      * @param  angularUnit  the angular unit of the longitude value relative to Greenwich.
      * @param  linearUnit   the linear unit of the ellipsoid semi-axis lengths.
      * @throws NoSuchElementException if a mandatory value is missing.
@@ -1060,7 +1060,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
             }
             case GeoCodes.userDefined: {
                 /*
-                 * Creates the geodetic datum, then a geographic CRS assuming (longitude, latitude) axis order.
+                 * Creates the geodetic reference frame, then a geographic CRS assuming (longitude, latitude) axis order.
                  * We use the coordinate system of CRS:84 as a template and modify its unit of measurement if needed.
                  */
                 final String[] names = splitName(getAsString(GeoKeys.GeodeticCitation));
@@ -1130,7 +1130,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
             }
             case GeoCodes.userDefined: {
                 /*
-                 * Creates the geodetic datum, then a geocentric CRS. We use the coordinate system of
+                 * Creates the geodetic reference frame, then a geocentric CRS. We use the coordinate system of
                  * the WGS84 geocentric CRS as a template and modify its unit of measurement if needed.
                  */
                 final String[] names = splitName(getAsString(GeoKeys.GeodeticCitation));

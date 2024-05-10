@@ -131,10 +131,10 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      *
      * <h4>Example</h4>
      * Converting time instants from a {@linkplain org.apache.sis.referencing.crs.DefaultTemporalCRS temporal CRS}
-     * using the <i>January 1st, 1950</i> epoch to another temporal CRS using the <i>January 1st, 1970</i> epoch
-     * is a datum change, since the epoch is part of {@linkplain org.apache.sis.referencing.datum.DefaultTemporalDatum
+     * using the <i>January 1st, 1950</i> epoch to another temporal CRS using the <i>January 1st, 1970</i> epoch is
+     * a datum change, since the epoch is part of {@linkplain org.apache.sis.referencing.datum.DefaultTemporalDatum
      * temporal datum} definition. However, such operation does not have all the accuracy issues of transformations
-     * between geodetic datum (empirically determined, over-determined systems, stochastic nature of the parameters).
+     * between geodetic reference frames (empirically determined, over-determined systems, stochastic nature of the parameters).
      * Consequently, some users may consider sufficient to represent temporal epoch changes as conversions instead
      * than transformations.
      *

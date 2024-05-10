@@ -631,7 +631,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
 
         /**
          * Sets the source coordinate system and related ellipsoid to the components of given CRS.
-         * The {@link Ellipsoid}, fetched from the geodetic datum, is often used together with an {@link EllipsoidalCS},
+         * The {@link Ellipsoid}, fetched from the geodetic reference frame, is often used together with an {@link EllipsoidalCS},
          * but not necessarily. The geodetic CRS may also be associated with a spherical or Cartesian coordinate system,
          * and the ellipsoid information may still be needed even with those non-ellipsoidal coordinate systems.
          *
@@ -665,7 +665,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
 
         /**
          * Sets the target coordinate system and related ellipsoid to the components of given CRS.
-         * The {@link Ellipsoid}, fetched from the geodetic datum, is often used together with an {@link EllipsoidalCS},
+         * The {@link Ellipsoid}, fetched from the geodetic reference frame, is often used together with an {@link EllipsoidalCS},
          * but not necessarily. The geodetic CRS may also be associated with a spherical or Cartesian coordinate system,
          * and the ellipsoid information may still be needed even with those non-ellipsoidal coordinate systems.
          *
