@@ -165,7 +165,7 @@ public final class GeodeticObjectFactoryTest extends ObjectFactoryTest {
         assertWktEquals(Convention.WKT1,
                 "SPHEROID[“Airy1830”, 6377563.396, 299.3249753150345]", ellipsoid);
         /*
-         * Geodetic datum
+         * Geodetic reference frame
          */
         datum = datumFactory.createGeodeticDatum(name("Airy1830"), ellipsoid, meridian);
         assertWktEquals(Convention.WKT1,

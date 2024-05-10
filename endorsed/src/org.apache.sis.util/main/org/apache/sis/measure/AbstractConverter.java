@@ -18,16 +18,30 @@ package org.apache.sis.measure;
 
 import java.util.List;
 import java.io.Serializable;
+import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import org.apache.sis.math.DecimalFunctions;
 
 
 /**
- * Base class of unit converters.
+ * Skeletal implementation of the {@code UnitConverter} interface for reducing implementation effort.
+ * This class makes easier to define a non-linear conversion between two units of measurement.
+ * Note that for linear conversions, the standard {@link Unit#shift(Number)}, {@link Unit#multiply(Number)}
+ * and {@link Unit#divide(Number)} methods should be used instead.
+ *
+ * <p>After a non-linear conversion has been created, a new unit of measurement using that conversion
+ * can be defined by a call to {@link Unit#transform(UnitConverter)}.
+ * See {@link Units#logarithm(Unit)} for an example.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ *
+ * @see Units#converter(Number, Number)
+ * @see Units#logarithm(Unit)
+ *
+ * @since 1.5
  */
-abstract class AbstractConverter implements UnitConverter, Serializable {
+public abstract class AbstractConverter implements UnitConverter, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -36,7 +50,7 @@ abstract class AbstractConverter implements UnitConverter, Serializable {
     /**
      * Creates a new converter.
      */
-    AbstractConverter() {
+    protected AbstractConverter() {
     }
 
     /**
@@ -135,19 +149,24 @@ abstract class AbstractConverter implements UnitConverter, Serializable {
      * by the specified converter (right converter), and then converting by this converter (left converter).
      *
      * <p>The default implementation is okay, but subclasses should override if they can detect optimizations.</p>
+     *
+     * @param  before  the converter to concatenate before this converter.
+     * @return a conversion which applies {@code before} first, then {@code this}.
      */
     @Override
-    public UnitConverter concatenate(final UnitConverter converter) {
-        if (equals(converter.inverse())) {
+    public UnitConverter concatenate(final UnitConverter before) {
+        if (equals(before.inverse())) {
             return IdentityConverter.INSTANCE;
         }
-        return new ConcatenatedConverter(converter, this);
+        return new ConcatenatedConverter(before, this);
     }
 
     /**
      * Returns the steps of fundamental converters making up this converter. The default implementation returns
      * only {@code this} on the assumption that this conversion is not a concatenation of other converters.
      * Subclasses should override if this assumption does not hold.
+     *
+     * @return list of steps in the unit conversion represented by this instance.
      */
     @Override
     public List<UnitConverter> getConversionSteps() {

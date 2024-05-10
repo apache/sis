@@ -178,7 +178,7 @@ public final class WKTUtilities extends Static {
     }
 
     /**
-     * Returns the given geodetic datum as a formattable object.
+     * Returns the given geodetic reference frame as a formattable object.
      *
      * @param  object  the datum, or {@code null}.
      * @return the given datum as a formattable object, or {@code null}.

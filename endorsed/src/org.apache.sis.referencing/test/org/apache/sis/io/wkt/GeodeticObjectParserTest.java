@@ -211,7 +211,7 @@ public final class GeodeticObjectParserTest extends TestCase {
     }
 
     /**
-     * Tests the parsing of a geodetic datum from a WKT 2 string.
+     * Tests the parsing of a geodetic reference frame from a WKT 2 string.
      *
      * @throws ParseException if the parsing failed.
      */

@@ -209,7 +209,7 @@ final class StandardDefinitions {
      * Creates a geodetic CRS from hard-coded values for the given code.
      *
      * @param  code   the EPSG code.
-     * @param  datum  the geodetic datum.
+     * @param  datum  the geodetic reference frame.
      * @param  cs     the coordinate system.
      * @return the geographic CRS for the given code.
      */
@@ -232,12 +232,12 @@ final class StandardDefinitions {
     }
 
     /**
-     * Creates a geodetic datum from hard-coded values for the given code.
+     * Creates a geodetic reference frame from hard-coded values for the given code.
      *
      * @param  code       the EPSG code.
      * @param  ellipsoid  the datum ellipsoid.
      * @param  meridian   the datum prime meridian.
-     * @return the geodetic datum for the given code.
+     * @return the geodetic reference frame for the given code.
      */
     static GeodeticDatum createGeodeticDatum(final short code, final Ellipsoid ellipsoid, final PrimeMeridian meridian) {
         final String name;

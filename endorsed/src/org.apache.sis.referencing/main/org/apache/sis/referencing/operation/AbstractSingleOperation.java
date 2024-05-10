@@ -310,8 +310,8 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
          *
          * Comparing the MathTransforms instead of parameters avoid the problem of implicit parameters. For example, in
          * a ProjectedCRS, the "semiMajor" and "semiMinor" axis lengths are sometimes provided as explicit parameters,
-         * and sometimes inferred from the geodetic datum. The two cases would be different set of parameters from the
-         * OperationMethod's point of view, but still result in the creation of identical MathTransforms.
+         * and sometimes inferred from the geodetic reference frame. The two cases would be different set of parameters
+         * from the OperationMethod's point of view, but still result in the creation of identical MathTransforms.
          *
          * Another rational for treating OperationMethod as metadata is that SIS's MathTransform providers extend
          * DefaultOperationMethod. Consequently, there is a wide range of subclasses, which make the comparisons more

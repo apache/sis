@@ -233,7 +233,7 @@ public final class ReferencingUtilities extends Static {
      *   <li>If the given CRS is an instance of {@link SingleCRS} and its datum is a {@link GeodeticDatum},
      *       then this method returns the datum ellipsoid.</li>
      *   <li>Otherwise if the given CRS is an instance of {@link CompoundCRS}, then this method
-     *       invokes itself recursively for each component until a geodetic datum is found.</li>
+     *       invokes itself recursively for each component until a geodetic reference frame is found.</li>
      *   <li>Otherwise this method returns {@code null}.</li>
      * </ul>
      *

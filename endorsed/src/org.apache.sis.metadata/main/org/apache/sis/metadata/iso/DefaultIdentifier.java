@@ -48,7 +48,7 @@ import org.apache.sis.xml.Namespaces;
  *
  * <p>Referencing objects like
  * {@linkplain org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis coordinate system axis},
- * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic datum},
+ * {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic reference frame},
  * {@linkplain org.apache.sis.referencing.crs.DefaultGeographicCRS geographic CRS} and more
  * rather use the {@link org.apache.sis.referencing.ImmutableIdentifier} implementation,
  * which is a class unrelated to the usual {@code org.apache.metadata} hierarchy

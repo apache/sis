@@ -78,7 +78,7 @@ import org.opengis.referencing.ObjectDomain;
  */
 public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     /**
-     * The geodetic datum, or {@code null} if none.
+     * The geodetic reference frame, or {@code null} if none.
      */
     private GeodeticDatum datum;
 
@@ -192,7 +192,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     }
 
     /**
-     * Creates a geodetic datum with an ellipsoid of the given shape.
+     * Creates a geodetic reference frame with an ellipsoid of the given shape.
      *
      * @param  name               ellipsoid and datum name.
      * @param  semiMajorAxis      equatorial radius in supplied linear units.

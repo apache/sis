@@ -93,7 +93,7 @@ import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
  *       The Position Vector convention is used by IAG and recommended by ISO 19111.</li>
  * </ul>
  *
- * <h2>Source and target geodetic datum</h2>
+ * <h2>Source and target geodetic reference frames</h2>
  * The <var>source datum</var> in above coordinates transformation is the {@link DefaultGeodeticDatum} instance
  * that contain this {@code BursaWolfParameters}. It can be any datum, including datum that are valid only locally.
  * The <var>{@linkplain #getTargetDatum() target datum}</var> is specified at construction time and is often,

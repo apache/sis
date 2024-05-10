@@ -19,6 +19,7 @@ package org.apache.sis.measure;
 import javax.measure.IncommensurableException;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
+import javax.measure.quantity.Power;
 import javax.measure.quantity.Volume;
 
 // Test dependencies
@@ -275,6 +276,22 @@ public final class ConventionalUnitTest extends TestCase {
         final Unit<Volume> cm3 = Units.CUBIC_METRE.divide(1E+06);
         assertEquals(4000,  l.getConverterTo(ml) .convert(4), "4 L to ml");
         assertEquals(40, cl.getConverterTo(cm3).convert(4), "4 cL to cm³");
+    }
+
+    /**
+     * Tests the creation of a unit of measurement defined by a logarithm.
+     *
+     * @see <a href="https://en.wikipedia.org/wiki/DBm">Decibel-milliwatts on Wikipedia</a>
+     */
+    @Test
+    public void testDecibelWatt() {
+        final Unit<Power> dBm = Units.logarithm(Units.WATT.divide(1000)).divide(10);
+        final UnitConverter c = dBm.getConverterTo(Units.WATT);
+        assertEquals(100000, c.convert(80));
+        assertEquals(  1000, c.convert(60));
+        assertEquals(    10, c.convert(40));
+        assertEquals(     1, c.convert(30));
+        assertEquals(0.3162, c.convert(25), 0.0001);
     }
 
     /**
