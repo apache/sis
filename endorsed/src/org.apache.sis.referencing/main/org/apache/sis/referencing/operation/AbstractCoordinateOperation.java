@@ -423,7 +423,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         sourceCRS                   = operation.getSourceCRS();
         targetCRS                   = operation.getTargetCRS();
         interpolationCRS            = operation.getInterpolationCRS().orElse(null);
-        operationVersion            = operation.getOperationVersion().orElse(null);
+        operationVersion            = operation.getOperationVersion();
         coordinateOperationAccuracy = operation.getCoordinateOperationAccuracy();
         transform                   = operation.getMathTransform();
         if (operation instanceof AbstractCoordinateOperation) {
@@ -557,11 +557,11 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * nature of the parameters. In principle this property is irrelevant to coordinate
      * {@linkplain DefaultConversion conversions}, but Apache SIS accepts it anyway.
      *
-     * @return the coordinate operation version.
+     * @return the coordinate operation version, or {@code null} if none.
      */
     @Override
-    public Optional<String> getOperationVersion() {
-        return Optional.ofNullable(operationVersion);
+    public String getOperationVersion() {
+        return operationVersion;
     }
 
     /**
