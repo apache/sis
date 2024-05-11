@@ -19,6 +19,7 @@ package org.apache.sis.feature;
 import java.util.Map;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Logger;
 import java.io.Serializable;
 import org.opengis.util.NameFactory;
@@ -40,7 +41,7 @@ import org.apache.sis.util.resources.Errors;
  * will be replaced by references to the {@code IdentifiedType} interface.</div>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.5
  */
 public class AbstractIdentifiedType implements Deprecable, Serializable {
@@ -280,10 +281,10 @@ public class AbstractIdentifiedType implements Deprecable, Serializable {
      * Returns a natural language designator for the element.
      * This can be used as an alternative to the {@linkplain #getName() name} in user interfaces.
      *
-     * @return natural language designator for the element, or {@code null} if none.
+     * @return natural language designator for the element.
      */
-    public InternationalString getDesignation() {
-        return designation;
+    public Optional<InternationalString> getDesignation() {
+        return Optional.ofNullable(designation);
     }
 
     /**
@@ -295,8 +296,8 @@ public class AbstractIdentifiedType implements Deprecable, Serializable {
      *
      * @return information beyond that required for concise definition of the element, or {@code null} if none.
      */
-    public InternationalString getDescription() {
-        return description;
+    public Optional<InternationalString> getDescription() {
+        return Optional.ofNullable(description);
     }
 
     /**

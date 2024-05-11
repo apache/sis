@@ -985,7 +985,7 @@ public class MetadataSource implements AutoCloseable {
         final Class<?> type           = TableHierarchy.subType(info.getMetadataType(), toSearch.identifier);
         final Class<?> returnType     = Interim.getReturnType(method);
         final boolean  wantCollection = Collection.class.isAssignableFrom(returnType);
-        final Class<?> elementType    = wantCollection ? Classes.boundOfParameterizedProperty(method) : returnType;
+        final Class<?> elementType    = (wantCollection || Classes.isParameterizedProperty(returnType)) ? Classes.boundOfParameterizedProperty(method) : returnType;
         final boolean  isMetadata     = standard.isMetadata(elementType);
         final String   tableName      = getTableName(type);
         final String   columnName     = info.asNameMap(standard).get(method.getName());

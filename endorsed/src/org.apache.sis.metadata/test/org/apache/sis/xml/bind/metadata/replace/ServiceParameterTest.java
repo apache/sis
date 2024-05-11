@@ -67,8 +67,8 @@ public final class ServiceParameterTest extends TestCase {
         final ReferenceIdentifier name = param.getName();
         assertEquals("TestSpace", name.getCodeSpace());
         assertEquals("My service parameter", name.getCode());
-        assertEquals("TestSpace:My service parameter", String.valueOf(name));
-        assertNull  (param.getDescription());
+        assertEquals("TestSpace:My service parameter", name.toString());
+        assertTrue(param.getDescription().isEmpty());
     }
 
     /**

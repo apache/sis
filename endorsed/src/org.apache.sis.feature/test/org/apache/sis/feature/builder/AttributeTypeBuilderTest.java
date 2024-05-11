@@ -66,8 +66,8 @@ public final class AttributeTypeBuilderTest extends TestCase {
         assertEquals(String.class, attribute.getValueClass());
         assertNull(attribute.getDefaultValue());
         assertNull(attribute.getDefinition());
-        assertNull(attribute.getDescription());
-        assertNull(attribute.getDesignation());
+        assertTrue(attribute.getDescription().isEmpty());
+        assertTrue(attribute.getDesignation().isEmpty());
         assertEquals(1, attribute.getMinimumOccurs());
         assertEquals(1, attribute.getMaximumOccurs());
     }
@@ -89,8 +89,8 @@ public final class AttributeTypeBuilderTest extends TestCase {
 
         assertEquals("myScope:myName",      attribute.getName().toString());
         assertEquals("test definition",     attribute.getDefinition().toString());
-        assertEquals("test description",    attribute.getDescription().toString());
-        assertEquals("test designation",    attribute.getDesignation().toString());
+        assertEquals("test description",    attribute.getDescription().orElseThrow().toString());
+        assertEquals("test designation",    attribute.getDesignation().orElseThrow().toString());
         assertEquals(String.class,          attribute.getValueClass());
         assertEquals("test default value.", attribute.getDefaultValue());
         assertEquals(10,                    attribute.getMinimumOccurs());
@@ -142,8 +142,8 @@ public final class AttributeTypeBuilderTest extends TestCase {
         final var attribute = b2.build();
         assertEquals("temperature",      attribute.getName().toString());
         assertEquals("test definition",  attribute.getDefinition().toString());
-        assertEquals("test description", attribute.getDescription().toString());
-        assertEquals("test designation", attribute.getDesignation().toString());
+        assertEquals("test description", attribute.getDescription().orElseThrow().toString());
+        assertEquals("test designation", attribute.getDesignation().orElseThrow().toString());
         assertEquals(Double.class,       attribute.getValueClass());
         assertEquals(Double.valueOf(25), attribute.getDefaultValue());
     }

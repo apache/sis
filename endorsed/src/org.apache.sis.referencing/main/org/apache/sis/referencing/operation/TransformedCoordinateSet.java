@@ -39,6 +39,8 @@ import org.apache.sis.coordinate.AbstractCoordinateSet;
  * The result of transforming coordinate tuples using the math transform of a given coordinate operation.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ *
+ * @todo The current implementation is inefficient.
  */
 final class TransformedCoordinateSet extends AbstractCoordinateSet implements UnaryOperator<DirectPosition> {
     /**

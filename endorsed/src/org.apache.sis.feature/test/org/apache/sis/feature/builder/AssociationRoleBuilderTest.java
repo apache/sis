@@ -54,8 +54,8 @@ public final class AssociationRoleBuilderTest extends TestCase {
         final var role = builder.build();
         assertEquals(1, role.getMinimumOccurs());
         assertEquals(2, role.getMaximumOccurs());
-        assertEquals(new SimpleInternationalString("A designation"),          role.getDesignation());
+        assertEquals(new SimpleInternationalString("A designation"),          role.getDesignation().orElseThrow());
         assertEquals(new SimpleInternationalString("A definition"),           role.getDefinition());
-        assertEquals(new SimpleInternationalString("Bridges on the highway"), role.getDescription());
+        assertEquals(new SimpleInternationalString("Bridges on the highway"), role.getDescription().orElseThrow());
     }
 }

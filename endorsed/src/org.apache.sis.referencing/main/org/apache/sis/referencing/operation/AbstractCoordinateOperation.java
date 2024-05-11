@@ -186,6 +186,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *
      * @see #getOperationVersion()
      */
+    @XmlElement(name = "operationVersion")
     private String operationVersion;
 
     /**
@@ -596,7 +597,6 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * @return the coordinate operation version, or {@code null} in none.
      */
     @Override
-    @XmlElement(name = "operationVersion")
     public String getOperationVersion() {
         return operationVersion;
     }
@@ -1225,19 +1225,6 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
             coordinateOperationAccuracy = UnmodifiableArrayList.wrap(values);
         } else {
             ImplementationHelper.propertyAlreadySet(AbstractCoordinateOperation.class, "setAccuracy", "coordinateOperationAccuracy");
-        }
-    }
-
-    /**
-     * Invoked by JAXB only at unmarshalling time.
-     *
-     * @see #getOperationVersion()
-     */
-    private void setOperationVersion(final String value) {
-        if (operationVersion == null) {
-            operationVersion = value;
-        } else {
-            ImplementationHelper.propertyAlreadySet(AbstractCoordinateOperation.class, "setOperationVersion", "operationVersion");
         }
     }
 

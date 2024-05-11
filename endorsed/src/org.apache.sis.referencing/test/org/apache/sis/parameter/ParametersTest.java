@@ -105,20 +105,20 @@ public final class ParametersTest extends TestCase {
     {
         assertEquals(valueDomain, Parameters.getValueDomain(descriptor));
         assertEquals(valueDomain, Parameters.getValueDomain(new ParameterDescriptor<T>() {
-            @Override public ReferenceIdentifier      getName()          {return descriptor.getName();}
-            @Override public Collection<GenericName>  getAlias()         {return descriptor.getAlias();}
-            @Override public Set<ReferenceIdentifier> getIdentifiers()   {return descriptor.getIdentifiers();}
-            @Override public InternationalString      getRemarks()       {return descriptor.getRemarks();}
-            @Override public int                      getMinimumOccurs() {return descriptor.getMinimumOccurs();}
-            @Override public int                      getMaximumOccurs() {return descriptor.getMaximumOccurs();}
-            @Override public Class<T>                 getValueClass()    {return descriptor.getValueClass();}
-            @Override public Set<T>                   getValidValues()   {return descriptor.getValidValues();}
-            @Override public Comparable<T>            getMinimumValue()  {return descriptor.getMinimumValue();}
-            @Override public Comparable<T>            getMaximumValue()  {return descriptor.getMaximumValue();}
-            @Override public T                        getDefaultValue()  {return descriptor.getDefaultValue();}
-            @Override public Unit<?>                  getUnit()          {return descriptor.getUnit();}
-            @Override public ParameterValue<T>        createValue()      {return descriptor.createValue();}
-            @Override public String                   toWKT()            {return descriptor.toWKT();}
+            @Override public ReferenceIdentifier           getName()          {return descriptor.getName();}
+            @Override public Collection<GenericName>       getAlias()         {return descriptor.getAlias();}
+            @Override public Set<ReferenceIdentifier>      getIdentifiers()   {return descriptor.getIdentifiers();}
+            @Override public InternationalString           getRemarks()       {return descriptor.getRemarks();}
+            @Override public int                           getMinimumOccurs() {return descriptor.getMinimumOccurs();}
+            @Override public int                           getMaximumOccurs() {return descriptor.getMaximumOccurs();}
+            @Override public Class<T>                      getValueClass()    {return descriptor.getValueClass();}
+            @Override public Set<T>                        getValidValues()   {return descriptor.getValidValues();}
+            @Override public Comparable<T>                 getMinimumValue()  {return descriptor.getMinimumValue();}
+            @Override public Comparable<T>                 getMaximumValue()  {return descriptor.getMaximumValue();}
+            @Override public T                             getDefaultValue()  {return descriptor.getDefaultValue();}
+            @Override public Unit<?>                       getUnit()          {return descriptor.getUnit();}
+            @Override public ParameterValue<T>             createValue()      {return descriptor.createValue();}
+            @Override public String                        toWKT()            {return descriptor.toWKT();}
         }));
     }
 

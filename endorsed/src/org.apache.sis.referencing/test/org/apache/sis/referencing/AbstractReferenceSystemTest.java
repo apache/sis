@@ -36,6 +36,7 @@ import org.apache.sis.test.mock.VerticalCRSMock;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
+import static org.apache.sis.referencing.Assertions.assertRemarksEquals;
 
 // Specific to the main branch:
 import static org.opengis.referencing.ReferenceSystem.*;
@@ -73,8 +74,8 @@ public final class AbstractReferenceSystemTest extends TestCase {
         assertEquals("This is a name",         reference.getName().getCode());
         assertEquals("This is a scope",        scope.toString(Locale.ROOT));
         assertEquals("Valide dans ce domaine", scope.toString(Locale.FRENCH));
-        assertEquals("There is remarks",       reference.getRemarks().toString(Locale.ENGLISH));
-        assertEquals("Voici des remarques",    reference.getRemarks().toString(Locale.FRENCH));
+        assertRemarksEquals("There is remarks",    reference, Locale.ENGLISH);
+        assertRemarksEquals("Voici des remarques", reference, Locale.FRENCH);
     }
 
     /**

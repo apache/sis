@@ -45,6 +45,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
+import static org.apache.sis.referencing.Assertions.assertRemarksEquals;
 
 // Specific to the main branch:
 import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
@@ -108,9 +109,9 @@ public final class DefaultGeodeticDatumTest extends TestCase {
         assertEquals("This is a name",        datum.getName().getCode());
         assertEquals("This is a scope",       scope.toString(Locale.ROOT));
         assertEquals("Valide pour tel usage", scope.toString(Locale.FRENCH));
-        assertEquals("There is remarks",      datum.getRemarks().toString(Locale.ROOT));
-        assertEquals("Voici des remarques",   datum.getRemarks().toString(Locale.FRENCH));
-        assertEquals("注です。",                datum.getRemarks().toString(Locale.JAPANESE));
+        assertRemarksEquals("There is remarks",      datum, Locale.ROOT);
+        assertRemarksEquals("Voici des remarques",   datum, Locale.FRENCH);
+        assertRemarksEquals("注です。",              datum, Locale.JAPANESE);
     }
 
     /**
@@ -301,16 +302,12 @@ public final class DefaultGeodeticDatumTest extends TestCase {
          * Values in the following tests are specific to our XML file.
          * The actual texts in the EPSG database are more descriptive.
          */
-        assertEquals("No distinction between the original and subsequent WGS 84 frames.",
-                datum.getRemarks().toString());
-        assertEquals("Satellite navigation.",
-                getScope(datum));
+        assertRemarksEquals("No distinction between the original and subsequent WGS 84 frames.", datum, null);
+        assertEquals("Satellite navigation.", getScope(datum));
         assertEquals("Station coordinates changed by a few centimetres in 1994, 1997, 2002 and 2012.",
-                datum.getAnchorDefinition().get().toString());
-        assertEquals(xmlDate("1984-01-01 00:00:00").toInstant(),
-                datum.getAnchorEpoch().orElse(null));
-        assertEquals("Defining parameters cited in EPSG database.",
-                datum.getEllipsoid().getRemarks().toString());
+                     datum.getAnchorDefinition().orElseThrow().toString());
+        assertEquals(xmlDate("1984-01-01 00:00:00").toInstant(), datum.getAnchorEpoch().orElseThrow());
+        assertRemarksEquals("Defining parameters cited in EPSG database.", datum.getEllipsoid(), null);
         return datum;
     }
 

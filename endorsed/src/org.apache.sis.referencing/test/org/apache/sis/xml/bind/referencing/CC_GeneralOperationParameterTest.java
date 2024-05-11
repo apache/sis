@@ -31,6 +31,7 @@ import org.apache.sis.xml.Namespaces;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.referencing.Assertions.assertRemarksEquals;
 import org.apache.sis.xml.test.TestCase;
 
 
@@ -72,7 +73,7 @@ public final class CC_GeneralOperationParameterTest extends TestCase.WithLogs {
          */
         assertEquals(name, p.getName().getCode());
         assertEquals(remarks, (remarks == null) ? null : p.getRemarks().toString());
-        assertNull(p.getDescription());
+        assertTrue(p.getDescription().isEmpty());
         assertNull(p.getValueClass());
         assertEquals(0, p.getMinimumOccurs());
         assertEquals(1, p.getMaximumOccurs());
@@ -155,7 +156,7 @@ public final class CC_GeneralOperationParameterTest extends TestCase.WithLogs {
         assertEquals (0,                     merged.getMinimumOccurs());
         assertEquals (1,                     merged.getMaximumOccurs());
         assertEquals (Integer.class,         merged.getValueClass());
-        assertSame   (provided.getRemarks(), merged.getRemarks());
+        assertEquals (provided.getRemarks(), merged.getRemarks());
         loggings.assertNoUnexpectedLog();
     }
 
@@ -169,13 +170,13 @@ public final class CC_GeneralOperationParameterTest extends TestCase.WithLogs {
     public void testGroupSubstitution() throws JAXBException {
         final Map<String,String> properties = new HashMap<>(4);
         assertNull(properties.put(DefaultParameterDescriptor.NAME_KEY, "Group"));
-        final ParameterDescriptorGroup provided = new DefaultParameterDescriptorGroup(properties, 1, 2,
+        final var provided = new DefaultParameterDescriptorGroup(properties, 1, 2,
                 unmarshal("Parameter A", null),
                 unmarshal("Parameter B", "Remarks B."),
                 unmarshal("Parameter C", null));
 
         assertNull(properties.put(DefaultParameterDescriptor.REMARKS_KEY, "More details here."));
-        final ParameterDescriptorGroup complete = new DefaultParameterDescriptorGroup(properties, 1, 2,
+        final var complete = new DefaultParameterDescriptorGroup(properties, 1, 2,
                 create("Parameter A", "Remarks A.", false, 3),
                 create("Parameter B", "Remarks B.", false, 4),
                 create("Parameter C", "Remarks C.", false, 5),
@@ -196,23 +197,22 @@ public final class CC_GeneralOperationParameterTest extends TestCase.WithLogs {
     public void testGroupMergeBecauseDifferentProperties() throws JAXBException {
         final Map<String,String> properties = new HashMap<>(4);
         assertNull(properties.put(DefaultParameterDescriptor.NAME_KEY, "Group"));
-        final ParameterDescriptorGroup provided = new DefaultParameterDescriptorGroup(properties, 1, 2,
+        final var provided = new DefaultParameterDescriptorGroup(properties, 1, 2,
                 unmarshal("Parameter A", "Remarks A."),
                 unmarshal("Parameter B", "Remarks B."),
                 unmarshal("Parameter C", "Remarks C."));
 
         assertNull(properties.put(DefaultParameterDescriptor.REMARKS_KEY, "More details here."));
-        final ParameterDescriptorGroup complete = new DefaultParameterDescriptorGroup(properties, 1, 2,
+        final var complete = new DefaultParameterDescriptorGroup(properties, 1, 2,
                 create("Parameter A", "Remarks A.", true,  3),
                 create("Parameter B", "Remarks B.", false, 4),
                 create("Parameter C", "Different.", false, 5),
                 create("Parameter D", "Remarks D.", false, 6));
 
-        final ParameterDescriptorGroup merged =
-                (ParameterDescriptorGroup) CC_GeneralOperationParameter.merge(provided, complete);
+        final var merged = (ParameterDescriptorGroup) CC_GeneralOperationParameter.merge(provided, complete);
         assertNotSame(complete, provided);
         assertSame   (complete.getName(),    merged.getName());
-        assertSame   (complete.getRemarks(), merged.getRemarks());
+        assertEquals (complete.getRemarks(), merged.getRemarks());
         assertEquals (1,                     merged.getMinimumOccurs());
         assertEquals (2,                     merged.getMaximumOccurs());
 
@@ -237,21 +237,20 @@ public final class CC_GeneralOperationParameterTest extends TestCase.WithLogs {
     public void testGroupMergeBecauseMissingParameter() throws JAXBException {
         final Map<String,String> properties = new HashMap<>(4);
         assertNull(properties.put(DefaultParameterDescriptor.NAME_KEY, "Group"));
-        final ParameterDescriptorGroup provided = new DefaultParameterDescriptorGroup(properties, 1, 2,
+        final var provided = new DefaultParameterDescriptorGroup(properties, 1, 2,
                 unmarshal("Parameter A", null),
                 unmarshal("Parameter C", null));
 
         assertNull(properties.put(DefaultParameterDescriptor.REMARKS_KEY, "More details here."));
-        final ParameterDescriptorGroup complete = new DefaultParameterDescriptorGroup(properties, 1, 2,
+        final var complete = new DefaultParameterDescriptorGroup(properties, 1, 2,
                 create("Parameter A", null, false, 3),
                 create("Parameter B", null, true,  4),
                 create("Parameter C", null, false, 5));
 
-        final ParameterDescriptorGroup merged =
-                (ParameterDescriptorGroup) CC_GeneralOperationParameter.merge(provided, complete);
+        final var merged = (ParameterDescriptorGroup) CC_GeneralOperationParameter.merge(provided, complete);
         assertNotSame(complete, provided);
         assertSame   (complete.getName(),    merged.getName());
-        assertSame   (complete.getRemarks(), merged.getRemarks());
+        assertEquals (complete.getRemarks(), merged.getRemarks());
         assertEquals (1,                     merged.getMinimumOccurs());
         assertEquals (2,                     merged.getMaximumOccurs());
 
@@ -279,22 +278,21 @@ public final class CC_GeneralOperationParameterTest extends TestCase.WithLogs {
     public void testGroupMergeBecauseExtraParameter() throws JAXBException {
         final Map<String,String> properties = new HashMap<>(4);
         assertNull(properties.put(DefaultParameterDescriptor.NAME_KEY, "Group"));
-        final ParameterDescriptorGroup provided = new DefaultParameterDescriptorGroup(properties, 1, 2,
+        final var provided = new DefaultParameterDescriptorGroup(properties, 1, 2,
                 unmarshal("Parameter A", "Remarks A."),
                 unmarshal("Parameter B", "Remarks B."),
                 unmarshal("Parameter C", "Remarks C."));
 
         assertNull(properties.put(DefaultParameterDescriptor.REMARKS_KEY, "More details here."));
-        final ParameterDescriptorGroup complete = new DefaultParameterDescriptorGroup(properties, 1, 2,
+        final var complete = new DefaultParameterDescriptorGroup(properties, 1, 2,
                 create("Parameter A", "Remarks A.", false, 3),
                 create("Parameter C", "Remarks C.", false, 4));
 
         loggings.assertNoUnexpectedLog();
-        final ParameterDescriptorGroup merged =
-                (ParameterDescriptorGroup) CC_GeneralOperationParameter.merge(provided, complete);
+        final var merged = (ParameterDescriptorGroup) CC_GeneralOperationParameter.merge(provided, complete);
         assertNotSame(complete, provided);
         assertSame   (complete.getName(),    merged.getName());
-        assertSame   (complete.getRemarks(), merged.getRemarks());
+        assertEquals (complete.getRemarks(), merged.getRemarks());
         assertEquals (1,                     merged.getMinimumOccurs());
         assertEquals (2,                     merged.getMaximumOccurs());
         loggings.assertNextLogContains("Parameter B", "Group");
@@ -306,7 +304,7 @@ public final class CC_GeneralOperationParameterTest extends TestCase.WithLogs {
 
         final GeneralParameterDescriptor extra = itm.next();
         assertEquals("Parameter B", extra.getName().getCode());
-        assertEquals("Remarks B.",  extra.getRemarks().toString());
+        assertRemarksEquals("Remarks B.", extra, null);
 
         verifyParameter(itc.next(), itm.next(), true, "Remarks C.");
         assertFalse(itc.hasNext());
@@ -326,6 +324,6 @@ public final class CC_GeneralOperationParameterTest extends TestCase.WithLogs {
         assertEquals(0,                  merged.getMinimumOccurs());
         assertEquals(1,                  merged.getMaximumOccurs());
         assertEquals(Integer.class,      ((ParameterDescriptor<?>) merged).getValueClass());
-        assertEquals(remarks,            (remarks == null) ? null : merged.getRemarks().toString());
+        assertRemarksEquals(remarks,     merged, null);
     }
 }

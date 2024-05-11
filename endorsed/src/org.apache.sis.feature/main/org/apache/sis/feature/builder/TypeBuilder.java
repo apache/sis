@@ -117,8 +117,8 @@ public abstract class TypeBuilder implements Localized {
     final void initialize(final AbstractIdentifiedType template) {
         putIfNonNull(AbstractIdentifiedType.NAME_KEY,        template.getName());
         putIfNonNull(AbstractIdentifiedType.DEFINITION_KEY,  template.getDefinition());
-        putIfNonNull(AbstractIdentifiedType.DESIGNATION_KEY, template.getDesignation());
-        putIfNonNull(AbstractIdentifiedType.DESCRIPTION_KEY, template.getDescription());
+        putIfNonNull(AbstractIdentifiedType.DESIGNATION_KEY, template.getDesignation().orElse(null));
+        putIfNonNull(AbstractIdentifiedType.DESCRIPTION_KEY, template.getDescription().orElse(null));
         if (template instanceof Deprecable && ((Deprecable) template).isDeprecated()) {
             identification.put(AbstractIdentifiedType.DEPRECATED_KEY, Boolean.TRUE);
         }
