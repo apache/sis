@@ -335,7 +335,7 @@ public class FeatureFormat extends TabularFormat<Object> {
             boolean hasDeprecatedTypes = false;
             for (final PropertyType propertyType : featureType.getProperties(true)) {
                 if (!hasDesignation) {
-                    hasDesignation = propertyType.getDesignation() != null;
+                    hasDesignation = propertyType.getDesignation().isPresent();
                 }
                 if (!hasCharacteristics && propertyType instanceof AttributeType<?>) {
                     hasCharacteristics = !((AttributeType<?>) propertyType).characteristics().isEmpty();
@@ -486,8 +486,9 @@ public class FeatureFormat extends TabularFormat<Object> {
                      * In many cases, this information is not provided and the whole column is skipped.
                      */
                     case DESIGNATION: {
-                        final InternationalString d = propertyType.getDesignation();
-                        if (d != null) table.append(d.toString(displayLocale));
+                        propertyType.getDesignation().ifPresent((d) -> {
+                            table.append(d.toString(displayLocale));
+                        });
                         break;
                     }
                     /*

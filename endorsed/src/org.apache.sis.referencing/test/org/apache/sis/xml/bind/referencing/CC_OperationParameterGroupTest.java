@@ -155,7 +155,7 @@ public final class CC_OperationParameterGroupTest extends TestCase {
         assertNotSame(incomplete, complete, "Latitude of natural origin");
         assertNotSame(fromValue,  complete, "Latitude of natural origin");
         assertSame   (fromValue .getName(),       complete.getName());
-        assertSame   (incomplete.getRemarks(),    complete.getRemarks());
+        assertEquals (incomplete.getRemarks(),    complete.getRemarks());
         assertEquals (Double.class,               complete.getValueClass());
         assertSame   (fromValue.getValueDomain(), complete.getValueDomain());
         /*
@@ -221,7 +221,7 @@ public final class CC_OperationParameterGroupTest extends TestCase {
         if (remarks != null) {
             assertEquals(remarks, actual.getRemarks().toString());
         } else {
-            assertSame(expected.getRemarks(), actual.getRemarks());
+            assertEquals(expected.getRemarks(), actual.getRemarks());
         }
     }
 }

@@ -157,7 +157,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
                 }
                 case 7: {   // OPERATION_VERSION_KEY
                     if (object instanceof CoordinateOperation) {
-                        return ((CoordinateOperation) object).getOperationVersion();
+                        return ((CoordinateOperation) object).getOperationVersion().orElse(null);
                     }
                     break;
                 }

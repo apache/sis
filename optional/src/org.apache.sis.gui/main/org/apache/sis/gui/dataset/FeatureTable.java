@@ -282,7 +282,7 @@ public class FeatureTable extends TableView<Feature> {
              */
             final GenericName qualifiedName = pt.getName();
             final String name = qualifiedName.toString();
-            String title = string(pt.getDesignation());
+            String title = string(pt.getDesignation().orElse(null));
             if (title == null) {
                 title = string(qualifiedName.toInternationalString());
                 if (title == null) title = name;

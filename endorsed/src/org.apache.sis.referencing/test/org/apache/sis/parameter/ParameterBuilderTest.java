@@ -24,6 +24,7 @@ import org.apache.sis.measure.Units;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.apache.sis.referencing.Assertions.assertRemarksEquals;
 import org.apache.sis.test.TestCase;
 
 
@@ -86,14 +87,14 @@ public final class ParameterBuilderTest extends TestCase {
             builder.addName("False northing")                 .create(0, Units.METRE)
         };
         // Tests random properties.
-        assertEquals("EPSG",             parameters[1].getName().getCodeSpace());
-        assertEquals("False easting",    parameters[3].getName().getCode());
-        assertEquals("Some remarks.",    parameters[0].getRemarks().toString());
-        assertEquals(Double.valueOf(84), parameters[1].getMaximumValue());
-        assertEquals(Units.METRE,        parameters[4].getUnit());
-        assertTrue  (                    parameters[1].getAlias().isEmpty());
+        assertEquals("EPSG",                 parameters[1].getName().getCodeSpace());
+        assertEquals("False easting",        parameters[3].getName().getCode());
+        assertRemarksEquals("Some remarks.", parameters[0], null);
+        assertEquals(Double.valueOf(84),     parameters[1].getMaximumValue());
+        assertEquals(Units.METRE,            parameters[4].getUnit());
+        assertTrue  (                        parameters[1].getAlias().isEmpty());
 
-        final GenericName alias = parameters[0].getAlias().iterator().next();
+        GenericName alias = parameters[0].getAlias().iterator().next();
         assertEquals("central_meridian",     alias.tip().toString());
         assertEquals("OGC",                  alias.head().toString());
         assertEquals("OGC:central_meridian", alias.toString());

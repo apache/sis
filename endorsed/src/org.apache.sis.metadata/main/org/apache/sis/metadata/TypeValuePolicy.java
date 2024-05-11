@@ -31,19 +31,20 @@ package org.apache.sis.metadata;
  */
 public enum TypeValuePolicy {
     /**
-     * The type of a property, as inferred from the
-     * {@linkplain java.lang.reflect.Method#getReturnType() return type} of the property method
-     * defined in the interface.
+     * The type of a property as inferred from the return type of the property method defined in the interface.
+     * The property type is the {@linkplain java.lang.reflect.Method#getReturnType()} except for the following
+     * special cases:
      *
-     * <h4>Notes</h4>
      * <ul>
-     *   <li>Collections are not handled in any special way: if the return type is a collection,
-     *       then the property type is {@code Collection.class} or any other declared return type.</li>
-     *   <li>As a special case, values of type {@code double} (the primitive type) in
+     *   <li>{@link java.util.Optional} are replaced by the wrapped type.</li>
+     *   <li>Values of type {@code double} (the primitive type) in
      *       {@link org.opengis.metadata.extent.GeographicBoundingBox} are wrapped in
      *       {@link org.apache.sis.measure.Longitude} and {@link org.apache.sis.measure.Latitude}
      *       objects instead of {@link Double}.</li>
      * </ul>
+     *
+     * Note that collections are not handled in any special way. If the return type is a collection,
+     * then the property type is {@code Collection.class} or any other declared return type.
      */
     PROPERTY_TYPE,
 

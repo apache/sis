@@ -156,7 +156,7 @@ public final class SingleOperationMarshallingTest extends TestCase.WithLogs {
         assertEquals("World Mercator", c.getName().getCode(), "name");
         assertEquals("3395", getSingleton(c.getIdentifiers()).getCode(), "identifier");
         assertEquals("Very small scale mapping.", getScope(c), "scope");
-        assertNull  (c.getOperationVersion(), "operationVersion");
+        assertTrue  (c.getOperationVersion().isEmpty(), "operationVersion");
 
         final GeographicBoundingBox e = getDomainOfValidity(c);
         assertEquals(+180, e.getEastBoundLongitude(), "eastBoundLongitude");
@@ -221,7 +221,7 @@ public final class SingleOperationMarshallingTest extends TestCase.WithLogs {
         assertEquals("NTF (Paris) to NTF (1)", c.getName().getCode(), "name");
         assertEquals("1763", getSingleton(c.getIdentifiers()).getCode(), "identifier");
         assertEquals("Change of prime meridian.", getScope(c), "scope");
-        assertEquals("IGN-Fra", c.getOperationVersion(), "operationVersion");
+        assertEquals("IGN-Fra", c.getOperationVersion().get(), "operationVersion");
 
         final OperationMethod method = c.getMethod();
         assertNotNull(method, "method");

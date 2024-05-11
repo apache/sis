@@ -16,6 +16,7 @@
  */
 package org.apache.sis.xml.bind.metadata.replace;
 
+import java.util.Optional;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -163,7 +164,7 @@ public final class ServiceParameter extends Parameter {
         super(parameter);
         memberName    = getMemberName(parameter);
         direction     = parameter.getDirection();
-        description   = parameter.getDescription();
+        description   = parameter.getDescription().orElse(null);
         optionality   = parameter.getMinimumOccurs() > 0;
         repeatability = parameter.getMaximumOccurs() > 1;
     }
@@ -338,11 +339,11 @@ public final class ServiceParameter extends Parameter {
     /**
      * Returns a narrative explanation of the role of the parameter.
      *
-     * @return a narrative explanation of the role of the parameter, or {@code null} if none.
+     * @return a narrative explanation of the role of the parameter.
      */
     @Override
-    public InternationalString getDescription() {
-        return description;
+    public Optional<InternationalString> getDescription() {
+        return Optional.ofNullable(description);
     }
 
     /**

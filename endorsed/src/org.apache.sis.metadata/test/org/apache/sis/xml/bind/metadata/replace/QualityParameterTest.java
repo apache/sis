@@ -70,8 +70,8 @@ public final class QualityParameterTest extends TestCase {
         final Identifier name = param.getName();
         assertNull  (name.getCodeSpace());
         assertEquals("some parameter", name.getCode());
-        assertEquals("a definition",  String.valueOf(name .getDescription()));
-        assertEquals("a description", String.valueOf(param.getDescription()));
+        assertEquals("a definition",   name.getDescription().toString());
+        assertEquals("a description",  param.getDescription().orElseThrow().toString());
     }
 
     /**

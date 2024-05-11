@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.opengis.test.Validators;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.referencing.Assertions.assertAxisEquals;
+import static org.apache.sis.referencing.Assertions.assertRemarksEquals;
 import static org.apache.sis.referencing.Assertions.assertEpsgIdentifierEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
@@ -138,7 +139,7 @@ public final class DefaultEllipsoidalCSTest extends TestCase {
         final CoordinateSystemAxis φ = cs.getAxis(0);
         final CoordinateSystemAxis λ = cs.getAxis(1);
         assertEquals("Latitude (north), Longitude (east)",     cs.getName().getCode());
-        assertEquals("Used in two-dimensional GeographicCRS.", cs.getRemarks().toString());
+        assertRemarksEquals("Used in two-dimensional GeographicCRS.", cs, null);
         assertAxisEquals("Geodetic latitude",  "φ", AxisDirection.NORTH, -90,  +90, Units.DEGREE, RangeMeaning.EXACT, φ);
         assertAxisEquals("Geodetic longitude", "λ", AxisDirection.EAST, -180, +180, Units.DEGREE, RangeMeaning.WRAPAROUND, λ);
         assertEpsgIdentifierEquals("6422", getSingleton(cs.getIdentifiers()));

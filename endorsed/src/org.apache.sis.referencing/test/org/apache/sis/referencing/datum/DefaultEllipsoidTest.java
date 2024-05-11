@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
+import static org.apache.sis.referencing.Assertions.assertRemarksEquals;
 
 
 /**
@@ -129,7 +130,7 @@ public final class DefaultEllipsoidTest extends TestCase {
     public void testEllipsoidXML() throws JAXBException {
         final DefaultEllipsoid ellipsoid = unmarshalFile(DefaultEllipsoid.class, openTestFile(false));
         assertEquals("Clarke 1880 (international foot)", ellipsoid.getName().getCode());
-        assertEquals("Definition in feet assumed to be international foot.", ellipsoid.getRemarks().toString());
+        assertRemarksEquals("Definition in feet assumed to be international foot.", ellipsoid, null);
         assertFalse (                    ellipsoid.isSphere());
         assertFalse (                    ellipsoid.isIvfDefinitive());
         assertEquals(20926202,           ellipsoid.getSemiMajorAxis());
@@ -153,7 +154,7 @@ public final class DefaultEllipsoidTest extends TestCase {
     public void testSphereXML() throws JAXBException {
         final DefaultEllipsoid ellipsoid = unmarshalFile(DefaultEllipsoid.class, openTestFile(true));
         assertEquals("GRS 1980 Authalic Sphere", ellipsoid.getName().getCode());
-        assertEquals("Authalic sphere derived from GRS 1980 ellipsoid (code 7019).", ellipsoid.getRemarks().toString());
+        assertRemarksEquals("Authalic sphere derived from GRS 1980 ellipsoid (code 7019).", ellipsoid, null);
         assertTrue  (                          ellipsoid.isSphere());
         assertFalse (                          ellipsoid.isIvfDefinitive());
         assertEquals(6371007,                  ellipsoid.getSemiMajorAxis());

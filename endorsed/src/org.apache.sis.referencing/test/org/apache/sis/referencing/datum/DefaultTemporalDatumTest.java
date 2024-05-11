@@ -30,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
+import static org.apache.sis.referencing.Assertions.assertRemarksEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.test.TestUtilities.getScope;
 
@@ -126,7 +127,7 @@ public final class DefaultTemporalDatumTest extends TestCase {
         assertIdentifierEquals("Apache Spatial Information System", "SIS", null, "MJ",
                                getSingleton(datum.getIdentifiers()), "identifier");
         assertEquals("Modified Julian", datum.getName().getCode());
-        assertEquals("Time measured as days since November 17, 1858 at 00:00 UTC.", datum.getRemarks().toString());
+        assertRemarksEquals("Time measured as days since November 17, 1858 at 00:00 UTC.", datum, null);
         assertEquals("History.", getScope(datum));
         assertEquals(new Date(ORIGIN), datum.getOrigin());
     }

@@ -181,6 +181,7 @@ public class AbstractCoordinateOperation extends AbstractIdentifiedObject implem
      *
      * @see #getOperationVersion()
      */
+    @XmlElement(name = "operationVersion")
     private String operationVersion;
 
     /**
@@ -422,7 +423,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
         sourceCRS                   = operation.getSourceCRS();
         targetCRS                   = operation.getTargetCRS();
         interpolationCRS            = operation.getInterpolationCRS().orElse(null);
-        operationVersion            = operation.getOperationVersion();
+        operationVersion            = operation.getOperationVersion().orElse(null);
         coordinateOperationAccuracy = operation.getCoordinateOperationAccuracy();
         transform                   = operation.getMathTransform();
         if (operation instanceof AbstractCoordinateOperation) {
@@ -556,12 +557,11 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * nature of the parameters. In principle this property is irrelevant to coordinate
      * {@linkplain DefaultConversion conversions}, but Apache SIS accepts it anyway.
      *
-     * @return the coordinate operation version, or {@code null} in none.
+     * @return the coordinate operation version.
      */
     @Override
-    @XmlElement(name = "operationVersion")
-    public String getOperationVersion() {
-        return operationVersion;
+    public Optional<String> getOperationVersion() {
+        return Optional.ofNullable(operationVersion);
     }
 
     /**
@@ -1163,19 +1163,6 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
             coordinateOperationAccuracy = UnmodifiableArrayList.wrap(values);
         } else {
             ImplementationHelper.propertyAlreadySet(AbstractCoordinateOperation.class, "setAccuracy", "coordinateOperationAccuracy");
-        }
-    }
-
-    /**
-     * Invoked by JAXB only at unmarshalling time.
-     *
-     * @see #getOperationVersion()
-     */
-    private void setOperationVersion(final String value) {
-        if (operationVersion == null) {
-            operationVersion = value;
-        } else {
-            ImplementationHelper.propertyAlreadySet(AbstractCoordinateOperation.class, "setOperationVersion", "operationVersion");
         }
     }
 
