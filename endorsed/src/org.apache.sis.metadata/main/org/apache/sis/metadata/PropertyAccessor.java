@@ -348,7 +348,7 @@ class PropertyAccessor {
              * is to get a type which can be accepted by the setter.
              */
             Class<?> elementType = getter.getReturnType();
-            if (Collection.class.isAssignableFrom(elementType)) {
+            if (Collection.class.isAssignableFrom(elementType) || Classes.isParameterizedProperty(elementType)) {
                 elementType = Classes.boundOfParameterizedProperty(getter);
                 if (elementType == null) {
                     // Subclass has erased parameterized type. Use method declared in the interface.
@@ -595,7 +595,8 @@ class PropertyAccessor {
                     return elementTypes[index];
                 }
                 case PROPERTY_TYPE: {
-                    return getters[index].getReturnType();
+                    final Class<?> type = getters[index].getReturnType();
+                    return Classes.isParameterizedProperty(type) ? elementTypes[index] : type;
                 }
                 case DECLARING_INTERFACE: {
                     return getters[index].getDeclaringClass();

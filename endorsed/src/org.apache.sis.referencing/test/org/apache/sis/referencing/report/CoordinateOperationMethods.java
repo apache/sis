@@ -332,7 +332,7 @@ public class CoordinateOperationMethods extends HTMLGenerator {
             reopenTag("tr");
             println("td", escape(getFirstEpsgCode(param.getIdentifiers())));
             writeName(param);
-            String remarks = toLocalizedString(param.getRemarks());
+            String remarks = toLocalizedString(param.getRemarks().orElse(null));
             if (remarks != null) {
                 Integer index = footnotes.putIfAbsent(remarks, footnotes.size() + 1);
                 if (index == null) {

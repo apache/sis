@@ -134,7 +134,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
                 case 1: return toArray(object.getIdentifiers(), Identifier[]::new);     // IDENTIFIERS_KEY
                 case 2: return toArray(object.getAlias(),      GenericName[]::new);     // ALIAS_KEY
                 case 3: return toArray(object.getDomains(),   ObjectDomain[]::new);     // DOMAINS_KEY
-                case 4: return         object.getRemarks();                             // REMARKS_KEY
+                case 4: return         object.getRemarks().orElse(null);                // REMARKS_KEY
                 case 5: {   // SCOPE_KEY
                     for (final ObjectDomain domain : object.getDomains()) {
                         InternationalString scope = domain.getScope();
@@ -151,7 +151,7 @@ final class Properties extends AbstractMap<String,Object> implements Serializabl
                 }
                 case 7: {   // OPERATION_VERSION_KEY
                     if (object instanceof CoordinateOperation) {
-                        return ((CoordinateOperation) object).getOperationVersion();
+                        return ((CoordinateOperation) object).getOperationVersion().orElse(null);
                     }
                     break;
                 }

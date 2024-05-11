@@ -81,8 +81,8 @@ public final class CharacteristicTypeBuilderTest extends TestCase {
         final var attribute = b2.build();
         assertEquals("stddev",           attribute.getName().toString());
         assertEquals("test definition",  attribute.getDefinition().toString());
-        assertEquals("test description", attribute.getDescription().toString());
-        assertEquals("test designation", attribute.getDesignation().toString());
+        assertEquals("test description", attribute.getDescription().orElseThrow().toString());
+        assertEquals("test designation", attribute.getDesignation().orElseThrow().toString());
         assertEquals(Float.class,        attribute.getValueClass());
         assertEquals(Float.valueOf(2),   attribute.getDefaultValue());
     }

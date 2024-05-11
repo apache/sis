@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.Optional;
 import java.lang.reflect.Type;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -170,6 +171,8 @@ public final class Classes extends Static {
      * @param  field  the field for which to obtain the parameterized type.
      * @return the upper bound of parameterized type, or {@code null} if the given field
      *         is not of a parameterized type.
+     *
+     * @see #isParameterizedProperty(Class)
      */
     public static Class<?> boundOfParameterizedProperty(final Field field) {
         return getActualTypeArgument(field.getGenericType());
@@ -190,6 +193,8 @@ public final class Classes extends Static {
      * @param  method  the getter or setter method for which to obtain the parameterized type.
      * @return the upper bound of parameterized type, or {@code null} if the given method
      *         is not a getter or setter for a property of a parameterized type.
+     *
+     * @see #isParameterizedProperty(Class)
      */
     public static Class<?> boundOfParameterizedProperty(final Method method) {
         final Type[] parameters = method.getGenericParameterTypes();
@@ -856,6 +861,31 @@ cmp:    for (final Class<?> c : c1) {
                method.getParameterCount() == 0 &&
               !method.isSynthetic() &&
               !ArraysExt.contains(EXCLUDES, method.getName());
+    }
+
+    /**
+     * Returns whether the actual type of a property is the parameterized type according SIS.
+     * The given {@code type} argument should be the type of a field or the return type of a
+     * {@linkplain #isPossibleGetter(Method) getter method}. If this method returns {@code true},
+     * then a {@code boundOfParameterizedProperty(…)} method needs to be invoked in order to get
+     * the actual property type.
+     *
+     * <p>The current implementation tests only if the given type is {@link Optional}.
+     * More types may be added in future Apache SIS versions, depending on API evolutions.
+     * Note that collections are intentionally <em>not</em> recognized by this method,
+     * because they usually need to be handled in a special way by the caller.</p>
+     *
+     * @param  type  the field type or getter method return type to test.
+     * @return whether a {@code boundOfParameterizedProperty(…)} method need to be invoked
+     *         for getting the actual property type.
+     *
+     * @see #boundOfParameterizedProperty(Field)
+     * @see #boundOfParameterizedProperty(Method)
+     *
+     * @since 1.5
+     */
+    public static boolean isParameterizedProperty(final Class<?> type) {
+        return type == Optional.class;
     }
 
     /**

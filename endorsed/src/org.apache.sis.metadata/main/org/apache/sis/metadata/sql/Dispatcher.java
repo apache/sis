@@ -289,7 +289,7 @@ final class Dispatcher implements InvocationHandler {
      */
     final String error(final Method method) {
         Class<?> returnType = method.getReturnType();
-        if (Collection.class.isAssignableFrom(returnType)) {
+        if (Classes.isParameterizedProperty(returnType) || Collection.class.isAssignableFrom(returnType)) {
             final Class<?> elementType = Classes.boundOfParameterizedProperty(method);
             if (elementType != null) {
                 returnType = elementType;

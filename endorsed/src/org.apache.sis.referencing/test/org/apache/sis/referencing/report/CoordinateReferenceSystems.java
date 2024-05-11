@@ -538,10 +538,10 @@ public final class CoordinateReferenceSystems extends AuthorityCodesReport {
             row.isDeprecated = dep.isDeprecated();
             if (row.isDeprecated) {
                 String replacedBy = null;
-                InternationalString i18n = object.getRemarks();
+                InternationalString i18n = object.getRemarks().orElse(null);
                 for (final Identifier id : object.getIdentifiers()) {
                     if (id instanceof Deprecable did && did.isDeprecated()) {
-                        i18n = did.getRemarks();
+                        i18n = did.getRemarks().orElse(null);
                         if (id instanceof DeprecatedCode dc) {
                             replacedBy = dc.replacedBy;
                         }

@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.internal;
 
+import java.util.Optional;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.referencing.NamedIdentifier;
@@ -69,11 +70,11 @@ public final class DeprecatedName extends NamedIdentifier implements Deprecable 
      *
      * <div class="note"><b>Example:</b> "superseded by code XYZ".</div>
      *
-     * @return information about the replacement for this name, or {@code null} if none.
+     * @return information about the replacement for this name.
      */
     @Override
-    public InternationalString getRemarks() {
-        return super.getDescription();
+    public Optional<InternationalString> getRemarks() {
+        return Optional.ofNullable(super.getDescription());
     }
 
     /**

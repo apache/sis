@@ -16,6 +16,7 @@
  */
 package org.apache.sis.util;
 
+import java.util.Optional;
 import org.opengis.util.InternationalString;
 
 
@@ -41,7 +42,7 @@ import org.opengis.util.InternationalString;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.5
  * @since   0.3
  */
 public interface Deprecable {
@@ -59,8 +60,10 @@ public interface Deprecable {
      *
      * <div class="note"><b>Example:</b> "superseded by code XYZ".</div>
      *
-     * @return comments about this instance, or {@code null} if none. Shall be the reason for deprecation
+     * @return comments about this instance, or empty if none. Shall be the reason for deprecation
      *         or the alternative to use if this instance {@linkplain #isDeprecated() is deprecated}.
      */
-    InternationalString getRemarks();
+    default Optional<InternationalString> getRemarks() {
+        return Optional.empty();
+    }
 }

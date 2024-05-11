@@ -17,6 +17,7 @@
 package org.apache.sis.metadata.simple;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.io.Serializable;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
@@ -88,12 +89,12 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
      * Returns a narrative explanation of the role of this object.
      * The default implementation returns {@link Identifier#getDescription()}.
      *
-     * @return a narrative explanation of the role of this object, or {@code null} if none.
+     * @return a narrative explanation of the role of this object.
      */
-    public InternationalString getDescription() {
+    public Optional<InternationalString> getDescription() {
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Identifier name = this.name;
-        return (name != null) ? name.getDescription() : null;
+        return Optional.ofNullable((name != null) ? name.getDescription() : null);
     }
 
     /**
@@ -145,7 +146,7 @@ public class SimpleIdentifiedObject implements IdentifiedObject, LenientComparab
                 return Objects.equals(getName(), that.getName()) &&
                         isNullOrEmpty(that.getIdentifiers()) &&
                         isNullOrEmpty(that.getAlias()) &&
-                        that.getRemarks() == null;
+                        that.getRemarks().isEmpty();
             }
         }
         return false;

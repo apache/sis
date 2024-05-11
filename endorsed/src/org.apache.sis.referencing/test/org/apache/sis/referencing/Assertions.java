@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing;
 
+import java.util.Locale;
 import java.util.Collection;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RectangularShape;
@@ -24,6 +25,7 @@ import static java.lang.StrictMath.*;
 import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
+import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.parameter.GeneralParameterValue;
 import org.opengis.parameter.ParameterDescriptor;
@@ -138,6 +140,20 @@ public final class Assertions extends Static {
         } else {
             assertEquals(expected, TestUtilities.getSingleton(aliases).tip().toString(), "alias");
         }
+    }
+
+    /**
+     * Asserts that the remarks of the given object are equal to the expected value.
+     *
+     * @param expected  the expected remarks, or {@code null}.
+     * @param object    the object for which to test the remarks.
+     * @param locale    the locale to test, or {@code null}.
+     */
+    public static void assertRemarksEquals(final String expected, final IdentifiedObject object, final Locale locale) {
+        var remarks = object.getRemarks()
+                .map((locale != null) ? (i18n) -> i18n.toString(locale) : InternationalString::toString)
+                .orElse(null);
+        assertEquals(expected, remarks, "remarks");
     }
 
     /**

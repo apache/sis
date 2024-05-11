@@ -145,8 +145,8 @@ public abstract class AbstractOperation extends AbstractIdentifiedType implement
         if (properties.isEmpty()) {
             properties.put(NAME_KEY,        super.getName());           // Do not invoke user-overrideable method.
             properties.put(DEFINITION_KEY,  super.getDefinition());
-            properties.put(DESIGNATION_KEY, super.getDesignation());
-            properties.put(DESCRIPTION_KEY, super.getDescription());
+            super.getDesignation().ifPresent((i18n) -> properties.put(DESIGNATION_KEY, i18n));
+            super.getDescription().ifPresent((i18n) -> properties.put(DESCRIPTION_KEY, i18n));
         }
         return properties;
     }

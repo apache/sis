@@ -24,6 +24,7 @@ import java.util.AbstractCollection;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Formattable;
 import java.util.FormattableFlags;
 import java.util.function.Function;
@@ -129,7 +130,7 @@ import org.opengis.referencing.ObjectDomain;
  * @since   0.4
  */
 @XmlType(name = "IdentifiedObjectType", propOrder = {
-    "description",
+    "descriptionGML",
     "identifier",
     "names",
     "remarks",
@@ -236,6 +237,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * @see #getRemarks()
      */
     @SuppressWarnings("serial")         // Most SIS implementations are serializable.
+    @XmlElement(name = "remarks")
     private InternationalString remarks;
 
     /**
@@ -454,7 +456,7 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
         alias       = nonEmpty(object.getAlias()); // Favor null for empty set in case it is not Collections.EMPTY_SET
         identifiers = nonEmpty(object.getIdentifiers());
         domains     = nonEmpty(object.getDomains());
-        remarks     =          object.getRemarks();
+        remarks     =          object.getRemarks().orElse(null);
         deprecated  = (object instanceof Deprecable) ? ((Deprecable) object).isDeprecated() : false;
     }
 
@@ -575,15 +577,14 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * The default implementation returns the {@linkplain ImmutableIdentifier#getDescription() description}
      * provided by this object's {@linkplain #getName() name}.
      *
-     * @return a narrative explanation of the role of this object, or {@code null} if none.
+     * @return a narrative explanation of the role of this object.
      *
      * @see ImmutableIdentifier#getDescription()
      *
      * @since 0.6
      */
-    @XmlElement(name = "description")
-    public InternationalString getDescription() {
-        return (name != null) ? name.getDescription() : null;
+    public Optional<InternationalString> getDescription() {
+        return Optional.ofNullable((name != null) ? name.getDescription() : null);
     }
 
     /**
@@ -591,12 +592,11 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * If this object {@linkplain #isDeprecated() is deprecated}, then the remarks should give
      * indication about the replacement (e.g. <q>superceded by …</q>).
      *
-     * @return the remarks, or {@code null} if none.
+     * @return the remarks.
      */
     @Override
-    @XmlElement(name = "remarks")
-    public InternationalString getRemarks() {
-        return remarks;
+    public Optional<InternationalString> getRemarks() {
+        return Optional.ofNullable(remarks);
     }
 
     /**
@@ -1180,6 +1180,14 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
     }
 
     /**
+     * Returns a narrative explanation of the role of this object.
+     */
+    @XmlElement(name = "description")
+    private InternationalString getDescriptionGML() {
+        return getDescription().orElse(null);
+    }
+
+    /**
      * Finds the first non-null domain element.
      *
      * @param  <T>     type of domain element to get.
@@ -1248,19 +1256,6 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
             area = domain.domainOfValidity;
         }
         domains = Collections.singleton(new DefaultObjectDomain(value, area));
-    }
-
-    /**
-     * Invoked by JAXB for setting the remarks.
-     *
-     * @see #getRemarks()
-     */
-    private void setRemarks(final InternationalString value) {
-        if (remarks == null) {
-            remarks = value;
-        } else {
-            propertyAlreadySet("setRemarks", "remarks");
-        }
     }
 
     /**

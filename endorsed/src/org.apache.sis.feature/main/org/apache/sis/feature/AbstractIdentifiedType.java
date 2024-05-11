@@ -19,6 +19,7 @@ package org.apache.sis.feature;
 import java.util.Map;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.logging.Logger;
 import java.io.Serializable;
 import org.opengis.util.NameFactory;
@@ -38,7 +39,7 @@ import org.opengis.feature.IdentifiedType;
  * Identification and description information inherited by property types and feature types.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.5
  */
 public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Serializable {
@@ -280,11 +281,11 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
      * Returns a natural language designator for the element.
      * This can be used as an alternative to the {@linkplain #getName() name} in user interfaces.
      *
-     * @return natural language designator for the element, or {@code null} if none.
+     * @return natural language designator for the element.
      */
     @Override
-    public InternationalString getDesignation() {
-        return designation;
+    public Optional<InternationalString> getDesignation() {
+        return Optional.ofNullable(designation);
     }
 
     /**
@@ -297,8 +298,8 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
      * @return information beyond that required for concise definition of the element, or {@code null} if none.
      */
     @Override
-    public InternationalString getDescription() {
-        return description;
+    public Optional<InternationalString> getDescription() {
+        return Optional.ofNullable(description);
     }
 
     /**
@@ -317,8 +318,8 @@ public class AbstractIdentifiedType implements IdentifiedType, Deprecable, Seria
      * @since 0.8
      */
     @Override
-    public InternationalString getRemarks() {
-        return deprecated ? description : null;
+    public Optional<InternationalString> getRemarks() {
+        return Optional.ofNullable(deprecated ? description : null);
     }
 
     /**

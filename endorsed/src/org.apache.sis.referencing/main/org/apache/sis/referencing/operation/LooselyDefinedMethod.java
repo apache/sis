@@ -65,13 +65,13 @@ final class LooselyDefinedMethod {
     static final DefaultOperationMethod AFFINE_GEOCENTRIC;
 
     static {
-        final HashMap<String,Object> properties = new HashMap<>(4);
+        final var properties = new HashMap<String,Object>(4);
         properties.put(DefaultOperationMethod.NAME_KEY,    "Undefined parameters");
         properties.put(DefaultOperationMethod.REMARKS_KEY, "Placeholder for what should be a chain of coordinate operations.");
-        final DefaultParameterDescriptorGroup parameters = new DefaultParameterDescriptorGroup(properties, 0, 1);
+        final var parameters = new DefaultParameterDescriptorGroup(properties, 0, 1);
 
         properties.put(DefaultOperationMethod.NAME_KEY,    "Affine parametric transformation in geocentric domain");
-        properties.put(DefaultOperationMethod.REMARKS_KEY, parameters.getRemarks());
+        properties.put(DefaultOperationMethod.REMARKS_KEY, parameters.getRemarks().get());
         properties.put(DefaultOperationMethod.FORMULA_KEY, new DefaultFormula(
                 "This operation method is currently an implementation dependent black box. " +
                 "A future version may redefine this method in terms of more standard methods."));

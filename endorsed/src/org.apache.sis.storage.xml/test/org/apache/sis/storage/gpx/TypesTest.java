@@ -67,7 +67,7 @@ public final class TypesTest extends TestCase {
             final GenericName name = p.getName();
             if (!AttributeConvention.contains(name)) {
                 final String label = name.toString();
-                assertNonEmpty(label, p.getDesignation());
+                assertNonEmpty(label, p.getDesignation().orElse(null));
                 assertNonEmpty(label, p.getDefinition());
             }
         }

@@ -95,7 +95,7 @@ final class InverseOperationMethod extends DefaultOperationMethod {
         }
         boolean useSameParameters = false;
         for (final GeneralParameterDescriptor descriptor : method.getParameters().descriptors()) {
-            useSameParameters = (descriptor.getRemarks() instanceof SignReversalComment);
+            useSameParameters = (descriptor.getRemarks().orElse(null) instanceof SignReversalComment);
             if (!useSameParameters) break;
         }
         if (useSameParameters) {
@@ -106,7 +106,7 @@ final class InverseOperationMethod extends DefaultOperationMethod {
         final Map<String,Object> properties = new HashMap<>(6);
         properties.put(NAME_KEY,    name);
         properties.put(FORMULA_KEY, method.getFormula());
-        properties.put(REMARKS_KEY, method.getRemarks());
+        properties.put(REMARKS_KEY, method.getRemarks().orElse(null));
         if (method instanceof Deprecable) {
             properties.put(DEPRECATED_KEY, ((Deprecable) method).isDeprecated());
         }
@@ -157,7 +157,7 @@ final class InverseOperationMethod extends DefaultOperationMethod {
                 final Object value = src.getValue();
                 if (value instanceof Number) {
                     final ParameterDescriptor<?> descriptor = src.getDescriptor();
-                    final InternationalString remarks = descriptor.getRemarks();
+                    final InternationalString remarks = descriptor.getRemarks().orElse(null);
                     if (remarks != SignReversalComment.SAME) {
                         if (remarks != SignReversalComment.OPPOSITE) {
                             /*

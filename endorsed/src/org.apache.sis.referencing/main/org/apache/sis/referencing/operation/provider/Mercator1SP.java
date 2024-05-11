@@ -110,7 +110,7 @@ public final class Mercator1SP extends AbstractMercator {
         LATITUDE_OF_ORIGIN = createZeroConstant(builder.addNamesAndIdentifiers(Equirectangular.LATITUDE_OF_ORIGIN)
                 .reidentify(Citations.GEOTIFF, "3081")
                 .rename(Citations.GEOTIFF, "NatOriginLat")
-                .setRemarks(Equirectangular.LATITUDE_OF_ORIGIN.getRemarks()));
+                .setRemarks(Equirectangular.LATITUDE_OF_ORIGIN.getRemarks().get()));
 
         LONGITUDE_OF_ORIGIN = createLongitude(builder.addNamesAndIdentifiers(Equirectangular.LONGITUDE_OF_ORIGIN)
                 .reidentify(Citations.GEOTIFF, "3080")

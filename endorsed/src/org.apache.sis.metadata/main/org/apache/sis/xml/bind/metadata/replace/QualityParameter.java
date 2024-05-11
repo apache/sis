@@ -17,6 +17,7 @@
 package org.apache.sis.xml.bind.metadata.replace;
 
 import java.util.Map;
+import java.util.Optional;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -137,10 +138,9 @@ public final class QualityParameter extends Parameter {
             code = id.getCode();
             definition = id.getDescription();
         }
-        InternationalString text = parameter.getDescription();
-        if (text != null) {
+        parameter.getDescription().ifPresent((text) -> {
             description = new DefaultMeasureDescription(text);
-        }
+        });
         valueType = parameter.getValueType();
         valueStructure = ValueStructure.valueOf(parameter.getValueClass()).orElse(null);
     }
@@ -178,12 +178,13 @@ public final class QualityParameter extends Parameter {
     /**
      * Returns a narrative explanation of the role of the parameter.
      *
-     * @return a narrative explanation of the role of the parameter, or {@code null} if none.
+     * @return a narrative explanation of the role of the parameter.
      */
     @Override
-    public InternationalString getDescription() {
+    public Optional<InternationalString> getDescription() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Description description = this.description;
-        return (description != null) ? description.getTextDescription() : null;
+        return Optional.ofNullable((description != null) ? description.getTextDescription() : null);
     }
 
     /**

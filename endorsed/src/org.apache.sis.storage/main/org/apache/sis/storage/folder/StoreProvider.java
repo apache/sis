@@ -117,7 +117,7 @@ public final class StoreProvider extends DataStoreProvider {
      * Creates a parameter descriptor equals to the given one except for the remarks which are set to the given value.
      */
     private static <T> ParameterDescriptor<T> annotate(ParameterBuilder builder, ParameterDescriptor<T> e, InternationalString remark) {
-        return builder.addName(e.getName()).setDescription(e.getDescription()).setRemarks(remark).create(e.getValueClass(), null);
+        return builder.addName(e.getName()).setDescription(e.getDescription().orElse(null)).setRemarks(remark).create(e.getValueClass(), null);
     }
 
     /**

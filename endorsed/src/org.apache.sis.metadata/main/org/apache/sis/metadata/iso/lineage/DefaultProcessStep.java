@@ -186,7 +186,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
         if (object != null) {
             description           = object.getDescription();
             rationale             = object.getRationale();
-            stepDateTime          = TemporalUtilities.createInstant(object.getDate());
+            stepDateTime          = object.getStepDateTime();
             processors            = copyCollection(object.getProcessors(), Responsibility.class);
             references            = copyCollection(object.getReferences(), Citation.class);
             sources               = copyCollection(object.getSources(), Source.class);

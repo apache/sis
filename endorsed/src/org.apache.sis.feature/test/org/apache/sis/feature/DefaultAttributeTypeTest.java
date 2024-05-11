@@ -127,8 +127,7 @@ public final class DefaultAttributeTypeTest extends TestCase {
         assertInstanceOf(LocalName.class, name);
         assertEquals("city", name.toString());
 
-        InternationalString p = city.getDesignation();
-        assertNotNull(p);
+        InternationalString p = city.getDesignation().orElseThrow();
         assertEquals("City",  p.toString(Locale.ENGLISH));
         assertEquals("Ville", p.toString(Locale.FRENCH));
         assertEquals("都市",   p.toString(Locale.JAPANESE));
@@ -138,7 +137,7 @@ public final class DefaultAttributeTypeTest extends TestCase {
         assertEquals("Le nom de la ville.", p.toString(Locale.FRENCH));
         assertEquals("都市の名前。", p.toString(Locale.JAPANESE));
 
-        p = city.getDescription();
+        p = city.getDescription().orElseThrow();
         assertEquals("Some verbose description.", p.toString(Locale.ENGLISH));
         assertEquals(String.class, city.getValueClass());
         assertEquals("Utopia",     city.getDefaultValue());

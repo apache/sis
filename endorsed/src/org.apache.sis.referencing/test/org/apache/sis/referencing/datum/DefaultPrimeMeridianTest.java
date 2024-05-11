@@ -37,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
+import static org.apache.sis.referencing.Assertions.assertRemarksEquals;
 
 
 /**
@@ -183,7 +184,7 @@ public final class DefaultPrimeMeridianTest extends TestCase {
         final DefaultPrimeMeridian pm = unmarshalFile(DefaultPrimeMeridian.class, openTestFile(false));
         assertIsParis(pm);
         assertEquals(2.33722917, pm.getGreenwichLongitude(Units.DEGREE), 1E-12);
-        assertEquals("Equivalent to 2°20′14.025″.", pm.getRemarks().toString());
+        assertRemarksEquals("Equivalent to 2°20′14.025″.", pm, null);
         assertNull(pm.getName().getCodeSpace());
         assertWktEquals(Convention.WKT1,
                 "PRIMEM[“Paris”, 2.33722917, AUTHORITY[“EPSG”, “8903”]]", pm);

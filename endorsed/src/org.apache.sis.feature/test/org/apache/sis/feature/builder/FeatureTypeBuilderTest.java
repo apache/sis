@@ -137,8 +137,8 @@ public final class FeatureTypeBuilderTest extends TestCase {
         final var feature = builder.build();
         assertEquals("myScope:myName",   feature.getName().toString());
         assertEquals("test definition",  feature.getDefinition().toString());
-        assertEquals("test description", feature.getDescription().toString());
-        assertEquals("test designation", feature.getDesignation().toString());
+        assertEquals("test description", feature.getDescription().orElseThrow().toString());
+        assertEquals("test designation", feature.getDesignation().orElseThrow().toString());
         assertTrue  (                    feature.isAbstract());
 
         final var it = feature.getProperties(true).iterator();

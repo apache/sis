@@ -17,6 +17,7 @@
 package org.apache.sis.metadata.simple;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.io.Serializable;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
@@ -141,8 +142,8 @@ public class SimpleIdentifier implements Identifier, Deprecable, Serializable {
      * An optional free text.
      */
     @Override
-    public InternationalString getRemarks() {
-        return null;
+    public Optional<InternationalString> getRemarks() {
+        return Optional.empty();
     }
 
     /**

@@ -353,7 +353,7 @@ final class PackageVerifier {
         for (final Method method : type.getDeclaredMethods()) {
             Class<?> valueType = method.getReturnType();
             final boolean isCollection = Collection.class.isAssignableFrom(valueType);
-            if (isCollection) {
+            if (isCollection || Classes.isParameterizedProperty(valueType)) {
                 valueType = Classes.boundOfParameterizedProperty(method);
             }
             verify(method, method.getName(), valueType, isCollection);

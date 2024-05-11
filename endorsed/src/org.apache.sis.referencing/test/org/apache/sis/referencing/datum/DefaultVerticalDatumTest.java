@@ -36,6 +36,7 @@ import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.test.TestUtilities.getScope;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
+import static org.apache.sis.referencing.Assertions.assertRemarksEquals;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.datum.RealizationMethod;
@@ -98,7 +99,7 @@ public final class DefaultVerticalDatumTest extends TestCase {
          * Values in the following tests are specific to our XML file.
          * The actual texts in the EPSG database are more descriptive.
          */
-        assertEquals("Approximates geoid.",             datum.getRemarks().toString());
+        assertRemarksEquals("Approximates geoid.",      datum, null);
         assertEquals("Hydrography.",                    getScope(datum));
         assertEquals("Averaged over a 19-year period.", datum.getAnchorDefinition().get().toString());
         /*
@@ -131,8 +132,8 @@ public final class DefaultVerticalDatumTest extends TestCase {
          * those property does not have the same XML element name (SIS-160).
          * Below is all we have.
          */
-        assertEquals("Approximates geoid.", datum.getRemarks().toString());
-        assertEquals("Hydrography.",        getScope(datum));
+        assertRemarksEquals("Approximates geoid.", datum, null);
+        assertEquals("Hydrography.", getScope(datum));
         /*
          * Test marshalling. We cannot yet compare with the original XML file
          * because of all the information lost. This may be fixed in a future

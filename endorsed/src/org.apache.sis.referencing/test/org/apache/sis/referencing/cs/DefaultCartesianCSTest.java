@@ -34,6 +34,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.referencing.Assertions.assertAxisEquals;
+import static org.apache.sis.referencing.Assertions.assertRemarksEquals;
 import static org.apache.sis.referencing.Assertions.assertEpsgIdentifierEquals;
 
 
@@ -217,7 +218,7 @@ public final class DefaultCartesianCSTest extends TestCase {
         final CoordinateSystemAxis E = cs.getAxis(0);
         final CoordinateSystemAxis N = cs.getAxis(1);
         assertEquals("Easting, northing (E,N)", cs.getName().getCode());
-        assertEquals("Used in ProjectedCRS.", cs.getRemarks().toString());
+        assertRemarksEquals("Used in ProjectedCRS.", cs, null);
         assertEpsgIdentifierEquals("4400", getSingleton(cs.getIdentifiers()));
         assertEpsgIdentifierEquals("1",    getSingleton(E.getIdentifiers()));
         assertEpsgIdentifierEquals("2",    getSingleton(N.getIdentifiers()));

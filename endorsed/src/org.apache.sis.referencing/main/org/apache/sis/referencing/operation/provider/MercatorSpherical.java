@@ -59,7 +59,7 @@ public final class MercatorSpherical extends AbstractMercator {
          */
         final ParameterDescriptor<Double> scaleFactor = createScale(builder
                 .addNamesAndIdentifiers(Mercator1SP.SCALE_FACTOR)
-                .setRemarks(Mercator2SP.SCALE_FACTOR.getRemarks())
+                .setRemarks(Mercator2SP.SCALE_FACTOR.getRemarks().get())
                 .setRequired(false));
 
         PARAMETERS = addNameAndLegacy(addIdentifierAndLegacy(builder, IDENTIFIER, "9841"),

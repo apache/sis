@@ -31,7 +31,6 @@ import java.text.Format;
 import java.text.FieldPosition;
 import javax.measure.Unit;
 import org.opengis.util.GenericName;
-import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.io.wkt.Colors;
@@ -183,12 +182,11 @@ final class ParameterTableRow {
         /*
          * Take the remarks, if any.
          */
-        final InternationalString r = object.getRemarks();
-        if (r != null) {
+        object.getRemarks().ifPresent((r) -> {
             final int n = remarks.size() + 1;
             final Integer p = remarks.putIfAbsent(r.toString(locale), n);
             this.remarks = (p != null) ? p : n;
-        }
+        });
     }
 
     /**
