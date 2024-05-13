@@ -30,7 +30,7 @@ import org.junit.jupiter.api.Disabled;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.opengis.test.wkt.CRSParserTest;
+import org.opengis.test.referencing.WKTParserTest;
 import org.apache.sis.test.LoggingWatcher;
 import org.apache.sis.test.FailureDetailsReporter;
 
@@ -42,7 +42,7 @@ import org.apache.sis.test.FailureDetailsReporter;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
 @ExtendWith(FailureDetailsReporter.class)
-public final class WKTParserTest extends CRSParserTest {
+public final class CRSParserTest extends WKTParserTest {
     /**
      * A JUnit extension for listening to log events.
      */
@@ -59,7 +59,7 @@ public final class WKTParserTest extends CRSParserTest {
     /**
      * Creates a new test case using the default {@code CRSFactory} implementation.
      */
-    public WKTParserTest() {
+    public CRSParserTest() {
         super(GeodeticObjectFactory.provider());
         loggings = new LoggingWatcher(Loggers.WKT);
     }
