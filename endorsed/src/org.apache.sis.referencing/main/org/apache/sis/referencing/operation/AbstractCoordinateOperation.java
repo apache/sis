@@ -594,7 +594,7 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * nature of the parameters. In principle this property is irrelevant to coordinate
      * {@linkplain DefaultConversion conversions}, but Apache SIS accepts it anyway.
      *
-     * @return the coordinate operation version, or {@code null} in none.
+     * @return the coordinate operation version, or {@code null} if none.
      */
     @Override
     public String getOperationVersion() {

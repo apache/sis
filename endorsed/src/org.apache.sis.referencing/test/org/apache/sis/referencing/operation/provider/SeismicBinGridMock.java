@@ -26,7 +26,7 @@ import org.apache.sis.measure.Units;
  * The provider for <q>P6 (I = J-90°) seismic bin grid transformation</q> transformation (EPSG:1049).
  *
  * This conversion is not yet implemented in Apache SIS, but we need to at least accept the parameters
- * for a Well Known Text (WKT) parsing test in the {@code org.apache.sis.io.wkt.WKTParserTest} class.
+ * for a Well Known Text (WKT) parsing test in the {@code org.apache.sis.io.wkt.CRSParserTest} class.
  *
  * <p>This class may be promoted to a real operation if we implement the formulas in a future Apache SIS version.</p>
  *

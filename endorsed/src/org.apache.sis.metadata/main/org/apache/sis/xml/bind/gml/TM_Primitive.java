@@ -82,9 +82,8 @@ public class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimitive> 
      */
     @XmlElement(name = "TimePeriod")
     public final TimePeriod getTimePeriod() {
-        @SuppressWarnings("LocalVariableHidesMemberVariable")
-        final TemporalPrimitive metadata = this.metadata;
-        return (metadata instanceof Period) ? new TimePeriod((Period) metadata) : null;
+        Period period = TemporalUtilities.getPeriod(metadata);
+        return (period != null) ? new TimePeriod(period) : null;
     }
 
     /**

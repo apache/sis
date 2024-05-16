@@ -66,7 +66,31 @@ public final class TemporalUtilities {
     }
 
     /**
-     * Returns the given value as an instant if the period is a single point in time, or {@code null} otherwis.
+     * Returns the given value as a period if it is not a single point in time, or {@code null} otherwise.
+     * This method is mutually exclusive with {@link #getInstant(TemporalPrimitive)}: if one method returns
+     * a non-null value, then the other method shall return a null value.
+     *
+     * @param  time  the instant or period for which to get a time range, or {@code null}.
+     * @return the period, or {@code null} if none.
+     */
+    public static Period getPeriod(final TemporalPrimitive time) {
+        if (time instanceof Period) {
+            var p = (Period) time;
+            final Instant begin = p.getBeginning();
+            if (begin != null) {
+                final Instant end = p.getEnding();
+                if (end != null && !begin.equals(end)) {
+                    return p;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Returns the given value as an instant if the period is a single point in time, or {@code null} otherwise.
+     * This method is mutually exclusive with {@link #getPeriod(TemporalPrimitive)}: if one method returns a
+     * non-null value, then the other method shall return a null value.
      *
      * @param  time  the instant or period for which to get a date, or {@code null}.
      * @return the instant, or {@code null} if none.
@@ -76,9 +100,12 @@ public final class TemporalUtilities {
             var p = (Period) time;
             final Instant begin = p.getBeginning();
             final Instant end = p.getEnding();
-            if (begin == null) return end;
-            if (end == null) return begin;
-            if (begin.equals(end)) return end;
+            if (end == null) {
+                return begin;
+            }
+            if (begin == null || begin.equals(end)) {
+                return end;
+            }
         }
         return null;
     }

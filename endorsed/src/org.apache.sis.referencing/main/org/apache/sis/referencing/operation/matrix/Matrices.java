@@ -116,7 +116,7 @@ public final class Matrices extends Static {
     }
 
     /**
-     * Creates a matrix of size {@code numRow} × {@code numCol}.
+     * Creates a modifiable matrix of size {@code numRow} × {@code numCol}.
      * Elements on the diagonal (<var>j</var> == <var>i</var>) are set to 1.
      * The result is an identity matrix if {@code numRow} = {@code numCol}.
      *

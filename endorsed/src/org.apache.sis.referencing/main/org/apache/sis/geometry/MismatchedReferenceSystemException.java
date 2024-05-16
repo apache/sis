@@ -19,8 +19,7 @@ package org.apache.sis.geometry;
 
 /**
  * Indicates that an object cannot be constructed because of a mismatch in the
- * {@linkplain org.opengis.referencing.ReferenceSystem reference systems} of
- * geometric components.
+ * reference systems of components.
  *
  * @author  Martin Desruisseaux (IRD)
  * @since   0.3

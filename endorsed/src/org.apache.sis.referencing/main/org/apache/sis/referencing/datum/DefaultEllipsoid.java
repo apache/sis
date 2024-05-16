@@ -29,6 +29,7 @@ import javax.measure.quantity.Length;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.datum.Ellipsoid;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.privy.Numerics;
@@ -43,8 +44,6 @@ import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.util.ArgumentChecks.ensureStrictlyPositive;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;
@@ -210,10 +209,10 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
                                final Unit<Length> unit)
     {
         super(properties);
-        ensureNonNull         ("unit",              unit);
-        ensureStrictlyPositive("semiMajorAxis",     semiMajorAxis);
-        ensureStrictlyPositive("semiMinorAxis",     semiMinorAxis);
-        ensureStrictlyPositive("inverseFlattening", inverseFlattening);
+        ArgumentChecks.ensureNonNull("unit", unit);
+        ArgumentChecks.ensureStrictlyPositive("semiMajorAxis", semiMajorAxis);
+        ArgumentChecks.ensureStrictlyPositive("semiMinorAxis", semiMinorAxis);
+        ArgumentChecks.ensureBetween("inverseFlattening", 1, Double.POSITIVE_INFINITY, inverseFlattening);
         this.unit              = unit;
         this.semiMajorAxis     = semiMajorAxis;
         this.semiMinorAxis     = semiMinorAxis;
@@ -755,7 +754,7 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
     private void setSemiMajorAxisMeasure(final Measure measure) {
         if (semiMajorAxis == 0) {
             final Unit<Length> uom = unit; // In case semi-minor were defined before semi-major.
-            ensureStrictlyPositive("semiMajorAxis", semiMajorAxis = measure.value);
+            ArgumentChecks.ensureStrictlyPositive("semiMajorAxis", semiMajorAxis = measure.value);
             unit = measure.getUnit(Length.class);
             harmonizeAxisUnits(uom);
         } else {
@@ -808,9 +807,9 @@ public class DefaultEllipsoid extends AbstractIdentifiedObject implements Ellips
                     if (value == 0) {
                         value = Double.POSITIVE_INFINITY;
                     }
-                    ensureStrictlyPositive("inverseFlattening", inverseFlattening = value);
+                    ArgumentChecks.ensureBetween("inverseFlattening", 1, Double.POSITIVE_INFINITY, inverseFlattening = value);
                 } else {
-                    ensureStrictlyPositive("semiMinorAxis", semiMinorAxis = value);
+                    ArgumentChecks.ensureStrictlyPositive("semiMinorAxis", semiMinorAxis = value);
                     harmonizeAxisUnits(measure.getUnit(Length.class));
                 }
             }
