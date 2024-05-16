@@ -23,7 +23,7 @@ import static java.lang.Double.isNaN;
 import static java.lang.Double.doubleToLongBits;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -42,7 +42,7 @@ import static org.apache.sis.geometry.AbstractEnvelope.isWrapAround;
 import static org.apache.sis.geometry.AbstractEnvelope.isNegativeUnsafe;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.geometry.MismatchedReferenceSystemException;
+import org.opengis.coordinate.MismatchedCoordinateMetadataException;
 
 
 /**
@@ -171,11 +171,11 @@ public class Envelope2D extends Rectangle2D.Double implements Envelope, Emptiabl
      *
      * @param  lowerCorner  the first position.
      * @param  upperCorner  the second position.
-     * @throws MismatchedReferenceSystemException if the two positions don't use the same CRS.
+     * @throws MismatchedCoordinateMetadataException if the two positions don't use the same CRS.
      * @throws MismatchedDimensionException if the two positions are not two-dimensional.
      */
     public Envelope2D(final DirectPosition lowerCorner, final DirectPosition upperCorner)
-            throws MismatchedReferenceSystemException, MismatchedDimensionException
+            throws MismatchedCoordinateMetadataException, MismatchedDimensionException
     {
         this(AbstractEnvelope.getCommonCRS(lowerCorner, upperCorner), lowerCorner, upperCorner);
     }

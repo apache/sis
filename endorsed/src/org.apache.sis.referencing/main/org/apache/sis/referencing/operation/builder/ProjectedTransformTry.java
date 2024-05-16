@@ -23,7 +23,7 @@ import java.util.Locale;
 import java.util.Collections;
 import java.util.Objects;
 import java.text.NumberFormat;
-import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.io.TableAppender;

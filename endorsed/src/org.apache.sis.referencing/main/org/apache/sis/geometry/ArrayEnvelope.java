@@ -27,8 +27,8 @@ import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
-import org.opengis.geometry.MismatchedReferenceSystemException;
+import org.opengis.coordinate.MismatchedDimensionException;
+import org.opengis.coordinate.MismatchedCoordinateMetadataException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.cs.RangeMeaning;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -101,10 +101,10 @@ class ArrayEnvelope extends AbstractEnvelope implements Serializable {
      * @param  lowerCorner  the limits in the direction of decreasing coordinate values for each dimension.
      * @param  upperCorner  the limits in the direction of increasing coordinate values for each dimension.
      * @throws MismatchedDimensionException if the two positions do not have the same dimension.
-     * @throws MismatchedReferenceSystemException if the CRS of the two position are not equal.
+     * @throws MismatchedCoordinateMetadataException if the CRS of the two position are not equal.
      */
     public ArrayEnvelope(final DirectPosition lowerCorner, final DirectPosition upperCorner)
-            throws MismatchedDimensionException, MismatchedReferenceSystemException
+            throws MismatchedDimensionException, MismatchedCoordinateMetadataException
     {
         crs = getCommonCRS(lowerCorner, upperCorner);           // This performs also an argument check.
         final int dimension = lowerCorner.getDimension();

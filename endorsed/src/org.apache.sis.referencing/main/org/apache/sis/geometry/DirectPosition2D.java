@@ -20,7 +20,7 @@ import java.util.Objects;
 import java.awt.geom.Point2D;
 import static java.lang.Double.doubleToLongBits;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.util.ArraysExt;

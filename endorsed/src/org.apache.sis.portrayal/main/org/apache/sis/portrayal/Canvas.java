@@ -23,7 +23,7 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -58,7 +58,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.geometry.MismatchedReferenceSystemException;
+import org.opengis.coordinate.MismatchedCoordinateMetadataException;
 import org.opengis.coverage.CannotEvaluateException;
 
 
@@ -796,7 +796,7 @@ public class Canvas extends Observable implements Localized {
         ArgumentChecks.ensureNonNull(DISPLAY_BOUNDS_PROPERTY, newValue);
         final CoordinateReferenceSystem crs = newValue.getCoordinateReferenceSystem();
         if (crs != null && !Utilities.equalsIgnoreMetadata(getDisplayCRS(), crs)) {
-            throw new MismatchedReferenceSystemException(errors().getString(
+            throw new MismatchedCoordinateMetadataException(errors().getString(
                     Errors.Keys.IllegalCoordinateSystem_1, IdentifiedObjects.getDisplayName(crs, getLocale())));
         }
         final GeneralEnvelope oldValue = new GeneralEnvelope(displayBounds);

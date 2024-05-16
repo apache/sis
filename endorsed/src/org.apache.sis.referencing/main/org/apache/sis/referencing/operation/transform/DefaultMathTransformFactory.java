@@ -1604,6 +1604,22 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     }
 
     /**
+     * Creates a modifiable matrix of size {@code numRow}&nbsp;×&nbsp;{@code numCol}.
+     * Elements on the diagonal (<var>j</var> == <var>i</var>) are set to 1.
+     *
+     * @param  numRow  number of rows.
+     * @param  numCol  number of columns.
+     * @return a new matrix of the given size.
+     * @throws FactoryException if the matrix creation failed.
+     *
+     * @since 1.5
+     */
+    @Override
+    public Matrix createMatrix(int numRow, int numCol) throws FactoryException {
+        return Matrices.createDiagonal(numRow, numCol);
+    }
+
+    /**
      * Creates a transform by concatenating two existing transforms.
      * A concatenated transform acts in the same way as applying two transforms, one after the other.
      *

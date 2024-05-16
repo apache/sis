@@ -70,7 +70,7 @@ import static org.apache.sis.util.privy.CollectionsExt.nonNull;
 import static org.apache.sis.metadata.privy.ReferencingServices.AUTHALIC_RADIUS;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.geometry.MismatchedReferenceSystemException;
+import org.opengis.coordinate.MismatchedCoordinateMetadataException;
 import org.opengis.referencing.datum.RealizationMethod;
 
 
@@ -714,7 +714,7 @@ public final class Extents extends Static {
      * @param  e2  the second extent, or {@code null}.
      * @return the intersection (may be any of the {@code e1} or {@code e2} argument if unchanged),
      *         or {@code null} if the two given extents are null.
-     * @throws MismatchedReferenceSystemException if the two extents do not use the same datum, ignoring metadata.
+     * @throws MismatchedCoordinateMetadataException if the two extents do not use the same datum, ignoring metadata.
      *
      * @see DefaultVerticalExtent#intersect(VerticalExtent)
      *

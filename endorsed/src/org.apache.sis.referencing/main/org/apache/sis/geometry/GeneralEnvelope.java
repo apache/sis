@@ -34,8 +34,8 @@ import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
-import org.opengis.geometry.MismatchedReferenceSystemException;
+import org.opengis.coordinate.MismatchedDimensionException;
+import org.opengis.coordinate.MismatchedCoordinateMetadataException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.referencing.privy.TemporalAccessor;
 import org.apache.sis.referencing.privy.AxisDirections;
@@ -159,10 +159,10 @@ public class GeneralEnvelope extends ArrayEnvelope implements Cloneable, Seriali
      * @param  lowerCorner  the limits in the direction of decreasing coordinate values for each dimension.
      * @param  upperCorner  the limits in the direction of increasing coordinate values for each dimension.
      * @throws MismatchedDimensionException if the two positions do not have the same dimension.
-     * @throws MismatchedReferenceSystemException if the CRS of the two position are not equal.
+     * @throws MismatchedCoordinateMetadataException if the CRS of the two position are not equal.
      */
     public GeneralEnvelope(final DirectPosition lowerCorner, final DirectPosition upperCorner)
-            throws MismatchedDimensionException, MismatchedReferenceSystemException
+            throws MismatchedDimensionException, MismatchedCoordinateMetadataException
     {
         super(lowerCorner, upperCorner);
     }

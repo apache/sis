@@ -20,7 +20,7 @@ import java.io.Serializable;
 import java.util.function.DoubleUnaryOperator;
 import static java.lang.Double.*;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.coordinate.MismatchedDimensionException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.privy.DoubleDouble;
 import org.apache.sis.util.privy.Numerics;

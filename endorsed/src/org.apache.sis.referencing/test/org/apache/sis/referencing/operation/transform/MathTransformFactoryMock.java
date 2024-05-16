@@ -30,6 +30,7 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.provider.AbstractProvider;
+import org.apache.sis.referencing.operation.matrix.Matrices;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
@@ -141,6 +142,18 @@ public final class MathTransformFactoryMock implements MathTransformFactory {
     @Override
     public MathTransform createAffineTransform(final Matrix matrix) {
         return MathTransforms.linear(matrix);
+    }
+
+    /**
+     * Delegates to {@link Matrices}.
+     *
+     * @param  numRow  number of rows.
+     * @param  numCol  number of columns.
+     * @return a new matrix of the given size.
+     */
+    @Override
+    public Matrix createMatrix(int numRow, int numCol) {
+        return Matrices.createDiagonal(numRow, numCol);
     }
 
     /**

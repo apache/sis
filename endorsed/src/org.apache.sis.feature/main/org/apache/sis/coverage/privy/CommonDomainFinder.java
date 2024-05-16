@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.NoSuchElementException;
 import org.opengis.util.FactoryException;
-import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;

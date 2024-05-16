@@ -20,7 +20,7 @@ import java.util.Arrays;
 import java.util.Objects;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;                         // For javadoc
 import org.opengis.referencing.operation.Matrix;
@@ -116,7 +116,7 @@ public final class Matrices extends Static {
     }
 
     /**
-     * Creates a matrix of size {@code numRow} × {@code numCol}.
+     * Creates a modifiable matrix of size {@code numRow} × {@code numCol}.
      * Elements on the diagonal (<var>j</var> == <var>i</var>) are set to 1.
      * The result is an identity matrix if {@code numRow} = {@code numCol}.
      *
