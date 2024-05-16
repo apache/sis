@@ -42,7 +42,6 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.opengis.coordinate.MismatchedDimensionException;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.cs.AbstractCS;
@@ -65,6 +64,7 @@ import org.opengis.referencing.datum.DatumEnsemble;
 import org.opengis.referencing.datum.ParametricDatum;
 import org.opengis.referencing.crs.ParametricCRS;
 import org.opengis.referencing.cs.ParametricCS;
+import org.opengis.coordinate.MismatchedDimensionException;
 
 
 /**

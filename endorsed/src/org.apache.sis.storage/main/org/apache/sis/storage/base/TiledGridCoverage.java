@@ -35,7 +35,6 @@ import static java.lang.Math.decrementExact;
 import static java.lang.Math.toIntExact;
 import static java.lang.Math.floorDiv;
 import org.opengis.util.GenericName;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.DisjointExtentException;
@@ -47,6 +46,9 @@ import org.apache.sis.storage.internal.Resources;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.geometry.MismatchedDimensionException;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coverage.CannotEvaluateException;

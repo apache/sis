@@ -35,7 +35,6 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CSAuthorityFactory;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -54,6 +53,9 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.Formatter;
 import static org.apache.sis.util.ArgumentChecks.*;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.geometry.MismatchedDimensionException;
 
 
 /**

@@ -39,7 +39,6 @@ import static java.lang.Math.multiplyExact;
 import static java.lang.Math.incrementExact;
 import static java.lang.Math.toIntExact;
 import org.opengis.util.FactoryException;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.image.DataType;
 import org.apache.sis.coverage.SubspaceNotSpecifiedException;
@@ -60,6 +59,9 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.math.Vector;
 import static org.apache.sis.image.PlanarImage.GRID_GEOMETRY_KEY;
 import static org.apache.sis.image.PlanarImage.SAMPLE_DIMENSIONS_KEY;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.geometry.MismatchedDimensionException;
 
 
 /**

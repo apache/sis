@@ -70,8 +70,8 @@ import static org.apache.sis.util.privy.CollectionsExt.nonNull;
 import static org.apache.sis.metadata.privy.ReferencingServices.AUTHALIC_RADIUS;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.coordinate.MismatchedCoordinateMetadataException;
 import org.opengis.referencing.datum.RealizationMethod;
+import org.opengis.coordinate.MismatchedCoordinateMetadataException;
 
 
 /**

@@ -30,10 +30,12 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.provider.AbstractProvider;
-import org.apache.sis.referencing.operation.matrix.Matrices;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.apache.sis.referencing.operation.matrix.Matrices;
 
 
 /**

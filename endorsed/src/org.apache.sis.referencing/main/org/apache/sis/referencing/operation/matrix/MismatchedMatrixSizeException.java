@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coordinate.MismatchedDimensionException;
 
 

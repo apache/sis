@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.transform;
 import java.util.Arrays;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -30,6 +29,7 @@ import org.opengis.referencing.operation.NoninvertibleTransformException;
 import static org.junit.jupiter.api.Assertions.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.coordinate.MismatchedDimensionException;
 import static org.opengis.test.Assertions.assertMatrixEquals;
 
 

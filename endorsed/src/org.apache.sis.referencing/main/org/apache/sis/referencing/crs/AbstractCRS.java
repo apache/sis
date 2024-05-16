@@ -24,7 +24,6 @@ import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import javax.measure.Unit;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.cs.CartesianCS;
@@ -44,6 +43,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the main and geoapi-3.1 branches:
+import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.crs.GeneralDerivedCRS;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

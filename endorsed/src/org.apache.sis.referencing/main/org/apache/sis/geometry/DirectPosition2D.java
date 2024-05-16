@@ -20,12 +20,14 @@ import java.util.Objects;
 import java.awt.geom.Point2D;
 import static java.lang.Double.doubleToLongBits;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.coordinate.MismatchedDimensionException;
 
 
 /**

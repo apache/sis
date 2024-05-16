@@ -17,7 +17,6 @@
 package org.apache.sis.xml.bind.metadata.replace;
 
 import java.util.Map;
-import java.util.Optional;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -38,6 +37,7 @@ import org.apache.sis.util.iso.Names;
 import org.opengis.referencing.ReferenceIdentifier;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.Optional;
 import org.opengis.coverage.Coverage;
 import org.opengis.metadata.quality.Description;
 import org.opengis.metadata.quality.ValueStructure;

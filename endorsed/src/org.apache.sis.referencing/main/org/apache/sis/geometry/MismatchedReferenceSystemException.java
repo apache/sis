@@ -16,6 +16,7 @@
  */
 package org.apache.sis.geometry;
 
+// Specific to the geoapi-3.1 branch:
 import org.opengis.coordinate.MismatchedCoordinateMetadataException;
 
 

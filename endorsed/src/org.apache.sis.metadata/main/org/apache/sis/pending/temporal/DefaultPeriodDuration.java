@@ -16,14 +16,14 @@
  */
 package org.apache.sis.pending.temporal;
 
+import java.io.Serializable;
 import java.time.temporal.TemporalAmount;
 import org.opengis.temporal.PeriodDuration;
 
 // Specific to the geoapi-3.1 branch:
-import java.util.List;
-import java.io.Serializable;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalUnit;
+import java.util.List;
 
 
 /**
