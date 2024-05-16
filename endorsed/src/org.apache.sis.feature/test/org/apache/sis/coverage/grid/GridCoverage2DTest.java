@@ -25,7 +25,6 @@ import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
 import java.awt.image.WritableRenderedImage;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.datum.PixelInCell;
@@ -46,6 +45,7 @@ import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.feature.Assertions.assertPixelsEqual;
 
 // Specific to the main branch:
+import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.coverage.PointOutsideCoverageException;
 
 

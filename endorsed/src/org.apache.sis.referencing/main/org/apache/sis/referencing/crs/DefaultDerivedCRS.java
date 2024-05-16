@@ -42,7 +42,6 @@ import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.cs.AbstractCS;
@@ -61,6 +60,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.collection.Containers;
 
 // Specific to the main branch:
+import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.cs.DefaultParametricCS;
 import org.apache.sis.referencing.datum.DefaultParametricDatum;
 

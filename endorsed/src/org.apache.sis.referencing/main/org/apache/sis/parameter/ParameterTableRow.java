@@ -31,7 +31,6 @@ import java.text.Format;
 import java.text.FieldPosition;
 import javax.measure.Unit;
 import org.opengis.util.GenericName;
-import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.io.wkt.Colors;
@@ -45,6 +44,9 @@ import org.apache.sis.util.privy.X364;
 import static org.apache.sis.util.privy.X364.*;
 import static org.apache.sis.util.CharSequences.spaces;
 import static org.apache.sis.util.privy.Constants.DEFAULT_SEPARATOR;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.util.InternationalString;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;

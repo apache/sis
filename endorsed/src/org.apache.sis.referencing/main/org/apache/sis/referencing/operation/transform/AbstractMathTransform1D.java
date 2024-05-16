@@ -17,13 +17,15 @@
 package org.apache.sis.referencing.operation.transform;
 
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.matrix.Matrix1;
 import static org.apache.sis.util.ArgumentChecks.ensureDimensionMatches;
+
+// Specific to the main branch:
+import org.opengis.geometry.MismatchedDimensionException;
 
 
 /**

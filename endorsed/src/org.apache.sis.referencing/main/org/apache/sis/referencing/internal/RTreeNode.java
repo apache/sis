@@ -30,7 +30,7 @@ import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
 
-// Specific to the main branch:
+// Specific to the main and geoapi-3.1 branches:
 import org.apache.sis.geometry.MismatchedReferenceSystemException;
 
 

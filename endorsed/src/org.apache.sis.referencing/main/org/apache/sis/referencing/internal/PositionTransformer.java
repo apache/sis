@@ -19,7 +19,6 @@ package org.apache.sis.referencing.internal;
 import java.util.Objects;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
@@ -30,6 +29,9 @@ import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.util.Utilities;
+
+// Specific to the main branch:
+import org.opengis.geometry.MismatchedDimensionException;
 
 
 /**

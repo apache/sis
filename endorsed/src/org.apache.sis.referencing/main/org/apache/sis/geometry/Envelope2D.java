@@ -23,7 +23,6 @@ import static java.lang.Double.isNaN;
 import static java.lang.Double.doubleToLongBits;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
@@ -40,6 +39,9 @@ import static org.apache.sis.referencing.privy.Formulas.isPoleToPole;
 import static org.apache.sis.geometry.AbstractEnvelope.getAxis;
 import static org.apache.sis.geometry.AbstractEnvelope.isWrapAround;
 import static org.apache.sis.geometry.AbstractEnvelope.isNegativeUnsafe;
+
+// Specific to the main branch:
+import org.opengis.geometry.MismatchedDimensionException;
 
 
 /**

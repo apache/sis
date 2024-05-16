@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.operation.matrix;
 
+// Specific to the main branch:
 import org.opengis.geometry.MismatchedDimensionException;
 
 

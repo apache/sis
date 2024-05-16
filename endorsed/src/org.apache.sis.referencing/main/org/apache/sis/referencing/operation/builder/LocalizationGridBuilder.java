@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -51,6 +50,9 @@ import org.apache.sis.math.Statistics;
 import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.math.Vector;
 import static org.apache.sis.referencing.operation.builder.ResidualGrid.SOURCE_DIMENSION;
+
+// Specific to the main branch:
+import org.opengis.geometry.MismatchedDimensionException;
 
 
 /**

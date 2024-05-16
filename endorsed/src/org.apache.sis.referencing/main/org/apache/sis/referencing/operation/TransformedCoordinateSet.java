@@ -23,7 +23,6 @@ import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -33,6 +32,9 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.coordinate.DefaultCoordinateMetadata;
 import org.apache.sis.coordinate.AbstractCoordinateSet;
+
+// Specific to the main branch:
+import org.opengis.geometry.MismatchedDimensionException;
 
 
 /**

@@ -31,7 +31,6 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -69,6 +68,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.system.Modules;
 
 // Specific to the main branch:
+import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.coverage.CannotEvaluateException;
 import org.apache.sis.coverage.PointOutsideCoverageException;
 

@@ -59,7 +59,6 @@ import javax.measure.IncommensurableException;
 import javax.measure.quantity.Length;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -99,6 +98,9 @@ import org.apache.sis.gui.internal.Resources;
 import org.apache.sis.gui.internal.Styles;
 import org.apache.sis.referencing.gazetteer.ReferencingByIdentifiers;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
+
+// Specific to the main branch:
+import org.opengis.geometry.MismatchedDimensionException;
 
 
 /**

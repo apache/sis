@@ -31,7 +31,6 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.opengis.geometry.MismatchedDimensionException;
 import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.operation.DefaultConversion;
@@ -47,6 +46,9 @@ import org.apache.sis.util.resources.Errors;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.crs.GeneralDerivedCRS;
+
+// Specific to the main branch:
+import org.opengis.geometry.MismatchedDimensionException;
 
 
 /**
