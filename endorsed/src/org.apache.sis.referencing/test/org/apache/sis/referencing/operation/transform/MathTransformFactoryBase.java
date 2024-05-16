@@ -95,6 +95,12 @@ class MathTransformFactoryBase implements MathTransformFactory {
 
     /** Default implementation throws an exception. */
     @Override
+    public Matrix createMatrix(int numRow, int numCol) throws FactoryException {
+        throw new FactoryException(MESSAGE);
+    }
+
+    /** Default implementation throws an exception. */
+    @Override
     public MathTransform createConcatenatedTransform(MathTransform transform1, MathTransform transform2) throws FactoryException {
         throw new FactoryException(MESSAGE);
     }

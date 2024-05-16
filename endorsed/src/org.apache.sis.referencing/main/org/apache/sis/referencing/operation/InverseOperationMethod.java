@@ -103,7 +103,7 @@ final class InverseOperationMethod extends DefaultOperationMethod {
         }
         Identifier name = method.getName();
         name = new ImmutableIdentifier(null, null, "Inverse of " + name.getCode());
-        final Map<String,Object> properties = new HashMap<>(6);
+        final var properties = new HashMap<String,Object>(6);
         properties.put(NAME_KEY,    name);
         properties.put(FORMULA_KEY, method.getFormula());
         properties.put(REMARKS_KEY, method.getRemarks());

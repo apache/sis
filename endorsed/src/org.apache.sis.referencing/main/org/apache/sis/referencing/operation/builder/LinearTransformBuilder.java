@@ -32,7 +32,7 @@ import java.io.UncheckedIOException;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.geometry.coordinate.Position;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -410,7 +410,8 @@ search: for (int j=numPoints; --j >= 0;) {
             return;
         }
         if (actual != expected) {
-            throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3, "source", expected, actual));
+            throw new org.opengis.geometry.MismatchedDimensionException(
+                    Errors.format(Errors.Keys.MismatchedDimension_3, "source", expected, actual));
         }
     }
 
@@ -420,8 +421,9 @@ search: for (int j=numPoints; --j >= 0;) {
      * with {@link #numPoints} the index of the next point that we failed to add.
      */
     private MismatchedDimensionException mismatchedDimension(final String name, final int expected, final int actual) {
-        return new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3,
-                    Strings.toIndexed(name, numPoints), expected, actual));
+        return new org.opengis.geometry.MismatchedDimensionException(
+                Errors.format(Errors.Keys.MismatchedDimension_3,
+                Strings.toIndexed(name, numPoints), expected, actual));
     }
 
     /**
@@ -577,7 +579,7 @@ search: for (int j=numPoints; --j >= 0;) {
         }
         final int srcDim = gridToCRS.getSourceDimensions();
         if (srcDim != gridSize.length) {
-            throw new MismatchedDimensionException(Errors.format(
+            throw new org.opengis.geometry.MismatchedDimensionException(Errors.format(
                     Errors.Keys.MismatchedTransformDimension_4, "gridToCRS", 0, gridSize.length, srcDim));
         }
         final int tgtDim = gridToCRS.getTargetDimensions();
@@ -975,7 +977,7 @@ search:         for (int j=domain(); --j >= 0;) {
         verifySourceDimension(source.length);
         final int tgtDim = target.length;
         if (targets != null && tgtDim != targets.length) {
-            throw new MismatchedDimensionException(Errors.format(
+            throw new org.opengis.geometry.MismatchedDimensionException(Errors.format(
                     Errors.Keys.MismatchedDimension_3, "target", targets.length, tgtDim));
         }
         int index;

@@ -24,7 +24,7 @@ import java.awt.geom.AffineTransform;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.operation.Matrix;
@@ -284,7 +284,8 @@ public abstract class AbstractMathTransform extends FormattableObject
      * @param  dimension  the wrong dimension.
      */
     static MismatchedDimensionException mismatchedDimension(final String argument, final int expected, final int dimension) {
-        return new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3, argument, expected, dimension));
+        return new org.opengis.geometry.MismatchedDimensionException(
+                Errors.format(Errors.Keys.MismatchedDimension_3, argument, expected, dimension));
     }
 
     /**

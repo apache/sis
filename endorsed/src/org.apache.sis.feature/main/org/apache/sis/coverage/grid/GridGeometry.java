@@ -30,7 +30,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.geometry.Envelope;
-import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -569,7 +569,7 @@ public class GridGeometry implements LenientComparable, Serializable {
         if (extent != null) {
             final int dimension = extent.getDimension();
             if (dimension != expected) {
-                throw new MismatchedDimensionException(Errors.format(
+                throw new org.opengis.geometry.MismatchedDimensionException(Errors.format(
                         Errors.Keys.MismatchedDimension_3, "extent", expected, dimension));
             }
         }

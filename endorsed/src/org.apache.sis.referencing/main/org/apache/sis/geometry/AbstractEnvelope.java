@@ -31,8 +31,8 @@ import javax.measure.IncommensurableException;
 import jakarta.xml.bind.annotation.XmlTransient;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
-import org.opengis.geometry.MismatchedReferenceSystemException;
+import org.opengis.coordinate.MismatchedDimensionException;
+import org.opengis.coordinate.MismatchedCoordinateMetadataException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -185,11 +185,11 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
      * @param  lowerCorner  the first position.
      * @param  upperCorner  the second position.
      * @return their common CRS, or {@code null} if none.
-     * @throws MismatchedReferenceSystemException if the two positions don't use equal CRS.
+     * @throws MismatchedCoordinateMetadataException if the two positions don't use equal CRS.
      */
     static CoordinateReferenceSystem getCommonCRS(final DirectPosition lowerCorner,
                                                   final DirectPosition upperCorner)
-            throws MismatchedReferenceSystemException
+            throws MismatchedCoordinateMetadataException
     {
         final CoordinateReferenceSystem crs1 = lowerCorner.getCoordinateReferenceSystem();
         final CoordinateReferenceSystem crs2 = upperCorner.getCoordinateReferenceSystem();
@@ -197,7 +197,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
             return crs2;
         } else {
             if (crs2 != null && !crs1.equals(crs2)) {
-                throw new MismatchedReferenceSystemException(Errors.format(Errors.Keys.MismatchedCRS));
+                throw new MismatchedCoordinateMetadataException(Errors.format(Errors.Keys.MismatchedCRS));
             }
             return crs1;
         }

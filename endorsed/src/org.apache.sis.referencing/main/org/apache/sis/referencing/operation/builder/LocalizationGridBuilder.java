@@ -24,7 +24,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
-import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -381,8 +381,9 @@ public class LocalizationGridBuilder extends TransformBuilder {
                 return;
             }
         }
-        throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedTransformDimension_4,
-                                               "sourceToGrid", isTarget, SOURCE_DIMENSION, dim));
+        throw new org.opengis.geometry.MismatchedDimensionException(
+                Errors.format(Errors.Keys.MismatchedTransformDimension_4,
+                "sourceToGrid", isTarget, SOURCE_DIMENSION, dim));
     }
 
     /**

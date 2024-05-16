@@ -35,7 +35,7 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.geometry.MismatchedReferenceSystemException;
+import org.opengis.coordinate.MismatchedCoordinateMetadataException;
 
 
 /**
@@ -275,14 +275,14 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      * bounds, then the corresponding bounds of the intersection result will also be NaN.</p>
      *
      * @param  other  the vertical extent to intersect with this extent.
-     * @throws MismatchedReferenceSystemException if the two extents do not use the same datum, ignoring metadata.
+     * @throws MismatchedCoordinateMetadataException if the two extents do not use the same datum, ignoring metadata.
      *
      * @see Extents#intersection(VerticalExtent, VerticalExtent)
      * @see org.apache.sis.geometry.GeneralEnvelope#intersect(Envelope)
      *
      * @since 0.8
      */
-    public void intersect(final VerticalExtent other) throws MismatchedReferenceSystemException {
+    public void intersect(final VerticalExtent other) throws MismatchedCoordinateMetadataException {
         checkWritePermission(value());
         Double min = other.getMinimumValue();
         Double max = other.getMaximumValue();
@@ -309,7 +309,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
                 }
             }
         } catch (UnsupportedOperationException | FactoryException | ClassCastException | TransformException e) {
-            throw new MismatchedReferenceSystemException(Errors.format(Errors.Keys.IncompatiblePropertyValue_1, "verticalCRS"), e);
+            throw new MismatchedCoordinateMetadataException(Errors.format(Errors.Keys.IncompatiblePropertyValue_1, "verticalCRS"), e);
         }
         if (minimumValue != null && maximumValue != null && minimumValue > maximumValue) {
             minimumValue = maximumValue = NilReason.MISSING.createNilObject(Double.class);

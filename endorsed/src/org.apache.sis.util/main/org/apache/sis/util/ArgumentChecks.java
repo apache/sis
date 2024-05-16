@@ -24,7 +24,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.coordinate.MismatchedDimensionException;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.resources.Errors;
 
@@ -771,7 +771,7 @@ public final class ArgumentChecks extends Static {
             if (cs != null) {                                       // Should never be null, but let be safe.
                 final int dimension = cs.getDimension();
                 if (dimension != expected) {
-                    throw new MismatchedDimensionException(Errors.format(
+                    throw new org.opengis.geometry.MismatchedDimensionException(Errors.format(
                             Errors.Keys.MismatchedDimension_3, name, expected, dimension));
                 }
             }
@@ -796,7 +796,7 @@ public final class ArgumentChecks extends Static {
         if (cs != null) {
             final int dimension = cs.getDimension();
             if (dimension != expected) {
-                throw new MismatchedDimensionException(Errors.format(
+                throw new org.opengis.geometry.MismatchedDimensionException(Errors.format(
                         Errors.Keys.MismatchedDimension_3, name, expected, dimension));
             }
         }
@@ -820,7 +820,7 @@ public final class ArgumentChecks extends Static {
         if (indices != null) {
             final int dimension = indices.length;
             if (dimension != expected) {
-                throw new MismatchedDimensionException(Errors.format(
+                throw new org.opengis.geometry.MismatchedDimensionException(Errors.format(
                         Errors.Keys.MismatchedDimension_3, name, expected, dimension));
             }
         }
@@ -842,7 +842,7 @@ public final class ArgumentChecks extends Static {
         if (vector != null) {
             final int dimension = vector.length;
             if (dimension != expected) {
-                throw new MismatchedDimensionException(Errors.format(
+                throw new org.opengis.geometry.MismatchedDimensionException(Errors.format(
                         Errors.Keys.MismatchedDimension_3, name, expected, dimension));
             }
         }
@@ -864,7 +864,7 @@ public final class ArgumentChecks extends Static {
         if (position != null) {
             final int dimension = position.getDimension();
             if (dimension != expected) {
-                throw new MismatchedDimensionException(Errors.format(
+                throw new org.opengis.geometry.MismatchedDimensionException(Errors.format(
                         Errors.Keys.MismatchedDimension_3, name, expected, dimension));
             }
         }
@@ -886,7 +886,7 @@ public final class ArgumentChecks extends Static {
         if (envelope != null) {
             final int dimension = envelope.getDimension();
             if (dimension != expected) {
-                throw new MismatchedDimensionException(Errors.format(
+                throw new org.opengis.geometry.MismatchedDimensionException(Errors.format(
                         Errors.Keys.MismatchedDimension_3, name, expected, dimension));
             }
         }
@@ -910,7 +910,7 @@ public final class ArgumentChecks extends Static {
         if (envelope != null) {
             final int dimension = envelope.getDimension();
             if (dimension != expected) {
-                throw new MismatchedDimensionException(Errors.format(
+                throw new org.opengis.geometry.MismatchedDimensionException(Errors.format(
                         Errors.Keys.MismatchedDimension_3, name, expected, dimension));
             }
         }
@@ -943,8 +943,9 @@ public final class ArgumentChecks extends Static {
                 expectedSource = expectedTarget;
                 side = 1;
             }
-            throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedTransformDimension_4,
-                                                                 name, side, expectedSource, dimension));
+            throw new org.opengis.geometry.MismatchedDimensionException(
+                    Errors.format(Errors.Keys.MismatchedTransformDimension_4,
+                    name, side, expectedSource, dimension));
         }
     }
 }

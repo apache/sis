@@ -31,7 +31,7 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.coordinate.MismatchedDimensionException;
 import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.operation.DefaultConversion;

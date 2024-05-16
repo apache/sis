@@ -24,7 +24,7 @@ import static java.lang.Math.abs;
 import static java.lang.Math.sqrt;
 import static java.lang.Math.ulp;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.coordinate.MismatchedDimensionException;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.privy.DoubleDouble;
 import org.apache.sis.util.privy.Numerics;
@@ -401,8 +401,9 @@ public class Plane implements DoubleBinaryOperator, Cloneable, Serializable {
             for (final DirectPosition p : points) {
                 final int dimension = p.getDimension();
                 if (dimension != DIMENSION) {
-                    throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3,
-                                Strings.toIndexed("points", i), DIMENSION, dimension));
+                    throw new org.opengis.geometry.MismatchedDimensionException(
+                            Errors.format(Errors.Keys.MismatchedDimension_3,
+                            Strings.toIndexed("points", i), DIMENSION, dimension));
                 }
                 i++;
                 final double x = p.getCoordinate(0); if (Double.isNaN(x)) continue;

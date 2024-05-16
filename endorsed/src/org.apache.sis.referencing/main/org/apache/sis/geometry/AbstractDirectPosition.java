@@ -25,8 +25,8 @@ package org.apache.sis.geometry;
 import java.util.Arrays;
 import java.util.Objects;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
-import org.opengis.geometry.MismatchedReferenceSystemException;
+import org.opengis.coordinate.MismatchedDimensionException;
+import org.opengis.coordinate.MismatchedCoordinateMetadataException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -121,15 +121,15 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
      *
      * <p>If this position and the given position have a non-null CRS, then the default implementation
      * requires the CRS to be {@linkplain Utilities#equalsIgnoreMetadata equals (ignoring metadata)},
-     * otherwise a {@code MismatchedReferenceSystemException} is thrown. However, subclass may choose
+     * otherwise a {@code MismatchedCoordinateMetadataException} is thrown. However, subclass may choose
      * to assign the CRS of this position to the CRS of the given position.</p>
      *
      * @param  position  the new position, or {@code null}.
      * @throws MismatchedDimensionException if the given position doesn't have the expected dimension.
-     * @throws MismatchedReferenceSystemException if the given position doesn't use the expected CRS.
+     * @throws MismatchedCoordinateMetadataException if the given position doesn't use the expected CRS.
      */
     public void setLocation(final DirectPosition position)
-            throws MismatchedDimensionException, MismatchedReferenceSystemException
+            throws MismatchedDimensionException, MismatchedCoordinateMetadataException
     {
         final int dimension = getDimension();
         if (position != null) {
@@ -138,7 +138,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
             if (crs != null) {
                 final CoordinateReferenceSystem other = position.getCoordinateReferenceSystem();
                 if (other != null && !Utilities.equalsIgnoreMetadata(crs, other)) {
-                    throw new MismatchedReferenceSystemException(Errors.format(Errors.Keys.MismatchedCRS));
+                    throw new MismatchedCoordinateMetadataException(Errors.format(Errors.Keys.MismatchedCRS));
                 }
             }
             for (int i=0; i<dimension; i++) {

@@ -31,7 +31,7 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -1975,7 +1975,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
         final int n = coordinates.length;
         final int m = n >>> 1;
         if (n != other.coordinates.length) {
-            throw new MismatchedDimensionException(Errors.format(
+            throw new org.opengis.geometry.MismatchedDimensionException(Errors.format(
                     Errors.Keys.MismatchedDimension_3, param, m, other.getDimension()));
         }
         // First condition below is a fast check for a common case.

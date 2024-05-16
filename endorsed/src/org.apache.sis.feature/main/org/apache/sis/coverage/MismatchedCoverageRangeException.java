@@ -24,7 +24,7 @@ package org.apache.sis.coverage;
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.0
  *
- * @see org.opengis.geometry.MismatchedDimensionException
+ * @see org.opengis.coordinate.MismatchedDimensionException
  *
  * @since 1.0
  */

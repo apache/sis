@@ -22,7 +22,7 @@ import java.io.Serializable;
 import java.lang.reflect.Array;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -256,8 +256,9 @@ public class PassThroughTransform extends AbstractMathTransform implements Seria
         final int subDim = subTransform.getSourceDimensions();
         final int actual = modifiedCoordinates.cardinality();
         if (actual != subDim) {
-            throw new MismatchedDimensionException(Errors.format(Errors.Keys.MismatchedDimension_3,
-                                                   "modifiedCoordinates", subDim, actual));
+            throw new org.opengis.geometry.MismatchedDimensionException(
+                    Errors.format(Errors.Keys.MismatchedDimension_3,
+                    "modifiedCoordinates", subDim, actual));
         }
         final var sep = new TransformSeparator(subTransform, factory);
         MathTransform result = MathTransforms.identity(resultDim);

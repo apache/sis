@@ -23,7 +23,7 @@ import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;

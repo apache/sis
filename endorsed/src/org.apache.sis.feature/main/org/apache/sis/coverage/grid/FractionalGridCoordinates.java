@@ -19,7 +19,7 @@ package org.apache.sis.coverage.grid;
 import java.util.Arrays;
 import java.io.Serializable;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.MismatchedDimensionException;
+import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.datum.PixelInCell;
@@ -248,7 +248,7 @@ public class FractionalGridCoordinates implements GridCoordinates, Serializable 
         if (bounds != null) {
             final int bd = bounds.getDimension();
             if (bd != dimension) {
-                throw new MismatchedDimensionException(Errors.format(
+                throw new org.opengis.geometry.MismatchedDimensionException(Errors.format(
                         Errors.Keys.MismatchedDimension_3, "bounds", dimension, bd));
             }
         }
