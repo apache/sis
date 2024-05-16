@@ -30,7 +30,6 @@ import java.awt.image.RasterFormatException;
 import java.awt.image.RenderedImage;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.feature.internal.Resources;
@@ -39,6 +38,7 @@ import org.apache.sis.util.collection.Cache;
 import org.apache.sis.image.DataType;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.coverage.CannotEvaluateException;
 import org.opengis.coverage.PointOutsideCoverageException;
 

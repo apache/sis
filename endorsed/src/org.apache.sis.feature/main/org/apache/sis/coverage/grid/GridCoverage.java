@@ -24,7 +24,6 @@ import java.util.Optional;
 import java.awt.image.RenderedImage;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
@@ -46,6 +45,7 @@ import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.resources.Vocabulary;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.coverage.CannotEvaluateException;
 
 

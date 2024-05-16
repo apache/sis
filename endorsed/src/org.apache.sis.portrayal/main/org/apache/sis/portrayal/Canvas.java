@@ -23,7 +23,6 @@ import java.util.Optional;
 import java.util.OptionalDouble;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -58,8 +57,11 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.coordinate.MismatchedCoordinateMetadataException;
+import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.coverage.CannotEvaluateException;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.coordinate.MismatchedCoordinateMetadataException;
 
 
 /**

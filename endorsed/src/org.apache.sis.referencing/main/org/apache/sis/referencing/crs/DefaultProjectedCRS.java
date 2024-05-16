@@ -28,7 +28,6 @@ import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;                 // For javadoc
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Conversion;
-import org.opengis.coordinate.MismatchedDimensionException;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
@@ -40,6 +39,9 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Workaround;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.coordinate.MismatchedDimensionException;
 
 
 /**

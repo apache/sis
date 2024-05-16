@@ -33,7 +33,6 @@ import javax.measure.IncommensurableException;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.IdentifiedObject;
@@ -82,6 +81,9 @@ import org.apache.sis.util.logging.Logging;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.ObjectDomain;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.coordinate.MismatchedDimensionException;
 
 
 /**

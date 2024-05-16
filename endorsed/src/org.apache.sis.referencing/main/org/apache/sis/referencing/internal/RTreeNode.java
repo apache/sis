@@ -30,7 +30,7 @@ import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+// Specific to the geoapi-4.0 branch:
 import org.opengis.coordinate.MismatchedCoordinateMetadataException;
 
 

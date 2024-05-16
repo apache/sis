@@ -16,8 +16,10 @@
  */
 package org.apache.sis.util;
 
-import java.util.Optional;
 import org.opengis.util.InternationalString;
+
+// Specific to the geoapi-4.0 branch:
+import java.util.Optional;
 
 
 /**

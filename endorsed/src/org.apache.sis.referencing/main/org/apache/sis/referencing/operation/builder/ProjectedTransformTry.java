@@ -23,7 +23,6 @@ import java.util.Locale;
 import java.util.Collections;
 import java.util.Objects;
 import java.text.NumberFormat;
-import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.io.TableAppender;
@@ -33,6 +32,9 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.coordinate.MismatchedDimensionException;
 
 
 /**

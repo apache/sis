@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;                         // For javadoc
 import org.opengis.referencing.operation.Matrix;
@@ -40,6 +39,9 @@ import org.apache.sis.referencing.privy.ExtendedPrecisionMatrix;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.Arithmetic;
 import org.apache.sis.referencing.operation.transform.MathTransforms;       // For javadoc
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.coordinate.MismatchedDimensionException;
 
 
 /**

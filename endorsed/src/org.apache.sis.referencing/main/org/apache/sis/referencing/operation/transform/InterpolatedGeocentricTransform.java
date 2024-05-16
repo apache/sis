@@ -22,7 +22,6 @@ import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
-import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -39,6 +38,9 @@ import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.referencing.datum.DatumShiftGrid;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.internal.Resources;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.coordinate.MismatchedDimensionException;
 
 
 /**

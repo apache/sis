@@ -17,7 +17,6 @@
 package org.apache.sis.metadata.simple;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.io.Serializable;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
@@ -27,6 +26,7 @@ import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.privy.Constants;
 
 // Specific to the geoapi-4.0 branch:
+import java.util.Optional;
 import org.opengis.metadata.Identifier;
 
 

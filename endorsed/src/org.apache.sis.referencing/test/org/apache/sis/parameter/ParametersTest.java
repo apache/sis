@@ -19,7 +19,6 @@ package org.apache.sis.parameter;
 import java.util.Map;
 import java.util.Set;
 import java.util.Collection;
-import java.util.Optional;
 import javax.measure.Unit;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterValue;
@@ -39,6 +38,7 @@ import org.apache.sis.test.TestCase;
 import org.apache.sis.test.TestUtilities;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.Optional;
 import org.opengis.parameter.ParameterDirection;
 import org.opengis.util.TypeName;
 

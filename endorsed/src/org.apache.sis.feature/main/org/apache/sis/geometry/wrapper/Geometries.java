@@ -22,7 +22,6 @@ import java.util.Optional;
 import java.util.logging.Logger;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -37,6 +36,9 @@ import org.apache.sis.system.Loggers;
 import org.apache.sis.math.Vector;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.util.resources.Errors;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.coordinate.MismatchedDimensionException;
 
 
 /**

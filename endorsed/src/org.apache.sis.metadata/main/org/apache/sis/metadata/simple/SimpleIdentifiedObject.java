@@ -17,7 +17,6 @@
 package org.apache.sis.metadata.simple;
 
 import java.util.Objects;
-import java.util.Optional;
 import java.io.Serializable;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
@@ -28,6 +27,9 @@ import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.privy.Constants;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.Optional;
 
 
 /**

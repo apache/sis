@@ -16,11 +16,13 @@
  */
 package org.apache.sis.referencing.internal;
 
-import java.util.Optional;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.util.Deprecable;
+
+// Specific to the geoapi-4.0 branch:
+import java.util.Optional;
 
 
 /**

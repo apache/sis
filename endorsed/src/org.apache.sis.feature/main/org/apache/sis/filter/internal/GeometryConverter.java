@@ -22,7 +22,6 @@ import java.util.Objects;
 import org.opengis.util.ScopedName;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Errors;
@@ -33,6 +32,7 @@ import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.filter.Optimization;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.filter.Expression;
 import org.opengis.filter.InvalidFilterValueException;
 
