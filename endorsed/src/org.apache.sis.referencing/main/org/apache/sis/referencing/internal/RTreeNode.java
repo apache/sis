@@ -30,8 +30,8 @@ import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.coordinate.MismatchedCoordinateMetadataException;
+// Specific to the main and geoapi-3.1 branches:
+import org.apache.sis.geometry.MismatchedReferenceSystemException;
 
 
 /**
@@ -251,7 +251,7 @@ detach: for (RTreeNode next; node != null; node = next) {
                 if (common == null) {
                     common = crs;
                 } else if (crs != null && !Utilities.equalsIgnoreMetadata(common, crs)) {
-                    throw new MismatchedCoordinateMetadataException(Errors.format(Errors.Keys.MismatchedCRS));
+                    throw new MismatchedReferenceSystemException(Errors.format(Errors.Keys.MismatchedCRS));
                 }
             }
         }

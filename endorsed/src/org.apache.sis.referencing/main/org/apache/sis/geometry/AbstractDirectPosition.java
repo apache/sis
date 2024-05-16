@@ -138,7 +138,7 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
             if (crs != null) {
                 final CoordinateReferenceSystem other = position.getCoordinateReferenceSystem();
                 if (other != null && !Utilities.equalsIgnoreMetadata(crs, other)) {
-                    throw new MismatchedCoordinateMetadataException(Errors.format(Errors.Keys.MismatchedCRS));
+                    throw new MismatchedReferenceSystemException(Errors.format(Errors.Keys.MismatchedCRS));
                 }
             }
             for (int i=0; i<dimension; i++) {

@@ -197,7 +197,7 @@ public abstract class AbstractEnvelope extends FormattableObject implements Enve
             return crs2;
         } else {
             if (crs2 != null && !crs1.equals(crs2)) {
-                throw new MismatchedCoordinateMetadataException(Errors.format(Errors.Keys.MismatchedCRS));
+                throw new MismatchedReferenceSystemException(Errors.format(Errors.Keys.MismatchedCRS));
             }
             return crs1;
         }
