@@ -28,10 +28,10 @@ import javax.xml.parsers.ParserConfigurationException;
 import jakarta.xml.bind.annotation.XmlNs;
 import jakarta.xml.bind.annotation.XmlElement;
 import org.xml.sax.SAXException;
-import org.opengis.geoapi.Departures;
-import org.opengis.geoapi.DocumentationStyle;
-import org.opengis.geoapi.SchemaInformation;
-import org.opengis.geoapi.SchemaException;
+import org.opengis.geoapi.schema.Departures;
+import org.opengis.geoapi.schema.DocumentationStyle;
+import org.opengis.geoapi.schema.SchemaInformation;
+import org.opengis.geoapi.schema.SchemaException;
 import org.apache.sis.util.StringBuilders;
 
 

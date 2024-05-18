@@ -29,7 +29,7 @@ import java.lang.reflect.Method;
 import jakarta.xml.bind.annotation.XmlSchema;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import org.opengis.geoapi.SchemaException;
+import org.opengis.geoapi.schema.SchemaException;
 import org.apache.sis.xml.privy.LegacyNamespaces;
 
 
