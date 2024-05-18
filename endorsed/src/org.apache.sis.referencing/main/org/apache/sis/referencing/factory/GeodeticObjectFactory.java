@@ -928,7 +928,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @see DefaultVerticalDatum#DefaultVerticalDatum(Map, RealizationMethod)
      * @see GeodeticAuthorityFactory#createVerticalDatum(String)
      *
-     * @since 2.0
+     * @since 2.0 (temporary version number until this branch is released)
      */
     @Override
     public VerticalDatum createVerticalDatum(final Map<String,?> properties,

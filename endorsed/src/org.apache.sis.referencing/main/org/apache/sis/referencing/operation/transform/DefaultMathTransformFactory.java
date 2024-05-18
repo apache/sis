@@ -1612,7 +1612,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @return a new matrix of the given size.
      * @throws FactoryException if the matrix creation failed.
      *
-     * @since 1.5
+     * @since 2.0 (temporary version number until this branch is released)
      */
     @Override
     public Matrix createMatrix(int numRow, int numCol) throws FactoryException {
