@@ -22,7 +22,7 @@ import java.util.stream.IntStream;
 import java.awt.image.DataBufferInt;
 import java.awt.image.RenderedImage;
 import org.opengis.util.LocalName;
-import org.opengis.referencing.datum.PixelInCell;
+import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.SampleDimension;

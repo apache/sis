@@ -27,7 +27,6 @@ import java.awt.image.WritableRenderedImage;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.coverage.privy.RasterFactory;

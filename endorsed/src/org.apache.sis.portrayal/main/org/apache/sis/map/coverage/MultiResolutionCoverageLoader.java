@@ -22,7 +22,7 @@ import java.lang.ref.SoftReference;
 import java.text.NumberFormat;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.datum.PixelInCell;
+import org.apache.sis.coverage.grid.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;

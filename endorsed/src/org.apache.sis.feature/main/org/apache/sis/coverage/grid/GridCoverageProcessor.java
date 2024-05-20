@@ -31,7 +31,6 @@ import java.awt.image.RenderedImage;
 import javax.measure.Quantity;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.spatial.DimensionNameType;
-import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;

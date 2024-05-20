@@ -24,7 +24,7 @@ import static java.lang.Math.round;
 import javax.measure.IncommensurableException;
 import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
-import org.opengis.referencing.datum.PixelInCell;
+import org.apache.sis.coverage.grid.PixelInCell;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;

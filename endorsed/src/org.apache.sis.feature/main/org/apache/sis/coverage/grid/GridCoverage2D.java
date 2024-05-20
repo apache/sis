@@ -38,7 +38,6 @@ import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.TransformException;

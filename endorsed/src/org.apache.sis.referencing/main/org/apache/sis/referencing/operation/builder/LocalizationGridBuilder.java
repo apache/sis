@@ -407,9 +407,9 @@ public class LocalizationGridBuilder extends TransformBuilder {
      * <ul>
      *   <li>If {@code true}, then the returned envelope encompasses full cell surfaces,
      *       from lower border to upper border. In other words, the returned envelope encompasses all
-     *       {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CORNER cell corners}.</li>
+     *       {@linkplain org.apache.sis.coverage.grid.PixelInCell#CELL_CORNER cell corners}.</li>
      *   <li>If {@code false}, then the returned envelope encompasses only
-     *       {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CENTER cell centers}, inclusive.</li>
+     *       {@linkplain org.apache.sis.coverage.grid.PixelInCell#CELL_CENTER cell centers}, inclusive.</li>
      * </ul>
      *
      * This is the envelope of the grid domain (i.e. the ranges of valid {@code gridX} and {@code gridY} argument

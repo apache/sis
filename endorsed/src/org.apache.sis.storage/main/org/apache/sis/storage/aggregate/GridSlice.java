@@ -19,7 +19,7 @@ package org.apache.sis.storage.aggregate;
 import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
-import org.opengis.referencing.datum.PixelInCell;
+import org.apache.sis.coverage.grid.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;

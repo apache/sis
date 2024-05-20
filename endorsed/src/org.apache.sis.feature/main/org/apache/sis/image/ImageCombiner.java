@@ -197,7 +197,7 @@ public class ImageCombiner implements Consumer<RenderedImage> {
     /**
      * Combines the result of resampling the given image. The resampling operation is defined by a potentially
      * non-linear transform from the <em>destination</em> image to the specified <em>source</em> image.
-     * That transform should map {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CENTER pixel centers}.
+     * That transform should map {@linkplain org.apache.sis.coverage.grid.PixelInCell#CELL_CENTER pixel centers}.
      *
      * <h4>Properties used</h4>
      * This operation uses the following properties in addition to method parameters:

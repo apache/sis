@@ -151,7 +151,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * @param  properties  the properties to be given to the identified object.
      * @param  method      the realization method (geoid, tidal, <i>etc.</i>), or {@code null} if unspecified.
      *
-     * @since 2.0
+     * @since 2.0 (temporary version number until this branch is released)
      */
     @SuppressWarnings("this-escape")
     public DefaultVerticalDatum(final Map<String,?> properties, final RealizationMethod method) {
@@ -229,7 +229,7 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      *
      * @return method through which this vertical reference frame is realized.
      *
-     * @since 2.0
+     * @since 2.0 (temporary version number until this branch is released)
      */
     @Override
     public Optional<RealizationMethod> getRealizationMethod() {

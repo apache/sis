@@ -488,7 +488,7 @@ search: for (int j=numPoints; --j >= 0;) {
      * The number of dimensions is equal to {@link #getSourceDimensions()}.
      * This method returns the known minimum and maximum values (inclusive) for each dimension,
      * <strong>not</strong> expanded to encompass full cell surfaces. In other words, the returned envelope encompasses only
-     * {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CENTER cell centers}.
+     * {@linkplain org.apache.sis.coverage.grid.PixelInCell#CELL_CENTER cell centers}.
      *
      * <p>If a grid size was {@link #LinearTransformBuilder(int...) specified at construction time},
      * then those minimums and maximums are inferred from the grid size and are always integer values.

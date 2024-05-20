@@ -19,7 +19,6 @@ package org.apache.sis.coverage.grid;
 import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.geometry.Envelope;
-import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;

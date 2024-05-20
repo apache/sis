@@ -1052,7 +1052,7 @@ public class ImageProcessor implements Cloneable {
     /**
      * Creates a new image which will resample the given image. The resampling operation is defined
      * by a potentially non-linear transform from the <em>new</em> image to the specified <em>source</em> image.
-     * That transform should map {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CENTER pixel centers}.
+     * That transform should map {@linkplain org.apache.sis.coverage.grid.PixelInCell#CELL_CENTER pixel centers}.
      * If that transform produces coordinates that are outside source envelope bounds, then the corresponding pixels
      * in the new image are set to {@linkplain #getFillValues() fill values}. Otherwise sample values are interpolated
      * using the method given by {@link #getInterpolation()}.

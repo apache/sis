@@ -26,7 +26,7 @@ import java.awt.image.DataBufferFloat;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.WritableRaster;
 import org.opengis.metadata.Metadata;
-import org.opengis.referencing.datum.PixelInCell;
+import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;

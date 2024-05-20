@@ -23,7 +23,6 @@ import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferInt;
 import java.awt.image.RenderedImage;
 import java.awt.image.WritableRaster;
-import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.iso.Names;
