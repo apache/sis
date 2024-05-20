@@ -1565,14 +1565,14 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @return the {@code "ImageDatum"} element.
      * @throws ParseException if the {@code "ImageDatum"} element cannot be parsed.
      */
+    @SuppressWarnings("removal")
     private DefaultImageDatum parseImageDatum(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.ImageDatum, WKTKeywords.IDatum);
         if (element == null) {
             return null;
         }
         final String name = element.pullString("name");
-        final PixelInCell pixelInCell = Types.forCodeName(PixelInCell.class,
-                element.pullVoidElement("pixelInCell").keyword, PixelInCell::valueOf);
+        final String pixelInCell = element.pullVoidElement("pixelInCell").keyword;
         return new DefaultImageDatum(parseAnchorAndClose(element, name), pixelInCell);
     }
 
@@ -1666,6 +1666,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
      * @return the {@code "ImageCRS"} element as an {@link ImageCRS} object.
      * @throws ParseException if the {@code "ImageCRS"} element cannot be parsed.
      */
+    @SuppressWarnings("removal")
     private DefaultImageCRS parseImageCRS(final int mode, final Element parent) throws ParseException {
         final Element element = parent.pullElement(mode, WKTKeywords.ImageCRS);
         if (element == null) {

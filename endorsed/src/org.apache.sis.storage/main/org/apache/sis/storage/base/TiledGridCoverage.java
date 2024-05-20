@@ -151,7 +151,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      *   <li><var>y′</var> = s₁⋅<var>y</var> + t₁</li>
      * </ul>
      *
-     * This transform maps {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CORNER pixel corners}.
+     * This transform maps {@linkplain org.apache.sis.coverage.grid.PixelInCell#CELL_CORNER pixel corners}.
      *
      * @see #getSubsampling(int)
      * @see #toFullResolution(long, int)

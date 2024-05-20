@@ -18,7 +18,6 @@ package org.apache.sis.referencing.crs;
 
 import java.util.Map;
 import java.util.HashMap;
-import org.opengis.referencing.datum.PixelInCell;
 import static org.opengis.referencing.IdentifiedObject.*;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.extent.Extents;
@@ -320,8 +319,8 @@ public final class HardCodedCRS {
      * By default, this CRS has no transformation path to any other CRS (i.e. a map using
      * this CS cannot be reprojected to a geographic coordinate reference system for example).
      *
-     * <p>The {@code PixelInCell} attribute of the associated {@code ImageDatum}
-     * is set to {@link PixelInCell#CELL_CENTER}.</p>
+     * <p>The {@code pixelInCell} attribute of the associated {@code ImageDatum}
+     * is set to {@link org.apache.sis.coverage.grid.PixelInCell#CELL_CENTER}.</p>
      */
     @SuppressWarnings("removal")
     public static final DefaultImageCRS IMAGE = new DefaultImageCRS(

@@ -30,7 +30,6 @@ import org.opengis.util.FactoryException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.geometry.Envelope;
-import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -924,12 +923,10 @@ public class GridGeometry implements LenientComparable, Serializable {
      */
     public MathTransform getGridToCRS(final PixelInCell anchor) {
         final MathTransform mt;
-        if (anchor.equals(PixelInCell.CELL_CENTER)) {           // Implicit null check.
-            mt = gridToCRS;
-        } else if (anchor == PixelInCell.CELL_CORNER) {
-            mt = cornerToCRS;
-        }  else {
-            mt = PixelTranslation.translate(gridToCRS, PixelInCell.CELL_CENTER, anchor);
+        switch (anchor) {
+            case CELL_CENTER: mt = gridToCRS; break;
+            case CELL_CORNER: mt = cornerToCRS; break;
+            default: mt = PixelTranslation.translate(gridToCRS, PixelInCell.CELL_CENTER, anchor); break;
         }
         if (mt != null) {
             return mt;

@@ -22,7 +22,6 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.referencing.cs.DefaultAffineCS;
 import org.apache.sis.referencing.datum.DefaultImageDatum;
 import org.apache.sis.io.wkt.Convention;
@@ -61,7 +60,7 @@ public final class DefaultImageCRSTest extends TestCase {
      */
     private static DefaultImageCRS create(final boolean cartesian) {
         return new DefaultImageCRS(Map.of(DefaultImageCRS.NAME_KEY, "An image CRS"),
-                new DefaultImageDatum(Map.of(DefaultImageDatum.NAME_KEY, "C1"), PixelInCell.CELL_CENTER),
+                new DefaultImageDatum(Map.of(DefaultImageDatum.NAME_KEY, "C1"), "cell center"),
                         cartesian ? HardCodedCS.GRID : new DefaultAffineCS(
                                 Map.of(DefaultAffineCS.NAME_KEY, "Grid"),
                                 HardCodedAxes.COLUMN, HardCodedAxes.ROW));

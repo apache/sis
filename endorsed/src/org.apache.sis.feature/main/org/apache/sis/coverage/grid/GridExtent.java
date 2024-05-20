@@ -36,7 +36,6 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
@@ -1230,7 +1229,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @throws TransformException if the envelope cannot be computed with the given transform.
      *
      * @see GridGeometry#getEnvelope()
-     * @see org.opengis.referencing.datum.PixelInCell#CELL_CORNER
+     * @see PixelInCell#CELL_CORNER
      *
      * @since 1.1
      */

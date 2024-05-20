@@ -19,7 +19,6 @@ package org.apache.sis.referencing.datum;
 import java.util.Date;
 import java.util.Map;
 import java.util.HashMap;
-import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.measure.Units;
@@ -152,12 +151,12 @@ public final class HardCodedDatum {
             properties("Day of year", null, null));
 
     /**
-     * Image with {@link PixelInCell#CELL_CENTER}.
+     * Image with {@link org.apache.sis.coverage.grid.PixelInCell#CELL_CENTER}.
      */
     @SuppressWarnings("removal")
     public static final DefaultImageDatum IMAGE = new DefaultImageDatum(
             properties("Image", null, null),
-            PixelInCell.CELL_CENTER);
+            "cell center");
 
     /**
      * An engineering datum for unknown coordinate reference system. Such CRS are usually

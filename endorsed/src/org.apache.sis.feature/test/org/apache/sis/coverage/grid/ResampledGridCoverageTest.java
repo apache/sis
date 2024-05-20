@@ -32,7 +32,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
-import static org.opengis.referencing.datum.PixelInCell.CELL_CENTER;
 import org.apache.sis.geometry.Envelope2D;
 import org.apache.sis.geometry.DirectPosition2D;
 import org.apache.sis.geometry.ImmutableEnvelope;
@@ -46,6 +45,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.TransformSeparator;
+import static org.apache.sis.coverage.grid.PixelInCell.CELL_CENTER;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

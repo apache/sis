@@ -20,7 +20,6 @@ import java.util.function.Function;
 import java.awt.image.RenderedImage;
 import java.awt.image.ImagingOpException;
 import org.opengis.util.FactoryException;
-import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;

@@ -32,7 +32,7 @@ import java.time.Duration;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.crs.SingleCRS;
-import org.opengis.referencing.datum.PixelInCell;
+import org.apache.sis.coverage.grid.PixelInCell;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.CommonCRS;

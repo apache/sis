@@ -21,7 +21,6 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.image.RenderedImage;
 import org.opengis.util.FactoryException;
-import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.MathTransform;

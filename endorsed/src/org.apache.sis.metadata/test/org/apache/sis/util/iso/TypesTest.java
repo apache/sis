@@ -28,8 +28,8 @@ import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.content.ImagingCondition;
+import org.opengis.metadata.constraint.Restriction;
 import org.opengis.referencing.datum.Datum;
-import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.DefaultInternationalString;
@@ -153,12 +153,8 @@ public final class TypesTest extends TestCase {
         assertSame(ImagingCondition.SEMI_DARKNESS, Types.forCodeName(ImagingCondition.class, "semi-darkness", null));
         assertNull(Types.forCodeName(ImagingCondition.class, "darkness", null));
 
-        assertSame(PixelInCell.CELL_CORNER, Types.forCodeName(PixelInCell.class, "cell corner", null));
-        assertSame(PixelInCell.CELL_CORNER, Types.forCodeName(PixelInCell.class, "cellCorner",  null));
-        assertSame(PixelInCell.CELL_CENTER, Types.forCodeName(PixelInCell.class, "cell center", null));
-        assertSame(PixelInCell.CELL_CENTER, Types.forCodeName(PixelInCell.class, "cellCenter",  null));
-        assertSame(PixelInCell.CELL_CENTER, Types.forCodeName(PixelInCell.class, "cell centre", null));
-        assertSame(PixelInCell.CELL_CENTER, Types.forCodeName(PixelInCell.class, "cellCentre",  null));
+        assertSame(Restriction.LICENCE, Types.forCodeName(Restriction.class, "licence", null));
+        assertSame(Restriction.LICENCE, Types.forCodeName(Restriction.class, "license", null));
     }
 
     /**

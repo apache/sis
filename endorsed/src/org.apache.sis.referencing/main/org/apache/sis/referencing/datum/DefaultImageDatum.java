@@ -21,13 +21,15 @@ import java.util.Objects;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
+import jakarta.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.util.ComparisonMode;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -72,7 +74,7 @@ public final class DefaultImageDatum extends AbstractDatum {
      *
      * @see #getPixelInCell()
      */
-    private PixelInCell pixelInCell;
+    private String pixelInCell;
 
     /**
      * Creates an image datum from the given properties. The properties map is given
@@ -122,7 +124,7 @@ public final class DefaultImageDatum extends AbstractDatum {
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createImageDatum(Map, PixelInCell)
      */
-    public DefaultImageDatum(final Map<String,?> properties, final PixelInCell pixelInCell) {
+    public DefaultImageDatum(final Map<String,?> properties, final String pixelInCell) {
         super(properties);
         this.pixelInCell = Objects.requireNonNull(pixelInCell);
     }
@@ -133,7 +135,8 @@ public final class DefaultImageDatum extends AbstractDatum {
      * @return the way image grid is associated with image data attributes.
      */
     @XmlElement(required = true)
-    public PixelInCell getPixelInCell() {
+    @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
+    public String getPixelInCell() {
         return pixelInCell;
     }
 
@@ -182,7 +185,7 @@ public final class DefaultImageDatum extends AbstractDatum {
         super.formatTo(formatter);
         final Convention convention = formatter.getConvention();
         if (convention == Convention.INTERNAL) {
-            formatter.append(getPixelInCell());         // This is an extension compared to ISO 19162.
+            formatter.append(getPixelInCell(), ElementKind.CODE_LIST);    // This is an extension compared to ISO 19162.
         } else if (convention.majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);
         }
@@ -218,7 +221,7 @@ public final class DefaultImageDatum extends AbstractDatum {
      *
      * @see #getPixelInCell()
      */
-    private void setPixelInCell(final PixelInCell value) {
+    private void setPixelInCell(final String value) {
         if (pixelInCell == null) {
             pixelInCell = value;
         } else {

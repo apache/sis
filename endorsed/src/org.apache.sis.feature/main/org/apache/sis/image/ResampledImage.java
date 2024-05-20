@@ -112,7 +112,7 @@ public class ResampledImage extends ComputedImage {
      * image. This transform should be an instance of {@link MathTransform2D}, but this is not required by this class
      * (a future version may allow interpolations in a <var>n</var>-dimensional cube).
      *
-     * @see org.opengis.referencing.datum.PixelInCell#CELL_CENTER
+     * @see org.apache.sis.coverage.grid.PixelInCell#CELL_CENTER
      */
     protected final MathTransform toSource;
 
@@ -175,7 +175,7 @@ public class ResampledImage extends ComputedImage {
     /**
      * Creates a new image which will resample the given image. The resampling operation is defined
      * by a potentially non-linear transform from <em>this</em> image to the specified <em>source</em> image.
-     * That transform should map {@linkplain org.opengis.referencing.datum.PixelInCell#CELL_CENTER pixel centers}.
+     * That transform should map {@linkplain org.apache.sis.coverage.grid.PixelInCell#CELL_CENTER pixel centers}.
      *
      * <p>The {@code sampleModel} determines the tile size and the target data type. This is often the same sample
      * model than the one used by the {@code source} image, but may also be different for forcing a different tile

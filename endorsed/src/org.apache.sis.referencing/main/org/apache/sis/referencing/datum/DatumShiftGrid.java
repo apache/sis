@@ -377,7 +377,7 @@ public abstract class DatumShiftGrid<C extends Quantity<C>, T extends Quantity<T
      * The input coordinates given to the {@link LinearTransform} shall be in the unit of measurement
      * given by {@link #getCoordinateUnit()}. The output coordinates are grid indices as real numbers
      * (i.e. can have a fractional part). Integer grid indices are located in the center of grid cells,
-     * i.e. the transform uses {@link org.opengis.referencing.datum.PixelInCell#CELL_CENTER} convention.
+     * i.e. the transform uses {@link org.apache.sis.coverage.grid.PixelInCell#CELL_CENTER} convention.
      *
      * <p>This transform is usually two-dimensional, in which case conversions from (<var>x</var>,<var>y</var>)
      * coordinates to ({@code gridX}, {@code gridY}) indices can be done with the following formulas:</p>
