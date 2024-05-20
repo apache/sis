@@ -20,7 +20,6 @@ import java.util.Map;
 import java.io.Serializable;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.metadata.spatial.PixelOrientation;
 import static org.opengis.metadata.spatial.PixelOrientation.*;
 import org.apache.sis.util.Static;
@@ -64,7 +63,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
  * }
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.0
+ * @version 1.5
  *
  * @see PixelInCell
  * @see PixelOrientation
@@ -143,19 +142,9 @@ public final class PixelTranslation extends Static implements Serializable {
      *
      * @param  anchor  the {@code PixelInCell} code, or {@code null}.
      * @return the corresponding pixel orientation, or {@code null} if the argument was null.
-     * @throws IllegalArgumentException if the given {@code anchor} is not a known code list value.
      */
     public static PixelOrientation getPixelOrientation(final PixelInCell anchor) {
-        if (anchor == null) {
-            return null;
-        } else if (anchor.equals(PixelInCell.CELL_CENTER)) {
-            return CENTER;
-        } else if (anchor.equals(PixelInCell.CELL_CORNER)) {
-            return UPPER_LEFT;
-        } else {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalArgumentValue_2, "anchor", anchor));
-        }
+        return (anchor == null) ? null : anchor.orientation;
     }
 
     /**
@@ -172,17 +161,9 @@ public final class PixelTranslation extends Static implements Serializable {
      *
      * @param  anchor  the "pixel in cell" value.
      * @return the translation for the given "pixel in cell" value.
-     * @throws IllegalArgumentException if the given {@code anchor} is not a known code list value.
      */
     public static double getPixelTranslation(final PixelInCell anchor) {
-        if (anchor == PixelInCell.CELL_CENTER) {
-            return 0;
-        } else if (anchor == PixelInCell.CELL_CORNER) {
-            return -0.5;
-        } else {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.IllegalArgumentValue_2, "anchor", anchor));
-        }
+        return anchor.translationFromCentre;
     }
 
     /**
@@ -237,11 +218,11 @@ public final class PixelTranslation extends Static implements Serializable {
      * @throws IllegalArgumentException if {@code current} or {@code desired} is not a known code list value.
      */
     public static MathTransform translate(final MathTransform gridToCRS, final PixelInCell current, final PixelInCell desired) {
-        if (gridToCRS == null || desired.equals(current)) {
+        if (gridToCRS == null || desired == current) {
             return gridToCRS;
         }
         final int dimension = gridToCRS.getSourceDimensions();
-        final double offset = getPixelTranslation(desired) - getPixelTranslation(current);
+        final double offset = desired.translationFromCentre - current.translationFromCentre;
         final int ci;               // Cache index.
         if (offset == -0.5) {
             ci = 2*dimension - 2;

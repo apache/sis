@@ -32,7 +32,7 @@ import java.awt.image.RasterFormatException;
 import java.awt.image.WritableRaster;
 import static java.lang.Math.multiplyExact;
 import org.opengis.metadata.Metadata;
-import org.opengis.referencing.datum.PixelInCell;
+import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridCoverage;

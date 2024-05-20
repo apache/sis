@@ -36,7 +36,6 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CompoundCRS;
 import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
-import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.OperationMethod;

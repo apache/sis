@@ -20,7 +20,7 @@ import java.awt.Shape;
 import java.util.Objects;
 import java.io.Serializable;
 import org.opengis.util.FactoryException;
-import org.opengis.referencing.datum.PixelInCell;
+import org.apache.sis.coverage.grid.PixelInCell;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.MathTransform;

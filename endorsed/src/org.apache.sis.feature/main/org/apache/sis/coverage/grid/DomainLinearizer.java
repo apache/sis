@@ -18,7 +18,6 @@ package org.apache.sis.coverage.grid;
 
 import java.util.Arrays;
 import org.opengis.util.FactoryException;
-import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.builder.LinearTransformBuilder;

@@ -27,6 +27,16 @@ import org.apache.sis.referencing.operation.projection.NormalizedProjection;
 
 /**
  * The provider for <q>Robinson</q> projection.
+ * This projection method has no associated EPSG code.
+ *
+ * <h2>Departure in parameter name compared to GDAL</h2>
+ * As of May 2024, the {@link #CENTRAL_MERIDIAN} parameter name declared on the GDAL web site
+ * is <q>Longitude of projection center</q> for EPSG and <q>longitude_of_center</q> for OGC.
+ * However, EPSG does not define this projection, and OGC names generally follow ESRI names.
+ * The parameter name declared by ESRI for projection ESRI:54030 is <q>Central_Meridian</q>.
+ * This class follows ESRI name for OGC and uses <q>Longitude of natural origin</q> for EPSG.
+ * The latter is the name that we found in usage for WKT 2 strings, is used by PROJ implementation
+ * and seems to be match better the usages in the EPSG geodetic dataset.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
@@ -50,7 +60,7 @@ public final class Robinson extends MapProjection {
      *   <tr><td> OGC:     </td><td> central_meridian </td></tr>
      *   <tr><td> GeoTIFF: </td><td> CenterLong </td></tr>
      *   <tr><td> Proj4:   </td><td> lon_0 </td></tr>
-     *   <tr><td> EPSG:    </td><td> Longitude of projection centre </td></tr>
+     *   <tr><td> EPSG:    </td><td> Longitude of natural origin </td></tr>
      * </table>
      */
     public static final ParameterDescriptor<Double> CENTRAL_MERIDIAN = Sinusoidal.CENTRAL_MERIDIAN;

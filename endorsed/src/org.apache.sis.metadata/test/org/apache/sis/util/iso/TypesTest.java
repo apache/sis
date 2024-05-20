@@ -144,11 +144,6 @@ public final class TypesTest extends TestCase {
         assertSame(PixelInCell.CELL_CORNER, Types.forCodeName(PixelInCell.class, "cellCorner",  null));
         assertSame(PixelInCell.CELL_CENTER, Types.forCodeName(PixelInCell.class, "cell center", null));
         assertSame(PixelInCell.CELL_CENTER, Types.forCodeName(PixelInCell.class, "cellCenter",  null));
-
-        if (PENDING_NEXT_GEOAPI_RELEASE) {
-            assertSame(PixelInCell.CELL_CENTER, Types.forCodeName(PixelInCell.class, "cell centre", null));
-            assertSame(PixelInCell.CELL_CENTER, Types.forCodeName(PixelInCell.class, "cellCentre",  null));
-        }
     }
 
     /**

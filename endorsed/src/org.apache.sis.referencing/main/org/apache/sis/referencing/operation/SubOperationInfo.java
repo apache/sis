@@ -44,7 +44,7 @@ final class SubOperationInfo {
      * Types of target CRS, together with the type of CRS that may be used as the source for that target.
      * For each array {@code COMPATIBLE_TYPES[i]}, the first element (i.e. {@code COMPATIBLE_TYPES[i][0]})
      * is the target CRS and the whole array (including the first element) gives the valid source CRS type,
-     * if preference order.
+     * in preference order.
      *
      * <h4>Example</h4>
      * If a target CRS is of type {@link VerticalCRS}, then the source CRS may be another {@code VerticalCRS}

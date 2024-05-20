@@ -41,7 +41,7 @@ import org.opengis.referencing.crs.DerivedCRS;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.referencing.datum.PixelInCell;
+import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.geometry.Envelopes;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.referencing.IdentifiedObjects;

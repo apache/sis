@@ -18,7 +18,6 @@ package org.apache.sis.coverage.grid;
 
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.privy.DirectPositionView;

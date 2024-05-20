@@ -18,7 +18,7 @@ package org.apache.sis.portrayal;
 
 import java.util.List;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.referencing.datum.PixelInCell;
+import org.apache.sis.coverage.grid.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;

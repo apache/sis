@@ -44,9 +44,6 @@ import org.apache.sis.measure.Angle;
  * </tr><tr>
  *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultEngineeringCRS Engineering}</td>
  *   <td>unspecified</td>
- * </tr><tr>
- *   <td>{@linkplain org.apache.sis.referencing.crs.DefaultImageCRS Image}</td>
- *   <td>unspecified</td>
  * </tr></table>
  *
  * <h2>Immutability and thread safety</h2>

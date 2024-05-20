@@ -19,7 +19,6 @@ package org.apache.sis.coverage.grid;
 import java.util.List;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
-import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.privy.AffineTransform2D;

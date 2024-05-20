@@ -17,7 +17,6 @@
 package org.apache.sis.coverage.grid;
 
 import org.opengis.metadata.spatial.PixelOrientation;
-import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.operation.transform.MathTransforms;

@@ -28,7 +28,6 @@ import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.MathTransform;
-import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.ArgumentChecks;
@@ -508,12 +507,10 @@ public class DimensionalityReduction implements UnaryOperator<GridCoverage>, Ser
      * @return removed part of the conversion from grid coordinates to "real world" coordinates.
      */
     private MathTransform getRemovedGridToCRS(final PixelInCell anchor) {
-        if (anchor == PixelInCell.CELL_CENTER) {
-            return removedGridToCRS;
-        } else if (anchor == PixelInCell.CELL_CORNER) {
-            return removedCornerToCRS;
-        }  else {
-            return PixelTranslation.translate(removedGridToCRS, PixelInCell.CELL_CENTER, anchor);
+        switch (anchor) {
+            case CELL_CENTER: return removedGridToCRS;
+            case CELL_CORNER: return removedCornerToCRS;
+            default: return PixelTranslation.translate(removedGridToCRS, PixelInCell.CELL_CENTER, anchor);
         }
     }
 

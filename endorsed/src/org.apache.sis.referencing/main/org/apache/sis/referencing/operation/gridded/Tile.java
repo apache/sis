@@ -27,7 +27,6 @@ import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import javax.imageio.ImageReader;                           // For javadoc
-import org.opengis.metadata.spatial.PixelOrientation;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.resources.Vocabulary;
@@ -202,8 +201,8 @@ public class Tile implements Serializable {
      * @param region     the tile region, or {@code null} if unknown.
      *                   The (<var>x</var>,<var>y</var> location of this region is typically (0,0).
      *                   The final location will be computed when this tile will be given to a {@link TileOrganizer}.
-     * @param gridToCRS  the <q>grid to real world</q> transform mapping pixel
-     *                   {@linkplain PixelOrientation#UPPER_LEFT upper left} corner.
+     * @param gridToCRS  the <q>grid to real world</q> transform mapping the corner of pixels.
+     *                   The corner shall be the one which smallest grid coordinates (typically upper-left).
      */
     public Tile(final Rectangle region, final AffineTransform gridToCRS) {
         ArgumentChecks.ensureNonNull("gridToCRS", gridToCRS);
@@ -435,8 +434,8 @@ public class Tile implements Serializable {
      *     gridToCRS.translate(location.x, location.y);
      *     }
      *
-     * @return the <q>grid to real world</q> transform mapping pixel
-     *         {@linkplain PixelOrientation#UPPER_LEFT upper left} corner, or {@code null} if undefined.
+     * @return the <q>grid to real world</q> transform mapping the corner of pixels, or {@code null} if undefined.
+     *         The corner shall be the one which smallest grid coordinates (typically upper-left).
      * @throws IllegalStateException if this tile has been {@linkplain #Tile(Rectangle, AffineTransform)
      *         created without location} and has not yet been processed by {@link TileOrganizer}.
      */
@@ -455,8 +454,8 @@ public class Tile implements Serializable {
      * Sets the new <q>grid to real world</q> transform to use after the translation performed by
      * {@link #translate(int, int)}, if any. The given instance should be immutable; it will not be cloned.
      *
-     * @param  at  the <q>grid to real world</q> transform mapping pixel
-     *             {@linkplain PixelOrientation#UPPER_LEFT upper left} corner.
+     * @param gridToCRS  the <q>grid to real world</q> transform mapping the corner of pixels.
+     *                   The corner shall be the one which smallest grid coordinates (typically upper-left).
      * @throws IllegalStateException if another transform was already assigned to this tile.
      */
     final void setGridToCRS(final AffineTransform at) throws IllegalStateException {

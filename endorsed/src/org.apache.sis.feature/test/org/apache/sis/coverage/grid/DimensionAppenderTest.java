@@ -19,7 +19,6 @@ package org.apache.sis.coverage.grid;
 import java.time.Instant;
 import java.time.Duration;
 import java.awt.image.BufferedImage;
-import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;

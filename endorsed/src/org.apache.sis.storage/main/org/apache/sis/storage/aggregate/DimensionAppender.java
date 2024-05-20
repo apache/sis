@@ -22,7 +22,7 @@ import java.util.Optional;
 import org.opengis.util.GenericName;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
-import org.opengis.referencing.datum.PixelInCell;
+import org.apache.sis.coverage.grid.PixelInCell;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;

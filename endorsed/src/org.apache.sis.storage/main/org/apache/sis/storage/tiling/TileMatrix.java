@@ -20,7 +20,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
-import org.opengis.referencing.datum.PixelInCell;
+import org.apache.sis.coverage.grid.PixelInCell;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
