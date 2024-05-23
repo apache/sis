@@ -16,7 +16,7 @@
  */
 package org.apache.sis.referencing.privy;
 
-import java.util.Date;
+import java.time.Instant;
 import java.time.Duration;
 import org.opengis.metadata.extent.Extent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
@@ -150,11 +150,11 @@ public final class ExtentSelectorTest extends TestCase {
      *                   {@code true} for associating a larger geographic area.
      */
     private static Extent time(final long startTime, final long endTime, final boolean largeArea) {
-        final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox(
+        final var bbox = new DefaultGeographicBoundingBox(
                 largeArea ? -20 : -10, 10,
                 largeArea ?  10 :  20, 30);
-        final DefaultTemporalExtent range = new DefaultTemporalExtent();
-        range.setBounds(new Date(startTime), new Date(endTime));
+        final var range = new DefaultTemporalExtent();
+        range.setBounds(Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime));
         return new DefaultExtent(null, bbox, null, range);
     }
 
@@ -162,7 +162,7 @@ public final class ExtentSelectorTest extends TestCase {
      * Creates the selector to use for testing purpose.
      */
     private ExtentSelector<Integer> create(final Extent aoi) {
-        ExtentSelector<Integer> selector = new ExtentSelector<>(aoi);
+        final var selector = new ExtentSelector<Integer>(aoi);
         selector.alternateOrdering = alternateOrdering;
         selector.setTimeGranularity(granularity);
         return selector;

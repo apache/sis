@@ -18,7 +18,7 @@ package org.apache.sis.storage.netcdf.base;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Locale;
+import java.util.TimeZone;
 import java.util.GregorianCalendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -102,7 +102,7 @@ final class HYCOM {
                          */
                         Vector values = variable.read();
                         final double[] times = new double[values.size()];
-                        final GregorianCalendar calendar = new GregorianCalendar(decoder.getTimeZone(), Locale.US);
+                        final GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone(decoder.getTimeZone()), Decoder.DATA_LOCALE);
                         calendar.clear();
                         for (int i=0; i<times.length; i++) {
                             double time = values.doubleValue(i);                            // Date encoded as a double (e.g. 20181017)

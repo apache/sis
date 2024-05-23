@@ -35,6 +35,8 @@ import static org.apache.sis.measure.UnitRegistry.CGS;
 import static org.apache.sis.measure.UnitRegistry.IMPERIAL;
 import static org.apache.sis.measure.UnitRegistry.OTHER;
 import static org.apache.sis.measure.UnitRegistry.PREFIXABLE;
+import static org.apache.sis.util.privy.StandardDateFormat.SECONDS_PER_DAY;
+import static org.apache.sis.util.privy.StandardDateFormat.MILLIS_PER_TROPICAL_YEAR;
 
 
 /**
@@ -56,7 +58,7 @@ import static org.apache.sis.measure.UnitRegistry.PREFIXABLE;
  *   <tr><td style="padding-top:15px" colspan="4"><b>Fundamental:</b></td></tr>
  *   <tr><td>{@link Length}</td>            <td>(L)</td> <td>{@link #METRE}</td>    <td>{@link #CENTIMETRE}, {@link #KILOMETRE}, {@link #NAUTICAL_MILE}, {@link #STATUTE_MILE}, {@link #FOOT}</td></tr>
  *   <tr><td>{@link Mass}</td>              <td>(M)</td> <td>{@link #KILOGRAM}</td> <td></td></tr>
- *   <tr><td>{@link Time}</td>              <td>(T)</td> <td>{@link #SECOND}</td>   <td>{@link #MILLISECOND}, {@link #MINUTE}, {@link #HOUR}, {@link #DAY}, {@link #WEEK}, {@link #TROPICAL_YEAR}</td></tr>
+ *   <tr><td>{@link Time}</td>              <td>(T)</td> <td>{@link #SECOND}</td>   <td>{@link #NANOSECOND}, {@link #MILLISECOND}, {@link #MINUTE}, {@link #HOUR}, {@link #DAY}, {@link #WEEK}, {@link #TROPICAL_YEAR}</td></tr>
  *   <tr><td>{@link ElectricCurrent}</td>   <td>(I)</td> <td>{@link #AMPERE}</td>   <td></td></tr>
  *   <tr><td>{@link Temperature}</td>       <td>(Θ)</td> <td>{@link #KELVIN}</td>   <td>{@link #CELSIUS}, {@link #FAHRENHEIT}</td></tr>
  *   <tr><td>{@link AmountOfSubstance}</td> <td>(N)</td> <td>{@link #MOLE}</td>     <td></td></tr>
@@ -447,6 +449,25 @@ public final class Units extends Static {
     public static final Unit<Angle> GRAD;
 
     /**
+     * Unit of measurement defined as 10<sup>-9</sup> seconds (1 ms).
+     * This unit is useful for inter-operability with various methods from the standard Java library.
+     * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #SECOND}
+     * and the unlocalized name is “nanosecond”.
+     *
+     * <table class="compact" style="margin-left:30px; line-height:1.25">
+     *   <caption>Related units</caption>
+     *   <tr><td>SI time units:</td> <td style="word-spacing:1em"><u>{@code NANOSECOND}</u>, {@link #MILLISECOND}, <b>{@link #SECOND}</b>.</td></tr>
+     *   <tr><td>Non-SI units:</td>  <td style="word-spacing:1em">{@link #MINUTE}, {@link #HOUR}, {@link #DAY}, {@link #WEEK}, {@link #TROPICAL_YEAR}.</td></tr>
+     *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #METRES_PER_SECOND}, {@link #HERTZ}, {@link #BECQUEREL}.</td></tr>
+     * </table>
+     *
+     * @see java.util.concurrent.TimeUnit#NANOSECONDS
+     *
+     * @since 1.5
+     */
+    public static final Unit<Time> NANOSECOND;
+
+    /**
      * Unit of measurement defined as 10<sup>-3</sup> seconds (1 ms).
      * This unit is useful for inter-operability with various methods from the standard Java library.
      * The {@linkplain ConventionalUnit#getSystemUnit() system unit} is {@link #SECOND}
@@ -454,7 +475,7 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI time units:</td> <td style="word-spacing:1em"><u>{@code MILLISECOND}</u>, <b>{@link #SECOND}</b>.</td></tr>
+     *   <tr><td>SI time units:</td> <td style="word-spacing:1em"><u>{@link #NANOSECOND}, {@code MILLISECOND}</u>, <b>{@link #SECOND}</b>.</td></tr>
      *   <tr><td>Non-SI units:</td>  <td style="word-spacing:1em">{@link #MINUTE}, {@link #HOUR}, {@link #DAY}, {@link #WEEK}, {@link #TROPICAL_YEAR}.</td></tr>
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #METRES_PER_SECOND}, {@link #HERTZ}, {@link #BECQUEREL}.</td></tr>
      * </table>
@@ -472,7 +493,7 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI time units:</td> <td style="word-spacing:1em">{@link #MILLISECOND}, <u><b>{@link #SECOND}</b></u>.</td></tr>
+     *   <tr><td>SI time units:</td> <td style="word-spacing:1em">{@link #NANOSECOND}, {@link #MILLISECOND}, <u><b>{@link #SECOND}</b></u>.</td></tr>
      *   <tr><td>Non-SI units:</td>  <td style="word-spacing:1em">{@link #MINUTE}, {@link #HOUR}, {@link #DAY}, {@link #WEEK}, {@link #TROPICAL_YEAR}.</td></tr>
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #METRES_PER_SECOND}, {@link #HERTZ}, {@link #BECQUEREL}.</td></tr>
      * </table>
@@ -488,7 +509,7 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI time units:</td> <td style="word-spacing:1em">{@link #MILLISECOND}, <b>{@link #SECOND}</b>.</td></tr>
+     *   <tr><td>SI time units:</td> <td style="word-spacing:1em">{@link #NANOSECOND}, {@link #MILLISECOND}, <b>{@link #SECOND}</b>.</td></tr>
      *   <tr><td>Non-SI units:</td>  <td style="word-spacing:1em"><u>{@code MINUTE}</u>, {@link #HOUR}, {@link #DAY}, {@link #WEEK}, {@link #TROPICAL_YEAR}.</td></tr>
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #METRES_PER_SECOND}, {@link #HERTZ}, {@link #BECQUEREL}.</td></tr>
      * </table>
@@ -504,7 +525,7 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI time units:</td> <td style="word-spacing:1em">{@link #MILLISECOND}, <b>{@link #SECOND}</b>.</td></tr>
+     *   <tr><td>SI time units:</td> <td style="word-spacing:1em">{@link #NANOSECOND}, {@link #MILLISECOND}, <b>{@link #SECOND}</b>.</td></tr>
      *   <tr><td>Non-SI units:</td>  <td style="word-spacing:1em">{@link #MINUTE}, <u>{@code HOUR}</u>, {@link #DAY}, {@link #WEEK}, {@link #TROPICAL_YEAR}.</td></tr>
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #KILOMETRES_PER_HOUR}, {@link #HERTZ}, {@link #BECQUEREL}.</td></tr>
      * </table>
@@ -520,7 +541,7 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI time units:</td> <td style="word-spacing:1em">{@link #MILLISECOND}, <b>{@link #SECOND}</b>.</td></tr>
+     *   <tr><td>SI time units:</td> <td style="word-spacing:1em">{@link #NANOSECOND}, {@link #MILLISECOND}, <b>{@link #SECOND}</b>.</td></tr>
      *   <tr><td>Non-SI units:</td>  <td style="word-spacing:1em">{@link #MINUTE}, {@link #HOUR}, <u>{@code DAY}</u>, {@link #WEEK}, {@link #TROPICAL_YEAR}.</td></tr>
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #KILOMETRES_PER_HOUR}, {@link #HERTZ}, {@link #BECQUEREL}.</td></tr>
      * </table>
@@ -536,7 +557,7 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI time units:</td> <td style="word-spacing:1em">{@link #MILLISECOND}, <b>{@link #SECOND}</b>.</td></tr>
+     *   <tr><td>SI time units:</td> <td style="word-spacing:1em">{@link #NANOSECOND}, {@link #MILLISECOND}, <b>{@link #SECOND}</b>.</td></tr>
      *   <tr><td>Non-SI units:</td>  <td style="word-spacing:1em">{@link #MINUTE}, {@link #HOUR}, {@link #DAY}, <u>{@link #WEEK}</u>, {@link #TROPICAL_YEAR}.</td></tr>
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #KILOMETRES_PER_HOUR}, {@link #HERTZ}, {@link #BECQUEREL}.</td></tr>
      * </table>
@@ -554,7 +575,7 @@ public final class Units extends Static {
      *
      * <table class="compact" style="margin-left:30px; line-height:1.25">
      *   <caption>Related units</caption>
-     *   <tr><td>SI time units:</td> <td style="word-spacing:1em">{@link #MILLISECOND}, <b>{@link #SECOND}</b>.</td></tr>
+     *   <tr><td>SI time units:</td> <td style="word-spacing:1em">{@link #NANOSECOND}, {@link #MILLISECOND}, <b>{@link #SECOND}</b>.</td></tr>
      *   <tr><td>Non-SI units:</td>  <td style="word-spacing:1em">{@link #MINUTE}, {@link #HOUR}, {@link #DAY}, {@link #WEEK}, <u>{@code TROPICAL_YEAR}</u>.</td></tr>
      *   <tr><td>Derived units:</td> <td style="word-spacing:1em">{@link #KILOMETRES_PER_HOUR}, {@link #HERTZ}, {@link #BECQUEREL}.</td></tr>
      * </table>
@@ -1256,12 +1277,13 @@ public final class Units extends Static {
          */
         s.related(5);
         SECOND         = s;
-        MILLISECOND    = add(s, milli,                                      "ms",  SI,       (short) 0);
-        MINUTE         = add(s, LinearConverter.scale(         60,      1), "min", ACCEPTED, (short) 0);
-        HOUR           = add(s, LinearConverter.scale(      60*60,      1), "h",   ACCEPTED, (short) 0);
-        DAY            = add(s, LinearConverter.scale(   24*60*60,      1), "d",   ACCEPTED, (short) 0);
-        WEEK           = add(s, LinearConverter.scale( 7*24*60*60,      1), "wk",  OTHER,    (short) 0);
-        TROPICAL_YEAR  = add(s, LinearConverter.scale(31556925445.0, 1000), "a",   OTHER,    (short) 1029);
+        NANOSECOND     = add(s, nano,                                                  "ns",  SI,       (short) 0);
+        MILLISECOND    = add(s, milli,                                                 "ms",  SI,       (short) 0);
+        MINUTE         = add(s, LinearConverter.scale(                      60,    1), "min", ACCEPTED, (short) 0);
+        HOUR           = add(s, LinearConverter.scale(                   60*60,    1), "h",   ACCEPTED, (short) 0);
+        DAY            = add(s, LinearConverter.scale(         SECONDS_PER_DAY,    1), "d",   ACCEPTED, (short) 0);
+        WEEK           = add(s, LinearConverter.scale(       7*SECONDS_PER_DAY,    1), "wk",  OTHER,    (short) 0);
+        TROPICAL_YEAR  = add(s, LinearConverter.scale(MILLIS_PER_TROPICAL_YEAR, 1000), "a",   OTHER,    (short) 1029);
         /*
          * All Unit<Speed>, Unit<Acceleration>, Unit<AngularVelocity> and Unit<ScaleRateOfChange>.
          * The `unityPerSecond` unit is not added to the registry because it is specific to the EPSG database,

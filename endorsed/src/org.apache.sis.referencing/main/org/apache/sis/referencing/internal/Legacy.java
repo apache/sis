@@ -31,17 +31,9 @@ import org.apache.sis.referencing.privy.ReferencingUtilities;
 
 // Specific to the main and geoapi-4.0 branches:
 import java.util.Date;
-import java.time.Instant;
-import java.time.Year;
-import java.time.YearMonth;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
-import java.time.LocalTime;
-import java.time.OffsetTime;
 import java.time.temporal.Temporal;
+import org.apache.sis.util.privy.StandardDateFormat;
 
 
 /**
@@ -155,33 +147,7 @@ public final class Legacy {
      * @throws ArithmeticException if numeric overflow occurs.
      */
     public static Date toDate(final Temporal t) {
-        final Instant instant;
-        if (t instanceof Instant) {
-            instant = (Instant) t;
-        } else {
-            final OffsetDateTime odt;
-            if (t instanceof OffsetDateTime) {
-                odt = (OffsetDateTime) t;
-            } else if (t instanceof ZonedDateTime) {
-                odt = ((ZonedDateTime) t).toOffsetDateTime();
-            } else if (t instanceof LocalDateTime) {
-                odt = ((LocalDateTime) t).atOffset(ZoneOffset.UTC);
-            } else {
-                final LocalDate date;
-                if (t instanceof LocalDate) {
-                    date = (LocalDate) t;
-                } else if (t instanceof YearMonth) {
-                    date = ((YearMonth) t).atDay(1);
-                } else if (t instanceof Year) {
-                    date = ((Year) t).atDay(1);
-                } else {
-                    return null;
-                }
-                odt = date.atTime(OffsetTime.of(LocalTime.MIDNIGHT, ZoneOffset.UTC));
-            }
-            instant = odt.toInstant();
-        }
         // Do not use `Date.from(Instant)` because we want the `ArithmeticException` in case of overflow.
-        return new Date(instant.toEpochMilli());
+        return new Date(StandardDateFormat.toInstant(t, ZoneOffset.UTC).toEpochMilli());
     }
 }

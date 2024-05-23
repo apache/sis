@@ -28,7 +28,11 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.function.Function;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import static java.lang.Math.*;
+import java.time.ZoneId;
+import java.time.Instant;
+import java.time.DateTimeException;
 import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -57,6 +61,7 @@ import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.Range;
+import org.apache.sis.pending.jdk.JDK23;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
@@ -65,8 +70,10 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
-import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
+import org.apache.sis.util.privy.StandardDateFormat;
 import static org.apache.sis.util.privy.CollectionsExt.nonNull;
+import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
+import static org.apache.sis.metadata.privy.ImplementationHelper.toDate;
 import static org.apache.sis.metadata.privy.ReferencingServices.AUTHALIC_RADIUS;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -483,31 +490,53 @@ public final class Extents extends Static {
      * @return a time range created from the given extent, or {@code null} if none.
      *
      * @since 0.4
+     *
+     * @deprecated Replaced by {@link #getTimeRange(Extent, ZoneId)} in order to transition to {@code java.time} API.
      */
-    @OptionalCandidate
+    @Deprecated(since="1.5", forRemoval=true)
     public static Range<Date> getTimeRange(final Extent extent) {
-        Date min = null;
-        Date max = null;
-        if (extent != null) {
-            for (final TemporalExtent t : nonNull(extent.getTemporalElements())) {
-                final Date startTime, endTime;
-                if (t instanceof DefaultTemporalExtent) {
-                    final DefaultTemporalExtent dt = (DefaultTemporalExtent) t;
-                    startTime = dt.getStartTime();                  // Maybe user has overridden those methods.
-                    endTime   = dt.getEndTime();
-                } else {
-                    final TemporalPrimitive p = t.getExtent();
-                    startTime = DefaultTemporalExtent.getTime(p, true);
-                    endTime   = DefaultTemporalExtent.getTime(p, false);
-                }
-                if (startTime != null && (min == null || startTime.before(min))) min = startTime;
-                if (  endTime != null && (max == null ||   endTime.after (max))) max =   endTime;
+        return onTimeRange(extent, null, (min, max) -> {
+            if (min == null && max == null) {
+                return null;
             }
-        }
-        if (min == null && max == null) {
-            return null;
-        }
-        return new Range<>(Date.class, min, true, max, true);
+            return new Range<>(Date.class, toDate(min), true, toDate(max), true);
+        }).orElse(null);
+    }
+
+    /**
+     * Returns the union of all time ranges found in the given extent.
+     *
+     * @param  extent  the extent to convert to a time range, or {@code null}.
+     * @param  zone    the timezone to use if a time is local, or {@code null} if none.
+     * @return a time range created from the given extent.
+     * @throws DateTimeException if a temporal value cannot be converted to an instant.
+     *
+     * @since 1.5
+     */
+    public static Optional<Range<Instant>> getTimeRange(final Extent extent, final ZoneId zone) {
+        return onTimeRange(extent, zone, (min, max) -> {
+            if (min == null && max == null) {
+                return null;
+            }
+            return new Range<>(Instant.class, min, true, max, true);
+        });
+    }
+
+    /**
+     * Returns a date in the {@linkplain Extent#getTemporalElements() temporal elements} of the given extent.
+     *
+     * @param  extent    the extent from which to get an instant, or {@code null}.
+     * @param  location  0 for the start time, 1 for the end time, 0.5 for the average time, or the
+     *                   coefficient (usually in the [0 … 1] range) for interpolating an instant.
+     * @return an instant interpolated at the given location, or {@code null} if none.
+     *
+     * @since 0.4
+     *
+     * @deprecated Replaced by {@link #getTimeRange(Extent, ZoneId)} in order to transition to {@code java.time} API.
+     */
+    @Deprecated(since="1.5", forRemoval=true)
+    public static Date getDate(final Extent extent, final double location) {
+        return toDate(getInstant(extent, null, location).orElse(null));
     }
 
     /**
@@ -521,8 +550,8 @@ public final class Extents extends Static {
      *
      * Special cases:
      * <ul>
-     *   <li>If {@code location} is 0, then this method returns the {@linkplain DefaultTemporalExtent#getStartTime() start time}.</li>
-     *   <li>If {@code location} is 1, then this method returns the {@linkplain DefaultTemporalExtent#getEndTime() end time}.</li>
+     *   <li>If {@code location} is 0, then this method returns the {@linkplain DefaultTemporalExtent#getBeginning() start time}.</li>
+     *   <li>If {@code location} is 1, then this method returns the {@linkplain DefaultTemporalExtent#getEnding() end time}.</li>
      *   <li>If {@code location} is 0.5, then this method returns the average of start time and end time.</li>
      *   <li>If {@code location} is outside the [0 … 1] range, then the result will be outside the temporal extent.</li>
      * </ul>
@@ -532,34 +561,49 @@ public final class Extents extends Static {
      *                   coefficient (usually in the [0 … 1] range) for interpolating an instant.
      * @return an instant interpolated at the given location, or {@code null} if none.
      *
-     * @since 0.4
+     * @since 1.5
      */
-    @OptionalCandidate
-    public static Date getDate(final Extent extent, final double location) {
+    public static Optional<Instant> getInstant(final Extent extent, final ZoneId zone, final double location) {
         ArgumentChecks.ensureFinite("location", location);
-        Date min = null;
-        Date max = null;
+        return onTimeRange(extent, zone, (min, max) -> {
+            if (min == null) return max;
+            if (max == null) return min;
+            return min.plusMillis(Math.round(location * JDK23.until(min, max).toMillis()));
+        });
+    }
+
+    /**
+     * Returns the result of applying the given function on the minimum and maximal temporal value.
+     *
+     * @param  <T>       type of value computed by the function.
+     * @param  extent    the extent on which to apply a function, or {@code null}.
+     * @param  zone      the timezone to use if a time is local, or {@code null} if none.
+     * @param  operator  the function to apply on the start and end time. Those times may be null.
+     * @return the result of applying the given function on the start and end time.
+     */
+    private static <T> Optional<T> onTimeRange(final Extent extent, final ZoneId zone,
+            final BiFunction<Instant,Instant,T> operator)
+    {
+        Instant min = null;
+        Instant max = null;
         if (extent != null) {
             for (final TemporalExtent t : nonNull(extent.getTemporalElements())) {
-                Date startTime = null;
-                Date   endTime = null;
+                final Instant startTime, endTime;
                 if (t instanceof DefaultTemporalExtent) {
-                    final DefaultTemporalExtent dt = (DefaultTemporalExtent) t;
-                    if (location != 1) startTime = dt.getStartTime();       // Maybe user has overridden those methods.
-                    if (location != 0)   endTime = dt.getEndTime();
+                    final var dt = (DefaultTemporalExtent) t;
+                    // Maybe user has overridden those methods.
+                    startTime = StandardDateFormat.toInstant(dt.getBeginning().orElse(null), zone);
+                    endTime   = StandardDateFormat.toInstant(dt.getEnding()   .orElse(null), zone);
                 } else {
                     final TemporalPrimitive p = t.getExtent();
-                    if (location != 1) startTime = DefaultTemporalExtent.getTime(p, true);
-                    if (location != 0)   endTime = DefaultTemporalExtent.getTime(p, false);
+                    startTime = DefaultTemporalExtent.getBound(p, true);
+                    endTime   = DefaultTemporalExtent.getBound(p, false);
                 }
-                if (startTime != null && (min == null || startTime.before(min))) min = startTime;
-                if (  endTime != null && (max == null ||   endTime.after (max))) max =   endTime;
+                if (startTime != null && (min == null || startTime.isBefore(min))) min = startTime;
+                if (  endTime != null && (max == null ||   endTime.isAfter (max))) max =   endTime;
             }
         }
-        if (min == null) return max;
-        if (max == null) return min;
-        final long startTime = min.getTime();
-        return new Date(Math.addExact(startTime, Math.round((max.getTime() - startTime) * location)));
+        return Optional.ofNullable(operator.apply(min, max));
     }
 
     /**
@@ -787,7 +831,7 @@ public final class Extents extends Static {
      * @param  e2           the second extent, or {@code null}.
      * @param  constructor  copy constructor of metadata implementation class.
      * @param  operator     the union or intersection operator to apply.
-     * @return
+     * @return the intersection or union of the given metadata objects.
      */
     @SuppressWarnings("unchecked")      // Workaround for Java above-cited compiler restriction.
     private static <I, C extends ISOMetadata> I apply(final I e1, final I e2,

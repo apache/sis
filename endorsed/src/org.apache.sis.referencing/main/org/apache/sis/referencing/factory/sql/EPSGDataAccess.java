@@ -41,10 +41,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.temporal.Temporal;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
@@ -240,12 +239,6 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * @see #getCalendar()
      */
     private Calendar calendar;
-
-    /**
-     * The object to use for parsing dates, created when first needed. This is used for
-     * parsing the origin of temporal datum. This is an Apache SIS specific extension.
-     */
-    private DateFormat dateFormat;
 
     /**
      * A pool of prepared statements. Keys are {@link String} objects related to their originating method
@@ -1551,13 +1544,14 @@ codes:  for (int i=0; i<codes.length; i++) {
                     case "geocentric": {
                         final CoordinateSystem cs = owner.createCoordinateSystem(getString(code, result, 8));
                         final GeodeticDatum datum = owner.createGeodeticDatum   (getString(code, result, 9));
+                        final DatumEnsemble<GeodeticDatum> datumEnsemble = null;  // TODO
                         @SuppressWarnings("LocalVariableHidesMemberVariable")
                         final Map<String,Object> properties = createProperties("Coordinate Reference System",
                                                                 name, epsg, area, scope, remarks, deprecated);
                         if (cs instanceof CartesianCS) {
-                            crs = crsFactory.createGeodeticCRS(properties, datum, (CartesianCS) cs);
+                            crs = crsFactory.createGeodeticCRS(properties, datum, datumEnsemble, (CartesianCS) cs);
                         } else if (cs instanceof SphericalCS) {
-                            crs = crsFactory.createGeodeticCRS(properties, datum, (SphericalCS) cs);
+                            crs = crsFactory.createGeodeticCRS(properties, datum, datumEnsemble, (SphericalCS) cs);
                         } else {
                             throw new FactoryDataException(error().getString(
                                     Errors.Keys.IllegalCoordinateSystem_1, cs.getName()));
@@ -1580,8 +1574,9 @@ codes:  for (int i=0; i<codes.length; i++) {
                     case "parametric": {
                         final ParametricCS    cs    = owner.createParametricCS   (getString(code, result, 8));
                         final ParametricDatum datum = owner.createParametricDatum(getString(code, result, 9));
+                        final DatumEnsemble<ParametricDatum> datumEnsemble = null;  // TODO
                         crs = crsFactory.createParametricCRS(createProperties("Coordinate Reference System",
-                                name, epsg, area, scope, remarks, deprecated), datum, cs);
+                                name, epsg, area, scope, remarks, deprecated), datum, datumEnsemble, cs);
                         break;
                     }
                     /* ----------------------------------------------------------------------
@@ -1720,16 +1715,13 @@ codes:  for (int i=0; i<codes.length; i++) {
                      * "date" type would have been better, but we do not modify the EPSG model.
                      */
                     case "temporal": {
-                        final Date originDate;
+                        final Temporal originDate;
                         if (Strings.isNullOrEmpty(anchor)) {
                             throw new FactoryDataException(resources().getString(Resources.Keys.DatumOriginShallBeDate));
                         }
-                        if (dateFormat == null) {
-                            dateFormat = new StandardDateFormat();      // Default to UTC timezone.
-                        }
                         try {
-                            originDate = dateFormat.parse(anchor);
-                        } catch (ParseException e) {
+                            originDate = StandardDateFormat.parseBest(anchor);
+                        } catch (RuntimeException e) {
                             throw new FactoryDataException(resources().getString(Resources.Keys.DatumOriginShallBeDate), e);
                         }
                         datum = datumFactory.createTemporalDatum(properties, originDate);

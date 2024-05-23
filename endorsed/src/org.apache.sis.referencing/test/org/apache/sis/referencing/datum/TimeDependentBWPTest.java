@@ -16,18 +16,19 @@
  */
 package org.apache.sis.referencing.datum;
 
-import java.util.Date;
+import java.time.Instant;
+import java.time.temporal.Temporal;
+import java.time.temporal.ChronoField;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.matrix.NoninvertibleMatrixException;
-import static org.apache.sis.referencing.privy.Formulas.JULIAN_YEAR_LENGTH;
+import static org.apache.sis.util.privy.StandardDateFormat.MILLIS_PER_TROPICAL_YEAR;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import static org.apache.sis.test.TestUtilities.date;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assertions.assertMatrixEquals;
@@ -51,7 +52,7 @@ public final class TimeDependentBWPTest extends TestCase {
      * For the purpose of this test, the target datum does not matter anyway.
      */
     private static TimeDependentBWP create() {
-        final TimeDependentBWP p = new TimeDependentBWP(GeodeticDatumMock.WGS84, null, date("1994-01-01 00:00:00"));
+        final var p = new TimeDependentBWP(GeodeticDatumMock.WGS84, null, Instant.parse("1994-01-01T00:00:00Z"));
         p.tX = -0.08468;    p.dtX = +1.42;
         p.tY = -0.01942;    p.dtY = +1.34;
         p.tZ = +0.03201;    p.dtZ = +0.90;
@@ -101,9 +102,11 @@ public final class TimeDependentBWPTest extends TestCase {
          * geocentric coordinates on ITRF2008 at epoch 2013.9.
          */
         final TimeDependentBWP p = create();
-        final Date time = p.getTimeReference();
-        time.setTime(time.getTime() + StrictMath.round((2013.9 - 1994) * JULIAN_YEAR_LENGTH));
-        assertEquals(date("2013-11-25 11:24:00"), time);
+        Temporal time = p.getTimeReference();
+        long t = time.getLong(ChronoField.INSTANT_SECONDS);
+        t += StrictMath.round((2013.9 - 1994) * (MILLIS_PER_TROPICAL_YEAR / 1000.0));
+        time = Instant.ofEpochSecond(t);
+        assertEquals(Instant.parse("2013-11-25T07:40:16Z"), time);
         /*
          * Transform the point given in the EPSG example and compare with the coordinate
          * that we obtain if we do the calculation ourself using the intermediate values
@@ -124,7 +127,7 @@ public final class TimeDependentBWPTest extends TestCase {
     }
 
     /**
-     * Compares the coordinates calculated with the {@link TimeDependentBWP#getPositionVectorTransformation(Date)}
+     * Compares the coordinates calculated with the {@link TimeDependentBWP#getPositionVectorTransformation(Temporal)}
      * matrix with the coordinates calculated ourselves from the numbers given in the EPSG examples. Note that the
      * EPSG documentation truncates the numerical values given in their example, so it is normal that we have a
      * slight difference.
@@ -182,7 +185,7 @@ public final class TimeDependentBWPTest extends TestCase {
      * We find a difference of 13, 9 and 3 millimetres along the X, Y and Z axis respectively.
      *
      * <p>The purpose of this test is to ensure that we get the same errors when calculating from the corrected values
-     * provided by EPSG, rather than as an error in {@link TimeDependentBWP#getPositionVectorTransformation(Date)}</p>
+     * provided by EPSG, rather than as an error in {@link TimeDependentBWP#getPositionVectorTransformation(Temporal)}</p>
      */
     @Test
     public void testEpsgCalculation() {

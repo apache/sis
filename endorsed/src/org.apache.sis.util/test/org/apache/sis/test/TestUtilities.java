@@ -233,19 +233,6 @@ public final class TestUtilities extends Static {
     }
 
     /**
-     * Formats the given date using the {@code "yyyy-MM-dd HH:mm:ss"} pattern in UTC timezone.
-     *
-     * @param  date  the date to format.
-     * @return the date as a {@link String}.
-     */
-    public static String format(final Date date) {
-        ArgumentChecks.ensureNonNull("date", date);
-        synchronized (dateFormat) {
-            return dateFormat.format(date);
-        }
-    }
-
-    /**
      * Formats the given value using the given formatter, and parses the text back to its value.
      * If the parsed value is not equal to the original one, an {@link AssertionError} is thrown.
      *

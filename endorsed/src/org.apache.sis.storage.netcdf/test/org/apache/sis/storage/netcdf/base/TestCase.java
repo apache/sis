@@ -16,9 +16,10 @@
  */
 package org.apache.sis.storage.netcdf.base;
 
-import java.util.Date;
 import java.util.EnumMap;
 import java.util.Iterator;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.io.IOException;
 import java.lang.reflect.UndeclaredThrowableException;
 import ucar.nc2.NetcdfFiles;
@@ -27,10 +28,10 @@ import ucar.nc2.dataset.NetcdfDatasets;
 import ucar.nc2.dataset.NetcdfDataset;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreMock;
-import org.apache.sis.storage.netcdf.ucar.DecoderWrapper;
-import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.storage.netcdf.ucar.DecoderWrapper;
+import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.setup.GeometryLibrary;
 
 // Test dependencies
 import org.junit.jupiter.api.AfterAll;
@@ -39,6 +40,7 @@ import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.apache.sis.storage.DataStoreMock;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.dataset.TestData;
@@ -262,7 +264,7 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      * @param  attributeName  the name of the attribute to test.
      * @throws IOException if an error occurred while reading the netCDF file.
      */
-    protected final void assertAttributeEquals(final Date expected, final String attributeName) throws IOException {
-        assertEquals(expected, decoder.dateValue(attributeName), attributeName);
+    protected final void assertAttributeEquals(final Instant expected, final String attributeName) throws IOException {
+        assertEquals(expected, StandardDateFormat.toInstant(decoder.dateValue(attributeName), ZoneOffset.UTC), attributeName);
     }
 }

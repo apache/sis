@@ -27,6 +27,7 @@ import java.text.Format;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
+import java.time.Instant;
 import javax.measure.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
@@ -38,7 +39,6 @@ import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.coordinate.Position;
 import org.apache.sis.io.TabularFormat;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.measure.UnitFormat;
@@ -173,13 +173,6 @@ public class LocationFormat extends TabularFormat<Location> {
     }
 
     /**
-     * Returns the direct position for the given position, or {@code null} if none.
-     */
-    private static DirectPosition position(final Position p) {
-        return (p != null) ? p.getDirectPosition() : null;
-    }
-
-    /**
      * Returns a localized version of the given international string, or {@code null} if none.
      */
     private static String toString(final InternationalString i18n, final Locale locale) {
@@ -189,8 +182,8 @@ public class LocationFormat extends TabularFormat<Location> {
     /**
      * Returns a localized version of the given date, or {@code null} if none.
      */
-    private String toString(final Date date) {
-        return (date != null) ? getFormat(Date.class).format(date) : null;
+    private String toString(final Instant date) {
+        return (date != null) ? getFormat(Date.class).format(Date.from(date)) : null;
     }
 
     /**
@@ -242,14 +235,14 @@ public class LocationFormat extends TabularFormat<Location> {
          * the axis order of the geographic bounding box.
          */
         final Extent extent = new DefaultExtent(null, location.getGeographicExtent(), null, location.getTemporalExtent());
-        final Range<Date> time = Extents.getTimeRange(extent);
+        final Range<Instant> time = Extents.getTimeRange(extent, null).orElse(null);
         if (time != null) {
             append(table, vocabulary, Vocabulary.Keys.StartDate, toString(time.getMinValue()));
             append(table, vocabulary, Vocabulary.Keys.EndDate,   toString(time.getMaxValue()));
         }
         GeographicBoundingBox     bbox     = Extents.getGeographicBoundingBox(extent);
         Envelope                  envelope = location.getEnvelope();
-        DirectPosition            position = position(location.getPosition());
+        DirectPosition            position = location.getPosition();
         DirectPosition            geopos   = null;                      // Position in geographic CRS.
         CoordinateReferenceSystem crs      = null;                      // Envelope Coordinate Reference System.
         CoordinateReferenceSystem normCRS  = null;                      // CRS in conventional (x,y) axis order.

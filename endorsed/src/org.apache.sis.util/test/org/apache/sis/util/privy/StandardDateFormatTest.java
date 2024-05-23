@@ -48,9 +48,11 @@ public final class StandardDateFormatTest extends TestCase {
      */
     @Test
     public void verifyConstantValues() {
+        assertEquals(TimeUnit.DAYS.toSeconds(1),       StandardDateFormat.SECONDS_PER_DAY);
         assertEquals(TimeUnit.DAYS.toMillis(1),        StandardDateFormat.MILLISECONDS_PER_DAY);
         assertEquals(TimeUnit.MILLISECONDS.toNanos(1), StandardDateFormat.NANOS_PER_MILLISECOND);
         assertEquals(TimeUnit.SECONDS.toNanos(1),      StandardDateFormat.NANOS_PER_SECOND);
+        assertEquals(365.24219 * (24*60*60 * 1000),    StandardDateFormat.MILLIS_PER_TROPICAL_YEAR, 0.00001 * (24*60*60 * 1000));
     }
 
     /**
@@ -139,9 +141,9 @@ public final class StandardDateFormatTest extends TestCase {
      */
     @Test
     public void testNegativeYear() throws ParseException {
-        final Date julian = new Date(-210866760000000L);            // Same epoch as CommonCRS.Temporal.JULIAN.
-        final String expected = "-4713-11-24T12:00:00.000";         // Proleptic Gregorian calendar, astronomical year.
-        final StandardDateFormat f = new StandardDateFormat();
+        final var julian = new Date(-210866760000000L);         // Same epoch as CommonCRS.Temporal.JULIAN.
+        final var expected = "-4713-11-24T12:00:00.000";        // Proleptic Gregorian calendar, astronomical year.
+        final var f = new StandardDateFormat();
         assertEquals(expected, f.format(julian));
         assertEquals(julian, f.parse(expected));
     }

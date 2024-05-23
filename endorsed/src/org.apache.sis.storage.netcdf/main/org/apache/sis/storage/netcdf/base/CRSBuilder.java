@@ -18,7 +18,6 @@ package org.apache.sis.storage.netcdf.base;
 
 import java.util.Map;
 import java.util.List;
-import java.util.Date;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.StringJoiner;
@@ -136,8 +135,15 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
 
     /**
      * The datum created by {@link #createDatum(DatumFactory, Map)}.
+     * At least one of {@code datum} and {@link #datumEnsemble} shall be initialized.
      */
     protected D datum;
+
+    /**
+     * The datum ensemble created by {@link #createDatum(DatumFactory, Map)}.
+     * At least one of {@link #datum} and {@code datumEnsemble} shall be initialized.
+     */
+    protected DatumEnsemble<D> datumEnsemble;
 
     /**
      * The coordinate system created by {@link #createCS(CSFactory, Map, CoordinateSystemAxis[])}.
@@ -695,7 +701,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
          * This method is invoked under conditions similar to the ones of above {@code createCS(…)} method.
          */
         @Override void createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {
-            referenceSystem = factory.createGeodeticCRS(properties, datum, coordinateSystem);
+            referenceSystem = factory.createGeodeticCRS(properties, datum, datumEnsemble, coordinateSystem);
         }
     }
 
@@ -967,7 +973,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
                     datum = c.datum();
                 } else {
                     properties = properties("Time since " + epoch);
-                    datum = factory.createTemporalDatum(properties, Date.from(epoch));
+                    datum = factory.createTemporalDatum(properties, epoch);
                 }
             }
         }

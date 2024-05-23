@@ -1656,6 +1656,8 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      * @param  cs     the coordinate system (never null).
      * @return the combined CRS, or {@code null} if the given information are not sufficient.
      * @throws FactoryException if an error occurred while creating the combined CRS.
+     *
+     * @todo Handle {@link DatumEnsemble}.
      */
     private static GeodeticCRS combine(final GeodeticDatum datum, final CoordinateSystem cs) throws FactoryException {
         final Map<String,?> properties = IdentifiedObjects.getProperties(datum, Datum.IDENTIFIERS_KEY);
@@ -1664,7 +1666,7 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
             if (cs instanceof EllipsoidalCS) {
                 return factory.createGeographicCRS(properties, datum, (EllipsoidalCS) cs);
             } else if (cs instanceof SphericalCS) {
-                return factory.createGeodeticCRS(properties, datum, (SphericalCS) cs);
+                return factory.createGeodeticCRS(properties, datum, null, (SphericalCS) cs);
             }
         }
         return null;

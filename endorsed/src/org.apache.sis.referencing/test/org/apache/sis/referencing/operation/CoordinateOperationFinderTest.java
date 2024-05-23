@@ -20,6 +20,7 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.text.ParseException;
+import java.time.temporal.ChronoField;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.cs.AxisDirection;
@@ -52,6 +53,7 @@ import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.measure.Units;
+import static org.apache.sis.util.privy.StandardDateFormat.SECONDS_PER_DAY;
 import static org.apache.sis.referencing.privy.Formulas.LINEAR_TOLERANCE;
 import static org.apache.sis.referencing.privy.Formulas.ANGULAR_TOLERANCE;
 import static org.apache.sis.referencing.privy.PositionalAccuracyConstant.DATUM_SHIFT_APPLIED;
@@ -642,7 +644,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
         tolerance = 2E-12;
         verifyTransform(new double[] {
             // December 31, 1899 at 12:00 UTC in seconds.
-            CommonCRS.Temporal.DUBLIN_JULIAN.datum().getOrigin().getTime() / 1000
+            CommonCRS.Temporal.DUBLIN_JULIAN.datum().getOrigin().getLong(ChronoField.INSTANT_SECONDS)
         }, new double[] {
             15019.5
         });
@@ -950,13 +952,13 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
                     1, 0, 0, 0,
                     0, 1, 0, 0,
                     0, 0, 0, 0,
-                    0, 0, 1./(24*60*60), 40587,
+                    0, 0, 1./SECONDS_PER_DAY, 40587,
                     0, 0, 0, 1
                 }), linear.getMatrix(), 1E-12, "transform.matrix");
 
         tolerance = 2E-12;
         verifyTransform(new double[] {
-            -5, -8, CommonCRS.Temporal.DUBLIN_JULIAN.datum().getOrigin().getTime() / 1000
+            -5, -8, CommonCRS.Temporal.DUBLIN_JULIAN.datum().getOrigin().getLong(ChronoField.INSTANT_SECONDS)
         }, new double[] {
             -5, -8, 0, 15019.5              // Same value as in testTemporalConversion().
         });

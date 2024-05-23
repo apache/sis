@@ -17,9 +17,9 @@
 package org.apache.sis.io.wkt;
 
 import java.util.Map;
-import java.util.Date;
 import java.util.Iterator;
 import java.util.Locale;
+import java.time.Instant;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import javax.measure.Unit;
@@ -43,7 +43,7 @@ import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.util.privy.StandardDateFormat.MILLISECONDS_PER_DAY;
+import static org.apache.sis.util.privy.StandardDateFormat.SECONDS_PER_DAY;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -1065,7 +1065,7 @@ public final class GeodeticObjectParserTest extends TestCase {
         final TemporalDatum timeDatum = timeCRS.getDatum();
         assertNameAndIdentifierEqual("Time", 0, timeCRS);
         assertNameAndIdentifierEqual("Modified Julian", 0, timeDatum);
-        assertEquals(new Date(-40587L * MILLISECONDS_PER_DAY), timeDatum.getOrigin(), "epoch");
+        assertEquals(Instant.ofEpochSecond(-40587L * SECONDS_PER_DAY), timeDatum.getOrigin(), "epoch");
 
         // No more CRS.
         assertFalse(components.hasNext());

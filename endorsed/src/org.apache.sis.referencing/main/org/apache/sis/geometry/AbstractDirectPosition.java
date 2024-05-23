@@ -87,16 +87,6 @@ public abstract class AbstractDirectPosition extends FormattableObject implement
     }
 
     /**
-     * Returns this direct position.
-     *
-     * @return {@code this}.
-     */
-    @Override
-    public final DirectPosition getDirectPosition() {
-        return this;
-    }
-
-    /**
      * Sets the coordinate value along the specified dimension.
      *
      * <p>The default implementation throws {@link UnsupportedOperationException}.

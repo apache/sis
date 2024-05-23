@@ -20,9 +20,9 @@ import java.util.Objects;
 import java.time.Instant;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import java.time.Duration;
 import java.time.temporal.TemporalAmount;
 import org.opengis.temporal.Period;
+import org.apache.sis.pending.jdk.JDK23;
 
 
 /**
@@ -53,7 +53,7 @@ final class DefaultPeriod extends Primitive implements Period {
 
     /** Duration of this temporal geometric primitive. */
     @Override public TemporalAmount length() {
-        return (beginning != null && ending != null) ? Duration.between(beginning, ending) : null;
+        return (beginning != null && ending != null) ? JDK23.until(beginning, ending) : null;
     }
 
     /** String representation. */

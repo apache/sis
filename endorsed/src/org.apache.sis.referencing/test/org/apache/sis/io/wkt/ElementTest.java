@@ -19,6 +19,7 @@ package org.apache.sis.io.wkt;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import java.time.Instant;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import org.apache.sis.util.CharSequences;
@@ -26,7 +27,6 @@ import org.apache.sis.util.CharSequences;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
 
 
@@ -182,7 +182,7 @@ public final class ElementTest extends TestCase {
     public void testPullDate() throws ParseException {
         Element element = parse("TimeOrigin[1858-11-17T00:00:00.0Z]");
         assertEquals("TimeOrigin", element.keyword);
-        assertEquals(TestUtilities.date("1858-11-17 00:00:00"), element.pullDate("date"));
+        assertEquals(Instant.parse("1858-11-17T00:00:00Z"), element.pullDate("date"));
         element.close(null);
     }
 
@@ -222,7 +222,7 @@ public final class ElementTest extends TestCase {
         assertEquals("Modified Julian", element.pullString("name"));
         Element inner = element.pullElement(AbstractParser.MANDATORY, "TimeOrigin");
         assertEquals("TimeOrigin", inner.keyword);
-        assertEquals(TestUtilities.date("1858-11-17 00:00:00"), inner.pullDate("date"));
+        assertEquals(Instant.parse("1858-11-17T00:00:00Z"), inner.pullDate("date"));
         inner.close(null);
         element.close(null);
     }

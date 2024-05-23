@@ -16,13 +16,12 @@
  */
 package org.apache.sis.metadata.iso.legacy;
 
-import java.time.Instant;
-import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
 import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
+import org.apache.sis.metadata.privy.ImplementationHelper;
 
 
 /**
@@ -59,6 +58,7 @@ public final class TemporalToDate extends AbstractCollection<Date> {
 
     /**
      * Returns an iterator over the dates in this collection.
+     * If a temporal object does not specify its timezone, then UTC is assumed.
      *
      * @return an iterator over the dates.
      */
@@ -73,13 +73,8 @@ public final class TemporalToDate extends AbstractCollection<Date> {
 
             /** Returns the next temporal object, converted to a date. */
             @Override public Date next() {
-                final Temporal t = dates.next();
-                if (t == null) return null;
-                if (t instanceof Instant) {
-                    return Date.from((Instant) t);
-                }
-                // Following may throw `DateTimeException` if the temporal does not support the field.
-                return new Date(Math.multiplyExact(t.getLong(ChronoField.INSTANT_SECONDS), 1000));
+                // Following may throw `DateTimeException` if the temporal does not support a required field.
+                return ImplementationHelper.toDate(dates.next());
             }
 
             /** Remove the last date returned by the iterator. */

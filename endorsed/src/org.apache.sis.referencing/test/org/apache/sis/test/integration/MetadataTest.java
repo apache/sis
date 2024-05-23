@@ -23,6 +23,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
+import java.time.Instant;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import jakarta.xml.bind.Marshaller;
@@ -236,7 +237,8 @@ public final class MetadataTest extends TestCase.WithLogs {
                         nameAndIdentifier("D28", "Depth below D28", "CRS for testing purpose"), datum, cs);
 
                 final var temporal = new DefaultTemporalExtent();
-                temporal.setBounds(TestUtilities.date("1990-06-05 00:00:00"), TestUtilities.date("1990-07-02 00:00:00"));
+                temporal.setBounds(Instant.parse("1990-06-05T00:00:00Z"),
+                                   Instant.parse("1990-07-02T00:00:00Z"));
                 identification.setExtents(Set.of(new DefaultExtent(
                         null,
                         new DefaultGeographicBoundingBox(1.1666, 1.1667, 36.4, 36.6),

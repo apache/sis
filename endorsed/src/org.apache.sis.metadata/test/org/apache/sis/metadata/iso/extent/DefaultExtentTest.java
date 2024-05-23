@@ -17,6 +17,7 @@
 package org.apache.sis.metadata.iso.extent;
 
 import java.util.List;
+import java.time.Instant;
 import java.net.URL;
 import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
@@ -31,7 +32,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.metadata.xml.TestUsingFile;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
-import static org.apache.sis.test.TestUtilities.date;
 
 
 /**
@@ -73,13 +73,13 @@ public final class DefaultExtentTest extends TestUsingFile {
      */
     @Test
     public void testIntersect() {
-        final DefaultGeographicBoundingBox bounds1   = new DefaultGeographicBoundingBox(10, 20, 30, 40);
-        final DefaultGeographicBoundingBox bounds2   = new DefaultGeographicBoundingBox(16, 18, 31, 42);
-        final DefaultGeographicBoundingBox clip      = new DefaultGeographicBoundingBox(15, 25, 26, 32);
-        final DefaultGeographicBoundingBox expected1 = new DefaultGeographicBoundingBox(15, 20, 30, 32);
-        final DefaultGeographicBoundingBox expected2 = new DefaultGeographicBoundingBox(16, 18, 31, 32);
-        final DefaultExtent e1 = new DefaultExtent("Somewhere", bounds1, null, null);
-        final DefaultExtent e2 = new DefaultExtent("Somewhere", clip, null, null);
+        final var bounds1   = new DefaultGeographicBoundingBox(10, 20, 30, 40);
+        final var bounds2   = new DefaultGeographicBoundingBox(16, 18, 31, 42);
+        final var clip      = new DefaultGeographicBoundingBox(15, 25, 26, 32);
+        final var expected1 = new DefaultGeographicBoundingBox(15, 20, 30, 32);
+        final var expected2 = new DefaultGeographicBoundingBox(16, 18, 31, 32);
+        final var e1 = new DefaultExtent("Somewhere", bounds1, null, null);
+        final var e2 = new DefaultExtent("Somewhere", clip, null, null);
         e1.getGeographicElements().add(bounds2);
         e1.intersect(e2);
         assertEquals("Somewhere", e1.getDescription().toString());
@@ -125,14 +125,15 @@ public final class DefaultExtentTest extends TestUsingFile {
      * Compares the marshalling and unmarshalling of a {@link DefaultExtent} with XML in the given file.
      */
     private void roundtrip(final Format format) throws JAXBException {
-        final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox(-99, -79, 14.9844, 31);
+        final var bbox = new DefaultGeographicBoundingBox(-99, -79, 14.9844, 31);
         bbox.getIdentifierMap().put(IdentifierSpace.ID, "bbox");
-        final DefaultTemporalExtent temporal = new DefaultTemporalExtent();
+        final var temporal = new DefaultTemporalExtent();
         if (PENDING_FUTURE_SIS_VERSION) {
             // This block needs a more complete sis-temporal module.
-            temporal.setBounds(date("2010-01-27 13:26:10"), date("2010-08-27 13:26:10"));
+            temporal.setBounds(Instant.parse("2010-01-27T13:26:10Z"),
+                               Instant.parse("2010-08-27T13:26:10Z"));
         }
-        final DefaultExtent extent = new DefaultExtent(null, bbox, null, temporal);
+        final var extent = new DefaultExtent(null, bbox, null, temporal);
         assertMarshalEqualsFile(openTestFile(format), extent, format.schemaVersion, "xmlns:*", "xsi:schemaLocation");
         assertEquals(extent, unmarshalFile(DefaultExtent.class, openTestFile(format)));
     }

@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Locale;
 import java.util.regex.Pattern;
 import java.io.IOException;
 import java.time.Instant;
@@ -1286,7 +1285,7 @@ public abstract class Variable extends Node {
      * @param  buffer  the buffer when to append the name of the variable data type.
      */
     public final void writeDataTypeName(final StringBuilder buffer) {
-        buffer.append(getDataType().name().toLowerCase(Locale.US));
+        buffer.append(getDataType().name().toLowerCase(Decoder.DATA_LOCALE));
         final List<Dimension> dimensions = getGridDimensions();
         for (int i=dimensions.size(); --i>=0;) {
             dimensions.get(i).writeLength(buffer);

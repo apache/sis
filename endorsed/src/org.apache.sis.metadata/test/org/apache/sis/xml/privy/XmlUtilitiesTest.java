@@ -61,10 +61,10 @@ public final class XmlUtilitiesTest extends TestCase {
     @Test
     public void testDateToXML() throws DatatypeConfigurationException, JAXBException {
         createContext(false, Locale.FRANCE, "CET");
-        final Date date = new Date(1230786000000L);
-        final XMLGregorianCalendar calendar = XmlUtilities.toXML(context, date);
+        final Instant date = Instant.ofEpochMilli(1230786000000L);
+        final XMLGregorianCalendar calendar = XmlUtilities.toXML(context, Date.from(date));
         assertEquals("2009-01-01T06:00:00.000+01:00", calendar.toString());
-        assertEquals(date, XmlUtilities.toDate(context, calendar));
+        assertEquals(date, XmlUtilities.toInstant(context, calendar));
 
         calendar.setMillisecond(FIELD_UNDEFINED);
         assertEquals("2009-01-01T06:00:00+01:00", calendar.toString());
@@ -85,21 +85,21 @@ public final class XmlUtilitiesTest extends TestCase {
 
         t = Instant.ofEpochMilli(1230786000000L);
         calendar = XmlUtilities.toXML(context, t);
-        assertEquals("2009-01-01T14:00:00.000+09:00", calendar.toString());
+        assertEquals("2009-01-01T14:00:00+09:00", calendar.toString());
 
         t = OffsetDateTime.parse("2009-01-01T06:00:00+01:00");
         calendar = XmlUtilities.toXML(context, t);
-        assertEquals("2009-01-01T06:00:00.000+01:00", calendar.toString());
+        assertEquals("2009-01-01T06:00:00+01:00", calendar.toString());
         assertEquals(t, XmlUtilities.toTemporal(context, calendar));
 
         t = LocalDateTime.parse("2009-08-12T06:20:10");
         calendar = XmlUtilities.toXML(context, t);
-        assertEquals("2009-08-12T06:20:10.000", calendar.toString());
+        assertEquals("2009-08-12T06:20:10", calendar.toString());
         assertEquals(t, XmlUtilities.toTemporal(context, calendar));
 
         t = LocalTime.parse("06:10:45");
         calendar = XmlUtilities.toXML(context, t);
-        assertEquals("06:10:45.000", calendar.toString());
+        assertEquals("06:10:45", calendar.toString());
         assertEquals(t, XmlUtilities.toTemporal(context, calendar));
 
         t = LocalDate.parse("2009-05-08");

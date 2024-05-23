@@ -16,12 +16,8 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Date;
 import java.time.Instant;
 import java.io.Serializable;
-
-// Test dependencies
-import org.apache.sis.test.TestUtilities;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.time.temporal.TemporalAmount;
@@ -96,7 +92,7 @@ final class PeriodLiteral implements Period, Literal<Feature,Period>, Serializab
      */
     @Override
     public String toString() {
-        return "Period[" + TestUtilities.format(new Date(begin)) +
-                 " ... " + TestUtilities.format(new Date(end)) + ']';
+        return "Period[" + Instant.ofEpochMilli(begin) +
+                 " ... " + Instant.ofEpochMilli(end) + ']';
     }
 }

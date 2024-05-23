@@ -16,7 +16,6 @@
  */
 package org.apache.sis.xml.bind.gml;
 
-import java.util.Date;
 import java.time.Instant;
 import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.temporal.TemporalPrimitive;
@@ -108,10 +107,10 @@ public class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimitive> 
         metadata = null;                                        // Cleaned first in case of failure.
         if (period != null) {
             final Context context = Context.current();
-            final Date begin = toDate(context, period.begin);
-            final Date end   = toDate(context, period.end);
+            final Instant begin = toInstant(context, period.begin);
+            final Instant end   = toInstant(context, period.end);
             if (begin != null || end != null) {
-                if (begin != null && end != null && end.before(begin)) {
+                if (begin != null && end != null && end.isBefore(begin)) {
                     /*
                      * Be tolerant - we can treat such case as an empty range, which is a similar
                      * approach to what JDK does for Rectangle width and height. We will log with
@@ -120,11 +119,9 @@ public class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimitive> 
                      */
                     Context.warningOccured(context, TemporalPrimitive.class,
                             "setTimePeriod", Errors.class, Errors.Keys.IllegalRange_2, begin, end);
-                } else try {
+                } else {
                     metadata = TemporalUtilities.createPeriod(begin, end);
                     period.copyIdTo(metadata);
-                } catch (UnsupportedOperationException e) {
-                    warningOccured("setTimePeriod", e);
                 }
             }
         }
@@ -139,31 +136,19 @@ public class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimitive> 
     public final void setTimeInstant(final TimeInstant instant) {
         metadata = null;                                        // Cleaned first in case of failure.
         if (instant != null) {
-            final Date position = XmlUtilities.toDate(Context.current(), instant.timePosition);
-            if (position != null) try {
+            final Instant position = XmlUtilities.toInstant(Context.current(), instant.timePosition);
+            if (position != null) {
                 metadata = TemporalUtilities.createInstant(position);
                 instant.copyIdTo(metadata);
-            } catch (UnsupportedOperationException e) {
-                warningOccured("setTimeInstant", e);
             }
         }
     }
 
     /**
-     * Returns the date of the given bounds, or {@code null} if none.
+     * Returns the instant of the given bounds, or {@code null} if none.
      */
-    private static Date toDate(final Context context, final TimePeriodBound bound) {
-        return (bound != null) ? XmlUtilities.toDate(context, bound.calendar()) : null;
-    }
-
-    /**
-     * Reports a warning for the given exception.
-     *
-     * @param method  the name of the method to declare in the log record.
-     * @param e the exception.
-     */
-    private static void warningOccured(final String method, final Exception e) {
-        Context.warningOccured(Context.current(), TM_Primitive.class, method, e, true);
+    private static Instant toInstant(final Context context, final TimePeriodBound bound) {
+        return (bound != null) ? XmlUtilities.toInstant(context, bound.calendar()) : null;
     }
 
     /**

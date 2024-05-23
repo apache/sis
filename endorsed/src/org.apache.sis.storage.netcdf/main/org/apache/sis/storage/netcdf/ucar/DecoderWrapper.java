@@ -18,11 +18,12 @@ package org.apache.sis.storage.netcdf.ucar;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Date;
 import java.util.Set;
 import java.util.List;
 import java.util.Formatter;
 import java.util.Collection;
+import java.time.Instant;
+import java.time.temporal.Temporal;
 import ucar.nc2.Group;
 import ucar.nc2.Attribute;
 import ucar.nc2.NetcdfFile;
@@ -318,7 +319,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * @return the attribute value, or {@code null} if none or unparsable or if the given name was null.
      */
     @Override
-    public Date dateValue(final String name) {
+    public Temporal dateValue(final String name) {
         if (name != null) {
             for (final Group group : groups) {
                 final Attribute attribute = findAttribute(group, name);
@@ -332,7 +333,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
                             listeners.warning(e);
                             continue;
                         }
-                        return new Date(date.getMillis());
+                        return Instant.ofEpochMilli(date.getMillis());
                     }
                 }
             }
@@ -348,8 +349,8 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
      * @return the converted values. May contains {@code null} elements.
      */
     @Override
-    public Date[] numberToDate(final String symbol, final Number... values) {
-        final Date[] dates = new Date[values.length];
+    public Temporal[] numberToDate(final String symbol, final Number... values) {
+        final var dates = new Instant[values.length];
         final DateUnit unit;
         try {
             unit = new DateUnit(symbol);
@@ -360,7 +361,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
         for (int i=0; i<values.length; i++) {
             final Number value = values[i];
             if (value != null) {
-                dates[i] = unit.makeDate(value.doubleValue());
+                dates[i] = unit.makeDate(value.doubleValue()).toInstant();
             }
         }
         return dates;

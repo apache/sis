@@ -18,7 +18,6 @@ package org.apache.sis.storage.netcdf;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.Map;
@@ -28,6 +27,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.io.IOException;
+import java.time.temporal.Temporal;
 import ucar.nc2.constants.CF;       // String constants are copied by the compiler with no UCAR reference left.
 import ucar.nc2.constants.CDM;      // idem
 import ucar.nc2.constants.ACDD;     // idem
@@ -760,18 +760,18 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
             hasExtent = true;
         }
         /*
-         * Get the start and end times as Date objects if available, or as numeric values otherwise.
-         * In the latter case, the unit symbol tells how to convert to Date objects.
+         * Get the start and end times as temporal objects if available, or as numeric values otherwise.
+         * In the latter case, the unit symbol tells how to convert to temporal objects.
          */
-        Date startTime = decoder.dateValue(TIME.MINIMUM);
-        Date endTime   = decoder.dateValue(TIME.MAXIMUM);
+        Temporal startTime = decoder.dateValue(TIME.MINIMUM);
+        Temporal endTime   = decoder.dateValue(TIME.MAXIMUM);
         if (startTime == null && endTime == null) {
             final Number tmin = decoder.numericValue(TIME.MINIMUM);
             final Number tmax = decoder.numericValue(TIME.MAXIMUM);
             if (tmin != null || tmax != null) {
                 final String symbol = stringValue(TIME.UNITS);
                 if (symbol != null) {
-                    final Date[] dates = decoder.numberToDate(symbol, tmin, tmax);
+                    final Temporal[] dates = decoder.numberToDate(symbol, tmin, tmax);
                     startTime = dates[0];
                     endTime   = dates[1];
                 }

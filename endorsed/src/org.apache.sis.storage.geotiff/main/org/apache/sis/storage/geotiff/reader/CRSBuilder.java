@@ -1141,7 +1141,8 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
                 if (!Units.METRE.equals(linearUnit)) {
                     cs = replaceLinearUnit(cs, linearUnit);
                 }
-                final GeodeticCRS crs = getCRSFactory().createGeodeticCRS(properties(getOrDefault(names, GCRS)), datum, cs);
+                // TODO: datum should be DatumEnsemble for some case such as EPSG:4326.
+                final GeodeticCRS crs = getCRSFactory().createGeodeticCRS(properties(getOrDefault(names, GCRS)), datum, null, cs);
                 lastName = crs.getName();
                 return crs;
             }

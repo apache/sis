@@ -28,7 +28,6 @@ import java.util.LinkedHashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.time.DateTimeException;
@@ -37,6 +36,8 @@ import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.channels.ReadableByteChannel;
+import java.time.Instant;
+import java.time.temporal.Temporal;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
 import javax.measure.format.MeasurementParseException;
@@ -103,14 +104,6 @@ public final class ChannelDecoder extends Decoder {
      * @see #readName()
      */
     private static final Charset NAME_ENCODING = StandardCharsets.UTF_8;
-
-    /**
-     * The locale of dimension, variable and attribute names. This is used for the conversion to
-     * lower-cases before case-insensitive searches.
-     *
-     * @see #findAttribute(String)
-     */
-    static final Locale NAME_LOCALE = Locale.US;
 
     /*
      * NOTE: the names of the static constants below this point match the names used in the Backus-Naur Form (BNF)
@@ -289,7 +282,7 @@ public final class ChannelDecoder extends Decoder {
                 }
             }
         }
-        attributeMap = CollectionsExt.toCaseInsensitiveNameMap(attributes, NAME_LOCALE);
+        attributeMap = CollectionsExt.toCaseInsensitiveNameMap(attributes, Decoder.DATA_LOCALE);
         attributeNames = attributeNames(attributes, attributeMap);
         if (variables != null) {
             this.variables   = variables;
@@ -326,7 +319,7 @@ public final class ChannelDecoder extends Decoder {
                 final E e = elements[index];
                 return new AbstractMap.SimpleImmutableEntry<>(e.getName(), e);
             }
-        }, NAME_LOCALE);
+        }, Decoder.DATA_LOCALE);
     }
 
     /**
@@ -631,7 +624,7 @@ public final class ChannelDecoder extends Decoder {
                     default: throw malformedHeader();
                 }
             }
-            final Map<String,Object> map = CollectionsExt.toCaseInsensitiveNameMap(attributes, NAME_LOCALE);
+            final Map<String,Object> map = CollectionsExt.toCaseInsensitiveNameMap(attributes, Decoder.DATA_LOCALE);
             variables[j] = new VariableInfo(this, input, name, varDims, map, attributeNames(attributes, map),
                     DataType.valueOf(input.readInt()), input.readInt(), readOffset());
         }
@@ -727,7 +720,7 @@ public final class ChannelDecoder extends Decoder {
     protected Dimension findDimension(final String dimName) {
         DimensionInfo dim = dimensionMap.get(dimName);          // Give precedence to exact match before to ignore case.
         if (dim == null) {
-            final String lower = dimName.toLowerCase(ChannelDecoder.NAME_LOCALE);
+            final String lower = dimName.toLowerCase(Decoder.DATA_LOCALE);
             if (lower != dimName) {                             // Identity comparison is okay here.
                 dim = dimensionMap.get(lower);
             }
@@ -744,7 +737,7 @@ public final class ChannelDecoder extends Decoder {
     private VariableInfo findVariableInfo(final String name) {
         VariableInfo v = variableMap.get(name);
         if (v == null && name != null) {
-            final String lower = name.toLowerCase(NAME_LOCALE);
+            final String lower = name.toLowerCase(Decoder.DATA_LOCALE);
             // Identity comparison is ok since following check is only an optimization for a common case.
             if (lower != name) {
                 v = variableMap.get(lower);
@@ -807,7 +800,7 @@ public final class ChannelDecoder extends Decoder {
              * Identity comparisons performed between String instances below are okay since they
              * are only optimizations for skipping calls to Map.get(Object) in common cases.
              */
-            final String lowerCase = mappedName.toLowerCase(NAME_LOCALE);
+            final String lowerCase = mappedName.toLowerCase(DATA_LOCALE);
             if (lowerCase != mappedName) {
                 value = attributeMap.get(lowerCase);
                 if (value != null) return value;
@@ -866,11 +859,11 @@ public final class ChannelDecoder extends Decoder {
      * @return {@inheritDoc}
      */
     @Override
-    public Date dateValue(final String name) {
+    public Temporal dateValue(final String name) {
         final Object value = findAttribute(name);
         if (value instanceof CharSequence) try {
-            return StandardDateFormat.toDate(StandardDateFormat.FORMAT.parse((CharSequence) value));
-        } catch (DateTimeException | ArithmeticException e) {
+            return StandardDateFormat.parseBest((CharSequence) value);
+        } catch (RuntimeException e) {
             listeners.warning(e);
         }
         return null;
@@ -884,16 +877,16 @@ public final class ChannelDecoder extends Decoder {
      * @return the converted values. May contain {@code null} elements.
      */
     @Override
-    public Date[] numberToDate(final String symbol, final Number... values) {
-        final Date[] dates = new Date[values.length];
+    public Temporal[] numberToDate(final String symbol, final Number... values) {
+        final var dates = new Instant[values.length];
         final Matcher parts = Variable.TIME_UNIT_PATTERN.matcher(symbol);
         if (parts.matches()) try {
-            final UnitConverter converter = Units.valueOf(parts.group(1)).getConverterToAny(Units.MILLISECOND);
-            final long epoch = StandardDateFormat.toDate(StandardDateFormat.FORMAT.parse(parts.group(2))).getTime();
+            final UnitConverter converter = Units.valueOf(parts.group(1)).getConverterToAny(Units.SECOND);
+            final Instant epoch = StandardDateFormat.parseInstantUTC(parts.group(2));
             for (int i=0; i<values.length; i++) {
                 final Number value = values[i];
                 if (value != null) {
-                    dates[i] = new Date(epoch + Math.round(converter.convert(value.doubleValue())));
+                    dates[i] = StandardDateFormat.addSeconds(epoch, converter.convert(value.doubleValue()));
                 }
             }
         } catch (IncommensurableException | MeasurementParseException | DateTimeException | ArithmeticException e) {

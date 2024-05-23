@@ -17,6 +17,7 @@
 package org.apache.sis.storage.csv;
 
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import javax.measure.Unit;
 import javax.measure.quantity.Time;
 import org.opengis.referencing.datum.TemporalDatum;
@@ -49,12 +50,12 @@ class TimeEncoding extends SurjectiveConverter<String,Instant> {
     };
 
     /**
-     * Date of value zero on the time axis, in milliseconds since January 1st 1970 at midnight UTC.
+     * Date of value zero on the time axis.
      */
-    private final long origin;
+    private final Instant origin;
 
     /**
-     * Number of milliseconds between two consecutive integer values on the time axis.
+     * Number of seconds between two consecutive integer values on the time axis.
      */
     private final double interval;
 
@@ -62,8 +63,8 @@ class TimeEncoding extends SurjectiveConverter<String,Instant> {
      * Creates a new time encoding.
      */
     TimeEncoding(final TemporalDatum datum, final Unit<Time> unit) {
-        this.origin   = datum.getOrigin().getTime();
-        this.interval = unit.getConverterTo(Units.MILLISECOND).convert(1);
+        this.origin   = StandardDateFormat.toInstant(datum.getOrigin(), null);
+        this.interval = unit.getConverterTo(Units.SECOND).convert(1);
     }
 
     /**
@@ -90,23 +91,16 @@ class TimeEncoding extends SurjectiveConverter<String,Instant> {
      */
     @Override
     public Instant apply(final String time) {
-        final double value = Double.parseDouble(time) * interval;
-        final long millis = Math.round(value);
-        return Instant.ofEpochMilli(millis + origin)
-                      .plusNanos(Math.round((value - millis) * StandardDateFormat.NANOS_PER_MILLISECOND));
-        /*
-         * Performance note: the call to .plusNano(…) will usually return the same 'Instant' instance
-         * (without creating new object) since the time granularity is rarely finer than milliseconds.
-         */
+        return StandardDateFormat.addSeconds(origin, Double.parseDouble(time) * interval);
     }
 
     /**
      * Converts the given timestamp to the values used in the temporal coordinate reference system.
      *
-     * @param  time  number of milliseconds elapsed since January 1st, 1970 midnight UTC.
+     * @param  time  instant to convert.
      * @return the value to use with the temporal coordinate reference system.
      */
-    final double toCRS(final long time) {
-        return (time - origin) / interval;
+    final double toCRS(final Instant time) {
+        return origin.until(time, ChronoUnit.SECONDS) / interval;
     }
 }

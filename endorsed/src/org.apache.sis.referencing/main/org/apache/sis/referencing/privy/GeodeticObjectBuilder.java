@@ -17,10 +17,10 @@
 package org.apache.sis.referencing.privy;
 
 import java.util.Map;
-import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.time.temporal.Temporal;
 import javax.measure.Unit;
 import javax.measure.quantity.Time;
 import javax.measure.quantity.Length;
@@ -539,12 +539,12 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * Creates a temporal CRS from the given origin and temporal unit. For this method, the CRS name is optional:
      * if no {@code addName(…)} method has been invoked, then a default name will be used.
      *
-     * @param  origin  the epoch in milliseconds since January 1st, 1970 at midnight UTC.
+     * @param  origin  the origin of the temporal datum.
      * @param  unit    the unit of measurement.
      * @return a temporal CRS using the given origin and units.
      * @throws FactoryException if an error occurred while building the temporal CRS.
      */
-    public TemporalCRS createTemporalCRS(final Date origin, final Unit<Time> unit) throws FactoryException {
+    public TemporalCRS createTemporalCRS(final Temporal origin, final Unit<Time> unit) throws FactoryException {
         /*
          * Try to use one of the predefined datum and coordinate system if possible.
          * This not only saves a little bit of memory, but also provides better names.

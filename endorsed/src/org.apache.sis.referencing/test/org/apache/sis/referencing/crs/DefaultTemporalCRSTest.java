@@ -109,10 +109,10 @@ public final class DefaultTemporalCRSTest extends TestCase {
      */
     @Test
     public void testDateConversionWithNanos() {
-        final DefaultTemporalDatum datum = new DefaultTemporalDatum(
+        final var datum = new DefaultTemporalDatum(
                 Map.of(DefaultTemporalDatum.NAME_KEY, "For test"),
-                new Date(10000L * MILLISECONDS_PER_DAY + 12345));                        // 1997-05-19T00:00:12.345Z
-        final DefaultTemporalCRS crs = new DefaultTemporalCRS(
+                Instant.ofEpochMilli(10000L * MILLISECONDS_PER_DAY + 12345));       // 1997-05-19T00:00:12.345Z
+        final var crs = new DefaultTemporalCRS(
                 Map.of(DefaultTemporalCRS.NAME_KEY, datum.getName()),
                 datum, HardCodedCS.DAYS);
         /*

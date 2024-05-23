@@ -39,11 +39,13 @@ import java.time.temporal.Temporal;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalQuery;
 import java.time.temporal.TemporalAccessor;
+import java.time.chrono.ChronoZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.format.SignStyle;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -218,10 +220,16 @@ replace:    if (Character.isWhitespace(c)) {
     }
 
     /**
+     * The length of a day in number of seconds.
+     * Can be casted to {@code float} with exact precision.
+     */
+    public static final int SECONDS_PER_DAY = 24*60*60;
+
+    /**
      * The length of a day in number of milliseconds.
      * Can be casted to {@code float} with exact precision.
      */
-    public static final int MILLISECONDS_PER_DAY = 24*60*60*1000;
+    public static final int MILLISECONDS_PER_DAY = SECONDS_PER_DAY*1000;
 
     /**
      * Number of milliseconds in one second.
@@ -242,32 +250,74 @@ replace:    if (Character.isWhitespace(c)) {
     public static final int NANOS_PER_SECOND = 1000_000_000;
 
     /**
-     * Converts the given temporal object into a date.
-     * The given temporal object is typically the value parsed by {@link #FORMAT}.
-     *
-     * @param  temporal  the temporal object to convert, or {@code null}.
-     * @return the legacy date for the given temporal object, or {@code null} if the argument was null.
-     * @throws DateTimeException if a value for the field cannot be obtained.
-     * @throws ArithmeticException if the number of milliseconds is too large.
+     * Length of a year as defined by the International Union of Geological Sciences (IUGS), in milliseconds.
+     * This is the unit of measurement used in EPSG geodetic dataset (EPSG:1029).
      */
-    public static Date toDate(final TemporalAccessor temporal) {
-        if (temporal == null) {
+    public static final long MILLIS_PER_TROPICAL_YEAR = 31556925445L;
+
+    /**
+     * Converts the given temporal object into an instant.
+     * If the timezone is unspecified, then UTC is assumed.
+     *
+     * @param  date  the temporal object to convert, or {@code null}.
+     * @param  zone  the timezone to use if the time is local, or {@code null} if none.
+     * @return the instant for the given temporal object, or {@code null} if the argument was null.
+     * @throws DateTimeException if the given date does not support a field required by this method.
+     */
+    public static Instant toInstant(final TemporalAccessor date, final ZoneId zone) {
+        if (date == null) {
             return null;
         }
-        long millis;
-        if (temporal instanceof Instant) {
-            millis = ((Instant) temporal).toEpochMilli();
-        } else if (temporal.isSupported(ChronoField.INSTANT_SECONDS)) {
-            millis = Math.multiplyExact(temporal.getLong(ChronoField.INSTANT_SECONDS), 1000);
-            millis = Math.addExact(millis, temporal.getLong(ChronoField.NANO_OF_SECOND) / 1000000);
-        } else {
-            // Note that the timezone may be unknown here. We assume UTC.
-            millis = Math.multiplyExact(temporal.getLong(ChronoField.EPOCH_DAY), MILLISECONDS_PER_DAY);
-            if (temporal.isSupported(ChronoField.MILLI_OF_DAY)) {
-                millis = Math.addExact(millis, temporal.getLong(ChronoField.MILLI_OF_DAY));
+        if (date instanceof Instant) {
+            return (Instant) date;
+        } else if (date instanceof OffsetDateTime) {
+            return ((OffsetDateTime) date).toInstant();
+        } else if (date instanceof ChronoZonedDateTime) {
+            return ((ChronoZonedDateTime) date).toInstant();
+        } else if (zone != null) {
+            if (date instanceof LocalDateTime) {
+                final var t = (LocalDateTime) date;
+                if (zone instanceof ZoneOffset) {
+                    return t.atOffset((ZoneOffset) zone).toInstant();
+                } else {
+                    return t.atZone(zone).toInstant();
+                }
+            } else if (date instanceof LocalDate) {
+                final var t = (LocalDate) date;
+                return t.atStartOfDay(zone).toInstant();
             }
         }
-        return new Date(millis);
+        Instant time;
+        final ChronoField nano;
+        if (zone == null || date.isSupported(ChronoField.INSTANT_SECONDS)) {
+            time = Instant.ofEpochSecond(date.getLong(ChronoField.INSTANT_SECONDS));
+            nano = ChronoField.NANO_OF_SECOND;
+        } else if (zone.equals(ZoneOffset.UTC)) {
+            // Note that the timezone of the temporal value is unknown here. We assume UTC.
+            time = Instant.ofEpochSecond(Math.multiplyExact(date.getLong(ChronoField.EPOCH_DAY), SECONDS_PER_DAY));
+            nano = ChronoField.NANO_OF_DAY;
+        } else {
+            throw new DateTimeException(Errors.format(Errors.Keys.CanNotConvertFromType_2, date.getClass(), Instant.class));
+        }
+        if (date.isSupported(nano)) {
+            time = time.plusNanos(date.getLong(nano));
+        }
+        return time;
+    }
+
+    /**
+     * Adds the given amount of seconds to the given instant.
+     *
+     * @param  time   the instant to which to add seconds, or {@code null}.
+     * @param  value  number of seconds.
+     * @return the shifted time, or {@code null} if the given instant was null or the given value was NaN.
+     */
+    public static Instant addSeconds(final Instant time, final double value) {
+        if (time == null || Double.isNaN(value)) {
+            return null;
+        }
+        final long r = Math.round(value);
+        return time.plusSeconds(r).plusNanos(Math.round((value - r) * NANOS_PER_SECOND));
     }
 
     /**
@@ -375,14 +425,21 @@ replace:    if (Character.isWhitespace(c)) {
     }
 
     /**
+     * Returns the zone, or UTC if unspecified.
+     */
+    private ZoneId getZone() {
+        final ZoneId zone = format.getZone();
+        return (zone != null) ? zone : ZoneOffset.UTC;
+    }
+
+    /**
      * Returns the timezone used for formatting instants.
      *
      * @return the timezone.
      */
     @Override
     public final TimeZone getTimeZone() {
-        final ZoneId zone = format.getZone();
-        return TimeZone.getTimeZone(zone != null ? zone : ZoneOffset.UTC);
+        return TimeZone.getTimeZone(getZone());
     }
 
     /**
@@ -430,11 +487,7 @@ replace:    if (Character.isWhitespace(c)) {
      */
     @Override
     public StringBuffer format(final Date date, final StringBuffer toAppendTo, final FieldPosition pos) {
-        ZoneId zone = format.getZone();
-        if (zone == null) {
-            zone = ZoneOffset.UTC;
-        }
-        final LocalDateTime dt = LocalDateTime.ofInstant(date.toInstant(), zone);
+        final LocalDateTime dt = LocalDateTime.ofInstant(date.toInstant(), getZone());
         TemporalAccessor value = dt;
         if (dt.getHour() == 0 && dt.getMinute() == 0 && dt.getSecond() == 0 && dt.getNano() == 0) {
             value = dt.toLocalDate();
@@ -454,7 +507,7 @@ replace:    if (Character.isWhitespace(c)) {
     @Override
     public Date parse(final String text, final ParsePosition position) {
         try {
-            return toDate(format.parse(text, position));
+            return Date.from(toInstant(format.parse(text, position), getZone()));
         } catch (DateTimeException | ArithmeticException e) {
             position.setErrorIndex(getErrorIndex(e, position));
             return null;
@@ -471,8 +524,8 @@ replace:    if (Character.isWhitespace(c)) {
     @Override
     public Date parse(final String text) throws ParseException {
         try {
-            return toDate(format.parse(toISO(text, 0, text.length())));
-        } catch (DateTimeException | ArithmeticException e) {
+            return Date.from(toInstant(format.parse(toISO(text, 0, text.length())), getZone()));
+        } catch (RuntimeException e) {
             throw (ParseException) new ParseException(e.getLocalizedMessage(), getErrorIndex(e, null)).initCause(e);
         }
     }

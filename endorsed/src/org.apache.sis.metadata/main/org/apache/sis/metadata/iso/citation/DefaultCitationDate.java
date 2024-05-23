@@ -17,6 +17,7 @@
 package org.apache.sis.metadata.iso.citation;
 
 import java.util.Date;
+import java.time.temporal.Temporal;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -25,7 +26,7 @@ import org.opengis.metadata.citation.DateType;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import static org.apache.sis.metadata.privy.ImplementationHelper.toDate;
-import static org.apache.sis.metadata.privy.ImplementationHelper.toMilliseconds;
+import static org.apache.sis.metadata.privy.ImplementationHelper.toInstant;
 
 
 /**
@@ -47,7 +48,7 @@ import static org.apache.sis.metadata.privy.ImplementationHelper.toMilliseconds;
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
  * @author  Cédric Briançon (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @TitleProperty(name = "date")
@@ -60,13 +61,13 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 5140213754542273710L;
+    private static final long serialVersionUID = 1032356967666782327L;
 
     /**
-     * Reference date for the cited resource in milliseconds elapsed sine January 1st, 1970,
-     * or {@link Long#MIN_VALUE} if none.
+     * Reference date for the cited resource.
      */
-    private long date = Long.MIN_VALUE;
+    @SuppressWarnings("serial")     // Most implementations are serializable.
+    private Temporal date;
 
     /**
      * Event used for reference date.
@@ -82,11 +83,28 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
     /**
      * Constructs a citation date initialized to the given date.
      *
+     * @param date      the reference date for the cited resource, or {@code null} if unknown.
+     * @param dateType  the event used for reference date, or {@code null} if unknown.
+     *
+     * @since 1.5
+     */
+    public DefaultCitationDate(final Temporal date, final DateType dateType) {
+        this.date = date;
+        this.dateType = dateType;
+    }
+
+    /**
+     * Constructs a citation date initialized to the given date.
+     *
      * @param date      the reference date for the cited resource.
      * @param dateType  the event used for reference date.
+     *
+     * @deprecated Replaced by {@link #DefaultCitationDate(Temporal, DateType)}
+     * in order to transition to {@code java.time} API.
      */
+    @Deprecated(since="1.5", forRemoval=true)
     public DefaultCitationDate(final Date date, final DateType dateType) {
-        this.date = toMilliseconds(date);
+        this.date = toInstant(date);
         this.dateType = dateType;
     }
 
@@ -102,7 +120,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
     public DefaultCitationDate(final CitationDate object) {
         super(object);
         if (object != null) {
-            date     = toMilliseconds(object.getDate());
+            date     = toInstant(object.getDate());
             dateType = object.getDateType();
         }
     }
@@ -135,6 +153,10 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
     /**
      * Returns the reference date for the cited resource.
      *
+     * <div class="warning"><b>Upcoming API change — temporal schema</b><br>
+     * The return type of this method may change in a future version.
+     * It may be replaced by {@link Temporal}.</div>
+     *
      * @return reference date for the cited resource, or {@code null}.
      */
     @Override
@@ -149,8 +171,19 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      * @param  newValue  the new date.
      */
     public void setDate(final Date newValue) {
-        checkWritePermission(toDate(date));
-        date = toMilliseconds(newValue);
+        setDate(toInstant(newValue));
+    }
+
+    /**
+     * Sets the reference date for the cited resource.
+     *
+     * @param  newValue  the new date.
+     *
+     * @since 1.5
+     */
+    public void setDate(final Temporal newValue) {
+        checkWritePermission(date);
+        date = newValue;
     }
 
     /**

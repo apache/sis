@@ -254,7 +254,7 @@ public final class GeohashReferenceSystemTest extends TestCase {
     private void testDecode(final GeohashReferenceSystem.Coder coder, final int λi, final int φi) throws TransformException {
         for (final Place place : PLACES) {
             final Location location = coder.decode(place.geohash);
-            final DirectPosition result = location.getPosition().getDirectPosition();
+            final DirectPosition result = location.getPosition();
             assertEquals(place.longitude, result.getCoordinate(λi), TOLERANCE, place.name);
             assertEquals(place.latitude,  result.getCoordinate(φi), TOLERANCE, place.name);
         }

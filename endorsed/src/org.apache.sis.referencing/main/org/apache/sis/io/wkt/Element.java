@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.Locale;
+import java.time.Instant;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -552,13 +553,13 @@ final class Element {
      * @return the next {@link Date} among the children.
      * @throws ParseException if no more date is available.
      */
-    public Date pullDate(final String key) throws ParseException {
+    public Instant pullDate(final String key) throws ParseException {
         final Iterator<Object> iterator = children.iterator();
         while (iterator.hasNext()) {
             final Object object = iterator.next();
             if (object instanceof Date) {
                 iterator.remove();
-                return (Date) object;
+                return ((Date) object).toInstant();
             }
         }
         throw missingComponent(key);

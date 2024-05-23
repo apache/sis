@@ -17,6 +17,7 @@
 package org.apache.sis.util.privy;
 
 import java.util.Arrays;
+import java.time.Duration;
 import java.math.BigInteger;
 import java.math.BigDecimal;
 import java.math.MathContext;
@@ -254,6 +255,16 @@ public final class DoubleDouble extends Number implements Comparable<DoubleDoubl
             error = decimal ? errorForWellKnownValue(v) : 0;
         }
         return new DoubleDouble(v, error);
+    }
+
+    /**
+     * Returns an instance for the given duration in nanoseconds.
+     *
+     * @param  value  the duration to convert.
+     * @return the given duration, in nanoseconds.
+     */
+    public static DoubleDouble of(final Duration value) {
+        return of(value.getSeconds()).multiply(StandardDateFormat.NANOS_PER_SECOND).add(value.getNano());
     }
 
     /**
