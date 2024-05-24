@@ -36,7 +36,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.xml.test.TestCase;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.test.TestUtilities.date;
-import static org.apache.sis.test.TestUtilities.format;
 
 
 /**
@@ -92,8 +91,8 @@ public final class TimePeriodTest extends TestCase {
                 "  <gml:timePosition>1992-01-01T01:00:00.000+01:00</gml:timePosition>\n" +
                 "</gml:TimeInstant>\n", actual, "xmlns:*");
 
-        final TimeInstant test = (TimeInstant) unmarshal(unmarshaller, actual);
-        assertEquals("1992-01-01 00:00:00", format(XmlUtilities.toDate(context, test.timePosition)));
+        final var test = (TimeInstant) unmarshal(unmarshaller, actual);
+        assertEquals("1992-01-01T00:00:00Z", XmlUtilities.toInstant(context, test.timePosition).toString());
 
         pool.recycle(marshaller);
         pool.recycle(unmarshaller);
@@ -108,8 +107,8 @@ public final class TimePeriodTest extends TestCase {
     @Test
     public void testPeriodGML2() throws JAXBException {
         createContext();
-        final TimePeriodBound begin = new TimePeriodBound.GML2(Instant.parse("1992-01-01T00:00:00Z"));
-        final TimePeriodBound end   = new TimePeriodBound.GML2(Instant.parse("2007-12-31T00:00:00Z"));
+        final var begin = new TimePeriodBound.GML2(Instant.parse("1992-01-01T00:00:00Z"));
+        final var end   = new TimePeriodBound.GML2(Instant.parse("2007-12-31T00:00:00Z"));
         testPeriod(begin, end,
                 "<gml:TimePeriod xmlns:gml=\"" + Namespaces.GML + "\">\n" +
                 "  <gml:begin>\n" +
@@ -142,10 +141,10 @@ public final class TimePeriodTest extends TestCase {
         period.end   = end;
         final String actual = marshal(marshaller, period);
         assertXmlEquals(expected, actual, "xmlns:*");
-        final TimePeriod test = (TimePeriod) unmarshal(unmarshaller, actual);
+        final var test = (TimePeriod) unmarshal(unmarshaller, actual);
         if (verifyValues) {
-            assertEquals("1992-01-01 00:00:00", format(XmlUtilities.toDate(context, test.begin.calendar())));
-            assertEquals("2007-12-31 00:00:00", format(XmlUtilities.toDate(context, test.end  .calendar())));
+            assertEquals("1992-01-01T00:00:00Z", XmlUtilities.toInstant(context, test.begin.calendar()).toString());
+            assertEquals("2007-12-31T00:00:00Z", XmlUtilities.toInstant(context, test.end  .calendar()).toString());
         }
         pool.recycle(marshaller);
         pool.recycle(unmarshaller);
@@ -160,8 +159,8 @@ public final class TimePeriodTest extends TestCase {
     @Test
     public void testPeriodGML3() throws JAXBException {
         createContext();
-        final TimePeriodBound begin = new TimePeriodBound.GML3(Instant.parse("1992-01-01T00:00:00Z"), "before");
-        final TimePeriodBound end   = new TimePeriodBound.GML3(Instant.parse("2007-12-31T00:00:00Z"), "after");
+        final var begin = new TimePeriodBound.GML3(Instant.parse("1992-01-01T00:00:00Z"), "before");
+        final var end   = new TimePeriodBound.GML3(Instant.parse("2007-12-31T00:00:00Z"), "after");
         testPeriod(begin, end,
                 "<gml:TimePeriod xmlns:gml=\"" + Namespaces.GML + "\">\n" +
                 "  <gml:beginPosition>1992-01-01T01:00:00+01:00</gml:beginPosition>\n" +
@@ -178,8 +177,8 @@ public final class TimePeriodTest extends TestCase {
     @Test
     public void testSimplifiedPeriodGML3() throws JAXBException {
         createContext();
-        final TimePeriodBound begin = new TimePeriodBound.GML3(Instant.parse("1992-01-01T23:00:00Z"), "before");
-        final TimePeriodBound end   = new TimePeriodBound.GML3(Instant.parse("2007-12-30T23:00:00Z"), "after");
+        final var begin = new TimePeriodBound.GML3(Instant.parse("1992-01-01T23:00:00Z"), "before");
+        final var end   = new TimePeriodBound.GML3(Instant.parse("2007-12-30T23:00:00Z"), "after");
         testPeriod(begin, end,
                 "<gml:TimePeriod xmlns:gml=\"" + Namespaces.GML + "\">\n" +
                 "  <gml:beginPosition>1992-01-02</gml:beginPosition>\n" +
@@ -196,8 +195,8 @@ public final class TimePeriodTest extends TestCase {
     @Test
     public void testBeforePeriodGML3() throws JAXBException {
         createContext();
-        final TimePeriodBound begin = new TimePeriodBound.GML3(null, "before");
-        final TimePeriodBound end   = new TimePeriodBound.GML3(Instant.parse("2007-12-30T23:00:00Z"), "after");
+        final var begin = new TimePeriodBound.GML3(null, "before");
+        final var end   = new TimePeriodBound.GML3(Instant.parse("2007-12-30T23:00:00Z"), "after");
         testPeriod(begin, end,
                 "<gml:TimePeriod xmlns:gml=\"" + Namespaces.GML + "\">\n" +
                 "  <gml:beginPosition indeterminatePosition=\"before\"/>\n" +
@@ -214,8 +213,8 @@ public final class TimePeriodTest extends TestCase {
     @Test
     public void testAfterPeriodGML3() throws JAXBException {
         createContext();
-        final TimePeriodBound begin = new TimePeriodBound.GML3(Instant.parse("1992-01-01T23:00:00Z"), "before");
-        final TimePeriodBound end   = new TimePeriodBound.GML3(null, "after");
+        final var begin = new TimePeriodBound.GML3(Instant.parse("1992-01-01T23:00:00Z"), "before");
+        final var end   = new TimePeriodBound.GML3(null, "after");
         testPeriod(begin, end,
                 "<gml:TimePeriod xmlns:gml=\"" + Namespaces.GML + "\">\n" +
                 "  <gml:beginPosition>1992-01-02</gml:beginPosition>\n" +

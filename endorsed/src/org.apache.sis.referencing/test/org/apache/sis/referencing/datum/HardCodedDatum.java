@@ -16,14 +16,14 @@
  */
 package org.apache.sis.referencing.datum;
 
-import java.util.Date;
 import java.util.Map;
 import java.util.HashMap;
+import java.time.Instant;
 import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.util.privy.StandardDateFormat.MILLISECONDS_PER_DAY;
+import static org.apache.sis.util.privy.Constants.SECONDS_PER_DAY;
 
 // Test dependencies
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
@@ -134,14 +134,14 @@ public final class HardCodedDatum {
      */
     public static final DefaultTemporalDatum UNIX = new DefaultTemporalDatum(
             properties("UNIX", null, null),
-            new Date(0));
+            Instant.EPOCH);
 
     /**
      * Default datum for time measured since November 17, 1858 at 00:00 UTC.
      */
     public static final DefaultTemporalDatum MODIFIED_JULIAN = new DefaultTemporalDatum(
             properties("Modified Julian", null, null),
-            new Date(-40587L * MILLISECONDS_PER_DAY));
+            Instant.ofEpochSecond(-40587L * SECONDS_PER_DAY));
 
     /**
      * A parametric datum for day of year, without any particular year.

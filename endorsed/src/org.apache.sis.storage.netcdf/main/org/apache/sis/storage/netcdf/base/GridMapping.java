@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.function.Supplier;
@@ -508,11 +509,11 @@ final class GridMapping {
     }
 
     /**
-     * Creates a coordinate reference system by parsing a Well Known Text (WKT) string. The WKT is presumed
-     * to use the GDAL flavor of WKT 1, and warnings are redirected to decoder listeners.
+     * Creates a coordinate reference system by parsing a Well Known Text (WKT) string.
+     * The WKT is presumed to use the GDAL flavor of WKT 1, and warnings are redirected to decoder listeners.
      */
     private static CoordinateReferenceSystem createFromWKT(final Node node, final String wkt) throws ParseException {
-        final WKTFormat f = new WKTFormat(node.getLocale(), node.decoder.getTimeZone());
+        final WKTFormat f = new WKTFormat(Decoder.DATA_LOCALE, TimeZone.getTimeZone(node.decoder.getTimeZone()));
         f.setConvention(org.apache.sis.io.wkt.Convention.WKT1_COMMON_UNITS);
         final CoordinateReferenceSystem crs = (CoordinateReferenceSystem) f.parseObject(wkt);
         final Warnings warnings = f.getWarnings();

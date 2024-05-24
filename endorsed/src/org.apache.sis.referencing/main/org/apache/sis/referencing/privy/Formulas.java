@@ -82,15 +82,6 @@ public final class Formulas extends Static {
     public static final double LONGITUDE_MAX = Numerics.MAX_INTEGER_CONVERTIBLE_TO_DOUBLE/2 * ANGULAR_TOLERANCE;
 
     /**
-     * The length of a <i>Julian year</i> in milliseconds.
-     * From Wikipedia, <q>In astronomy, a Julian year (symbol: <b>a</b>) is a unit of measurement of time
-     * defined as exactly 365.25 days of 86,400 SI seconds each.</q>.
-     *
-     * @see <a href="https://en.wikipedia.org/wiki/Julian_year_%28astronomy%29">Wikipedia: Julian year (astronomy)</a>
-     */
-    public static final long JULIAN_YEAR_LENGTH = 31557600000L;
-
-    /**
      * Maximum number of iterations for iterative computations. Defined in this {@code Formulas} class as a default value,
      * but some classes may use a derived value (for example twice this amount). This constant is mostly useful for identifying
      * places where iterations occur.

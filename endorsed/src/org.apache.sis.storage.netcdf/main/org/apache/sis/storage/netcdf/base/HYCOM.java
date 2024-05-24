@@ -18,14 +18,14 @@ package org.apache.sis.storage.netcdf.base;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Locale;
+import java.util.TimeZone;
 import java.util.GregorianCalendar;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.Constants;
 
 
 /**
@@ -102,7 +102,7 @@ final class HYCOM {
                          */
                         Vector values = variable.read();
                         final double[] times = new double[values.size()];
-                        final GregorianCalendar calendar = new GregorianCalendar(decoder.getTimeZone(), Locale.US);
+                        final GregorianCalendar calendar = new GregorianCalendar(TimeZone.getTimeZone(decoder.getTimeZone()), Decoder.DATA_LOCALE);
                         calendar.clear();
                         for (int i=0; i<times.length; i++) {
                             double time = values.doubleValue(i);                            // Date encoded as a double (e.g. 20181017)
@@ -112,7 +112,7 @@ final class HYCOM {
                             int month = (int) (date % 100); date /= 100;
                             calendar.set(Math.toIntExact(date), month - 1, day, 0, 0, 0);
                             date = calendar.getTimeInMillis() - origin;                     // Milliseconds since epoch.
-                            time += date / (double) StandardDateFormat.MILLISECONDS_PER_DAY;
+                            time += date / (double) Constants.MILLISECONDS_PER_DAY;
                             times[i] = time;
                         }
                         variable.setValues(times);

@@ -27,7 +27,7 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.referencing.privy.WKTKeywords;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.Constants;
 
 
 /**
@@ -70,7 +70,7 @@ public final class Epoch extends FormattableObject {
                 fractionDigits = 2;
             } else if (epoch.isSupported(ChronoField.NANO_OF_DAY)) {
                 day = epoch.getLong(ChronoField.NANO_OF_DAY);
-                day /= StandardDateFormat.MILLISECONDS_PER_DAY * (long) StandardDateFormat.NANOS_PER_MILLISECOND;
+                day /= (double) Constants.NANOSECONDS_PER_DAY;
                 fractionDigits = (epoch.get(ChronoField.NANO_OF_SECOND) != 0) ? 16 : 8;
             }
             day += epoch.get(ChronoField.DAY_OF_YEAR) - 1;

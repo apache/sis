@@ -16,12 +16,8 @@
  */
 package org.apache.sis.filter;
 
-import java.util.Date;
 import java.time.Instant;
 import java.io.Serializable;
-
-// Test dependencies
-import org.apache.sis.test.TestUtilities;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
@@ -86,7 +82,7 @@ final class PeriodLiteral implements Period, Literal<AbstractFeature,Period>, Se
      */
     @Override
     public String toString() {
-        return "Period[" + TestUtilities.format(new Date(begin)) +
-                 " ... " + TestUtilities.format(new Date(end)) + ']';
+        return "Period[" + Instant.ofEpochMilli(begin) +
+                 " ... " + Instant.ofEpochMilli(end) + ']';
     }
 }

@@ -29,7 +29,7 @@ import static java.lang.StrictMath.*;
 import org.apache.sis.math.Statistics;
 import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.Constants;
 
 // Test dependencies
 import org.junit.jupiter.api.Tag;
@@ -290,7 +290,7 @@ public final class CacheTest extends TestCaseWithGC {
         for (int i=0; i<10; i++) {
             final long t = System.nanoTime();
             out.printf("Cache size: %4d (after %3d ms)%n", cache.size(),
-                       round((t - time) / (double) StandardDateFormat.NANOS_PER_MILLISECOND));
+                       round((t - time) / (double) Constants.NANOS_PER_MILLISECOND));
             time = t;
             Thread.sleep(250);
             if (i >= 2) {

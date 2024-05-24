@@ -132,7 +132,7 @@ public final class TemporalAccessor {
      * @param  target    the target temporal extent.
      */
     public void setTemporalExtent(final Envelope envelope, final DefaultTemporalExtent target) {
-        target.setBounds(timeCRS.toDate(envelope.getMinimum(dimension)),
-                         timeCRS.toDate(envelope.getMaximum(dimension)));
+        target.setBounds(timeCRS.toInstant(envelope.getMinimum(dimension)),
+                         timeCRS.toInstant(envelope.getMaximum(dimension)));
     }
 }

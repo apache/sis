@@ -1011,7 +1011,7 @@ final class ImageFileDirectory extends DataCube {
              */
             case TAG_DATE_TIME: {
                 for (final String value : type.readAsStrings(input(), count, encoding())) {
-                    metadata.addCitationDate(reader.store.getDateFormat().parse(value),
+                    metadata.addCitationDate(reader.store.getDateFormat().parse(value).toInstant(),
                             DateType.CREATION, ImageMetadataBuilder.Scope.RESOURCE);
                 }
                 break;

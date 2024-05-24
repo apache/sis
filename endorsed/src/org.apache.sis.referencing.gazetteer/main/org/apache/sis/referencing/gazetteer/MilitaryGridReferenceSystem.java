@@ -2217,7 +2217,7 @@ parse:                  switch (part) {
             if (!isValid) {
                 final String gzd;
                 try {
-                    gzd = owner.encoder(crs).encode(owner, getDirectPosition(), true, "", 0, 0);
+                    gzd = owner.encoder(crs).encode(owner, this, true, "", 0, 0);
                 } catch (IllegalArgumentException | FactoryException e) {
                     throw new GazetteerException(e.getLocalizedMessage(), e);
                 }

@@ -84,7 +84,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.util.privy.StandardDateFormat.MILLISECONDS_PER_DAY;
+import static org.apache.sis.util.privy.Constants.SECONDS_PER_DAY;
 
 // Specific to the main branch:
 import org.opengis.referencing.crs.GeocentricCRS;
@@ -1557,13 +1557,13 @@ public enum CommonCRS {
          * the legacy date/time formatting classes in the {@link java.text} package uses the proleptic
          * Julian calendar for dates before October 15, 1582, while the new date/time formatting classes
          * in the {@link java.time.format} package use the ISO-8601 calendar system, which is equivalent
-         * to the proleptic Gregorian calendar for every dates. For parsing and formatting of Julian days,
-         * the {@link java.text.SimpleDateFormat} class is closer to the common practice (but not ISO 8601
-         * compliant).</p>
+         * to the proleptic <em>Gregorian</em> calendar for every dates. For parsing and formatting of
+         * Julian days, the {@link java.text.SimpleDateFormat} class is closer to the common practice
+         * (but not ISO 8601 compliant).</p>
          *
          * @see <a href="https://en.wikipedia.org/wiki/Julian_day">Julian day on Wikipedia</a>
          */
-        JULIAN(Vocabulary.Keys.Julian, -2440588L * MILLISECONDS_PER_DAY + MILLISECONDS_PER_DAY/2,
+        JULIAN(Vocabulary.Keys.Julian, -2440588L * SECONDS_PER_DAY + SECONDS_PER_DAY/2,
                "JulianDate", true),
 
         /**
@@ -1574,7 +1574,7 @@ public enum CommonCRS {
          *
          * @see <a href="https://en.wikipedia.org/wiki/Julian_day">Julian day on Wikipedia</a>
          */
-        MODIFIED_JULIAN(Vocabulary.Keys.ModifiedJulian, -40587L * MILLISECONDS_PER_DAY,
+        MODIFIED_JULIAN(Vocabulary.Keys.ModifiedJulian, -40587L * SECONDS_PER_DAY,
                         "ModifiedJulianDate", false),
 
         /**
@@ -1586,7 +1586,7 @@ public enum CommonCRS {
          *
          * @see <a href="https://en.wikipedia.org/wiki/Julian_day">Julian day on Wikipedia</a>
          */
-        TRUNCATED_JULIAN(Vocabulary.Keys.TruncatedJulian, -587L * MILLISECONDS_PER_DAY,
+        TRUNCATED_JULIAN(Vocabulary.Keys.TruncatedJulian, -587L * SECONDS_PER_DAY,
                          "TruncatedJulianDate", true),
 
         /**
@@ -1597,7 +1597,7 @@ public enum CommonCRS {
          *
          * @see <a href="https://en.wikipedia.org/wiki/Julian_day">Julian day on Wikipedia</a>
          */
-        DUBLIN_JULIAN(Vocabulary.Keys.DublinJulian, -25568L * MILLISECONDS_PER_DAY + MILLISECONDS_PER_DAY/2,
+        DUBLIN_JULIAN(Vocabulary.Keys.DublinJulian, -25568L * SECONDS_PER_DAY + SECONDS_PER_DAY/2,
                       "DublinJulian", false),
 
         /**
@@ -1615,7 +1615,7 @@ public enum CommonCRS {
          *
          * @since 1.5
          */
-        TROPICAL_YEAR(Vocabulary.Keys.TropicalYear, 946684800000L, "TropicalYear", false),
+        TROPICAL_YEAR(Vocabulary.Keys.TropicalYear, 946684800L, "TropicalYear", false),
 
         /**
          * Time measured as seconds since January 1st, 1970 at 00:00 UTC.
@@ -1633,7 +1633,7 @@ public enum CommonCRS {
         private final short key;
 
         /**
-         * The date and time origin of this temporal datum.
+         * The date and time origin of this temporal datum in seconds since January 1st, 1970 at 00:00 UTC.
          */
         private final long epoch;
 
@@ -1727,8 +1727,8 @@ public enum CommonCRS {
          */
         @OptionalCandidate
         public static Temporal forEpoch(final Instant epoch) {
-            if (epoch != null) {
-                final long e = epoch.toEpochMilli();
+            if (epoch != null && epoch.getNano() == 0) {
+                final long e = epoch.getEpochSecond();
                 for (final Temporal candidate : values()) {
                     if (candidate.epoch == e) {
                         return candidate;
@@ -1847,7 +1847,7 @@ public enum CommonCRS {
                         } else {
                             properties = properties(key);
                         }
-                        object = new DefaultTemporalDatum(properties, new Date(epoch));
+                        object = new DefaultTemporalDatum(properties, Instant.ofEpochSecond(epoch));
                         cached = object;
                     }
                 }

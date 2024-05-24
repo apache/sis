@@ -17,7 +17,7 @@
 package org.apache.sis.referencing;
 
 import static java.lang.Math.*;
-import org.opengis.geometry.coordinate.Position;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.internal.Resources;
@@ -209,7 +209,7 @@ class GeodesicsOnEllipsoid extends GeodeticCalculator {
     /**
      * Constructs a new geodetic calculator expecting coordinates in the supplied CRS.
      *
-     * @param  crs         the referencing system for the {@link Position} arguments and return values.
+     * @param  crs         the referencing system for the {@link DirectPosition} arguments and return values.
      * @param  ellipsoid   ellipsoid associated to the geodetic component of given CRS.
      */
     GeodesicsOnEllipsoid(final CoordinateReferenceSystem crs, final Ellipsoid ellipsoid) {

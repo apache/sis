@@ -16,9 +16,9 @@
  */
 package org.apache.sis.referencing.datum;
 
-import java.util.Date;
 import java.util.Arrays;
 import java.util.Objects;
+import java.time.temporal.Temporal;
 import java.io.Serializable;
 import static java.lang.Math.abs;
 import org.opengis.metadata.extent.Extent;
@@ -120,7 +120,7 @@ import static org.apache.sis.referencing.operation.matrix.Matrix4.SIZE;
  * (case 1 above) over the <i>early-binding</i> approach (case 3 above).
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see DefaultGeodeticDatum#getBursaWolfParameters()
  * @see <a href="https://en.wikipedia.org/wiki/Helmert_transformation">Wikipedia: Helmert transformation</a>
@@ -386,7 +386,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
 
     /**
      * Inverts in-place the transformation by inverting the sign of all numerical parameters.
-     * The {@linkplain #getPositionVectorTransformation(Date) position vector transformation} matrix
+     * The {@linkplain #getPositionVectorTransformation(Temporal) position vector transformation} matrix
      * created from inverted Bursa-Wolf parameters will be <strong>approximately</strong> equals
      * to the {@linkplain org.apache.sis.referencing.operation.matrix.MatrixSIS#inverse() inverse}
      * of the matrix created from the original parameters. The equality holds approximately only
@@ -406,7 +406,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      *
      * @return fractional number of tropical years since reference time, or {@code null}.
      */
-    DoubleDouble period(final Date time) {
+    DoubleDouble period(final Temporal time) {
         return null;
     }
 
@@ -414,7 +414,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * Returns the parameter at the given index. If this {@code BursaWolfParameters} is time-dependent,
      * then the returned value shall be corrected the time elapsed since the reference time.
      *
-     * The {@code factor} argument shall be the value computed by {@link #period(Date)},
+     * The {@code factor} argument shall be the value computed by {@link #period(Temporal)},
      * multiplied by 1000 for all {@code index} values except 6.
      * The 1000 factor is for conversion mm/year to m/year or milli-arc-seconds to arc-seconds.
      *
@@ -478,8 +478,10 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * @return an affine transform in geocentric space created from this Bursa-Wolf parameters and the given time.
      *
      * @see DefaultGeodeticDatum#getPositionVectorTransformation(GeodeticDatum, Extent)
+     *
+     * @since 1.5
      */
-    public Matrix getPositionVectorTransformation(final Date time) {
+    public Matrix getPositionVectorTransformation(final Temporal time) {
         final DoubleDouble period = period(time);
         if (period == null && isTranslation()) {
             final Matrix4 matrix = new Matrix4();
@@ -524,7 +526,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
      * @param  tolerance  the tolerance error for the skew-symmetric matrix test, in units of PPM or arc-seconds (e.g. 1E-8).
      * @throws IllegalArgumentException if the specified matrix does not met the conditions.
      *
-     * @see #getPositionVectorTransformation(Date)
+     * @see #getPositionVectorTransformation(Temporal)
      */
     public void setPositionVectorTransformation(final Matrix matrix, final double tolerance) throws IllegalArgumentException {
         final int numRow = matrix.getNumRow();

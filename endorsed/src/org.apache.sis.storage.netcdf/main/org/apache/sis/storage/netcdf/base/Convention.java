@@ -21,7 +21,6 @@ import java.util.Set;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.ServiceLoader;
 import java.util.function.Function;
 import java.awt.Color;
@@ -482,7 +481,7 @@ public class Convention {
         final Map<String,Object> definition = new HashMap<>();
         definition.put(CF.GRID_MAPPING_NAME, method);
         for (final String name : node.getAttributeNames()) try {
-            final String ln = name.toLowerCase(Locale.US);
+            final String ln = name.toLowerCase(Decoder.DATA_LOCALE);
             Object value;
             switch (ln) {
                 case CF.GRID_MAPPING_NAME: continue;        // Already stored.

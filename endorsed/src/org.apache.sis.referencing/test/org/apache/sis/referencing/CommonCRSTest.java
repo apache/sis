@@ -19,7 +19,10 @@ package org.apache.sis.referencing;
 import java.util.Date;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Locale;
+import java.util.TimeZone;
 import java.time.Instant;
+import java.text.SimpleDateFormat;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
@@ -46,9 +49,11 @@ import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.TestUtilities.*;
+import static org.apache.sis.util.privy.Constants.UTC;
 
 // Specific to the main branch:
 import org.opengis.referencing.datum.VerticalDatumType;
+import org.apache.sis.util.privy.TemporalDate;
 import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
 
 
@@ -58,11 +63,6 @@ import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
  * @author  Martin Desruisseaux (IRD, Geomatys)
  */
 public final class CommonCRSTest extends TestCase {
-    /**
-     * Length of a day in milliseconds.
-     */
-    private static final double DAY_LENGTH = 24 * 60 * 60 * 1000;
-
     /**
      * Creates a new test case.
      */
@@ -252,8 +252,20 @@ public final class CommonCRSTest extends TestCase {
      */
     @Test
     public void testTemporal() {
-        final double julianEpoch = CommonCRS.Temporal.JULIAN.datum().getOrigin().getTime() / DAY_LENGTH;
-        assertTrue(julianEpoch < 0);
+        final var julianEpoch = TemporalDate.toInstant(CommonCRS.Temporal.JULIAN.datum().getOrigin());
+        final double SECONDS_PER_DAY = Constants.SECONDS_PER_DAY;
+        final double julianEpochSecond = julianEpoch.getEpochSecond() / SECONDS_PER_DAY;
+        assertTrue(julianEpochSecond < 0);
+        /*
+         * We need to use `java.text.DateFormat` rather than `Instant.parse(String)` because
+         * they have different policy regarding the calendar for dates before October 15, 1582.
+         * The `java.time` classes use the proleptic Gregorian calendar while `java.text` uses
+         * the prolectic Julian calendar. The latter is what we need for this test.
+         */
+        final var dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.CANADA);
+        dateFormat.setTimeZone(TimeZone.getTimeZone(UTC));
+        dateFormat.setLenient(false);
+
         for (final CommonCRS.Temporal e : CommonCRS.Temporal.values()) {
             final String epoch;
             final double days;
@@ -274,8 +286,8 @@ public final class CommonCRSTest extends TestCase {
             Validators.validate(crs);
             assertSame(datum, e.datum(), name);             // Datum before CRS creation.
             assertSame(crs.getDatum(), e.datum(), name);    // Datum after CRS creation.
-            assertEquals(epoch, format(origin), name);
-            assertEquals(days, origin.getTime() / DAY_LENGTH - julianEpoch, name);
+            assertEquals(epoch, dateFormat.format(origin), name);
+            assertEquals(days, origin.getTime() / (1000*SECONDS_PER_DAY) - julianEpochSecond, name);
             switch (e) {
                 case JAVA: {
                     assertNameContains(datum, "Unix/POSIX");

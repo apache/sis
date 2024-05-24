@@ -16,7 +16,7 @@
  */
 package org.apache.sis.storage.netcdf.base;
 
-import java.util.Date;
+import java.time.Instant;
 import java.io.IOException;
 import org.apache.sis.storage.DataStoreException;
 import static org.apache.sis.storage.netcdf.AttributeNames.*;
@@ -24,7 +24,6 @@ import static org.apache.sis.storage.netcdf.AttributeNames.*;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.apache.sis.test.TestUtilities.date;
 
 
 /**
@@ -85,9 +84,9 @@ public class DecoderTest extends TestCase {
     @Test
     public void testDateValue() throws IOException, DataStoreException {
         selectDataset(TestData.NETCDF_2D_GEOGRAPHIC);
-        assertAttributeEquals(date("2005-09-22 00:00:00"), DATE_CREATED);
-        assertAttributeEquals(date("2018-05-15 13:00:00"), DATE_MODIFIED);
-        assertAttributeEquals((Date) null,                 DATE_ISSUED);
+        assertAttributeEquals(Instant.parse("2005-09-22T00:00:00Z"), DATE_CREATED);
+        assertAttributeEquals(Instant.parse("2018-05-15T13:00:00Z"), DATE_MODIFIED);
+        assertAttributeEquals((Instant) null, DATE_ISSUED);
     }
 
     /**
@@ -99,14 +98,14 @@ public class DecoderTest extends TestCase {
     @Test
     public void testNumberToDate() throws IOException, DataStoreException {
         final Decoder decoder = selectDataset(TestData.NETCDF_2D_GEOGRAPHIC);
-        assertArrayEquals(new Date[] {
-            date("2005-09-22 00:00:00")
+        assertArrayEquals(new Instant[] {
+            Instant.parse("2005-09-22T00:00:00Z")
         }, decoder.numberToDate("hours since 1992-1-1", 120312));
 
-        assertArrayEquals(new Date[] {
-            date("1970-01-09 18:00:00"),
-            date("1969-12-29 06:00:00"),
-            date("1993-04-10 00:00:00")
+        assertArrayEquals(new Instant[] {
+            Instant.parse("1970-01-09T18:00:00Z"),
+            Instant.parse("1969-12-29T06:00:00Z"),
+            Instant.parse("1993-04-10T00:00:00Z")
         }, decoder.numberToDate("days since 1970-01-01T00:00:00Z", 8.75, -2.75, 8500));
     }
 

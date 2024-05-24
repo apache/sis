@@ -17,12 +17,15 @@
 package org.apache.sis.referencing.datum;
 
 import java.util.Date;
+import java.util.Objects;
+import java.time.Duration;
+import java.time.temporal.Temporal;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.util.privy.DoubleDouble;
+import org.apache.sis.util.privy.Constants;
 import static org.apache.sis.util.ArgumentChecks.*;
-import static org.apache.sis.referencing.privy.Formulas.JULIAN_YEAR_LENGTH;
 
 
 /**
@@ -57,7 +60,7 @@ import static org.apache.sis.referencing.privy.Formulas.JULIAN_YEAR_LENGTH;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.4
  */
 @SuppressWarnings("CloneableImplementsClone")                   // Fields in this class do not need cloning.
@@ -65,7 +68,7 @@ public class TimeDependentBWP extends BursaWolfParameters {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -4628799278259080258L;
+    private static final long serialVersionUID = 8404372938646871943L;
 
     /**
      * Rate of change of X-axis translation in millimetres per year (EPSG:1040).
@@ -108,7 +111,8 @@ public class TimeDependentBWP extends BursaWolfParameters {
     /**
      * The reference epoch for time-dependent parameters (EPSG:1047).
      */
-    private final long timeReference;
+    @SuppressWarnings("serial")         // Most implementations are serializable.
+    private final Temporal timeReference;
 
     /**
      * Creates a new instance for the given target datum, domain of validity and time reference.
@@ -119,10 +123,22 @@ public class TimeDependentBWP extends BursaWolfParameters {
      * @param domainOfValidity  area or region in which a coordinate transformation based on those Bursa-Wolf parameters
      *                          is valid, or {@code null} if unspecified.
      * @param timeReference     the reference epoch for time-dependent parameters.
+     *
+     * @since 1.5
      */
-    public TimeDependentBWP(final GeodeticDatum targetDatum, final Extent domainOfValidity, final Date timeReference) {
+    public TimeDependentBWP(final GeodeticDatum targetDatum, final Extent domainOfValidity, final Temporal timeReference) {
         super(targetDatum, domainOfValidity);
-        this.timeReference = timeReference.getTime();
+        this.timeReference = Objects.requireNonNull(timeReference);
+    }
+
+    /**
+     * Creates a new instance for the given target datum, domain of validity and time reference.
+     *
+     * @deprecated Replaced by {@link #TimeDependentBWP(GeodeticDatum, Extent, Temporal)}.
+     */
+    @Deprecated(since="1.5", forRemoval=true)
+    public TimeDependentBWP(final GeodeticDatum targetDatum, final Extent domainOfValidity, final Date timeReference) {
+        this(targetDatum, domainOfValidity, timeReference.toInstant());
     }
 
     /**
@@ -144,8 +160,8 @@ public class TimeDependentBWP extends BursaWolfParameters {
      *
      * @return the reference epoch for time-dependent parameters.
      */
-    public Date getTimeReference() {
-        return new Date(timeReference);
+    public Temporal getTimeReference() {
+        return timeReference;
     }
 
     /**
@@ -155,11 +171,11 @@ public class TimeDependentBWP extends BursaWolfParameters {
      * @return fractional number of tropical years since reference time, or {@code null}.
      */
     @Override
-    final DoubleDouble period(final Date time) {
+    final DoubleDouble period(final Temporal time) {
         if (time != null) {
-            final long millis = time.getTime() - timeReference;
-            if (millis != 0) {                                          // Returns null for 0 as an optimization.
-                return DoubleDouble.of(millis).divide(JULIAN_YEAR_LENGTH);
+            final Duration d = Duration.between(timeReference, time);
+            if (!d.isZero()) {      // Returns null for 0 as an optimization.
+                return DoubleDouble.of(d).divide(Constants.MILLIS_PER_TROPICAL_YEAR * Constants.NANOS_PER_MILLISECOND);
             }
         }
         return null;
@@ -285,6 +301,6 @@ public class TimeDependentBWP extends BursaWolfParameters {
      */
     @Override
     public int hashCode() {
-        return super.hashCode() ^ Long.hashCode(timeReference);
+        return super.hashCode() ^ timeReference.hashCode();
     }
 }

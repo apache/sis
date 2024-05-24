@@ -17,10 +17,10 @@
 package org.apache.sis.referencing.privy;
 
 import java.util.Map;
-import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.function.BiConsumer;
+import java.time.temporal.Temporal;
 import javax.measure.Unit;
 import javax.measure.quantity.Time;
 import javax.measure.quantity.Length;
@@ -60,6 +60,9 @@ import org.apache.sis.measure.Latitude;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.parameter.Parameters;
+
+// Specific to the main branch:
+import org.apache.sis.util.privy.TemporalDate;
 
 
 /**
@@ -533,12 +536,12 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * Creates a temporal CRS from the given origin and temporal unit. For this method, the CRS name is optional:
      * if no {@code addName(…)} method has been invoked, then a default name will be used.
      *
-     * @param  origin  the epoch in milliseconds since January 1st, 1970 at midnight UTC.
+     * @param  origin  the origin of the temporal datum.
      * @param  unit    the unit of measurement.
      * @return a temporal CRS using the given origin and units.
      * @throws FactoryException if an error occurred while building the temporal CRS.
      */
-    public TemporalCRS createTemporalCRS(final Date origin, final Unit<Time> unit) throws FactoryException {
+    public TemporalCRS createTemporalCRS(final Temporal origin, final Unit<Time> unit) throws FactoryException {
         /*
          * Try to use one of the predefined datum and coordinate system if possible.
          * This not only saves a little bit of memory, but also provides better names.
@@ -582,7 +585,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
             if (datum == null) {
                 final Object remarks    = properties.remove(TemporalCRS.REMARKS_KEY);
                 final Object identifier = properties.remove(TemporalCRS.IDENTIFIERS_KEY);
-                datum = factories.getDatumFactory().createTemporalDatum(properties, origin);
+                datum = factories.getDatumFactory().createTemporalDatum(properties, TemporalDate.toDate(origin));
                 properties.put(TemporalCRS.IDENTIFIERS_KEY, identifier);
                 properties.put(TemporalCRS.REMARKS_KEY,     remarks);
                 properties.put(TemporalCRS.NAME_KEY, datum.getName());      // Share the Identifier instance.

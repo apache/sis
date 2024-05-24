@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.privy;
 
-import java.util.Date;
 import java.time.Instant;
 import java.time.Duration;
 import org.opengis.metadata.extent.Extent;
@@ -25,6 +24,7 @@ import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Range;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.pending.jdk.JDK23;
 
 
 /**
@@ -221,12 +221,10 @@ public final class ExtentSelector<T> {
     public final boolean setExtentOfInterest(final Extent domain, final GeographicBoundingBox aoi, final Instant[] toi) {
         areaOfInterest = Extents.intersection(aoi, Extents.getGeographicBoundingBox(domain));
         minTOI = maxTOI = null;
-        final Range<Date> tr = Extents.getTimeRange(domain);
-        if (tr != null) {
-            Date t;
-            if ((t = tr.getMinValue()) != null) minTOI = t.toInstant();
-            if ((t = tr.getMaxValue()) != null) maxTOI = t.toInstant();
-        }
+        Extents.getTimeRange(domain, null).ifPresent((tr) -> {
+            minTOI = tr.getMinValue();
+            maxTOI = tr.getMaxValue();
+        });
         if (toi != null && toi.length != 0) {
             Instant t = toi[0];
             if (minTOI == null || (t != null && t.isAfter(minTOI))) {
@@ -367,7 +365,7 @@ public final class ExtentSelector<T> {
      */
     private Duration overtime(final Instant startTime, final Instant endTime, final Duration intersection) {
         return (startTime != null && endTime != null && intersection != null)
-                ? round(Duration.between(startTime, endTime).minus(intersection)) : null;
+                ? round(JDK23.until(startTime, endTime).minus(intersection)) : null;
     }
 
     /**
@@ -379,11 +377,10 @@ public final class ExtentSelector<T> {
      * @param  object  a user object associated to the given extent.
      */
     public void evaluate(final Extent domain, final T object) {
-        Date t;
-        final Range<Date> tr = Extents.getTimeRange(domain);
+        final Range<Instant> tr = Extents.getTimeRange(domain, null).orElse(null);
         evaluate(Extents.getGeographicBoundingBox(domain),
-                 (tr != null && (t = tr.getMinValue()) != null) ? t.toInstant() : null,
-                 (tr != null && (t = tr.getMaxValue()) != null) ? t.toInstant() : null,
+                 (tr != null) ? tr.getMinValue() : null,
+                 (tr != null) ? tr.getMaxValue() : null,
                  object);
     }
 
@@ -409,7 +406,7 @@ public final class ExtentSelector<T> {
         if (tmax != null && maxTOI != null && tmax.isAfter (maxTOI)) tmax = maxTOI;
         final Duration duration;
         if (tmin != null && tmax != null) {
-            duration = Duration.between(tmin, tmax);
+            duration = JDK23.until(tmin, tmax);
             if (duration.isNegative()) return;
         } else {
             duration = null;

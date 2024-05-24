@@ -20,7 +20,7 @@ import org.opengis.referencing.IdentifiedObject;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.system.DelayedExecutor;
 import org.apache.sis.system.DelayedRunnable;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.Constants;
 
 
 /**
@@ -56,7 +56,7 @@ final class ReferenceKeeper {
      * Time to wait before to remove entries from this map. Current value is 5 minutes.
      */
     @Configuration
-    private static final long EXPIRATION_TIME = 5L * 60 * StandardDateFormat.NANOS_PER_SECOND;
+    private static final long EXPIRATION_TIME = 5L * 60 * Constants.NANOS_PER_SECOND;
 
     /**
      * The objects to retain by strong reference. May contains duplicated values and {@code null} anywhere.

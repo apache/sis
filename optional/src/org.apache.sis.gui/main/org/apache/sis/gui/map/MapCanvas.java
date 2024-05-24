@@ -89,7 +89,7 @@ import org.apache.sis.portrayal.PlanarCanvas;
 import org.apache.sis.portrayal.RenderException;
 import org.apache.sis.portrayal.TransformChangeEvent;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
-import static org.apache.sis.util.privy.StandardDateFormat.NANOS_PER_MILLISECOND;
+import static org.apache.sis.util.privy.Constants.NANOS_PER_MILLISECOND;
 
 // Specific to the main branch:
 import org.opengis.geometry.MismatchedDimensionException;

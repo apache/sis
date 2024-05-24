@@ -35,7 +35,6 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.coordinate.Position;
 import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
@@ -70,11 +69,11 @@ import static org.apache.sis.referencing.operation.provider.ModifiedAzimuthalEqu
  *
  * <p>This class uses the following information:</p>
  * <ul>
- *   <li>The {@linkplain #setStartPoint(Position) start point}, which is always considered valid after the first call
+ *   <li>The {@linkplain #setStartPoint(DirectPosition) start point}, which is always considered valid after the first call
  *     to {@code setStartPoint(…)}. Its value can only be changed by another call to {@code setStartPoint(…)}.</li>
  *   <li>One of the followings (the latest specified properties override other properties and determines what will be calculated):
  *     <ul>
- *       <li>the {@linkplain #setEndPoint(Position) end point}, or</li>
+ *       <li>the {@linkplain #setEndPoint(DirectPosition) end point}, or</li>
  *       <li>the {@linkplain #setStartingAzimuth(double) azimuth at start point} together with
  *           the {@linkplain #setGeodesicDistance(double) geodesic distance} from that point.</li>
  *     </ul>
@@ -153,7 +152,7 @@ public class GeodeticCalculator {
      *
      * <ul>
      *   <li>{@link PositionTransformer#defaultCRS} is the default CRS for all methods receiving a
-     *       {@link Position} argument if the given position does not specify its own CRS.</li>
+     *       {@link DirectPosition} argument if the given position does not specify its own CRS.</li>
      *   <li>{@link PositionTransformer#getCoordinateReferenceSystem()} is the CRS of all methods
      *       receiving (φ,λ) arguments as {@code double} values.</li>
      * </ul>
@@ -269,7 +268,7 @@ public class GeodeticCalculator {
      * <p>This class is currently not designed for sub-classing outside this package. If in a future version we want to
      * relax this restriction, we should revisit the package-private API in order to commit to a safer protected API.</p>
      *
-     * @param  crs         the reference system for the {@link Position} arguments and return values.
+     * @param  crs         the reference system for the {@link DirectPosition} arguments and return values.
      * @param  ellipsoid   ellipsoid associated to the geodetic component of given CRS.
      */
     GeodeticCalculator(final CoordinateReferenceSystem crs, final Ellipsoid ellipsoid) {
@@ -285,11 +284,11 @@ public class GeodeticCalculator {
 
     /**
      * Constructs a new geodetic calculator expecting coordinates in the supplied CRS.
-     * All {@code GeodeticCalculator} methods having a {@link Position} argument
+     * All {@code GeodeticCalculator} methods having a {@link DirectPosition} argument
      * or return value will use that specified CRS.
      * That CRS is the value returned by {@link #getPositionCRS()}.
      *
-     * @param  crs  the reference system for the {@link Position} objects.
+     * @param  crs  the reference system for the {@link DirectPosition} objects.
      * @return a new geodetic calculator using the specified CRS.
      */
     public static GeodeticCalculator create(final CoordinateReferenceSystem crs) {
@@ -320,13 +319,14 @@ public class GeodeticCalculator {
     }
 
     /**
-     * Returns the Coordinate Reference System (CRS) in which {@code Position}s are represented, unless otherwise specified.
-     * This is the CRS of all {@link Position} instances returned by methods in this class. This is also the default CRS
-     * assumed by methods receiving a {@link Position} argument when the given position does not specify its CRS.
+     * Returns the Coordinate Reference System (CRS) in which positions are represented, unless otherwise specified.
+     * This is the CRS of all {@link DirectPosition} instances returned by methods in this class.
+     * This is also the default CRS assumed by methods receiving a {@link DirectPosition} argument
+     * when the given position does not specify its CRS.
      * This default CRS is specified at construction time.
      * It is not necessarily geographic; it may be projected or geocentric.
      *
-     * @return the default CRS for {@link Position} instances.
+     * @return the default CRS for {@link DirectPosition} instances.
      */
     public CoordinateReferenceSystem getPositionCRS() {
         return userToGeodetic.defaultCRS;
@@ -400,12 +400,12 @@ public class GeodeticCalculator {
      * @param  point  the starting point in any coordinate reference system.
      * @throws IllegalArgumentException if the given coordinates cannot be transformed.
      *
-     * @see #setEndPoint(Position)
+     * @see #setEndPoint(DirectPosition)
      */
-    public void setStartPoint(final Position point) {
+    public void setStartPoint(final DirectPosition point) {
         final DirectPosition p;
         try {
-            p = userToGeodetic.transform(point.getDirectPosition());
+            p = userToGeodetic.transform(point);
         } catch (TransformException e) {
             throw new IllegalArgumentException(transformError(false), e);
         }
@@ -435,7 +435,7 @@ public class GeodeticCalculator {
 
     /**
      * Returns or computes the destination in the CRS specified at construction time. This method returns
-     * the point specified in the last call to a {@link #setEndPoint(Position) setEndPoint(…)} method,
+     * the point specified in the last call to a {@link #setEndPoint(DirectPosition) setEndPoint(…)} method,
      * unless the {@linkplain #setStartingAzimuth(double) starting azimuth} and
      * {@linkplain #setGeodesicDistance(double) geodesic distance} have been set more recently.
      * In the latter case, the end point will be computed from the {@linkplain #getStartPoint() start point}
@@ -467,12 +467,12 @@ public class GeodeticCalculator {
      * @param  position  the destination (end point) in any coordinate reference system.
      * @throws IllegalArgumentException if the given coordinates cannot be transformed.
      *
-     * @see #setStartPoint(Position)
+     * @see #setStartPoint(DirectPosition)
      */
-    public void setEndPoint(final Position position) {
+    public void setEndPoint(final DirectPosition position) {
         final DirectPosition p;
         try {
-            p = userToGeodetic.transform(position.getDirectPosition());
+            p = userToGeodetic.transform(position);
         } catch (TransformException e) {
             throw new IllegalArgumentException(transformError(false), e);
         }
@@ -504,7 +504,7 @@ public class GeodeticCalculator {
      * Returns or computes the angular heading at the starting point of a geodesic path.
      * Azimuth is relative to geographic North with values increasing clockwise.
      * This method returns the azimuth normalized to [-180 … +180]° range given in last call to
-     * {@link #setStartingAzimuth(double)} method, unless the {@link #setEndPoint(Position) setEndPoint(…)}
+     * {@link #setStartingAzimuth(double)} method, unless the {@link #setEndPoint(DirectPosition) setEndPoint(…)}
      * method has been invoked more recently. In the latter case, the azimuth will be computed from the
      * {@linkplain #getStartPoint() start point} and the current end point.
      *
@@ -541,8 +541,9 @@ public class GeodeticCalculator {
 
     /**
      * Computes the angular heading at the ending point of a geodesic path.
-     * Azimuth is relative to geographic North with values increasing clockwise. This method computes the azimuth
-     * from the current {@linkplain #setStartPoint(Position) start point} and {@linkplain #setEndPoint(Position) end point},
+     * Azimuth is relative to geographic North with values increasing clockwise.
+     * This method computes the azimuth from the current {@linkplain #setStartPoint(DirectPosition) start point}
+     * and {@linkplain #setEndPoint(DirectPosition) end point},
      * or from start point and the current {@linkplain #setStartingAzimuth(double) starting azimuth} and
      * {@linkplain #setGeodesicDistance(double) geodesic distance}.
      *
@@ -579,8 +580,9 @@ public class GeodeticCalculator {
     /**
      * Returns or computes the shortest distance from start point to end point. This is sometimes called "great circle"
      * or "orthodromic" distance. This method returns the value given in last call to {@link #setGeodesicDistance(double)},
-     * unless the {@link #setEndPoint(Position) setEndPoint(…)} method has been invoked more recently. In the latter case,
-     * the distance will be computed from the {@linkplain #getStartPoint() start point} and current end point.
+     * unless the {@link #setEndPoint(DirectPosition) setEndPoint(…)} method has been invoked more recently.
+     * In the latter case, the distance will be computed from the {@linkplain #getStartPoint() start point}
+     * and current end point.
      *
      * @return the shortest distance in the unit of measurement given by {@link #getDistanceUnit()}.
      * @throws IllegalStateException if the start point or end point has not been set.

@@ -163,6 +163,7 @@ public abstract class TimePeriodBound {
          */
         @Override
         XMLGregorianCalendar calendar() {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final TimeInstant timeInstant = this.timeInstant;
             return (timeInstant != null) ? timeInstant.timePosition : null;
         }

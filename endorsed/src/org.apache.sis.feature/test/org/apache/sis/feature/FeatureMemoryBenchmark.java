@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.Constants;
 
 // Test dependencies
 import org.apache.sis.test.Benchmark;
@@ -182,7 +182,7 @@ public final class FeatureMemoryBenchmark {
                 long time = System.nanoTime();
                 b.run();
                 time = System.nanoTime() - time;
-                System.console().printf("Ellapsed time: %f%n", time / (float) StandardDateFormat.NANOS_PER_SECOND);
+                System.console().printf("Ellapsed time: %f%n", time / (float) Constants.NANOS_PER_SECOND);
                 return;
             }
         }

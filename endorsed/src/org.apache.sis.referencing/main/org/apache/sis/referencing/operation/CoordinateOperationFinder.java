@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ListIterator;
+import java.time.Duration;
 import javax.measure.Unit;
 import javax.measure.IncommensurableException;
 import javax.measure.quantity.Time;
@@ -36,6 +37,10 @@ import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
+import org.apache.sis.parameter.TensorParameters;
+import org.apache.sis.measure.Units;
+import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -46,6 +51,12 @@ import org.apache.sis.referencing.privy.EllipsoidalHeightCombiner;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.internal.AnnotatedMatrix;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.datum.BursaWolfParameters;
+import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
+import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.matrix.MatrixSIS;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.operation.provider.DatumShiftMethod;
 import org.apache.sis.referencing.operation.provider.Geographic2Dto3D;
@@ -54,20 +65,13 @@ import org.apache.sis.referencing.operation.provider.GeographicToGeocentric;
 import org.apache.sis.referencing.operation.provider.GeocentricToGeographic;
 import org.apache.sis.referencing.operation.provider.GeocentricAffine;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.privy.DoubleDouble;
 import org.apache.sis.util.privy.Constants;
-import org.apache.sis.measure.Units;
-import org.apache.sis.metadata.iso.citation.Citations;
-import org.apache.sis.metadata.iso.extent.Extents;
-import org.apache.sis.parameter.TensorParameters;
-import org.apache.sis.referencing.cs.CoordinateSystems;
-import org.apache.sis.referencing.datum.BursaWolfParameters;
-import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
-import org.apache.sis.referencing.operation.matrix.Matrices;
-import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
+import org.apache.sis.util.privy.DoubleDouble;
 import org.apache.sis.util.resources.Vocabulary;
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.apache.sis.util.privy.TemporalDate;
 
 
 /**
@@ -859,15 +863,16 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final TimeCS sourceCS = sourceCRS.getCoordinateSystem();
         final TimeCS targetCS = targetCRS.getCoordinateSystem();
         /*
-         * Compute the epoch shift.  The epoch is the time "0" in a particular coordinate reference system.
-         * For example, the epoch for java.util.Date object is january 1, 1970 at 00:00 UTC. We compute how
-         * much to add to a time in `sourceCRS` in order to get a time in `targetCRS`.
+         * Compute the epoch shift. The epoch is the "time zero" in a particular coordinate reference system.
+         * For example, the epoch of Java temporal objects (e.g. `Instant`) is january 1, 1970 at 00:00 UTC.
+         * We compute how much to add to a time in `sourceCRS` in order to get a time in `targetCRS`.
          * This "epoch shift" is in units of `targetCRS`.
          */
         final Unit<Time> targetUnit = targetCS.getAxis(0).getUnit().asType(Time.class);
-        DoubleDouble epochShift = DoubleDouble.of(sourceDatum.getOrigin().getTime());
-        epochShift = epochShift.subtract(targetDatum.getOrigin().getTime());
-        epochShift = DoubleDouble.of(Units.MILLISECOND.getConverterTo(targetUnit).convert(epochShift), true);
+        DoubleDouble epochShift = DoubleDouble.of(Duration.between(
+                TemporalDate.toTemporal(targetDatum.getOrigin()),
+                TemporalDate.toTemporal(sourceDatum.getOrigin())));
+        epochShift = DoubleDouble.of(Units.NANOSECOND.getConverterTo(targetUnit).convert(epochShift), true);
         /*
          * Check axis directions. The method `swapAndScaleAxes` should returns a matrix of size 2×2.
          * The element at index (0,0) may be +1 if source and target axes are in the same direction,

@@ -59,7 +59,7 @@ import org.apache.sis.system.Shutdown;
 import org.apache.sis.system.DataDirectory;
 import static org.apache.sis.util.collection.TableColumn.NAME;
 import static org.apache.sis.util.collection.TableColumn.VALUE_AS_TEXT;
-import static org.apache.sis.util.privy.StandardDateFormat.UTC;
+import static org.apache.sis.util.privy.Constants.UTC;
 
 
 /**

@@ -1066,7 +1066,7 @@ public class WKTFormat extends CompoundFormat<Object> {
      * {@link org.opengis.metadata.extent.VerticalExtent},
      * {@link org.opengis.metadata.extent.TemporalExtent},
      * {@link org.opengis.geometry.Envelope},
-     * {@link org.opengis.geometry.coordinate.Position}
+     * {@link org.opengis.geometry.DirectPosition}
      * and {@link Unit}.
      *
      * @param  object      the object to format.

@@ -18,7 +18,6 @@ package org.apache.sis.storage.netcdf.base;
 
 import java.util.Map;
 import java.util.List;
-import java.util.Date;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.StringJoiner;
@@ -61,6 +60,7 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 
 // Specific to the main branch:
+import org.apache.sis.util.privy.TemporalDate;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 
 
@@ -136,6 +136,7 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
 
     /**
      * The datum created by {@link #createDatum(DatumFactory, Map)}.
+     * At least one of {@code datum} and {@link #datumEnsemble} shall be initialized.
      */
     protected D datum;
 
@@ -968,7 +969,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
                     datum = c.datum();
                 } else {
                     properties = properties("Time since " + epoch);
-                    datum = factory.createTemporalDatum(properties, Date.from(epoch));
+                    datum = factory.createTemporalDatum(properties, TemporalDate.toDate(epoch));
                 }
             }
         }

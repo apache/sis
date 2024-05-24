@@ -27,7 +27,7 @@ import org.apache.sis.xml.XML;
 import org.apache.sis.xml.MarshallerPool;
 import org.apache.sis.xml.bind.cat.CodeListUID;
 import org.apache.sis.xml.privy.LegacyNamespaces;
-import static org.apache.sis.util.privy.StandardDateFormat.UTC;
+import static org.apache.sis.util.privy.Constants.UTC;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

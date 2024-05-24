@@ -50,6 +50,54 @@ public final class Constants extends Static {
     public static final byte DEFAULT_INDENTATION = 2;
 
     /**
+     * The length of a day in number of seconds.
+     * Can be casted to {@code float} with exact precision.
+     */
+    public static final int SECONDS_PER_DAY = 24*60*60;
+
+    /**
+     * The length of a day in number of milliseconds.
+     * Can be casted to {@code float} with exact precision.
+     */
+    public static final int MILLISECONDS_PER_DAY = SECONDS_PER_DAY * 1000;
+
+    /**
+     * The length of a day in number of nanoseconds.
+     */
+    public static final long NANOSECONDS_PER_DAY = MILLISECONDS_PER_DAY * (long) 1_000_000;
+
+    /**
+     * Number of milliseconds in one second.
+     * Can be casted to {@code float} with exact precision.
+     */
+    public static final int MILLIS_PER_SECOND = 1000;
+
+    /**
+     * Number of nanoseconds in one millisecond.
+     * Can be casted to {@code float} with exact precision.
+     */
+    public static final int NANOS_PER_MILLISECOND = 1000_000;
+
+    /**
+     * Number of nanoseconds in one second.
+     * Can be casted to {@code float} with exact precision.
+     */
+    public static final int NANOS_PER_SECOND = 1000_000_000;
+
+    /**
+     * Length of a year as defined by the International Union of Geological Sciences (IUGS), in milliseconds.
+     * This is the unit of measurement used in EPSG geodetic dataset (EPSG:1029).
+     */
+    public static final long MILLIS_PER_TROPICAL_YEAR = 31556925445L;
+
+    /**
+     * The {@value} timezone ID.
+     *
+     * @see java.time.ZoneOffset#UTC
+     */
+    public static final String UTC = "UTC";
+
+    /**
      * The {@value} protocol.
      */
     public static final String HTTP = "http", HTTPS = "https";

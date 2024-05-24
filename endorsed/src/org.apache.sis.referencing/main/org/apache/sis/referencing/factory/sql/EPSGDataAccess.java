@@ -41,10 +41,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.Statement;
 import java.sql.SQLException;
-import java.text.DateFormat;
-import java.text.ParseException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.temporal.Temporal;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
@@ -118,11 +117,12 @@ import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.pending.jdk.JDK16;
+import static org.apache.sis.util.privy.Constants.UTC;
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
-import static org.apache.sis.util.privy.StandardDateFormat.UTC;
 import static org.apache.sis.referencing.internal.ServicesForMetadata.CONNECTION;
 
 // Specific to the main branch:
+import org.apache.sis.util.privy.TemporalDate;
 import org.apache.sis.referencing.internal.ServicesForMetadata;
 import org.apache.sis.referencing.cs.DefaultParametricCS;
 import org.apache.sis.referencing.datum.DefaultParametricDatum;
@@ -242,12 +242,6 @@ public class EPSGDataAccess extends GeodeticAuthorityFactory implements CRSAutho
      * @see #getCalendar()
      */
     private Calendar calendar;
-
-    /**
-     * The object to use for parsing dates, created when first needed. This is used for
-     * parsing the origin of temporal datum. This is an Apache SIS specific extension.
-     */
-    private DateFormat dateFormat;
 
     /**
      * A pool of prepared statements. Keys are {@link String} objects related to their originating method
@@ -1722,19 +1716,16 @@ codes:  for (int i=0; i<codes.length; i++) {
                      * "date" type would have been better, but we do not modify the EPSG model.
                      */
                     case "temporal": {
-                        final Date originDate;
+                        final Temporal originDate;
                         if (Strings.isNullOrEmpty(anchor)) {
                             throw new FactoryDataException(resources().getString(Resources.Keys.DatumOriginShallBeDate));
                         }
-                        if (dateFormat == null) {
-                            dateFormat = new StandardDateFormat();      // Default to UTC timezone.
-                        }
                         try {
-                            originDate = dateFormat.parse(anchor);
-                        } catch (ParseException e) {
+                            originDate = StandardDateFormat.parseBest(anchor);
+                        } catch (RuntimeException e) {
                             throw new FactoryDataException(resources().getString(Resources.Keys.DatumOriginShallBeDate), e);
                         }
-                        datum = datumFactory.createTemporalDatum(properties, originDate);
+                        datum = datumFactory.createTemporalDatum(properties, TemporalDate.toDate(originDate));
                         break;
                     }
                     /*

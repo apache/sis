@@ -41,7 +41,7 @@ import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.gui.internal.BackgroundThreads;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
@@ -67,7 +67,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
      * The delay value is a compromise between fast user experience and giving enough time for doing a few
      * large data transfers instead of many small data transfers.
      */
-    private static final long REFRESH_DELAY = StandardDateFormat.NANOS_PER_SECOND / 10;
+    private static final long REFRESH_DELAY = Constants.NANOS_PER_SECOND / 10;
 
     /**
      * The table view which use this list, or {@code null} if we don't need this information anymore.
@@ -447,7 +447,7 @@ final class AuthorityCodes extends ObservableListBase<Code>
                  * the `toDescribe` list to be populated with more requests, then process them.
                  */
                 if (codes.isEmpty()) {
-                    Thread.sleep(REFRESH_DELAY / StandardDateFormat.NANOS_PER_MILLISECOND);
+                    Thread.sleep(REFRESH_DELAY / Constants.NANOS_PER_MILLISECOND);
                     return new PartialResult(null, processNameRequests(factory));
                 }
             } catch (BackingStoreException e) {

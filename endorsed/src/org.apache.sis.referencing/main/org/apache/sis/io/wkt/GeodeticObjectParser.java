@@ -26,13 +26,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import java.time.Instant;
 import static java.util.Collections.singletonMap;
 import javax.measure.Unit;
 import javax.measure.Quantity;
@@ -89,6 +89,7 @@ import org.opengis.referencing.ReferenceIdentifier;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceSystem;
+import org.apache.sis.util.privy.TemporalDate;
 import org.apache.sis.referencing.internal.ServicesForMetadata;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 
@@ -542,8 +543,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                     element.close(ignoredElements);
                     warning(parent, element, Errors.formatInternational(Errors.Keys.UnsupportedType_1, "TimeExtent[String,String]"), null);
                 } else {
-                    final Date startTime = element.pullDate("startTime");
-                    final Date endTime   = element.pullDate("endTime");
+                    final Instant startTime = element.pullDate("startTime");
+                    final Instant endTime   = element.pullDate("endTime");
                     element.close(ignoredElements);
                     final DefaultTemporalExtent t = new DefaultTemporalExtent();
                     t.setBounds(startTime, endTime);
@@ -1495,11 +1496,11 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         }
         final String  name   = element.pullString ("name");
         final Element origin = element.pullElement(MANDATORY, WKTKeywords.TimeOrigin);
-        final Date    epoch  = origin .pullDate("origin");
+        final Instant epoch  = origin .pullDate("origin");
         origin.close(ignoredElements);
         final DatumFactory datumFactory = factories.getDatumFactory();
         try {
-            return datumFactory.createTemporalDatum(parseAnchorAndClose(element, name), epoch);
+            return datumFactory.createTemporalDatum(parseAnchorAndClose(element, name), TemporalDate.toDate(epoch));
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
@@ -2056,9 +2057,9 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
          * A ParametricCRS can be either a "normal" one (with a non-null datum), or a DerivedCRS of kind ParametricCRS.
          * In the latter case, the datum is null and we have instead DerivingConversion element from a BaseParametricCRS.
          */
-        Datum           datum    = null;
-        SingleCRS       baseCRS  = null;
-        Conversion      fromBase = null;
+        Datum datum = null;
+        SingleCRS baseCRS = null;
+        Conversion fromBase = null;
         if (!isBaseCRS) {
             /*
              * UNIT[…] in DerivedCRS parameters are mandatory according ISO 19162 and the specification does not said

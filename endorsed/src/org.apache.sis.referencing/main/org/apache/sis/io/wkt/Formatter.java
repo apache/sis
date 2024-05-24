@@ -27,6 +27,8 @@ import java.util.Date;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.FieldPosition;
+import java.time.Instant;
+import java.time.temporal.Temporal;
 import java.io.IOException;
 import java.lang.reflect.Array;
 import java.math.RoundingMode;
@@ -50,11 +52,10 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.ConcatenatedOperation;
 import org.opengis.referencing.operation.MathTransform;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
-import org.opengis.geometry.coordinate.Position;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.UnitFormat;
-import org.apache.sis.measure.Range;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.Vector;
@@ -925,7 +926,7 @@ public class Formatter implements Localized {
             appendOnNewLine(WKTKeywords.Area, area.getDescription(), ElementKind.EXTENT);
             append(Extents.getGeographicBoundingBox(area), BBOX_ACCURACY);
             appendVerticalExtent(Extents.getVerticalRange(area));
-            appendTemporalExtent(Extents.getTimeRange(area));
+            appendTemporalExtent(area);
         }
     }
 
@@ -1005,10 +1006,10 @@ public class Formatter implements Localized {
      *   <li>“{@code TemporalExtent[1980-04-12T18:00:00.0Z, 1980-04-12T21:00:00.0Z]}”</li>
      * </ul>
      */
-    private void appendTemporalExtent(final Range<Date> range) {
-        if (range != null) {
-            final Date min = range.getMinValue();
-            final Date max = range.getMaxValue();
+    private void appendTemporalExtent(final Extent area) {
+        Extents.getTimeRange(area, null).ifPresent((range) -> {
+            final Instant min = range.getMinValue();
+            final Instant max = range.getMaxValue();
             if (min != null && max != null) {
                 openElement(true, WKTKeywords.TimeExtent);
                 setColor(ElementKind.EXTENT);
@@ -1017,7 +1018,7 @@ public class Formatter implements Localized {
                 resetColor();
                 closeElement(true);
             }
-        }
+        });
     }
 
     /**
@@ -1182,11 +1183,35 @@ public class Formatter implements Localized {
     }
 
     /**
+     * Appends a temporal object (usually an instant).
+     * The {@linkplain Symbols#getSeparator() element separator} will be written before the date if needed.
+     *
+     * @param  date  the date to append to the WKT, or {@code null} if none.
+     *
+     * @since 1.5
+     */
+    public void append(final Temporal date) {
+        if (date != null) {
+            appendSeparator();
+            if (date instanceof Instant) {
+                // This is the usual case.
+                dateFormat.format(Date.from((Instant) date), buffer, dummy);
+            } else {
+                // Preserve the data structure (e.g. whether there is hours or not, timezone or not).
+                buffer.append(date);
+            }
+        }
+    }
+
+    /**
      * Appends a date.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the date if needed.
      *
      * @param  date  the date to append to the WKT, or {@code null} if none.
+     *
+     * @deprecated Replaced by {@link #append(Temporal)}.
      */
+    @Deprecated(since="1.5", forRemoval=true)
     public void append(final Date date) {
         if (date != null) {
             appendSeparator();
@@ -1195,10 +1220,10 @@ public class Formatter implements Localized {
     }
 
     /**
-     * Appends a boolean value.
+     * Appends a Boolean value.
      * The {@linkplain Symbols#getSeparator() element separator} will be written before the boolean if needed.
      *
-     * @param  value  the boolean to append to the WKT.
+     * @param  value  the Boolean to append to the WKT.
      */
     public void append(final boolean value) {
         appendSeparator();
@@ -1572,6 +1597,7 @@ public class Formatter implements Localized {
         }
         else if (value instanceof CodeList<?>) append((CodeList<?>) value);
         else if (value instanceof Date)        append((Date)        value);
+        else if (value instanceof Temporal)    append((Temporal)    value);
         else if (value instanceof Boolean)     append((Boolean)     value);
         else if (value instanceof CharSequence) {
             append((value instanceof InternationalString) ?
@@ -1632,9 +1658,9 @@ public class Formatter implements Localized {
         } else if (value instanceof VerticalExtent) {
             appendVerticalExtent(Extents.getVerticalRange(new SimpleExtent(null, (VerticalExtent) value, null)));
         } else if (value instanceof TemporalExtent) {
-            appendTemporalExtent(Extents.getTimeRange(new SimpleExtent(null, null, (TemporalExtent) value)));
-        } else if (value instanceof Position) {
-            append(AbstractDirectPosition.castOrCopy(((Position) value).getDirectPosition()));
+            appendTemporalExtent(new SimpleExtent(null, null, (TemporalExtent) value));
+        } else if (value instanceof DirectPosition) {
+            append(AbstractDirectPosition.castOrCopy((DirectPosition) value));
         } else if (value instanceof Envelope) {
             append(AbstractEnvelope.castOrCopy((Envelope) value));          // Non-standard
         } else {

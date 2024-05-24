@@ -27,14 +27,12 @@ import java.text.ParsePosition;
 import java.text.ParseException;
 import java.time.DateTimeException;
 import java.time.Instant;
-import java.time.LocalTime;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalQuery;
@@ -66,13 +64,6 @@ import org.apache.sis.util.CharSequences;
  */
 @SuppressWarnings("serial")     // Not intended to be serialized.
 public final class StandardDateFormat extends DateFormat {
-    /**
-     * The {@value} timezone ID.
-     *
-     * @see ZoneOffset#UTC
-     */
-    public static final String UTC = "UTC";
-
     /**
      * Midnight (00:00) UTC.
      */
@@ -218,92 +209,6 @@ replace:    if (Character.isWhitespace(c)) {
     }
 
     /**
-     * The length of a day in number of milliseconds.
-     * Can be casted to {@code float} with exact precision.
-     */
-    public static final int MILLISECONDS_PER_DAY = 24*60*60*1000;
-
-    /**
-     * Number of milliseconds in one second.
-     * Can be casted to {@code float} with exact precision.
-     */
-    public static final int MILLIS_PER_SECOND = 1000;
-
-    /**
-     * Number of nanoseconds in one millisecond.
-     * Can be casted to {@code float} with exact precision.
-     */
-    public static final int NANOS_PER_MILLISECOND = 1000_000;
-
-    /**
-     * Number of nanoseconds in one second.
-     * Can be casted to {@code float} with exact precision.
-     */
-    public static final int NANOS_PER_SECOND = 1000_000_000;
-
-    /**
-     * Converts the given temporal object into a date.
-     * The given temporal object is typically the value parsed by {@link #FORMAT}.
-     *
-     * @param  temporal  the temporal object to convert, or {@code null}.
-     * @return the legacy date for the given temporal object, or {@code null} if the argument was null.
-     * @throws DateTimeException if a value for the field cannot be obtained.
-     * @throws ArithmeticException if the number of milliseconds is too large.
-     */
-    public static Date toDate(final TemporalAccessor temporal) {
-        if (temporal == null) {
-            return null;
-        }
-        long millis;
-        if (temporal instanceof Instant) {
-            millis = ((Instant) temporal).toEpochMilli();
-        } else if (temporal.isSupported(ChronoField.INSTANT_SECONDS)) {
-            millis = Math.multiplyExact(temporal.getLong(ChronoField.INSTANT_SECONDS), 1000);
-            millis = Math.addExact(millis, temporal.getLong(ChronoField.NANO_OF_SECOND) / 1000000);
-        } else {
-            // Note that the timezone may be unknown here. We assume UTC.
-            millis = Math.multiplyExact(temporal.getLong(ChronoField.EPOCH_DAY), MILLISECONDS_PER_DAY);
-            if (temporal.isSupported(ChronoField.MILLI_OF_DAY)) {
-                millis = Math.addExact(millis, temporal.getLong(ChronoField.MILLI_OF_DAY));
-            }
-        }
-        return new Date(millis);
-    }
-
-    /**
-     * Returns {@code true} if objects of the given class have day, month and hour fields.
-     * This method is defined here for having a single class where to concentrate such heuristic rules.
-     * Note that {@link Instant} does not have date fields.
-     *
-     * @param  date  class of object to test (may be {@code null}).
-     * @return whether the given class is {@link LocalDate} or one of the classes with date + time.
-     *         This list may be expanded in future versions.
-     */
-    public static boolean hasDateFields(final Class<?> date) {
-        return date == LocalDate.class
-            || date == LocalDateTime.class
-            || date == OffsetDateTime.class
-            || date == ZonedDateTime.class;
-    }
-
-    /**
-     * Returns {@code true} if objects of the given class have time fields.
-     * This method is defined here for having a single class where to concentrate such heuristic rules.
-     * Note that {@link Instant} does not have hour fields.
-     *
-     * @param  date  class of object to test (may be {@code null}).
-     * @return whether the given class is {@link LocalTime}, {@link OffsetTime} or one of the classes with date + time.
-     *         This list may be expanded in future versions.
-     */
-    public static boolean hasTimeFields(final Class<?> date) {
-        return date == LocalTime.class
-            || date == OffsetTime.class
-            || date == LocalDateTime.class
-            || date == OffsetDateTime.class
-            || date == ZonedDateTime.class;
-    }
-
-    /**
      * The {@code java.time} parser and formatter. This is usually the {@link #FORMAT} instance
      * unless a different locale or timezone has been specified.
      */
@@ -341,7 +246,7 @@ replace:    if (Character.isWhitespace(c)) {
      */
     public StandardDateFormat(final Locale locale, final TimeZone zone) {
         this(locale);
-        if (!UTC.equals(zone.getID())) {
+        if (!Constants.UTC.equals(zone.getID())) {
             setTimeZone(zone);
         }
     }
@@ -375,14 +280,21 @@ replace:    if (Character.isWhitespace(c)) {
     }
 
     /**
+     * Returns the zone, or UTC if unspecified.
+     */
+    private ZoneId getZone() {
+        final ZoneId zone = format.getZone();
+        return (zone != null) ? zone : ZoneOffset.UTC;
+    }
+
+    /**
      * Returns the timezone used for formatting instants.
      *
      * @return the timezone.
      */
     @Override
     public final TimeZone getTimeZone() {
-        final ZoneId zone = format.getZone();
-        return TimeZone.getTimeZone(zone != null ? zone : ZoneOffset.UTC);
+        return TimeZone.getTimeZone(getZone());
     }
 
     /**
@@ -430,11 +342,7 @@ replace:    if (Character.isWhitespace(c)) {
      */
     @Override
     public StringBuffer format(final Date date, final StringBuffer toAppendTo, final FieldPosition pos) {
-        ZoneId zone = format.getZone();
-        if (zone == null) {
-            zone = ZoneOffset.UTC;
-        }
-        final LocalDateTime dt = LocalDateTime.ofInstant(date.toInstant(), zone);
+        final LocalDateTime dt = LocalDateTime.ofInstant(date.toInstant(), getZone());
         TemporalAccessor value = dt;
         if (dt.getHour() == 0 && dt.getMinute() == 0 && dt.getSecond() == 0 && dt.getNano() == 0) {
             value = dt.toLocalDate();
@@ -454,7 +362,7 @@ replace:    if (Character.isWhitespace(c)) {
     @Override
     public Date parse(final String text, final ParsePosition position) {
         try {
-            return toDate(format.parse(text, position));
+            return Date.from(TemporalDate.toInstant(format.parse(text, position), getZone()));
         } catch (DateTimeException | ArithmeticException e) {
             position.setErrorIndex(getErrorIndex(e, position));
             return null;
@@ -471,8 +379,8 @@ replace:    if (Character.isWhitespace(c)) {
     @Override
     public Date parse(final String text) throws ParseException {
         try {
-            return toDate(format.parse(toISO(text, 0, text.length())));
-        } catch (DateTimeException | ArithmeticException e) {
+            return Date.from(TemporalDate.toInstant(format.parse(toISO(text, 0, text.length())), getZone()));
+        } catch (RuntimeException e) {
             throw (ParseException) new ParseException(e.getLocalizedMessage(), getErrorIndex(e, null)).initCause(e);
         }
     }

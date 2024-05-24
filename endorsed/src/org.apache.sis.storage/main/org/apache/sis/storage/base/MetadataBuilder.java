@@ -71,7 +71,7 @@ import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.privy.CollectionsExt;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.metadata.ModifiableMetadata;
@@ -1125,9 +1125,9 @@ public class MetadataBuilder {
      * @param  type   the type of the date to add, or {@code null} if none (not legal but tolerated).
      * @param  scope  whether the date applies to data, to metadata or to both.
      *
-     * @see #addAcquisitionTime(Date)
+     * @see #addAcquisitionTime(Temporal)
      */
-    public final void addCitationDate(final Date date, final DateType type, final Scope scope) {
+    public final void addCitationDate(final Temporal date, final DateType type, final Scope scope) {
         if (date != null) {
             final var cd = new DefaultCitationDate(date, type);
             if (scope != Scope.RESOURCE) addEarliest(metadata().getDateInfo(), cd, type);
@@ -1800,25 +1800,10 @@ public class MetadataBuilder {
      *
      * @param  startTime  when the data begins, or {@code null} if unbounded.
      * @param  endTime    when the data ends, or {@code null} if unbounded.
+     *
+     * @see #addAcquisitionTime(Temporal)
      */
     public final void addTemporalExtent(final Temporal startTime, final Temporal endTime) {
-        addTemporalExtent(StandardDateFormat.toDate(startTime), StandardDateFormat.toDate(endTime));
-    }
-
-    /**
-     * Adds a temporal extent covered by the data.
-     * Storage location is:
-     *
-     * <ul>
-     *   <li>{@code metadata/identificationInfo/extent/temporalElement}</li>
-     * </ul>
-     *
-     * @param  startTime  when the data begins, or {@code null} if unbounded.
-     * @param  endTime    when the data ends, or {@code null} if unbounded.
-     *
-     * @see #addAcquisitionTime(Date)
-     */
-    public final void addTemporalExtent(final Date startTime, final Date endTime) {
         if (startTime != null || endTime != null) {
             final var t = new DefaultTemporalExtent();
             t.setBounds(startTime, endTime);
@@ -2051,7 +2036,7 @@ public class MetadataBuilder {
     public final void addTemporalResolution(final double duration) {
         if (Double.isFinite(duration)) {
             addIfNotPresent(identification().getTemporalResolutions(),
-                    Duration.ofMillis(Math.round(duration * StandardDateFormat.MILLISECONDS_PER_DAY)));
+                    Duration.ofNanos(Math.round(duration * Constants.NANOSECONDS_PER_DAY)));
         }
     }
 
@@ -2701,9 +2686,9 @@ public class MetadataBuilder {
      *
      * @param  time  the acquisition time, or {@code null} for no-operation.
      *
-     * @see #addTemporalExtent(Date, Date)
+     * @see #addTemporalExtent(Temporal, Temporal)
      */
-    public final void addAcquisitionTime(final Date time) {
+    public final void addAcquisitionTime(final Temporal time) {
         if (time != null) {
             final var event = new DefaultEvent();
             event.setContext(Context.ACQUISITION);
@@ -2729,15 +2714,15 @@ public class MetadataBuilder {
      * @param  endTime    end time, or {@code null} if unknown.
      */
     public final void addAcquisitionTime(final Instant startTime, final Instant endTime) {
-        final Date time;
+        final Temporal time;
         if (startTime == null) {
             if (endTime == null) return;
-            time = Date.from(endTime);
+            time = endTime;
         } else if (endTime == null) {
-            time = Date.from(startTime);
+            time = startTime;
         } else {
             // Divide by 2 before to add in order to avoid overflow.
-            time = new Date((startTime.toEpochMilli() >> 1) + (endTime.toEpochMilli() >> 1));
+            time = Instant.ofEpochMilli((startTime.toEpochMilli() >> 1) + (endTime.toEpochMilli() >> 1));
         }
         addAcquisitionTime(time);
     }

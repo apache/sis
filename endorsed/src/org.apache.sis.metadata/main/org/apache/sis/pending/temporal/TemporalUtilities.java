@@ -18,7 +18,10 @@ package org.apache.sis.pending.temporal;
 
 import java.util.Date;
 import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.temporal.Temporal;
 import org.opengis.temporal.TemporalPrimitive;
+import org.apache.sis.util.privy.TemporalDate;
 
 // Specific to the main branch:
 import org.apache.sis.pending.geoapi.temporal.Period;
@@ -42,27 +45,44 @@ public final class TemporalUtilities {
      *
      * @param  time  the date for which to create instant, or {@code null}.
      * @return the instant, or {@code null} if the given time was null.
-     * @throws UnsupportedOperationException if the temporal factory is not available on the module path.
      */
-    public static TemporalPrimitive createInstant(final Date time) throws UnsupportedOperationException {
-        if (time == null) return null;
-        final Instant t = time.toInstant();
-        return new DefaultPeriod(t, t);
+    public static TemporalPrimitive createInstant(final Date time) {
+        return (time == null) ? null : createInstant(time.toInstant());
     }
 
     /**
-     * Creates a period for the given begin and end dates.
+     * Creates an instant for the given Java temporal instant.
      *
-     * @param  begin  the begin date (inclusive), or {@code null}.
-     * @param  end    the end date (inclusive), or {@code null}.
-     * @return the period, or {@code null} if both arguments are null.
-     * @throws UnsupportedOperationException if the temporal factory is not available on the module path.
+     * @param  time  the date for which to create instant, or {@code null}.
+     * @return the instant, or {@code null} if the given time was null.
      */
-    public static TemporalPrimitive createPeriod(final Date begin, final Date end) throws UnsupportedOperationException {
-        if (begin == null && end == null) return null;
-        return new DefaultPeriod(
-                (begin != null) ? begin.toInstant() : null,
-                  (end != null) ?   end.toInstant() : null);
+    public static TemporalPrimitive createInstant(final Instant time) {
+        return (time == null) ? null : new DefaultPeriod(time, time);
+    }
+
+    /**
+     * Creates a period for the given begin and end instant.
+     *
+     * @param  begin  the begin instant (inclusive), or {@code null}.
+     * @param  end    the end instant (inclusive), or {@code null}.
+     * @return the period, or {@code null} if both arguments are null.
+     */
+    public static TemporalPrimitive createPeriod(final Instant begin, final Instant end) {
+        return (begin == null && end == null) ? null : new DefaultPeriod(begin, end);
+    }
+
+    /**
+     * Creates a period for the given begin and end instant.
+     *
+     * @param  begin  the begin instant (inclusive), or {@code null}.
+     * @param  end    the end instant (inclusive), or {@code null}.
+     * @return the period, or {@code null} if both arguments are null.
+     *
+     * @todo Needs to avoid assuming UTC timezone.
+     */
+    public static TemporalPrimitive createPeriod(final Temporal begin, final Temporal end) {
+        return createPeriod(TemporalDate.toInstant(begin, ZoneOffset.UTC),
+                            TemporalDate.toInstant(end,   ZoneOffset.UTC));
     }
 
     /**
@@ -122,7 +142,7 @@ public final class TemporalUtilities {
             var p = (Period) time;
             Instant instant;
             if ((instant = p.getEnding()) != null || (instant = p.getBeginning()) != null) {
-                return Date.from(instant);
+                return TemporalDate.toDate(instant);
             }
         }
         return null;

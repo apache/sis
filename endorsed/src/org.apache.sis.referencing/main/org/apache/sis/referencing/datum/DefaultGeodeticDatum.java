@@ -18,7 +18,6 @@ package org.apache.sis.referencing.datum;
 
 import java.util.Map;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Objects;
 import java.util.logging.Logger;
 import java.time.Instant;
@@ -413,7 +412,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * @param  areaOfInterest  the geographic and temporal extent where the transformation should be valid, or {@code null}.
      * @return an affine transform from {@code this} to {@code target} in geocentric space, or {@code null} if none.
      *
-     * @see BursaWolfParameters#getPositionVectorTransformation(Date)
+     * @see BursaWolfParameters#getPositionVectorTransformation(Temporal)
      */
     public Matrix getPositionVectorTransformation(final GeodeticDatum targetDatum, final Extent areaOfInterest) {
         ensureNonNull("targetDatum", targetDatum);
@@ -432,7 +431,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                 return Matrices.inverse(createTransformation(candidate, areaOfInterest));
             } catch (NoninvertibleMatrixException e) {
                 /*
-                 * Should never happen because BursaWolfParameters.getPositionVectorTransformation(Date)
+                 * Should never happen because BursaWolfParameters.getPositionVectorTransformation(Temporal)
                  * is defined in such a way that matrix should always be invertible. If it happen anyway,
                  * returning `null` is allowed by this method's contract.
                  */
@@ -483,7 +482,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
     }
 
     /**
-     * Invokes {@link BursaWolfParameters#getPositionVectorTransformation(Date)} for a date calculated from
+     * Invokes {@link BursaWolfParameters#getPositionVectorTransformation(Temporal)} for a date calculated from
      * the temporal elements on the given extent. This method chooses an instant located midway between the
      * start and end time.
      */
@@ -493,7 +492,8 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
          * not a subclass of BursaWolfParameters. This optimisation covers the vast majority of cases.
          */
         return bursaWolf.getPositionVectorTransformation(bursaWolf.getClass() != BursaWolfParameters.class ?
-                Extents.getDate(areaOfInterest, 0.5) : null);       // 0.5 is for choosing midway instant.
+                Extents.getInstant(areaOfInterest, null, 0.5).orElse(null) : null);
+                // 0.5 is for choosing the instant midway between start and end.
     }
 
     /**

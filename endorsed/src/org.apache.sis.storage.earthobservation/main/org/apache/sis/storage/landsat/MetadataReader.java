@@ -23,7 +23,6 @@ import java.io.LineNumberReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.Locale;
 import java.util.EnumMap;
 import java.util.regex.Matcher;
@@ -64,7 +63,6 @@ import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
 import org.apache.sis.referencing.operation.provider.PolarStereographicB;
 import org.apache.sis.referencing.operation.provider.TransverseMercator;
 import org.apache.sis.storage.base.MetadataBuilder;
-import org.apache.sis.util.privy.StandardDateFormat;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.Strings;
 import static org.apache.sis.util.privy.CollectionsExt.singletonOrNull;
@@ -429,8 +427,7 @@ final class MetadataReader extends MetadataBuilder {
              * Example: "2014-03-12T06:06:35Z".
              */
             case "FILE_DATE": {
-                addCitationDate(StandardDateFormat.toDate(OffsetDateTime.parse(value)),
-                                DateType.CREATION, MetadataBuilder.Scope.ALL);
+                addCitationDate(OffsetDateTime.parse(value), DateType.CREATION, MetadataBuilder.Scope.ALL);
                 break;
             }
             /*
@@ -809,9 +806,8 @@ final class MetadataReader extends MetadataBuilder {
         final Temporal st = sceneTime;
         if (st != null) {
             sceneTime = null;                   // Clear now in case an exception it thrown below.
-            final Date t = StandardDateFormat.toDate(st);
-            addAcquisitionTime(t);
-            addTemporalExtent(t, t);
+            addAcquisitionTime(st);
+            addTemporalExtent(st, st);
         }
     }
 
