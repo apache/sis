@@ -32,7 +32,6 @@ import java.io.UncheckedIOException;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.coordinate.Position;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -555,13 +554,6 @@ search: for (int j=numPoints; --j >= 0;) {
     }
 
     /**
-     * Returns the direct position of the given position, or {@code null} if none.
-     */
-    private static DirectPosition position(final Position p) {
-        return (p != null) ? p.getDirectPosition() : null;
-    }
-
-    /**
      * Sets all control point (source, target) pairs, overwriting any previous setting.
      * The source positions are all integer coordinates in a rectangle from (0, 0, …) inclusive
      * to {@code gridSize} exclusive where {@code gridSize} is an {@code int[]} array specified
@@ -643,7 +635,7 @@ search: for (int j=numPoints; --j >= 0;) {
      *
      * @since 0.8
      */
-    public void setControlPoints(final Map<? extends Position, ? extends Position> sourceToTarget)
+    public void setControlPoints(final Map<? extends DirectPosition, ? extends DirectPosition> sourceToTarget)
             throws MismatchedDimensionException
     {
         ensureModifiable();
@@ -652,9 +644,9 @@ search: for (int j=numPoints; --j >= 0;) {
         numPoints  = 0;
         int srcDim = 0;
         int tgtDim = 0;
-        for (final Map.Entry<? extends Position, ? extends Position> entry : sourceToTarget.entrySet()) {
-            final DirectPosition src = position(entry.getKey());   if (src == null) continue;
-            final DirectPosition tgt = position(entry.getValue()); if (tgt == null) continue;
+        for (final Map.Entry<? extends DirectPosition, ? extends DirectPosition> entry : sourceToTarget.entrySet()) {
+            final DirectPosition src = entry.getKey();   if (src == null) continue;
+            final DirectPosition tgt = entry.getValue(); if (tgt == null) continue;
             /*
              * The first time that we get a non-null source and target coordinate, allocate the arrays.
              * The sources arrays are allocated only if the source coordinates are randomly distributed.
@@ -797,7 +789,7 @@ search:         for (int j=domain(); --j >= 0;) {
          */
         @Override
         public final boolean containsValue(final Object value) {
-            return (value instanceof Position) && search(targets, ((Position) value).getDirectPosition().getCoordinates()) >= 0;
+            return (value instanceof DirectPosition) && search(targets, ((DirectPosition) value).getCoordinates()) >= 0;
         }
 
         /**
@@ -806,7 +798,7 @@ search:         for (int j=domain(); --j >= 0;) {
          */
         @Override
         public final boolean containsKey(final Object key) {
-            return (key instanceof Position) && flatIndex(((Position) key).getDirectPosition()) >= 0;
+            return (key instanceof DirectPosition) && flatIndex((DirectPosition) key) >= 0;
         }
 
         /**
@@ -815,8 +807,8 @@ search:         for (int j=domain(); --j >= 0;) {
          */
         @Override
         public final DirectPosition get(final Object key) {
-            if (key instanceof Position) {
-                final int index = flatIndex(((Position) key).getDirectPosition());
+            if (key instanceof DirectPosition) {
+                final int index = flatIndex((DirectPosition) key);
                 if (index >= 0) return position(targets, index);
             }
             return null;

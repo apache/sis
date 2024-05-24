@@ -18,6 +18,7 @@ package org.apache.sis.metadata.iso.acquisition;
 
 import java.util.Collection;
 import java.util.Date;
+import java.time.temporal.Temporal;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -30,8 +31,8 @@ import org.opengis.metadata.acquisition.PlatformPass;
 import org.opengis.metadata.acquisition.Sequence;
 import org.opengis.metadata.acquisition.Trigger;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import static org.apache.sis.metadata.privy.ImplementationHelper.toDate;
-import static org.apache.sis.metadata.privy.ImplementationHelper.toMilliseconds;
+import static org.apache.sis.util.privy.TemporalDate.toDate;
+import static org.apache.sis.util.privy.TemporalDate.toInstant;
 
 
 /**
@@ -57,7 +58,7 @@ import static org.apache.sis.metadata.privy.ImplementationHelper.toMilliseconds;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @XmlType(name = "MI_Event_Type", propOrder = {
@@ -75,7 +76,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -519920133287763009L;
+    private static final long serialVersionUID = 7862440773058520852L;
 
     /**
      * Initiator of the event.
@@ -93,9 +94,10 @@ public class DefaultEvent extends ISOMetadata implements Event {
     private Sequence sequence;
 
     /**
-     * Time the event occurred, or {@link Long#MIN_VALUE} if none.
+     * Date and/or time the event occurred.
      */
-    private long time = Long.MIN_VALUE;
+    @SuppressWarnings("serial")     // Most implementations are serializable.
+    private Temporal time;
 
     /**
      * Objective or objectives satisfied by an event.
@@ -130,6 +132,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      *
      * @see #castOrCopy(Event)
      */
+    @SuppressWarnings("this-escape")
     public DefaultEvent(final Event object) {
         super(object);
         if (object != null) {
@@ -137,7 +140,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
             trigger            = object.getTrigger();
             context            = object.getContext();
             sequence           = object.getSequence();
-            time               = toMilliseconds(object.getTime());
+            time               = toInstant(object.getTime());
             expectedObjectives = copyCollection(object.getExpectedObjectives(), Objective.class);
             relatedPass        = object.getRelatedPass();
             relatedSensors     = copyCollection(object.getRelatedSensors(), Instrument.class);
@@ -256,6 +259,10 @@ public class DefaultEvent extends ISOMetadata implements Event {
     /**
      * Returns the time the event occurred.
      *
+     * <div class="warning"><b>Upcoming API change — temporal schema</b><br>
+     * The return type of this method may change in a future version.
+     * It may be replaced by {@link Temporal}.</div>
+     *
      * @return time the event occurred, or {@code null}.
      */
     @Override
@@ -270,8 +277,19 @@ public class DefaultEvent extends ISOMetadata implements Event {
      * @param  newValue  the new time value.
      */
     public void setTime(final Date newValue) {
+        setTime(toInstant(newValue));
+    }
+
+    /**
+     * Sets the date and/or time the event occurred.
+     *
+     * @param  newValue  the new time value.
+     *
+     * @since 1.5
+     */
+    public void setTime(final Temporal newValue) {
         checkWritePermission(time);
-        time = toMilliseconds(newValue);
+        time = newValue;
     }
 
     /**

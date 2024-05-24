@@ -52,14 +52,6 @@ public final class FormulasTest extends TestCase {
     }
 
     /**
-     * Verifies the {@link Formulas#JULIAN_YEAR_LENGTH} constant.
-     */
-    @Test
-    public void verifyJulianYearLength() {
-        assertEquals(StrictMath.round(365.25 * 24 * 60 * 60 * 1000), Formulas.JULIAN_YEAR_LENGTH);
-    }
-
-    /**
      * Tests {@link Formulas#isPoleToPole(double, double)}.
      */
     @Test

@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.StringJoiner;
+import java.time.Instant;
 import javafx.concurrent.Task;
 import javafx.geometry.HPos;
 import javafx.scene.canvas.Canvas;
@@ -364,7 +365,7 @@ final class IdentificationInfo extends Section<Identification> {
          */
         text = null;
         Identifier identifier = null;
-        Range<Date> timeRange = null;
+        Range<Instant> timeRange = null;
         Range<Double> heights = null;
         for (final Extent extent : nonNull(info.getExtents())) {
             if (extent != null) {
@@ -381,7 +382,7 @@ final class IdentificationInfo extends Section<Identification> {
                 }
                 final MeasurementRange<Double> v = Extents.getVerticalRange(extent);
                 if (v != null) heights = (heights != null) ? heights.union(v) : v;
-                final Range<Date> t = Extents.getTimeRange(extent);
+                final Range<Instant> t = Extents.getTimeRange(extent, null).orElse(null);
                 if (t != null) timeRange = (timeRange != null) ? timeRange.union(t) : t;
             }
         }
@@ -400,12 +401,12 @@ final class IdentificationInfo extends Section<Identification> {
         addLine(Vocabulary.Keys.Extent, text);
         if (timeRange != null) {
             label = Vocabulary.Keys.StartDate;
-            Date t = timeRange.getMinValue();
+            Instant t = timeRange.getMinValue();
             if (t == null) {
                 t = timeRange.getMaxValue();
                 label = Vocabulary.Keys.EndDate;
             }
-            addLine(label, owner.format(t));
+            addLine(label, owner.format(Date.from(t)));
         }
         if (heights != null) {
             final Double min = heights.getMinValue();

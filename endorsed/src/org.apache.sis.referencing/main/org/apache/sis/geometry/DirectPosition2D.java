@@ -183,16 +183,6 @@ public class DirectPosition2D extends Point2D.Double implements DirectPosition, 
     }
 
     /**
-     * Returns this direct position.
-     *
-     * @return {@code this}.
-     */
-    @Override
-    public final DirectPosition getDirectPosition() {
-        return this;
-    }
-
-    /**
      * The length of coordinate sequence (the number of entries).
      * This is always 2 for {@code DirectPosition2D} objects.
      *

@@ -42,7 +42,7 @@ import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.internal.AutoMessageFormat;
 import org.apache.sis.io.IO;
 import org.apache.sis.io.LineAppender;
-import static org.apache.sis.util.privy.StandardDateFormat.UTC;
+import static org.apache.sis.util.privy.Constants.UTC;
 
 
 /**

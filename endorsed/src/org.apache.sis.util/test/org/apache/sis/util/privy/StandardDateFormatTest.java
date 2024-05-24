@@ -20,7 +20,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 import java.text.ParseException;
 
 // Test dependencies
@@ -40,17 +39,6 @@ public final class StandardDateFormatTest extends TestCase {
      * Creates a new test case.
      */
     public StandardDateFormatTest() {
-    }
-
-    /**
-     * Verifies the {@link StandardDateFormat#MILLISECONDS_PER_DAY}, {@link StandardDateFormat#NANOS_PER_MILLISECOND}
-     * and {@link StandardDateFormat#NANOS_PER_SECOND} constant values.
-     */
-    @Test
-    public void verifyConstantValues() {
-        assertEquals(TimeUnit.DAYS.toMillis(1),        StandardDateFormat.MILLISECONDS_PER_DAY);
-        assertEquals(TimeUnit.MILLISECONDS.toNanos(1), StandardDateFormat.NANOS_PER_MILLISECOND);
-        assertEquals(TimeUnit.SECONDS.toNanos(1),      StandardDateFormat.NANOS_PER_SECOND);
     }
 
     /**
@@ -139,9 +127,9 @@ public final class StandardDateFormatTest extends TestCase {
      */
     @Test
     public void testNegativeYear() throws ParseException {
-        final Date julian = new Date(-210866760000000L);            // Same epoch as CommonCRS.Temporal.JULIAN.
-        final String expected = "-4713-11-24T12:00:00.000";         // Proleptic Gregorian calendar, astronomical year.
-        final StandardDateFormat f = new StandardDateFormat();
+        final var julian = new Date(-210866760000000L);         // Same epoch as CommonCRS.Temporal.JULIAN.
+        final var expected = "-4713-11-24T12:00:00.000";        // Proleptic Gregorian calendar, astronomical year.
+        final var f = new StandardDateFormat();
         assertEquals(expected, f.format(julian));
         assertEquals(julian, f.parse(expected));
     }

@@ -34,9 +34,9 @@ import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.xml.bind.FilterByVersion;
-import org.apache.sis.xml.privy.LegacyNamespaces;
 import org.apache.sis.xml.bind.gml.TM_Primitive;
 import org.apache.sis.xml.bind.metadata.MD_Scope;
+import org.apache.sis.xml.privy.LegacyNamespaces;
 import org.apache.sis.pending.temporal.TemporalUtilities;
 
 // Specific to the main and geoapi-3.1 branches:
@@ -320,7 +320,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      */
     @Deprecated(since="1.0")
     public void setDate(final Date newValue) {
-        setStepDateTime(TemporalUtilities.createInstant(newValue));
+        setStepDateTime(TemporalUtilities.createInstant(newValue == null ? null : newValue.toInstant()));
     }
 
     /**

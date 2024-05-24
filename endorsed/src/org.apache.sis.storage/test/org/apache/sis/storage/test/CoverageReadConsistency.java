@@ -33,7 +33,7 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArraysExt;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.image.PixelIterator;
 import org.apache.sis.math.Statistics;
@@ -458,7 +458,7 @@ nextSlice:  for (;;) {
                 break;
             }
             if (durations != null) {
-                durations.accept((System.nanoTime() - startTime) / (double) StandardDateFormat.NANOS_PER_MILLISECOND);
+                durations.accept((System.nanoTime() - startTime) / (double) Constants.NANOS_PER_MILLISECOND);
             }
         }
         /*

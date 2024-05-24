@@ -54,7 +54,7 @@ public final class ImplementationHelper extends Static {
 
     /**
      * Returns the milliseconds value of the given date, or {@link Long#MIN_VALUE}
-     * if the date us null.
+     * if the date is null.
      *
      * @param  value  the date, or {@code null}.
      * @return the time in milliseconds, or {@code Long.MIN_VALUE} if none.

@@ -218,7 +218,7 @@ public final class MilitaryGridReferenceSystemTest extends TestCase {
     {
         final Location loc = coder.decode(reference);
         final Envelope2D envelope = new Envelope2D(loc.getEnvelope());
-        final DirectPosition2D pos = new DirectPosition2D(loc.getPosition().getDirectPosition());
+        final DirectPosition2D pos = new DirectPosition2D(loc.getPosition());
         assertTrue(envelope.contains(pos), reference);
         return pos;
     }

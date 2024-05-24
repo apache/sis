@@ -87,6 +87,7 @@ public final class UnitFormatTest extends TestCase {
         verify(declared, "ARC_MINUTE",          "",             "′",     "arc-minute",              Units.ARC_MINUTE);
         verify(declared, "ARC_SECOND",          "",             "″",     "arc-second",              Units.ARC_SECOND);
         verify(declared, "GRAD",                "",             "grad",  "grad",                    Units.GRAD);
+        verify(declared, "NANOSECOND",          "T",            "ns",    "nanosecond",              Units.NANOSECOND);
         verify(declared, "MILLISECOND",         "T",            "ms",    "millisecond",             Units.MILLISECOND);
         verify(declared, "SECOND",              "T",            "s",     "second",                  Units.SECOND);
         verify(declared, "MINUTE",              "T",            "min",   "minute",                  Units.MINUTE);

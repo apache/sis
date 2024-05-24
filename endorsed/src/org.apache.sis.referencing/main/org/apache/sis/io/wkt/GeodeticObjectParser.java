@@ -26,13 +26,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.text.DateFormat;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
+import java.time.Instant;
 import static java.util.Collections.singletonMap;
 import javax.measure.Unit;
 import javax.measure.Quantity;
@@ -532,8 +532,8 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                     element.close(ignoredElements);
                     warning(parent, element, Errors.formatInternational(Errors.Keys.UnsupportedType_1, "TimeExtent[String,String]"), null);
                 } else {
-                    final Date startTime = element.pullDate("startTime");
-                    final Date endTime   = element.pullDate("endTime");
+                    final Instant startTime = element.pullDate("startTime");
+                    final Instant endTime   = element.pullDate("endTime");
                     element.close(ignoredElements);
                     final DefaultTemporalExtent t = new DefaultTemporalExtent();
                     t.setBounds(startTime, endTime);
@@ -1480,7 +1480,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         }
         final String  name   = element.pullString ("name");
         final Element origin = element.pullElement(MANDATORY, WKTKeywords.TimeOrigin);
-        final Date    epoch  = origin .pullDate("origin");
+        final Instant epoch  = origin .pullDate("origin");
         origin.close(ignoredElements);
         final DatumFactory datumFactory = factories.getDatumFactory();
         try {
@@ -1850,16 +1850,17 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
             }
             final PrimeMeridian meridian = parsePrimeMeridian(OPTIONAL, element, isWKT1, longitudeUnit);
             final GeodeticDatum datum = parseDatum(MANDATORY, element, meridian);
+            final DatumEnsemble<GeodeticDatum> datumEnsemble = null;    // TODO
             final Map<String,?> properties = parseMetadataAndClose(element, name, datum);
             if (cs instanceof EllipsoidalCS) {                                  // By far the most frequent case.
-                return crsFactory.createGeographicCRS(properties, datum, (EllipsoidalCS) cs);
+                return crsFactory.createGeographicCRS(properties, datum, datumEnsemble, (EllipsoidalCS) cs);
             }
             if (cs instanceof CartesianCS) {                                    // The second most frequent case.
-                return crsFactory.createGeodeticCRS(properties, datum,
+                return crsFactory.createGeodeticCRS(properties, datum, datumEnsemble,
                         Legacy.forGeocentricCRS((CartesianCS) cs, false));
             }
             if (cs instanceof SphericalCS) {                                    // Not very common case.
-                return crsFactory.createGeodeticCRS(properties, datum, (SphericalCS) cs);
+                return crsFactory.createGeodeticCRS(properties, datum, datumEnsemble, (SphericalCS) cs);
             }
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
@@ -2043,9 +2044,10 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
          * A ParametricCRS can be either a "normal" one (with a non-null datum), or a DerivedCRS of kind ParametricCRS.
          * In the latter case, the datum is null and we have instead DerivingConversion element from a BaseParametricCRS.
          */
-        ParametricDatum datum    = null;
-        SingleCRS       baseCRS  = null;
-        Conversion      fromBase = null;
+        ParametricDatum datum = null;
+        DatumEnsemble<ParametricDatum> datumEnsemble = null;    // TODO
+        SingleCRS baseCRS = null;
+        Conversion fromBase = null;
         if (!isBaseCRS) {
             /*
              * UNIT[…] in DerivedCRS parameters are mandatory according ISO 19162 and the specification does not said
@@ -2074,7 +2076,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                 if (baseCRS != null) {
                     return crsFactory.createDerivedCRS(properties, baseCRS, fromBase, cs);
                 }
-                return crsFactory.createParametricCRS(properties, datum, (ParametricCS) cs);
+                return crsFactory.createParametricCRS(properties, datum, datumEnsemble, (ParametricCS) cs);
             }
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);

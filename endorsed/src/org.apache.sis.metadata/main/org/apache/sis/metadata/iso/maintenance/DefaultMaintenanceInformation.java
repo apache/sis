@@ -152,6 +152,7 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *
      * @see #castOrCopy(MaintenanceInformation)
      */
+    @SuppressWarnings("this-escape")
     public DefaultMaintenanceInformation(final MaintenanceInformation object) {
         super(object);
         if (object != null) {
@@ -290,7 +291,8 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
             }
         }
         if (newValue != null) {
-            final CitationDate date = new DefaultCitationDate(newValue, DateType.NEXT_UPDATE);
+            @SuppressWarnings("removal")
+            final var date = new DefaultCitationDate(newValue, DateType.NEXT_UPDATE);
             if (dates != null) {
                 dates.add(date);
             } else {

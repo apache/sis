@@ -36,7 +36,7 @@ import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.X364;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.system.Supervisor;
@@ -139,7 +139,7 @@ final class AboutCommand extends CommandRunner {
                  * Logs a message telling how long it took to receive the reply.
                  * Sometimes the delay gives a hint about the server charge.
                  */
-                double delay = (System.nanoTime() - time) / (double) StandardDateFormat.NANOS_PER_SECOND;   // In seconds.
+                double delay = (System.nanoTime() - time) / (double) Constants.NANOS_PER_SECOND;   // In seconds.
                 if (delay >= 0.1) {
                     final double scale = (delay >= 10) ? 1 : (delay >= 1) ? 10 : 100;
                     delay = Math.rint(delay * scale) / scale;

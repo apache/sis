@@ -16,7 +16,6 @@
  */
 package org.apache.sis.referencing.datum;
 
-import java.util.Date;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
@@ -105,7 +104,7 @@ public final class BursaWolfParametersTest extends TestCase {
     }
 
     /**
-     * Invokes {@link BursaWolfParameters#getPositionVectorTransformation(Date)}
+     * Invokes {@link BursaWolfParameters#getPositionVectorTransformation(Temporal)}
      * and compares with our own matrix calculated using double arithmetic.
      */
     private static MatrixSIS getPositionVectorTransformation(final BursaWolfParameters p) {
@@ -150,7 +149,7 @@ public final class BursaWolfParametersTest extends TestCase {
     }
 
     /**
-     * Tests {@link BursaWolfParameters#getPositionVectorTransformation(Date)}.
+     * Tests {@link BursaWolfParameters#getPositionVectorTransformation(Temporal)}.
      * This test transform a point from WGS72 to WGS84, and conversely,
      * as documented in the example section of EPSG operation method 9606.
      *

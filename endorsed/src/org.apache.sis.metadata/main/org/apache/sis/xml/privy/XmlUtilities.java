@@ -192,22 +192,21 @@ public final class XmlUtilities extends SystemListener {
      * @return the XML calendar, or {@code null} if {@code date} was null.
      * @throws DatatypeConfigurationException if the factory cannot be created.
      */
-    public static XMLGregorianCalendar toXML(final Context context, final Temporal date) throws DatatypeConfigurationException {
+    public static XMLGregorianCalendar toXML(final Context context, Temporal date) throws DatatypeConfigurationException {
         if (date == null) {
             return null;
         }
-        final XMLGregorianCalendar xml = getDatatypeFactory().newXMLGregorianCalendar();
         if (date instanceof Instant) {
             final TimeZone zone = (context != null) ? context.getTimeZone() : null;
             final ZoneId zid = (zone != null) ? zone.toZoneId() : ZoneId.systemDefault();
-            final ZonedDateTime t = ZonedDateTime.ofInstant((Instant) date, zid);
-            for (int i=0; i<FIELDS.length; i++) {
-                SETTERS[i].accept(xml, t.get(FIELDS[i]));
-            }
-        } else {
-            for (int i=0; i<FIELDS.length; i++) {
-                final ChronoField field = FIELDS[i];
-                if (date.isSupported(field)) {
+            date = ZonedDateTime.ofInstant((Instant) date, zid);
+        }
+        final XMLGregorianCalendar xml = getDatatypeFactory().newXMLGregorianCalendar();
+        for (int i=0; i<FIELDS.length; i++) {
+            final ChronoField field = FIELDS[i];
+            if (date.isSupported(field)) {
+                final int n = date.get(field);
+                if (n != 0 || field != ChronoField.MILLI_OF_SECOND) {
                     SETTERS[i].accept(xml, date.get(field));
                 }
             }
@@ -314,6 +313,20 @@ public final class XmlUtilities extends SystemListener {
         } else {
             return OffsetTime.of(hour, min, sec, nano, zone);
         }
+    }
+
+    /**
+     * Converts the given XML Gregorian calendar to an instant.
+     * This method should be invoked only when the temporal object needs to be the {@link Instant} specialization.
+     * If the more generic {@link Temporal} type is okay, use {@link #toTemporal(Context, XMLGregorianCalendar)}.
+     *
+     * @param  context  the current (un)marshalling context, or {@code null} if none.
+     * @param  xml      the XML calendar to convert to a date, or {@code null}.
+     * @return the instant, or {@code null} if {@code xml} was null.
+     */
+    public static Instant toInstant(final Context context, final XMLGregorianCalendar xml) {
+        final Date date = toDate(context, xml);
+        return (date != null) ? date.toInstant() : null;
     }
 
     /**

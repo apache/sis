@@ -37,7 +37,7 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.AngleFormat;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.io.stream.IOUtilities;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.internal.Resources;
 
@@ -203,7 +203,7 @@ public abstract class AbstractGridCoverageResource extends AbstractResource impl
             final Locale locale = listeners.getLocale();
             final Object[] parameters = new Object[6];
             parameters[0] = IOUtilities.filename(file != null ? file : listeners.getSourceName());
-            parameters[5] = nanos / (double) StandardDateFormat.NANOS_PER_SECOND;
+            parameters[5] = nanos / (double) Constants.NANOS_PER_SECOND;
             domain.getGeographicExtent().ifPresentOrElse((box) -> {
                 final AngleFormat f = new AngleFormat(locale);
                 double min = box.getSouthBoundLatitude();

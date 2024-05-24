@@ -18,7 +18,6 @@ package org.apache.sis.referencing.gazetteer;
 
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
-import org.opengis.geometry.coordinate.Position;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.operation.MathTransform;
@@ -117,17 +116,7 @@ class SimpleLocation extends AbstractLocation implements DirectPosition, Envelop
      * In this simple implementation, this instance is its own centroid coordinate.
      */
     @Override
-    public final Position getPosition() {
-        return this;
-    }
-
-    /**
-     * Returns this direct position.
-     *
-     * @return {@code this}.
-     */
-    @Override
-    public final DirectPosition getDirectPosition() {
+    public final DirectPosition getPosition() {
         return this;
     }
 

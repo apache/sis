@@ -25,8 +25,8 @@ import java.util.Collections;
 import java.util.SortedSet;
 import org.apache.sis.measure.Range;
 import org.apache.sis.measure.NumberRange;
-import static org.apache.sis.util.privy.StandardDateFormat.MILLISECONDS_PER_DAY;
-import static org.apache.sis.util.privy.StandardDateFormat.NANOS_PER_SECOND;
+import static org.apache.sis.util.privy.Constants.MILLISECONDS_PER_DAY;
+import static org.apache.sis.util.privy.Constants.NANOS_PER_SECOND;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

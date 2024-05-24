@@ -28,7 +28,6 @@ import org.apache.sis.math.StatisticsFormat;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.privy.Constants;
-import org.apache.sis.util.privy.StandardDateFormat;
 import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -219,7 +218,7 @@ public final class ProjectionBenchmark {
             long time = System.nanoTime();
             projection.transform(sources, 0, targets, 0, NUM_POINTS);
             time = System.nanoTime() - time;
-            final double seconds = time / (double) StandardDateFormat.NANOS_PER_SECOND;
+            final double seconds = time / (double) Constants.NANOS_PER_SECOND;
             System.out.printf("%s time: %1.4f%n", performance.name(), seconds);
             performance.accept(seconds);
         }
@@ -235,7 +234,7 @@ public final class ProjectionBenchmark {
             kernel.transform(targets, 0, targets, 0, NUM_POINTS);
             time = System.nanoTime() - time;
             denormalize.transform(targets, 0, targets, 0, NUM_POINTS);
-            final double seconds = time / (double) StandardDateFormat.NANOS_PER_SECOND;
+            final double seconds = time / (double) Constants.NANOS_PER_SECOND;
             System.out.printf("%s time: %1.4f%n", performance.name(), seconds);
             performance.accept(seconds);
         }

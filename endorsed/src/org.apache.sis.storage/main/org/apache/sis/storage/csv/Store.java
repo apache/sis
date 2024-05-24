@@ -19,7 +19,6 @@ package org.apache.sis.storage.csv;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -450,7 +449,7 @@ final class Store extends URIDataStore implements FeatureSet {
                     temporal = TimeEncoding.DEFAULT.crs();
                     timeEncoding = TimeEncoding.ABSOLUTE;
                 } else {
-                    temporal = builder.createTemporalCRS(Date.from(startTime), timeUnit);
+                    temporal = builder.createTemporalCRS(startTime, timeUnit);
                     timeEncoding = new TimeEncoding(temporal.getDatum(), timeUnit);
                 }
                 components[count++] = temporal;
@@ -482,8 +481,8 @@ final class Store extends URIDataStore implements FeatureSet {
             envelope.setRange(i, lowerCorner[i], upperCorner[i]);
         }
         if (startTime != null) {
-            envelope.setRange(spatialDimensionCount, timeEncoding.toCRS(startTime.toEpochMilli()),
-                    (endTime == null) ? Double.NaN : timeEncoding.toCRS(endTime.toEpochMilli()));
+            envelope.setRange(spatialDimensionCount, timeEncoding.toCRS(startTime),
+                    (endTime == null) ? Double.NaN : timeEncoding.toCRS(endTime));
         }
         this.spatialDimensionCount = (short) spatialDimensionCount;
         return envelope;

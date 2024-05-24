@@ -22,7 +22,7 @@ import org.opengis.metadata.extent.TemporalExtent;
 import org.opengis.metadata.extent.GeographicExtent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.geometry.Envelope;
-import org.opengis.geometry.coordinate.Position;
+import org.opengis.geometry.DirectPosition;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.geometry.Envelope2D;
@@ -190,13 +190,13 @@ public abstract class AbstractLocation implements Location {
      * @return coordinates of a representative point for the location instance, or {@code null} if none.
      */
     @Override
-    public Position getPosition() {
+    public DirectPosition getPosition() {
         final Envelope envelope = getEnvelope();
         if (envelope == null) {
             return null;
         }
         final int dimension = envelope.getDimension();
-        final GeneralDirectPosition pos = new GeneralDirectPosition(dimension);
+        final var pos = new GeneralDirectPosition(dimension);
         pos.setCoordinateReferenceSystem(envelope.getCoordinateReferenceSystem());
         for (int i=0; i<dimension; i++) {
             pos.setCoordinate(i, envelope.getMedian(i));

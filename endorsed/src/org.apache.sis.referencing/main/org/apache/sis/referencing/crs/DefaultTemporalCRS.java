@@ -21,6 +21,8 @@ import java.util.Date;
 import java.util.Objects;
 import java.time.Instant;
 import java.time.Duration;
+import java.time.temporal.Temporal;
+import java.time.temporal.ChronoField;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import jakarta.xml.bind.annotation.XmlType;
@@ -40,8 +42,11 @@ import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Fraction;
-import static org.apache.sis.util.privy.StandardDateFormat.NANOS_PER_SECOND;
-import static org.apache.sis.util.privy.StandardDateFormat.MILLIS_PER_SECOND;
+import static org.apache.sis.util.privy.Constants.NANOS_PER_SECOND;
+import static org.apache.sis.util.privy.Constants.MILLIS_PER_SECOND;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.apache.sis.util.privy.TemporalDate;
 
 
 /**
@@ -223,16 +228,16 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      */
     private void initializeConverter() {
         toSeconds = getUnit().getConverterTo(Units.SECOND);
-        long t = datum.getOrigin().getTime();
-        origin = t / MILLIS_PER_SECOND;
-        t %= MILLIS_PER_SECOND;
-        if (t != 0) {
+        final Temporal t = TemporalDate.toTemporal(datum.getOrigin());
+        origin = t.getLong(ChronoField.INSTANT_SECONDS);
+        int r = t.get(ChronoField.NANO_OF_SECOND);
+        if (r != 0) {
             /*
              * The origin is usually an integer number of days or hours. It rarely has a fractional number of seconds.
              * If it happens anyway, put the fractional number of seconds in the converter instead of adding another
              * field in this class for such very rare situation. Accuracy should be okay since the offset is small.
              */
-            UnitConverter c = Units.converter(null, Fraction.valueOf(t, MILLIS_PER_SECOND));
+            UnitConverter c = Units.converter(null, new Fraction(r, NANOS_PER_SECOND));
             toSeconds = c.concatenate(toSeconds);
         }
     }

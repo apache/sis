@@ -16,13 +16,13 @@
  */
 package org.apache.sis.referencing.datum;
 
-import java.util.Date;
 import java.util.HashMap;
+import java.time.ZoneOffset;
+import java.time.OffsetDateTime;
 import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.referencing.ImmutableIdentifier;
-import static org.apache.sis.util.privy.StandardDateFormat.MILLISECONDS_PER_DAY;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -33,6 +33,9 @@ import static org.apache.sis.referencing.Assertions.assertWktEquals;
 import static org.apache.sis.referencing.Assertions.assertRemarksEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.test.TestUtilities.getScope;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.apache.sis.util.privy.TemporalDate;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.referencing.ObjectDomain.*;
@@ -63,14 +66,16 @@ public final class DefaultTemporalDatumTest extends TestCase {
     }
 
     /**
-     * November 17, 1858 at 00:00 UTC as a Java timestamp.
+     * November 17, 1858 at 00:00 UTC.
      */
-    private static final long ORIGIN = -40587L * MILLISECONDS_PER_DAY;
+    private static final OffsetDateTime ORIGIN = OffsetDateTime.of(1858, 11, 17, 0, 0, 0, 0, ZoneOffset.UTC);
 
     /**
      * Creates the temporal datum to use for testing purpose.
+     *
+     * @param local  whether the datum origin should be a local date.
      */
-    private static DefaultTemporalDatum create() {
+    private static DefaultTemporalDatum create(final boolean local) {
         final var properties = new HashMap<String,Object>(4);
         assertNull(properties.put(IDENTIFIERS_KEY,
                 new ImmutableIdentifier(HardCodedCitations.SIS, "SIS", "MJ")));
@@ -78,7 +83,7 @@ public final class DefaultTemporalDatumTest extends TestCase {
         assertNull(properties.put(SCOPE_KEY, "History."));
         assertNull(properties.put(REMARKS_KEY,
                 "Time measured as days since November 17, 1858 at 00:00 UTC."));
-        return new DefaultTemporalDatum(properties, new Date(ORIGIN));
+        return new DefaultTemporalDatum(properties, local ? ORIGIN.toLocalDate() : ORIGIN);
     }
 
     /**
@@ -86,7 +91,7 @@ public final class DefaultTemporalDatumTest extends TestCase {
      */
     @Test
     public void testConsistency() {
-        assertEquals(HardCodedDatum.MODIFIED_JULIAN.getOrigin(), new Date(ORIGIN));
+        assertEquals(TemporalDate.toTemporal(HardCodedDatum.MODIFIED_JULIAN.getOrigin()), ORIGIN.toInstant());
     }
 
     /**
@@ -99,7 +104,7 @@ public final class DefaultTemporalDatumTest extends TestCase {
      */
     @Test
     public void testToWKT() {
-        final DefaultTemporalDatum datum = create();
+        final DefaultTemporalDatum datum = create(true);
         assertWktEquals(Convention.WKT1, "TDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17], AUTHORITY[“SIS”, “MJ”]]", datum);
         assertWktEquals(Convention.WKT2, "TDATUM[“Modified Julian”, TIMEORIGIN[1858-11-17], ID[“SIS”, “MJ”]]", datum);
         assertWktEquals(Convention.WKT2_SIMPLIFIED, "TimeDatum[“Modified Julian”, TimeOrigin[1858-11-17], Id[“SIS”, “MJ”]]", datum);
@@ -112,7 +117,7 @@ public final class DefaultTemporalDatumTest extends TestCase {
      */
     @Test
     public void testMarshalling() throws JAXBException {
-        final DefaultTemporalDatum datum = create();
+        final DefaultTemporalDatum datum = create(false);
         assertMarshalEqualsFile(openTestFile(), datum, "xmlns:*", "xsi:schemaLocation");
     }
 
@@ -129,6 +134,6 @@ public final class DefaultTemporalDatumTest extends TestCase {
         assertEquals("Modified Julian", datum.getName().getCode());
         assertRemarksEquals("Time measured as days since November 17, 1858 at 00:00 UTC.", datum, null);
         assertEquals("History.", getScope(datum));
-        assertEquals(new Date(ORIGIN), datum.getOrigin());
+        assertEquals(ORIGIN, TemporalDate.toTemporal(datum.getOrigin()));
     }
 }

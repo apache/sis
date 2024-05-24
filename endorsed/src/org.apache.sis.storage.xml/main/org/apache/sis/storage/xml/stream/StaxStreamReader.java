@@ -371,7 +371,7 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      */
     protected final Date getElementAsDate() throws XMLStreamException {
         final String text = getElementText();
-        return (text != null) ? StandardDateFormat.toDate(StandardDateFormat.FORMAT.parse(text)) : null;
+        return (text == null) ? null : Date.from(StandardDateFormat.parseInstantUTC(text));
     }
 
     /**

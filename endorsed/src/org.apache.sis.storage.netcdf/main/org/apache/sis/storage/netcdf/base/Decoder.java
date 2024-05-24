@@ -22,12 +22,14 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collection;
 import java.util.Objects;
-import java.util.Date;
-import java.util.TimeZone;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.temporal.Temporal;
 import java.io.IOException;
 import java.nio.file.Path;
 import ucar.nc2.constants.CF;       // String constants are copied by the compiler with no UCAR reference left.
@@ -45,7 +47,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.collection.TreeTable;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
 
@@ -75,6 +77,13 @@ public abstract class Decoder extends ReferencingFactoryContainer {
      * By contrast, {@code NetcdfStoreProvider} uses upper-case "N" because it is considered at the beginning of sentences.
      */
     public static final String FORMAT_NAME = "netCDF";
+
+    /**
+     * The locale of data such as number formats, dates and names.
+     * This is used, for example, for the conversion to lower-cases before case-insensitive searches.
+     * This is not the locale for error messages or warnings reported to the user.
+     */
+    public static final Locale DATA_LOCALE = Locale.US;
 
     /**
      * The path to the netCDF file, or {@code null} if unknown.
@@ -329,7 +338,7 @@ public abstract class Decoder extends ReferencingFactoryContainer {
      * @param  name  the name of the attribute to search, or {@code null}.
      * @return the attribute value, or {@code null} if none or unparsable or if the given name was null.
      */
-    public abstract Date dateValue(String name);
+    public abstract Temporal dateValue(String name);
 
     /**
      * Converts the given numerical values to date, using the information provided in the given unit symbol.
@@ -339,15 +348,15 @@ public abstract class Decoder extends ReferencingFactoryContainer {
      * @param  values  the values to convert. May contains {@code null} elements.
      * @return the converted values. May contains {@code null} elements.
      */
-    public abstract Date[] numberToDate(String symbol, Number... values);
+    public abstract Temporal[] numberToDate(String symbol, Number... values);
 
     /**
      * Returns the timezone for decoding dates. Currently fixed to UTC.
      *
      * @return the timezone for dates.
      */
-    public TimeZone getTimeZone() {
-        return TimeZone.getTimeZone(StandardDateFormat.UTC);
+    public ZoneId getTimeZone() {
+        return ZoneOffset.UTC;
     }
 
     /**
@@ -511,7 +520,7 @@ public abstract class Decoder extends ReferencingFactoryContainer {
         final Logger logger = listeners.getLogger();
         if (logger.isLoggable(level)) {
             final LogRecord record = resources().getLogRecord(level, resourceKey,
-                    getFilename(), time / (double) StandardDateFormat.NANOS_PER_SECOND);
+                    getFilename(), time / (double) Constants.NANOS_PER_SECOND);
             Logging.completeAndLog(logger, caller, method, record);
         }
     }

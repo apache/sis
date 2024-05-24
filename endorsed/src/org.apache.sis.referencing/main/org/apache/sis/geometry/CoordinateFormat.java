@@ -35,6 +35,8 @@ import java.util.logging.Logger;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.UncheckedIOException;
+import java.time.Duration;
+import java.time.Instant;
 import javax.measure.Unit;
 import javax.measure.UnitConverter;
 import javax.measure.Quantity;
@@ -57,6 +59,8 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.privy.LocalizedParseException;
+import org.apache.sis.util.privy.TemporalDate;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.MathFunctions;
@@ -71,6 +75,7 @@ import org.apache.sis.measure.Quantities;
 import org.apache.sis.measure.QuantityFormat;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.io.CompoundFormat;
+import org.apache.sis.pending.jdk.JDK23;
 
 
 /**
@@ -408,12 +413,12 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
     private transient long negate;
 
     /**
-     * The time epochs. Non-null only if the at least on coordinate is to be formatted as a date.
+     * The time epochs. Non-null only if at least one coordinate is to be formatted as a date.
      *
      * <p>This array is created by {@link #createFormats(CoordinateReferenceSystem)}, which is invoked before
      * parsing or formatting in a different CRS than last operation, and stay unmodified after creation.</p>
      */
-    private transient long[] epochs;
+    private transient Instant[] epochs;
 
     /**
      * Dummy field position.
@@ -571,12 +576,12 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                 final CoordinateReferenceSystem t = CRS.getComponentAt(crs, i, i+1);
                 if (t instanceof TemporalCRS) {
                     if (epochs == null) {
-                        epochs = new long[dimension];
+                        epochs = new Instant[dimension];
                     }
                     types  [i] = DATE;
                     formats[i] = getFormat(Date.class);
-                    epochs [i] = ((TemporalCRS) t).getDatum().getOrigin().getTime();
-                    setConverter(dimension, i, unit.asType(Time.class).getConverterTo(Units.MILLISECOND));
+                    epochs [i] = TemporalDate.toInstant(((TemporalCRS) t).getDatum().getOrigin());
+                    setConverter(dimension, i, unit.asType(Time.class).getConverterTo(Units.SECOND));
                     if (direction == AxisDirection.PAST) {
                         negate(i);
                     }
@@ -1486,7 +1491,7 @@ abort:  if (dimensions != 0 && groundAccuracy != null) try {
                     case ANGLE:     valueObject = new Angle     (value); break;
                     case DATE: {
                         if (Double.isFinite(value)) {
-                            valueObject = new Date(Math.addExact(Math.round(value), epochs[i]));
+                            valueObject = TemporalDate.toDate(TemporalDate.addSeconds(epochs[i], value));
                         } else {
                             if (i != 0) toAppendTo.append(separator);
                             toAppendTo.append(String.valueOf(value));
@@ -1666,7 +1671,8 @@ skipSep:    if (i != 0) {
             if (object instanceof Angle) {
                 value = ((Angle) object).degrees();
             } else if (object instanceof Date) {
-                value = Math.subtractExact(((Date) object).getTime(), epochs[i]);
+                final Duration d = JDK23.until(epochs[i], ((Date) object).toInstant());
+                value = d.getSeconds() + (d.getNano() / (double) Constants.NANOS_PER_SECOND);
             } else {
                 value = ((Number) object).doubleValue();
             }

@@ -17,7 +17,9 @@
 package org.apache.sis.metadata.iso.extent;
 
 import java.util.Date;
+import java.util.Optional;
 import java.time.Instant;
+import java.time.temporal.Temporal;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -30,6 +32,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.privy.ReferencingServices;
 import org.apache.sis.pending.temporal.TemporalUtilities;
+import org.apache.sis.util.privy.TemporalDate;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
 
@@ -46,8 +49,8 @@ import org.opengis.temporal.Period;
  *
  * In addition to the standard properties, SIS provides the following methods:
  * <ul>
- *   <li>{@link #getStartTime()} for fetching the start time from the temporal primitive.</li>
- *   <li>{@link #getEndTime()} for fetching the end time from the temporal primitive.</li>
+ *   <li>{@link #getBeginning()} for fetching the start time from the temporal primitive.</li>
+ *   <li>{@link #getEnding()} for fetching the end time from the temporal primitive.</li>
  *   <li>{@link #setBounds(Date, Date)} for setting the extent from the given start and end time.</li>
  *   <li>{@link #setBounds(Envelope)} for setting the extent from the given envelope.</li>
  * </ul>
@@ -138,9 +141,6 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
 
     /**
      * Returns the date and time for the content of the dataset.
-     * If no extent has been {@linkplain #setExtent(TemporalPrimitive) explicitly set},
-     * then this method will build an extent from the {@linkplain #getStartTime() start
-     * time} and {@linkplain #getEndTime() end time} if any.
      *
      * @return the date and time for the content, or {@code null}.
      */
@@ -161,21 +161,43 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
     }
 
     /**
-     * Infers a value from the extent as a {@link Date} object.
+     * Infers a value from the extent as a {@code Instant} object.
      *
-     * @param  begin  {@code true} if we are asking for the start time,
-     *                or {@code false} for the end time.
-     * @return the requested time as a Java date, or {@code null} if none.
+     * @param  begin  {@code true} for the start time, or {@code false} for the end time.
+     * @return the requested time as an instant, or {@code null} if none.
      */
-    static Date getTime(final TemporalPrimitive extent, final boolean begin) {
+    static Instant getBound(final TemporalPrimitive extent, final boolean begin) {
         if (extent instanceof Period) {
             var p = (Period) extent;
-            Instant time = begin ? p.getBeginning() : p.getEnding();
-            if (time != null) {
-                return Date.from(time);
-            }
+            return begin ? p.getBeginning() : p.getEnding();
         }
         return null;
+    }
+
+    /**
+     * Returns the start of the temporal range for the content of the dataset.
+     * This method tries to infer this value from the {@linkplain #getExtent() extent}.
+     * The returned object is often an {@link Instant}, but not necessarily.
+     *
+     * @return the start of the temporal range.
+     *
+     * @since 1.5
+     */
+    public Optional<Temporal> getBeginning() {
+        return Optional.ofNullable(getBound(extent, true));
+    }
+
+    /**
+     * Returns the end of the temporal range for the content of the dataset.
+     * This method tries to infer this value from the {@linkplain #getExtent() extent}.
+     * The returned object is often an {@link Instant}, but not necessarily.
+     *
+     * @return the end of the temporal range.
+     *
+     * @since 1.5
+     */
+    public Optional<Temporal> getEnding() {
+        return Optional.ofNullable(getBound(extent, false));
     }
 
     /**
@@ -183,9 +205,12 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * This method tries to infer it from the {@linkplain #getExtent() extent}.
      *
      * @return the start time, or {@code null} if none.
+     *
+     * @deprecated Replaced by {@link #getBeginning()} in order to transition to {@code java.time} API.
      */
+    @Deprecated(since="1.5", forRemoval=true)
     public Date getStartTime() {
-        return getTime(extent, true);
+        return TemporalDate.toDate(getBeginning().orElse(null));
     }
 
     /**
@@ -193,9 +218,12 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * This method tries to infer it from the {@linkplain #getExtent() extent}.
      *
      * @return the end time, or {@code null} if none.
+     *
+     * @deprecated Replaced by {@link #getEnding()} in order to transition to {@code java.time} API.
      */
+    @Deprecated(since="1.5", forRemoval=true)
     public Date getEndTime() {
-        return getTime(extent, false);
+        return TemporalDate.toDate(getEnding().orElse(null));
     }
 
     /**
@@ -204,13 +232,26 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      *
      * @param  startTime  the start date and time for the content of the dataset, or {@code null} if none.
      * @param  endTime    the end date and time for the content of the dataset, or {@code null} if none.
+     *
+     * @deprecated Replaced by {@link #setBounds(Temporal, Temporal)} in order to transition to {@code java.time} API.
      */
-    public void setBounds(final Date startTime, final Date endTime) throws UnsupportedOperationException {
-        TemporalPrimitive value = null;
-        if (startTime != null || endTime != null) {
-            value = TemporalUtilities.createPeriod(startTime, endTime);
-        }
-        setExtent(value);
+    @Deprecated(since="1.5", forRemoval=true)
+    public void setBounds(final Date startTime, final Date endTime) {
+        setBounds((startTime == null) ? null : startTime.toInstant(),
+                    (endTime == null) ? null : endTime.toInstant());
+    }
+
+    /**
+     * Sets the temporal extent to the specified values. This convenience method creates a temporal
+     * primitive for the given dates and/or times, then invokes {@link #setExtent(TemporalPrimitive)}.
+     *
+     * @param  startTime  the start date and time for the content of the dataset, or {@code null} if none.
+     * @param  endTime    the end date and time for the content of the dataset, or {@code null} if none.
+     *
+     * @since 1.5
+     */
+    public void setBounds(final Temporal startTime, final Temporal endTime) {
+        setExtent(TemporalUtilities.createPeriod(startTime, endTime));
     }
 
     /**
@@ -222,7 +263,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * module is available on the module path.</p>
      *
      * @param  envelope  the envelope to use for setting this temporal extent.
-     * @throws UnsupportedOperationException if the referencing module or the temporal module is not on the module path.
+     * @throws UnsupportedOperationException if the referencing module is not on the module path.
      * @throws TransformException if the envelope cannot be transformed to a temporal extent.
      *
      * @see DefaultExtent#addElements(Envelope)
@@ -255,21 +296,21 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
             if (extent == null || (ot instanceof NilObject)) {
                 extent = ot;
             } else {
-                Date t0 = getTime(extent, true);
-                Date t1 = getTime(extent, false);
-                Date h0 = getTime(ot,     true);
-                Date h1 = getTime(ot,     false);
+                Instant t0 = getBound(extent, true);
+                Instant t1 = getBound(extent, false);
+                Instant h0 = getBound(ot,     true);
+                Instant h1 = getBound(ot,     false);
                 boolean changed = false;
-                if (h0 != null && (t0 == null || h0.after(t0))) {
+                if (h0 != null && (t0 == null || h0.isAfter(t0))) {
                     t0 = h0;
                     changed = true;
                 }
-                if (h1 != null && (t1 == null || h1.before(t1))) {
+                if (h1 != null && (t1 == null || h1.isBefore(t1))) {
                     t1 = h1;
                     changed = true;
                 }
                 if (changed) {
-                    if (t0 != null && t1 != null && t0.after(t1)) {
+                    if (t0 != null && t1 != null && t0.isAfter(t1)) {
                         extent = NilReason.MISSING.createNilObject(TemporalPrimitive.class);
                     } else {
                         setBounds(t0, t1);

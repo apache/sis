@@ -19,6 +19,7 @@ package org.apache.sis.referencing.datum;
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
+import java.time.temporal.Temporal;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlSchemaType;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -28,11 +29,13 @@ import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.referencing.privy.WKTKeywords;
-import org.apache.sis.xml.bind.gml.UniversalTimeAdapter;
-import org.apache.sis.metadata.privy.ImplementationHelper;
+import org.apache.sis.xml.bind.gml.TemporalAdapter;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.apache.sis.util.privy.TemporalDate;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
@@ -70,7 +73,7 @@ import org.opengis.metadata.Identifier;
  * all components were created using only SIS factories and static constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see org.apache.sis.referencing.CommonCRS.Temporal#datum()
  * @see org.apache.sis.referencing.cs.DefaultTimeCS
@@ -85,17 +88,21 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 3357241732140076884L;
+    private static final long serialVersionUID = -1507650596130032757L;
 
     /**
-     * The date and time origin of this temporal datum, or {@link Long#MIN_VALUE} if none.
-     * This information is mandatory, but SIS is tolerant to missing value is case a XML
-     * fragment was incomplete.
+     * The date and time origin of this temporal datum, or {@code null} if none.
+     * This information is mandatory, but SIS is tolerant to missing value
+     * is case a XML fragment was incomplete.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setOrigin(Date)}</p>
+     * This field is modified only at unmarshalling time.</p>
      */
-    private long origin;
+    @SuppressWarnings("serial")         // Most implementations are serializable.
+    @XmlSchemaType(name = "dateTime")
+    @XmlElement(name = "origin", required = true)
+    @XmlJavaTypeAdapter(TemporalAdapter.class)
+    private Temporal origin;
 
     /**
      * Creates a temporal datum from the given properties. The properties map is given
@@ -144,9 +151,9 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createTemporalDatum(Map, Date)
      */
-    public DefaultTemporalDatum(final Map<String,?> properties, final Date origin) {
+    public DefaultTemporalDatum(final Map<String,?> properties, final Temporal origin) {
         super(properties);
-        this.origin = origin.getTime();
+        this.origin = origin;
     }
 
     /**
@@ -162,7 +169,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      */
     protected DefaultTemporalDatum(final TemporalDatum datum) {
         super(datum);
-        origin = ImplementationHelper.toMilliseconds(datum.getOrigin());
+        origin = TemporalDate.toTemporal(datum.getOrigin());
     }
 
     /**
@@ -202,11 +209,8 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      * @return the date and time origin of this temporal datum.
      */
     @Override
-    @XmlSchemaType(name = "dateTime")
-    @XmlElement(name = "origin", required = true)
-    @XmlJavaTypeAdapter(UniversalTimeAdapter.class)
     public Date getOrigin() {
-        return ImplementationHelper.toDate(origin);
+        return TemporalDate.toDate(origin);
     }
 
     /**
@@ -228,7 +232,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
         }
         switch (mode) {
             case STRICT: {
-                return origin == ((DefaultTemporalDatum) object).origin;
+                return Objects.equals(origin, ((DefaultTemporalDatum) object).origin);
             }
             default: {
                 return Objects.equals(getOrigin(), ((TemporalDatum) object).getOrigin());
@@ -245,7 +249,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      */
     @Override
     protected long computeHashCode() {
-        return super.computeHashCode() + origin;
+        return super.computeHashCode() + Objects.hashCode(origin);
     }
 
     /**
@@ -261,7 +265,7 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
     @Override
     protected String formatTo(final Formatter formatter) {
         super.formatTo(formatter);
-        formatter.append(new Origin(getOrigin()));
+        formatter.append(new Origin(TemporalDate.toTemporal(getOrigin())));
         if (formatter.getConvention().majorVersion() == 1) {
             formatter.setInvalidWKT(this, null);
         }
@@ -273,10 +277,10 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      */
     private static final class Origin extends FormattableObject {
         /** The value of the origin to format. */
-        private final Date origin;
+        private final Temporal origin;
 
         /** Creates a new time origin with the given value. */
-        Origin(final Date origin) {
+        Origin(final Temporal origin) {
             this.origin = origin;
         }
 
@@ -310,24 +314,10 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultTemporalDatum() {
-        origin = Long.MIN_VALUE;
         /*
          * The origin is mandatory for SIS working. We do not verify its presence here because the verification
-         * would have to be done in an 'afterMarshal(…)' method and throwing an exception in that method causes
+         * would have to be done in an `afterMarshal(…)` method and throwing an exception in that method causes
          * the whole unmarshalling to fail. But the CD_TemporalDatum adapter does some verifications.
          */
-    }
-
-    /**
-     * Invoked by JAXB only at unmarshalling time.
-     *
-     * @see #getOrigin()
-     */
-    private void setOrigin(final Date value) {
-        if (origin == Long.MIN_VALUE) {
-            origin = value.getTime();
-        } else {
-            ImplementationHelper.propertyAlreadySet(DefaultTemporalDatum.class, "setOrigin", "origin");
-        }
     }
 }
