@@ -33,7 +33,7 @@ import java.time.ZoneOffset;
 import java.math.BigDecimal;
 import org.apache.sis.math.Vector;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
 
 
@@ -361,8 +361,8 @@ public class ValueGetter<T> {
              * `Time.toLocalTime()` does not use sub-second precision.
              * However, some databases provide millisecond precision.
              */
-            final int milli = (int) (time.getTime() % StandardDateFormat.MILLIS_PER_SECOND);
-            return time.toLocalTime().withNano(milli * StandardDateFormat.NANOS_PER_MILLISECOND);
+            final int milli = (int) (time.getTime() % Constants.MILLIS_PER_SECOND);
+            return time.toLocalTime().withNano(milli * Constants.NANOS_PER_MILLISECOND);
         }
     }
 
@@ -440,8 +440,8 @@ public class ValueGetter<T> {
             final Time time = source.getTime(columnIndex);
             if (time == null) return null;
             final int offsetMinute = -time.getTimezoneOffset();
-            final int milli = (int) (time.getTime() % StandardDateFormat.MILLIS_PER_SECOND);
-            return time.toLocalTime().withNano(milli * StandardDateFormat.NANOS_PER_MILLISECOND)
+            final int milli = (int) (time.getTime() % Constants.MILLIS_PER_SECOND);
+            return time.toLocalTime().withNano(milli * Constants.NANOS_PER_MILLISECOND)
                     .atOffset(ZoneOffset.ofHoursMinutes(offsetMinute / 60, offsetMinute % 60));
         }
     }

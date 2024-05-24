@@ -21,7 +21,7 @@ import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
-import org.apache.sis.metadata.privy.ImplementationHelper;
+import org.apache.sis.util.privy.TemporalDate;
 
 
 /**
@@ -74,7 +74,7 @@ public final class TemporalToDate extends AbstractCollection<Date> {
             /** Returns the next temporal object, converted to a date. */
             @Override public Date next() {
                 // Following may throw `DateTimeException` if the temporal does not support a required field.
-                return ImplementationHelper.toDate(dates.next());
+                return TemporalDate.toDate(dates.next());
             }
 
             /** Remove the last date returned by the iterator. */

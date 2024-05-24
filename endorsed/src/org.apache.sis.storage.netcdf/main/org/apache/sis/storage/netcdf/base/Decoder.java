@@ -47,7 +47,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.collection.TreeTable;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
 
@@ -520,7 +520,7 @@ public abstract class Decoder extends ReferencingFactoryContainer {
         final Logger logger = listeners.getLogger();
         if (logger.isLoggable(level)) {
             final LogRecord record = resources().getLogRecord(level, resourceKey,
-                    getFilename(), time / (double) StandardDateFormat.NANOS_PER_SECOND);
+                    getFilename(), time / (double) Constants.NANOS_PER_SECOND);
             Logging.completeAndLog(logger, caller, method, record);
         }
     }

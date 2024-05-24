@@ -32,7 +32,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.privy.ReferencingServices;
 import org.apache.sis.pending.temporal.TemporalUtilities;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.TemporalDate;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
 
@@ -201,14 +201,6 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
     }
 
     /**
-     * Helper method for the deprecated methods.
-     */
-    @Deprecated(forRemoval=true)
-    private static Date toDate(final Optional<Temporal> date) {
-        return date.map((t) -> Date.from(StandardDateFormat.toInstant(t, null))).orElse(null);
-    }
-
-    /**
      * The start date and time for the content of the dataset.
      * This method tries to infer it from the {@linkplain #getExtent() extent}.
      *
@@ -218,7 +210,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      */
     @Deprecated(since="1.5", forRemoval=true)
     public Date getStartTime() {
-        return toDate(getBeginning());
+        return TemporalDate.toDate(getBeginning().orElse(null));
     }
 
     /**
@@ -231,7 +223,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      */
     @Deprecated(since="1.5", forRemoval=true)
     public Date getEndTime() {
-        return toDate(getEnding());
+        return TemporalDate.toDate(getEnding().orElse(null));
     }
 
     /**

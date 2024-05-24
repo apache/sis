@@ -71,7 +71,7 @@ import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.privy.CollectionsExt;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.metadata.ModifiableMetadata;
@@ -2029,7 +2029,7 @@ public class MetadataBuilder {
     public final void addTemporalResolution(final double duration) {
         if (Double.isFinite(duration)) {
             addIfNotPresent(identification().getTemporalResolutions(),
-                    Duration.ofMillis(Math.round(duration * StandardDateFormat.MILLISECONDS_PER_DAY)));
+                    Duration.ofNanos(Math.round(duration * Constants.NANOSECONDS_PER_DAY)));
         }
     }
 

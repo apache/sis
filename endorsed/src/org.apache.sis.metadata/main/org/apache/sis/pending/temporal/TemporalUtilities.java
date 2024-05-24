@@ -21,7 +21,7 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.temporal.Temporal;
 import org.opengis.temporal.TemporalPrimitive;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.TemporalDate;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.temporal.Period;
@@ -71,8 +71,8 @@ public final class TemporalUtilities {
      * @todo Needs to avoid assuming UTC timezone.
      */
     public static TemporalPrimitive createPeriod(final Temporal begin, final Temporal end) {
-        return createPeriod(StandardDateFormat.toInstant(begin, ZoneOffset.UTC),
-                            StandardDateFormat.toInstant(end,   ZoneOffset.UTC));
+        return createPeriod(TemporalDate.toInstant(begin, ZoneOffset.UTC),
+                            TemporalDate.toInstant(end,   ZoneOffset.UTC));
     }
 
     /**
@@ -132,7 +132,7 @@ public final class TemporalUtilities {
             var p = (Period) time;
             Instant instant;
             if ((instant = p.getEnding()) != null || (instant = p.getBeginning()) != null) {
-                return Date.from(instant);
+                return TemporalDate.toDate(instant);
             }
         }
         return null;

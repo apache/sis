@@ -22,9 +22,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Objects;
-import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.temporal.Temporal;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.IdentifierSpace;
@@ -34,7 +31,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.privy.CollectionsExt;
-import org.apache.sis.util.privy.StandardDateFormat;
 
 
 /**
@@ -54,40 +50,6 @@ public final class ImplementationHelper extends Static {
      * Do not allow instantiation of this class.
      */
     private ImplementationHelper() {
-    }
-
-    /**
-     * Returns the instant value for the given date, or {@code null} if the date is null.
-     * This is a temporary method for compatibility with legacy API.
-     *
-     * @param  value  the date, or {@code null}.
-     * @return the instant, or {@code null}.
-     */
-    public static Instant toInstant(final Date value) {
-        return (value != null) ? value.toInstant() : null;
-    }
-
-    /**
-     * Converts the instant to a date object, or returns null if the given time is null.
-     * This is a temporary method for compatibility with legacy API.
-     *
-     * @param  value  the instant, or {@code null}.
-     * @return the date for the given instant, or {@code null}.
-     */
-    public static Date toDate(final Instant value) {
-        return (value != null) ? Date.from(value) : null;
-    }
-
-    /**
-     * Converts the temporal to a date object, or returns null if the given time is null.
-     * If the temporal object does not specify its timezone, then UTC is assumed.
-     * This is a temporary method for compatibility with legacy API.
-     *
-     * @param  value  the temporal value, or {@code null}.
-     * @return the date for the given value, or {@code null}.
-     */
-    public static Date toDate(final Temporal value) {
-        return (value != null) ? Date.from(StandardDateFormat.toInstant(value, ZoneOffset.UTC)) : null;
     }
 
     /**

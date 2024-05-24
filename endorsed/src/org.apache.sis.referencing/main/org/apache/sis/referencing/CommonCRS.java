@@ -84,7 +84,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Latitude;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.util.privy.StandardDateFormat.SECONDS_PER_DAY;
+import static org.apache.sis.util.privy.Constants.SECONDS_PER_DAY;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.datum.RealizationMethod;

@@ -30,7 +30,7 @@ import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.netcdf.ucar.DecoderWrapper;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.TemporalDate;
 import org.apache.sis.setup.GeometryLibrary;
 
 // Test dependencies
@@ -265,6 +265,6 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      * @throws IOException if an error occurred while reading the netCDF file.
      */
     protected final void assertAttributeEquals(final Instant expected, final String attributeName) throws IOException {
-        assertEquals(expected, StandardDateFormat.toInstant(decoder.dateValue(attributeName), ZoneOffset.UTC), attributeName);
+        assertEquals(expected, TemporalDate.toInstant(decoder.dateValue(attributeName), ZoneOffset.UTC), attributeName);
     }
 }

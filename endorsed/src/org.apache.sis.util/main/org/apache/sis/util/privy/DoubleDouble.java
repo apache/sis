@@ -264,7 +264,7 @@ public final class DoubleDouble extends Number implements Comparable<DoubleDoubl
      * @return the given duration, in nanoseconds.
      */
     public static DoubleDouble of(final Duration value) {
-        return of(value.getSeconds()).multiply(StandardDateFormat.NANOS_PER_SECOND).add(value.getNano());
+        return of(value.getSeconds()).multiply(Constants.NANOS_PER_SECOND).add(value.getNano());
     }
 
     /**

@@ -59,7 +59,8 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
 import org.apache.sis.util.privy.LocalizedParseException;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.TemporalDate;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.MathFunctions;
@@ -579,7 +580,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                     }
                     types  [i] = DATE;
                     formats[i] = getFormat(Date.class);
-                    epochs [i] = StandardDateFormat.toInstant(((TemporalCRS) t).getDatum().getOrigin(), null);
+                    epochs [i] = TemporalDate.toInstant(((TemporalCRS) t).getDatum().getOrigin(), null);
                     setConverter(dimension, i, unit.asType(Time.class).getConverterTo(Units.SECOND));
                     if (direction == AxisDirection.PAST) {
                         negate(i);
@@ -1490,7 +1491,7 @@ abort:  if (dimensions != 0 && groundAccuracy != null) try {
                     case ANGLE:     valueObject = new Angle     (value); break;
                     case DATE: {
                         if (Double.isFinite(value)) {
-                            valueObject = Date.from(StandardDateFormat.addSeconds(epochs[i], value));
+                            valueObject = TemporalDate.toDate(TemporalDate.addSeconds(epochs[i], value));
                         } else {
                             if (i != 0) toAppendTo.append(separator);
                             toAppendTo.append(String.valueOf(value));
@@ -1671,7 +1672,7 @@ skipSep:    if (i != 0) {
                 value = ((Angle) object).degrees();
             } else if (object instanceof Date) {
                 final Duration d = JDK23.until(epochs[i], ((Date) object).toInstant());
-                value = d.getSeconds() + (d.getNano() / (double) StandardDateFormat.NANOS_PER_SECOND);
+                value = d.getSeconds() + (d.getNano() / (double) Constants.NANOS_PER_SECOND);
             } else {
                 value = ((Number) object).doubleValue();
             }

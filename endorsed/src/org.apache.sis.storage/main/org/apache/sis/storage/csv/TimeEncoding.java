@@ -23,6 +23,7 @@ import javax.measure.quantity.Time;
 import org.opengis.referencing.datum.TemporalDatum;
 import org.apache.sis.converter.SurjectiveConverter;
 import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.TemporalDate;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.measure.Units;
 
@@ -63,7 +64,7 @@ class TimeEncoding extends SurjectiveConverter<String,Instant> {
      * Creates a new time encoding.
      */
     TimeEncoding(final TemporalDatum datum, final Unit<Time> unit) {
-        this.origin   = StandardDateFormat.toInstant(datum.getOrigin(), null);
+        this.origin   = TemporalDate.toInstant(datum.getOrigin(), null);
         this.interval = unit.getConverterTo(Units.SECOND).convert(1);
     }
 
@@ -91,7 +92,7 @@ class TimeEncoding extends SurjectiveConverter<String,Instant> {
      */
     @Override
     public Instant apply(final String time) {
-        return StandardDateFormat.addSeconds(origin, Double.parseDouble(time) * interval);
+        return TemporalDate.addSeconds(origin, Double.parseDouble(time) * interval);
     }
 
     /**

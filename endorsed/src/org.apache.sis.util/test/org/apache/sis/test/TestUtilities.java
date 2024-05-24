@@ -47,7 +47,7 @@ import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTableFormat;
 import org.apache.sis.util.privy.X364;
-import static org.apache.sis.util.privy.StandardDateFormat.UTC;
+import static org.apache.sis.util.privy.Constants.UTC;
 
 // Test dependencies
 import static org.junit.jupiter.api.Assertions.*;

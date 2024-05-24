@@ -24,7 +24,7 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.apache.sis.util.privy.DoubleDouble;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.Constants;
 import static org.apache.sis.util.ArgumentChecks.*;
 
 
@@ -175,7 +175,7 @@ public class TimeDependentBWP extends BursaWolfParameters {
         if (time != null) {
             final Duration d = Duration.between(timeReference, time);
             if (!d.isZero()) {      // Returns null for 0 as an optimization.
-                return DoubleDouble.of(d).divide(StandardDateFormat.MILLIS_PER_TROPICAL_YEAR * StandardDateFormat.NANOS_PER_MILLISECOND);
+                return DoubleDouble.of(d).divide(Constants.MILLIS_PER_TROPICAL_YEAR * Constants.NANOS_PER_MILLISECOND);
             }
         }
         return null;

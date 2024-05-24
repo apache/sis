@@ -30,7 +30,7 @@ import org.apache.sis.util.StringBuilders;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.metadata.sql.privy.ScriptRunner;
 import org.apache.sis.metadata.sql.privy.SQLUtilities;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.system.Fallback;
 import org.apache.sis.util.resources.Messages;
 import org.apache.sis.util.logging.PerformanceLevel;
@@ -247,7 +247,7 @@ final class EPSGInstaller extends ScriptRunner {
         time = System.nanoTime() - time;
         InstallationScriptProvider.log(Messages.forLocale(locale).getLogRecord(
                 PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS),
-                Messages.Keys.InsertDuration_2, numRows, time / (float) StandardDateFormat.NANOS_PER_SECOND));
+                Messages.Keys.InsertDuration_2, numRows, time / (float) Constants.NANOS_PER_SECOND));
     }
 
     /**

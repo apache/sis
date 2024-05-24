@@ -39,7 +39,6 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.privy.AxisNames;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
-import org.apache.sis.util.privy.StandardDateFormat;
 import org.apache.sis.util.privy.Constants;
 
 // Test dependencies
@@ -50,7 +49,7 @@ import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.TestUtilities.*;
-import static org.apache.sis.util.privy.StandardDateFormat.UTC;
+import static org.apache.sis.util.privy.Constants.UTC;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.datum.RealizationMethod;
@@ -256,7 +255,7 @@ public final class CommonCRSTest extends TestCase {
     @Test
     public void testTemporal() {
         final var julianEpoch = (Instant) CommonCRS.Temporal.JULIAN.datum().getOrigin();
-        final double SECONDS_PER_DAY = StandardDateFormat.SECONDS_PER_DAY;
+        final double SECONDS_PER_DAY = Constants.SECONDS_PER_DAY;
         final double julianEpochSecond = julianEpoch.getEpochSecond() / SECONDS_PER_DAY;
         assertTrue(julianEpochSecond < 0);
         /*

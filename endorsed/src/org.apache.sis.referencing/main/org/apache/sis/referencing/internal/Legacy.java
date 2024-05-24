@@ -30,10 +30,6 @@ import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 
 // Specific to the main and geoapi-4.0 branches:
-import java.util.Date;
-import java.time.ZoneOffset;
-import java.time.temporal.Temporal;
-import org.apache.sis.util.privy.StandardDateFormat;
 
 
 /**
@@ -136,18 +132,5 @@ public final class Legacy {
             cs = (CartesianCS) CoordinateSystems.replaceLinearUnit(cs, unit.asType(Length.class));
         }
         return cs;
-    }
-
-    /**
-     * Converts a {@link java.time} object to a legacy {@link Date} object.
-     * If the time zone is not specified, UTC is assumed.
-     *
-     * @param  t  the date to convert.
-     * @return the given temporal object as a date, or {@code null} if the method doesn't know how to convert.
-     * @throws ArithmeticException if numeric overflow occurs.
-     */
-    public static Date toDate(final Temporal t) {
-        // Do not use `Date.from(Instant)` because we want the `ArithmeticException` in case of overflow.
-        return new Date(StandardDateFormat.toInstant(t, ZoneOffset.UTC).toEpochMilli());
     }
 }

@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 import org.apache.sis.math.Vector;
 import org.apache.sis.measure.Units;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.Constants;
 
 
 /**
@@ -112,7 +112,7 @@ final class HYCOM {
                             int month = (int) (date % 100); date /= 100;
                             calendar.set(Math.toIntExact(date), month - 1, day, 0, 0, 0);
                             date = calendar.getTimeInMillis() - origin;                     // Milliseconds since epoch.
-                            time += date / (double) StandardDateFormat.MILLISECONDS_PER_DAY;
+                            time += date / (double) Constants.MILLISECONDS_PER_DAY;
                             times[i] = time;
                         }
                         variable.setValues(times);

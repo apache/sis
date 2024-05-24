@@ -57,7 +57,7 @@ import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.logging.PerformanceLevel;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.privy.CollectionsExt;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.metadata.simple.SimpleCitation;
 import org.apache.sis.system.ReferenceQueueConsumer;
 import org.apache.sis.system.DelayedExecutor;
@@ -219,7 +219,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                 value = depth;
             } else {
                 text = "%s made available %d seconds ago";
-                value = Math.round((System.nanoTime() - timestamp) / (double) StandardDateFormat.NANOS_PER_SECOND);
+                value = Math.round((System.nanoTime() - timestamp) / (double) Constants.NANOS_PER_SECOND);
             }
             return String.format(text, Classes.getShortClassName(factory), value);
         }
@@ -493,7 +493,7 @@ public abstract class ConcurrentAuthorityFactory<DAO extends GeodeticAuthorityFa
                     caller = "create".concat(type.getSimpleName());
                 }
                 final Level level = PerformanceLevel.forDuration(time, TimeUnit.NANOSECONDS);
-                final Double duration = time / (double) StandardDateFormat.NANOS_PER_SECOND;
+                final Double duration = time / (double) Constants.NANOS_PER_SECOND;
                 final Messages resources = Messages.forLocale(null);
                 final LogRecord record;
                 if (code != null) {

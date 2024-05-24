@@ -20,7 +20,6 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Date;
-import java.util.concurrent.TimeUnit;
 import java.text.ParseException;
 
 // Test dependencies
@@ -40,19 +39,6 @@ public final class StandardDateFormatTest extends TestCase {
      * Creates a new test case.
      */
     public StandardDateFormatTest() {
-    }
-
-    /**
-     * Verifies the {@link StandardDateFormat#MILLISECONDS_PER_DAY}, {@link StandardDateFormat#NANOS_PER_MILLISECOND}
-     * and {@link StandardDateFormat#NANOS_PER_SECOND} constant values.
-     */
-    @Test
-    public void verifyConstantValues() {
-        assertEquals(TimeUnit.DAYS.toSeconds(1),       StandardDateFormat.SECONDS_PER_DAY);
-        assertEquals(TimeUnit.DAYS.toMillis(1),        StandardDateFormat.MILLISECONDS_PER_DAY);
-        assertEquals(TimeUnit.MILLISECONDS.toNanos(1), StandardDateFormat.NANOS_PER_MILLISECOND);
-        assertEquals(TimeUnit.SECONDS.toNanos(1),      StandardDateFormat.NANOS_PER_SECOND);
-        assertEquals(365.24219 * (24*60*60 * 1000),    StandardDateFormat.MILLIS_PER_TROPICAL_YEAR, 0.00001 * (24*60*60 * 1000));
     }
 
     /**

@@ -59,6 +59,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.TemporalDate;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
@@ -886,7 +887,7 @@ public final class ChannelDecoder extends Decoder {
             for (int i=0; i<values.length; i++) {
                 final Number value = values[i];
                 if (value != null) {
-                    dates[i] = StandardDateFormat.addSeconds(epoch, converter.convert(value.doubleValue()));
+                    dates[i] = TemporalDate.addSeconds(epoch, converter.convert(value.doubleValue()));
                 }
             }
         } catch (IncommensurableException | MeasurementParseException | DateTimeException | ArithmeticException e) {

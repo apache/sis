@@ -70,10 +70,9 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.util.privy.TemporalDate;
 import static org.apache.sis.util.privy.CollectionsExt.nonNull;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.metadata.privy.ImplementationHelper.toDate;
 import static org.apache.sis.metadata.privy.ReferencingServices.AUTHALIC_RADIUS;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -499,7 +498,7 @@ public final class Extents extends Static {
             if (min == null && max == null) {
                 return null;
             }
-            return new Range<>(Date.class, toDate(min), true, toDate(max), true);
+            return new Range<>(Date.class, TemporalDate.toDate(min), true, TemporalDate.toDate(max), true);
         }).orElse(null);
     }
 
@@ -536,7 +535,7 @@ public final class Extents extends Static {
      */
     @Deprecated(since="1.5", forRemoval=true)
     public static Date getDate(final Extent extent, final double location) {
-        return toDate(getInstant(extent, null, location).orElse(null));
+        return TemporalDate.toDate(getInstant(extent, null, location).orElse(null));
     }
 
     /**
@@ -592,8 +591,8 @@ public final class Extents extends Static {
                 if (t instanceof DefaultTemporalExtent) {
                     final var dt = (DefaultTemporalExtent) t;
                     // Maybe user has overridden those methods.
-                    startTime = StandardDateFormat.toInstant(dt.getBeginning().orElse(null), zone);
-                    endTime   = StandardDateFormat.toInstant(dt.getEnding()   .orElse(null), zone);
+                    startTime = TemporalDate.toInstant(dt.getBeginning().orElse(null), zone);
+                    endTime   = TemporalDate.toInstant(dt.getEnding()   .orElse(null), zone);
                 } else {
                     final TemporalPrimitive p = t.getExtent();
                     startTime = DefaultTemporalExtent.getBound(p, true);

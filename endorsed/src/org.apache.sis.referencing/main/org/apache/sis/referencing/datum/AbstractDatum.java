@@ -45,7 +45,7 @@ import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;
 
 // Specific to the main and geoapi-4.0 branches:
-import org.apache.sis.referencing.internal.Legacy;
+import org.apache.sis.util.privy.TemporalDate;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
@@ -477,7 +477,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     @XmlElement(name = "realizationEpoch")
     @UML(identifier="realizationEpoch", obligation=OPTIONAL, specification=ISO_19111, version=2007)
     private Date getRealizationEpoch() {
-        return getAnchorEpoch().map(Legacy::toDate).orElse(null);
+        return getAnchorEpoch().map(TemporalDate::toDate).orElse(null);
     }
 
     /**

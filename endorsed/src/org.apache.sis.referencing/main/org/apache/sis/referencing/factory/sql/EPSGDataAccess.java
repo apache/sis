@@ -117,8 +117,8 @@ import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.pending.jdk.JDK16;
+import static org.apache.sis.util.privy.Constants.UTC;
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
-import static org.apache.sis.util.privy.StandardDateFormat.UTC;
 import static org.apache.sis.referencing.internal.ServicesForMetadata.CONNECTION;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:

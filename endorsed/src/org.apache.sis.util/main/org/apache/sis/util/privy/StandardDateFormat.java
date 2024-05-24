@@ -27,25 +27,21 @@ import java.text.ParsePosition;
 import java.text.ParseException;
 import java.time.DateTimeException;
 import java.time.Instant;
-import java.time.LocalTime;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalQuery;
 import java.time.temporal.TemporalAccessor;
-import java.time.chrono.ChronoZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.format.SignStyle;
 import org.apache.sis.util.CharSequences;
-import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -68,13 +64,6 @@ import org.apache.sis.util.resources.Errors;
  */
 @SuppressWarnings("serial")     // Not intended to be serialized.
 public final class StandardDateFormat extends DateFormat {
-    /**
-     * The {@value} timezone ID.
-     *
-     * @see ZoneOffset#UTC
-     */
-    public static final String UTC = "UTC";
-
     /**
      * Midnight (00:00) UTC.
      */
@@ -220,140 +209,6 @@ replace:    if (Character.isWhitespace(c)) {
     }
 
     /**
-     * The length of a day in number of seconds.
-     * Can be casted to {@code float} with exact precision.
-     */
-    public static final int SECONDS_PER_DAY = 24*60*60;
-
-    /**
-     * The length of a day in number of milliseconds.
-     * Can be casted to {@code float} with exact precision.
-     */
-    public static final int MILLISECONDS_PER_DAY = SECONDS_PER_DAY*1000;
-
-    /**
-     * Number of milliseconds in one second.
-     * Can be casted to {@code float} with exact precision.
-     */
-    public static final int MILLIS_PER_SECOND = 1000;
-
-    /**
-     * Number of nanoseconds in one millisecond.
-     * Can be casted to {@code float} with exact precision.
-     */
-    public static final int NANOS_PER_MILLISECOND = 1000_000;
-
-    /**
-     * Number of nanoseconds in one second.
-     * Can be casted to {@code float} with exact precision.
-     */
-    public static final int NANOS_PER_SECOND = 1000_000_000;
-
-    /**
-     * Length of a year as defined by the International Union of Geological Sciences (IUGS), in milliseconds.
-     * This is the unit of measurement used in EPSG geodetic dataset (EPSG:1029).
-     */
-    public static final long MILLIS_PER_TROPICAL_YEAR = 31556925445L;
-
-    /**
-     * Converts the given temporal object into an instant.
-     * If the timezone is unspecified, then UTC is assumed.
-     *
-     * @param  date  the temporal object to convert, or {@code null}.
-     * @param  zone  the timezone to use if the time is local, or {@code null} if none.
-     * @return the instant for the given temporal object, or {@code null} if the argument was null.
-     * @throws DateTimeException if the given date does not support a field required by this method.
-     */
-    public static Instant toInstant(final TemporalAccessor date, final ZoneId zone) {
-        if (date == null) {
-            return null;
-        }
-        if (date instanceof Instant) {
-            return (Instant) date;
-        } else if (date instanceof OffsetDateTime) {
-            return ((OffsetDateTime) date).toInstant();
-        } else if (date instanceof ChronoZonedDateTime) {
-            return ((ChronoZonedDateTime) date).toInstant();
-        } else if (zone != null) {
-            if (date instanceof LocalDateTime) {
-                final var t = (LocalDateTime) date;
-                if (zone instanceof ZoneOffset) {
-                    return t.atOffset((ZoneOffset) zone).toInstant();
-                } else {
-                    return t.atZone(zone).toInstant();
-                }
-            } else if (date instanceof LocalDate) {
-                final var t = (LocalDate) date;
-                return t.atStartOfDay(zone).toInstant();
-            }
-        }
-        Instant time;
-        final ChronoField nano;
-        if (zone == null || date.isSupported(ChronoField.INSTANT_SECONDS)) {
-            time = Instant.ofEpochSecond(date.getLong(ChronoField.INSTANT_SECONDS));
-            nano = ChronoField.NANO_OF_SECOND;
-        } else if (zone.equals(ZoneOffset.UTC)) {
-            // Note that the timezone of the temporal value is unknown here. We assume UTC.
-            time = Instant.ofEpochSecond(Math.multiplyExact(date.getLong(ChronoField.EPOCH_DAY), SECONDS_PER_DAY));
-            nano = ChronoField.NANO_OF_DAY;
-        } else {
-            throw new DateTimeException(Errors.format(Errors.Keys.CanNotConvertFromType_2, date.getClass(), Instant.class));
-        }
-        if (date.isSupported(nano)) {
-            time = time.plusNanos(date.getLong(nano));
-        }
-        return time;
-    }
-
-    /**
-     * Adds the given amount of seconds to the given instant.
-     *
-     * @param  time   the instant to which to add seconds, or {@code null}.
-     * @param  value  number of seconds.
-     * @return the shifted time, or {@code null} if the given instant was null or the given value was NaN.
-     */
-    public static Instant addSeconds(final Instant time, final double value) {
-        if (time == null || Double.isNaN(value)) {
-            return null;
-        }
-        final long r = Math.round(value);
-        return time.plusSeconds(r).plusNanos(Math.round((value - r) * NANOS_PER_SECOND));
-    }
-
-    /**
-     * Returns {@code true} if objects of the given class have day, month and hour fields.
-     * This method is defined here for having a single class where to concentrate such heuristic rules.
-     * Note that {@link Instant} does not have date fields.
-     *
-     * @param  date  class of object to test (may be {@code null}).
-     * @return whether the given class is {@link LocalDate} or one of the classes with date + time.
-     *         This list may be expanded in future versions.
-     */
-    public static boolean hasDateFields(final Class<?> date) {
-        return date == LocalDate.class
-            || date == LocalDateTime.class
-            || date == OffsetDateTime.class
-            || date == ZonedDateTime.class;
-    }
-
-    /**
-     * Returns {@code true} if objects of the given class have time fields.
-     * This method is defined here for having a single class where to concentrate such heuristic rules.
-     * Note that {@link Instant} does not have hour fields.
-     *
-     * @param  date  class of object to test (may be {@code null}).
-     * @return whether the given class is {@link LocalTime}, {@link OffsetTime} or one of the classes with date + time.
-     *         This list may be expanded in future versions.
-     */
-    public static boolean hasTimeFields(final Class<?> date) {
-        return date == LocalTime.class
-            || date == OffsetTime.class
-            || date == LocalDateTime.class
-            || date == OffsetDateTime.class
-            || date == ZonedDateTime.class;
-    }
-
-    /**
      * The {@code java.time} parser and formatter. This is usually the {@link #FORMAT} instance
      * unless a different locale or timezone has been specified.
      */
@@ -391,7 +246,7 @@ replace:    if (Character.isWhitespace(c)) {
      */
     public StandardDateFormat(final Locale locale, final TimeZone zone) {
         this(locale);
-        if (!UTC.equals(zone.getID())) {
+        if (!Constants.UTC.equals(zone.getID())) {
             setTimeZone(zone);
         }
     }
@@ -507,7 +362,7 @@ replace:    if (Character.isWhitespace(c)) {
     @Override
     public Date parse(final String text, final ParsePosition position) {
         try {
-            return Date.from(toInstant(format.parse(text, position), getZone()));
+            return Date.from(TemporalDate.toInstant(format.parse(text, position), getZone()));
         } catch (DateTimeException | ArithmeticException e) {
             position.setErrorIndex(getErrorIndex(e, position));
             return null;
@@ -524,7 +379,7 @@ replace:    if (Character.isWhitespace(c)) {
     @Override
     public Date parse(final String text) throws ParseException {
         try {
-            return Date.from(toInstant(format.parse(toISO(text, 0, text.length())), getZone()));
+            return Date.from(TemporalDate.toInstant(format.parse(toISO(text, 0, text.length())), getZone()));
         } catch (RuntimeException e) {
             throw (ParseException) new ParseException(e.getLocalizedMessage(), getErrorIndex(e, null)).initCause(e);
         }

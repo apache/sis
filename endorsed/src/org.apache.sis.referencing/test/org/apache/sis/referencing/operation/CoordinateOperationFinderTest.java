@@ -53,7 +53,7 @@ import org.apache.sis.referencing.crs.DefaultCompoundCRS;
 import org.apache.sis.referencing.crs.DefaultDerivedCRS;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.measure.Units;
-import static org.apache.sis.util.privy.StandardDateFormat.SECONDS_PER_DAY;
+import static org.apache.sis.util.privy.Constants.SECONDS_PER_DAY;
 import static org.apache.sis.referencing.privy.Formulas.LINEAR_TOLERANCE;
 import static org.apache.sis.referencing.privy.Formulas.ANGULAR_TOLERANCE;
 import static org.apache.sis.referencing.privy.PositionalAccuracyConstant.DATUM_SHIFT_APPLIED;

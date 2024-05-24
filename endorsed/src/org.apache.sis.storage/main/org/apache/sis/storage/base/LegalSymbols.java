@@ -27,7 +27,7 @@ import org.apache.sis.metadata.iso.citation.AbstractParty;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultCitationDate;
 import org.apache.sis.metadata.iso.constraint.DefaultLegalConstraints;
-import static org.apache.sis.util.privy.StandardDateFormat.MILLISECONDS_PER_DAY;
+import static org.apache.sis.util.privy.Constants.MILLISECONDS_PER_DAY;
 
 // Specific to the geoapi-4.0 branch:
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;

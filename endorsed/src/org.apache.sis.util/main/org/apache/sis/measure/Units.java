@@ -35,8 +35,8 @@ import static org.apache.sis.measure.UnitRegistry.CGS;
 import static org.apache.sis.measure.UnitRegistry.IMPERIAL;
 import static org.apache.sis.measure.UnitRegistry.OTHER;
 import static org.apache.sis.measure.UnitRegistry.PREFIXABLE;
-import static org.apache.sis.util.privy.StandardDateFormat.SECONDS_PER_DAY;
-import static org.apache.sis.util.privy.StandardDateFormat.MILLIS_PER_TROPICAL_YEAR;
+import static org.apache.sis.util.privy.Constants.SECONDS_PER_DAY;
+import static org.apache.sis.util.privy.Constants.MILLIS_PER_TROPICAL_YEAR;
 
 
 /**
