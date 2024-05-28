@@ -146,7 +146,9 @@ public class DefaultTemporalDatum extends AbstractDatum implements TemporalDatum
      * @param  properties  the properties to be given to the identified object.
      * @param  origin      the date and time origin of this temporal datum.
      *
-     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createTemporalDatum(Map, Date)
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createTemporalDatum(Map, Temporal)
+     *
+     * @since 1.5
      */
     public DefaultTemporalDatum(final Map<String,?> properties, final Temporal origin) {
         super(properties);

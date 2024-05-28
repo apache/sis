@@ -17,12 +17,12 @@
 package org.apache.sis.pending.temporal;
 
 import java.util.Objects;
-import java.time.Instant;
+import java.time.temporal.Temporal;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.time.Duration;
 import java.time.temporal.TemporalAmount;
 import org.opengis.temporal.Period;
-import org.apache.sis.pending.jdk.JDK23;
 
 
 /**
@@ -33,27 +33,27 @@ import org.apache.sis.pending.jdk.JDK23;
  */
 final class DefaultPeriod extends Primitive implements Period {
     /** Bounds making this period. */
-    private final Instant beginning, ending;
+    private final Temporal beginning, ending;
 
     /** Creates a new period with the given bounds. */
-    DefaultPeriod(final Instant beginning, final Instant ending) {
+    DefaultPeriod(final Temporal beginning, final Temporal ending) {
         this.beginning = beginning;
         this.ending    = ending;
     }
 
     /** The beginning instant at which this period starts. */
-    @Override public Instant getBeginning() {
+    @Override public Temporal getBeginning() {
         return beginning;
     }
 
     /** The ending instant at which this period ends. */
-    @Override public Instant getEnding() {
+    @Override public Temporal getEnding() {
         return ending;
     }
 
     /** Duration of this temporal geometric primitive. */
     @Override public TemporalAmount length() {
-        return (beginning != null && ending != null) ? JDK23.until(beginning, ending) : null;
+        return (beginning != null && ending != null) ? Duration.between(beginning, ending) : null;
     }
 
     /** String representation. */

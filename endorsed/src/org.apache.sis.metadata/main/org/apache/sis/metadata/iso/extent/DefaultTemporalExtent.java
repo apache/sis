@@ -169,7 +169,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
     static Instant getBound(final TemporalPrimitive extent, final boolean begin) {
         if (extent instanceof Period) {
             var p = (Period) extent;
-            return begin ? p.getBeginning() : p.getEnding();
+            return TemporalDate.toInstant(begin ? p.getBeginning() : p.getEnding(), null);
         }
         return null;
     }

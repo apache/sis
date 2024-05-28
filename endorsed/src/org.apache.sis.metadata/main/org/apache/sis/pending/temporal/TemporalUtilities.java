@@ -46,19 +46,8 @@ public final class TemporalUtilities {
      * @param  time  the date for which to create instant, or {@code null}.
      * @return the instant, or {@code null} if the given time was null.
      */
-    public static TemporalPrimitive createInstant(final Instant time) {
+    public static TemporalPrimitive createInstant(final Temporal time) {
         return (time == null) ? null : new DefaultPeriod(time, time);
-    }
-
-    /**
-     * Creates a period for the given begin and end instant.
-     *
-     * @param  begin  the begin instant (inclusive), or {@code null}.
-     * @param  end    the end instant (inclusive), or {@code null}.
-     * @return the period, or {@code null} if both arguments are null.
-     */
-    public static TemporalPrimitive createPeriod(final Instant begin, final Instant end) {
-        return (begin == null && end == null) ? null : new DefaultPeriod(begin, end);
     }
 
     /**
@@ -71,8 +60,7 @@ public final class TemporalUtilities {
      * @todo Needs to avoid assuming UTC timezone.
      */
     public static TemporalPrimitive createPeriod(final Temporal begin, final Temporal end) {
-        return createPeriod(TemporalDate.toInstant(begin, ZoneOffset.UTC),
-                            TemporalDate.toInstant(end,   ZoneOffset.UTC));
+        return (begin == null && end == null) ? null : new DefaultPeriod(begin, end);
     }
 
     /**
@@ -86,9 +74,9 @@ public final class TemporalUtilities {
     public static Period getPeriod(final TemporalPrimitive time) {
         if (time instanceof Period) {
             var p = (Period) time;
-            final Instant begin = p.getBeginning();
+            final Temporal begin = p.getBeginning();
             if (begin != null) {
-                final Instant end = p.getEnding();
+                final Temporal end = p.getEnding();
                 if (end != null && !begin.equals(end)) {
                     return p;
                 }
@@ -108,8 +96,8 @@ public final class TemporalUtilities {
     public static Instant getInstant(final TemporalPrimitive time) {
         if (time instanceof Period) {
             var p = (Period) time;
-            final Instant begin = p.getBeginning();
-            final Instant end = p.getEnding();
+            final Instant begin = TemporalDate.toInstant(p.getBeginning(), ZoneOffset.UTC);
+            final Instant end = TemporalDate.toInstant(p.getEnding(), ZoneOffset.UTC);
             if (end == null) {
                 return begin;
             }
@@ -130,7 +118,7 @@ public final class TemporalUtilities {
     public static Date getAnyDate(final TemporalPrimitive time) {
         if (time instanceof Period) {
             var p = (Period) time;
-            Instant instant;
+            Temporal instant;
             if ((instant = p.getEnding()) != null || (instant = p.getBeginning()) != null) {
                 return TemporalDate.toDate(instant);
             }

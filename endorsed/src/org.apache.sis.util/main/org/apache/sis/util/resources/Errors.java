@@ -194,6 +194,11 @@ public class Errors extends IndexedResourceBundle {
         public static final short CanNotWriteFile_2 = 27;
 
         /**
+         * Cannot compare instance of ‘{0}’ with ‘{1}’.
+         */
+        public static final short CannotCompareInstanceOf_2 = 205;
+
+        /**
          * Circular reference.
          */
         public static final short CircularReference = 28;
