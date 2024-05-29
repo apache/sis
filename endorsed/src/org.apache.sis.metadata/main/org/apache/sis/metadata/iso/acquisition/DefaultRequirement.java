@@ -18,6 +18,7 @@ package org.apache.sis.metadata.iso.acquisition;
 
 import java.util.Date;
 import java.util.Collection;
+import java.time.temporal.Temporal;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -28,8 +29,7 @@ import org.opengis.metadata.acquisition.RequestedDate;
 import org.opengis.metadata.acquisition.Requirement;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import static org.apache.sis.metadata.privy.ImplementationHelper.toDate;
-import static org.apache.sis.metadata.privy.ImplementationHelper.toMilliseconds;
+import org.apache.sis.util.privy.TemporalDate;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.metadata.citation.Responsibility;
@@ -65,7 +65,7 @@ import org.opengis.metadata.citation.Responsibility;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @XmlType(name = "MI_Requirement_Type", propOrder = {
@@ -83,7 +83,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -4987984804974769238L;
+    private static final long serialVersionUID = 3698085104012907473L;
 
     /**
      * Identification of reference or guidance material for the requirement.
@@ -115,10 +115,10 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     private RequestedDate requestedDate;
 
     /**
-     * Date and time after which collection is no longer valid,
-     * or {@link Long#MIN_VALUE} if none.
+     * Date and time after which collection is no longer valid.
      */
-    private long expiryDate = Long.MIN_VALUE;
+    @SuppressWarnings("serial")     // Standard Java implementations are serializable.
+    private Temporal expiryDate;
 
     /**
      * Plan that identifies solution to satisfy the requirement.
@@ -141,6 +141,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      *
      * @see #castOrCopy(Requirement)
      */
+    @SuppressWarnings("this-escape")
     public DefaultRequirement(final Requirement object) {
         super(object);
         if (object != null) {
@@ -150,7 +151,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
             recipients     = copyCollection(object.getRecipients(), Responsibility.class);
             priority       = object.getPriority();
             requestedDate  = object.getRequestedDate();
-            expiryDate     = toMilliseconds(object.getExpiryDate());
+            expiryDate     = TemporalDate.toTemporal(object.getExpiryDate());
             satisfiedPlans = copyCollection(object.getSatisfiedPlans(), Plan.class);
         }
     }
@@ -313,7 +314,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     @Override
     @XmlElement(name = "expiryDate", required = true)
     public Date getExpiryDate() {
-        return toDate(expiryDate);
+        return TemporalDate.toDate(expiryDate);
     }
 
     /**
@@ -322,8 +323,8 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      * @param  newValue  the new expiry date.
      */
     public void setExpiryDate(final Date newValue) {
-        checkWritePermission(toDate(expiryDate));
-        expiryDate = toMilliseconds(newValue);
+        checkWritePermission(expiryDate);
+        expiryDate = TemporalDate.toTemporal(newValue);
     }
 
     /**

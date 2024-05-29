@@ -23,7 +23,8 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
-import java.time.Instant;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import jakarta.xml.bind.Marshaller;
@@ -57,7 +58,6 @@ import org.apache.sis.xml.IdentifierSpace;
 import org.apache.sis.xml.NilReason;
 import org.apache.sis.xml.XML;
 import org.apache.sis.xml.bind.metadata.replace.ReferenceSystemMetadata;
-import org.apache.sis.xml.privy.LegacyNamespaces;
 import org.apache.sis.xml.bind.gcx.Anchor;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.util.SimpleInternationalString;
@@ -67,7 +67,6 @@ import org.apache.sis.util.privy.Constants;
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
-import org.apache.sis.test.TestUtilities;
 import org.apache.sis.xml.test.DocumentComparator;
 import org.apache.sis.xml.test.TestCase;
 
@@ -108,7 +107,7 @@ public final class MetadataTest extends TestCase.WithLogs {
         metadata.setMetadataIdentifier(new DefaultIdentifier("test/Metadata.xml"));
         metadata.setLocalesAndCharsets(Map.of(Locale.ENGLISH, StandardCharsets.UTF_8));
         metadata.setMetadataScopes(Set.of(new DefaultMetadataScope(ScopeCode.DATASET, "Pseudo Common Data Index record")));
-        metadata.setDateInfo(Set.of(new DefaultCitationDate(TestUtilities.date("2009-01-01 04:00:00"), DateType.CREATION)));
+        metadata.setDateInfo(Set.of(new DefaultCitationDate(OffsetDateTime.parse("2009-01-01T05:00:00+01:00"), DateType.CREATION)));
         /*
          * Contact information for the author. The same party will be used for custodian and distributor,
          * with only the role changed. Note that we need to create an instance of the deprecated class,
@@ -143,8 +142,8 @@ public final class MetadataTest extends TestCase.WithLogs {
             final var citation = new DefaultCitation("Some set of points");
             citation.setAlternateTitles(Set.of(new SimpleInternationalString("Code XYZ")));
             citation.setDates(List.of(
-                    new DefaultCitationDate(TestUtilities.date("1990-06-04 22:00:00"), DateType.REVISION),
-                    new DefaultCitationDate(TestUtilities.date("1979-08-02 22:00:00"), DateType.CREATION)));
+                    new DefaultCitationDate(LocalDate.parse("1990-06-05"), DateType.REVISION),
+                    new DefaultCitationDate(LocalDate.parse("1979-08-03"), DateType.CREATION)));
             {
                 @SuppressWarnings("deprecation")
                 final var originator = new DefaultResponsibleParty(Role.ORIGINATOR);
@@ -184,7 +183,7 @@ public final class MetadataTest extends TestCase.WithLogs {
                 keyword.setType(KeywordType.THEME);
                 final var thesaurus = new DefaultCitation("BODC Parameter Discovery Vocabulary");
                 thesaurus.setAlternateTitles(Set.of(new SimpleInternationalString("P021")));
-                thesaurus.setDates(Set.of(new DefaultCitationDate(TestUtilities.date("2008-11-25 23:00:00"), DateType.REVISION)));
+                thesaurus.setDates(Set.of(new DefaultCitationDate(LocalDate.parse("2008-11-26"), DateType.REVISION)));
                 thesaurus.setEdition(new Anchor(URI.create("SDN:C371:1:35"), "35"));
                 thesaurus.setIdentifiers(Set.of(new ImmutableIdentifier(null, null, "http://www.seadatanet.org/urnurl/")));
                 keyword.setThesaurusName(thesaurus);
@@ -214,7 +213,7 @@ public final class MetadataTest extends TestCase.WithLogs {
                 final var aggregateInfo = new DefaultAggregateInformation();
                 final var name = new DefaultCitation("Some oceanographic campaign");
                 name.setAlternateTitles(Set.of(new SimpleInternationalString("Pseudo group of data")));
-                name.setDates(Set.of(new DefaultCitationDate(TestUtilities.date("1990-06-04 22:00:00"), DateType.REVISION)));
+                name.setDates(Set.of(new DefaultCitationDate(LocalDate.parse("1990-06-05"), DateType.REVISION)));
                 aggregateInfo.setName(name);
                 aggregateInfo.setInitiativeType(InitiativeType.CAMPAIGN);
                 aggregateInfo.setAssociationType(AssociationType.LARGER_WORK_CITATION);
@@ -236,9 +235,10 @@ public final class MetadataTest extends TestCase.WithLogs {
                 final var vcrs = new DefaultVerticalCRS(
                         nameAndIdentifier("D28", "Depth below D28", "CRS for testing purpose"), datum, cs);
 
-                final var temporal = new DefaultTemporalExtent();
-                temporal.setBounds(Instant.parse("1990-06-05T00:00:00Z"),
-                                   Instant.parse("1990-07-02T00:00:00Z"));
+                final var temporal = new DefaultTemporalExtent(
+                        OffsetDateTime.parse("1990-06-05T00:00Z"),
+                        OffsetDateTime.parse("1990-07-02T00:00Z"));
+
                 identification.setExtents(Set.of(new DefaultExtent(
                         null,
                         new DefaultGeographicBoundingBox(1.1666, 1.1667, 36.4, 36.6),
@@ -374,13 +374,10 @@ public final class MetadataTest extends TestCase.WithLogs {
         replace(xml, "<gcol:CharacterString>4326</gcol:CharacterString>",
                      "<gmx:Anchor xlink:href=\"SDN:L101:2:4326\">4326</gmx:Anchor>");
         /*
-         * The <gmd:EX_TemporalExtent> block cannot be marshalled es expected yet (need a "sis-temporal" module).
-         * We need to instruct the XML comparator to ignore this block during the comparison. We also ignore for
-         * now the "gml:id" attribute since SIS generates different values than the ones in our test XML file,
+         * Ignore the "gml:id" attribute because SIS generates different values than the ones in our test XML file,
          * and those values may change in future SIS version.
          */
         final var comparator = new DocumentComparator(getResource(), xml.toString());
-        comparator.ignoredNodes.add(LegacyNamespaces.GMD + ":temporalElement");
         comparator.ignoredAttributes.add("http://www.w3.org/2000/xmlns:*");
         comparator.ignoredAttributes.add(Namespaces.XSI + ":schemaLocation");
         comparator.ignoredAttributes.add(Namespaces.GML + ":id");
@@ -415,7 +412,7 @@ public final class MetadataTest extends TestCase.WithLogs {
          */
         final MarshallerPool pool = getMarshallerPool();
         final Unmarshaller unmarshaller = pool.acquireUnmarshaller();
-        final DefaultMetadata metadata = (DefaultMetadata) unmarshaller.unmarshal(getResource());
+        final var metadata = (DefaultMetadata) unmarshaller.unmarshal(getResource());
         pool.recycle(unmarshaller);
         final DefaultMetadata expected = createHardCoded();
         assertTrue(metadata.equals(expected, ComparisonMode.DEBUG));

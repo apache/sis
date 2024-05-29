@@ -31,6 +31,8 @@ import java.time.temporal.Temporal;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
 import java.time.chrono.ChronoZonedDateTime;
+import org.apache.sis.util.ComparisonMode;
+import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -38,6 +40,7 @@ import org.apache.sis.util.resources.Errors;
  * A date which is wrapping a {@code java.time} temporal object.
  * This is used for interoperability in a situation where we are mixing
  * legacy API working on {@link Date} with newer API working on {@link Temporal}.
+ * This class also opportunistically defines some methods relative to temporal objects.
  *
  * <h2>Design note</h2>
  * This class intentionally don't implement {@link Temporal} in order to force unwrapping
@@ -45,7 +48,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class TemporalDate extends Date {     // Intentionally do not implement Temporal.
+public final class TemporalDate extends Date implements LenientComparable {     // Intentionally do not implement Temporal.
     /**
      * For cross-version compatibility.
      */
@@ -55,27 +58,16 @@ public final class TemporalDate extends Date {     // Intentionally do not imple
      * The temporal object wrapped by this date.
      */
     @SuppressWarnings("serial")     // Most implementations are serializable.
-    private final Temporal temporal;
+    public final Temporal temporal;
 
     /**
-     * Creates a new date for the given instant.
+     * Creates a new date for the given time since epoch and the given temporal object.
      *
+     * @param  time     number of milliseconds since the epoch.
      * @param  temporal the temporal object to wrap in a new date.
-     * @throws ArithmeticException if numeric overflow occurs.
      */
-    private TemporalDate(final Instant temporal) {
-        super(temporal.toEpochMilli());
-        this.temporal = temporal;
-    }
-
-    /**
-     * Creates a new date for the given temporal.
-     *
-     * @param  temporal the temporal object to wrap in a new date.
-     * @throws ArithmeticException if numeric overflow occurs.
-     */
-    private TemporalDate(final Temporal temporal) {
-        super(toInstant(temporal, ZoneOffset.UTC).toEpochMilli());
+    public TemporalDate(final long time, final Temporal temporal) {
+        super(time);
         this.temporal = temporal;
     }
 
@@ -88,7 +80,7 @@ public final class TemporalDate extends Date {     // Intentionally do not imple
      * @throws ArithmeticException if numeric overflow occurs.
      */
     public static Date toDate(final Temporal time) {
-        return (time == null) ? null : new TemporalDate(time);
+        return (time == null) ? null : new TemporalDate(toInstant(time, ZoneOffset.UTC).toEpochMilli(), time);
     }
 
     /**
@@ -100,7 +92,7 @@ public final class TemporalDate extends Date {     // Intentionally do not imple
      * @throws ArithmeticException if numeric overflow occurs.
      */
     public static Date toDate(final Instant time) {
-        return (time == null) ? null : new TemporalDate(time);
+        return (time == null) ? null : new TemporalDate(time.toEpochMilli(), time);
     }
 
     /**
@@ -111,18 +103,23 @@ public final class TemporalDate extends Date {     // Intentionally do not imple
      * @return the given date as a temporal object, or {@code null} if the given argument was null.
      */
     public static Temporal toTemporal(final Date time) {
-        return (time == null) ? null : (time instanceof TemporalDate) ? ((TemporalDate) time).temporal : time.toInstant();
-    }
-
-    /**
-     * Returns the given date as an instant object.
-     * Used for interoperability in situations where old and new Java API are mixed.
-     *
-     * @param  time  the date to return as an instant object, or {@code null}.
-     * @return the given date as an instant object, or {@code null} if the given argument was null.
-     */
-    public static Instant toInstant(final Date time) {
-        return (time == null) ? null : time.toInstant();
+        if (time == null) {
+            return null;
+        }
+        if (time instanceof TemporalDate) {
+            return ((TemporalDate) time).temporal;
+        }
+        try {
+            return time.toInstant();
+        } catch (UnsupportedOperationException e) {
+            if (time instanceof java.sql.Date) {
+                return LocalDate.ofEpochDay(time.getTime() / Constants.MILLISECONDS_PER_DAY);
+            }
+            if (time instanceof java.sql.Time) {
+                return LocalTime.ofSecondOfDay(time.getTime());
+            }
+            throw e;
+        }
     }
 
     /**
@@ -232,5 +229,70 @@ public final class TemporalDate extends Date {     // Intentionally do not imple
             || date == LocalDateTime.class
             || date == OffsetDateTime.class
             || date == ZonedDateTime.class;
+    }
+
+    /**
+     * Compares two temporal objects that may not be of the same type.
+     * First, this method tries to compare the positions on the timeline.
+     * Only if this comparison cannot be done, then this method fallbacks on {@link Comparable}.
+     * The comparisons are in that order because {@code Comparable.compareTo(…)} does not always
+     * compare position on the timeline. It may apply additional criterion for consistency with
+     * {@code equals(Object)}, which is not desired here.
+     *
+     * @param  t1  the first temporal object to compare.
+     * @param  t2  the second temporal object to compare.
+     * @return negative if {@code t1} is before {@code t2}, positive if after, or 0 if equal.
+     * @throws DateTimeException if the given objects are not comparable.
+     */
+    public static int compare(final Temporal t1, final Temporal t2) {
+        int c = -2;   // Any value different than 0 is okay, even the values potentially returned by Long.compare(…).
+        try {
+            c = Long.compare(t1.getLong(ChronoField.INSTANT_SECONDS), t2.getLong(ChronoField.INSTANT_SECONDS));
+            if (c == 0) {
+                // According Javadoc, `NANO_OF_SECOND` should be present if `INSTANT_SECONDS` is present.
+                c = Long.compare(t1.getLong(ChronoField.NANO_OF_SECOND), t2.getLong(ChronoField.NANO_OF_SECOND));
+            }
+        } catch (DateTimeException e) {
+            if (c != 0) {   // Value is 0 if `INSTANT_SECONDS` succeeded before `NANO_OF_SECOND` failed.
+                if (t1 instanceof Comparable<?> && t1.getClass().isInstance(t2)) {
+                    @SuppressWarnings("unchecked")
+                    int cc = ((Comparable) t1).compareTo((Comparable) t2);
+                    return cc;
+                }
+                throw e;
+            }
+        }
+        return c;
+    }
+
+    /**
+     * Compares this date with the given object.
+     *
+     * @param  other  the other object to compare with this date.
+     * @param  mode   whether to require strict equality or to be lenient.
+     * @return comparison result.
+     */
+    @Override
+    public boolean equals(final Object other, final ComparisonMode mode) {
+        if (other instanceof TemporalDate && mode.ordinal() >= ComparisonMode.ALLOW_VARIANT.ordinal()) {
+            /*
+             * The number of milliseconds may differ when comparing two local dates,
+             * depending on which timezone was assumed when `Date` has been constructed.
+             */
+            if (compare(temporal, ((TemporalDate) other).temporal) == 0) {
+                return true;
+            }
+        }
+        return equals(other);
+    }
+
+    /**
+     * Returns a string representation for debugging purposes.
+     *
+     * @return a string representation for debugging purposes.
+     */
+    @Override
+    public String toString() {
+        return toInstant().toString() + " (" + temporal + ')';
     }
 }

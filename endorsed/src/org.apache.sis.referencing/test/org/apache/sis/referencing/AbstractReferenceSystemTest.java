@@ -19,6 +19,7 @@ package org.apache.sis.referencing;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
+import java.time.LocalDate;
 import org.opengis.util.InternationalString;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.metadata.iso.citation.Citations;
@@ -109,10 +110,13 @@ public final class AbstractReferenceSystemTest extends TestCase {
         assertNull(properties.put(REMARKS_KEY, "注です。"));
         assertNull(properties.put(IDENTIFIERS_KEY, new ImmutableIdentifier(
                 Citations.EPSG, "EPSG", "4326", "8.2", null)));
+
         assertNull(properties.put(DOMAIN_OF_VALIDITY_KEY, new DefaultExtent("Netherlands offshore.",
                 new DefaultGeographicBoundingBox(2.54, 6.40, 51.43, 55.77),
                 new DefaultVerticalExtent(10, 1000, VerticalCRSMock.DEPTH),
-                new DefaultTemporalExtent()))); // TODO: needs sis-temporal module for testing that one.
+                new DefaultTemporalExtent(LocalDate.parse("2010-04-05"),
+                                          LocalDate.parse("2010-09-08")))));
+
         final var object = new AbstractReferenceSystem(properties);
 
         assertTrue(object.toString(Convention.WKT1).startsWith(
@@ -128,6 +132,7 @@ public final class AbstractReferenceSystemTest extends TestCase {
                 "  AREA[“Netherlands offshore.”],\n" +
                 "  BBOX[51.43, 2.54, 55.77, 6.40],\n" +
                 "  VERTICALEXTENT[-1000, -10, LENGTHUNIT[“metre”, 1]],\n" +
+                "  TIMEEXTENT[2010-04-05, 2010-09-08],\n" +
                 "  ID[“EPSG”, 4326, “8.2”, URI[“urn:ogc:def:referenceSystem:EPSG:8.2:4326”]],\n" +
                 "  REMARK[“注です。”]]",
                 object);
@@ -138,6 +143,7 @@ public final class AbstractReferenceSystemTest extends TestCase {
                 "  Area[“Netherlands offshore.”],\n" +
                 "  BBox[51.43, 2.54, 55.77, 6.40],\n" +
                 "  VerticalExtent[-1000, -10],\n" +
+                "  TimeExtent[2010-04-05, 2010-09-08],\n" +
                 "  Id[“EPSG”, 4326, “8.2”, URI[“urn:ogc:def:referenceSystem:EPSG:8.2:4326”]],\n" +
                 "  Remark[“注です。”]]",
                 object);
@@ -148,6 +154,7 @@ public final class AbstractReferenceSystemTest extends TestCase {
                 "  Area[“Netherlands offshore.”],\n" +
                 "  BBox[51.43, 2.54, 55.77, 6.40],\n" +
                 "  VerticalExtent[-1000, -10],\n" +
+                "  TimeExtent[2010-04-05, 2010-09-08],\n" +
                 "  Id[“EPSG”, 4326, “8.2”],\n" +
                 "  Remark[“注です。”]]",
                 object);

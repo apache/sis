@@ -92,6 +92,20 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
     }
 
     /**
+     * Constructs a new instance initialized with the specified values.
+     *
+     * @param  beginning  the start date and time for the content of the dataset, or {@code null} if none.
+     * @param  ending     the end date and time for the content of the dataset, or {@code null} if none.
+     *
+     * @see #setBounds(Temporal, Temporal)
+     *
+     * @since 1.5
+     */
+    public DefaultTemporalExtent(final Temporal beginning, final Temporal ending) {
+        extent = TemporalUtilities.createPeriod(beginning, ending);
+    }
+
+    /**
      * Constructs a new instance initialized with the values from the specified metadata object.
      * This is a <em>shallow</em> copy constructor, because the other metadata contained in the
      * given object are not recursively copied.
@@ -166,10 +180,10 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * @param  begin  {@code true} for the start time, or {@code false} for the end time.
      * @return the requested time as an instant, or {@code null} if none.
      */
-    static Instant getBound(final TemporalPrimitive extent, final boolean begin) {
+    static Temporal getBound(final TemporalPrimitive extent, final boolean begin) {
         if (extent instanceof Period) {
-            var p = (Period) extent;
-            return TemporalDate.toInstant(begin ? p.getBeginning() : p.getEnding(), null);
+            final var p = (Period) extent;
+            return begin ? p.getBeginning() : p.getEnding();
         }
         return null;
     }
@@ -245,13 +259,13 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * Sets the temporal extent to the specified values. This convenience method creates a temporal
      * primitive for the given dates and/or times, then invokes {@link #setExtent(TemporalPrimitive)}.
      *
-     * @param  startTime  the start date and time for the content of the dataset, or {@code null} if none.
-     * @param  endTime    the end date and time for the content of the dataset, or {@code null} if none.
+     * @param  beginning  the start date and time for the content of the dataset, or {@code null} if none.
+     * @param  ending     the end date and time for the content of the dataset, or {@code null} if none.
      *
      * @since 1.5
      */
-    public void setBounds(final Temporal startTime, final Temporal endTime) {
-        setExtent(TemporalUtilities.createPeriod(startTime, endTime));
+    public void setBounds(final Temporal beginning, final Temporal ending) {
+        setExtent(TemporalUtilities.createPeriod(beginning, ending));
     }
 
     /**
@@ -296,21 +310,21 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
             if (extent == null || (ot instanceof NilObject)) {
                 extent = ot;
             } else {
-                Instant t0 = getBound(extent, true);
-                Instant t1 = getBound(extent, false);
-                Instant h0 = getBound(ot,     true);
-                Instant h1 = getBound(ot,     false);
+                Temporal t0 = getBound(extent, true);
+                Temporal t1 = getBound(extent, false);
+                Temporal h0 = getBound(ot,     true);
+                Temporal h1 = getBound(ot,     false);
                 boolean changed = false;
-                if (h0 != null && (t0 == null || h0.isAfter(t0))) {
+                if (h0 != null && (t0 == null || TemporalDate.compare(h0, t0) > 0)) {
                     t0 = h0;
                     changed = true;
                 }
-                if (h1 != null && (t1 == null || h1.isBefore(t1))) {
+                if (h1 != null && (t1 == null || TemporalDate.compare(h1, t1) < 0)) {
                     t1 = h1;
                     changed = true;
                 }
                 if (changed) {
-                    if (t0 != null && t1 != null && t0.isAfter(t1)) {
+                    if (t0 != null && t1 != null && TemporalDate.compare(t0, t1) > 0) {
                         extent = NilReason.MISSING.createNilObject(TemporalPrimitive.class);
                     } else {
                         setBounds(t0, t1);

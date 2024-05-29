@@ -18,6 +18,7 @@ package org.apache.sis.test.integration;
 
 import java.net.URI;
 import java.util.Locale;
+import java.time.LocalDate;
 import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.*;
@@ -38,6 +39,7 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
+import org.apache.sis.util.privy.TemporalDate;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -86,10 +88,10 @@ public final class MetadataVerticalTest extends TestCase.WithLogs {
     @Test
     public void testMetadataWithVerticalCRS() throws JAXBException {
         final Metadata metadata = unmarshalFile(Metadata.class, openTestFile());
-        assertEquals("20090901",                     metadata.getMetadataIdentifier().getCode());
-        assertEquals(Locale.ENGLISH,                 getSingleton(metadata.getLocalesAndCharsets().keySet()));
-        assertEquals(StandardCharsets.UTF_8,         getSingleton(metadata.getLocalesAndCharsets().values()));
-        assertEquals(xmlDate("2014-01-04 00:00:00"), getSingleton(metadata.getDateInfo()).getDate());
+        assertEquals("20090901",                    metadata.getMetadataIdentifier().getCode());
+        assertEquals(Locale.ENGLISH,                getSingleton(metadata.getLocalesAndCharsets().keySet()));
+        assertEquals(StandardCharsets.UTF_8,        getSingleton(metadata.getLocalesAndCharsets().values()));
+        assertEquals(LocalDate.parse("2014-01-04"), TemporalDate.toTemporal(getSingleton(metadata.getDateInfo()).getDate()));
         /*
          * <gmd:contact>
          *   <gmd:CI_ResponsibleParty>

@@ -536,8 +536,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
                     final Instant startTime = element.pullDate("startTime");
                     final Instant endTime   = element.pullDate("endTime");
                     element.close(ignoredElements);
-                    final DefaultTemporalExtent t = new DefaultTemporalExtent();
-                    t.setBounds(startTime, endTime);
+                    final var t = new DefaultTemporalExtent(startTime, endTime);
                     if (extent == null) extent = new DefaultExtent();
                     extent.getTemporalElements().add(t);
                 }

@@ -17,8 +17,6 @@
 package org.apache.sis.pending.temporal;
 
 import java.util.Date;
-import java.time.Instant;
-import java.time.ZoneOffset;
 import java.time.temporal.Temporal;
 import org.opengis.temporal.TemporalPrimitive;
 import org.apache.sis.util.privy.TemporalDate;
@@ -86,18 +84,19 @@ public final class TemporalUtilities {
     }
 
     /**
-     * Returns the given value as an instant if the period is a single point in time, or {@code null} otherwise.
-     * This method is mutually exclusive with {@link #getPeriod(TemporalPrimitive)}: if one method returns a
-     * non-null value, then the other method shall return a null value.
+     * Returns the given value as an ISO 19108 instant (a temporal in Java API)
+     * if the period is a single point in time, or {@code null} otherwise.
+     * This method is mutually exclusive with {@link #getPeriod(TemporalPrimitive)}:
+     * if one method returns a non-null value, then the other method shall return a null value.
      *
      * @param  time  the instant or period for which to get a date, or {@code null}.
-     * @return the instant, or {@code null} if none.
+     * @return the ISO 19108 instant, or {@code null} if none.
      */
-    public static Instant getInstant(final TemporalPrimitive time) {
+    public static Temporal getInstant(final TemporalPrimitive time) {
         if (time instanceof Period) {
             var p = (Period) time;
-            final Instant begin = TemporalDate.toInstant(p.getBeginning(), ZoneOffset.UTC);
-            final Instant end = TemporalDate.toInstant(p.getEnding(), ZoneOffset.UTC);
+            final Temporal begin = p.getBeginning();
+            final Temporal end   = p.getEnding();
             if (end == null) {
                 return begin;
             }

@@ -31,12 +31,12 @@ import org.opengis.temporal.Period;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class DefaultPeriod extends Primitive implements Period {
+public final class DefaultPeriod extends Primitive implements Period {
     /** Bounds making this period. */
     private final Temporal beginning, ending;
 
     /** Creates a new period with the given bounds. */
-    DefaultPeriod(final Temporal beginning, final Temporal ending) {
+    public DefaultPeriod(final Temporal beginning, final Temporal ending) {
         this.beginning = beginning;
         this.ending    = ending;
     }

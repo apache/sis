@@ -47,7 +47,6 @@
   </gex:geographicElement>
   <gex:temporalElement>
     <gex:EX_TemporalExtent>
-      <!-- TODO: This block needs the sis-temporal module.
       <gex:extent>
         <gml:TimePeriod gml:id="period">
           <gml:description>Acquisition period</gml:description>
@@ -55,7 +54,6 @@
           <gml:endPosition>2010-08-27T08:26:10-05:00</gml:endPosition>
         </gml:TimePeriod>
       </gex:extent>
-      -->
     </gex:EX_TemporalExtent>
   </gex:temporalElement>
 </gex:EX_Extent>

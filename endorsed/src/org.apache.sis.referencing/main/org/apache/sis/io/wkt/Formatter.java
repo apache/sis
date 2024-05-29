@@ -54,6 +54,7 @@ import org.opengis.referencing.operation.ConcatenatedOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.geometry.Envelope;
+import org.apache.sis.measure.Range;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.measure.MeasurementRange;
@@ -71,6 +72,7 @@ import org.apache.sis.util.collection.IntegerList;
 import org.apache.sis.util.privy.X364;
 import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.privy.Constants;
+import org.apache.sis.util.privy.TemporalDate;
 import org.apache.sis.util.privy.StandardDateFormat;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.metadata.simple.SimpleExtent;
@@ -1005,9 +1007,10 @@ public class Formatter implements Localized {
      * </ul>
      */
     private void appendTemporalExtent(final Extent area) {
-        Extents.getTimeRange(area, null).ifPresent((range) -> {
-            final Instant min = range.getMinValue();
-            final Instant max = range.getMaxValue();
+        final Range<Date> range = Extents.getTimeRange(area);
+        if (range != null) {
+            final Temporal min = TemporalDate.toTemporal(range.getMinValue());
+            final Temporal max = TemporalDate.toTemporal(range.getMaxValue());
             if (min != null && max != null) {
                 openElement(true, WKTKeywords.TimeExtent);
                 setColor(ElementKind.EXTENT);
@@ -1016,7 +1019,7 @@ public class Formatter implements Localized {
                 resetColor();
                 closeElement(true);
             }
-        });
+        }
     }
 
     /**
@@ -1192,7 +1195,6 @@ public class Formatter implements Localized {
         if (date != null) {
             appendSeparator();
             if (date instanceof Instant) {
-                // This is the usual case.
                 dateFormat.format(Date.from((Instant) date), buffer, dummy);
             } else {
                 // Preserve the data structure (e.g. whether there is hours or not, timezone or not).

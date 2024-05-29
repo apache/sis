@@ -26,6 +26,8 @@ import java.util.LinkedHashMap;
 import java.util.MissingResourceException;
 import java.util.logging.Filter;
 import java.util.logging.LogRecord;
+import java.time.Instant;
+import java.time.Duration;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.io.StringWriter;
@@ -133,10 +135,10 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
          *
          * Some code are indented for readability and more local variable scopes.
          */
-        final DefaultMetadata md = new DefaultMetadata();
+        final var md = new DefaultMetadata();
         {
             // Metadata identifier
-            final DefaultIdentifier id = new DefaultIdentifier("a-metadata-identifier");
+            final var id = new DefaultIdentifier("a-metadata-identifier");
             id.setCodeSpace("md.id.ns");
             md.setMetadataIdentifier(id);
         }
@@ -146,8 +148,8 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
         md.setLocalesAndCharsets(languages);
         {
             // Parent metadata
-            final DefaultCitation parent = new DefaultCitation("A parent metadata");
-            final DefaultIdentifier parentId = new DefaultIdentifier("a-parent-identifier");
+            final var parent   = new DefaultCitation("A parent metadata");
+            final var parentId = new DefaultIdentifier("a-parent-identifier");
             parentId.setCodeSpace("pmd.id.ns");
             parent.getIdentifiers().add(parentId);
             md.setParentMetadata(parent);
@@ -187,13 +189,13 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
              *   └─Individual…………………………………………………………… Socrates
              *       └─Position name………………………………………… Philosopher
              */
-            final DefaultContact contact = new DefaultContact();
+            final var contact = new DefaultContact();
             contact.setPhones(List.of(new DefaultTelephone("555-444-3333", TelephoneType.VOICE),
                                       new DefaultTelephone("555-555-5555", TelephoneType.FACSIMILE)));
             {
                 {
                     // Address information
-                    final DefaultAddress address = new DefaultAddress();
+                    final var address = new DefaultAddress();
                     address.setDeliveryPoints(Set.of(new SimpleInternationalString("123 Main Street")));
                     address.getElectronicMailAddresses().add("test@example.com");
                     address.setCity(new SimpleInternationalString("Metropolis city"));
@@ -203,7 +205,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
                     contact.getAddresses().add(address);
                 }
                 // Online resources
-                final DefaultInternationalString description = new DefaultInternationalString();
+                final var description = new DefaultInternationalString();
                 description.add(Locale.ENGLISH, "A dialog between philosophers.");
                 description.add(Locale.FRENCH,  "Un dialogue entre philosophes.");
                 onlineResource = new DefaultOnlineResource(new URI("http://example.com"));
@@ -220,18 +222,18 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
                 contact.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "thought");           // For enabling references
             }
             // Create some individuals
-            final DefaultIndividual individual  = new DefaultIndividual("Socrates", "Philosopher", null);
-            final DefaultIndividual individual2 = new DefaultIndividual("Hermocrates", "Politician", contact);
-            final DefaultOrganisation org = new DefaultOrganisation("Plato Republic", null, individual, contact);
+            final var individual  = new DefaultIndividual("Socrates", "Philosopher", null);
+            final var individual2 = new DefaultIndividual("Hermocrates", "Politician", contact);
+            final var org = new DefaultOrganisation("Plato Republic", null, individual, contact);
             md.setContacts(List.of(new DefaultResponsibility(Role.POINT_OF_CONTACT, null, org),
                                    new DefaultResponsibility(Role.POINT_OF_CONTACT, null, individual2)));
         }
         // Date info (date stamp in legacy ISO 19115:2003 model)
-        final Collection<CitationDate> dateInfo = Set.of(new DefaultCitationDate(new Date(1260961229580L), DateType.CREATION));
+        final var dateInfo = Set.of(new DefaultCitationDate(new Date(1260961229580L), DateType.CREATION));
         md.setDateInfo(dateInfo);
         {
             // Metadata standard
-            final DefaultCitation standard = new DefaultCitation("ISO 19115-1");
+            final var standard = new DefaultCitation("ISO 19115-1");
             standard.setEdition(new SimpleInternationalString("2014"));
             md.getMetadataStandards().add(standard);
         }
@@ -250,10 +252,10 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
              *   ├─Check point availability……………………………………… false
              *   └─Point in pixel………………………………………………………………… Upper right
              */
-            final DefaultGeorectified georectified = new DefaultGeorectified();
+            final var georectified = new DefaultGeorectified();
             georectified.setNumberOfDimensions(2);
-            final DefaultDimension rows = new DefaultDimension(DimensionNameType.ROW,    7777);
-            final DefaultDimension cols = new DefaultDimension(DimensionNameType.COLUMN, 2233);
+            final var rows = new DefaultDimension(DimensionNameType.ROW,    7777);
+            final var cols = new DefaultDimension(DimensionNameType.COLUMN, 2233);
             rows.setResolution(10.0);
             cols.setResolution( 5.0);
             georectified.setAxisDimensionProperties(List.of(rows, cols));
@@ -264,17 +266,17 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
         }
         {
             // Reference System Information
-            final ReferenceSystemMetadata refSystem = new ReferenceSystemMetadata();
-            final DefaultCitation cit = new DefaultCitation("Atlantis grid");
+            final var refSystem = new ReferenceSystemMetadata();
+            final var cit = new DefaultCitation("Atlantis grid");
             cit.setDates(dateInfo);
             {
                 //  Responsibilities
-                final DefaultOrganisation org = new DefaultOrganisation();
+                final var org = new DefaultOrganisation();
                 org.setName(new SimpleInternationalString("Atlantis national mapping agency"));
                 cit.getCitedResponsibleParties().add(new DefaultResponsibility(Role.PUBLISHER, null, org));
             }
             // Identifier
-            final DefaultIdentifier id = new DefaultIdentifier("AG9000");
+            final var id = new DefaultIdentifier("AG9000");
             id.setAuthority(cit);
             id.setCodeSpace("rs.id.ns");
             id.setVersion("1.0");
@@ -295,9 +297,9 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
              *   ├─Rule………………………………………………………… Element exists in cited resource.
              *   └─Rationale…………………………………………… For testing extended elements.
              */
-            final DefaultMetadataExtensionInformation extension = new DefaultMetadataExtensionInformation();
+            final var extension = new DefaultMetadataExtensionInformation();
             extension.setExtensionOnLineResource(onlineResource);
-            final DefaultExtendedElementInformation elementInfo = new DefaultExtendedElementInformation();
+            final var elementInfo = new DefaultExtendedElementInformation();
             elementInfo.setName("ExtendedElementName");
             elementInfo.setDefinition(new SimpleInternationalString("An extended element not included in the standard."));
             elementInfo.setObligation(Obligation.CONDITIONAL);
@@ -319,7 +321,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
          *   ├─Abstract………………… Méta-données pour une carte imaginaire.
          *   └─Purpose…………………… For XML (un)marshalling tests.
          */
-        final DefaultDataIdentification dataId = new DefaultDataIdentification();
+        final var dataId = new DefaultDataIdentification();
         {
             final DefaultInternationalString description = new DefaultInternationalString();
             description.add(Locale.ENGLISH, "Metadata for an imaginary map.");
@@ -339,7 +341,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
              *   │   └─Extent type code……………… true
              *   └─Temporal element
              */
-            final DefaultExtent extent = new DefaultExtent();
+            final var extent = new DefaultExtent();
             extent.setDescription(new SimpleInternationalString("Azores"));
             {
                 final DefaultGeographicBoundingBox bbox = new DefaultGeographicBoundingBox();
@@ -350,7 +352,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
                 bbox.setWestBoundLongitude(-24.50);
                 extent.getGeographicElements().add(bbox);
             }
-            final DefaultTemporalExtent temporal = new DefaultTemporalExtent();
+            final var temporal = new DefaultTemporalExtent();
             extent.getTemporalElements().add(temporal);
             extent.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "azores");     // For enabling references
             extents = Set.of(extent);
@@ -372,8 +374,8 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
              *   └─Releasability
              *       └─Statement……………………………………… Public domain
              */
-            final DefaultConstraints constraint = new DefaultConstraints();
-            final DefaultBrowseGraphic graphic = new DefaultBrowseGraphic(new URI("ocean.png"));
+            final var constraint = new DefaultConstraints();
+            final var graphic = new DefaultBrowseGraphic(new URI("ocean.png"));
             graphic.setFileDescription(new SimpleInternationalString("Somewhere in the Atlantic ocean"));
             graphic.setFileType("PNG image");
             graphic.getImageConstraints().add(new DefaultConstraints());
@@ -382,7 +384,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
             constraint.setUseLimitations(Set.of(new SimpleInternationalString("Not for navigation.")));
 
             // Releasability
-            final DefaultReleasability releasability = new DefaultReleasability();
+            final var releasability = new DefaultReleasability();
             releasability.setStatement(new SimpleInternationalString("Public domain"));
             constraint.setReleasability(releasability);
             constraint.setConstraintApplicationScope(new DefaultScope(ScopeCode.DOCUMENT));
@@ -393,7 +395,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
         dataId.getSpatialRepresentationTypes().add(SpatialRepresentationType.GRID);
         {
             // Spatial resolution
-            final DefaultResolution resolution = new DefaultResolution();
+            final var resolution = new DefaultResolution();
             resolution.setDistance(56777.0);
             dataId.getSpatialResolutions().add(resolution);
         }
@@ -408,17 +410,17 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
          *   ├─Edition………………………………………………… First edition
          *   └─Edition date…………………………………… 2018-04-10 00:00:00
          */
-        final DefaultCitation cit = new DefaultCitation();
+        final var cit = new DefaultCitation();
         cit.setTitle(new SimpleInternationalString("A lost island"));
         cit.setEdition(new SimpleInternationalString("First edition"));
         cit.setEditionDate(new Date(1523311200000L));
         cit.setCollectiveTitle(new SimpleInternationalString("Popular legends"));
         cit.setAlternateTitles(List.of(new SimpleInternationalString("Island lost again"),
                                        new Anchor(new URI("http://map-example.com"), "Map example")));
-        cit.getDates().add(new DefaultCitationDate(new Date(1523224800000L), DateType.CREATION));
+        cit.getDates().add(new DefaultCitationDate(Instant.ofEpochMilli(1523224800000L), DateType.CREATION));
         cit.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "lost-island");
         dataId.setCitation(cit);
-        dataId.setTemporalResolutions(Set.of());          // TODO: need a more complete sis-temporal.
+        dataId.setTemporalResolutions(Set.of(Duration.ofDays(2)));
         final Collection<MaintenanceInformation> resourceMaintenances;
         {
             /*
@@ -431,14 +433,14 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
              *       └─Level description
              *           └─Dataset………………………………………………… Imaginary map
              */
-            DefaultMaintenanceInformation maintenanceInfo = new DefaultMaintenanceInformation();
+            var maintenanceInfo = new DefaultMaintenanceInformation();
             maintenanceInfo.setMaintenanceAndUpdateFrequency(MaintenanceFrequency.NOT_PLANNED);
             maintenanceInfo.getMaintenanceDates().add(new DefaultCitationDate(new Date(32503676400000L), DateType.REVISION));
-            final DefaultScope maintenanceScope = new DefaultScope();
+            final var maintenanceScope = new DefaultScope();
             maintenanceScope.setLevel(ScopeCode.MODEL);
             {
                 // Scope level descriptions
-                final DefaultScopeDescription scopeDescription = new DefaultScopeDescription();
+                final var scopeDescription = new DefaultScopeDescription();
                 scopeDescription.setDataset("Imaginary map");
                 maintenanceScope.getLevelDescription().add(scopeDescription);
             }
@@ -456,7 +458,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
              *   ├─Amendment number……………………………………… Second edition
              *   └─File decompression technique……… L77 / Huffman coding
              */
-            final DefaultFormat resourceFormat = new DefaultFormat();
+            final var resourceFormat = new DefaultFormat();
             resourceFormat.setName(new SimpleInternationalString("PNG"));
             resourceFormat.setSpecification(new SimpleInternationalString("Portable Network Graphics"));
             resourceFormat.setAmendmentNumber(new SimpleInternationalString("Second edition"));
@@ -474,10 +476,10 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
              *   ├─Keyword (2 de 2)…… Aether
              *   └─Type…………………………………… Theme
              */
-            final DefaultKeywords keywords = new DefaultKeywords();
+            final var keywords = new DefaultKeywords();
             keywords.setType(KeywordType.THEME);
             keywords.setThesaurusName(new DefaultCitation("Plato's dialogues"));
-            final DefaultKeywordClass keywordClass = new DefaultKeywordClass();
+            final var keywordClass = new DefaultKeywordClass();
             keywordClass.setClassName(new SimpleInternationalString("Greek elements"));
             keywords.setKeywordClass(keywordClass);
             keywords.setKeywords(List.of(new SimpleInternationalString("Water"),
@@ -493,7 +495,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
              *   ├─User determined limitations…… Not to be used outside MarshallingTest.java test file.
              *   └─Response……………………………………………………… Random elements
              */
-            final DefaultUsage usage = new DefaultUsage();
+            final var usage = new DefaultUsage();
             usage.setSpecificUsage(new SimpleInternationalString("For testing purpose only."));
             usage.setUsageDate(new Date(1523361600000L));
             usage.setResponses(Set.of(new SimpleInternationalString("Random elements")));
@@ -515,7 +517,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
         dataId.setSupplementalInformation(new SimpleInternationalString("High water pressure."));
         {
             // Service identification info
-            final DefaultServiceIdentification serviceId = new DefaultServiceIdentification();
+            final var serviceId = new DefaultServiceIdentification();
             serviceId.setCitation(cit);
             serviceId.setAbstract(new SimpleInternationalString("An inspiration for story tellers."));
             serviceId.setExtents(extents);
@@ -525,10 +527,10 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
             serviceId.setAssociatedResources(associatedResources);
             serviceId.setServiceTypeVersions(Set.of("Version 1000+"));
             // TODO: Coupled resources
-            final DefaultCoupledResource coupledResource = new DefaultCoupledResource();
+            final var coupledResource = new DefaultCoupledResource();
             serviceId.getCoupledResources().add(coupledResource);
             serviceId.setCouplingType(CouplingType.LOOSE);
-            final DefaultOperationMetadata operationMetadata = new DefaultOperationMetadata();
+            final var operationMetadata = new DefaultOperationMetadata();
             {
                 operationMetadata.setOperationName("Authoring");
                 operationMetadata.setOperationDescription(new SimpleInternationalString("Write a book."));
@@ -545,8 +547,8 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
             {
                 coverageDescription = new DefaultCoverageDescription();
                 // Attribute description
-                final DefaultRecordSchema schema = new DefaultRecordSchema(null, null, "IslandFeatures");
-                final Map<CharSequence,Class<?>> members = new LinkedHashMap<>();
+                final var schema = new DefaultRecordSchema(null, null, "IslandFeatures");
+                final var members = new LinkedHashMap<CharSequence,Class<?>>();
                 members.put("city",      String.class);
                 members.put("latitude",  Double.class);
                 members.put("longitude", Double.class);
@@ -566,7 +568,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
                      *       ├─Units…………………………… °C
                      *       └─Scale factor………… 1,5
                      */
-                    final DefaultAttributeGroup attributeGroup = new DefaultAttributeGroup();
+                    final var attributeGroup = new DefaultAttributeGroup();
                     attributeGroup.getContentTypes().add(CoverageContentType.AUXILLARY_INFORMATION);
                     // Attributes
                     final DefaultRangeDimension rangeDimension = new DefaultRangeDimension();
@@ -584,7 +586,7 @@ public final class MarshallingTest extends TestUsingFile implements Filter {
                 }
             }
             // Feature Catalogue Description
-            final DefaultFeatureCatalogueDescription featureCatalogueDescription = new DefaultFeatureCatalogueDescription();
+            final var featureCatalogueDescription = new DefaultFeatureCatalogueDescription();
             featureCatalogueDescription.setIncludedWithDataset(true);
             featureCatalogueDescription.setCompliant(true);
             md.setContentInfo(List.of(coverageDescription, featureCatalogueDescription));

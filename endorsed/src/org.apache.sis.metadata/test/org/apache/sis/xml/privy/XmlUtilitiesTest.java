@@ -64,7 +64,7 @@ public final class XmlUtilitiesTest extends TestCase {
         final Instant date = Instant.ofEpochMilli(1230786000000L);
         final XMLGregorianCalendar calendar = XmlUtilities.toXML(context, Date.from(date));
         assertEquals("2009-01-01T06:00:00.000+01:00", calendar.toString());
-        assertEquals(date, XmlUtilities.toInstant(context, calendar));
+        assertEquals(date, XmlUtilities.toDate(context, calendar).toInstant());
 
         calendar.setMillisecond(FIELD_UNDEFINED);
         assertEquals("2009-01-01T06:00:00+01:00", calendar.toString());

@@ -487,7 +487,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     private void setRealizationEpoch(final Date value) {
         if (anchorEpoch == null) {
-            anchorEpoch = value.toInstant();
+            anchorEpoch = TemporalDate.toTemporal(value);
         } else {
             ImplementationHelper.propertyAlreadySet(AbstractDatum.class, "setRealizationEpoch", "realizationEpoch");
         }

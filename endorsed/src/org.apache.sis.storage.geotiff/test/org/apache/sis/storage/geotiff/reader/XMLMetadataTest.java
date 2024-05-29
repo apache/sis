@@ -158,7 +158,7 @@ public final class XMLMetadataTest extends TestCase {
                 "  └─Identification info\n" +
                 "      └─Extent\n" +
                 "          └─Temporal element\n" +
-                "              └─Extent……………… [2018-02-28T03:04:00Z … 2018-02-28T04:48:00Z]\n",
+                "              └─Extent……………… [2018-02-28T03:04Z … 2018-02-28T04:48Z]\n",
                 metadata.toString());
     }
 }

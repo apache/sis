@@ -1798,8 +1798,7 @@ public class MetadataBuilder {
      */
     public final void addTemporalExtent(final Temporal startTime, final Temporal endTime) {
         if (startTime != null || endTime != null) {
-            final var t = new DefaultTemporalExtent();
-            t.setBounds(startTime, endTime);
+            final var t = new DefaultTemporalExtent(startTime, endTime);
             addIfNotPresent(extent().getTemporalElements(), t);
         }
     }

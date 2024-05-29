@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.logging.Logger;
-import java.time.Instant;
+import java.time.temporal.Temporal;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -450,7 +450,7 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
              */
             if (bursaWolf != null) {
                 GeographicBoundingBox bbox = selector.getAreaOfInterest();
-                Instant[]  timeOfInterest  = selector.getTimeOfInterest();
+                Temporal[] timeOfInterest  = selector.getTimeOfInterest();
                 boolean useAOI = true;
                 do {    // Executed at most 3 times with `bbox` cleared, then `timeOfInterest` cleared.
                     for (final BursaWolfParameters toPivot : bursaWolf) {

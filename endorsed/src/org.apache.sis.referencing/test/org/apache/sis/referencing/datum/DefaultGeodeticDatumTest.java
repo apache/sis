@@ -18,6 +18,7 @@ package org.apache.sis.referencing.datum;
 
 import java.util.HashMap;
 import java.util.Locale;
+import java.time.LocalDate;
 import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.extent.Extent;
@@ -306,7 +307,7 @@ public final class DefaultGeodeticDatumTest extends TestCase {
         assertEquals("Satellite navigation.", getScope(datum));
         assertEquals("Station coordinates changed by a few centimetres in 1994, 1997, 2002 and 2012.",
                      datum.getAnchorDefinition().orElseThrow().toString());
-        assertEquals(xmlDate("1984-01-01 00:00:00").toInstant(), datum.getAnchorEpoch().orElseThrow());
+        assertEquals(LocalDate.parse("1984-01-01"), datum.getAnchorEpoch().orElseThrow());
         assertRemarksEquals("Defining parameters cited in EPSG database.", datum.getEllipsoid(), null);
         return datum;
     }

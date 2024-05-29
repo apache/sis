@@ -20,11 +20,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.TimeZone;
-import java.util.Date;
 import java.util.logging.Logger;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.text.ParseException;
 import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -118,17 +114,6 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
      * to have an error of one or two hours if a code fails to take timezone offset in account.
      */
     private static final String TIMEZONE = "CET";
-
-    /**
-     * Date parser and formatter using the {@code "yyyy-MM-dd HH:mm:ss"} pattern
-     * and the time zone of the XML (un)marshallers used for the tests.
-     */
-    private static final DateFormat dateFormat;
-    static {
-        dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.UK);
-        dateFormat.setTimeZone(TimeZone.getTimeZone(TIMEZONE));
-        dateFormat.setLenient(false);
-    };
 
     /**
      * A poll of configured {@link Marshaller} and {@link Unmarshaller} binded to the default set of classes.
@@ -422,24 +407,6 @@ public abstract class TestCase extends org.apache.sis.test.TestCase {
         assertNotNull(unmarshaller, "unmarshaller");
         assertNotNull(xml, "xml");
         return unmarshaller.unmarshal(new StringReader(xml));
-    }
-
-    /**
-     * Parses the date for the given string using the {@code "yyyy-MM-dd HH:mm:ss"} pattern
-     * and the time zone of the XML (un)marshallers used for the tests.
-     *
-     * @param  date  the date as a {@link String}.
-     * @return the date as a {@link Date}.
-     */
-    protected static Date xmlDate(final String date) {
-        assertNotNull(date, "date");
-        try {
-            synchronized (dateFormat) {
-                return dateFormat.parse(date);
-            }
-        } catch (ParseException e) {
-            throw new AssertionError(e);
-        }
     }
 
     /**
