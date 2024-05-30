@@ -307,7 +307,7 @@ public final class DefaultGeodeticDatumTest extends TestCase {
         assertEquals("Satellite navigation.", getScope(datum));
         assertEquals("Station coordinates changed by a few centimetres in 1994, 1997, 2002 and 2012.",
                      datum.getAnchorDefinition().orElseThrow().toString());
-        assertEquals(LocalDate.parse("1984-01-01"), datum.getAnchorEpoch().orElseThrow());
+        assertEquals(LocalDate.of(1984, 1, 1), datum.getAnchorEpoch().orElseThrow());
         assertRemarksEquals("Defining parameters cited in EPSG database.", datum.getEllipsoid(), null);
         return datum;
     }

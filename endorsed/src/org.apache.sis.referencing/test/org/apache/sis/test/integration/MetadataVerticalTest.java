@@ -88,10 +88,10 @@ public final class MetadataVerticalTest extends TestCase.WithLogs {
     @Test
     public void testMetadataWithVerticalCRS() throws JAXBException {
         final Metadata metadata = unmarshalFile(Metadata.class, openTestFile());
-        assertEquals("20090901",                    metadata.getMetadataIdentifier().getCode());
-        assertEquals(Locale.ENGLISH,                getSingleton(metadata.getLocalesAndCharsets().keySet()));
-        assertEquals(StandardCharsets.UTF_8,        getSingleton(metadata.getLocalesAndCharsets().values()));
-        assertEquals(LocalDate.parse("2014-01-04"), TemporalDate.toTemporal(getSingleton(metadata.getDateInfo()).getDate()));
+        assertEquals("20090901",               metadata.getMetadataIdentifier().getCode());
+        assertEquals(Locale.ENGLISH,           getSingleton(metadata.getLocalesAndCharsets().keySet()));
+        assertEquals(StandardCharsets.UTF_8,   getSingleton(metadata.getLocalesAndCharsets().values()));
+        assertEquals(LocalDate.of(2014, 1, 4), TemporalDate.toTemporal(getSingleton(metadata.getDateInfo()).getDate()));
         /*
          * <gmd:contact>
          *   <gmd:CI_ResponsibleParty>

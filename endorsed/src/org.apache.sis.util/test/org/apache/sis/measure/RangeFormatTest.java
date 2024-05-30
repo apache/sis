@@ -307,8 +307,8 @@ public final class RangeFormatTest extends TestCase {
     public void testFormatLocalDate() {
         format = new RangeFormat(Locale.CANADA_FRENCH, LocalDate.class);
         final Range<LocalDate> range = new Range<>(LocalDate.class,
-                LocalDate.parse("2019-12-23"), true,
-                LocalDate.parse("2020-05-31"), true);
+                LocalDate.of(2019, 12, 23), true,
+                LocalDate.of(2020,  5, 31), true);
         /*
          * Expected output is "[2019-12-23 … 2020-05-31]" but be robust
          * to small variation in output format (years may be on 2 digits).
@@ -324,8 +324,8 @@ public final class RangeFormatTest extends TestCase {
     public void testFormatLocalTime() {
         format = new RangeFormat(Locale.FRANCE, LocalTime.class);
         final Range<LocalTime> range = new Range<>(LocalTime.class,
-                LocalTime.parse("06:00:00"), true,
-                LocalTime.parse("18:00:00"), true);
+                LocalTime.of( 6, 0), true,
+                LocalTime.of(18, 0), true);
 
         assertEquals("[06:00 … 18:00]", format.format(range));
     }

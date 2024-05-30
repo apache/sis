@@ -178,8 +178,8 @@ public final class TimePeriodTest extends TestCase {
     @Test
     public void testSimplifiedPeriodGML3() throws JAXBException {
         createContext();
-        final var begin = new TimePeriodBound.GML3(LocalDate.parse("1992-01-02"), "before");
-        final var end   = new TimePeriodBound.GML3(LocalDate.parse("2007-12-31"), "after");
+        final var begin = new TimePeriodBound.GML3(LocalDate.of(1992,  1,  2), "before");
+        final var end   = new TimePeriodBound.GML3(LocalDate.of(2007, 12, 31), "after");
         testPeriod(begin, end,
                 "<gml:TimePeriod xmlns:gml=\"" + Namespaces.GML + "\">\n" +
                 "  <gml:beginPosition>1992-01-02</gml:beginPosition>\n" +
@@ -197,7 +197,7 @@ public final class TimePeriodTest extends TestCase {
     public void testBeforePeriodGML3() throws JAXBException {
         createContext();
         final var begin = new TimePeriodBound.GML3(null, "before");
-        final var end   = new TimePeriodBound.GML3(LocalDate.parse("2007-12-31"), "after");
+        final var end   = new TimePeriodBound.GML3(LocalDate.of(2007, 12, 31), "after");
         testPeriod(begin, end,
                 "<gml:TimePeriod xmlns:gml=\"" + Namespaces.GML + "\">\n" +
                 "  <gml:beginPosition indeterminatePosition=\"before\"/>\n" +
@@ -214,7 +214,7 @@ public final class TimePeriodTest extends TestCase {
     @Test
     public void testAfterPeriodGML3() throws JAXBException {
         createContext();
-        final var begin = new TimePeriodBound.GML3(LocalDate.parse("1992-01-02"), "before");
+        final var begin = new TimePeriodBound.GML3(LocalDate.of(1992, 1, 2), "before");
         final var end   = new TimePeriodBound.GML3(null, "after");
         testPeriod(begin, end,
                 "<gml:TimePeriod xmlns:gml=\"" + Namespaces.GML + "\">\n" +

@@ -92,27 +92,27 @@ public final class XmlUtilitiesTest extends TestCase {
         assertEquals("2009-01-01T06:00:00+01:00", calendar.toString());
         assertEquals(t, XmlUtilities.toTemporal(context, calendar));
 
-        t = LocalDateTime.parse("2009-08-12T06:20:10");
+        t = LocalDateTime.of(2009, 8, 12, 6, 20, 10);
         calendar = XmlUtilities.toXML(context, t);
         assertEquals("2009-08-12T06:20:10", calendar.toString());
         assertEquals(t, XmlUtilities.toTemporal(context, calendar));
 
-        t = LocalTime.parse("06:10:45");
+        t = LocalTime.of(6, 10, 45);
         calendar = XmlUtilities.toXML(context, t);
         assertEquals("06:10:45", calendar.toString());
         assertEquals(t, XmlUtilities.toTemporal(context, calendar));
 
-        t = LocalDate.parse("2009-05-08");
+        t = LocalDate.of(2009, 5, 8);
         calendar = XmlUtilities.toXML(context, t);
         assertEquals("2009-05-08", calendar.toString());
         assertEquals(t, XmlUtilities.toTemporal(context, calendar));
 
-        t = YearMonth.parse("2009-05");
+        t = YearMonth.of(2009, 5);
         calendar = XmlUtilities.toXML(context, t);
         assertEquals("2009-05", calendar.toString());
         assertEquals(t, XmlUtilities.toTemporal(context, calendar));
 
-        t = Year.parse("2012");
+        t = Year.of(2012);
         calendar = XmlUtilities.toXML(context, t);
         assertEquals("2012", calendar.toString());
         assertEquals(t, XmlUtilities.toTemporal(context, calendar));

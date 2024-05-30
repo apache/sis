@@ -142,8 +142,8 @@ public final class MetadataTest extends TestCase.WithLogs {
             final var citation = new DefaultCitation("Some set of points");
             citation.setAlternateTitles(Set.of(new SimpleInternationalString("Code XYZ")));
             citation.setDates(List.of(
-                    new DefaultCitationDate(LocalDate.parse("1990-06-05"), DateType.REVISION),
-                    new DefaultCitationDate(LocalDate.parse("1979-08-03"), DateType.CREATION)));
+                    new DefaultCitationDate(LocalDate.of(1990, 6, 5), DateType.REVISION),
+                    new DefaultCitationDate(LocalDate.of(1979, 8, 3), DateType.CREATION)));
             {
                 @SuppressWarnings("deprecation")
                 final var originator = new DefaultResponsibleParty(Role.ORIGINATOR);
@@ -183,7 +183,7 @@ public final class MetadataTest extends TestCase.WithLogs {
                 keyword.setType(KeywordType.THEME);
                 final var thesaurus = new DefaultCitation("BODC Parameter Discovery Vocabulary");
                 thesaurus.setAlternateTitles(Set.of(new SimpleInternationalString("P021")));
-                thesaurus.setDates(Set.of(new DefaultCitationDate(LocalDate.parse("2008-11-26"), DateType.REVISION)));
+                thesaurus.setDates(Set.of(new DefaultCitationDate(LocalDate.of(2008, 11, 26), DateType.REVISION)));
                 thesaurus.setEdition(new Anchor(URI.create("SDN:C371:1:35"), "35"));
                 thesaurus.setIdentifiers(Set.of(new ImmutableIdentifier(null, null, "http://www.seadatanet.org/urnurl/")));
                 keyword.setThesaurusName(thesaurus);
@@ -213,7 +213,7 @@ public final class MetadataTest extends TestCase.WithLogs {
                 final var aggregateInfo = new DefaultAggregateInformation();
                 final var name = new DefaultCitation("Some oceanographic campaign");
                 name.setAlternateTitles(Set.of(new SimpleInternationalString("Pseudo group of data")));
-                name.setDates(Set.of(new DefaultCitationDate(LocalDate.parse("1990-06-05"), DateType.REVISION)));
+                name.setDates(Set.of(new DefaultCitationDate(LocalDate.of(1990, 6, 5), DateType.REVISION)));
                 aggregateInfo.setName(name);
                 aggregateInfo.setInitiativeType(InitiativeType.CAMPAIGN);
                 aggregateInfo.setAssociationType(AssociationType.LARGER_WORK_CITATION);

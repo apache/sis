@@ -114,8 +114,8 @@ public final class AbstractReferenceSystemTest extends TestCase {
         assertNull(properties.put(DOMAIN_OF_VALIDITY_KEY, new DefaultExtent("Netherlands offshore.",
                 new DefaultGeographicBoundingBox(2.54, 6.40, 51.43, 55.77),
                 new DefaultVerticalExtent(10, 1000, VerticalCRSMock.DEPTH),
-                new DefaultTemporalExtent(LocalDate.parse("2010-04-05"),
-                                          LocalDate.parse("2010-09-08")))));
+                new DefaultTemporalExtent(LocalDate.of(2010, 4, 5),
+                                          LocalDate.of(2010, 9, 8)))));
 
         final var object = new AbstractReferenceSystem(properties);
 
