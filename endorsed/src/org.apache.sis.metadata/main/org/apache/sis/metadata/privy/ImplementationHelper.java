@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata.privy;
 
-import java.util.Date;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -50,28 +49,6 @@ public final class ImplementationHelper extends Static {
      * Do not allow instantiation of this class.
      */
     private ImplementationHelper() {
-    }
-
-    /**
-     * Returns the milliseconds value of the given date, or {@link Long#MIN_VALUE}
-     * if the date is null.
-     *
-     * @param  value  the date, or {@code null}.
-     * @return the time in milliseconds, or {@code Long.MIN_VALUE} if none.
-     */
-    public static long toMilliseconds(final Date value) {
-        return (value != null) ? value.getTime() : Long.MIN_VALUE;
-    }
-
-    /**
-     * Converts the given milliseconds time to a date object, or returns null
-     * if the given time is {@link Long#MIN_VALUE}.
-     *
-     * @param  value  the time in milliseconds.
-     * @return the date for the given milliseconds value, or {@code null}.
-     */
-    public static Date toDate(final long value) {
-        return (value != Long.MIN_VALUE) ? new Date(value) : null;
     }
 
     /**

@@ -17,7 +17,7 @@
 package org.apache.sis.metadata.iso.extent;
 
 import java.util.List;
-import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.net.URL;
 import java.io.InputStream;
 import jakarta.xml.bind.JAXBException;
@@ -127,14 +127,13 @@ public final class DefaultExtentTest extends TestUsingFile {
     private void roundtrip(final Format format) throws JAXBException {
         final var bbox = new DefaultGeographicBoundingBox(-99, -79, 14.9844, 31);
         bbox.getIdentifierMap().put(IdentifierSpace.ID, "bbox");
-        final var temporal = new DefaultTemporalExtent();
-        if (PENDING_FUTURE_SIS_VERSION) {
-            // This block needs a more complete sis-temporal module.
-            temporal.setBounds(Instant.parse("2010-01-27T13:26:10Z"),
-                               Instant.parse("2010-08-27T13:26:10Z"));
-        }
+        final var temporal = new DefaultTemporalExtent(
+                OffsetDateTime.parse("2010-01-27T08:26:10-05:00"),
+                OffsetDateTime.parse("2010-08-27T08:26:10-05:00"));
         final var extent = new DefaultExtent(null, bbox, null, temporal);
-        assertMarshalEqualsFile(openTestFile(format), extent, format.schemaVersion, "xmlns:*", "xsi:schemaLocation");
+        assertMarshalEqualsFile(openTestFile(format), extent, format.schemaVersion, STRICT,
+                new String[] {"gml:description"},                               // Ignored nodes.
+                new String[] {"xmlns:*", "xsi:schemaLocation", "gml:id"});      // Ignored attributes.
         assertEquals(extent, unmarshalFile(DefaultExtent.class, openTestFile(format)));
     }
 

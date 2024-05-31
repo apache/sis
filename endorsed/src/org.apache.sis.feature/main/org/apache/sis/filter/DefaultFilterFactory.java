@@ -32,6 +32,7 @@ import org.apache.sis.filter.sqlmm.Registry;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.privy.Strings;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Iterator;
@@ -67,6 +68,11 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     private final Geometries<G> library;
 
     /**
+     * The base class of temporal objects.
+     */
+    private final Class<T> temporal;
+
+    /**
      * The strategy to use for representing a region crossing the anti-meridian.
      */
     private final WraparoundMethod wraparound;
@@ -93,14 +99,14 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
      *   <tr><td>Default</td> <td>{@code java.lang.Object}</td></tr>
      * </table>
      *
-     * <table class="sis">
-     *   <caption>Authorized temporal class argument values</caption>
-     *   <tr><th>Library</th> <th>Temporal class</th></tr>
-     *   <tr><td>Default</td> <td>{@code java.lang.Object}</td></tr>
-     * </table>
+     * The {@code temporal} argument should be one of the {@link java.time.temporal.Temporal}
+     * implementation classes. The {@code Temporal.class} or {@code Object.class} arguments
+     * are also accepted if the temporal class is not known at compile-time, in which case
+     * it will be determined on a case-by-case basis at runtime. Note the latter is lightly
+     * more expensive that specifying an implementation class in advance.
      *
      * @param  spatial     type of spatial objects,  or {@code Object.class} for default.
-     * @param  temporal    type of temporal objects, or {@code Object.class} for default.
+     * @param  temporal    type of temporal objects, or {@code Object.class} for any supported type.
      * @param  wraparound  the strategy to use for representing a region crossing the anti-meridian.
      */
     @SuppressWarnings("unchecked")
@@ -116,9 +122,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
                 throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "spatial", spatial));
             }
         }
-        if (temporal != Object.class) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "temporal", temporal));
-        }
+        this.temporal = temporal;
         this.wraparound = wraparound;
         availableFunctions = new HashMap<>();
     }
@@ -126,10 +130,9 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     /**
      * Returns a factory operating on {@link Feature} instances.
      * The {@linkplain GeometryLibrary geometry library} will be the system default.
+     * The temporal objects can be {@link java.util.Date} or implementations of {@link java.time.temporal.Temporal}.
      *
      * @return factory operating on {@link Feature} instances.
-     *
-     * @todo The type of temporal objects is not yet determined.
      */
     public static FilterFactory<Feature, Object, Object> forFeatures() {
         return Features.DEFAULT;
@@ -170,7 +173,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
          * super-class constructor} for a list of valid class arguments.
          *
          * @param  spatial     type of spatial objects,  or {@code Object.class} for default.
-         * @param  temporal    type of temporal objects, or {@code Object.class} for default.
+         * @param  temporal    type of temporal objects, or {@code Object.class} for any supported type.
          * @param  wraparound  the strategy to use for representing a region crossing the anti-meridian.
          *
          * @see DefaultFilterFactory#forFeatures()
@@ -729,7 +732,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> after(final Expression<R, ? extends T> time1,
                                      final Expression<R, ? extends T> time2)
     {
-        return new TemporalFilter.After<>(time1, time2);
+        return TemporalFilter.create(temporal, TemporalOperation.After::new, time1, time2);
     }
 
     /**
@@ -745,7 +748,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> before(final Expression<R, ? extends T> time1,
                                       final Expression<R, ? extends T> time2)
     {
-        return new TemporalFilter.Before<>(time1, time2);
+        return TemporalFilter.create(temporal, TemporalOperation.Before::new, time1, time2);
     }
 
     /**
@@ -761,7 +764,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> begins(final Expression<R, ? extends T> time1,
                                       final Expression<R, ? extends T> time2)
     {
-        return new TemporalFilter.Begins<>(time1, time2);
+        return TemporalFilter.create(temporal, TemporalOperation.Begins::new, time1, time2);
     }
 
     /**
@@ -777,7 +780,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> begunBy(final Expression<R, ? extends T> time1,
                                        final Expression<R, ? extends T> time2)
     {
-        return new TemporalFilter.BegunBy<>(time1, time2);
+        return TemporalFilter.create(temporal, TemporalOperation.BegunBy::new, time1, time2);
     }
 
     /**
@@ -793,7 +796,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> tcontains(final Expression<R, ? extends T> time1,
                                          final Expression<R, ? extends T> time2)
     {
-        return new TemporalFilter.Contains<>(time1, time2);
+        return TemporalFilter.create(temporal, TemporalOperation.Contains::new, time1, time2);
     }
 
     /**
@@ -809,7 +812,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> during(final Expression<R, ? extends T> time1,
                                       final Expression<R, ? extends T> time2)
     {
-        return new TemporalFilter.During<>(time1, time2);
+        return TemporalFilter.create(temporal, TemporalOperation.During::new, time1, time2);
     }
 
     /**
@@ -825,7 +828,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> tequals(final Expression<R, ? extends T> time1,
                                        final Expression<R, ? extends T> time2)
     {
-        return new TemporalFilter.Equals<>(time1, time2);
+        return TemporalFilter.create(temporal, TemporalOperation.Equals::new, time1, time2);
     }
 
     /**
@@ -841,7 +844,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> toverlaps(final Expression<R, ? extends T> time1,
                                          final Expression<R, ? extends T> time2)
     {
-        return new TemporalFilter.Overlaps<>(time1, time2);
+        return TemporalFilter.create(temporal, TemporalOperation.Overlaps::new, time1, time2);
     }
 
     /**
@@ -857,7 +860,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> meets(final Expression<R, ? extends T> time1,
                                      final Expression<R, ? extends T> time2)
     {
-        return new TemporalFilter.Meets<>(time1, time2);
+        return TemporalFilter.create(temporal, TemporalOperation.Meets::new, time1, time2);
     }
 
     /**
@@ -873,7 +876,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> ends(final Expression<R, ? extends T> time1,
                                     final Expression<R, ? extends T> time2)
     {
-        return new TemporalFilter.Ends<>(time1, time2);
+        return TemporalFilter.create(temporal, TemporalOperation.Ends::new, time1, time2);
     }
 
     /**
@@ -889,7 +892,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> overlappedBy(final Expression<R, ? extends T> time1,
                                             final Expression<R, ? extends T> time2)
     {
-        return new TemporalFilter.OverlappedBy<>(time1, time2);
+        return TemporalFilter.create(temporal, TemporalOperation.OverlappedBy::new, time1, time2);
     }
 
     /**
@@ -905,7 +908,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> metBy(final Expression<R, ? extends T> time1,
                                      final Expression<R, ? extends T> time2)
     {
-        return new TemporalFilter.MetBy<>(time1, time2);
+        return TemporalFilter.create(temporal, TemporalOperation.MetBy::new, time1, time2);
     }
 
     /**
@@ -921,7 +924,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> endedBy(final Expression<R, ? extends T> time1,
                                        final Expression<R, ? extends T> time2)
     {
-        return new TemporalFilter.EndedBy<>(time1, time2);
+        return TemporalFilter.create(temporal, TemporalOperation.EndedBy::new, time1, time2);
     }
 
     /**
@@ -938,7 +941,7 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     public TemporalOperator<R> anyInteracts(final Expression<R, ? extends T> time1,
                                             final Expression<R, ? extends T> time2)
     {
-        return new TemporalFilter.AnyInteracts<>(time1, time2);
+        return TemporalFilter.create(temporal, TemporalOperation.AnyInteracts::new, time1, time2);
     }
 
     /**
@@ -1151,5 +1154,18 @@ public abstract class DefaultFilterFactory<R,G,T> extends AbstractFactory implem
     @Override
     public SortProperty<R> sort(final ValueReference<R,?> property, final SortOrder order) {
         return new DefaultSortProperty<>(property, order);
+    }
+
+    /**
+     * Returns a string representation of this factory for debugging purposes.
+     * The string returned by this method may change in any future version.
+     *
+     * @return a string representation for debugging purposes.
+     *
+     * @since 1.5
+     */
+    @Override
+    public String toString() {
+        return Strings.toString(getClass(), "spatial", library.library, "temporal", temporal.getSimpleName());
     }
 }

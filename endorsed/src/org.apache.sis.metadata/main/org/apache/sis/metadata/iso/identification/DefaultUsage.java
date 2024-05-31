@@ -18,6 +18,7 @@ package org.apache.sis.metadata.iso.identification;
 
 import java.util.Date;
 import java.util.Collection;
+import java.time.temporal.Temporal;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -28,8 +29,7 @@ import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.iso.Types;
-import static org.apache.sis.metadata.privy.ImplementationHelper.toDate;
-import static org.apache.sis.metadata.privy.ImplementationHelper.toMilliseconds;
+import org.apache.sis.util.privy.TemporalDate;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.metadata.citation.ResponsibleParty;
@@ -61,7 +61,7 @@ import org.opengis.metadata.citation.ResponsibleParty;
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @TitleProperty(name = "specificUsage")
@@ -79,7 +79,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = 7464000583573398579L;
+    private static final long serialVersionUID = -4161209112438016820L;
 
     /**
      * Brief description of the resource and/or resource series usage.
@@ -89,10 +89,9 @@ public class DefaultUsage extends ISOMetadata implements Usage {
 
     /**
      * Date and time of the first use or range of uses of the resource and/or resource series.
-     * Values are milliseconds elapsed since January 1st, 1970,
-     * or {@link Long#MIN_VALUE} if this value is not set.
      */
-    private long usageDate = Long.MIN_VALUE;
+    @SuppressWarnings("serial")     // Standard Java implementations are serializable.
+    private Temporal usageDate;
 
     /**
      * Applications, determined by the user for which the resource and/or resource series
@@ -138,6 +137,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * @param specificUsage    brief description of the resource and/or resource series usage, or {@code null} if none.
      * @param userContactInfo  means of communicating with person(s) and organization(s), or {@code null} if none.
      */
+    @SuppressWarnings("this-escape")
     public DefaultUsage(final CharSequence specificUsage,
                         final ResponsibleParty userContactInfo)
     {
@@ -154,11 +154,12 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      *
      * @see #castOrCopy(Usage)
      */
+    @SuppressWarnings("this-escape")
     public DefaultUsage(final Usage object) {
         super(object);
         if (object != null) {
             specificUsage             = object.getSpecificUsage();
-            usageDate                 = toMilliseconds(object.getUsageDate());
+            usageDate                 = TemporalDate.toTemporal(object.getUsageDate());
             userDeterminedLimitations = object.getUserDeterminedLimitations();
             userContactInfo           = copyCollection(object.getUserContactInfo(), ResponsibleParty.class);
             responses                 = copyCollection(object.getResponses(), InternationalString.class);
@@ -221,7 +222,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
     @Override
     @XmlElement(name = "usageDateTime")
     public Date getUsageDate() {
-        return toDate(usageDate);
+        return TemporalDate.toDate(usageDate);
     }
 
     /**
@@ -230,8 +231,8 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * @param  newValue  the new usage date.
      */
     public void setUsageDate(final Date newValue)  {
-        checkWritePermission(toDate(usageDate));
-        usageDate = toMilliseconds(newValue);
+        checkWritePermission(usageDate);
+        usageDate = TemporalDate.toTemporal(newValue);
     }
 
     /**

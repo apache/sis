@@ -28,11 +28,11 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.function.Function;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import static java.lang.Math.*;
 import java.time.ZoneId;
 import java.time.Instant;
 import java.time.DateTimeException;
+import java.time.temporal.Temporal;
 import javax.measure.Unit;
 import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
@@ -62,6 +62,7 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.Range;
 import org.apache.sis.pending.jdk.JDK23;
+import org.apache.sis.pending.temporal.DefaultPeriod;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
@@ -87,8 +88,8 @@ import org.opengis.coordinate.MismatchedCoordinateMetadataException;
  * <ul>
  *   <li>{@linkplain #getGeographicBoundingBox Fetching geographic},
  *       {@linkplain #getVerticalRange vertical} or
- *       {@linkplain #getDate temporal components} in a convenient form.</li>
- *   <li>Computing {@linkplain #intersection intersection} of bounding boxes</li>
+ *       {@linkplain #getTimeRange temporal} ranges in a convenient form.</li>
+ *   <li>Computing {@linkplain #intersection intersection} of bounding boxes.</li>
  *   <li>Computing {@linkplain #area area} estimations.</li>
  * </ul>
  *
@@ -415,7 +416,6 @@ public final class Extents extends Static {
      * @since 0.4
      */
     @OptionalCandidate
-    @SuppressWarnings("deprecation")
     public static MeasurementRange<Double> getVerticalRange(final Extent extent) {
         MeasurementRange<Double> range = null;
         RealizationMethod selectedMethod = null;
@@ -489,37 +489,31 @@ public final class Extents extends Static {
      * @return a time range created from the given extent, or {@code null} if none.
      *
      * @since 0.4
-     *
-     * @deprecated Replaced by {@link #getTimeRange(Extent, ZoneId)} in order to transition to {@code java.time} API.
      */
-    @Deprecated(since="1.5", forRemoval=true)
+    @OptionalCandidate
     public static Range<Date> getTimeRange(final Extent extent) {
-        return onTimeRange(extent, null, (min, max) -> {
-            if (min == null && max == null) {
-                return null;
-            }
-            return new Range<>(Date.class, TemporalDate.toDate(min), true, TemporalDate.toDate(max), true);
-        }).orElse(null);
+        final DefaultPeriod period = getPeriod(extent);
+        final Date min = TemporalDate.toDate(period.getBeginning());
+        final Date max = TemporalDate.toDate(period.getEnding());
+        if (min == null && max == null) {
+            return null;
+        }
+        return new Range<>(Date.class, min, true, max, true);
     }
 
-    /**
+    /*
      * Returns the union of all time ranges found in the given extent.
      *
      * @param  extent  the extent to convert to a time range, or {@code null}.
      * @param  zone    the timezone to use if a time is local, or {@code null} if none.
      * @return a time range created from the given extent.
-     * @throws DateTimeException if a temporal value cannot be converted to an instant.
      *
-     * @since 1.5
-     */
+     * @todo Not yet provided because the return type should be `Temporal`, but that type
+     * does not extend `Comparable`. An alterlative would be to return `Period` instead.
+     *
     public static Optional<Range<Instant>> getTimeRange(final Extent extent, final ZoneId zone) {
-        return onTimeRange(extent, zone, (min, max) -> {
-            if (min == null && max == null) {
-                return null;
-            }
-            return new Range<>(Instant.class, min, true, max, true);
-        });
     }
+     */
 
     /**
      * Returns a date in the {@linkplain Extent#getTemporalElements() temporal elements} of the given extent.
@@ -531,7 +525,7 @@ public final class Extents extends Static {
      *
      * @since 0.4
      *
-     * @deprecated Replaced by {@link #getTimeRange(Extent, ZoneId)} in order to transition to {@code java.time} API.
+     * @deprecated Replaced by {@link #getInstant(Extent, ZoneId, double)} in order to transition to {@code java.time} API.
      */
     @Deprecated(since="1.5", forRemoval=true)
     public static Date getDate(final Extent extent, final double location) {
@@ -549,60 +543,64 @@ public final class Extents extends Static {
      *
      * Special cases:
      * <ul>
-     *   <li>If {@code location} is 0, then this method returns the {@linkplain DefaultTemporalExtent#getBeginning() start time}.</li>
-     *   <li>If {@code location} is 1, then this method returns the {@linkplain DefaultTemporalExtent#getEnding() end time}.</li>
+     *   <li>If {@code location} is 0, then this method returns the {@linkplain DefaultTemporalExtent#getBeginning() beginning}.</li>
+     *   <li>If {@code location} is 1, then this method returns the {@linkplain DefaultTemporalExtent#getEnding() ending}.</li>
      *   <li>If {@code location} is 0.5, then this method returns the average of start time and end time.</li>
      *   <li>If {@code location} is outside the [0 … 1] range, then the result will be outside the temporal extent.</li>
      * </ul>
      *
      * @param  extent    the extent from which to get an instant, or {@code null}.
-     * @param  location  0 for the start time, 1 for the end time, 0.5 for the average time, or the
+     * @param  zone      the timezone to use if a time is local, or {@code null} if none.
+     * @param  location  0 for the beginning, 1 for the ending, 0.5 for the average time, or the
      *                   coefficient (usually in the [0 … 1] range) for interpolating an instant.
-     * @return an instant interpolated at the given location, or {@code null} if none.
+     * @return an instant interpolated at the given location.
+     * @throws DateTimeException if {@code zone} is null and a temporal value
+     *         cannot be converted to an instant without that information.
      *
      * @since 1.5
      */
     public static Optional<Instant> getInstant(final Extent extent, final ZoneId zone, final double location) {
         ArgumentChecks.ensureFinite("location", location);
-        return onTimeRange(extent, zone, (min, max) -> {
-            if (min == null) return max;
-            if (max == null) return min;
-            return min.plusMillis(Math.round(location * JDK23.until(min, max).toMillis()));
-        });
+        final DefaultPeriod period = getPeriod(extent);
+        Instant min = TemporalDate.toInstant(period.getBeginning(), zone);
+        Instant max = TemporalDate.toInstant(period.getEnding(), zone);
+        if (min == null || location == 1) {
+            return Optional.ofNullable(max);
+        }
+        if (max != null && location != 0) {
+            min = min.plusMillis(Math.round(location * JDK23.until(min, max).toMillis()));
+        }
+        return Optional.of(min);
     }
 
     /**
-     * Returns the result of applying the given function on the minimum and maximal temporal value.
+     * Returns the minimum and maximum temporal values in an array of length 2.
      *
-     * @param  <T>       type of value computed by the function.
      * @param  extent    the extent on which to apply a function, or {@code null}.
-     * @param  zone      the timezone to use if a time is local, or {@code null} if none.
-     * @param  operator  the function to apply on the start and end time. Those times may be null.
-     * @return the result of applying the given function on the start and end time.
+     * @return the minimum and maximum values. Never null, but may contain null elements.
+     * @throws DateTimeException if there is more than one temporal extent, and some temporal values are not comparable.
      */
-    private static <T> Optional<T> onTimeRange(final Extent extent, final ZoneId zone,
-            final BiFunction<Instant,Instant,T> operator)
-    {
-        Instant min = null;
-        Instant max = null;
+    private static DefaultPeriod getPeriod(final Extent extent) {
+        Temporal min = null;
+        Temporal max = null;
         if (extent != null) {
             for (final TemporalExtent t : nonNull(extent.getTemporalElements())) {
-                final Instant startTime, endTime;
+                final Temporal startTime, endTime;
                 if (t instanceof DefaultTemporalExtent) {
                     final var dt = (DefaultTemporalExtent) t;
                     // Maybe user has overridden those methods.
-                    startTime = TemporalDate.toInstant(dt.getBeginning().orElse(null), zone);
-                    endTime   = TemporalDate.toInstant(dt.getEnding()   .orElse(null), zone);
+                    startTime = dt.getBeginning().orElse(null);
+                    endTime   = dt.getEnding()   .orElse(null);
                 } else {
                     final TemporalPrimitive p = t.getExtent();
                     startTime = DefaultTemporalExtent.getBound(p, true);
                     endTime   = DefaultTemporalExtent.getBound(p, false);
                 }
-                if (startTime != null && (min == null || startTime.isBefore(min))) min = startTime;
-                if (  endTime != null && (max == null ||   endTime.isAfter (max))) max =   endTime;
+                if (startTime != null && (min == null || TemporalDate.compare(startTime, min) < 0)) min = startTime;
+                if (  endTime != null && (max == null || TemporalDate.compare(  endTime, max) > 0)) max = endTime;
             }
         }
-        return Optional.ofNullable(operator.apply(min, max));
+        return new DefaultPeriod(min, max);
     }
 
     /**

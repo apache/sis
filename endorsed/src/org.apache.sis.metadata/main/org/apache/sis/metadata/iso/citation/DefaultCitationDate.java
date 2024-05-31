@@ -25,8 +25,7 @@ import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.DateType;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import static org.apache.sis.util.privy.TemporalDate.toDate;
-import static org.apache.sis.util.privy.TemporalDate.toInstant;
+import org.apache.sis.util.privy.TemporalDate;
 
 
 /**
@@ -104,7 +103,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      */
     @Deprecated(since="1.5", forRemoval=true)
     public DefaultCitationDate(final Date date, final DateType dateType) {
-        this.date = toInstant(date);
+        this.date = TemporalDate.toTemporal(date);
         this.dateType = dateType;
     }
 
@@ -120,7 +119,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
     public DefaultCitationDate(final CitationDate object) {
         super(object);
         if (object != null) {
-            date     = toInstant(object.getDate());
+            date     = TemporalDate.toTemporal(object.getDate());
             dateType = object.getDateType();
         }
     }
@@ -162,7 +161,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
     @Override
     @XmlElement(name = "date", required = true)
     public Date getDate() {
-        return toDate(date);
+        return TemporalDate.toDate(date);
     }
 
     /**
@@ -171,7 +170,7 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
      * @param  newValue  the new date.
      */
     public void setDate(final Date newValue) {
-        setDate(toInstant(newValue));
+        setDate(TemporalDate.toTemporal(newValue));
     }
 
     /**

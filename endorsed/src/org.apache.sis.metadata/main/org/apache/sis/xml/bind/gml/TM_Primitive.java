@@ -16,7 +16,8 @@
  */
 package org.apache.sis.xml.bind.gml;
 
-import java.time.Instant;
+import java.time.temporal.Temporal;
+import java.time.temporal.ChronoField;
 import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.temporal.TemporalPrimitive;
 import org.apache.sis.xml.privy.XmlUtilities;
@@ -93,7 +94,7 @@ public class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimitive> 
      */
     @XmlElement(name = "TimeInstant")
     public final TimeInstant getTimeInstant() {
-        Instant time = TemporalUtilities.getInstant(metadata);
+        Temporal time = TemporalUtilities.getInstant(metadata);
         return (time != null) ? new TimeInstant(time) : null;
     }
 
@@ -107,22 +108,22 @@ public class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimitive> 
         metadata = null;                                        // Cleaned first in case of failure.
         if (period != null) {
             final Context context = Context.current();
-            final Instant begin = toInstant(context, period.begin);
-            final Instant end   = toInstant(context, period.end);
-            if (begin != null || end != null) {
-                if (begin != null && end != null && end.isBefore(begin)) {
-                    /*
-                     * Be tolerant - we can treat such case as an empty range, which is a similar
-                     * approach to what JDK does for Rectangle width and height. We will log with
-                     * TemporalPrimitive as the source class, since it is the closest we can get
-                     * to a public API.
-                     */
-                    Context.warningOccured(context, TemporalPrimitive.class,
-                            "setTimePeriod", Errors.class, Errors.Keys.IllegalRange_2, begin, end);
-                } else {
-                    metadata = TemporalUtilities.createPeriod(begin, end);
-                    period.copyIdTo(metadata);
-                }
+            final Temporal begin = toInstant(context, period.begin);
+            final Temporal end   = toInstant(context, period.end);
+            if (begin != null && end != null
+                    && end.isSupported(ChronoField.INSTANT_SECONDS)
+                    && begin.isSupported(ChronoField.INSTANT_SECONDS)
+                    && begin.getLong(ChronoField.INSTANT_SECONDS) > end.getLong(ChronoField.INSTANT_SECONDS))
+            {
+                /*
+                 * We log with `TemporalPrimitive` as the source class,
+                 * because it is the closest we can get to a public API.
+                 */
+                Context.warningOccured(context, TemporalPrimitive.class,
+                        "setTimePeriod", Errors.class, Errors.Keys.IllegalRange_2, begin, end);
+            } else {
+                metadata = TemporalUtilities.createPeriod(begin, end);
+                period.copyIdTo(metadata);
             }
         }
     }
@@ -136,7 +137,7 @@ public class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimitive> 
     public final void setTimeInstant(final TimeInstant instant) {
         metadata = null;                                        // Cleaned first in case of failure.
         if (instant != null) {
-            final Instant position = XmlUtilities.toInstant(Context.current(), instant.timePosition);
+            final Temporal position = XmlUtilities.toTemporal(Context.current(), instant.timePosition);
             if (position != null) {
                 metadata = TemporalUtilities.createInstant(position);
                 instant.copyIdTo(metadata);
@@ -147,8 +148,8 @@ public class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimitive> 
     /**
      * Returns the instant of the given bounds, or {@code null} if none.
      */
-    private static Instant toInstant(final Context context, final TimePeriodBound bound) {
-        return (bound != null) ? XmlUtilities.toInstant(context, bound.calendar()) : null;
+    private static Temporal toInstant(final Context context, final TimePeriodBound bound) {
+        return (bound != null) ? XmlUtilities.toTemporal(context, bound.calendar()) : null;
     }
 
     /**

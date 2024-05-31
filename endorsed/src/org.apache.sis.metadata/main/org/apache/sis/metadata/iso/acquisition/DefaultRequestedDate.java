@@ -17,13 +17,13 @@
 package org.apache.sis.metadata.iso.acquisition;
 
 import java.util.Date;
+import java.time.temporal.Temporal;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.metadata.acquisition.RequestedDate;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import static org.apache.sis.metadata.privy.ImplementationHelper.toDate;
-import static org.apache.sis.metadata.privy.ImplementationHelper.toMilliseconds;
+import org.apache.sis.util.privy.TemporalDate;
 
 
 /**
@@ -45,7 +45,7 @@ import static org.apache.sis.metadata.privy.ImplementationHelper.toMilliseconds;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @XmlType(name = "MI_RequestedDate_Type", propOrder = {
@@ -57,19 +57,19 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 942236885315159329L;
+    private static final long serialVersionUID = -8491304736666217656L;
 
     /**
-     * Preferred date and time of collection,
-     * or {@link Long#MIN_VALUE} if none.
+     * Preferred date and time of collection.
      */
-    private long requestedDateOfCollection = Long.MIN_VALUE;
+    @SuppressWarnings("serial")     // Standard Java implementations are serializable.
+    private Temporal requestedDateOfCollection;
 
     /**
-     * Latest date and time collection must be completed,
-     * or {@link Long#MIN_VALUE} if none.
+     * Latest date and time collection must be completed.
      */
-    private long latestAcceptableDate = Long.MIN_VALUE;
+    @SuppressWarnings("serial")     // Standard Java implementations are serializable.
+    private Temporal latestAcceptableDate;
 
     /**
      * Constructs an initially empty requested date.
@@ -89,8 +89,8 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
     public DefaultRequestedDate(final RequestedDate object) {
         super(object);
         if (object != null) {
-            requestedDateOfCollection = toMilliseconds(object.getRequestedDateOfCollection());
-            latestAcceptableDate      = toMilliseconds(object.getLatestAcceptableDate());
+            requestedDateOfCollection = TemporalDate.toTemporal(object.getRequestedDateOfCollection());
+            latestAcceptableDate      = TemporalDate.toTemporal(object.getLatestAcceptableDate());
         }
     }
 
@@ -127,7 +127,7 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
     @Override
     @XmlElement(name = "requestedDateOfCollection", required = true)
     public Date getRequestedDateOfCollection() {
-        return toDate(requestedDateOfCollection);
+        return TemporalDate.toDate(requestedDateOfCollection);
     }
 
     /**
@@ -136,8 +136,8 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
      * @param  newValue  the new requested date of collection value.
      */
     public void setRequestedDateOfCollection(final Date newValue) {
-        checkWritePermission(toDate(requestedDateOfCollection));
-        requestedDateOfCollection = toMilliseconds(newValue);
+        checkWritePermission(requestedDateOfCollection);
+        requestedDateOfCollection = TemporalDate.toTemporal(newValue);
     }
 
     /**
@@ -148,7 +148,7 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
     @Override
     @XmlElement(name = "latestAcceptableDate", required = true)
     public Date getLatestAcceptableDate() {
-        return toDate(latestAcceptableDate);
+        return TemporalDate.toDate(latestAcceptableDate);
     }
 
     /**
@@ -157,7 +157,7 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
      * @param  newValue  the new latest acceptable data value.
      */
     public void setLatestAcceptableDate(final Date newValue) {
-        checkWritePermission(toDate(latestAcceptableDate));
-        latestAcceptableDate = toMilliseconds(newValue);
+        checkWritePermission(latestAcceptableDate);
+        latestAcceptableDate = TemporalDate.toTemporal(newValue);
     }
 }

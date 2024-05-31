@@ -31,8 +31,7 @@ import org.opengis.metadata.acquisition.PlatformPass;
 import org.opengis.metadata.acquisition.Sequence;
 import org.opengis.metadata.acquisition.Trigger;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import static org.apache.sis.util.privy.TemporalDate.toDate;
-import static org.apache.sis.util.privy.TemporalDate.toInstant;
+import org.apache.sis.util.privy.TemporalDate;
 
 
 /**
@@ -140,7 +139,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
             trigger            = object.getTrigger();
             context            = object.getContext();
             sequence           = object.getSequence();
-            time               = toInstant(object.getTime());
+            time               = TemporalDate.toTemporal(object.getTime());
             expectedObjectives = copyCollection(object.getExpectedObjectives(), Objective.class);
             relatedPass        = object.getRelatedPass();
             relatedSensors     = copyCollection(object.getRelatedSensors(), Instrument.class);
@@ -268,7 +267,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
     @Override
     @XmlElement(name = "time", required = true)
     public Date getTime() {
-        return toDate(time);
+        return TemporalDate.toDate(time);
     }
 
     /**
@@ -277,7 +276,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      * @param  newValue  the new time value.
      */
     public void setTime(final Date newValue) {
-        setTime(toInstant(newValue));
+        setTime(TemporalDate.toTemporal(newValue));
     }
 
     /**

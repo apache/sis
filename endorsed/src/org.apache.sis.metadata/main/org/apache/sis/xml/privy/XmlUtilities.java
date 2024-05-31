@@ -48,6 +48,7 @@ import static javax.xml.datatype.DatatypeConstants.FIELD_UNDEFINED;
 import org.apache.sis.system.SystemListener;
 import org.apache.sis.system.Modules;
 import org.apache.sis.xml.bind.Context;
+import org.apache.sis.util.privy.TemporalDate;
 
 
 /**
@@ -114,13 +115,11 @@ public final class XmlUtilities extends SystemListener {
      *     <ul>
      *       <li>If every time components (hour, minute, seconds and milliseconds) are zero, set
      *           them to {@code FIELD_UNDEFINED} in order to prevent them from being formatted
-     *           at XML marshalling time. Then returns {@code true}.</li>
-     *       <li>Otherwise returns {@code false}. But before doing so, still set the milliseconds
-     *           to {@code FIELD_UNDEFINED} if its value was 0.</li>
+     *           at XML marshalling time.</li>
+     *       <li>Otherwise set the milliseconds to {@code FIELD_UNDEFINED} if its value was 0.</li>
      *     </ul></li>
      *   <li>Otherwise (if the {@code force} argument is {@code false}), then the temporal
-     *       part is set to {@code FIELD_UNDEFINED} unconditionally and this method returns
-     *       {@code true}.</li>
+     *       part is set to {@code FIELD_UNDEFINED} unconditionally.</li>
      * </ul>
      *
      * <strong>WARNING: The timezone information may be lost!</strong> This method is used mostly
@@ -132,9 +131,8 @@ public final class XmlUtilities extends SystemListener {
      *
      * @param  gc     the date to modify in-place.
      * @param  force  {@code true} for forcing the temporal components to be removed without any check.
-     * @return {@code true} if the time part has been completely removed, {@code false} otherwise.
      */
-    public static boolean trimTime(final XMLGregorianCalendar gc, final boolean force) {
+    public static void trimTime(final XMLGregorianCalendar gc, final boolean force) {
         if (force || gc.getMillisecond() == 0) {
             gc.setMillisecond(FIELD_UNDEFINED);
             if (force || (gc.getHour() == 0 && gc.getMinute() == 0 && gc.getSecond() == 0)) {
@@ -142,10 +140,8 @@ public final class XmlUtilities extends SystemListener {
                 gc.setMinute(FIELD_UNDEFINED);
                 gc.setSecond(FIELD_UNDEFINED);
                 gc.setTimezone(FIELD_UNDEFINED);
-                return true;
             }
         }
-        return false;
     }
 
     /**
@@ -184,18 +180,12 @@ public final class XmlUtilities extends SystemListener {
      * The returned calendar may have undefined fields (including undefined time zone)
      * if the corresponding information was not provided in the given temporal object.
      *
-     * <p>If the returned date has a time, then it usually has millisecond accuracy.
-     * Caller may want to clear the millisecond field if it is equal to zero.</p>
-     *
      * @param  context  the current (un)marshalling context, or {@code null} if none.
-     * @param  date     the date to convert to a XML calendar, or {@code null}.
-     * @return the XML calendar, or {@code null} if {@code date} was null.
+     * @param  date     the date to convert to a XML calendar.
+     * @return the XML calendar.
      * @throws DatatypeConfigurationException if the factory cannot be created.
      */
     public static XMLGregorianCalendar toXML(final Context context, Temporal date) throws DatatypeConfigurationException {
-        if (date == null) {
-            return null;
-        }
         if (date instanceof Instant) {
             final TimeZone zone = (context != null) ? context.getTimeZone() : null;
             final ZoneId zid = (zone != null) ? zone.toZoneId() : ZoneId.systemDefault();
@@ -221,17 +211,17 @@ public final class XmlUtilities extends SystemListener {
      * Caller may want to clear the millisecond field if it is equal to zero.
      *
      * @param  context  the current (un)marshalling context, or {@code null} if none.
-     * @param  date     the date to convert to a XML calendar, or {@code null}.
+     * @param  date     the date to convert to a XML calendar.
      * @return the XML calendar, or {@code null} if {@code date} was null.
      * @throws DatatypeConfigurationException if the factory cannot be created.
      */
     public static XMLGregorianCalendar toXML(final Context context, final Date date) throws DatatypeConfigurationException {
-        if (date != null) {
-            final GregorianCalendar calendar = createGregorianCalendar(context);
-            calendar.setTime(date);
-            return getDatatypeFactory().newXMLGregorianCalendar(calendar);
+        if (date instanceof TemporalDate) {
+            return toXML(context, ((TemporalDate) date).temporal);
         }
-        return null;
+        final GregorianCalendar calendar = createGregorianCalendar(context);
+        calendar.setTime(date);
+        return getDatatypeFactory().newXMLGregorianCalendar(calendar);
     }
 
     /**
@@ -316,20 +306,6 @@ public final class XmlUtilities extends SystemListener {
     }
 
     /**
-     * Converts the given XML Gregorian calendar to an instant.
-     * This method should be invoked only when the temporal object needs to be the {@link Instant} specialization.
-     * If the more generic {@link Temporal} type is okay, use {@link #toTemporal(Context, XMLGregorianCalendar)}.
-     *
-     * @param  context  the current (un)marshalling context, or {@code null} if none.
-     * @param  xml      the XML calendar to convert to a date, or {@code null}.
-     * @return the instant, or {@code null} if {@code xml} was null.
-     */
-    public static Instant toInstant(final Context context, final XMLGregorianCalendar xml) {
-        final Date date = toDate(context, xml);
-        return (date != null) ? date.toInstant() : null;
-    }
-
-    /**
      * Converts the given XML Gregorian calendar to a date.
      *
      * @param  context  the current (un)marshalling context, or {@code null} if none.
@@ -345,7 +321,7 @@ public final class XmlUtilities extends SystemListener {
                     calendar.setTimeZone(timezone);
                 }
             }
-            return calendar.getTime();
+            return new TemporalDate(calendar.getTimeInMillis(), toTemporal(context, xml));
         }
         return null;
     }
