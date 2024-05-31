@@ -17,7 +17,7 @@
 package org.apache.sis.pending.temporal;
 
 import java.util.Objects;
-import java.time.Instant;
+import java.time.temporal.Temporal;
 
 // Specific to the main branch:
 import org.apache.sis.pending.geoapi.temporal.Period;
@@ -29,23 +29,23 @@ import org.apache.sis.pending.geoapi.temporal.Period;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class DefaultPeriod implements Period {
+public final class DefaultPeriod implements Period {
     /** Bounds making this period. */
-    private final Instant beginning, ending;
+    private final Temporal beginning, ending;
 
     /** Creates a new period with the given bounds. */
-    DefaultPeriod(final Instant beginning, final Instant ending) {
+    public DefaultPeriod(final Temporal beginning, final Temporal ending) {
         this.beginning = beginning;
         this.ending    = ending;
     }
 
     /** The beginning instant at which this period starts. */
-    @Override public Instant getBeginning() {
+    @Override public Temporal getBeginning() {
         return beginning;
     }
 
     /** The ending instant at which this period ends. */
-    @Override public Instant getEnding() {
+    @Override public Temporal getEnding() {
         return ending;
     }
 

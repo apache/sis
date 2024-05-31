@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata.privy;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Collection;
@@ -40,24 +39,6 @@ public final class ImplementationHelperTest extends TestCase {
      * Creates a new test case.
      */
     public ImplementationHelperTest() {
-    }
-
-    /**
-     * Tests {@link ImplementationHelper#toMilliseconds(Date)}.
-     */
-    @Test
-    public void testToMilliseconds() {
-        assertEquals(1000,           ImplementationHelper.toMilliseconds(new Date(1000)));
-        assertEquals(Long.MIN_VALUE, ImplementationHelper.toMilliseconds(null));
-    }
-
-    /**
-     * Tests {@link ImplementationHelper#toDate(long)}.
-     */
-    @Test
-    public void testToDate() {
-        assertEquals(new Date(1000), ImplementationHelper.toDate(1000));
-        assertNull(ImplementationHelper.toDate(Long.MIN_VALUE));
     }
 
     /**

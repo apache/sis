@@ -210,6 +210,8 @@ public final class TestUtilities extends Static {
      *
      * @param  date  the date as a {@link String}.
      * @return the date as a {@link Date}.
+     *
+     * @todo Remove in favor of {@link java.time.Instant#parse}.
      */
     public static Date date(final String date) {
         ArgumentChecks.ensureNonNull("date", date);
@@ -223,7 +225,7 @@ public final class TestUtilities extends Static {
         }
         /*
          * The milliseconds are not part of the pattern used by this method because they are rarely specified.
-         * If a test needs to specify milliseconds, add the manually here. Note that this naive hack requires
+         * If a test needs to specify milliseconds, add them manually here. Note that this naive hack requires
          * all milliseconds digits to be provided, e.g. ".900" - not ".9".
          */
         final int s = date.lastIndexOf('.');

@@ -18,6 +18,7 @@ package org.apache.sis.metadata.iso.distribution;
 
 import java.util.Date;
 import java.util.Currency;
+import java.time.temporal.Temporal;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -29,8 +30,7 @@ import org.opengis.metadata.distribution.StandardOrderProcess;
 import org.apache.sis.xml.bind.gco.GO_RecordType;
 import org.apache.sis.xml.bind.gco.GO_Record;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import static org.apache.sis.metadata.privy.ImplementationHelper.toDate;
-import static org.apache.sis.metadata.privy.ImplementationHelper.toMilliseconds;
+import org.apache.sis.util.privy.TemporalDate;
 
 // Specific to the main branch:
 import org.opengis.annotation.UML;
@@ -55,7 +55,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Touraïvane (IRD)
  * @author  Cédric Briançon (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @XmlType(name = "MD_StandardOrderProcess_Type", propOrder = {
@@ -71,7 +71,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 1948951192071039775L;
+    private static final long serialVersionUID = 3044160895750125764L;
 
     /**
      * Fees and terms for retrieving the resource.
@@ -86,10 +86,10 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     private Currency currency;
 
     /**
-     * Date and time when the dataset will be available,
-     * in milliseconds elapsed since January 1st, 1970.
+     * Date and time when the dataset will be available.
      */
-    private long plannedAvailableDateTime = Long.MIN_VALUE;
+    @SuppressWarnings("serial")     // Standard Java implementations are serializable.
+    private Temporal plannedAvailableDateTime;
 
     /**
      * General instructions, terms and services provided by the distributor.
@@ -134,7 +134,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
         super(object);
         if (object != null) {
             fees                     = object.getFees();
-            plannedAvailableDateTime = toMilliseconds(object.getPlannedAvailableDateTime());
+            plannedAvailableDateTime = TemporalDate.toTemporal(object.getPlannedAvailableDateTime());
             orderingInstructions     = object.getOrderingInstructions();
             turnaround               = object.getTurnaround();
             if (object instanceof DefaultStandardOrderProcess) {
@@ -240,7 +240,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
     @Override
     @XmlElement(name = "plannedAvailableDateTime")
     public Date getPlannedAvailableDateTime() {
-        return toDate(plannedAvailableDateTime);
+        return TemporalDate.toDate(plannedAvailableDateTime);
     }
 
     /**
@@ -250,7 +250,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      */
     public void setPlannedAvailableDateTime(final Date newValue) {
         checkWritePermission(plannedAvailableDateTime);
-        plannedAvailableDateTime = toMilliseconds(newValue);
+        plannedAvailableDateTime = TemporalDate.toTemporal(newValue);
     }
 
     /**

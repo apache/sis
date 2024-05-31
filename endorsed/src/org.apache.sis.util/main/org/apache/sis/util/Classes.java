@@ -539,9 +539,9 @@ next:       for (final Class<?> candidate : candidates) {
     }
 
     /**
-     * Returns the most specific class implemented by the objects in the given collection.
-     * If there is more than one specialized class, returns their {@linkplain #findCommonClass
-     * most specific common super class}.
+     * Returns the most specific class of the objects in the given collection.
+     * If there is more than one specialized class,
+     * returns their {@linkplain #findCommonClass most specific common super class}.
      *
      * <p>This method searches for classes only, not interfaces.</p>
      *
@@ -653,7 +653,7 @@ next:       for (final Class<?> candidate : candidates) {
             return Collections.emptySet();
         }
         interfaces.retainAll(buffer);
-        for (Iterator<Class<?>> it=interfaces.iterator(); it.hasNext();) {
+        for (Iterator<Class<?>> it = interfaces.iterator(); it.hasNext();) {
             final Class<?> candidate = it.next();
             buffer.clear();     // Safe because the buffer cannot be Collections.EMPTY_SET at this point.
             getInterfaceSet(candidate, buffer);
@@ -729,29 +729,25 @@ cmp:    for (final Class<?> c : c1) {
      *     <th>{@code getSimpleName()}</th>
      *     <th>{@code getCanonicalName()}</th>
      *     <th>{@code getShortName()}</th>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@link String}</td>
      *     <td>{@code "java.lang.String"}</td>
      *     <td>{@code "String"}</td>
      *     <td>{@code "java.lang.String"}</td>
      *     <td>{@code "String"}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@code double[]}</td>
      *     <td>{@code "[D"}</td>
      *     <td>{@code "double[]"}</td>
      *     <td>{@code "double[]"}</td>
      *     <td>{@code "double[]"}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>{@link java.awt.geom.Point2D.Double}</td>
      *     <td>{@code "java.awt.geom.Point2D$Double"}</td>
      *     <td>{@code "Double"}</td>
      *     <td>{@code "java.awt.geom.Point2D.Double"}</td>
      *     <td>{@code "Point2D.Double"}</td>
-     *   </tr>
-     *   <tr>
+     *   </tr><tr>
      *     <td>Anonymous {@link Comparable}</td>
      *     <td>{@code "com.mycompany.myclass$1"}</td>
      *     <td>{@code ""}</td>

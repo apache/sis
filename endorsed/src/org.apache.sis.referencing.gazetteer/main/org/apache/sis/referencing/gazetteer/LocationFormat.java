@@ -27,7 +27,6 @@ import java.text.Format;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
-import java.time.Instant;
 import javax.measure.Unit;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
@@ -180,8 +179,8 @@ public class LocationFormat extends TabularFormat<AbstractLocation> {
     /**
      * Returns a localized version of the given date, or {@code null} if none.
      */
-    private String toString(final Instant date) {
-        return (date != null) ? getFormat(Date.class).format(Date.from(date)) : null;
+    private String toString(final Date date) {
+        return (date != null) ? getFormat(Date.class).format(date) : null;
     }
 
     /**
@@ -238,7 +237,7 @@ public class LocationFormat extends TabularFormat<AbstractLocation> {
          * the axis order of the geographic bounding box.
          */
         final Extent extent = new DefaultExtent(null, location.getGeographicExtent(), null, location.getTemporalExtent());
-        final Range<Instant> time = Extents.getTimeRange(extent, null).orElse(null);
+        final Range<Date> time = Extents.getTimeRange(extent);
         if (time != null) {
             append(table, vocabulary, Vocabulary.Keys.StartDate, toString(time.getMinValue()));
             append(table, vocabulary, Vocabulary.Keys.EndDate,   toString(time.getMaxValue()));

@@ -153,8 +153,9 @@ public final class ExtentSelectorTest extends TestCase {
         final var bbox = new DefaultGeographicBoundingBox(
                 largeArea ? -20 : -10, 10,
                 largeArea ?  10 :  20, 30);
-        final var range = new DefaultTemporalExtent();
-        range.setBounds(Instant.ofEpochMilli(startTime), Instant.ofEpochMilli(endTime));
+        final var range = new DefaultTemporalExtent(
+                Instant.ofEpochMilli(startTime),
+                Instant.ofEpochMilli(endTime));
         return new DefaultExtent(null, bbox, null, range);
     }
 

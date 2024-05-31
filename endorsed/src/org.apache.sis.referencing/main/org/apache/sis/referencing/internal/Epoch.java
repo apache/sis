@@ -69,9 +69,9 @@ public final class Epoch extends FormattableObject {
                 epoch = ((YearMonth) epoch).atDay(1);
                 fractionDigits = 2;
             } else if (epoch.isSupported(ChronoField.NANO_OF_DAY)) {
-                day = epoch.getLong(ChronoField.NANO_OF_DAY);
-                day /= (double) Constants.NANOSECONDS_PER_DAY;
-                fractionDigits = (epoch.get(ChronoField.NANO_OF_SECOND) != 0) ? 16 : 8;
+                final long nano = epoch.getLong(ChronoField.NANO_OF_DAY);
+                day = nano / (double) Constants.NANOSECONDS_PER_DAY;
+                fractionDigits = ((nano % Constants.NANOS_PER_SECOND) != 0) ? 16 : 8;
             }
             day += epoch.get(ChronoField.DAY_OF_YEAR) - 1;
             value = year + day / Year.of(year).length();

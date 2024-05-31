@@ -16,7 +16,7 @@
  */
 package org.apache.sis.pending.geoapi.temporal;
 
-import java.time.Instant;
+import java.time.temporal.Temporal;
 import org.opengis.temporal.TemporalPrimitive;
 
 
@@ -33,12 +33,12 @@ public interface Period extends TemporalPrimitive {
      *
      * @return The beginning instant.
      */
-    Instant getBeginning();
+    Temporal getBeginning();
 
     /**
      * Links this period to the instant at which it ends.
      *
      * @return The end instant.
      */
-    Instant getEnding();
+    Temporal getEnding();
 }

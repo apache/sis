@@ -57,11 +57,11 @@ public final class TemporalAdapter extends XmlAdapter<XMLGregorianCalendar, Temp
      */
     @Override
     public XMLGregorianCalendar marshal(final Temporal value) {
-        try {
+        if (value != null) try {
             return XmlUtilities.toXML(Context.current(), value);
         } catch (DatatypeConfigurationException e) {
             Context.warningOccured(Context.current(), TemporalAdapter.class, "marshal", e, true);
-            return null;
         }
+        return null;
     }
 }

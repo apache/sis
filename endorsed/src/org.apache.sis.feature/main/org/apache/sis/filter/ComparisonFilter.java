@@ -64,6 +64,8 @@ import org.apache.sis.pending.geoapi.filter.BetweenComparisonOperator;
  * returning 0 if {@code false} or 1 if {@code true}. Comparisons of other types is done by overriding
  * the {@code compare(…)} methods.</p>
  *
+ * @todo Delegate all comparisons of temporal objects to {@link TemporalFilter}.
+ *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  *
@@ -230,6 +232,8 @@ abstract class ComparisonFilter<R> extends BinaryFunction<R,Object,Object>
      *
      * @param  left   the first object to compare. Must be non-null.
      * @param  right  the second object to compare. Must be non-null.
+     *
+     * @todo Delegate all comparisons of temporal objects to {@link TemporalFilter}.
      */
     private boolean evaluate(Object left, Object right) {
         /*

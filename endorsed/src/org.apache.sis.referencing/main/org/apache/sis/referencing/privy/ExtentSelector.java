@@ -16,15 +16,19 @@
  */
 package org.apache.sis.referencing.privy;
 
-import java.time.Instant;
+import java.util.Date;
 import java.time.Duration;
+import java.time.DateTimeException;
+import java.time.temporal.Temporal;
+import java.time.temporal.ChronoField;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Range;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.pending.jdk.JDK23;
+import org.apache.sis.util.privy.TemporalDate;
+import org.apache.sis.util.privy.Constants;
 
 
 /**
@@ -86,7 +90,7 @@ public final class ExtentSelector<T> {
      * The area of interest (AOI), or {@code null} if unbounded.
      * This is initialized at construction time, but can be modified later.
      *
-     * @see #setExtentOfInterest(Extent, GeographicBoundingBox, Instant[])
+     * @see #setExtentOfInterest(Extent, GeographicBoundingBox, Temporal[])
      */
     private GeographicBoundingBox areaOfInterest;
 
@@ -94,9 +98,9 @@ public final class ExtentSelector<T> {
      * Start/end of the time of interest (TOI), or {@code null} if unbounded.
      * This is initialized at construction time, but can be modified later.
      *
-     * @see #setExtentOfInterest(Extent, GeographicBoundingBox, Instant[])
+     * @see #setExtentOfInterest(Extent, GeographicBoundingBox, Temporal[])
      */
-    private Instant minTOI, maxTOI;
+    private Temporal minTOI, maxTOI;
 
     /**
      * Granularity of the time of interest in seconds, or 0 if none.
@@ -180,7 +184,7 @@ public final class ExtentSelector<T> {
      * @param  toi  the time of interest, or {@code null} or empty if unbounded.
      *              The first element is start time and the last element is end time.
      */
-    public ExtentSelector(final GeographicBoundingBox aoi, final Instant[] toi) {
+    public ExtentSelector(final GeographicBoundingBox aoi, final Temporal[] toi) {
         areaOfInterest = aoi;
         final int n;
         if (toi != null && (n = toi.length) != 0) {
@@ -218,24 +222,25 @@ public final class ExtentSelector<T> {
      *                 If array length is 0 or array reference is null, there is no temporal range to intersect.
      * @return whether the intersections of {@code domain} with {@code aoi} and {@code toi} have valid ranges.
      */
-    public final boolean setExtentOfInterest(final Extent domain, final GeographicBoundingBox aoi, final Instant[] toi) {
+    public final boolean setExtentOfInterest(final Extent domain, final GeographicBoundingBox aoi, final Temporal[] toi) {
         areaOfInterest = Extents.intersection(aoi, Extents.getGeographicBoundingBox(domain));
         minTOI = maxTOI = null;
-        Extents.getTimeRange(domain, null).ifPresent((tr) -> {
-            minTOI = tr.getMinValue();
-            maxTOI = tr.getMaxValue();
-        });
+        final Range<Date> tr = Extents.getTimeRange(domain);
+        if (tr != null) {
+            minTOI = TemporalDate.toTemporal(tr.getMinValue());
+            maxTOI = TemporalDate.toTemporal(tr.getMaxValue());
+        }
         if (toi != null && toi.length != 0) {
-            Instant t = toi[0];
-            if (minTOI == null || (t != null && t.isAfter(minTOI))) {
-                minTOI = t;
+            Temporal t = toi[0];
+            if (minTOI == null || (t != null && TemporalDate.compare(t, minTOI) > 0)) {
+                minTOI = t;     // `t` is after `minTOI`: reduce the range to intersection.
             }
             if (toi.length >= 2) t = toi[1];
-            if (maxTOI == null || (t != null && t.isBefore(maxTOI))) {
-                maxTOI = t;
+            if (maxTOI == null || (t != null && TemporalDate.compare(t, maxTOI) < 0)) {
+                maxTOI = t;     // `t` is before `maxTOI`: reduce the range to intersection.
             }
         }
-        return (minTOI == null || maxTOI == null || !minTOI.isAfter(maxTOI)) &&
+        return (minTOI == null || maxTOI == null || TemporalDate.compare(minTOI, maxTOI) <= 0) &&
                 ((areaOfInterest == null) ||
                     (areaOfInterest.getNorthBoundLatitude() >= areaOfInterest.getSouthBoundLatitude()
                         && Double.isFinite(areaOfInterest.getWestBoundLongitude())
@@ -257,8 +262,8 @@ public final class ExtentSelector<T> {
      *
      * @return the start time and end time of interest, or {@code null} if none.
      */
-    public final Instant[] getTimeOfInterest() {
-        return (minTOI == null && maxTOI == null) ? null : new Instant[] {minTOI, maxTOI};
+    public final Temporal[] getTimeOfInterest() {
+        return (minTOI == null && maxTOI == null) ? null : new Temporal[] {minTOI, maxTOI};
     }
 
     /**
@@ -290,13 +295,12 @@ public final class ExtentSelector<T> {
     private Duration round(Duration duration) {
         if (duration != null && !duration.isZero() && granularity != 0) {
             long t = duration.getSeconds();
-            long n = t / granularity;
             long r = t % granularity;
             if (r != 0) {
                 t -= r;
                 if (t == 0 || r >= (granularity >> 1)) {
                     t += granularity;
-                };
+                }
                 duration = Duration.ofSeconds(t);
             }
         }
@@ -336,21 +340,33 @@ public final class ExtentSelector<T> {
      *
      * @see #temporalDistance
      */
-    private double temporalDistance(final Instant startTime, final Instant endTime) {
+    private double temporalDistance(final Temporal startTime, final Temporal endTime) {
         return Math.abs(median(startTime, endTime) - median(minTOI, maxTOI));
     }
 
     /**
      * Returns instant (in milliseconds) in the middle of given time range, or {@link Double#NaN} if none.
-     * Used for {@link #temporalDistance(Instant, Instant)} implementation only.
+     * Used for {@link #temporalDistance(Temporal, Temporal)} implementation only.
+     *
+     * @throws DateTimeException if the distance cannot be computed between the given objects.
      */
-    private static double median(final Instant startTime, final Instant endTime) {
-        if (startTime != null) {
-            final long t = startTime.toEpochMilli();
-            return (endTime != null) ? MathFunctions.average(t, endTime.toEpochMilli()) : t;
-        } else {
-            return (endTime != null) ? endTime.toEpochMilli() : Double.NaN;
+    private static double median(Temporal tmin, Temporal tmax) {
+        if (tmin == null) {
+            if (tmax == null) {
+                return Double.NaN;
+            }
+            tmin = tmax;
+        } else if (tmax == null) {
+            tmax = tmin;
         }
+        final long t0 = tmin.getLong(ChronoField.INSTANT_SECONDS);
+        final long n0 = tmin.getLong(ChronoField.NANO_OF_SECOND);
+        if (tmax != tmin) {
+            final long t1 = tmax.getLong(ChronoField.INSTANT_SECONDS);
+            final long n1 = tmax.getLong(ChronoField.NANO_OF_SECOND);
+            return MathFunctions.average(t0, t1) + MathFunctions.average(n0, n1) / Constants.NANOS_PER_SECOND;
+        }
+        return t0 + n0 / (double) Constants.NANOS_PER_SECOND;
     }
 
     /**
@@ -362,25 +378,27 @@ public final class ExtentSelector<T> {
      * @param  endTime       end time of the candidate object, or {@code null} if none (unbounded).
      * @param  intersection  duration of the intersection of [{@code startTime} … {@code endTime}]
      *                       with [{@link #minTOI} … {@link #maxTOI}].
+     * @throws DateTimeException if the duration cannot be computed between the given objects.
      */
-    private Duration overtime(final Instant startTime, final Instant endTime, final Duration intersection) {
+    private Duration overtime(final Temporal startTime, final Temporal endTime, final Duration intersection) {
         return (startTime != null && endTime != null && intersection != null)
-                ? round(JDK23.until(startTime, endTime).minus(intersection)) : null;
+                ? round(Duration.between(startTime, endTime).minus(intersection)) : null;
     }
 
     /**
      * Evaluates the given extent against the criteria represented by this {@code ExtentSelector}.
      * See class javadoc for a list of criteria and the order in which they are applied.
-     * Implementation delegates to {@link #evaluate(GeographicBoundingBox, Instant, Instant, Object)}.
+     * Implementation delegates to {@link #evaluate(GeographicBoundingBox, Temporal, Temporal, Object)}.
      *
      * @param  domain  the extent to evaluate, or {@code null} if none.
      * @param  object  a user object associated to the given extent.
+     * @throws DateTimeException if this method cannot perform temporal calculation between the given objects.
      */
     public void evaluate(final Extent domain, final T object) {
-        final Range<Instant> tr = Extents.getTimeRange(domain, null).orElse(null);
+        final Range<Date> tr = Extents.getTimeRange(domain);
         evaluate(Extents.getGeographicBoundingBox(domain),
-                 (tr != null) ? tr.getMinValue() : null,
-                 (tr != null) ? tr.getMaxValue() : null,
+                 (tr != null) ? TemporalDate.toTemporal(tr.getMinValue()) : null,
+                 (tr != null) ? TemporalDate.toTemporal(tr.getMaxValue()) : null,
                  object);
     }
 
@@ -392,21 +410,22 @@ public final class ExtentSelector<T> {
      * @param  startTime  start time of {@code object}, or {@code null} if none (unbounded).
      * @param  endTime    end time of {@code object}, or {@code null} if none (unbounded).
      * @param  object     a user object associated to the given extent.
+     * @throws DateTimeException if this method cannot perform temporal calculation between the given objects.
      */
     @SuppressWarnings("fallthrough")
-    public void evaluate(final GeographicBoundingBox bbox, final Instant startTime, final Instant endTime, final T object) {
+    public void evaluate(final GeographicBoundingBox bbox, final Temporal startTime, final Temporal endTime, final T object) {
         /*
          * Get the geographic and temporal intersections. If there is no intersection, no more analysis is done.
          * Note that the intersection is allowed to be zero (empty), which is not the same as no intersection.
          * An empty intersection may happen if the AOI is a single point or the TOI is a single instant.
          */
-        Instant tmin = startTime;
-        Instant tmax = endTime;
-        if (tmin != null && minTOI != null && tmin.isBefore(minTOI)) tmin = minTOI;
-        if (tmax != null && maxTOI != null && tmax.isAfter (maxTOI)) tmax = maxTOI;
+        Temporal tmin = startTime;
+        Temporal tmax = endTime;
+        if (tmin != null && minTOI != null && TemporalDate.compare(tmin, minTOI) < 0) tmin = minTOI;
+        if (tmax != null && maxTOI != null && TemporalDate.compare(tmax, maxTOI) > 0) tmax = maxTOI;
         final Duration duration;
         if (tmin != null && tmax != null) {
-            duration = JDK23.until(tmin, tmax);
+            duration = Duration.between(tmin, tmax);
             if (duration.isNegative()) return;
         } else {
             duration = null;

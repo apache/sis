@@ -16,7 +16,7 @@
  */
 package org.apache.sis.xml.bind.gml;
 
-import java.time.Instant;
+import java.time.temporal.Temporal;
 import javax.xml.datatype.XMLGregorianCalendar;
 import jakarta.xml.bind.annotation.XmlValue;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -98,7 +98,7 @@ public abstract class TimePeriodBound {
          * @param instant        the instant of the new bound, or {@code null}.
          * @param indeterminate  the value to give to {@link #indeterminatePosition} if the date is null.
          */
-        GML3(final Instant instant, final String indeterminate) {
+        GML3(final Temporal instant, final String indeterminate) {
             value = TimeInstant.toXML(instant);
             if (value == null) {
                 indeterminatePosition = indeterminate;
@@ -154,7 +154,7 @@ public abstract class TimePeriodBound {
          *
          * @param instant The instant of the new bound, or {@code null}.
          */
-        GML2(final Instant instant) {
+        GML2(final Temporal instant) {
             timeInstant = new TimeInstant(instant);
         }
 

@@ -91,7 +91,8 @@ public class GO_DateTime extends XmlAdapter<GO_DateTime, Date> {
         try {
             final XMLGregorianCalendar gc = XmlUtilities.toXML(context, date);
             if (Context.isFlagSet(context, Context.LEGACY_METADATA)) {
-                if (XmlUtilities.trimTime(gc, false)) {
+                XmlUtilities.trimTime(gc, false);
+                if (gc.getHour() == DatatypeConstants.FIELD_UNDEFINED) {
                     this.date = gc;
                 } else {
                     dateTime = gc;

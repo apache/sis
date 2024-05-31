@@ -18,6 +18,7 @@ package org.apache.sis.metadata.iso.citation;
 
 import java.util.Date;
 import java.util.Collection;
+import java.time.temporal.Temporal;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -35,11 +36,10 @@ import org.apache.sis.xml.IdentifierMap;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.NonMarshalledAuthority;
 import org.apache.sis.xml.privy.LegacyNamespaces;
+import org.apache.sis.util.privy.TemporalDate;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
-import static org.apache.sis.metadata.privy.ImplementationHelper.toDate;
-import static org.apache.sis.metadata.privy.ImplementationHelper.toMilliseconds;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.metadata.citation.ResponsibleParty;
@@ -77,7 +77,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.4
+ * @version 1.5
  * @since   0.3
  */
 @TitleProperty(name = "title")
@@ -103,7 +103,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 3490090845236158848L;
+    private static final long serialVersionUID = -758307311682907327L;
 
     /**
      * Name by which the cited resource is known.
@@ -131,10 +131,10 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     private InternationalString edition;
 
     /**
-     * Date of the edition in milliseconds elapsed sine January 1st, 1970,
-     * or {@link Long#MIN_VALUE} if none.
+     * Date of the edition.
      */
-    private long editionDate = Long.MIN_VALUE;
+    @SuppressWarnings("serial")     // Standard Java implementations are serializable.
+    private Temporal editionDate;
 
     /**
      * Roles, Name, contact, and position information for an individual or organization that is responsible
@@ -211,6 +211,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      *
      * @see #castOrCopy(Citation)
      */
+    @SuppressWarnings("this-escape")
     public DefaultCitation(final Citation object) {
         super(object);
         if (object != null) {
@@ -218,7 +219,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
             alternateTitles         = copyCollection(object.getAlternateTitles(), InternationalString.class);
             dates                   = copyCollection(object.getDates(), CitationDate.class);
             edition                 = object.getEdition();
-            editionDate             = toMilliseconds(object.getEditionDate());
+            editionDate             = TemporalDate.toTemporal(object.getEditionDate());
             identifiers             = copyCollection(object.getIdentifiers(), Identifier.class);
             citedResponsibleParties = copyCollection(object.getCitedResponsibleParties(), ResponsibleParty.class);
             presentationForms       = copyCollection(object.getPresentationForms(), PresentationForm.class);
@@ -358,7 +359,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     @Override
     @XmlElement(name = "editionDate")
     public Date getEditionDate() {
-        return toDate(editionDate);
+        return TemporalDate.toDate(editionDate);
     }
 
     /**
@@ -367,8 +368,8 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * @param  newValue  the new edition date, or {@code null} if none.
      */
     public void setEditionDate(final Date newValue) {
-        checkWritePermission(toDate(editionDate));
-        editionDate = toMilliseconds(newValue);
+        checkWritePermission(editionDate);
+        editionDate = TemporalDate.toTemporal(newValue);
     }
 
     /**

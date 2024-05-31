@@ -35,6 +35,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.privy.TemporalDate;
 import org.apache.sis.metadata.privy.Identifiers;
 import org.apache.sis.metadata.privy.NameToIdentifier;
 import org.apache.sis.metadata.privy.ImplementationHelper;
@@ -521,7 +522,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     private void setRealizationEpoch(final Date value) {
         if (anchorEpoch == null) {
-            anchorEpoch = value.toInstant();
+            anchorEpoch = TemporalDate.toTemporal(value);
         } else {
             ImplementationHelper.propertyAlreadySet(AbstractDatum.class, "setRealizationEpoch", "realizationEpoch");
         }

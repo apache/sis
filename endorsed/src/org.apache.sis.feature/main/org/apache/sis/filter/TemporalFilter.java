@@ -16,7 +16,8 @@
  */
 package org.apache.sis.filter;
 
-import java.time.Instant;
+import org.apache.sis.util.Classes;
+import org.apache.sis.feature.privy.FeatureExpression;
 
 // Specific to the main branch:
 import org.apache.sis.pending.geoapi.temporal.Period;
@@ -24,63 +25,148 @@ import org.apache.sis.pending.geoapi.filter.TemporalOperatorName;
 
 
 /**
- * Temporal operations between a period and an instant.
- * The nature of the operation depends on the subclass.
- * Subclasses shall override at least one of following methods:
- *
- * <ul>
- *   <li>{@link #evaluate(Instant, Instant)}</li>
- *   <li>{@link #evaluate(Period, Instant)}</li>
- *   <li>{@link #evaluate(Period, Period)}</li>
- * </ul>
+ * Temporal operations between a period and an instant or between two periods.
+ * The base class represents the general case when don't know if the the argument are periods or not.
+ * The subclasses represent specializations when at least one of the arguments is known to be a period.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  *
- * @param  <T>  the type of resources (e.g. {@code Feature}) used as inputs.
+ * @param  <R>  the type of resources (e.g. {@code Feature}) used as inputs.
+ * @param  <T>  the base type of temporal objects, or {@code Object.class} for any type.
  */
-abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
-        implements Filter<T>, Optimization.OnFilter<T>
+class TemporalFilter<R,T> extends BinaryFunction<R,T,T>
+        implements Filter<R>, Optimization.OnFilter<R>
 {
     /**
      * For cross-version compatibility.
      */
-    private static final long serialVersionUID = 5392780837658687513L;
+    private static final long serialVersionUID = 8248634286785309435L;
+
+    /**
+     * The operation to apply on instants or periods.
+     */
+    protected final TemporalOperation<T> operation;
+
+    /**
+     * Creates a new temporal function.
+     *
+     * @param  operation    the operation to apply on instants or periods.
+     * @param  expression1  the first of the two expressions to be used by this function.
+     * @param  expression2  the second of the two expressions to be used by this function.
+     */
+    private TemporalFilter(final TemporalOperation<T> operation,
+                           final Expression<R, ? extends T> expression1,
+                           final Expression<R, ? extends T> expression2)
+    {
+        super(expression1, expression2);
+        this.operation = operation;
+    }
 
     /**
      * Creates a new temporal function.
      *
      * @param  expression1  the first of the two expressions to be used by this function.
      * @param  expression2  the second of the two expressions to be used by this function.
+     * @param  operation    the operation to apply on instants or periods.
      */
-    TemporalFilter(final Expression<T,?> expression1,
-                   final Expression<T,?> expression2)
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    public static <R,V> TemporalFilter<R,?> create(
+            final Class<V> type,
+            final TemporalOperation.Factory factory,
+            final Expression<R, ? extends V> expression1,
+            final Expression<R, ? extends V> expression2)
     {
-        super(expression1, expression2);
+        final Class<? extends V> c1 = getValueClass(expression1, type);
+        final Class<? extends V> c2 = getValueClass(expression2, type);
+        Class<? extends V> commonType = type;
+        if (type.isInterface()) {
+            for (final Class<?> c : Classes.findCommonInterfaces(c1, c2)) {
+                if (commonType.isAssignableFrom(c)) {
+                    commonType = (Class<? extends V>) c;        // Safe because verified by `isAssignableFrom(c)`.
+                }
+            }
+        } else {
+            final Class<?> c = Classes.findCommonClass(c1, c2);
+            if (commonType.isAssignableFrom(c)) {
+                commonType = (Class<? extends V>) c;            // Safe because verified by `isAssignableFrom(c)`.
+            }
+        }
+        /*
+         * We cannot use a more specific type here because the `find(…)` method argument is parameterized
+         * with `<? extends T>` while its return value is parameterized with `<? super T>`. Java language
+         * has no parameterized type that can express those conflicting covariance and contra-variance,
+         * therefore we must use `<?>`.
+         *
+         * Creations of `TemporalFilter` instances below are safe because `TimeMethods.type` is a parent
+         * of both `expression1` and `expression2` value types (verified by assertions). Therefore, with
+         * `commonType` of type `Class<T>` no matter if <T> is a super-type or a sub-type of <V>, we can
+         * assert that the parmeterized type of the two expressions is `<? extends T>`.
+         */
+        final TemporalOperation<?> operation = factory.create(TimeMethods.find(commonType)).unique();
+        assert operation.comparators.type.isAssignableFrom(commonType) : commonType;
+        assert commonType.isAssignableFrom(c1) : c1;
+        assert commonType.isAssignableFrom(c2) : c2;
+        if (Period.class.isAssignableFrom(commonType)) {
+            // Safe because `commonType` extends both Period and T.
+            return new Periods(operation, expression1, expression2);
+        }
+        if (operation.comparators.isDynamic()) {
+            return new TemporalFilter(operation, expression1, expression2);
+        }
+        return new Instants(operation, expression1, expression2);
     }
 
     /**
-     * Returns {@code true} if {@code self} is non null and before {@code other}.
-     * This is an helper function for {@code evaluate(…)} methods implementations.
+     * Returns the class of values computed by the given expression, or {@code type} if unknown.
      */
-    private static boolean isBefore(final Instant self, final Instant other) {
-        return (self != null) && (other != null) && self.isBefore(other);
+    @SuppressWarnings("unchecked")
+    private static <T> Class<? extends T> getValueClass(final Expression<?,? extends T> e, final Class<T> type) {
+        if (e instanceof FeatureExpression<?,?>) {
+            final Class<?> c = ((FeatureExpression<?, ? extends T>) e).getValueClass();
+            if (type.isAssignableFrom(c)) {
+                return (Class<? extends T>) c;
+            }
+        }
+        return type;
     }
 
     /**
-     * Returns {@code true} if {@code self} is non null and after {@code other}.
-     * This is an helper function for {@code evaluate(…)} methods implementations.
+     * Returns an identification of this operation.
      */
-    private static boolean isAfter(final Instant self, final Instant other) {
-        return (self != null) && (other != null) && self.isAfter(other);
+    @Override
+    public final TemporalOperatorName getOperatorType() {
+        return operation.getOperatorType();
     }
 
     /**
-     * Returns {@code true} if {@code self} is non null and equal to {@code other}.
-     * This is an helper function for {@code evaluate(…)} methods implementations.
+     * Returns the mathematical symbol for this temporal operation.
+     *
+     * @return the mathematical symbol, or 0 if none.
      */
-    private static boolean isEqual(final Instant self, final Instant other) {
-        return (self != null) && self.equals(other);
+    @Override
+    protected final char symbol() {
+        return operation.symbol();
+    }
+
+    /**
+     * Casts an expression returning values of unknown type.
+     * This is an helper function for {@code recreate(…)} method implementations.
+     *
+     * @param  effective  the expression to cast.
+     * @return an expression that can be used with this temporal filter.
+     * @throws ClassCastException if the expression cannot be casted.
+     */
+    protected final Expression<R, ? extends T> cast(final Expression<R,?> effective) {
+        return effective.toValueType(operation.comparators.type);
+    }
+
+    /**
+     * Creates a new filter of the same type but different parameters.
+     */
+    @Override
+    public Filter<R> recreate(final Expression<R,?>[] effective) {
+        return new TemporalFilter<>(operation, cast(effective[0]), cast(effective[1]));
     }
 
     /**
@@ -88,679 +174,98 @@ abstract class TemporalFilter<T> extends BinaryFunction<T,Object,Object>
      * Values of {@link #expression1} and {@link #expression2} shall be two single values.
      */
     @Override
-    public final boolean test(final T candidate) {
-        final Object left = expression1.apply(candidate);
-        if (left instanceof Period) {
-            final Object right = expression2.apply(candidate);
-            if (right instanceof Period) {
-                return evaluate((Period) left, (Period) right);
-            }
-            final Instant t = ComparisonFilter.toInstant(right);
-            if (t != null) {
-                return evaluate((Period) left, t);
-            }
-        } else {
-            final Instant t = ComparisonFilter.toInstant(left);
-            if (t != null) {
-                final Instant t2 = ComparisonFilter.toInstant(expression2.apply(candidate));
-                if (t2 != null) {
-                    return evaluate(t, t2);
+    public boolean test(final R candidate) {
+        final T left = expression1.apply(candidate);
+        if (left != null) {
+            final T right = expression2.apply(candidate);
+            if (right != null) {
+                if (left instanceof Period) {
+                    if (right instanceof Period) {
+                        return operation.evaluate((Period) left, (Period) right);
+                    } else {
+                        return operation.evaluate((Period) left, right);
+                    }
+                } else if (right instanceof Period) {
+                    return operation.evaluate(left, (Period) right);
+                } else {
+                    return operation.evaluate(left, right);
                 }
             }
         }
         return false;
     }
 
-    /**
-     * Evaluates the filter between two instants.
-     * Both arguments given to this method are non-null.
-     * The {@code self} and {@code other} argument names are chosen to match ISO 19108 tables.
-     */
-    protected boolean evaluate(Instant self, Instant other) {
-        return false;
-    }
 
     /**
-     * Evaluates the filter between a period and an instant.
-     * Both arguments given to this method are non-null, but period begin or end instant may be null.
-     * The {@code self} and {@code other} argument names are chosen to match ISO 19108 tables.
-     */
-    protected boolean evaluate(Period self, Instant other) {
-        return false;
-    }
-
-    /**
-     * Evaluates the filter between two periods.
-     * Both arguments given to this method are non-null, but period begin or end instant may be null.
-     * The {@code self} and {@code other} argument names are chosen to match ISO 19108 tables.
-     */
-    protected boolean evaluate(Period self, Period other) {
-        return false;
-    }
-
-    /*
-     * No operation on numbers for now. We could revisit this policy in a future version if we
-     * allow the temporal function to have a CRS and to operate on temporal coordinate values.
-     */
-
-
-    /**
-     * The {@code "TEquals"} (=) filter. Defined by ISO 19108 as:
-     * <ul>
-     *   <li>{@literal self = other}</li>
-     *   <li>{@literal self.begin = other.begin  AND  self.end = other.end}</li>
-     * </ul>
+     * A temporal filters where both operands are ISO 19108 instants.
      *
-     * @param  <T>  the type of resources used as inputs.
+     * @param  <R>  the type of resources used as inputs.
+     * @param  <T>  the base type of temporal objects.
      */
-    static final class Equals<T> extends TemporalFilter<T> {
+    private static final class Instants<R,T> extends TemporalFilter<R,T> {
         /** For cross-version compatibility during (de)serialization. */
-        private static final long serialVersionUID = -6060822291802339424L;
+        private static final long serialVersionUID = -3176521794130878518L;
 
         /** Creates a new filter. */
-        Equals(Expression<T,?> expression1,
-               Expression<T,?> expression2)
+        Instants(TemporalOperation<T> operation,
+                 Expression<R, ? extends T> expression1,
+                 Expression<R, ? extends T> expression2)
         {
-            super(expression1, expression2);
+            super(operation, expression1, expression2);
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
-            return new Equals<>(effective[0], effective[1]);
+        @Override public Filter<R> recreate(final Expression<R,?>[] effective) {
+            return new Instants<>(operation, cast(effective[0]), cast(effective[1]));
         }
 
-        /** Identification of this operation. */
-        @Override public TemporalOperatorName getOperatorType() {
-            return TemporalOperatorName.EQUALS;
-        }
-
-        /** Symbol of this operation. */
-        @Override protected char symbol() {
-            return '=';
-        }
-
-        /** Condition defined by ISO 19108:2002 §5.2.3.5. */
-        @Override protected boolean evaluate(final Instant self, final Instant other) {
-            return self.equals(other);
-        }
-
-        /** Extension to ISO 19108: handle instant as a tiny period. */
-        @Override public boolean evaluate(final Period self, final Instant other) {
-            return isEqual(self.getBeginning(), other) &&
-                   isEqual(self.getEnding(),    other);
-        }
-
-        /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
-        @Override public boolean evaluate(final Period self, final Period other) {
-            return isEqual(self.getBeginning(), other.getBeginning()) &&
-                   isEqual(self.getEnding(),    other.getEnding());
+        /** Tests if this filter passes on the given resource. */
+        @Override public boolean test(final R candidate) {
+            final T left = expression1.apply(candidate);
+            if (left != null) {
+                final T right = expression2.apply(candidate);
+                if (right != null) {
+                    return operation.evaluate(left, right);
+                }
+            }
+            return false;
         }
     }
 
 
     /**
-     * The {@code "Before"} {@literal (<)} filter. Defined by ISO 19108 as:
-     * <ul>
-     *   <li>{@literal self     < other}</li>
-     *   <li>{@literal self.end < other}</li>
-     *   <li>{@literal self.end < other.begin}</li>
-     * </ul>
+     * A temporal filters where both operands are ISO 19108 periods.
      *
-     * @param  <T>  the type of resources used as inputs.
+     * @param  <R>  the type of resources used as inputs.
+     * @param  <T>  the base type of temporal objects.
      */
-    static final class Before<T> extends TemporalFilter<T> {
+    private static final class Periods<R, T extends Period> extends TemporalFilter<R,T> {
         /** For cross-version compatibility during (de)serialization. */
-        private static final long serialVersionUID = -3422629447456003982L;
+        private static final long serialVersionUID = 7570449007668484459L;
 
         /** Creates a new filter. */
-        Before(Expression<T,?> expression1,
-               Expression<T,?> expression2)
+        Periods(TemporalOperation<T> operation,
+                Expression<R, ? extends T> expression1,
+                Expression<R, ? extends T> expression2)
         {
-            super(expression1, expression2);
+            super(operation, expression1, expression2);
         }
 
         /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
-            return new Before<>(effective[0], effective[1]);
-        }
-
-        /** Identification of this operation. */
-        @Override public TemporalOperatorName getOperatorType() {
-            return TemporalOperatorName.BEFORE;
-        }
-
-        /** Symbol of this operation. */
-        @Override protected char symbol() {
-            return '<';
-        }
-
-        /** Condition defined by ISO 19108:2002 §5.2.3.5. */
-        @Override protected boolean evaluate(final Instant self, final Instant other) {
-            return self.isBefore(other);
-        }
-
-        /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
-        @Override public boolean evaluate(final Period self, final Instant other) {
-            return isBefore(self.getEnding(), other);
-        }
-
-        /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
-        @Override public boolean evaluate(final Period self, final Period other) {
-            return isBefore(self.getEnding(), other.getBeginning());
-        }
-    }
-
-
-    /**
-     * The {@code "After"} {@literal (>)} filter. Defined by ISO 19108 as:
-     * <ul>
-     *   <li>{@literal self       > other}</li>
-     *   <li>{@literal self.begin > other}</li>
-     *   <li>{@literal self.begin > other.end}</li>
-     * </ul>
-     *
-     * @param  <T>  the type of resources used as inputs.
-     */
-    static final class After<T> extends TemporalFilter<T> {
-        /** For cross-version compatibility during (de)serialization. */
-        private static final long serialVersionUID = 5410476260417497682L;
-
-        /** Creates a new filter. */
-        After(Expression<T,?> expression1,
-              Expression<T,?> expression2)
-        {
-            super(expression1, expression2);
-        }
-
-        /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
-            return new After<>(effective[0], effective[1]);
-        }
-
-        /** Identification of this operation. */
-        @Override public TemporalOperatorName getOperatorType() {
-            return TemporalOperatorName.AFTER;
-        }
-
-        /** Symbol of this operation. */
-        @Override protected char symbol() {
-            return '>';
-        }
-
-        /** Condition defined by ISO 19108:2002 §5.2.3.5. */
-        @Override protected boolean evaluate(final Instant self, final Instant other) {
-            return self.isAfter(other);
-        }
-
-        /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
-        @Override public boolean evaluate(final Period self, final Instant other) {
-            return isAfter(self.getBeginning(), other);
-        }
-
-        /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
-        @Override public boolean evaluate(final Period self, final Period other) {
-            return isAfter(self.getBeginning(), other.getEnding());
-        }
-    }
-
-
-    /**
-     * The {@code "Begins"} filter. Defined by ISO 19108 as:
-     * <ul>
-     *   <li>{@literal self.begin = other.begin  AND  self.end < other.end}</li>
-     * </ul>
-     *
-     * @param  <T>  the type of resources used as inputs.
-     */
-    static final class Begins<T> extends TemporalFilter<T> {
-        /** For cross-version compatibility during (de)serialization. */
-        private static final long serialVersionUID = -7880699329127762233L;
-
-        /** Creates a new filter. */
-        Begins(Expression<T,?> expression1,
-               Expression<T,?> expression2)
-        {
-            super(expression1, expression2);
-        }
-
-        /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
-            return new Begins<>(effective[0], effective[1]);
-        }
-
-        /** Identification of this operation. */
-        @Override public TemporalOperatorName getOperatorType() {
-            return TemporalOperatorName.BEGINS;
-        }
-
-        /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
-        @Override public boolean evaluate(final Period self, final Period other) {
-            return isEqual (self.getBeginning(), other.getBeginning()) &&
-                   isBefore(self.getEnding(),    other.getEnding());
-        }
-    }
-
-
-    /**
-     * The {@code "Ends"} filter. Defined by ISO 19108 as:
-     * <ul>
-     *   <li>{@literal self.begin > other.begin  AND  self.end = other.end}</li>
-     * </ul>
-     *
-     * @param  <T>  the type of resources used as inputs.
-     */
-    static final class Ends<T> extends TemporalFilter<T> {
-        /** For cross-version compatibility during (de)serialization. */
-        private static final long serialVersionUID = -5508229966320563437L;
-
-        /** Creates a new filter. */
-        Ends(Expression<T,?> expression1,
-             Expression<T,?> expression2)
-        {
-            super(expression1, expression2);
-        }
-
-        /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
-            return new Ends<>(effective[0], effective[1]);
-        }
-
-        /** Identification of this operation. */
-        @Override public TemporalOperatorName getOperatorType() {
-            return TemporalOperatorName.ENDS;
-        }
-
-        /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
-        @Override public boolean evaluate(final Period self, final Period other) {
-            return isEqual(self.getEnding(),    other.getEnding()) &&
-                   isAfter(self.getBeginning(), other.getBeginning());
-        }
-    }
-
-
-    /**
-     * The {@code "BegunBy"} filter. Defined by ISO 19108 as:
-     * <ul>
-     *   <li>{@literal self.begin = other}</li>
-     *   <li>{@literal self.begin = other.begin  AND  self.end > other.end}</li>
-     * </ul>
-     *
-     * @param  <T>  the type of resources used as inputs.
-     */
-    static final class BegunBy<T> extends TemporalFilter<T> {
-        /** For cross-version compatibility during (de)serialization. */
-        private static final long serialVersionUID = -7212413827394364384L;
-
-        /** Creates a new filter. */
-        BegunBy(Expression<T,?> expression1,
-                Expression<T,?> expression2)
-        {
-            super(expression1, expression2);
-        }
-
-        /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
-            return new BegunBy<>(effective[0], effective[1]);
-        }
-
-        /** Identification of this operation. */
-        @Override public TemporalOperatorName getOperatorType() {
-            return TemporalOperatorName.BEGUN_BY;
-        }
-
-        /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
-        @Override public boolean evaluate(final Period self, final Instant other) {
-            return isEqual(self.getBeginning(), other);
-        }
-
-        /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
-        @Override public boolean evaluate(final Period self, final Period other) {
-            return isEqual(self.getBeginning(), other.getBeginning()) &&
-                   isAfter(self.getEnding(),    other.getEnding());
-        }
-    }
-
-
-    /**
-     * The {@code "EndedBy"} filter. Defined by ISO 19108 as:
-     * <ul>
-     *   <li>{@literal self.end = other}</li>
-     *   <li>{@literal self.begin < other.begin  AND  self.end = other.end}</li>
-     * </ul>
-     *
-     * @param  <T>  the type of resources used as inputs.
-     */
-    static final class EndedBy<T> extends TemporalFilter<T> {
-        /** For cross-version compatibility during (de)serialization. */
-        private static final long serialVersionUID = 8586566103462153666L;
-
-        /** Creates a new filter. */
-        EndedBy(Expression<T,?> expression1,
-                Expression<T,?> expression2)
-        {
-            super(expression1, expression2);
-        }
-
-        /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
-            return new EndedBy<>(effective[0], effective[1]);
-        }
-
-        /** Identification of this operation. */
-        @Override public TemporalOperatorName getOperatorType() {
-            return TemporalOperatorName.ENDED_BY;
-        }
-
-        /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
-        @Override public boolean evaluate(final Period self, final Instant other) {
-            return isEqual(self.getEnding(), other);
-        }
-
-        /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
-        @Override public boolean evaluate(final Period self, final Period other) {
-            return isEqual (self.getEnding(),    other.getEnding()) &&
-                   isBefore(self.getBeginning(), other.getBeginning());
-        }
-    }
-
-
-    /**
-     * The {@code "Meets"} filter. Defined by ISO 19108 as:
-     * <ul>
-     *   <li>{@literal self.end = other.begin}</li>
-     * </ul>
-     *
-     * @param  <T>  the type of resources used as inputs.
-     */
-    static final class Meets<T> extends TemporalFilter<T> {
-        /** For cross-version compatibility during (de)serialization. */
-        private static final long serialVersionUID = -3534843269384858443L;
-
-        /** Creates a new filter. */
-        Meets(Expression<T,?> expression1,
-              Expression<T,?> expression2)
-        {
-            super(expression1, expression2);
-        }
-
-        /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
-            return new Meets<>(effective[0], effective[1]);
-        }
-
-        /** Identification of this operation. */
-        @Override public TemporalOperatorName getOperatorType() {
-            return TemporalOperatorName.MEETS;
-        }
-
-        /** Extension to ISO 19108: handle instant as a tiny period. */
-        @Override public boolean evaluate(final Instant self, final Instant other) {
-            return self.equals(other);
-        }
-
-        /** Extension to ISO 19108: handle instant as a tiny period. */
-        @Override public boolean evaluate(final Period self, final Instant other) {
-            return isEqual(self.getEnding(), other);
-        }
-
-        /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
-        @Override public boolean evaluate(final Period self, final Period other) {
-            return isEqual(self.getEnding(), other.getBeginning());
-        }
-    }
-
-
-    /**
-     * The {@code "MetBy"} filter. Defined by ISO 19108 as:
-     * <ul>
-     *   <li>{@literal self.begin = other.end}</li>
-     * </ul>
-     *
-     * @param  <T>  the type of resources used as inputs.
-     */
-    static final class MetBy<T> extends TemporalFilter<T> {
-        /** For cross-version compatibility during (de)serialization. */
-        private static final long serialVersionUID = 5358059498707330482L;
-
-        /** Creates a new filter. */
-        MetBy(Expression<T,?> expression1,
-              Expression<T,?> expression2)
-        {
-            super(expression1, expression2);
-        }
-
-        /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
-            return new MetBy<>(effective[0], effective[1]);
-        }
-
-        /** Identification of this operation. */
-        @Override public TemporalOperatorName getOperatorType() {
-            return TemporalOperatorName.MET_BY;
-        }
-
-        /** Extension to ISO 19108: handle instant as a tiny period. */
-        @Override public boolean evaluate(final Instant self, final Instant other) {
-            return self.equals(other);
-        }
-
-        /** Extension to ISO 19108: handle instant as a tiny period. */
-        @Override public boolean evaluate(final Period self, final Instant other) {
-            return isEqual(self.getBeginning(), other);
-        }
-
-        /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
-        @Override public boolean evaluate(final Period self, final Period other) {
-            return isEqual(self.getBeginning(), other.getEnding());
-        }
-    }
-
-
-    /**
-     * The {@code "During"} filter. Defined by ISO 19108 as:
-     * <ul>
-     *   <li>{@literal self.begin > other.begin  AND  self.end < other.end}</li>
-     * </ul>
-     *
-     * @param  <T>  the type of resources used as inputs.
-     */
-    static final class During<T> extends TemporalFilter<T> {
-        /** For cross-version compatibility during (de)serialization. */
-        private static final long serialVersionUID = -4674319635076886196L;
-
-        /** Creates a new filter. */
-        During(Expression<T,?> expression1,
-               Expression<T,?> expression2)
-        {
-            super(expression1, expression2);
-        }
-
-        /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
-            return new During<>(effective[0], effective[1]);
-        }
-
-        /** Identification of this operation. */
-        @Override public TemporalOperatorName getOperatorType() {
-            return TemporalOperatorName.DURING;
-        }
-
-        /** Symbol of this operation. */
-        @Override protected char symbol() {
-            return '⊊';         // `self` is a proper (or strict) subset of `other`.
-        }
-
-        /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
-        @Override public boolean evaluate(final Period self, final Period other) {
-            return isAfter (self.getBeginning(), other.getBeginning()) &&
-                   isBefore(self.getEnding(),    other.getEnding());
-        }
-    }
-
-
-    /**
-     * The {@code "TContains"} filter. Defined by ISO 19108 as:
-     * <ul>
-     *   <li>{@literal self.begin < other AND self.end > other}</li>
-     *   <li>{@literal self.begin < other.begin  AND  self.end > other.end}</li>
-     * </ul>
-     *
-     * @param  <T>  the type of resources used as inputs.
-     */
-    static final class Contains<T> extends TemporalFilter<T> {
-        /** For cross-version compatibility during (de)serialization. */
-        private static final long serialVersionUID = 9107531246948034411L;
-
-        /** Creates a new filter. */
-        Contains(Expression<T,?> expression1,
-                 Expression<T,?> expression2)
-        {
-            super(expression1, expression2);
-        }
-
-        /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
-            return new Contains<>(effective[0], effective[1]);
-        }
-
-        /** Identification of this operation. */
-        @Override public TemporalOperatorName getOperatorType() {
-            return TemporalOperatorName.CONTAINS;
-        }
-
-        /** Symbol of this operation. */
-        @Override protected char symbol() {
-            return '⊋';         // `self` is a proper (or strict) superset of `other`.
-        }
-
-        /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
-        @Override public boolean evaluate(final Period self, final Instant other) {
-            return isBefore(self.getBeginning(), other) &&
-                   isAfter (self.getEnding(),    other);
-        }
-
-        /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
-        @Override public boolean evaluate(final Period self, final Period other) {
-            return isBefore(self.getBeginning(), other.getBeginning()) &&
-                   isAfter (self.getEnding(),    other.getEnding());
-        }
-    }
-
-
-    /**
-     * The {@code "TOverlaps"} filter. Defined by ISO 19108 as:
-     * <ul>
-     *   <li>{@literal self.begin < other.begin  AND  self.end > other.begin  AND  self.end < other.end}</li>
-     * </ul>
-     *
-     * @param  <T>  the type of resources used as inputs.
-     */
-    static final class Overlaps<T> extends TemporalFilter<T> {
-        /** For cross-version compatibility during (de)serialization. */
-        private static final long serialVersionUID = 1517443045593389773L;
-
-        /** Creates a new filter. */
-        Overlaps(Expression<T,?> expression1,
-                 Expression<T,?> expression2)
-        {
-            super(expression1, expression2);
-        }
-
-        /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
-            return new Overlaps<>(effective[0], effective[1]);
-        }
-
-        /** Identification of this operation. */
-        @Override public TemporalOperatorName getOperatorType() {
-            return TemporalOperatorName.OVERLAPS;
-        }
-
-        /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
-        @Override public boolean evaluate(final Period self, final Period other) {
-            final Instant selfBegin, selfEnd, otherBegin, otherEnd;
-            return ((otherBegin = other.getBeginning()) != null) &&
-                   ((selfBegin  = self .getBeginning()) != null) && selfBegin.isBefore(otherBegin) &&
-                   ((selfEnd    = self .getEnding())    != null) && selfEnd  .isAfter (otherBegin) &&
-                   ((otherEnd   = other.getEnding())    != null) && otherEnd .isAfter (selfEnd);
-        }
-    }
-
-
-    /**
-     * The {@code "OverlappedBy"} filter. Defined by ISO 19108 as:
-     * <ul>
-     *   <li>{@literal self.begin > other.begin  AND  self.begin < other.end  AND  self.end > other.end}</li>
-     * </ul>
-     *
-     * @param  <T>  the type of resources used as inputs.
-     */
-    static final class OverlappedBy<T> extends TemporalFilter<T> {
-        /** For cross-version compatibility during (de)serialization. */
-        private static final long serialVersionUID = 2228673820507226463L;
-
-        /** Creates a new filter. */
-        OverlappedBy(Expression<T,?> expression1,
-                     Expression<T,?> expression2)
-        {
-            super(expression1, expression2);
-        }
-
-        /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
-            return new OverlappedBy<>(effective[0], effective[1]);
-        }
-
-        /** Identification of this operation. */
-        @Override public TemporalOperatorName getOperatorType() {
-            return TemporalOperatorName.OVERLAPPED_BY;
-        }
-
-        /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
-        @Override public boolean evaluate(final Period self, final Period other) {
-            final Instant selfBegin, selfEnd, otherBegin, otherEnd;
-            return ((selfBegin  = self .getBeginning()) != null) &&
-                   ((otherBegin = other.getBeginning()) != null) && otherBegin.isBefore(selfBegin) &&
-                   ((otherEnd   = other.getEnding())    != null) && selfBegin .isBefore(otherEnd)  &&
-                   ((selfEnd    = self .getEnding())    != null) && selfEnd   .isAfter (otherEnd);
-        }
-    }
-
-
-    /**
-     * The {@code "AnyInteracts"} filter.
-     * This is a shortcut for NOT (Before OR Meets OR MetBy OR After).
-     *
-     * @param  <T>  the type of resources used as inputs.
-     */
-    static final class AnyInteracts<T> extends TemporalFilter<T> {
-        /** For cross-version compatibility during (de)serialization. */
-        private static final long serialVersionUID = 5972351564286442392L;
-
-        /** Creates a new filter. */
-        AnyInteracts(Expression<T,?> expression1,
-                     Expression<T,?> expression2)
-        {
-            super(expression1, expression2);
-        }
-
-        /** Creates a new filter of the same type but different parameters. */
-        @Override public Filter<T> recreate(final Expression<T,?>[] effective) {
-            return new AnyInteracts<>(effective[0], effective[1]);
-        }
-
-        /** Identification of this operation. */
-        @Override public TemporalOperatorName getOperatorType() {
-            return TemporalOperatorName.ANY_INTERACTS;
-        }
-
-        /** Condition defined by OGC filter specification. */
-        @Override public boolean evaluate(final Period self, final Period other) {
-            final Instant selfBegin, selfEnd, otherBegin, otherEnd;
-            return ((selfBegin  = self .getBeginning()) != null) &&
-                   ((otherEnd   = other.getEnding())    != null) && selfBegin.isBefore(otherEnd) &&
-                   ((selfEnd    = self .getEnding())    != null) &&
-                   ((otherBegin = other.getBeginning()) != null) && selfEnd.isAfter(otherBegin);
+        @Override public Filter<R> recreate(final Expression<R,?>[] effective) {
+            return new Periods<>(operation, cast(effective[0]), cast(effective[1]));
+        }
+
+        /** Tests if this filter passes on the given resource. */
+        @Override public boolean test(final R candidate) {
+            final Period left = expression1.apply(candidate);
+            if (left != null) {
+                final Period right = expression2.apply(candidate);
+                if (right != null) {
+                    return operation.evaluate(left, right);
+                }
+            }
+            return false;
         }
     }
 }

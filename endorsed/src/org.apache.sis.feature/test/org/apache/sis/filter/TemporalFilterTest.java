@@ -16,17 +16,19 @@
  */
 package org.apache.sis.filter;
 
+import java.time.Instant;
+import org.apache.sis.geometry.WraparoundMethod;
 import static org.apache.sis.util.privy.Constants.MILLISECONDS_PER_DAY;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
-import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
+import org.apache.sis.pending.geoapi.temporal.Period;
 import org.apache.sis.pending.geoapi.filter.TemporalOperatorName;
 
 
@@ -40,7 +42,7 @@ public final class TemporalFilterTest extends TestCase {
     /**
      * The factory to use for creating the objects to test.
      */
-    private final DefaultFilterFactory<AbstractFeature,Object,Object> factory;
+    private DefaultFilterFactory<AbstractFeature, Object, ? super Period> factory;
 
     /**
      * The filter to test. This field shall be assigned by each {@code testFoo()} method by invoking
@@ -61,8 +63,8 @@ public final class TemporalFilterTest extends TestCase {
         factory = DefaultFilterFactory.forFeatures();
         expression1 = new PeriodLiteral();
         expression2 = new PeriodLiteral();
-        expression1.begin = expression2.begin = TestUtilities.date("2000-01-01 09:00:00").getTime();
-        expression1.end   = expression2.end   = TestUtilities.date("2000-01-05 10:00:00").getTime();
+        expression1.begin = expression2.begin = Instant.parse("2000-01-01T09:00:00Z").toEpochMilli();
+        expression1.end   = expression2.end   = Instant.parse("2000-01-05T10:00:00Z").toEpochMilli();
     }
 
     /**
@@ -124,6 +126,8 @@ public final class TemporalFilterTest extends TestCase {
 
     /**
      * Tests "After" (construction, evaluation, serialization, equality).
+     *
+     * @see #testOnPeriods()
      */
     @Test
     public void testAfter() {
@@ -341,5 +345,16 @@ public final class TemporalFilterTest extends TestCase {
         assertTrue(evaluate());
         expression1.end += 2;
         assertTrue(evaluate());
+    }
+
+    /**
+     * Re-test an arbitrary operation, but using a different factory.
+     * This test uses a factory specialized for the {@link Period} type
+     * in order to test a different code path.
+     */
+    @Test
+    public void testOnPeriods() {
+        factory = new DefaultFilterFactory.Features<>(Object.class, Period.class, WraparoundMethod.NONE);
+        testAfter();
     }
 }

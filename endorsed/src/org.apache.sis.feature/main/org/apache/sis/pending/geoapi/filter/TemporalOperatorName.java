@@ -25,4 +25,8 @@ package org.apache.sis.pending.geoapi.filter;
 public enum TemporalOperatorName {
     AFTER, BEFORE, BEGINS, BEGUN_BY, CONTAINS, DURING, EQUALS, OVERLAPS, MEETS, ENDS,
     OVERLAPPED_BY, MET_BY, ENDED_BY, ANY_INTERACTS;
+
+    public String identifier() {
+        return name().toLowerCase();
+    }
 }

@@ -120,6 +120,7 @@ module org.apache.sis.metadata {
             jakarta.xml.bind;                   // Seems ignored.
 
     exports org.apache.sis.xml.bind.gts to
+            org.glassfish.jaxb.runtime,         // TODO: need to export to Jakarta only.
             org.glassfish.jaxb.core,            // TODO: need to export to Jakarta only.
             jakarta.xml.bind;                   // Seems ignored.
 

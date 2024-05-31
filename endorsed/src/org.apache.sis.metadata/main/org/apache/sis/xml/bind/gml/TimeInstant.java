@@ -16,8 +16,7 @@
  */
 package org.apache.sis.xml.bind.gml;
 
-import java.util.Date;
-import java.time.Instant;
+import java.time.temporal.Temporal;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.datatype.DatatypeConfigurationException;
 import jakarta.xml.bind.annotation.XmlType;
@@ -61,28 +60,19 @@ public final class TimeInstant extends GMLAdapter {
      *
      * @param instant  the initial instant value.
      */
-    public TimeInstant(final Instant instant) {
+    public TimeInstant(final Temporal instant) {
         timePosition = toXML(instant);
     }
 
     /**
-     * Creates a XML Gregorian Calendar from the given instants, if non-null.
+     * Creates a XML Gregorian Calendar from the given instant, if non-null.
      * Otherwise returns {@code null}.
-     *
-     * <p><strong>WARNING: The timezone information may be lost!</strong> This is because this field
-     * is derived from a {@link java.util.Date}, in which case we don't know if the time is really 0
-     * or just unspecified. This class assumes that a time of zero means "unspecified". This will be
-     * revised after we implemented ISO 19108.</p>
      */
-    static XMLGregorianCalendar toXML(final Instant instant) {
+    static XMLGregorianCalendar toXML(final Temporal instant) {
         if (instant != null) {
             final Context context = Context.current();
             try {
-                final XMLGregorianCalendar gc = XmlUtilities.toXML(context, Date.from(instant));
-                if (gc != null) {
-                    XmlUtilities.trimTime(gc, false);
-                    return gc;
-                }
+                return XmlUtilities.toXML(context, instant);
             } catch (DatatypeConfigurationException | IllegalArgumentException e) {
                 Context.warningOccured(context, TimeInstant.class, "toXML", e, true);
             }
