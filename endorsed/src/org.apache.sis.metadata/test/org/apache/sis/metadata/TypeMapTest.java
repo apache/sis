@@ -18,7 +18,7 @@ package org.apache.sis.metadata;
 
 import java.util.Map;
 import java.util.Collection;
-import java.util.Date;
+import java.time.temporal.Temporal;
 import static java.util.AbstractMap.SimpleEntry;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -72,7 +72,7 @@ public final class TypeMapTest extends TestCase {
             new SimpleEntry<>("alternateTitle",        InternationalString.class),
             new SimpleEntry<>("date",                  CitationDate.class),
             new SimpleEntry<>("edition",               InternationalString.class),
-            new SimpleEntry<>("editionDate",           Date.class),
+            new SimpleEntry<>("editionDate",           Temporal.class),
             new SimpleEntry<>("identifier",            Identifier.class),
             new SimpleEntry<>("citedResponsibleParty", Responsibility.class),
             new SimpleEntry<>("presentationForm",      PresentationForm.class),

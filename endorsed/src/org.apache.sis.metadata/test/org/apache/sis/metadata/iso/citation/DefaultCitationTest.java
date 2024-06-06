@@ -23,6 +23,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Locale;
 import java.io.InputStream;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -48,7 +50,6 @@ import org.apache.sis.metadata.iso.extent.Extents;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.metadata.xml.TestUsingFile;
-import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 
@@ -251,7 +252,7 @@ public final class DefaultCitationTest extends TestUsingFile {
                 new DefaultResponsibility(Role.ORIGINATOR, null, new DefaultIndividual("Maid Marian", null, contact)),
                 new DefaultResponsibility(Role.FUNDER,     null, new DefaultIndividual("Robin Hood",  null, contact))
         ));
-        c.getDates().add(new DefaultCitationDate(TestUtilities.date("2015-10-17 00:00:00"), DateType.ADOPTED));
+        c.getDates().add(new DefaultCitationDate(OffsetDateTime.of(2015, 10, 17, 2, 0, 0, 0, ZoneOffset.ofHours(2)), DateType.ADOPTED));
         c.getPresentationForms().add(PresentationForm.PHYSICAL_OBJECT);
         /*
          * Check that XML file built by the marshaller is the same as the example file.
@@ -300,7 +301,7 @@ public final class DefaultCitationTest extends TestUsingFile {
         assertTitleEquals("Fight against poverty", c, "citation");
 
         final CitationDate date = getSingleton(c.getDates());
-        assertEquals(date.getDate(), TestUtilities.date("2015-10-17 00:00:00"));
+        assertEquals(date.getReferenceDate(), OffsetDateTime.of(2015, 10, 17, 2, 0, 0, 0, ZoneOffset.ofHours(2)));
         assertEquals(DateType.ADOPTED, date.getDateType());
         assertEquals(PresentationForm.PHYSICAL_OBJECT, getSingleton(c.getPresentationForms()));
 
@@ -308,7 +309,7 @@ public final class DefaultCitationTest extends TestUsingFile {
         final Contact contact = assertResponsibilityEquals(Role.ORIGINATOR, "Maid Marian", it.next());
         assertEquals("Send carrier pigeon.", String.valueOf(contact.getContactInstructions()));
 
-        final OnlineResource resource = TestUtilities.getSingleton(contact.getOnlineResources());
+        final OnlineResource resource = getSingleton(contact.getOnlineResources());
         assertEquals("IP over Avian Carriers", String.valueOf(resource.getName()));
         assertEquals("High delay, low throughput, and low altitude service.", String.valueOf(resource.getDescription()));
         assertEquals("https://tools.ietf.org/html/rfc1149", String.valueOf(resource.getLinkage()));

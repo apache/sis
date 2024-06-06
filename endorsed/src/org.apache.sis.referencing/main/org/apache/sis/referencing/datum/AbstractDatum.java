@@ -35,6 +35,7 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.iso.Types;
+import org.apache.sis.util.privy.TemporalDate;
 import org.apache.sis.metadata.privy.Identifiers;
 import org.apache.sis.metadata.privy.NameToIdentifier;
 import org.apache.sis.metadata.privy.ImplementationHelper;
@@ -43,9 +44,6 @@ import org.apache.sis.io.wkt.ElementKind;
 import org.apache.sis.io.wkt.Formatter;
 import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;
-
-// Specific to the main and geoapi-4.0 branches:
-import org.apache.sis.util.privy.TemporalDate;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;

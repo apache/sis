@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Locale;
-import java.util.Date;
+import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAmount;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
@@ -181,7 +181,7 @@ public final class PropertyAccessorTest extends TestCase {
             Citation.class, "getAlternateTitles",         "alternateTitles",         "alternateTitle",        "Alternate titles",           InternationalString[].class,
             Citation.class, "getDates",                   "dates",                   "date",                  "Dates",                      CitationDate[].class,
             Citation.class, "getEdition",                 "edition",                 "edition",               "Edition",                    InternationalString.class,
-            Citation.class, "getEditionDate",             "editionDate",             "editionDate",           "Edition date",               Date.class,
+            Citation.class, "getEditionDate",             "editionDate",             "editionDate",           "Edition date",               Temporal.class,
             Citation.class, "getIdentifiers",             "identifiers",             "identifier",            "Identifiers",                Identifier[].class,
             Citation.class, "getCitedResponsibleParties", "citedResponsibleParties", "citedResponsibleParty", "Cited responsible parties",  Responsibility[].class,
             Citation.class, "getPresentationForms",       "presentationForms",       "presentationForm",      "Presentation forms",         PresentationForm[].class,

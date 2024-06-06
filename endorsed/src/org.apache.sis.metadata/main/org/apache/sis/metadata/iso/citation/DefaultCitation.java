@@ -72,7 +72,7 @@ import org.opengis.metadata.citation.Responsibility;
  * @author  Cédric Briançon (Geomatys)
  * @author  Rémi Maréchal (Geomatys)
  * @author  Cullen Rombach (Image Matters)
- * @version 1.5
+ * @version 2.0
  * @since   0.3
  */
 @TitleProperty(name = "title")
@@ -214,7 +214,7 @@ public class DefaultCitation extends ISOMetadata implements Citation {
             alternateTitles         = copyCollection(object.getAlternateTitles(), InternationalString.class);
             dates                   = copyCollection(object.getDates(), CitationDate.class);
             edition                 = object.getEdition();
-            editionDate             = TemporalDate.toTemporal(object.getEditionDate());
+            editionDate             = object.getEditionDate();
             identifiers             = copyCollection(object.getIdentifiers(), Identifier.class);
             citedResponsibleParties = copyCollection(object.getCitedResponsibleParties(), Responsibility.class);
             presentationForms       = copyCollection(object.getPresentationForms(), PresentationForm.class);
@@ -347,21 +347,40 @@ public class DefaultCitation extends ISOMetadata implements Citation {
      * Returns the date of the edition.
      *
      * @return the edition date, or {@code null} if none.
+     * @version 2.0
      */
     @Override
     @XmlElement(name = "editionDate")
-    public Date getEditionDate() {
-        return TemporalDate.toDate(editionDate);
+    public Temporal getEditionDate() {
+        return editionDate;
+    }
+
+    /**
+     * Sets the date of the edition.
+     * The specified value should be an instance of {@link java.time.LocalDate}, {@link java.time.LocalDateTime},
+     * {@link java.time.OffsetDateTime} or {@link java.time.ZonedDateTime}, depending whether hours are defined
+     * and how the timezone (if any) is defined. But other types are also allowed.
+     * For example, a citation date may be merely a {@link java.time.Year}.
+     *
+     * @param  newValue  the new edition date, or {@code null} if none.
+     *
+     * @since 1.5
+     */
+    public void setEditionDate(final Temporal newValue) {
+        checkWritePermission(editionDate);
+        editionDate = newValue;
     }
 
     /**
      * Sets the date of the edition.
      *
      * @param  newValue  the new edition date, or {@code null} if none.
+     *
+     * @deprecated Replaced by {@link #setEditionDate(Temporal)}.
      */
+    @Deprecated(since="1.5")
     public void setEditionDate(final Date newValue) {
-        checkWritePermission(editionDate);
-        editionDate = TemporalDate.toTemporal(newValue);
+        setEditionDate(TemporalDate.toTemporal(newValue));
     }
 
     /**

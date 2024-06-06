@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata.internal;
 
-import java.util.Date;
 import java.util.Collection;
 import java.util.logging.Logger;
 import java.io.ObjectStreamException;
@@ -40,6 +39,7 @@ import org.opengis.metadata.citation.OnlineResource;
 import org.opengis.metadata.identification.BrowseGraphic;
 
 // Specific to the geoapi-4.0 branch:
+import java.time.temporal.Temporal;
 import org.opengis.metadata.citation.Responsibility;
 
 
@@ -215,7 +215,7 @@ public class CitationConstant extends SimpleCitation {
     @Override public Collection<? extends InternationalString>  getAlternateTitles()         {return delegate().getAlternateTitles();}
     @Override public Collection<? extends CitationDate>         getDates()                   {return delegate().getDates();}
     @Override public InternationalString                        getEdition()                 {return delegate().getEdition();}
-    @Override public Date                                       getEditionDate()             {return delegate().getEditionDate();}
+    @Override public Temporal                                   getEditionDate()             {return delegate().getEditionDate();}
     @Override public Collection<? extends Identifier>           getIdentifiers()             {return delegate().getIdentifiers();}
     @Override public Collection<? extends Responsibility>       getCitedResponsibleParties() {return delegate().getCitedResponsibleParties();}
     @Override public Collection<PresentationForm>               getPresentationForms()       {return delegate().getPresentationForms();}

@@ -45,7 +45,7 @@ import org.apache.sis.util.privy.TemporalDate;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 2.0
  * @since   0.3
  */
 @XmlType(name = "MI_RequestedDate_Type", propOrder = {
@@ -89,8 +89,8 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
     public DefaultRequestedDate(final RequestedDate object) {
         super(object);
         if (object != null) {
-            requestedDateOfCollection = TemporalDate.toTemporal(object.getRequestedDateOfCollection());
-            latestAcceptableDate      = TemporalDate.toTemporal(object.getLatestAcceptableDate());
+            requestedDateOfCollection = object.getRequestedDateOfCollection();
+            latestAcceptableDate      = object.getLatestAcceptableDate();
         }
     }
 
@@ -123,41 +123,77 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
      * Returns the preferred date and time of collection.
      *
      * @return preferred date and time, or {@code null}.
+     * @version 2.0
      */
     @Override
     @XmlElement(name = "requestedDateOfCollection", required = true)
-    public Date getRequestedDateOfCollection() {
-        return TemporalDate.toDate(requestedDateOfCollection);
+    public Temporal getRequestedDateOfCollection() {
+        return requestedDateOfCollection;
+    }
+
+    /**
+     * Sets the preferred date and time of collection.
+     * The specified value should be an instance of {@link java.time.LocalDate}, {@link java.time.LocalDateTime},
+     * {@link java.time.OffsetDateTime} or {@link java.time.ZonedDateTime}, depending whether hours are defined
+     * and how the timezone (if any) is defined. But other types are also allowed.
+     *
+     * @param  newValue  the new requested date of collection value.
+     *
+     * @since 1.5
+     */
+    public void setRequestedDateOfCollection(final Temporal newValue) {
+        checkWritePermission(requestedDateOfCollection);
+        requestedDateOfCollection = newValue;
     }
 
     /**
      * Sets the preferred date and time of collection.
      *
      * @param  newValue  the new requested date of collection value.
+     *
+     * @deprecated Replaced by {@link #setRequestedDateOfCollection(Temporal)}.
      */
+    @Deprecated(since="1.5")
     public void setRequestedDateOfCollection(final Date newValue) {
-        checkWritePermission(requestedDateOfCollection);
-        requestedDateOfCollection = TemporalDate.toTemporal(newValue);
+        setRequestedDateOfCollection(TemporalDate.toTemporal(newValue));
     }
 
     /**
      * Returns the latest date and time collection must be completed.
      *
      * @return latest date and time, or {@code null}.
+     * @version 2.0
      */
     @Override
     @XmlElement(name = "latestAcceptableDate", required = true)
-    public Date getLatestAcceptableDate() {
-        return TemporalDate.toDate(latestAcceptableDate);
+    public Temporal getLatestAcceptableDate() {
+        return latestAcceptableDate;
+    }
+
+    /**
+     * Sets the latest date and time collection must be completed.
+     * The specified value should be an instance of {@link java.time.LocalDate}, {@link java.time.LocalDateTime},
+     * {@link java.time.OffsetDateTime} or {@link java.time.ZonedDateTime}, depending whether hours are defined
+     * and how the timezone (if any) is defined. But other types are also allowed.
+     *
+     * @param  newValue  the new latest acceptable data value.
+     *
+     * @since 1.5
+     */
+    public void setLatestAcceptableDate(final Temporal newValue) {
+        checkWritePermission(latestAcceptableDate);
+        latestAcceptableDate = newValue;
     }
 
     /**
      * Sets the latest date and time collection must be completed.
      *
      * @param  newValue  the new latest acceptable data value.
+     *
+     * @deprecated Replaced by {@link #setLatestAcceptableDate(Temporal)}.
      */
+    @Deprecated(since="1.5")
     public void setLatestAcceptableDate(final Date newValue) {
-        checkWritePermission(latestAcceptableDate);
-        latestAcceptableDate = TemporalDate.toTemporal(newValue);
+        setLatestAcceptableDate(TemporalDate.toTemporal(newValue));
     }
 }

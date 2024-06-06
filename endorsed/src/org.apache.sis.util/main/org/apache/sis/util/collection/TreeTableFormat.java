@@ -25,12 +25,12 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.ConcurrentModificationException;
 import java.util.function.Predicate;
+import java.util.regex.Matcher;
 import java.io.IOException;
 import java.text.Format;
 import java.text.DecimalFormat;
 import java.text.ParsePosition;
 import java.text.ParseException;
-import java.util.regex.Matcher;
 import org.apache.sis.io.TableAppender;
 import org.apache.sis.io.TabularFormat;
 import org.apache.sis.measure.UnitFormat;
@@ -575,7 +575,9 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
      * @see #clearTreeSymbols()
      */
     private void createTreeSymbols() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final int indentation = this.indentation;
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final int verticalLinePosition = this.verticalLinePosition;
         final char[] buffer = new char[indentation];
         for (int k=0; k<4; k++) {
@@ -679,6 +681,8 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
             this.values  = new Object[columns.length];
             this.isLast  = new boolean[8];
             this.recursivityGuard = recursivityGuard;
+
+            @SuppressWarnings("LocalVariableHidesMemberVariable")   // To be stored in the field if successful.
             Predicate<TreeTable.Node> filter = nodeFilter;
             if (tree instanceof TreeFormatCustomization) {
                 final TreeFormatCustomization custom = (TreeFormatCustomization) tree;
@@ -686,7 +690,6 @@ public class TreeTableFormat extends TabularFormat<TreeTable> {
                 if (more != null) {
                     filter = (filter != null) ? more.and(filter) : more;
                 }
-            } else {
             }
             this.filter = filter;
             setTabulationExpanded(true);

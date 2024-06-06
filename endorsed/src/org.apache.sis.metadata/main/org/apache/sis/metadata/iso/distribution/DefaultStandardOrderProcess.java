@@ -55,7 +55,7 @@ import org.apache.sis.util.privy.TemporalDate;
  */
 @XmlType(name = "MD_StandardOrderProcess_Type", propOrder = {
     "fees",
-    "plannedAvailableDateTime",
+    "plannedAvailableDate",
     "orderingInstructions",
     "turnaround",
     "orderOptionsType",             // New in ISO 19115-3
@@ -129,7 +129,7 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
         super(object);
         if (object != null) {
             fees                     = object.getFees();
-            plannedAvailableDateTime = TemporalDate.toTemporal(object.getPlannedAvailableDateTime());
+            plannedAvailableDateTime = object.getPlannedAvailableDate();
             orderingInstructions     = object.getOrderingInstructions();
             turnaround               = object.getTurnaround();
             orderOptionsType         = object.getOrderOptionsType();
@@ -230,21 +230,53 @@ public class DefaultStandardOrderProcess extends ISOMetadata implements Standard
      * Returns the date and time when the dataset will be available.
      *
      * @return date and time when the dataset will be available, or {@code null}.
+     *
+     * @deprecated Replaced by {@link #getPlannedAvailableDate()}.
      */
     @Override
-    @XmlElement(name = "plannedAvailableDateTime")
+    @Deprecated(since="1.5")
     public Date getPlannedAvailableDateTime() {
-        return TemporalDate.toDate(plannedAvailableDateTime);
+        return TemporalDate.toDate(getPlannedAvailableDate());
     }
 
     /**
      * Sets the date and time when the dataset will be available.
      *
      * @param  newValue  the new planned available time.
+     *
+     * @deprecated Replaced by {@link #setPlannedAvailableDate(Temporal)}.
      */
+    @Deprecated(since="1.5")
     public void setPlannedAvailableDateTime(final Date newValue) {
+        setPlannedAvailableDate(TemporalDate.toTemporal(newValue));
+    }
+
+    /**
+     * Returns the date and time when the dataset will be available.
+     *
+     * @return date and time when the dataset will be available, or {@code null}.
+     *
+     * @since 1.5
+     */
+    @Override
+    @XmlElement(name = "plannedAvailableDateTime")
+    public Temporal getPlannedAvailableDate() {
+        return plannedAvailableDateTime;
+    }
+
+    /**
+     * Sets the date and time when the dataset will be available.
+     * The specified value should be an instance of {@link java.time.LocalDate}, {@link java.time.LocalDateTime},
+     * {@link java.time.OffsetDateTime} or {@link java.time.ZonedDateTime}, depending whether hours are defined
+     * and how the timezone (if any) is defined. But other types are also allowed.
+     *
+     * @param  newValue  the new planned available time.
+     *
+     * @since 1.5
+     */
+    public void setPlannedAvailableDate(final Temporal newValue) {
         checkWritePermission(plannedAvailableDateTime);
-        plannedAvailableDateTime = TemporalDate.toTemporal(newValue);
+        plannedAvailableDateTime = newValue;
     }
 
     /**

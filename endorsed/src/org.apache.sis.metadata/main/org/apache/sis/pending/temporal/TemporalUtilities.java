@@ -51,14 +51,14 @@ public final class TemporalUtilities {
     /**
      * Creates a period for the given begin and end instant.
      *
-     * @param  begin  the begin instant (inclusive), or {@code null}.
-     * @param  end    the end instant (inclusive), or {@code null}.
+     * @param  beginning  the begin instant (inclusive), or {@code null}.
+     * @param  ending     the end instant (inclusive), or {@code null}.
      * @return the period, or {@code null} if both arguments are null.
      *
      * @todo Needs to avoid assuming UTC timezone.
      */
-    public static TemporalPrimitive createPeriod(final Temporal begin, final Temporal end) {
-        return (begin == null && end == null) ? null : new DefaultPeriod(begin, end);
+    public static TemporalPrimitive createPeriod(final Temporal beginning, final Temporal ending) {
+        return (beginning == null && ending == null) ? null : new DefaultPeriod(beginning, ending);
     }
 
     /**

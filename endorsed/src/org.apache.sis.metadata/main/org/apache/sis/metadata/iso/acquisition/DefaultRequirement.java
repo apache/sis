@@ -65,7 +65,7 @@ import org.opengis.metadata.citation.Responsibility;
  *
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.5
+ * @version 2.0
  * @since   0.3
  */
 @XmlType(name = "MI_Requirement_Type", propOrder = {
@@ -151,7 +151,7 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
             recipients     = copyCollection(object.getRecipients(), Responsibility.class);
             priority       = object.getPriority();
             requestedDate  = object.getRequestedDate();
-            expiryDate     = TemporalDate.toTemporal(object.getExpiryDate());
+            expiryDate     = object.getExpiryDate();
             satisfiedPlans = copyCollection(object.getSatisfiedPlans(), Plan.class);
         }
     }
@@ -310,21 +310,39 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      * Returns the date and time after which collection is no longer valid.
      *
      * @return date and time after which collection is no longer valid, or {@code null}.
+     * @version 2.0
      */
     @Override
     @XmlElement(name = "expiryDate", required = true)
-    public Date getExpiryDate() {
-        return TemporalDate.toDate(expiryDate);
+    public Temporal getExpiryDate() {
+        return expiryDate;
+    }
+
+    /**
+     * Sets the date and time after which collection is no longer valid.
+     * The specified value should be an instance of {@link java.time.LocalDate}, {@link java.time.LocalDateTime},
+     * {@link java.time.OffsetDateTime} or {@link java.time.ZonedDateTime}, depending whether hours are defined
+     * and how the timezone (if any) is defined. But other types are also allowed.
+     *
+     * @param  newValue  the new expiry date.
+     *
+     * @since 1.5
+     */
+    public void setExpiryDate(final Temporal newValue) {
+        checkWritePermission(expiryDate);
+        expiryDate = newValue;
     }
 
     /**
      * Sets the date and time after which collection is no longer valid.
      *
      * @param  newValue  the new expiry date.
+     *
+     * @deprecated Replaced by {@link #setExpiryDate(Temporal)}.
      */
+    @Deprecated(since="1.5")
     public void setExpiryDate(final Date newValue) {
-        checkWritePermission(expiryDate);
-        expiryDate = TemporalDate.toTemporal(newValue);
+        setExpiryDate(TemporalDate.toTemporal(newValue));
     }
 
     /**
