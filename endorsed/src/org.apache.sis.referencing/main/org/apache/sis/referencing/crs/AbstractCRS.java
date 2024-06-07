@@ -46,8 +46,8 @@ import org.apache.sis.util.resources.Errors;
 import org.opengis.metadata.Identifier;
 
 // Specific to the geoapi-4.0 branch:
-import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.referencing.crs.DerivedCRS;
+import org.opengis.coordinate.MismatchedDimensionException;
 
 
 /**

@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.text.ParseException;
-import java.time.temporal.ChronoField;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.cs.AxisDirection;
@@ -75,6 +74,9 @@ import static org.apache.sis.test.TestCase.STRICT;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.Assertions;
+
+// Specific to the geoapi-4.0 branch:
+import java.time.temporal.ChronoField;
 
 
 /**

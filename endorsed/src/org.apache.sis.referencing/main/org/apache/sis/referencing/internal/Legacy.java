@@ -29,8 +29,6 @@ import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 
-// Specific to the main and geoapi-4.0 branches:
-
 
 /**
  * Utilities related to version 1 of Well Known Text format, or to ISO 19111:2007.

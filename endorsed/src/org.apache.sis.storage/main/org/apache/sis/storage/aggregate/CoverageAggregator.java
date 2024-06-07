@@ -32,7 +32,6 @@ import java.time.Duration;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.opengis.referencing.crs.SingleCRS;
-import org.apache.sis.coverage.grid.PixelInCell;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.apache.sis.referencing.CommonCRS;
@@ -53,6 +52,7 @@ import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverageProcessor;
 import org.apache.sis.coverage.grid.IllegalGridGeometryException;
+import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.privy.Numerics;
 

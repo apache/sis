@@ -16,8 +16,10 @@
  */
 package org.apache.sis.coverage.grid;
 
-import org.opengis.util.ControlledVocabulary;
 import org.opengis.metadata.spatial.PixelOrientation;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.util.ControlledVocabulary;
 
 
 /**

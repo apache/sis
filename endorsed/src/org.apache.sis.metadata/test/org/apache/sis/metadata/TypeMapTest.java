@@ -18,7 +18,6 @@ package org.apache.sis.metadata;
 
 import java.util.Map;
 import java.util.Collection;
-import java.time.temporal.Temporal;
 import static java.util.AbstractMap.SimpleEntry;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -40,6 +39,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-4.0 branch:
+import java.time.temporal.Temporal;
 import org.opengis.metadata.citation.Responsibility;
 
 
