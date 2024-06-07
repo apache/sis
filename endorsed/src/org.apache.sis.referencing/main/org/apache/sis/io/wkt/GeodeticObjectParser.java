@@ -89,8 +89,8 @@ import org.opengis.referencing.ReferenceIdentifier;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceSystem;
-import org.apache.sis.util.privy.TemporalDate;
 import org.apache.sis.referencing.internal.ServicesForMetadata;
+import org.apache.sis.util.privy.TemporalDate;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 
 

@@ -21,13 +21,13 @@ import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.CitationDate;
 import org.apache.sis.util.ComparisonMode;
 
-// Specific to the main branch:
-import java.util.Date;
-
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
+
+// Specific to the main branch:
+import java.util.Date;
 
 
 /**

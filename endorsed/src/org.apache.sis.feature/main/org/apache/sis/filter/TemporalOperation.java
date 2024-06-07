@@ -25,7 +25,7 @@ import static org.apache.sis.filter.TimeMethods.BEFORE;
 import static org.apache.sis.filter.TimeMethods.AFTER;
 import static org.apache.sis.filter.TimeMethods.EQUAL;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+// Specific to the main branch:
 import org.apache.sis.pending.geoapi.temporal.Period;
 import org.apache.sis.pending.geoapi.filter.TemporalOperatorName;
 

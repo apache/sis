@@ -18,7 +18,6 @@ package org.apache.sis.referencing.crs;
 
 import java.util.Map;
 import java.util.HashMap;
-import org.opengis.referencing.datum.PixelInCell;
 import static org.opengis.referencing.IdentifiedObject.*;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.metadata.iso.extent.Extents;
@@ -29,6 +28,9 @@ import static org.apache.sis.referencing.IdentifiedObjects.getProperties;
 import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.datum.HardCodedDatum;
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.datum.PixelInCell;
 
 // Specific to the main branch:
 import static org.opengis.referencing.ReferenceSystem.DOMAIN_OF_VALIDITY_KEY;

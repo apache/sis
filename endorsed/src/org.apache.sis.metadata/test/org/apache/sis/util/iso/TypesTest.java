@@ -29,7 +29,6 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.content.ImagingCondition;
 import org.opengis.referencing.datum.Datum;
-import org.opengis.referencing.datum.PixelInCell;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.DefaultInternationalString;
@@ -40,6 +39,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 // Specific to the main branch:
+import org.opengis.referencing.datum.PixelInCell;
 import static org.apache.sis.test.GeoapiAssert.PENDING_NEXT_GEOAPI_RELEASE;
 
 

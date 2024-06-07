@@ -31,7 +31,6 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
-import org.apache.sis.coverage.grid.PixelInCell;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Localized;
@@ -55,6 +54,7 @@ import org.apache.sis.util.privy.DoubleDouble;
 import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.PixelInCell;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.apache.sis.geometry.MismatchedReferenceSystemException;

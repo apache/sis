@@ -34,11 +34,11 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 
-// Specific to the main branch:
-import org.opengis.referencing.ReferenceIdentifier;
-
 // Specific to the main and geoapi-3.1 branches:
 import org.apache.sis.util.privy.TemporalDate;
+
+// Specific to the main branch:
+import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**

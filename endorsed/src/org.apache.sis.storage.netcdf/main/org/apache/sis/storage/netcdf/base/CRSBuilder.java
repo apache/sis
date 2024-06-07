@@ -60,8 +60,8 @@ import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 
 // Specific to the main branch:
-import org.apache.sis.util.privy.TemporalDate;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
+import org.apache.sis.util.privy.TemporalDate;
 
 
 /**

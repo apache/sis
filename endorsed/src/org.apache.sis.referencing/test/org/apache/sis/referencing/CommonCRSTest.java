@@ -40,6 +40,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.privy.AxisNames;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.util.privy.Constants;
+import static org.apache.sis.util.privy.Constants.UTC;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -49,11 +50,12 @@ import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.TestUtilities.*;
-import static org.apache.sis.util.privy.Constants.UTC;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.apache.sis.util.privy.TemporalDate;
 
 // Specific to the main branch:
 import org.opengis.referencing.datum.VerticalDatumType;
-import org.apache.sis.util.privy.TemporalDate;
 import static org.apache.sis.test.GeoapiAssert.assertAxisDirectionsEqual;
 
 

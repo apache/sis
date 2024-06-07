@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata;
 
-import java.util.Date;
 import java.util.Random;
 import java.util.Iterator;
 import java.util.List;
@@ -37,6 +36,9 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.test.TestCase;
+
+// Specific to the main branch:
+import java.util.Date;
 
 
 /**

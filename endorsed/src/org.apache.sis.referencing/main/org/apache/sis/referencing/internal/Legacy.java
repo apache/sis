@@ -29,8 +29,11 @@ import org.apache.sis.referencing.cs.DefaultCartesianCS;
 import org.apache.sis.referencing.cs.DefaultCoordinateSystemAxis;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 
-// Specific to the main and geoapi-4.0 branches:
+// Specific to the main branch:
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.Collection;
 import java.time.Instant;
 import java.time.Year;
 import java.time.YearMonth;
@@ -42,11 +45,6 @@ import java.time.ZoneOffset;
 import java.time.LocalTime;
 import java.time.OffsetTime;
 import java.time.temporal.Temporal;
-
-// Specific to the main branch:
-import java.util.List;
-import java.util.Objects;
-import java.util.Collection;
 import org.opengis.referencing.ReferenceSystem;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.util.InternationalString;

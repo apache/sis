@@ -122,8 +122,8 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 import static org.apache.sis.referencing.internal.ServicesForMetadata.CONNECTION;
 
 // Specific to the main branch:
-import org.apache.sis.util.privy.TemporalDate;
 import org.apache.sis.referencing.internal.ServicesForMetadata;
+import org.apache.sis.util.privy.TemporalDate;
 import org.apache.sis.referencing.cs.DefaultParametricCS;
 import org.apache.sis.referencing.datum.DefaultParametricDatum;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;

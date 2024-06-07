@@ -22,7 +22,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Date;
 import java.time.Year;
 import java.time.temporal.Temporal;
 import java.time.temporal.ChronoField;
@@ -41,6 +40,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.iso.Types;
 
 // Specific to the main branch:
+import java.util.Date;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.citation.ResponsibleParty;

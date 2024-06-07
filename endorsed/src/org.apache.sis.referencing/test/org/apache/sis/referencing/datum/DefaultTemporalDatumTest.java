@@ -34,12 +34,12 @@ import static org.apache.sis.referencing.Assertions.assertRemarksEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.test.TestUtilities.getScope;
 
+// Specific to the main and geoapi-3.1 branches:
+import org.apache.sis.util.privy.TemporalDate;
+
 // Specific to the main branch:
 import static org.opengis.referencing.ReferenceSystem.*;
 import static org.apache.sis.test.GeoapiAssert.assertIdentifierEquals;
-
-// Specific to the main and geoapi-3.1 branches:
-import org.apache.sis.util.privy.TemporalDate;
 
 
 /**

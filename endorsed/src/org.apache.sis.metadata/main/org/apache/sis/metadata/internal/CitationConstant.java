@@ -16,7 +16,6 @@
  */
 package org.apache.sis.metadata.internal;
 
-import java.util.Date;
 import java.util.Collection;
 import java.util.logging.Logger;
 import java.io.ObjectStreamException;
@@ -36,6 +35,7 @@ import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.logging.Logging;
 
 // Specific to the main and geoapi-3.1 branches:
+import java.util.Date;
 import org.opengis.metadata.citation.ResponsibleParty;
 
 

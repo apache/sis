@@ -18,7 +18,6 @@ package org.apache.sis.portrayal;
 
 import java.util.List;
 import org.opengis.geometry.DirectPosition;
-import org.apache.sis.coverage.grid.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystem;
@@ -31,6 +30,7 @@ import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.util.privy.Numerics;
