@@ -20,9 +20,12 @@ import java.net.URI;
 import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Date;
+import java.time.Year;
+import java.time.temporal.Temporal;
+import java.time.temporal.ChronoField;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.Identifier;
@@ -41,6 +44,7 @@ import org.apache.sis.util.iso.Types;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.citation.ResponsibleParty;
+import org.apache.sis.util.privy.TemporalDate;
 import org.apache.sis.metadata.iso.citation.AbstractParty;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
@@ -111,9 +115,9 @@ resp:   for (final DefaultResponsibility r : ((DefaultConstraints) c).getRespons
         }
         for (final Citation ci : ((DefaultConstraints) c).getReferences()) {
             for (final CitationDate d : ci.getDates()) {
-                final Date date = d.getDate();
+                final Temporal date = TemporalDate.toTemporal(d.getDate());
                 if (date != null) {
-                    year = date.getYear() + 1900;
+                    year = date.get(ChronoField.YEAR);
                     break;
                 }
             }
@@ -305,7 +309,7 @@ resp:   for (final DefaultResponsibility r : ((DefaultConstraints) c).getRespons
     @Override
     public Date getDate() {
         if (year != null) {
-            return new Date(year - 1900, 0, 1);
+            return TemporalDate.toDate(Year.of(year));
         }
         return null;
     }

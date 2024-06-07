@@ -21,6 +21,7 @@ import java.util.Random;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
+import java.time.LocalDate;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.PresentationForm;
@@ -134,7 +135,7 @@ public final class TreeNodeChildrenTest extends TestCase {
      */
     static DefaultCitation metadataSimplifiable() {
         final DefaultCitation citation = new DefaultCitation();
-        final DefaultCitationDate date = new DefaultCitationDate(TestUtilities.date("2012-01-01 00:00:00"), DateType.CREATION);
+        final DefaultCitationDate date = new DefaultCitationDate(LocalDate.of(2012, 1, 1), DateType.CREATION);
         assertTrue(citation.getDates().add(date));
         return citation;
     }
@@ -227,7 +228,7 @@ public final class TreeNodeChildrenTest extends TestCase {
          * We need to perform the tests on the "Date" node, not on the "DefaultCitation" node.
          */
         final TreeTable.Node node = TestUtilities.getSingleton(create(citation, ValueExistencePolicy.COMPACT));
-        assertEquals(1325376000000L, ((Date) node.getValue(TableColumn.VALUE)).getTime());
+        assertEquals(15340, ((LocalDate) node.getValue(TableColumn.VALUE)).toEpochDay());
         final TreeNodeChildren children = (TreeNodeChildren) node.getChildren();
         final String[] expected = {
             // The "Date" node should be omitted because merged with the parent "Date" node.

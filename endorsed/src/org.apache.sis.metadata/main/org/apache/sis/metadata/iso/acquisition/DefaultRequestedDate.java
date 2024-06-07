@@ -122,6 +122,10 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
     /**
      * Returns the preferred date and time of collection.
      *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * {@code Date} may be replaced by {@link Temporal} in GeoAPI 4.0.
+     * </div>
+     *
      * @return preferred date and time, or {@code null}.
      */
     @Override
@@ -132,16 +136,37 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
 
     /**
      * Sets the preferred date and time of collection.
+     * The specified value should be an instance of {@link java.time.LocalDate}, {@link java.time.LocalDateTime},
+     * {@link java.time.OffsetDateTime} or {@link java.time.ZonedDateTime}, depending whether hours are defined
+     * and how the timezone (if any) is defined. But other types are also allowed.
      *
      * @param  newValue  the new requested date of collection value.
+     *
+     * @since 1.5
      */
-    public void setRequestedDateOfCollection(final Date newValue) {
+    public void setRequestedDateOfCollection(final Temporal newValue) {
         checkWritePermission(requestedDateOfCollection);
-        requestedDateOfCollection = TemporalDate.toTemporal(newValue);
+        requestedDateOfCollection = newValue;
+    }
+
+    /**
+     * Sets the preferred date and time of collection.
+     *
+     * @param  newValue  the new requested date of collection value.
+     *
+     * @deprecated Replaced by {@link #setRequestedDateOfCollection(Temporal)}.
+     */
+    @Deprecated(since="1.5")
+    public void setRequestedDateOfCollection(final Date newValue) {
+        setRequestedDateOfCollection(TemporalDate.toTemporal(newValue));
     }
 
     /**
      * Returns the latest date and time collection must be completed.
+     *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * {@code Date} may be replaced by {@link Temporal} in GeoAPI 4.0.
+     * </div>
      *
      * @return latest date and time, or {@code null}.
      */
@@ -153,11 +178,28 @@ public class DefaultRequestedDate extends ISOMetadata implements RequestedDate {
 
     /**
      * Sets the latest date and time collection must be completed.
+     * The specified value should be an instance of {@link java.time.LocalDate}, {@link java.time.LocalDateTime},
+     * {@link java.time.OffsetDateTime} or {@link java.time.ZonedDateTime}, depending whether hours are defined
+     * and how the timezone (if any) is defined. But other types are also allowed.
      *
      * @param  newValue  the new latest acceptable data value.
+     *
+     * @since 1.5
      */
-    public void setLatestAcceptableDate(final Date newValue) {
+    public void setLatestAcceptableDate(final Temporal newValue) {
         checkWritePermission(latestAcceptableDate);
-        latestAcceptableDate = TemporalDate.toTemporal(newValue);
+        latestAcceptableDate = newValue;
+    }
+
+    /**
+     * Sets the latest date and time collection must be completed.
+     *
+     * @param  newValue  the new latest acceptable data value.
+     *
+     * @deprecated Replaced by {@link #setLatestAcceptableDate(Temporal)}.
+     */
+    @Deprecated(since="1.5")
+    public void setLatestAcceptableDate(final Date newValue) {
+        setLatestAcceptableDate(TemporalDate.toTemporal(newValue));
     }
 }

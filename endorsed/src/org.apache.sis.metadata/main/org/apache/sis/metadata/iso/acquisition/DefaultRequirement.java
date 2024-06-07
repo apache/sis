@@ -329,6 +329,10 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
     /**
      * Returns the date and time after which collection is no longer valid.
      *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * {@code Date} may be replaced by {@link Temporal} in GeoAPI 4.0.
+     * </div>
+     *
      * @return date and time after which collection is no longer valid, or {@code null}.
      */
     @Override
@@ -339,12 +343,29 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
 
     /**
      * Sets the date and time after which collection is no longer valid.
+     * The specified value should be an instance of {@link java.time.LocalDate}, {@link java.time.LocalDateTime},
+     * {@link java.time.OffsetDateTime} or {@link java.time.ZonedDateTime}, depending whether hours are defined
+     * and how the timezone (if any) is defined. But other types are also allowed.
      *
      * @param  newValue  the new expiry date.
+     *
+     * @since 1.5
      */
-    public void setExpiryDate(final Date newValue) {
+    public void setExpiryDate(final Temporal newValue) {
         checkWritePermission(expiryDate);
-        expiryDate = TemporalDate.toTemporal(newValue);
+        expiryDate = newValue;
+    }
+
+    /**
+     * Sets the date and time after which collection is no longer valid.
+     *
+     * @param  newValue  the new expiry date.
+     *
+     * @deprecated Replaced by {@link #setExpiryDate(Temporal)}.
+     */
+    @Deprecated(since="1.5")
+    public void setExpiryDate(final Date newValue) {
+        setExpiryDate(TemporalDate.toTemporal(newValue));
     }
 
     /**

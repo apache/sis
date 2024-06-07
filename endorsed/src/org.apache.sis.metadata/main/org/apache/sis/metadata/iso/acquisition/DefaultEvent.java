@@ -33,6 +33,11 @@ import org.opengis.metadata.acquisition.Trigger;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.privy.TemporalDate;
 
+// Specific to the main branch:
+import org.opengis.annotation.UML;
+import static org.opengis.annotation.Obligation.MANDATORY;
+import static org.opengis.annotation.Specification.ISO_19115_2;
+
 
 /**
  * Identification of a significant collection point within an operation.
@@ -65,7 +70,7 @@ import org.apache.sis.util.privy.TemporalDate;
     "trigger",
     "context",
     "sequence",
-    "time",
+    "dateOfOccurrence",
     "expectedObjectives",
     "relatedPass",
     "relatedSensors"
@@ -258,14 +263,12 @@ public class DefaultEvent extends ISOMetadata implements Event {
     /**
      * Returns the time the event occurred.
      *
-     * <div class="warning"><b>Upcoming API change — temporal schema</b><br>
-     * The return type of this method may change in a future version.
-     * It may be replaced by {@link Temporal}.</div>
-     *
      * @return time the event occurred, or {@code null}.
+     *
+     * @deprecated Replaced by {@link #getDateOfOccurrence()}.
      */
     @Override
-    @XmlElement(name = "time", required = true)
+    @Deprecated(since="1.5")
     public Date getTime() {
         return TemporalDate.toDate(time);
     }
@@ -274,9 +277,25 @@ public class DefaultEvent extends ISOMetadata implements Event {
      * Sets the time the event occurred.
      *
      * @param  newValue  the new time value.
+     *
+     * @deprecated Replaced by {@link #setDateOfOccurrence(Temporal)}.
      */
+    @Deprecated(since="1.5")
     public void setTime(final Date newValue) {
-        setTime(TemporalDate.toTemporal(newValue));
+        setDateOfOccurrence(TemporalDate.toTemporal(newValue));
+    }
+
+    /**
+     * Returns the time the event occurred.
+     *
+     * @return time the event occurred, or {@code null}.
+     *
+     * @since 1.5
+     */
+    @XmlElement(name = "time", required = true)
+    @UML(identifier="time", obligation=MANDATORY, specification=ISO_19115_2)
+    public Temporal getDateOfOccurrence() {
+        return time;
     }
 
     /**
@@ -286,7 +305,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      *
      * @since 1.5
      */
-    public void setTime(final Temporal newValue) {
+    public void setDateOfOccurrence(final Temporal newValue) {
         checkWritePermission(time);
         time = newValue;
     }

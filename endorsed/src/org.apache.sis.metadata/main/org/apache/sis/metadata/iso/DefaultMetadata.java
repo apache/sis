@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.time.temporal.Temporal;
 import jakarta.xml.bind.Marshaller;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
@@ -59,6 +60,9 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.util.SimpleInternationalString;
 import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.ObjectConverter;
+import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.privy.TemporalDate;
 import org.apache.sis.metadata.MetadataCopier;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
@@ -69,7 +73,6 @@ import org.apache.sis.metadata.iso.identification.DefaultDataIdentification;
 import org.apache.sis.metadata.iso.legacy.LegacyPropertyAdapter;
 import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.metadata.internal.Dependencies;
-import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.lan.LocaleAndCharset;
@@ -79,7 +82,6 @@ import org.apache.sis.xml.bind.lan.PT_Locale;
 import org.apache.sis.xml.bind.metadata.CI_Citation;
 import org.apache.sis.xml.bind.metadata.MD_Identifier;
 import org.apache.sis.xml.privy.LegacyNamespaces;
-import org.apache.sis.util.collection.Containers;
 import org.apache.sis.converter.SurjectiveConverter;
 import org.apache.sis.math.FunctionProperty;
 
@@ -358,10 +360,30 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      * @param contact             party responsible for the metadata information.
      * @param dateStamp           date that the metadata was created.
      * @param identificationInfo  basic information about the resource to which the metadata applies.
+     *
+     * @deprecated Replaced by {@link #DefaultMetadata(ResponsibleParty, Temporal, Identification)}.
      */
+    @Deprecated(since="1.5", forRemoval=true)
     public DefaultMetadata(final ResponsibleParty contact,
                            final Date             dateStamp,
                            final Identification   identificationInfo)
+    {
+        this(contact, TemporalDate.toTemporal(dateStamp), identificationInfo);
+    }
+
+    /**
+     * Creates a meta data initialized to the specified values.
+     *
+     * @param contact             party responsible for the metadata information.
+     * @param dateStamp           date that the metadata was created.
+     * @param identificationInfo  basic information about the resource to which the metadata applies.
+     *
+     * @since 1.5
+     */
+    @SuppressWarnings("this-escape")
+    public DefaultMetadata(final ResponsibleParty contact,
+                           final Temporal       dateStamp,
+                           final Identification identificationInfo)
     {
         this.contacts  = singleton(contact, ResponsibleParty.class);
         this.identificationInfo = singleton(identificationInfo, Identification.class);
@@ -662,8 +684,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @XmlJavaTypeAdapter(LocaleAdapter.Wrapped.class)
     public Collection<Locale> getLocales() {
         if (FilterByVersion.LEGACY_METADATA.accept()) {
-            final Set<PT_Locale> locales = OtherLocales.filter(getLocalesAndCharsets());
-            return Containers.derivedSet(locales, ToLocale.INSTANCE);
+            return Containers.derivedSet(OtherLocales.filter(getLocalesAndCharsets()), ToLocale.INSTANCE);
         }
         return null;
     }
@@ -792,6 +813,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
     @XmlElement(name = "parentIdentifier", namespace = LegacyNamespaces.GMD)
     public String getParentIdentifier() {
         if (FilterByVersion.LEGACY_METADATA.accept()) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             final Citation parentMetadata = getParentMetadata();
             if (parentMetadata != null) {
                 final InternationalString title = parentMetadata.getTitle();
@@ -1066,7 +1088,7 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
                 }
             }
         }
-        newValues.add(new DefaultCitationDate(newValue, DateType.CREATION));
+        newValues.add(new DefaultCitationDate(TemporalDate.toTemporal(newValue), DateType.CREATION));
         setDateInfo(newValues);
     }
 

@@ -612,6 +612,13 @@ public abstract class AnnotationConsistencyCheck extends TestCaseWithLogs {
                 return true;
             }
             /*
+             * Property which exists in a deprecated and a non-deprecated version,
+             * with the same name but different namespace.
+             */
+            case "usageDateTime": {
+                return method.isAnnotationPresent(Deprecated.class);
+            }
+            /*
              * - "resultContent" is a property in the ISO 10157 model but not yet in the XML schema.
              * - "resultFormat" and "resultFile" differ in XML schema compared to abstract model (different obligation).
              */

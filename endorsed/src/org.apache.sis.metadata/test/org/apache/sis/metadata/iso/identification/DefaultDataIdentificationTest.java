@@ -20,6 +20,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.Locale;
+import java.time.LocalDate;
 import java.nio.charset.StandardCharsets;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.DateType;
@@ -66,7 +67,7 @@ public final class DefaultDataIdentificationTest extends TestCase {
          *       └─Code……………………………………………………………………… NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc
          */
         final var citation = new DefaultCitation("Sea Surface Temperature Analysis Model");
-        citation.setDates(Set.of(new DefaultCitationDate(TestUtilities.date("2005-09-22 00:00:00"), DateType.CREATION)));
+        citation.setDates(Set.of(new DefaultCitationDate(LocalDate.of(2005, 9, 22), DateType.CREATION)));
         citation.setIdentifiers(Set.of(new DefaultIdentifier("SST_Global.nc")));
         /*
          * Descriptive keywords
@@ -128,7 +129,7 @@ public final class DefaultDataIdentificationTest extends TestCase {
         assertMultilinesEquals(
                 "Data identification\n" +
                 "  ├─Citation………………………………………………………… Sea Surface Temperature Analysis Model\n" +
-                "  │   ├─Date………………………………………………………… 2005-09-22 00:00:00\n" +
+                "  │   ├─Date………………………………………………………… 2005 Sep 22\n" +
                 "  │   │   └─Date type………………………………… Creation\n" +
                 "  │   └─Identifier………………………………………… SST_Global.nc\n" +
                 "  ├─Abstract………………………………………………………… Global 5.0 x 2.5 degree model data\n" +

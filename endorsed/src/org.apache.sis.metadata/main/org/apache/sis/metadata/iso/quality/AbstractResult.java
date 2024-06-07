@@ -174,9 +174,9 @@ public class AbstractResult extends ISOMetadata implements Result {
 
     /**
      * Returns the date when the result was generated.
-     * This is typically a {@link java.time.LocalDate}, {@link java.time.LocalDateTime}
-     * or {@link java.time.ZonedDateTime} depending on whether the hour of the day and
-     * the time zone are provided.
+     * The specified value should be an instance of {@link java.time.LocalDate}, {@link java.time.LocalDateTime},
+     * {@link java.time.OffsetDateTime} or {@link java.time.ZonedDateTime}, depending whether hours are defined
+     * and how the timezone (if any) is defined. But other types are also allowed.
      *
      * @return date of the result, or {@code null} if none.
      *

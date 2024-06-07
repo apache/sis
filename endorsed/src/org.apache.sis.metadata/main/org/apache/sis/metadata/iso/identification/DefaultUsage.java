@@ -17,17 +17,24 @@
 package org.apache.sis.metadata.iso.identification;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Collection;
 import java.time.temporal.Temporal;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
+import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.identification.Usage;
+import org.opengis.temporal.TemporalPrimitive;
 import org.apache.sis.xml.bind.FilterByVersion;
+import org.apache.sis.xml.bind.gml.TM_Primitive;
+import org.apache.sis.xml.privy.LegacyNamespaces;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
+import org.apache.sis.metadata.internal.Dependencies;
+import org.apache.sis.pending.temporal.TemporalUtilities;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.privy.TemporalDate;
 
@@ -38,6 +45,7 @@ import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
+import org.apache.sis.pending.temporal.DefaultPeriod;
 
 
 /**
@@ -73,6 +81,7 @@ import static org.opengis.annotation.Specification.ISO_19115;
 @XmlType(name = "MD_Usage_Type", propOrder = {
     "specificUsage",
     "usageDate",
+    "usageDates",
     "userDeterminedLimitations",
     "userContactInfo",
     "response",                     // New in ISO 19115:2014
@@ -84,7 +93,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
     /**
      * Serial number for compatibility with different versions.
      */
-    private static final long serialVersionUID = -4161209112438016820L;
+    private static final long serialVersionUID = -685588625450110348L;
 
     /**
      * Brief description of the resource and/or resource series usage.
@@ -95,8 +104,8 @@ public class DefaultUsage extends ISOMetadata implements Usage {
     /**
      * Date and time of the first use or range of uses of the resource and/or resource series.
      */
-    @SuppressWarnings("serial")     // Standard Java implementations are serializable.
-    private Temporal usageDate;
+    @SuppressWarnings("serial")
+    private Collection<TemporalPrimitive> usageDates;
 
     /**
      * Applications, determined by the user for which the resource and/or resource series
@@ -164,14 +173,19 @@ public class DefaultUsage extends ISOMetadata implements Usage {
         super(object);
         if (object != null) {
             specificUsage             = object.getSpecificUsage();
-            usageDate                 = TemporalDate.toTemporal(object.getUsageDate());
             userDeterminedLimitations = object.getUserDeterminedLimitations();
             userContactInfo           = copyCollection(object.getUserContactInfo(), ResponsibleParty.class);
             if (object instanceof DefaultUsage) {
-                final DefaultUsage c = (DefaultUsage) object;
+                final var c = (DefaultUsage) object;
+                usageDates                = copyCollection(c.getUsageDates(), TemporalPrimitive.class);
                 responses                 = copyCollection(c.getResponses(), InternationalString.class);
                 additionalDocumentation   = copyCollection(c.getAdditionalDocumentation(), Citation.class);
                 identifiedIssues          = copyCollection(c.getIdentifiedIssues(), Citation.class);
+            } else {
+                TemporalPrimitive t = TemporalUtilities.createInstant(TemporalDate.toTemporal(object.getUsageDate()));
+                if (t != null) {
+                    usageDates = List.of(t);
+                }
             }
         }
     }
@@ -226,21 +240,82 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * Returns the date and time of the first use or range of uses of the resource and/or resource series.
      *
      * @return date of the first use of the resource, or {@code null}.
+     *
+     * @deprecated Replaced by {@link #getUsageDates()}.
      */
     @Override
-    @XmlElement(name = "usageDateTime")
+    @Deprecated(since="1.5")
+    @Dependencies("getUsageDates")
+    @XmlElement(name = "usageDateTime", namespace = LegacyNamespaces.GMD)
     public Date getUsageDate() {
-        return TemporalDate.toDate(usageDate);
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
+            final Collection<TemporalPrimitive> usageDates = getUsageDates();
+            if (usageDates != null) {
+                for (TemporalPrimitive t : usageDates) {
+                    if (t instanceof DefaultPeriod) {
+                        Date p = TemporalDate.toDate(((DefaultPeriod) t).getBeginning());
+                        if (p != null) {
+                            return p;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /**
      * Sets the date and time of the first use.
      *
      * @param  newValue  the new usage date.
+     *
+     * @deprecated Replaced by {@link #setUsageDates(Collection)}.
      */
+    @Deprecated(since="1.5")
     public void setUsageDate(final Date newValue)  {
-        checkWritePermission(usageDate);
-        usageDate = TemporalDate.toTemporal(newValue);
+        setUsageDates(newValue == null ? List.of() : List.of(TemporalUtilities.createInstant(TemporalDate.toTemporal(newValue))));
+    }
+
+    /**
+     * Returns the date and time of the first use or range of uses of the resource and/or resource series.
+     *
+     * @return date of the first use of the resource.
+     *
+     * @since 1.5
+     */
+    @XmlElement(name = "usageDateTime")
+    @XmlJavaTypeAdapter(TM_Primitive.Since2014.class)
+    @UML(identifier="usageDateTime", obligation=OPTIONAL, specification=ISO_19115)
+    public Collection<TemporalPrimitive> getUsageDates() {
+        return usageDates = nonNullCollection(usageDates, TemporalPrimitive.class);
+    }
+
+    /**
+     * Sets the date and time of the first use or range of uses of the resource and/or resource series.
+     *
+     * @param  newValues  date of the first use of the resource.
+     *
+     * @since 1.5
+     */
+    public void setUsageDates(final Collection<TemporalPrimitive> newValues) {
+        usageDates = writeCollection(usageDates, newValues, TemporalPrimitive.class);
+    }
+
+    /**
+     * Adds a period for the range of uses of the resource and/or resource series.
+     * This is a convenience method for adding a temporal period.
+     *
+     * @param  beginning  the begin instant (inclusive), or {@code null}.
+     * @param  ending     the end instant (inclusive), or {@code null}.
+     *
+     * @since 1.5
+     */
+    public void addUsageDates(final Temporal beginning, final Temporal ending) {
+        TemporalPrimitive period = TemporalUtilities.createPeriod(beginning, ending);
+        if (period != null) {
+            getUsageDates().add(period);
+        }
     }
 
     /**

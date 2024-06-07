@@ -16,10 +16,13 @@
  */
 package org.apache.sis.metadata.iso.citation;
 
-import java.util.Date;
+import java.time.Instant;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.CitationDate;
 import org.apache.sis.util.ComparisonMode;
+
+// Specific to the main branch:
+import java.util.Date;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -49,9 +52,8 @@ public final class DefaultCitationDateTest extends TestCase {
             @Override public DateType getDateType() {return DateType.CREATION;}
         };
         final DefaultCitationDate copy = new DefaultCitationDate(original);
-        assertEquals(new Date(1305716658508L), copy.getDate());
+        assertEquals(Instant.ofEpochMilli(1305716658508L), copy.getReferenceDate());
         assertEquals(DateType.CREATION, copy.getDateType());
-        assertTrue (copy.equals(original, ComparisonMode.BY_CONTRACT));
         assertFalse(copy.equals(original, ComparisonMode.STRICT)); // Opportunist test.
     }
 }

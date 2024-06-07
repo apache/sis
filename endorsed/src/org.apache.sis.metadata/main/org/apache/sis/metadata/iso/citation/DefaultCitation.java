@@ -354,6 +354,10 @@ public class DefaultCitation extends ISOMetadata implements Citation {
     /**
      * Returns the date of the edition.
      *
+     * <div class="warning"><b>Upcoming API change</b><br>
+     * {@code Date} may be replaced by {@link Temporal} in GeoAPI 4.0.
+     * </div>
+     *
      * @return the edition date, or {@code null} if none.
      */
     @Override
@@ -364,12 +368,30 @@ public class DefaultCitation extends ISOMetadata implements Citation {
 
     /**
      * Sets the date of the edition.
+     * The specified value should be an instance of {@link java.time.LocalDate}, {@link java.time.LocalDateTime},
+     * {@link java.time.OffsetDateTime} or {@link java.time.ZonedDateTime}, depending whether hours are defined
+     * and how the timezone (if any) is defined. But other types are also allowed.
+     * For example, a citation date may be merely a {@link java.time.Year}.
      *
      * @param  newValue  the new edition date, or {@code null} if none.
+     *
+     * @since 1.5
      */
-    public void setEditionDate(final Date newValue) {
+    public void setEditionDate(final Temporal newValue) {
         checkWritePermission(editionDate);
-        editionDate = TemporalDate.toTemporal(newValue);
+        editionDate = newValue;
+    }
+
+    /**
+     * Sets the date of the edition.
+     *
+     * @param  newValue  the new edition date, or {@code null} if none.
+     *
+     * @deprecated Replaced by {@link #setEditionDate(Temporal)}.
+     */
+    @Deprecated(since="1.5")
+    public void setEditionDate(final Date newValue) {
+        setEditionDate(TemporalDate.toTemporal(newValue));
     }
 
     /**

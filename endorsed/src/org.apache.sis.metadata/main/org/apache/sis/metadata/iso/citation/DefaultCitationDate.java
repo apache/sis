@@ -27,6 +27,11 @@ import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.util.privy.TemporalDate;
 
+// Specific to the main branch:
+import org.opengis.annotation.UML;
+import static org.opengis.annotation.Obligation.MANDATORY;
+import static org.opengis.annotation.Specification.ISO_19115;
+
 
 /**
  * Reference date and event used to describe it.
@@ -52,7 +57,7 @@ import org.apache.sis.util.privy.TemporalDate;
  */
 @TitleProperty(name = "date")
 @XmlType(name = "CI_Date_Type", propOrder = {
-    "date",
+    "referenceDate",
     "dateType"
 })
 @XmlRootElement(name = "CI_Date")
@@ -119,8 +124,12 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
     public DefaultCitationDate(final CitationDate object) {
         super(object);
         if (object != null) {
-            date     = TemporalDate.toTemporal(object.getDate());
             dateType = object.getDateType();
+            if (object instanceof DefaultCitationDate) {
+                date = ((DefaultCitationDate) object).getReferenceDate();
+            } else {
+                date = TemporalDate.toTemporal(object.getDate());
+            }
         }
     }
 
@@ -152,35 +161,53 @@ public class DefaultCitationDate extends ISOMetadata implements CitationDate {
     /**
      * Returns the reference date for the cited resource.
      *
-     * <div class="warning"><b>Upcoming API change — temporal schema</b><br>
-     * The return type of this method may change in a future version.
-     * It may be replaced by {@link Temporal}.</div>
-     *
      * @return reference date for the cited resource, or {@code null}.
+     *
+     * @deprecated Replaced by {@link #getReferenceDate()}.
      */
     @Override
-    @XmlElement(name = "date", required = true)
+    @Deprecated(since="1.5")
     public Date getDate() {
-        return TemporalDate.toDate(date);
+        return TemporalDate.toDate(getReferenceDate());
     }
 
     /**
      * Sets the reference date for the cited resource.
      *
      * @param  newValue  the new date.
+     *
+     * @deprecated Replaced by {@link #setReferenceDate(Temporal)}.
      */
+    @Deprecated(since="1.5")
     public void setDate(final Date newValue) {
-        setDate(TemporalDate.toTemporal(newValue));
+        setReferenceDate(TemporalDate.toTemporal(newValue));
+    }
+
+    /**
+     * Returns the reference date for the cited resource.
+     *
+     * @return reference date for the cited resource, or {@code null}.
+     *
+     * @since 1.5
+     */
+    @XmlElement(name = "date", required = true)
+    @UML(identifier="date", obligation=MANDATORY, specification=ISO_19115)
+    public Temporal getReferenceDate() {
+        return date;
     }
 
     /**
      * Sets the reference date for the cited resource.
+     * The specified value should be an instance of {@link java.time.LocalDate}, {@link java.time.LocalDateTime},
+     * {@link java.time.OffsetDateTime} or {@link java.time.ZonedDateTime}, depending whether hours are defined
+     * and how the timezone (if any) is defined. But other types are also allowed.
+     * For example, a citation date may be merely a {@link java.time.Year}.
      *
      * @param  newValue  the new date.
      *
      * @since 1.5
      */
-    public void setDate(final Temporal newValue) {
+    public void setReferenceDate(final Temporal newValue) {
         checkWritePermission(date);
         date = newValue;
     }

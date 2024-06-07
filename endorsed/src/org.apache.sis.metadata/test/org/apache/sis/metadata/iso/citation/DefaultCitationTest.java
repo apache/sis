@@ -23,6 +23,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Locale;
 import java.io.InputStream;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import jakarta.xml.bind.JAXBException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
@@ -48,7 +50,6 @@ import org.apache.sis.metadata.iso.extent.Extents;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.metadata.xml.TestUsingFile;
-import org.apache.sis.test.TestUtilities;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 
@@ -251,13 +252,13 @@ public final class DefaultCitationTest extends TestUsingFile {
         final var contact = new DefaultContact(rs);
         contact.setContactInstructions(new SimpleInternationalString("Send carrier pigeon."));
         contact.getIdentifierMap().putSpecialized(IdentifierSpace.ID, "ip-protocol");
-        final DefaultCitation c = new DefaultCitation("Fight against poverty");
-        final DefaultResponsibleParty r1 = new DefaultResponsibleParty(Role.ORIGINATOR);
-        final DefaultResponsibleParty r2 = new DefaultResponsibleParty(Role.valueOf("funder"));
+        final var c  = new DefaultCitation("Fight against poverty");
+        final var r1 = new DefaultResponsibleParty(Role.ORIGINATOR);
+        final var r2 = new DefaultResponsibleParty(Role.valueOf("funder"));
         r1.setParties(Set.of(new DefaultIndividual("Maid Marian", null, contact)));
         r2.setParties(Set.of(new DefaultIndividual("Robin Hood",  null, contact)));
         c.setCitedResponsibleParties(List.of(r1, r2));
-        c.getDates().add(new DefaultCitationDate(TestUtilities.date("2015-10-17 00:00:00"), DateType.valueOf("adopted")));
+        c.getDates().add(new DefaultCitationDate(OffsetDateTime.of(2015, 10, 17, 2, 0, 0, 0, ZoneOffset.ofHours(2)), DateType.valueOf("adopted")));
         c.getPresentationForms().add(PresentationForm.valueOf("physicalObject"));
         /*
          * Check that XML file built by the marshaller is the same as the example file.
@@ -305,8 +306,8 @@ public final class DefaultCitationTest extends TestUsingFile {
     public static void verifyUnmarshalledCitation(final Citation c) {
         assertTitleEquals("Fight against poverty", c, "citation");
 
-        final CitationDate date = getSingleton(c.getDates());
-        assertEquals(date.getDate(), TestUtilities.date("2015-10-17 00:00:00"));
+        final var date = (DefaultCitationDate) getSingleton(c.getDates());
+        assertEquals(date.getReferenceDate(), OffsetDateTime.of(2015, 10, 17, 2, 0, 0, 0, ZoneOffset.ofHours(2)));
         assertEquals(DateType.valueOf("adopted"), date.getDateType());
         assertEquals(PresentationForm.valueOf("physicalObject"), getSingleton(c.getPresentationForms()));
 

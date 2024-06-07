@@ -2691,7 +2691,7 @@ public class MetadataBuilder {
         if (time != null) {
             final var event = new DefaultEvent();
             event.setContext(Context.ACQUISITION);
-            event.setTime(time);
+            event.setDateOfOccurrence(time);
             final var op = new DefaultOperation();
             op.setSignificantEvents(Collections.singleton(event));
             op.setType(OperationType.REAL);
