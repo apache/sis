@@ -16,18 +16,18 @@
  */
 package org.apache.sis.metadata.iso.citation;
 
+import java.time.Instant;
 import org.opengis.metadata.citation.DateType;
 import org.opengis.metadata.citation.CitationDate;
 import org.apache.sis.util.ComparisonMode;
-
-// Specific to the geoapi-4.0 branch:
-import java.time.Instant;
-import java.time.temporal.Temporal;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.time.temporal.Temporal;
 
 
 /**

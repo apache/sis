@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Locale;
-import java.util.Date;
 import java.time.temporal.TemporalAmount;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
@@ -64,6 +63,7 @@ import static org.apache.sis.test.TestUtilities.getSingleton;
 import static org.apache.sis.metadata.Assertions.assertTitleEquals;
 
 // Specific to the main and geoapi-3.1 branches:
+import java.util.Date;
 import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.referencing.ReferenceIdentifier;
 

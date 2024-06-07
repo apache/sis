@@ -46,8 +46,8 @@ import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.resources.Vocabulary;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.metadata.citation.Party;
 import org.opengis.referencing.ObjectDomain;
+import org.opengis.metadata.citation.Party;
 import org.opengis.referencing.gazetteer.Location;
 import org.opengis.referencing.gazetteer.LocationType;
 import org.opengis.referencing.gazetteer.ReferenceSystemUsingIdentifiers;

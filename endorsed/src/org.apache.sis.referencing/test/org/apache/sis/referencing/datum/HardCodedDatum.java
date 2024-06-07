@@ -19,7 +19,6 @@ package org.apache.sis.referencing.datum;
 import java.util.Map;
 import java.util.HashMap;
 import java.time.Instant;
-import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.measure.Units;
@@ -27,6 +26,9 @@ import static org.apache.sis.util.privy.Constants.SECONDS_PER_DAY;
 
 // Test dependencies
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.datum.PixelInCell;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.datum.RealizationMethod;

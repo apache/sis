@@ -19,7 +19,6 @@ package org.apache.sis.storage.aggregate;
 import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
-import org.apache.sis.coverage.grid.PixelInCell;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
@@ -28,6 +27,7 @@ import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridExtent;
+import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.coverage.privy.CommonDomainFinder;
 import org.apache.sis.util.privy.Strings;
 

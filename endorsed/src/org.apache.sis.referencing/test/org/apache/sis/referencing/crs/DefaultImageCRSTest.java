@@ -22,7 +22,6 @@ import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.AffineCS;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.referencing.cs.DefaultAffineCS;
 import org.apache.sis.referencing.datum.DefaultImageDatum;
 import org.apache.sis.io.wkt.Convention;
@@ -36,6 +35,9 @@ import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.referencing.cs.HardCodedAxes;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
 import static org.apache.sis.referencing.Assertions.assertWktEquals;
+
+// Specific to the main and geoapi-3.1 branches:
+import org.opengis.referencing.datum.PixelInCell;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import static org.opengis.test.Assertions.assertAxisDirectionsEqual;

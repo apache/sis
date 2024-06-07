@@ -28,7 +28,6 @@ import org.opengis.metadata.citation.Address;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.content.ImagingCondition;
-import org.opengis.metadata.constraint.Restriction;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.cs.AxisDirection;
 import org.apache.sis.util.SimpleInternationalString;
@@ -40,6 +39,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.constraint.Restriction;
 import org.opengis.parameter.ParameterDirection;
 
 
