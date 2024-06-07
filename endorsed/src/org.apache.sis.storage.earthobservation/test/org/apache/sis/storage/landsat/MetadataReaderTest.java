@@ -27,6 +27,8 @@ import org.apache.sis.test.TestCase;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.acquisition.Context;
 import org.opengis.metadata.acquisition.OperationType;
@@ -44,7 +46,6 @@ import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
 import org.opengis.test.dataset.ContentVerifier;
-import static org.apache.sis.test.TestUtilities.date;
 
 
 /**
@@ -100,10 +101,10 @@ public final class MetadataReaderTest extends TestCase {
             "defaultLocale+otherLocale[0]",                                                          "en",
             "metadataIdentifier.code",                                                               "LandsatTest",
             "metadataScope[0].resourceScope",                                                        ScopeCode.COVERAGE,
-            "dateInfo[0].date",                                                                      date("2016-06-27 16:48:12"),
+            "dateInfo[0].date",                                                                      OffsetDateTime.of(2016, 6, 27, 16, 48, 12, 0, ZoneOffset.UTC),
             "dateInfo[0].dateType",                                                                  DateType.CREATION,
             "identificationInfo[0].topicCategory[0]",                                                TopicCategory.GEOSCIENTIFIC_INFORMATION,
-            "identificationInfo[0].citation.date[0].date",                                           date("2016-06-27 16:48:12"),
+            "identificationInfo[0].citation.date[0].date",                                           OffsetDateTime.of(2016, 6, 27, 16, 48, 12, 0, ZoneOffset.UTC),
             "identificationInfo[0].citation.date[0].dateType",                                       DateType.CREATION,
             "identificationInfo[0].citation.title",                                                  "LandsatTest",
             "identificationInfo[0].credit[0]",                                                       "Derived from U.S. Geological Survey data",
@@ -123,7 +124,7 @@ public final class MetadataReaderTest extends TestCase {
             "acquisitionInformation[0].platform[0].instrument[0].identifier.code", "Pseudo TIRS",
             "acquisitionInformation[0].acquisitionRequirement[0].identifier.code", "Software unit tests",
             "acquisitionInformation[0].operation[0].significantEvent[0].context",  Context.ACQUISITION,
-            "acquisitionInformation[0].operation[0].significantEvent[0].time",     date("2016-06-26 03:02:01.090"),
+            "acquisitionInformation[0].operation[0].significantEvent[0].time",     OffsetDateTime.of(2016, 6, 26, 3, 2, 1, 90_000_000, ZoneOffset.UTC),
             "acquisitionInformation[0].operation[0].status",                       Progress.COMPLETED,
             "acquisitionInformation[0].operation[0].type",                         OperationType.REAL,
 

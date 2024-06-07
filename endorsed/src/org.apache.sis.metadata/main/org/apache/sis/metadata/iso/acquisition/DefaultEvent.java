@@ -65,7 +65,7 @@ import org.apache.sis.util.privy.TemporalDate;
     "trigger",
     "context",
     "sequence",
-    "time",
+    "dateOfOccurrence",
     "expectedObjectives",
     "relatedPass",
     "relatedSensors"
@@ -139,7 +139,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
             trigger            = object.getTrigger();
             context            = object.getContext();
             sequence           = object.getSequence();
-            time               = TemporalDate.toTemporal(object.getTime());
+            time               = object.getDateOfOccurrence();
             expectedObjectives = copyCollection(object.getExpectedObjectives(), Objective.class);
             relatedPass        = object.getRelatedPass();
             relatedSensors     = copyCollection(object.getRelatedSensors(), Instrument.class);
@@ -258,14 +258,12 @@ public class DefaultEvent extends ISOMetadata implements Event {
     /**
      * Returns the time the event occurred.
      *
-     * <div class="warning"><b>Upcoming API change — temporal schema</b><br>
-     * The return type of this method may change in a future version.
-     * It may be replaced by {@link Temporal}.</div>
-     *
      * @return time the event occurred, or {@code null}.
+     *
+     * @deprecated Replaced by {@link #getDateOfOccurrence()}.
      */
     @Override
-    @XmlElement(name = "time", required = true)
+    @Deprecated(since="1.5")
     public Date getTime() {
         return TemporalDate.toDate(time);
     }
@@ -274,9 +272,25 @@ public class DefaultEvent extends ISOMetadata implements Event {
      * Sets the time the event occurred.
      *
      * @param  newValue  the new time value.
+     *
+     * @deprecated Replaced by {@link #setDateOfOccurrence(Temporal)}.
      */
+    @Deprecated(since="1.5")
     public void setTime(final Date newValue) {
-        setTime(TemporalDate.toTemporal(newValue));
+        setDateOfOccurrence(TemporalDate.toTemporal(newValue));
+    }
+
+    /**
+     * Returns the time the event occurred.
+     *
+     * @return time the event occurred, or {@code null}.
+     *
+     * @since 1.5
+     */
+    @Override
+    @XmlElement(name = "time", required = true)
+    public Temporal getDateOfOccurrence() {
+        return time;
     }
 
     /**
@@ -286,7 +300,7 @@ public class DefaultEvent extends ISOMetadata implements Event {
      *
      * @since 1.5
      */
-    public void setTime(final Temporal newValue) {
+    public void setDateOfOccurrence(final Temporal newValue) {
         checkWritePermission(time);
         time = newValue;
     }

@@ -17,6 +17,9 @@
 package org.apache.sis.storage.netcdf;
 
 import java.io.IOException;
+import java.time.ZoneOffset;
+import java.time.LocalDateTime;
+import java.time.temporal.Temporal;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.citation.Role;
 import org.opengis.metadata.citation.DateType;
@@ -36,7 +39,6 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.storage.netcdf.base.TestCase;
 import org.apache.sis.storage.netcdf.classic.ChannelDecoderTest;
-import static org.apache.sis.test.TestUtilities.date;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.test.dataset.ContentVerifier;
@@ -77,7 +79,7 @@ public final class MetadataReaderTest extends TestCase {
         final Decoder input = ChannelDecoderTest.createChannelDecoder(TestData.NETCDF_2D_GEOGRAPHIC);
         final Metadata metadata = new MetadataReader(input).read();
         input.close(new DataStoreMock("lock"));
-        compareToExpected(metadata).assertMetadataEquals();
+        compareToExpected(metadata, false).assertMetadataEquals();
     }
 
     /**
@@ -92,16 +94,30 @@ public final class MetadataReaderTest extends TestCase {
         final Decoder input = createDecoder(TestData.NETCDF_2D_GEOGRAPHIC);
         final Metadata metadata = new MetadataReader(input).read();
         input.close(new DataStoreMock("lock"));
-        final ContentVerifier verifier = compareToExpected(metadata);
+        final ContentVerifier verifier = compareToExpected(metadata, true);
         verifier.addExpectedValue("identificationInfo[0].resourceFormat[0].formatSpecificationCitation.alternateTitle[1]", "NetCDF-3/CDM");
         verifier.assertMetadataEquals();
     }
 
     /**
+     * Converts the given object to the actual type stored in the metadata.
+     *
+     * @param  expected  the expected date to convert.
+     * @param  ucar      whether the UCAR wrapper is used.
+     * @return the given date converted to the expected type.
+     */
+    private static Temporal actual(final LocalDateTime expected, final boolean ucar) {
+        return ucar ? expected.toInstant(ZoneOffset.UTC) : expected;
+    }
+
+    /**
      * Creates comparator for the string representation of the given metadata object with the expected one.
      * The given metadata shall have been created from the {@link TestData#NETCDF_2D_GEOGRAPHIC} dataset.
+     *
+     * @param  actual    the metadata which have been read.
+     * @param  ucar      whether the UCAR wrapper is used.
      */
-    static ContentVerifier compareToExpected(final Metadata actual) {
+    static ContentVerifier compareToExpected(final Metadata actual, final boolean ucar) {
         final ContentVerifier verifier = new ContentVerifier();
         verifier.addPropertyToIgnore(Metadata.class, "metadataStandard");
         verifier.addPropertyToIgnore(Metadata.class, "referenceSystemInfo");
@@ -115,7 +131,7 @@ public final class MetadataReaderTest extends TestCase {
             "identificationInfo[0].resourceFormat[0].formatSpecificationCitation.citedResponsibleParty[0].role", Role.PRINCIPAL_INVESTIGATOR,
 
             // Read from the file
-            "dateInfo[0].date",                                                        date("2018-05-15 13:01:00"),
+            "dateInfo[0].date",                                                        actual(LocalDateTime.of(2018, 5, 15, 13, 1), ucar),
             "dateInfo[0].dateType",                                                    DateType.REVISION,
             "metadataScope[0].resourceScope",                                          ScopeCode.DATASET,
             "identificationInfo[0].abstract",                                          "Global, two-dimensional model data",
@@ -129,8 +145,8 @@ public final class MetadataReaderTest extends TestCase {
             "identificationInfo[0].pointOfContact[0].party[0].name",                   "NOAA/NWS/NCEP",
             "identificationInfo[0].citation.citedResponsibleParty[0].role",            Role.ORIGINATOR,
             "identificationInfo[0].citation.citedResponsibleParty[0].party[0].name",   "NOAA/NWS/NCEP",
-            "identificationInfo[0].citation.date[0].date",                             date("2005-09-22 00:00:00"),
-            "identificationInfo[0].citation.date[1].date",                             date("2018-05-15 13:00:00"),
+            "identificationInfo[0].citation.date[0].date",                             actual(LocalDateTime.of(2005, 9, 22,  0, 0), ucar),
+            "identificationInfo[0].citation.date[1].date",                             actual(LocalDateTime.of(2018, 5, 15, 13, 0), ucar),
             "identificationInfo[0].citation.date[0].dateType",                         DateType.CREATION,
             "identificationInfo[0].citation.date[1].dateType",                         DateType.REVISION,
             "identificationInfo[0].citation.identifier[0].code",                       "NCEP/SST/Global_5x2p5deg/SST_Global_5x2p5deg_20050922_0000.nc",

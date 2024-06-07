@@ -30,6 +30,16 @@ import java.text.FieldPosition;
 import java.text.ParsePosition;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalTime;
+import java.time.OffsetTime;
+import java.time.OffsetDateTime;
+import java.time.chrono.ChronoLocalDate;
+import java.time.chrono.ChronoLocalDateTime;
+import java.time.chrono.ChronoZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.time.temporal.TemporalAccessor;
 import javax.measure.Quantity;
 import javax.measure.Unit;
 import org.opengis.referencing.IdentifiedObject;
@@ -95,7 +105,7 @@ import static org.apache.sis.util.privy.Constants.UTC;
  * in case of error.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.1
+ * @version 1.5
  *
  * @param <T>  the base type of objects parsed and formatted by this class.
  *
@@ -452,6 +462,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      *   <tr><td>{@link DirectPosition}</td>  <td>{@link org.apache.sis.geometry.CoordinateFormat}</td></tr>
      *   <tr><td>{@link Angle}</td>           <td>{@link AngleFormat}</td></tr>
      *   <tr><td>{@link Date}</td>            <td>{@link DateFormat}</td></tr>
+     *   <tr><td>{@link TemporalAccessor}</td><td>{@link DateTimeFormatter}</td></tr>
      *   <tr><td>{@link Number}</td>          <td>{@link NumberFormat}</td></tr>
      *   <tr><td>{@link Unit}</td>            <td>{@link UnitFormat}</td></tr>
      *   <tr><td>{@link Quantity}</td>        <td>{@link QuantityFormat}</td></tr>
@@ -473,7 +484,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      */
     protected Format createFormat(final Class<?> valueType) {
         /*
-         * The first case below is an apparent exception to the 'expected == type' rule
+         * The first case below is an apparent exception to the `expected == type` rule
          * documented in this method javadoc. But actually it is not, since the call to
          * DefaultFormat.getInstance(…) will indirectly perform this kind of comparison.
          */
@@ -487,12 +498,26 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
             } else if (Numbers.isInteger(valueType)) {
                 return NumberFormat.getIntegerInstance(locale);
             }
+        } else if (TemporalAccessor.class.isAssignableFrom(valueType)) {
+            final DateTimeFormatter format;
+            if (valueType == ChronoLocalDateTime.class || valueType == ChronoZonedDateTime.class || valueType == OffsetDateTime.class) {
+                format = DateTimeFormatter.ofLocalizedDateTime(getTemporalStyle(true), getTemporalStyle(false));
+            } else if (valueType == ChronoLocalDate.class) {
+                format = DateTimeFormatter.ofLocalizedDate(getTemporalStyle(true));
+            } else if (valueType == LocalTime.class || valueType == OffsetTime.class) {
+                format = DateTimeFormatter.ofLocalizedTime(getTemporalStyle(false));
+            } else if (valueType == Instant.class) {
+                format = DateTimeFormatter.ISO_INSTANT;
+            } else {
+                return null;
+            }
+            return format.withLocale(locale).toFormat();
         } else if (valueType == Date.class) {
             final DateFormat format;
-            if (!Locale.ROOT.equals(locale)) {
-                format = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, locale);
-            } else {
+            if (Locale.ROOT.equals(locale)) {
                 format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ROOT);
+            } else {
+                format = DateFormat.getDateTimeInstance(getLegacyStyle(true), getLegacyStyle(false), locale);
             }
             format.setTimeZone(getTimeZone());
             return format;
@@ -518,6 +543,35 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
     }
 
     /**
+     * Returns the style to use for formatting dates or times.
+     * This is invoked by the default implementation of {@link #createFormat(Class)} when
+     * the formatter to create is a {@link DateFormat} or a {@link DateTimeFormatter}.
+     *
+     * @param  dates  {@code true} for the date style, or {@code false} for the time (hours) style.
+     * @return the date or time style to use.
+     * @since 1.5
+     */
+    protected FormatStyle getTemporalStyle(final boolean dates) {
+        return FormatStyle.MEDIUM;
+    }
+
+    /**
+     * Returns the style to use for formatting dates or times using legacy formatter.
+     *
+     * @param  dates  {@code true} for the date style, or {@code false} for the time (hours) style.
+     * @return the date or time style to use.
+     */
+    private int getLegacyStyle(final boolean dates) {
+        switch (getTemporalStyle(dates)) {
+            case FULL:   return DateFormat.FULL;
+            case LONG:   return DateFormat.LONG;
+            case MEDIUM: return DateFormat.MEDIUM;
+            case SHORT:  return DateFormat.SHORT;
+            default:     return DateFormat.DEFAULT;
+        }
+    }
+
+    /**
      * Returns a clone of this format.
      *
      * @return a clone of this format.
@@ -539,7 +593,7 @@ public abstract class CompoundFormat<T> extends Format implements Localized {
      * Do not override equals(Object) and hashCode(). They are unlikely to be needed since we
      * do not expect CompoundFormats to be used as keys in HashMap, especially since they are
      * mutable. Furthermore, it is difficult to check for equality since the values in the
-     * 'formats' map are created only when needed and we don't know how subclasses will
+     * `formats` map are created only when needed and we don't know how subclasses will
      * configure them.
      */
 }

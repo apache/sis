@@ -102,6 +102,7 @@
     @XmlJavaTypeAdapter(CI_ResponsibleParty.class),
     @XmlJavaTypeAdapter(EX_Extent.class),
     @XmlJavaTypeAdapter(GO_DateTime.class),
+    @XmlJavaTypeAdapter(GO_Temporal.class),
     @XmlJavaTypeAdapter(GO_Real.class),
     @XmlJavaTypeAdapter(GM_Object.class),
     @XmlJavaTypeAdapter(MD_Identifier.class),

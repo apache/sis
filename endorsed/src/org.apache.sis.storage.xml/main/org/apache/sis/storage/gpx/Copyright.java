@@ -20,9 +20,11 @@ import java.net.URI;
 import java.util.List;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Locale;
 import java.util.Objects;
+import java.time.Year;
+import java.time.temporal.Temporal;
+import java.time.temporal.ChronoField;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.metadata.Identifier;
@@ -111,9 +113,9 @@ resp:   for (final Responsibility r : c.getResponsibleParties()) {
         }
         for (final Citation ci : c.getReferences()) {
             for (final CitationDate d : ci.getDates()) {
-                final Date date = d.getDate();
+                final Temporal date = d.getReferenceDate();
                 if (date != null) {
-                    year = date.getYear() + 1900;
+                    year = date.get(ChronoField.YEAR);
                     break;
                 }
             }
@@ -299,9 +301,9 @@ resp:   for (final Responsibility r : c.getResponsibleParties()) {
      * @return reference date for the cited resource.
      */
     @Override
-    public Date getDate() {
+    public Temporal getReferenceDate() {
         if (year != null) {
-            return new Date(year - 1900, 0, 1);
+            return Year.of(year);
         }
         return null;
     }
