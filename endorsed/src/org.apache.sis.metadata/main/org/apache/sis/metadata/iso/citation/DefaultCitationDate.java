@@ -25,7 +25,7 @@ import org.opengis.metadata.citation.CitationDate;
 import org.opengis.metadata.citation.DateType;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.util.privy.TemporalDate;
+import org.apache.sis.temporal.TemporalDate;
 
 
 /**
@@ -50,7 +50,7 @@ import org.apache.sis.util.privy.TemporalDate;
  * @version 1.5
  * @since   0.3
  */
-@TitleProperty(name = "date")
+@TitleProperty(name = "referenceDate")
 @XmlType(name = "CI_Date_Type", propOrder = {
     "referenceDate",
     "dateType"

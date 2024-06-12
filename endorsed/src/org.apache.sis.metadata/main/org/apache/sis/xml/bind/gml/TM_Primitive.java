@@ -23,7 +23,7 @@ import org.opengis.temporal.TemporalPrimitive;
 import org.apache.sis.xml.privy.XmlUtilities;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.gco.PropertyType;
-import org.apache.sis.pending.temporal.TemporalUtilities;
+import org.apache.sis.temporal.TemporalUtilities;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -82,8 +82,10 @@ public class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimitive> 
      */
     @XmlElement(name = "TimePeriod")
     public final TimePeriod getTimePeriod() {
-        Period period = TemporalUtilities.getPeriod(metadata);
-        return (period != null) ? new TimePeriod(period) : null;
+        if (metadata instanceof Period) {
+            return new TimePeriod((Period) metadata);
+        }
+        return null;
     }
 
     /**

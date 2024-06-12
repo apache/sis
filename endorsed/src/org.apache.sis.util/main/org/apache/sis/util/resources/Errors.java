@@ -502,6 +502,11 @@ public class Errors extends IndexedResourceBundle {
         public static final short InconsistentUnitsForCS_1 = 87;
 
         /**
+         * The position is indeterminate.
+         */
+        public static final short IndeterminatePosition = 206;
+
+        /**
          * Index {0} is out of bounds.
          */
         public static final short IndexOutOfBounds_1 = 88;

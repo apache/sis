@@ -48,7 +48,7 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.filter.privy.FunctionNames;
 import org.apache.sis.filter.privy.Visitor;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.temporal.StandardDateFormat;
 
 
 /**

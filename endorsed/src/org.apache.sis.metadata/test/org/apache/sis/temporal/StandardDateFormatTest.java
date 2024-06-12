@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.privy;
+package org.apache.sis.temporal;
 
 import java.time.Instant;
 import java.time.LocalDate;

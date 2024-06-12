@@ -34,9 +34,9 @@ import org.apache.sis.xml.privy.LegacyNamespaces;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.internal.Dependencies;
-import org.apache.sis.pending.temporal.TemporalUtilities;
+import org.apache.sis.temporal.TemporalUtilities;
+import org.apache.sis.temporal.TemporalDate;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.privy.TemporalDate;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.metadata.citation.Responsibility;
@@ -239,7 +239,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
             final Collection<TemporalPrimitive> usageDates = getUsageDates();
             if (usageDates != null) {
                 for (TemporalPrimitive t : usageDates) {
-                    Date p = TemporalDate.toDate(t.position().orElse(null));
+                    Date p = TemporalDate.toDate(TemporalUtilities.getInstant(t));
                     if (p != null) {
                         return p;
                     }

@@ -52,7 +52,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.util.privy.Numerics;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.temporal.StandardDateFormat;
 import org.apache.sis.storage.DataOptionKey;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;

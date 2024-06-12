@@ -30,7 +30,7 @@ import org.opengis.metadata.distribution.StandardOrderProcess;
 import org.apache.sis.xml.bind.gco.GO_RecordType;
 import org.apache.sis.xml.bind.gco.GO_Record;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.util.privy.TemporalDate;
+import org.apache.sis.temporal.TemporalDate;
 
 
 /**

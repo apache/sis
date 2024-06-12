@@ -27,8 +27,8 @@ import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.measure.Range;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.TemporalDate;
 import org.apache.sis.util.privy.Constants;
+import org.apache.sis.temporal.TemporalDate;
 
 
 /**
