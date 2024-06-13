@@ -51,6 +51,11 @@ final class DefaultInstant implements Instant, Serializable {
     private static final long serialVersionUID = 3898772638524283287L;
 
     /**
+     * The constant for the "unknown" instant.
+     */
+    static final DefaultInstant UNKNOWN = new DefaultInstant(null, IndeterminateValue.UNKNOWN);
+
+    /**
      * The temporal position as a date, time or date/time.
      * May be {@code null} if {@link #indeterminate} is non-null and not "before" or "after".
      */

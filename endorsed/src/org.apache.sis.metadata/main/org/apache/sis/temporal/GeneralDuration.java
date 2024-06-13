@@ -45,15 +45,12 @@ import org.opengis.temporal.IndeterminatePositionException;
 
 /**
  * A data type to be used for describing length or distance in the temporal dimension.
- * This implementation combine {@link java.time.Period} with {@link java.time.Duration}
- * for situation where both of them are needed together (which is not recommended).
- *
- * This class also contains a {@code distance(…)} method for computing the distance between two ISO 19108 instants.
- * This is defined here for reducing class loading in the common case where {@code distance(…)} is not invoked.
+ * This implementation combines {@link java.time.Period} with {@link java.time.Duration}
+ * for situations where both of them are needed together (which is not recommended).
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class GeneralDuration implements TemporalAmount, Serializable {
+public final class GeneralDuration implements TemporalAmount, Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -63,13 +60,13 @@ final class GeneralDuration implements TemporalAmount, Serializable {
      * The period in numbers of years, months and days.
      * Shall be non-null and non-zero.
      */
-    private final Period period;
+    public final Period period;
 
     /**
      * The time part of the period in numbers of hours, minutes and seconds.
      * Shall be non-null, non-zero and less than one day.
      */
-    private final Duration time;
+    public final Duration time;
 
     /**
      * Creates a new instance with the given parts.
@@ -81,6 +78,41 @@ final class GeneralDuration implements TemporalAmount, Serializable {
     private GeneralDuration(final Period period, final Duration time) {
         this.period = period;
         this.time   = time;
+    }
+
+    /**
+     * Parses a temporal amount which may contain a period and a duration part.
+     * This method returns a {@link Period} or {@link Duration} if those objects
+     * are sufficient, or an instance of {@code GeneralDuration} is last resort.
+     *
+     * @param  text  the text to parse.
+     * @return the parsed period and/or duration.
+     * @throws DateTimeParseException if the given text cannot be parsed.
+     *
+     * @see Period#parse(CharSequence)
+     * @see Duration#parse(CharSequence)
+     */
+    public static TemporalAmount parse(final CharSequence text) {
+        char previousLetter = 0;
+        final int length = text.length();
+        for (int i=0; i<length; i++) {
+            char c = text.charAt(i);
+            if (c >= 'a' && c <= 'z') c -= 'a' - 'A';       // Quick upper case, ASCII characters only.
+            if (c >= 'A' && c <= 'Z') {
+                if (c == 'T') {
+                    if (previousLetter == 'P') {
+                        return Duration.parse(text);
+                    }
+                    var period   = Period.parse(text.subSequence(0, i));
+                    var duration = Duration.parse(new StringBuilder(length - i + 1).append('P').append(text, i, length));
+                    if (duration.isZero()) return period;
+                    if  (period.isZero())  return duration;
+                    return new GeneralDuration(period, duration);
+                }
+                previousLetter = c;
+            }
+        }
+        return Period.parse(text);
     }
 
     /**

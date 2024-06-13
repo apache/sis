@@ -19,6 +19,8 @@ package org.apache.sis.temporal;
 import java.util.Date;
 import java.time.temporal.Temporal;
 import org.opengis.temporal.TemporalPrimitive;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.temporal.IndeterminateValue;
@@ -46,7 +48,42 @@ public final class TemporalUtilities {
      * @return the instant, or an unknown instant if the given time was null.
      */
     public static Instant createInstant(final Temporal time) {
-        return new DefaultInstant(time, (time != null) ? null : IndeterminateValue.UNKNOWN);
+        return (time == null) ? DefaultInstant.UNKNOWN : new DefaultInstant(time, null);
+    }
+
+    /**
+     * Creates an instant for the given Java temporal instant associated to the indeterminate value.
+     * This is used for creating "before" or "after" instant.
+     *
+     * @param  time   the date for which to create instant.
+     * @param  value  the indeterminate value.
+     * @return the instant.
+     */
+    public static Instant createInstant(final Temporal time, final IndeterminateValue value) {
+        ArgumentChecks.ensureNonNull("value", value);
+        if (value == IndeterminateValue.UNKNOWN) {
+            return DefaultInstant.UNKNOWN;
+        }
+        if (value == IndeterminateValue.BEFORE || value == IndeterminateValue.AFTER) {
+            ArgumentChecks.ensureNonNull("time", time);
+        }
+        return new DefaultInstant(time, value);
+    }
+
+    /**
+     * Creates an instant for the given indeterminate value.
+     * The given value cannot be "before" or "after".
+     *
+     * @param  value  the indeterminate value.
+     * @return the instant for the given indeterminate value.
+     * @throws IllegalArgumentException if the given value is "before" or "after".
+     */
+    public static Instant createInstant(final IndeterminateValue value) {
+        ArgumentChecks.ensureNonNull("value", value);
+        if (value == IndeterminateValue.BEFORE || value == IndeterminateValue.AFTER) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "value", value));
+        }
+        return (value == IndeterminateValue.UNKNOWN) ? DefaultInstant.UNKNOWN : new DefaultInstant(null, value);
     }
 
     /**
@@ -61,6 +98,22 @@ public final class TemporalUtilities {
             return null;
         }
         return new DefaultPeriod(createInstant(beginning), createInstant(ending));
+    }
+
+    /**
+     * Creates a period for the given begin and end instant.
+     *
+     * @param  beginning  the begin instant (inclusive), or {@code null}.
+     * @param  ending     the end instant (exclusive), or {@code null}.
+     * @return the period, or {@code null} if both arguments are null.
+     */
+    public static Period createPeriod(Instant beginning, Instant ending) {
+        if (beginning == null && ending == null) {
+            return null;
+        }
+        if (beginning == null) beginning = DefaultInstant.UNKNOWN;
+        if    (ending == null)    ending = DefaultInstant.UNKNOWN;
+        return new DefaultPeriod(beginning, ending);
     }
 
     /**
