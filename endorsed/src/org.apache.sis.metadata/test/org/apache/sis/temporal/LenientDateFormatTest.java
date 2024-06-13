@@ -30,19 +30,19 @@ import static org.apache.sis.test.TestUtilities.date;
 
 
 /**
- * Tests the {@link StandardDateFormat} class.
+ * Tests the {@link LenientDateFormat} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class StandardDateFormatTest extends TestCase {
+public final class LenientDateFormatTest extends TestCase {
     /**
      * Creates a new test case.
      */
-    public StandardDateFormatTest() {
+    public LenientDateFormatTest() {
     }
 
     /**
-     * Tests {@link StandardDateFormat#toISO(CharSequence, int, int)}.
+     * Tests {@link LenientDateFormat#toISO(CharSequence, int, int)}.
      */
     @Test
     public void testToISO() {
@@ -58,7 +58,7 @@ public final class StandardDateFormatTest extends TestCase {
      * Helper method for {@link #testToISO()}.
      */
     private static String toISO(final String text) {
-        return StandardDateFormat.toISO(text, 0, text.length()).toString();
+        return LenientDateFormat.toISO(text, 0, text.length()).toString();
     }
 
     /**
@@ -69,7 +69,7 @@ public final class StandardDateFormatTest extends TestCase {
     @Test
     public void testParse() throws ParseException {
         final long day = 1466985600000L;
-        final StandardDateFormat f = new StandardDateFormat();
+        final LenientDateFormat f = new LenientDateFormat();
         assertEquals(day + ((16*60 + 48)*60     )*1000,      f.parse("2016-06-27T16:48Z")      .getTime());
         assertEquals(day + ((16*60 + 48)*60 + 12)*1000,      f.parse("2016-06-27T16:48:12Z")   .getTime());
         assertEquals(day,                                    f.parse("2016-06-27")             .getTime());
@@ -92,13 +92,13 @@ public final class StandardDateFormatTest extends TestCase {
     @Test
     public void testParseBest() {
         final long day = 1466985600000L;
-        assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60     )*1000),      StandardDateFormat.parseBest("2016-06-27T16:48Z"));
-        assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60 + 12)*1000),      StandardDateFormat.parseBest("2016-06-27T16:48:12Z"));
-        assertEquals(Instant.ofEpochMilli(day + (( 3*60 +  2)*60 +  1)*1000 + 90), StandardDateFormat.parseBest("2016-06-27T03:02:01.09Z"));
-        assertEquals(LocalDateTime.of(2016, 6, 27, 16, 48, 12),                    StandardDateFormat.parseBest("2016-06-27T16:48:12"));
-        assertEquals(LocalDateTime.of(2016, 6, 27, 16, 48),                        StandardDateFormat.parseBest("2016-06-27T16:48"));
-        assertEquals(LocalDateTime.of(2016, 6, 27, 16, 48),                        StandardDateFormat.parseBest("2016-06-27 16:48"));
-        assertEquals(LocalDate.of(2016, 6, 27),                                    StandardDateFormat.parseBest("2016-06-27"));
+        assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60     )*1000),      LenientDateFormat.parseBest("2016-06-27T16:48Z"));
+        assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60 + 12)*1000),      LenientDateFormat.parseBest("2016-06-27T16:48:12Z"));
+        assertEquals(Instant.ofEpochMilli(day + (( 3*60 +  2)*60 +  1)*1000 + 90), LenientDateFormat.parseBest("2016-06-27T03:02:01.09Z"));
+        assertEquals(LocalDateTime.of(2016, 6, 27, 16, 48, 12),                    LenientDateFormat.parseBest("2016-06-27T16:48:12"));
+        assertEquals(LocalDateTime.of(2016, 6, 27, 16, 48),                        LenientDateFormat.parseBest("2016-06-27T16:48"));
+        assertEquals(LocalDateTime.of(2016, 6, 27, 16, 48),                        LenientDateFormat.parseBest("2016-06-27 16:48"));
+        assertEquals(LocalDate.of(2016, 6, 27),                                    LenientDateFormat.parseBest("2016-06-27"));
     }
 
     /**
@@ -107,14 +107,14 @@ public final class StandardDateFormatTest extends TestCase {
     @Test
     public void testParseInstant() {
         final long day = 1466985600000L;
-        assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60     )*1000),      StandardDateFormat.parseInstantUTC("2016-06-27T16:48Z"));
-        assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60 + 12)*1000),      StandardDateFormat.parseInstantUTC("2016-06-27T16:48:12Z"));
-        assertEquals(Instant.ofEpochMilli(day + (( 3*60 +  2)*60 +  1)*1000 + 90), StandardDateFormat.parseInstantUTC("2016-06-27T03:02:01.09Z"));
-        assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60 + 12)*1000),      StandardDateFormat.parseInstantUTC("2016-06-27T16:48:12"));
-        assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60     )*1000),      StandardDateFormat.parseInstantUTC("2016-06-27T16:48"));
-        assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60     )*1000),      StandardDateFormat.parseInstantUTC("2016-06-27 16:48"));
-        assertEquals(Instant.ofEpochMilli(day),                                    StandardDateFormat.parseInstantUTC("2016-06-27"));
-        assertEquals(Instant.ofEpochMilli(day + 2000),                             StandardDateFormat.parseInstantUTC("2016-06-27 00:00:02 UTC"));
+        assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60     )*1000),      LenientDateFormat.parseInstantUTC("2016-06-27T16:48Z"));
+        assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60 + 12)*1000),      LenientDateFormat.parseInstantUTC("2016-06-27T16:48:12Z"));
+        assertEquals(Instant.ofEpochMilli(day + (( 3*60 +  2)*60 +  1)*1000 + 90), LenientDateFormat.parseInstantUTC("2016-06-27T03:02:01.09Z"));
+        assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60 + 12)*1000),      LenientDateFormat.parseInstantUTC("2016-06-27T16:48:12"));
+        assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60     )*1000),      LenientDateFormat.parseInstantUTC("2016-06-27T16:48"));
+        assertEquals(Instant.ofEpochMilli(day + ((16*60 + 48)*60     )*1000),      LenientDateFormat.parseInstantUTC("2016-06-27 16:48"));
+        assertEquals(Instant.ofEpochMilli(day),                                    LenientDateFormat.parseInstantUTC("2016-06-27"));
+        assertEquals(Instant.ofEpochMilli(day + 2000),                             LenientDateFormat.parseInstantUTC("2016-06-27 00:00:02 UTC"));
     }
 
     /**
@@ -129,7 +129,7 @@ public final class StandardDateFormatTest extends TestCase {
     public void testNegativeYear() throws ParseException {
         final var julian = new Date(-210866760000000L);         // Same epoch as CommonCRS.Temporal.JULIAN.
         final var expected = "-4713-11-24T12:00:00.000";        // Proleptic Gregorian calendar, astronomical year.
-        final var f = new StandardDateFormat();
+        final var f = new LenientDateFormat();
         assertEquals(expected, f.format(julian));
         assertEquals(julian, f.parse(expected));
     }

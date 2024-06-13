@@ -94,7 +94,7 @@ import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.privy.URLs;
-import org.apache.sis.temporal.StandardDateFormat;
+import org.apache.sis.temporal.LenientDateFormat;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
@@ -1720,7 +1720,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                             throw new FactoryDataException(resources().getString(Resources.Keys.DatumOriginShallBeDate));
                         }
                         try {
-                            originDate = StandardDateFormat.parseBest(anchor);
+                            originDate = LenientDateFormat.parseBest(anchor);
                         } catch (RuntimeException e) {
                             throw new FactoryDataException(resources().getString(Resources.Keys.DatumOriginShallBeDate), e);
                         }

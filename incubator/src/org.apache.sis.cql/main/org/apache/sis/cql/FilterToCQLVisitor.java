@@ -48,7 +48,7 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.filter.privy.FunctionNames;
 import org.apache.sis.filter.privy.Visitor;
-import org.apache.sis.temporal.StandardDateFormat;
+import org.apache.sis.temporal.LenientDateFormat;
 
 
 /**
@@ -174,10 +174,10 @@ final class FilterToCQLVisitor extends Visitor<Feature,StringBuilder> {
                 sb.append(value);
             } else if (value instanceof Date) {
                 final Date date = (Date) value;
-                sb.append(StandardDateFormat.FORMAT.format(date.toInstant()));
+                sb.append(LenientDateFormat.FORMAT.format(date.toInstant()));
             } else if (value instanceof TemporalAccessor) {
                 final TemporalAccessor date = (TemporalAccessor) value;
-                sb.append(StandardDateFormat.FORMAT.format(date));
+                sb.append(LenientDateFormat.FORMAT.format(date));
             } else if (value instanceof Geometry) {
                 final Geometry geometry = (Geometry) value;
                 final WKTWriter writer = new WKTWriter();

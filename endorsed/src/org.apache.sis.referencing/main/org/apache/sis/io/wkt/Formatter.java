@@ -73,7 +73,7 @@ import org.apache.sis.util.privy.X364;
 import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.temporal.TemporalDate;
-import org.apache.sis.temporal.StandardDateFormat;
+import org.apache.sis.temporal.LenientDateFormat;
 import org.apache.sis.system.Configuration;
 import org.apache.sis.metadata.simple.SimpleExtent;
 import org.apache.sis.metadata.iso.extent.Extents;
@@ -372,7 +372,7 @@ public class Formatter implements Localized {
         this.separatorNewLine = this.symbols.separatorNewLine();
         this.indentation      = (byte) indentation;
         this.numberFormat     = symbols.createNumberFormat();
-        this.dateFormat       = new StandardDateFormat(symbols.getLocale());
+        this.dateFormat       = new LenientDateFormat(symbols.getLocale());
         this.unitFormat       = new UnitFormat(symbols.getLocale());
         this.buffer           = new StringBuffer();
         unitFormat.setStyle(UnitFormat.Style.NAME);

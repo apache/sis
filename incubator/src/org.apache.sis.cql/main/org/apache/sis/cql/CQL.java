@@ -61,7 +61,7 @@ import org.apache.sis.cql.internal.CQLParser.ExpressionUnaryContext;
 import org.apache.sis.cql.internal.CQLParser.FilterContext;
 import org.apache.sis.cql.internal.CQLParser.FilterGeometryContext;
 import org.apache.sis.cql.internal.CQLParser.FilterTermContext;
-import org.apache.sis.temporal.StandardDateFormat;
+import org.apache.sis.temporal.LenientDateFormat;
 import static org.apache.sis.cql.internal.CQLParser.*;
 
 
@@ -284,7 +284,7 @@ public final class CQL {
                 case INT:   return ff.literal(Integer.valueOf(tree.getText()));
                 case FLOAT: return ff.literal(Double.valueOf(tree.getText()));
                 case DATE: {
-                    TemporalAccessor ta = StandardDateFormat.FORMAT.parse(tree.getText());
+                    TemporalAccessor ta = LenientDateFormat.FORMAT.parse(tree.getText());
                     return ff.literal(ta);
                     // TODO! return ff.literal(TemporalUtilities.getTimeInMillis(tree.getText()));
                 }
