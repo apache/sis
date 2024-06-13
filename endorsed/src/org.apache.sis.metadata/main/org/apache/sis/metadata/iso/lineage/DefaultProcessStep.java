@@ -37,7 +37,7 @@ import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.gml.TM_Primitive;
 import org.apache.sis.xml.bind.metadata.MD_Scope;
 import org.apache.sis.xml.privy.LegacyNamespaces;
-import org.apache.sis.temporal.TemporalUtilities;
+import org.apache.sis.temporal.TemporalObjects;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.maintenance.Scope;
@@ -302,7 +302,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     @XmlElement(name = "dateTime", namespace = LegacyNamespaces.GMD)
     public Date getDate() {
         if (FilterByVersion.LEGACY_METADATA.accept()) {
-            Date date = TemporalUtilities.getAnyDate(getStepDateTime());
+            Date date = TemporalObjects.getAnyDate(getStepDateTime());
             if (date == null) {
                 date = ProcessStep.super.getDate();
             }
@@ -320,7 +320,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      */
     @Deprecated(since="1.0")
     public void setDate(final Date newValue) {
-        setStepDateTime(TemporalUtilities.createInstant(newValue == null ? null : newValue.toInstant()));
+        setStepDateTime(TemporalObjects.createInstant(newValue == null ? null : newValue.toInstant()));
     }
 
     /**

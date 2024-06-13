@@ -18,7 +18,7 @@ package org.apache.sis.filter;
 
 import java.time.Instant;
 import java.io.Serializable;
-import org.apache.sis.temporal.TemporalUtilities;
+import org.apache.sis.temporal.TemporalObjects;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
@@ -59,7 +59,7 @@ final class PeriodLiteral implements Period, Literal<Feature,Period>, Serializab
      */
     @Override
     public org.opengis.temporal.Instant getBeginning() {
-        return TemporalUtilities.createInstant(Instant.ofEpochMilli(begin));
+        return TemporalObjects.createInstant(Instant.ofEpochMilli(begin));
     }
 
     /**
@@ -67,7 +67,7 @@ final class PeriodLiteral implements Period, Literal<Feature,Period>, Serializab
      */
     @Override
     public org.opengis.temporal.Instant getEnding() {
-        return TemporalUtilities.createInstant(Instant.ofEpochMilli(end));
+        return TemporalObjects.createInstant(Instant.ofEpochMilli(end));
     }
 
     /**

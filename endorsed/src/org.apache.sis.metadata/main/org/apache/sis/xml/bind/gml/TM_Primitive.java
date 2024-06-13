@@ -23,7 +23,7 @@ import org.opengis.temporal.TemporalPrimitive;
 import org.apache.sis.xml.privy.XmlUtilities;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.xml.bind.gco.PropertyType;
-import org.apache.sis.temporal.TemporalUtilities;
+import org.apache.sis.temporal.TemporalObjects;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -96,7 +96,7 @@ public class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimitive> 
      */
     @XmlElement(name = "TimeInstant")
     public final TimeInstant getTimeInstant() {
-        Temporal time = TemporalUtilities.getInstant(metadata);
+        Temporal time = TemporalObjects.getInstant(metadata);
         return (time != null) ? new TimeInstant(time) : null;
     }
 
@@ -124,7 +124,7 @@ public class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimitive> 
                 Context.warningOccured(context, TemporalPrimitive.class,
                         "setTimePeriod", Errors.class, Errors.Keys.IllegalRange_2, begin, end);
             } else {
-                metadata = TemporalUtilities.createPeriod(begin, end);
+                metadata = TemporalObjects.createPeriod(begin, end);
                 period.copyIdTo(metadata);
             }
         }
@@ -141,7 +141,7 @@ public class TM_Primitive extends PropertyType<TM_Primitive, TemporalPrimitive> 
         if (instant != null) {
             final Temporal position = XmlUtilities.toTemporal(Context.current(), instant.timePosition);
             if (position != null) {
-                metadata = TemporalUtilities.createInstant(position);
+                metadata = TemporalObjects.createInstant(position);
                 instant.copyIdTo(metadata);
             }
         }

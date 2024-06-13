@@ -51,12 +51,12 @@ public final class DefaultInstantTest extends TestCase {
 
     /**
      * Tests {@link DefaultInstant#getPosition()}.
-     * Opportunistically tests {@link TemporalUtilities#createInstant(Temporal)} too.
+     * Opportunistically tests {@link TemporalObjects#createInstant(Temporal)} too.
      */
     @Test
     public void testGetPosition() {
         var date    = LocalDate.of(2010, 5, 1);
-        var instant = TemporalUtilities.createInstant(date);
+        var instant = TemporalObjects.createInstant(date);
         assertEquals(date, instant.getPosition());
     }
 

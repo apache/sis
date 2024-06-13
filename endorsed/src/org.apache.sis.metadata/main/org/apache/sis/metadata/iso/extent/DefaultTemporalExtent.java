@@ -31,7 +31,7 @@ import org.opengis.metadata.extent.SpatialTemporalExtent;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.privy.ReferencingServices;
-import org.apache.sis.temporal.TemporalUtilities;
+import org.apache.sis.temporal.TemporalObjects;
 import org.apache.sis.temporal.TemporalDate;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
@@ -102,7 +102,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * @since 1.5
      */
     public DefaultTemporalExtent(final Temporal beginning, final Temporal ending) {
-        extent = TemporalUtilities.createPeriod(beginning, ending);
+        extent = TemporalObjects.createPeriod(beginning, ending);
     }
 
     /**
@@ -265,7 +265,7 @@ public class DefaultTemporalExtent extends ISOMetadata implements TemporalExtent
      * @since 1.5
      */
     public void setBounds(final Temporal beginning, final Temporal ending) {
-        setExtent(TemporalUtilities.createPeriod(beginning, ending));
+        setExtent(TemporalObjects.createPeriod(beginning, ending));
     }
 
     /**

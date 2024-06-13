@@ -34,11 +34,11 @@ import org.opengis.temporal.Period;
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Guilhem Legal (Geomatys)
  */
-public final class TemporalUtilities {
+public final class TemporalObjects {
     /**
      * Do not allow instantiation of this class.
      */
-    private TemporalUtilities() {
+    private TemporalObjects() {
     }
 
     /**

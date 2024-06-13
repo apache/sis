@@ -40,13 +40,13 @@ public final class DefaultPeriodTest extends TestCase {
 
     /**
      * Tests {@link DefaultPeriod#getBeginning()} and {@link DefaultPeriod#getEnding()}.
-     * Opportunistically tests {@link TemporalUtilities#createPeriod(Temporal, Temporal)} too.
+     * Opportunistically tests {@link TemporalObjects#createPeriod(Temporal, Temporal)} too.
      */
     @Test
     public void testBounds() {
         var beginning = LocalDate.of(2010, 5, 1);
         var ending    = LocalDate.of(2015, 8, 6);
-        var period    = TemporalUtilities.createPeriod(beginning, ending);
+        var period    = TemporalObjects.createPeriod(beginning, ending);
         assertEquals(beginning, period.getBeginning().getPosition());
         assertEquals(ending,    period.getEnding().getPosition());
     }
@@ -56,9 +56,9 @@ public final class DefaultPeriodTest extends TestCase {
      */
     @Test
     public void testEquals() {
-        var p1 = TemporalUtilities.createPeriod(LocalDate.of(2000, 1, 1), LocalDate.of(2010, 1, 1));
-        var p2 = TemporalUtilities.createPeriod(LocalDate.of(1988, 1, 1), LocalDate.of(2010, 1, 1));
-        var p3 = TemporalUtilities.createPeriod(LocalDate.of(1988, 1, 1), LocalDate.of(2010, 1, 1));
+        var p1 = TemporalObjects.createPeriod(LocalDate.of(2000, 1, 1), LocalDate.of(2010, 1, 1));
+        var p2 = TemporalObjects.createPeriod(LocalDate.of(1988, 1, 1), LocalDate.of(2010, 1, 1));
+        var p3 = TemporalObjects.createPeriod(LocalDate.of(1988, 1, 1), LocalDate.of(2010, 1, 1));
 
         assertNotEquals(p1, p2);
         assertNotEquals(p1.hashCode(), p2.hashCode());
@@ -72,7 +72,7 @@ public final class DefaultPeriodTest extends TestCase {
      */
     @Test
     public void testToString() {
-        var p1 = TemporalUtilities.createPeriod(LocalDate.of(2000, 1, 1), LocalDate.of(2010, 1, 1));
+        var p1 = TemporalObjects.createPeriod(LocalDate.of(2000, 1, 1), LocalDate.of(2010, 1, 1));
         assertEquals("2000-01-01/2010-01-01", p1.toString());
     }
 
@@ -83,7 +83,7 @@ public final class DefaultPeriodTest extends TestCase {
     public void testLength() {
         var beginning = LocalDate.of(2010, 5, 1);
         var ending    = LocalDate.of(2015, 8, 6);
-        var period    = TemporalUtilities.createPeriod(beginning, ending);
+        var period    = TemporalObjects.createPeriod(beginning, ending);
         assertEquals(Period.of(5, 3, 5), period.length());
     }
 }

@@ -286,7 +286,7 @@ public final class CQL {
                 case DATE: {
                     TemporalAccessor ta = LenientDateFormat.FORMAT.parse(tree.getText());
                     return ff.literal(ta);
-                    // TODO! return ff.literal(TemporalUtilities.getTimeInMillis(tree.getText()));
+                    // TODO: return ff.literal(TemporalObjects.getTimeInMillis(tree.getText()));
                 }
                 case TEXT: {
                     // strip start and end '
