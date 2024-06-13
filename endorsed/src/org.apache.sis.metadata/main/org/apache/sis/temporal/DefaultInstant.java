@@ -21,8 +21,10 @@ import java.util.Optional;
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.DateTimeException;
+import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAmount;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.resources.Errors;
 
@@ -32,6 +34,7 @@ import org.opengis.temporal.Instant;
 import org.opengis.temporal.TemporalPrimitive;
 import org.opengis.temporal.IndeterminateValue;
 import org.opengis.filter.TemporalOperatorName;
+import org.opengis.temporal.IndeterminatePositionException;
 
 
 /**
@@ -77,11 +80,11 @@ final class DefaultInstant implements Instant, Serializable {
      * @return the date, time or position on the time-scale represented by this primitive.
      */
     @Override
-    public Temporal getPosition() {
+    public final Temporal getPosition() {
         if (indeterminate != IndeterminateValue.NOW) {
             return position;
         }
-        return java.time.Instant.now();
+        return ZonedDateTime.now();
     }
 
     /**
@@ -90,7 +93,7 @@ final class DefaultInstant implements Instant, Serializable {
      * @return the reason why the temporal position is missing or inaccurate.
      */
     @Override
-    public Optional<IndeterminateValue> getIndeterminatePosition() {
+    public final Optional<IndeterminateValue> getIndeterminatePosition() {
         return Optional.ofNullable(indeterminate);
     }
 
@@ -107,7 +110,8 @@ final class DefaultInstant implements Instant, Serializable {
         ArgumentChecks.ensureNonNull("other", other);
         if (other instanceof Instant) {
             return GeneralDuration.distance(this, (Instant) other, false, true);
-        } else if (other instanceof Period) {
+        }
+        if (other instanceof Period) {
             final var p = (Period) other;
             TemporalAmount t = GeneralDuration.distance(this, p.getBeginning(), false, false);
             if (t == null) {
@@ -117,13 +121,12 @@ final class DefaultInstant implements Instant, Serializable {
                 }
             }
             return t;
-        } else {
-            throw new DateTimeException(Errors.format(Errors.Keys.UnsupportedType_1, other.getClass()));
         }
+        throw new DateTimeException(Errors.format(Errors.Keys.UnsupportedType_1, other.getClass()));
     }
 
     /**
-     * Determines the position of this primitive relative to another temporal primitive.
+     * Determines the position of this instant relative to another temporal primitive.
      * The relative position is identified by an operator which evaluates to {@code true}
      * when the two operands are {@code this} and {@code other}.
      *
@@ -133,7 +136,89 @@ final class DefaultInstant implements Instant, Serializable {
      */
     @Override
     public TemporalOperatorName findRelativePosition(final TemporalPrimitive other) {
-        throw new UnsupportedOperationException();
+        ArgumentChecks.ensureNonNull("other", other);
+        if (other instanceof Instant) {
+            return relativeToInstant((Instant) other);
+        }
+        if (other instanceof Period) {
+            final var period = (Period) other;
+            TemporalOperatorName relation = relativeToInstant(period.getBeginning());
+            String erroneous;
+            if (relation == TemporalOperatorName.BEFORE) return relation;
+            if (relation == TemporalOperatorName.EQUALS) return TemporalOperatorName.BEGINS;
+            if (relation == TemporalOperatorName.AFTER) {
+                relation = relativeToInstant(period.getEnding());
+                if (relation == TemporalOperatorName.AFTER)  return relation;
+                if (relation == TemporalOperatorName.EQUALS) return TemporalOperatorName.ENDS;
+                if (relation == TemporalOperatorName.BEFORE) return TemporalOperatorName.DURING;
+                erroneous = "ending";
+            } else {
+                erroneous = "beginning";
+            }
+            throw new DateTimeException(Errors.format(Errors.Keys.IllegalMapping_2, erroneous, relation));
+        }
+        throw new DateTimeException(Errors.format(Errors.Keys.UnsupportedType_1, other.getClass()));
+    }
+
+    /**
+     * Determines the position of this instant relative to another instant.
+     *
+     * @param  other the other instant for which to determine the relative position.
+     * @return a temporal operator which is true when evaluated between this primitive and the other primitive.
+     * @throws DateTimeException if the temporal objects cannot be compared.
+     */
+    @SuppressWarnings({"rawtypes", "unchecked"})    // See end of method.
+    private TemporalOperatorName relativeToInstant(final Instant other) {
+        boolean canTestBefore = true;
+        boolean canTestAfter  = true;
+        boolean canTestEqual  = true;
+        if (indeterminate != null && indeterminate != IndeterminateValue.NOW) {
+            canTestBefore = (indeterminate == IndeterminateValue.BEFORE);
+            canTestAfter  = (indeterminate == IndeterminateValue.AFTER);
+            canTestEqual  = false;
+        }
+        final IndeterminateValue oip = other.getIndeterminatePosition().orElse(null);
+        if (oip != null) {
+            if (oip != IndeterminateValue.NOW) {
+                canTestBefore &= (oip == IndeterminateValue.AFTER);
+                canTestAfter  &= (oip == IndeterminateValue.BEFORE);
+                canTestEqual   = false;
+            } else if (indeterminate == IndeterminateValue.NOW) {
+                return TemporalOperatorName.EQUALS;
+            }
+        }
+cmp:    if (canTestBefore | canTestAfter | canTestEqual) {
+            final Temporal t1;                  // Same as `this.position` except if "now".
+            final Temporal t2;                  // Position of the other instant.
+            final TimeMethods<?> comparators;   // The "is before", "is after" and "is equal" methods to invoke.
+            /*
+             * First, resolve the case when the indeterminate value is "now". Do not invoke `getPosition()`
+             * because the results could differ by a few nanoseconds when two "now" instants are compared,
+             * and also for getting a temporal object of the same type than the other instant.
+             */
+            if (oip == IndeterminateValue.NOW) {
+                t1 = position;
+                if (t1 == null) break cmp;
+                comparators = TimeMethods.find(t1.getClass());
+                t2 = comparators.now();
+            } else {
+                t2 = other.getPosition();
+                if (t2 == null) break cmp;
+                if (indeterminate == IndeterminateValue.NOW) {
+                    comparators = TimeMethods.find(t2.getClass());
+                    t1 = comparators.now();
+                } else {
+                    t1 = position;
+                    if (t1 == null) break cmp;
+                    comparators = TimeMethods.find(Classes.findCommonClass(t1.getClass(), t2.getClass()));
+                }
+            }
+            // This is where the @SuppressWarnings(…) apply.
+            if (canTestBefore && ((TimeMethods) comparators).isBefore.test(t1, t2)) return TemporalOperatorName.BEFORE;
+            if (canTestAfter  && ((TimeMethods) comparators).isAfter .test(t1, t2)) return TemporalOperatorName.AFTER;
+            if (canTestEqual  && ((TimeMethods) comparators).isEqual .test(t1, t2)) return TemporalOperatorName.EQUALS;
+        }
+        throw new IndeterminatePositionException(Errors.format(Errors.Keys.IndeterminatePosition));
     }
 
     /**

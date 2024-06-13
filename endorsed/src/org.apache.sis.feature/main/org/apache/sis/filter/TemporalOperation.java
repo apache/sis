@@ -17,13 +17,15 @@
 package org.apache.sis.filter;
 
 import java.io.Serializable;
+import java.time.DateTimeException;
 import java.time.temporal.Temporal;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.collection.WeakHashSet;
-import static org.apache.sis.filter.TimeMethods.BEFORE;
-import static org.apache.sis.filter.TimeMethods.AFTER;
-import static org.apache.sis.filter.TimeMethods.EQUAL;
+import org.apache.sis.temporal.TimeMethods;
+import static org.apache.sis.temporal.TimeMethods.BEFORE;
+import static org.apache.sis.temporal.TimeMethods.AFTER;
+import static org.apache.sis.temporal.TimeMethods.EQUAL;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.temporal.Period;
@@ -142,6 +144,9 @@ abstract class TemporalOperation<T> implements Serializable {
      *
      * <p><b>Note:</b> this relationship is not defined by ISO 19108. This method should be overridden
      * only when an ISO 19108 extension can be easily defined, for example for the "equal" operation.</p>
+     *
+     * @throws DateTimeException if two temporal objects cannot be compared.
+     * @throws ArithmeticException if the comparison exceeds integer capacity.
      */
     protected boolean evaluate(T self, Period other) {
         return false;
@@ -151,6 +156,9 @@ abstract class TemporalOperation<T> implements Serializable {
      * Evaluates the filter between a period and a temporal object.
      * Both arguments given to this method shall be non-null, but period begin or end instant may be null.
      * Note: the {@code self} and {@code other} argument names are chosen to match ISO 19108 tables.
+     *
+     * @throws DateTimeException if two temporal objects cannot be compared.
+     * @throws ArithmeticException if the comparison exceeds integer capacity.
      */
     protected boolean evaluate(Period self, T other) {
         return false;
@@ -160,6 +168,9 @@ abstract class TemporalOperation<T> implements Serializable {
      * Evaluates the filter between two periods.
      * Both arguments given to this method shall be non-null, but period begin or end instant may be null.
      * Note: the {@code self} and {@code other} argument names are chosen to match ISO 19108 tables.
+     *
+     * @throws DateTimeException if two temporal objects cannot be compared.
+     * @throws ArithmeticException if the comparison exceeds integer capacity.
      */
     protected abstract boolean evaluate(Period self, Period other);
 
@@ -197,9 +208,9 @@ abstract class TemporalOperation<T> implements Serializable {
      * @param  self   the object on which to invoke the method identified by {@code test}.
      * @param  other  the argument to give to the test method call, or {@code null} if none.
      * @return the result of performing the comparison identified by {@code test}.
-     * @throws InvalidFilterValueException if the two objects cannot be compared.
+     * @throws DateTimeException if the two objects cannot be compared.
      */
-    final boolean compare(final int test, final T self, final Temporal other) {
+    protected final boolean compare(final int test, final T self, final Temporal other) {
         return (other != null) && comparators.compare(test, self, other);
     }
 
@@ -211,10 +222,10 @@ abstract class TemporalOperation<T> implements Serializable {
      * @param  self   the object on which to invoke the method identified by {@code test}, or {@code null} if none.
      * @param  other  the argument to give to the test method call, or {@code null} if none.
      * @return the result of performing the comparison identified by {@code test}.
-     * @throws InvalidFilterValueException if the two objects cannot be compared.
+     * @throws DateTimeException if the two objects cannot be compared.
      */
     @SuppressWarnings("unchecked")
-    static boolean compare(final int test, final Temporal self, final Temporal other) {
+    protected static boolean compare(final int test, final Temporal self, final Temporal other) {
         return (self != null) && (other != null) && TimeMethods.compare(test,
                 (Class) Classes.findCommonClass(self.getClass(), other.getClass()), self, other);
     }

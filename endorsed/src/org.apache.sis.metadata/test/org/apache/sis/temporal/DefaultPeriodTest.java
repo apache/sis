@@ -17,8 +17,7 @@
 package org.apache.sis.temporal;
 
 import java.time.LocalDate;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.time.Period;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -75,5 +74,16 @@ public final class DefaultPeriodTest extends TestCase {
     public void testToString() {
         var p1 = TemporalUtilities.createPeriod(LocalDate.of(2000, 1, 1), LocalDate.of(2010, 1, 1));
         assertEquals("2000-01-01/2010-01-01", p1.toString());
+    }
+
+    /**
+     * Tests {@link DefaultPeriod#length()}.
+     */
+    @Test
+    public void testLength() {
+        var beginning = LocalDate.of(2010, 5, 1);
+        var ending    = LocalDate.of(2015, 8, 6);
+        var period    = TemporalUtilities.createPeriod(beginning, ending);
+        assertEquals(Period.of(5, 3, 5), period.length());
     }
 }

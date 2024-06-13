@@ -17,7 +17,6 @@
 package org.apache.sis.temporal;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.io.Serializable;
 import java.time.Period;
@@ -133,14 +132,11 @@ final class GeneralDuration implements TemporalAmount, Serializable {
          */
         Temporal t1 = getDeterminatePosition(self);
         Temporal t2 = getDeterminatePosition(other);
-        if (Objects.equals(t1, t2)) {
-            return Duration.ZERO;
-        }
         /*
          * Ensures that the given objects both have a date part, or that none of them have a date part.
          * Note that the "epoch day" field is supported by `LocalDate` as well as the dates with zone ID.
          */
-        boolean hasDate = isSupportedByBoth(ChronoField.EPOCH_DAY, t1, t2);
+        final boolean hasDate = isSupportedByBoth(ChronoField.EPOCH_DAY, t1, t2);
         /*
          * If at least one date has a timezone, then we require that both dates have a timezone.
          * It allows an unambiguous duration in number of days, without time-varying months or years.
@@ -174,7 +170,6 @@ final class GeneralDuration implements TemporalAmount, Serializable {
             if (!absolute && (negate ? d1.isBefore(d2) : d1.isAfter(d2))) {
                 return null;        // Stop early if we can.
             }
-            hasDate = !d1.isEqual(d2);
         }
         /*
          * Compute the duration in the time part. If negative (after negation if `negate` is true),
@@ -186,14 +181,17 @@ final class GeneralDuration implements TemporalAmount, Serializable {
         if (hasTime) {
             time = Duration.between(LocalTime.from(t1), LocalTime.from(t2));
             if (hasDate) {
-                if (negate ? JDK18.isPositive(time) : time.isNegative()) {
-                    long n = time.toDays();                     // Truncated toward 0.
-                    if (negate) {
-                        d1 = d1.plus(++n, ChronoUnit.DAYS);     // `n` is positive. Reduces period by increasing the beginning.
-                    } else {
-                        d2 = d2.plus(--n, ChronoUnit.DAYS);     // `n` is negative. Reduces period by decreasing the ending.
+                final boolean isPositive = d1.isBefore(d2);
+                if (isPositive || d1.isAfter(d2)) {                 // Require the period to be non-zero.
+                    if (isPositive ? time.isNegative() : JDK18.isPositive(time)) {
+                        long n = time.toDays();                     // Truncated toward 0.
+                        if (isPositive) {
+                            d2 = d2.plus (--n, ChronoUnit.DAYS);    // `n` is negative. Reduces period by decreasing the ending.
+                        } else {
+                            d1 = d1.minus(++n, ChronoUnit.DAYS);    // `n` is positive. Reduces period by increasing the beginning.
+                        }
+                        time = time.minusDays(n);                   // If negative, make positive. If positive, make negative.
                     }
-                    time = time.minusDays(n);                   // If negative, make positive. If positive, make negative.
                 }
             }
         }
@@ -203,7 +201,11 @@ final class GeneralDuration implements TemporalAmount, Serializable {
          */
         if (hasDate) {
             ChronoPeriod period = d1.until(d2);
-            if (!period.isZero()) {
+            if (period.isZero()) {
+                if (time.isZero()) {
+                    return period;
+                }
+            } else {
                 if (period.isNegative()) {
                     if (!(negate | absolute)) {                 // Equivalent to (!negate && !absolute).
                         return null;
