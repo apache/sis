@@ -34,7 +34,7 @@ public enum Dialect {
      *
      * @see DatabaseMetaData#supportsANSI92EntryLevelSQL()
      */
-    ANSI(null, false, true, true),
+    ANSI(null, false, true, true, true),
 
     /**
      * The database uses Derby syntax. This is ANSI, with some constraints that PostgreSQL does not have
@@ -43,31 +43,31 @@ public enum Dialect {
      *
      * <a href="https://issues.apache.org/jira/browse/DERBY-6445">DERBY-6445</a>
      */
-    DERBY("derby", false, true, false),
+    DERBY("derby", false, true, false, true),
 
     /**
      * The database uses HSQL syntax. This is ANSI, but does not allow {@code INSERT} statements inserting many lines.
      * It also have a {@code SHUTDOWN} command which is specific to HSQLDB.
      */
-    HSQL("hsqldb", false, true, true),
+    HSQL("hsqldb", false, true, true, true),
 
     /**
      * The database uses PostgreSQL syntax. This is ANSI, but provided an a separated
      * enumeration value because it allows a few additional commands like {@code VACUUM}.
      */
-    POSTGRESQL("postgresql", true, true, true),
+    POSTGRESQL("postgresql", true, true, true, true),
 
     /**
      * The database uses Oracle syntax. This is ANSI, but without {@code "AS"} keyword.
      */
-    ORACLE("oracle", false, true, true),
+    ORACLE("oracle", false, true, true, true),
 
     /**
      * The database uses SQLite syntax. This is ANSI, but with several limitations.
      *
      * @see <a href="https://www.sqlite.org/omitted.html">SQL Features That SQLite Does Not Implement</a>
      */
-    SQLITE("sqlite", false, false, false);
+    SQLITE("sqlite", false, false, false, false);
 
     /**
      * The protocol in JDBC URL, or {@code null} if unknown.
@@ -107,17 +107,25 @@ public enum Dialect {
     public final boolean supportsJavaTime;
 
     /**
+     * Whether the JDBC driver supports configuring readOnly mode on connection instances.
+     * This feature is not supported in SQLite.
+     */
+    public final boolean supportsReadOnlyUpdate;
+
+    /**
      * Creates a new enumeration value for a SQL dialect for the given protocol.
      */
     private Dialect(final String  protocol,
                     final boolean supportsTableInheritance,
                     final boolean supportsAlterTableWithAddConstraint,
-                    final boolean supportsJavaTime)
+                    final boolean supportsJavaTime,
+                    final boolean supportsReadOnlyUpdate)
     {
         this.protocol = protocol;
         this.supportsTableInheritance = supportsTableInheritance;
         this.supportsAlterTableWithAddConstraint = supportsAlterTableWithAddConstraint;
         this.supportsJavaTime = supportsJavaTime;
+        this.supportsReadOnlyUpdate = supportsReadOnlyUpdate;
     }
 
     /**
