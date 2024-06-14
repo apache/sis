@@ -81,6 +81,20 @@ public final class GeneralDuration implements TemporalAmount, Serializable {
     }
 
     /**
+     * Returns the duration for the given components.
+     * If any component is zero, the other component is returned.
+     *
+     * @param  period  the period.
+     * @param  time    the component.
+     * @return the temporal amount from the given components.
+     */
+    public static TemporalAmount of(final Period period, final Duration time) {
+        if (period.isZero()) return time;
+        if (time.isZero()) return period;
+        return new GeneralDuration(period, time);
+    }
+
+    /**
      * Parses a temporal amount which may contain a period and a duration part.
      * This method returns a {@link Period} or {@link Duration} if those objects
      * are sufficient, or an instance of {@code GeneralDuration} is last resort.
@@ -103,11 +117,8 @@ public final class GeneralDuration implements TemporalAmount, Serializable {
                     if (previousLetter == 'P') {
                         return Duration.parse(text);
                     }
-                    var period   = Period.parse(text.subSequence(0, i));
-                    var duration = Duration.parse(new StringBuilder(length - i + 1).append('P').append(text, i, length));
-                    if (duration.isZero()) return period;
-                    if  (period.isZero())  return duration;
-                    return new GeneralDuration(period, duration);
+                    return of(Period.parse(text.subSequence(0, i)),
+                            Duration.parse(new StringBuilder(length - i + 1).append('P').append(text, i, length)));
                 }
                 previousLetter = c;
             }

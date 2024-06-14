@@ -18,7 +18,6 @@ package org.apache.sis.temporal;
 
 import java.util.Objects;
 import java.util.Optional;
-import java.io.Serializable;
 import java.time.Duration;
 import java.time.DateTimeException;
 import java.time.ZonedDateTime;
@@ -26,6 +25,7 @@ import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAmount;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -42,9 +42,13 @@ import org.opengis.temporal.IndeterminatePositionException;
  * This is not the same as {@link java.time.Instant}, because the
  * instant can actually be a date, or may be indeterminate.
  *
+ * <h2>Thread-safety</h2>
+ * Instances of this class are mostly immutable, except for the list of identifiers.
+ * All instances are thread-safe.
+ *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class DefaultInstant implements Instant, Serializable {
+final class DefaultInstant extends TemporalObject implements Instant {
     /**
      * For cross-version compatibility.
      */
@@ -227,6 +231,33 @@ cmp:    if (canTestBefore | canTestAfter | canTestEqual) {
     }
 
     /**
+     * Compares this instant with the given object, optionally ignoring timezone.
+     * If the comparison mode ignores metadata, this method compares only the position on the timeline.
+     *
+     * @param  other  the object to compare to {@code this}.
+     * @param  mode   the strictness level of the comparison.
+     * @return {@code true} if both objects are equal according the given comparison mode.
+     */
+    @Override
+    public boolean equals(final Object object, final ComparisonMode mode) {
+        if (mode.equals(ComparisonMode.STRICT)) {   // Use `mode.equals(…)` for opportunistic null check.
+            return equals(object);
+        }
+        if (object instanceof Instant) {
+            final var that = (Instant) object;
+            if (indeterminate == that.getIndeterminatePosition().orElse(null)) {
+                if (indeterminate == IndeterminateValue.NOW || indeterminate == IndeterminateValue.UNKNOWN) {
+                    return true;
+                }
+                final Temporal other = that.getPosition();
+                return Objects.equals(position, other) ||       // Needed in all cases for testing null values.
+                        (mode.isIgnoringMetadata() && TimeMethods.compareAny(TimeMethods.EQUAL, position, other));
+            }
+        }
+        return false;
+    }
+
+    /**
      * Compares this instant with the given object for equality.
      */
     @Override
@@ -236,7 +267,9 @@ cmp:    if (canTestBefore | canTestAfter | canTestEqual) {
         }
         if (object instanceof DefaultInstant) {
             final var that = (DefaultInstant) object;
-            return Objects.equals(position, that.position) && indeterminate == that.indeterminate;
+            return indeterminate == that.indeterminate
+                    && Objects.equals(position, that.position)
+                    && equalIdentifiers(that);
         }
         return false;
     }

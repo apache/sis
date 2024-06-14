@@ -40,6 +40,7 @@ import java.time.temporal.TemporalAccessor;
 import java.lang.reflect.Modifier;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.resources.Errors;
 
@@ -157,6 +158,23 @@ public class TimeMethods<T> implements Serializable {
             return delegate(test, self, (T) other);         // Safe because of above `isInstance(…)` check.
         }
         return compareAsInstants(test, accessor(self), other);
+    }
+
+    /**
+     * Returns {@code true} if both arguments are non-null and the specified comparison evaluates to {@code true}.
+     * The type of the objects being compared is determined dynamically, which has a performance cost.
+     * The {@code compare(…)} methods should be preferred when the type is known in advance.
+     *
+     * @param  test   {@link #BEFORE}, {@link #AFTER} or {@link #EQUAL}.
+     * @param  self   the object on which to invoke the method identified by {@code test}, or {@code null} if none.
+     * @param  other  the argument to give to the test method call, or {@code null} if none.
+     * @return the result of performing the comparison identified by {@code test}.
+     * @throws DateTimeException if the two objects cannot be compared.
+     */
+    @SuppressWarnings("unchecked")
+    public static boolean compareAny(final int test, final Temporal self, final Temporal other) {
+        return (self != null) && (other != null)
+                && compare(test, (Class) Classes.findCommonClass(self.getClass(), other.getClass()), self, other);
     }
 
     /**
@@ -351,7 +369,7 @@ public class TimeMethods<T> implements Serializable {
      * @return the current time.
      * @throws ClassCastException if the {@linkplain #type} is {@link Date} or {@link MonthDay}.
      */
-    final Temporal now() {
+    public final Temporal now() {
         return (now != null) ? (Temporal) now.get() : ZonedDateTime.now();
     }
 

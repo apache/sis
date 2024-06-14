@@ -16,10 +16,10 @@
  */
 package org.apache.sis.filter;
 
+import java.util.Optional;
 import java.io.Serializable;
 import java.time.DateTimeException;
 import java.time.temporal.Temporal;
-import org.apache.sis.util.Classes;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.temporal.TimeMethods;
@@ -29,7 +29,9 @@ import static org.apache.sis.temporal.TimeMethods.EQUAL;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.temporal.Period;
+import org.opengis.temporal.Instant;
 import org.opengis.filter.TemporalOperatorName;
+import org.opengis.temporal.IndeterminateValue;
 
 
 /**
@@ -175,32 +177,6 @@ abstract class TemporalOperation<T> implements Serializable {
     protected abstract boolean evaluate(Period self, Period other);
 
     /**
-     * Returns the beginning of the given period, or {@code null} if indeterminate.
-     *
-     * @param  p the period from which to get the beginning.
-     * @return beginning of the given period, or {@code null} if indeterminate.
-     *
-     * @todo Handle "before" and "after" indeterminate values.
-     */
-    static Temporal getBeginning(final Period p) {
-        final var t = p.getBeginning();
-        return (t != null) ? t.getPosition() : null;
-    }
-
-    /**
-     * Returns the ending of the given period, or {@code null} if indeterminate.
-     *
-     * @param  p the period from which to get the ending.
-     * @return ending of the given period, or {@code null} if indeterminate.
-     *
-     * @todo Handle "before" and "after" indeterminate values.
-     */
-    static Temporal getEnding(final Period p) {
-        final var t = p.getEnding();
-        return (t != null) ? t.getPosition() : null;
-    }
-
-    /**
      * Returns {@code true} if {@code other} is non-null and the specified comparison evaluates to {@code true}.
      * This is a helper function for {@code evaluate(…)} methods implementations.
      *
@@ -210,8 +186,29 @@ abstract class TemporalOperation<T> implements Serializable {
      * @return the result of performing the comparison identified by {@code test}.
      * @throws DateTimeException if the two objects cannot be compared.
      */
-    protected final boolean compare(final int test, final T self, final Temporal other) {
-        return (other != null) && comparators.compare(test, self, other);
+    protected final boolean compare(final int test, final T self, final Instant other) {
+        if (other != null) {
+            final Temporal position;
+            final Optional<IndeterminateValue> p = other.getIndeterminatePosition();
+            if (p.isPresent()) {
+                if (p.get() == IndeterminateValue.NOW) {
+                    position = comparators.now();
+                } else {
+                    switch (test) {
+                        case BEFORE: if (p.get() != IndeterminateValue.AFTER)  return false; else break;
+                        case AFTER:  if (p.get() != IndeterminateValue.BEFORE) return false; else break;
+                        default: return false;
+                    }
+                    position = other.getPosition();
+                }
+            } else {
+                position = other.getPosition();
+            }
+            if (position != null) {
+                return comparators.compare(test, self, position);
+            }
+        }
+        return false;
     }
 
     /**
@@ -225,9 +222,34 @@ abstract class TemporalOperation<T> implements Serializable {
      * @throws DateTimeException if the two objects cannot be compared.
      */
     @SuppressWarnings("unchecked")
-    protected static boolean compare(final int test, final Temporal self, final Temporal other) {
-        return (self != null) && (other != null) && TimeMethods.compare(test,
-                (Class) Classes.findCommonClass(self.getClass(), other.getClass()), self, other);
+    protected static boolean compare(final int test, final Instant self, final Instant other) {
+        if (self == null || other == null) {
+            return false;
+        }
+        final IndeterminateValue p1 = self.getIndeterminatePosition().orElse(null);
+        final IndeterminateValue p2 = other.getIndeterminatePosition().orElse(null);
+        if (p1 != null || p2 != null) {
+            if (p1 == p2) {
+                return (test == EQUAL) && (p1 == IndeterminateValue.NOW);
+            }
+            switch (test) {
+                case BEFORE: if (isAmbiguous(p1, IndeterminateValue.BEFORE) || isAmbiguous(p2, IndeterminateValue.AFTER))  return false; else break;
+                case AFTER:  if (isAmbiguous(p1, IndeterminateValue.AFTER)  || isAmbiguous(p2, IndeterminateValue.BEFORE)) return false; else break;
+                default: return false;
+            }
+        }
+        return TimeMethods.compareAny(test, self.getPosition(), other.getPosition());
+    }
+
+    /**
+     * Returns {@code true} if using the {@code p} value would be ambiguous.
+     *
+     * @param  p         the indeterminate value to test.
+     * @param  required  the required value for a non-ambiguous comparison.
+     * @return whether using the given value would be ambiguous.
+     */
+    private static boolean isAmbiguous(final IndeterminateValue p, final IndeterminateValue required) {
+        return (p != null) && (p != IndeterminateValue.NOW) && (p != required);
     }
 
 
@@ -284,20 +306,20 @@ abstract class TemporalOperation<T> implements Serializable {
 
         /** Extension to ISO 19108: handle instant as a tiny period. */
         @Override public boolean evaluate(T self, Period other) {
-            return compare(EQUAL, self, getBeginning(other)) &&
-                   compare(EQUAL, self, getEnding(other));
+            return compare(EQUAL, self, other.getBeginning()) &&
+                   compare(EQUAL, self, other.getEnding());
         }
 
         /** Extension to ISO 19108: handle instant as a tiny period. */
         @Override public boolean evaluate(Period self, T other) {
-            return compare(EQUAL, other, getBeginning(self)) &&
-                   compare(EQUAL, other, getEnding(self));
+            return compare(EQUAL, other, self.getBeginning()) &&
+                   compare(EQUAL, other, self.getEnding());
         }
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(Period self, Period other) {
-            return compare(EQUAL, getBeginning(self), getBeginning(other)) &&
-                   compare(EQUAL, getEnding(self),    getEnding(other));
+            return compare(EQUAL, self.getBeginning(), other.getBeginning()) &&
+                   compare(EQUAL, self.getEnding(),    other.getEnding());
         }
     }
 
@@ -338,17 +360,17 @@ abstract class TemporalOperation<T> implements Serializable {
 
         /** Relationship not defined by ISO 19108:2006. */
         @Override public boolean evaluate(T self, Period other) {
-            return compare(BEFORE, self, getBeginning(other));
+            return compare(BEFORE, self, other.getBeginning());
         }
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(Period self, T other) {
-            return compare(AFTER, other, getEnding(self));
+            return compare(AFTER, other, self.getEnding());
         }
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(Period self, Period other) {
-            return compare(BEFORE, getEnding(self), getBeginning(other));
+            return compare(BEFORE, self.getEnding(), other.getBeginning());
         }
     }
 
@@ -389,17 +411,17 @@ abstract class TemporalOperation<T> implements Serializable {
 
         /** Relationship not defined by ISO 19108:2006. */
         @Override public boolean evaluate(T self, Period other) {
-            return compare(AFTER, self, getEnding(other));
+            return compare(AFTER, self, other.getEnding());
         }
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(Period self, T other) {
-            return compare(BEFORE, other, getBeginning(self));
+            return compare(BEFORE, other, self.getBeginning());
         }
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(Period self, Period other) {
-            return compare(AFTER, getBeginning(self), getEnding(other));
+            return compare(AFTER, self.getBeginning(), other.getEnding());
         }
     }
 
@@ -428,8 +450,8 @@ abstract class TemporalOperation<T> implements Serializable {
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Period other) {
-            return compare(EQUAL,  getBeginning(self), getBeginning(other)) &&
-                   compare(BEFORE, getEnding(self),    getEnding(other));
+            return compare(EQUAL,  self.getBeginning(), other.getBeginning()) &&
+                   compare(BEFORE, self.getEnding(),    other.getEnding());
         }
     }
 
@@ -458,8 +480,8 @@ abstract class TemporalOperation<T> implements Serializable {
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Period other) {
-            return compare(EQUAL, getEnding(self),    getEnding(other)) &&
-                   compare(AFTER, getBeginning(self), getBeginning(other));
+            return compare(EQUAL, self.getEnding(),    other.getEnding()) &&
+                   compare(AFTER, self.getBeginning(), other.getBeginning());
         }
     }
 
@@ -489,13 +511,13 @@ abstract class TemporalOperation<T> implements Serializable {
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(Period self, T other) {
-            return compare(EQUAL, other, getBeginning(self));
+            return compare(EQUAL, other, self.getBeginning());
         }
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Period other) {
-            return compare(EQUAL, getBeginning(self), getBeginning(other)) &&
-                   compare(AFTER, getEnding(self),    getEnding(other));
+            return compare(EQUAL, self.getBeginning(), other.getBeginning()) &&
+                   compare(AFTER, self.getEnding(),    other.getEnding());
         }
     }
 
@@ -525,13 +547,13 @@ abstract class TemporalOperation<T> implements Serializable {
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final T other) {
-            return compare(EQUAL, other, getEnding(self));
+            return compare(EQUAL, other, self.getEnding());
         }
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Period other) {
-            return compare(EQUAL,  getEnding(self),    getEnding(other)) &&
-                   compare(BEFORE, getBeginning(self), getBeginning(other));
+            return compare(EQUAL,  self.getEnding(),    other.getEnding()) &&
+                   compare(BEFORE, self.getBeginning(), other.getBeginning());
         }
     }
 
@@ -565,17 +587,17 @@ abstract class TemporalOperation<T> implements Serializable {
 
         /** Extension to ISO 19108: handle instant as a tiny period. */
         @Override public boolean evaluate(final T self, final Period other) {
-            return compare(EQUAL, self, getBeginning(other));
+            return compare(EQUAL, self, other.getBeginning());
         }
 
         /** Extension to ISO 19108: handle instant as a tiny period. */
         @Override public boolean evaluate(final Period self, final T other) {
-            return compare(EQUAL, other, getEnding(self));
+            return compare(EQUAL, other, self.getEnding());
         }
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Period other) {
-            return compare(EQUAL, getEnding(self), getBeginning(other));
+            return compare(EQUAL, self.getEnding(), other.getBeginning());
         }
     }
 
@@ -609,17 +631,17 @@ abstract class TemporalOperation<T> implements Serializable {
 
         /** Extension to ISO 19108: handle instant as a tiny period. */
         @Override public boolean evaluate(final T self, final Period other) {
-            return compare(EQUAL, self, getEnding(other));
+            return compare(EQUAL, self, other.getEnding());
         }
 
         /** Extension to ISO 19108: handle instant as a tiny period. */
         @Override public boolean evaluate(final Period self, final T other) {
-            return compare(EQUAL, other, getBeginning(self));
+            return compare(EQUAL, other, self.getBeginning());
         }
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Period other) {
-            return compare(EQUAL, getBeginning(self), getEnding(other));
+            return compare(EQUAL, self.getBeginning(), other.getEnding());
         }
     }
 
@@ -653,8 +675,8 @@ abstract class TemporalOperation<T> implements Serializable {
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Period other) {
-            return compare(AFTER,  getBeginning(self), getBeginning(other)) &&
-                   compare(BEFORE, getEnding(self),    getEnding(other));
+            return compare(AFTER,  self.getBeginning(), other.getBeginning()) &&
+                   compare(BEFORE, self.getEnding(),    other.getEnding());
         }
     }
 
@@ -689,14 +711,14 @@ abstract class TemporalOperation<T> implements Serializable {
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final T other) {
-            return compare(AFTER,  other, getBeginning(self)) &&
-                   compare(BEFORE, other, getEnding(self));
+            return compare(AFTER,  other, self.getBeginning()) &&
+                   compare(BEFORE, other, self.getEnding());
         }
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Period other) {
-            return compare(BEFORE, getBeginning(self), getBeginning(other)) &&
-                   compare(AFTER,  getEnding(self),    getEnding(other));
+            return compare(BEFORE, self.getBeginning(), other.getBeginning()) &&
+                   compare(AFTER,  self.getEnding(),    other.getEnding());
         }
     }
 
@@ -725,11 +747,11 @@ abstract class TemporalOperation<T> implements Serializable {
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Period other) {
-            final Temporal selfBegin, selfEnd, otherBegin, otherEnd;
-            return ((otherBegin = getBeginning(other)) != null) &&
-                   ((selfBegin  = getBeginning(self))  != null) && compare(BEFORE, selfBegin, otherBegin) &&
-                   ((selfEnd    = getEnding   (self))  != null) && compare(AFTER,  selfEnd,   otherBegin) &&
-                   ((otherEnd   = getEnding   (other)) != null) && compare(BEFORE, selfEnd,   otherEnd);
+            final Instant selfBegin, selfEnd, otherBegin, otherEnd;
+            return ((otherBegin = other.getBeginning()) != null) &&
+                   ((selfBegin  = self.getBeginning())  != null) && compare(BEFORE, selfBegin, otherBegin) &&
+                   ((selfEnd    = self.   getEnding())  != null) && compare(AFTER,  selfEnd,   otherBegin) &&
+                   ((otherEnd   = other.  getEnding())  != null) && compare(BEFORE, selfEnd,   otherEnd);
         }
     }
 
@@ -758,11 +780,11 @@ abstract class TemporalOperation<T> implements Serializable {
 
         /** Condition defined by ISO 19108:2006 (corrigendum) §5.2.3.5. */
         @Override public boolean evaluate(final Period self, final Period other) {
-            final Temporal selfBegin, selfEnd, otherBegin, otherEnd;
-            return ((selfBegin  = getBeginning(self))  != null) &&
-                   ((otherBegin = getBeginning(other)) != null) && compare(AFTER,  selfBegin,  otherBegin) &&
-                   ((otherEnd   = getEnding   (other)) != null) && compare(BEFORE, selfBegin,  otherEnd)   &&
-                   ((selfEnd    = getEnding   (self))  != null) && compare(AFTER,  selfEnd,    otherEnd);
+            final Instant selfBegin, selfEnd, otherBegin, otherEnd;
+            return ((selfBegin  = self.getBeginning())  != null) &&
+                   ((otherBegin = other.getBeginning()) != null) && compare(AFTER,  selfBegin,  otherBegin) &&
+                   ((otherEnd   = other.  getEnding())  != null) && compare(BEFORE, selfBegin,  otherEnd)   &&
+                   ((selfEnd    = self.   getEnding())  != null) && compare(AFTER,  selfEnd,    otherEnd);
         }
     }
 
@@ -789,11 +811,11 @@ abstract class TemporalOperation<T> implements Serializable {
 
         /** Condition defined by OGC filter specification. */
         @Override public boolean evaluate(final Period self, final Period other) {
-            final Temporal selfBegin, selfEnd, otherBegin, otherEnd;
-            return ((selfBegin  = getBeginning(self))  != null) &&
-                   ((otherEnd   = getEnding   (other)) != null) && compare(BEFORE, selfBegin, otherEnd) &&
-                   ((selfEnd    = getEnding   (self))  != null) &&
-                   ((otherBegin = getBeginning(other)) != null) && compare(AFTER, selfEnd, otherBegin);
+            final Instant selfBegin, selfEnd, otherBegin, otherEnd;
+            return ((selfBegin  = self.getBeginning())  != null) &&
+                   ((otherEnd   = other.  getEnding())  != null) && compare(BEFORE, selfBegin, otherEnd) &&
+                   ((selfEnd    = self.   getEnding())  != null) &&
+                   ((otherBegin = other.getBeginning()) != null) && compare(AFTER, selfEnd, otherBegin);
         }
     }
 }
