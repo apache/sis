@@ -18,10 +18,12 @@ package org.apache.sis.storage.sql.feature;
 
 import java.util.OptionalInt;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.sql.ResultSet;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.geometry.wrapper.Geometries;
+import org.apache.sis.storage.DataStoreContentException;
 
 
 /**
@@ -106,11 +108,45 @@ final class GeometryGetter<G, V extends G> extends ValueGetter<V> {
     public V getValue(final InfoStatements stmts, final ResultSet source, final int columnIndex) throws Exception {
         final byte[] wkb = encoding.getBytes(source, columnIndex);
         if (wkb == null) return null;
-        final GeometryWrapper geom = geometryFactory.parseWKB(ByteBuffer.wrap(wkb));
+        ByteBuffer buffer = ByteBuffer.wrap(wkb);
+
+        // Possible Geopackage header https://www.geopackage.org/spec140/index.html#gpb_spec
+        int gpkgSrid = -1;
+        if (wkb.length > 2 && wkb[0] == 'G' && wkb[1] == 'P') {
+            // Remove the header.
+            final int version = wkb[2] & 0xFF; // 8-bit unsigned integer, 0 = version 1
+            if (version != 0) {
+                throw new DataStoreContentException("Only version 1 of Geopackage WKB is supported");
+            }
+            final int flags = wkb[3];
+            final boolean bigEndian = (flags & 0b1) == 0;
+            final int envelopeType = (flags & 0b1110) >> 1;
+            final boolean isEmpty = (flags & 0b10000) != 0;
+            final boolean extendedType = (flags & 0b100000) != 0;
+
+            buffer.order(bigEndian ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
+            gpkgSrid = buffer.asIntBuffer().get(1);
+            // Skip header and envelope.
+            final int offset;
+            switch (envelopeType) {
+                case 0 : offset = 8; break;
+                case 1 : offset = 8 + 4 * Double.BYTES; break;
+                case 2 :
+                case 3 : offset = 8 + 6 * Double.BYTES; break;
+                case 4 : offset = 8 + 8 * Double.BYTES; break;
+                default : throw new DataStoreContentException("Invalid envelope type");
+            }
+            buffer = buffer.position(offset).limit(wkb.length-offset).slice();
+            // Result of slice is in BIG_ENDIAN.
+        }
+
+        final GeometryWrapper geom = geometryFactory.parseWKB(buffer);
         CoordinateReferenceSystem crs = defaultCRS;
         if (stmts != null) {
             final OptionalInt srid = geom.getSRID();
             if (srid.isPresent()) {
+                crs = stmts.fetchCRS(srid.getAsInt());
+            } else if (gpkgSrid != -1) {
                 crs = stmts.fetchCRS(srid.getAsInt());
             }
         }
