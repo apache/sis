@@ -1113,8 +1113,8 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
                 }
 
                 //unchanged files
-                ShpFiles.replace(files.cpgFile, tempFiles.getCpg(true));
-                ShpFiles.replace(files.prjFile, tempFiles.getPrj(true));
+                if (files.cpgFile != null) Files.copy(files.cpgFile, tempFiles.getCpg(true), StandardCopyOption.REPLACE_EXISTING);
+                if (files.prjFile != null) Files.copy(files.prjFile, tempFiles.getPrj(true), StandardCopyOption.REPLACE_EXISTING);
 
                 //start new files
 
@@ -1169,7 +1169,9 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
             final long recordEndPosition = shpWriter.getSteamPosition();
 
             //write index
-            shxWriter.writeRecord(Math.toIntExact(recordStartPosition), Math.toIntExact(recordEndPosition - recordStartPosition));
+            final int recordStartPositionWord = Math.toIntExact(recordStartPosition / 2); // divide by 2 for word size
+            final int recordEndPositionWord = Math.toIntExact(recordEndPosition / 2); // divide by 2 for word size
+            shxWriter.writeRecord(recordStartPositionWord, recordEndPositionWord - recordStartPositionWord);
 
             //copy dbf fields
             Object[] fields = new Object[dbfHeader.fields.length];

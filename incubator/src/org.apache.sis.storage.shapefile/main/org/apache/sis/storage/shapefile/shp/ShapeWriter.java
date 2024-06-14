@@ -54,12 +54,12 @@ public final class ShapeWriter implements AutoCloseable{
     }
 
     /**
-     * Get current position in the stream.
+     * Get current byte position in the stream.
      *
      * @return current position in the stream
      */
     public long getSteamPosition() {
-        return channel.getBitOffset();
+        return channel.getStreamPosition();
     }
 
     /**
