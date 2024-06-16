@@ -16,13 +16,20 @@
  */
 package org.apache.sis.temporal;
 
+import java.util.Map;
+import java.time.DateTimeException;
 import java.time.temporal.TemporalAmount;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.privy.LazyCandidate;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.temporal.Instant;
 import org.opengis.temporal.Period;
+import org.opengis.temporal.TemporalPrimitive;
+import org.opengis.filter.TemporalOperatorName;
 
 
 /**
@@ -77,6 +84,70 @@ final class DefaultPeriod extends TemporalObject implements Period {
     public TemporalAmount length() {
         return GeneralDuration.distance(beginning, ending, false, false);
     }
+
+    /**
+     * Determines the position of this period relative to another temporal primitive.
+     * The relative position is identified by an operator which evaluates to {@code true}
+     * when the two operands are {@code this} and {@code other}.
+     *
+     * @param  other the other primitive for which to determine the relative position.
+     * @return a temporal operator which is true when evaluated between this period and the other primitive.
+     * @throws DateTimeException if the temporal objects cannot be compared.
+     */
+    @Override
+    public TemporalOperatorName findRelativePosition(final TemporalPrimitive other) {
+        ArgumentChecks.ensureNonNull("other", other);
+        if (other instanceof Instant) {
+            return DefaultInstant.castOrCopy((Instant) other).relativeToPeriod(this).reversed().orElseThrow();
+        }
+        if (other instanceof Period) {
+            final var period = (Period) other;
+            String erroneous;
+            TemporalOperatorName relation = DefaultInstant.castOrCopy(beginning).relativeToPeriod(period);
+            final var map = POSITIONS.get(relation);
+            if (map != null) {
+                relation = DefaultInstant.castOrCopy(ending).relativeToPeriod(period);
+                final var result = map.get(relation);
+                if (result != null) {
+                    return result;
+                }
+                erroneous = "ending";
+            } else {
+                erroneous = "beginning";
+            }
+            // Should never happen.
+            throw new DateTimeException(Errors.format(Errors.Keys.IllegalMapping_2, erroneous, relation));
+        }
+        throw new DateTimeException(Errors.format(Errors.Keys.UnsupportedType_1, other.getClass()));
+    }
+
+    /**
+     * Relative positions for given pairs (beginning, ending) relative positions.
+     * Keys of this static map are the relative positions of the beginning of this period relative to the other period.
+     * Keys of the enclosed maps are the relative positions of the ending of this period relative to the other period.
+     */
+    @LazyCandidate
+    private static final Map<TemporalOperatorName, Map<TemporalOperatorName, TemporalOperatorName>> POSITIONS = Map.of(
+            TemporalOperatorName.BEFORE, Map.of(
+                    TemporalOperatorName.BEFORE, TemporalOperatorName.BEFORE,
+                    TemporalOperatorName.BEGINS, TemporalOperatorName.MEETS,
+                    TemporalOperatorName.DURING, TemporalOperatorName.OVERLAPS,
+                    TemporalOperatorName.ENDS,   TemporalOperatorName.ENDED_BY,
+                    TemporalOperatorName.AFTER,  TemporalOperatorName.CONTAINS),
+            TemporalOperatorName.BEGINS, Map.of(
+                    TemporalOperatorName.BEGINS, TemporalOperatorName.MEETS,
+                    TemporalOperatorName.DURING, TemporalOperatorName.BEGINS,
+                    TemporalOperatorName.ENDS,   TemporalOperatorName.EQUALS,
+                    TemporalOperatorName.AFTER,  TemporalOperatorName.BEGUN_BY),
+            TemporalOperatorName.DURING, Map.of(
+                    TemporalOperatorName.DURING, TemporalOperatorName.DURING,
+                    TemporalOperatorName.ENDS,   TemporalOperatorName.ENDS,
+                    TemporalOperatorName.AFTER,  TemporalOperatorName.OVERLAPPED_BY),
+            TemporalOperatorName.ENDS, Map.of(
+                    TemporalOperatorName.ENDS,   TemporalOperatorName.MET_BY,
+                    TemporalOperatorName.AFTER,  TemporalOperatorName.MET_BY),
+            TemporalOperatorName.AFTER, Map.of(
+                    TemporalOperatorName.AFTER,  TemporalOperatorName.AFTER));
 
     /**
      * Returns a string representation in ISO 8601 format.

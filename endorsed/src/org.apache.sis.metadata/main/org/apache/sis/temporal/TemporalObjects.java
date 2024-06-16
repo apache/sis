@@ -44,46 +44,45 @@ public final class TemporalObjects {
     /**
      * Creates an instant for the given Java temporal instant.
      *
-     * @param  time  the date for which to create instant, or {@code null}.
+     * @param  position  the date for which to create instant, or {@code null}.
      * @return the instant, or an unknown instant if the given time was null.
      */
-    public static Instant createInstant(final Temporal time) {
-        return (time == null) ? DefaultInstant.UNKNOWN : new DefaultInstant(time, null);
+    public static Instant createInstant(final Temporal position) {
+        return (position == null) ? DefaultInstant.UNKNOWN : new DefaultInstant(position, null);
     }
 
     /**
      * Creates an instant for the given Java temporal instant associated to the indeterminate value.
      * This is used for creating "before" or "after" instant.
      *
-     * @param  time   the date for which to create instant.
-     * @param  value  the indeterminate value.
+     * @param  position       the date and/or time for which to create instant.
+     * @param  indeterminate  the indeterminate value, or {@code null} if the value is not indeterminate.
      * @return the instant.
      */
-    public static Instant createInstant(final Temporal time, final IndeterminateValue value) {
-        ArgumentChecks.ensureNonNull("value", value);
-        if (value == IndeterminateValue.UNKNOWN) {
+    public static Instant createInstant(final Temporal position, final IndeterminateValue indeterminate) {
+        if (indeterminate == IndeterminateValue.UNKNOWN) {
             return DefaultInstant.UNKNOWN;
         }
-        if (value == IndeterminateValue.BEFORE || value == IndeterminateValue.AFTER) {
-            ArgumentChecks.ensureNonNull("time", time);
+        if (indeterminate == null || indeterminate == IndeterminateValue.BEFORE || indeterminate == IndeterminateValue.AFTER) {
+            ArgumentChecks.ensureNonNull("position", position);
         }
-        return new DefaultInstant(time, value);
+        return new DefaultInstant(position, indeterminate);
     }
 
     /**
      * Creates an instant for the given indeterminate value.
      * The given value cannot be "before" or "after".
      *
-     * @param  value  the indeterminate value.
+     * @param  indeterminate  the indeterminate value.
      * @return the instant for the given indeterminate value.
      * @throws IllegalArgumentException if the given value is "before" or "after".
      */
-    public static Instant createInstant(final IndeterminateValue value) {
-        ArgumentChecks.ensureNonNull("value", value);
-        if (value == IndeterminateValue.BEFORE || value == IndeterminateValue.AFTER) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "value", value));
+    public static Instant createInstant(final IndeterminateValue indeterminate) {
+        ArgumentChecks.ensureNonNull("indeterminate", indeterminate);
+        if (indeterminate == IndeterminateValue.BEFORE || indeterminate == IndeterminateValue.AFTER) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "indeterminate", indeterminate));
         }
-        return (value == IndeterminateValue.UNKNOWN) ? DefaultInstant.UNKNOWN : new DefaultInstant(null, value);
+        return (indeterminate == IndeterminateValue.UNKNOWN) ? DefaultInstant.UNKNOWN : new DefaultInstant(null, indeterminate);
     }
 
     /**

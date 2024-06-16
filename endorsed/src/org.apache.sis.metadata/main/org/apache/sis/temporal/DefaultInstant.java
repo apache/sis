@@ -83,6 +83,28 @@ final class DefaultInstant extends TemporalObject implements Instant {
     }
 
     /**
+     * Returns the given instant as an instance of this implementation class.
+     *
+     * @param  other  the other instance to cast or copy, or {@code null}.
+     * @return the given instant as an {@code DefaultInstant}, or {@code null} if the given value was null.
+     */
+    public static DefaultInstant castOrCopy(final Instant other) {
+        if (other == null || other instanceof DefaultInstant) {
+            return (DefaultInstant) other;
+        } else {
+            final var indeterminate = other.getIndeterminatePosition().orElse(null);
+            if (indeterminate == IndeterminateValue.UNKNOWN) {
+                return UNKNOWN;
+            }
+            final Temporal position = other.getPosition();
+            if (indeterminate == null || indeterminate == IndeterminateValue.BEFORE || indeterminate == IndeterminateValue.AFTER) {
+                Objects.requireNonNull(position);
+            }
+            return new DefaultInstant(position, indeterminate);
+        }
+    }
+
+    /**
      * Returns the date, time or position on the time-scale represented by this primitive.
      * Should not be null, unless the value is {@linkplain IndeterminateValue#UNKNOWN unknown}.
      *
@@ -140,7 +162,7 @@ final class DefaultInstant extends TemporalObject implements Instant {
      * when the two operands are {@code this} and {@code other}.
      *
      * @param  other the other primitive for which to determine the relative position.
-     * @return a temporal operator which is true when evaluated between this primitive and the other primitive.
+     * @return a temporal operator which is true when evaluated between this instant and the other primitive.
      * @throws DateTimeException if the temporal objects cannot be compared.
      */
     @Override
@@ -150,23 +172,34 @@ final class DefaultInstant extends TemporalObject implements Instant {
             return relativeToInstant((Instant) other);
         }
         if (other instanceof Period) {
-            final var period = (Period) other;
-            TemporalOperatorName relation = relativeToInstant(period.getBeginning());
-            String erroneous;
-            if (relation == TemporalOperatorName.BEFORE) return relation;
-            if (relation == TemporalOperatorName.EQUALS) return TemporalOperatorName.BEGINS;
-            if (relation == TemporalOperatorName.AFTER) {
-                relation = relativeToInstant(period.getEnding());
-                if (relation == TemporalOperatorName.AFTER)  return relation;
-                if (relation == TemporalOperatorName.EQUALS) return TemporalOperatorName.ENDS;
-                if (relation == TemporalOperatorName.BEFORE) return TemporalOperatorName.DURING;
-                erroneous = "ending";
-            } else {
-                erroneous = "beginning";
-            }
-            throw new DateTimeException(Errors.format(Errors.Keys.IllegalMapping_2, erroneous, relation));
+            return relativeToPeriod((Period) other);
         }
         throw new DateTimeException(Errors.format(Errors.Keys.UnsupportedType_1, other.getClass()));
+    }
+
+    /**
+     * Determines the position of this instant relative to a period.
+     *
+     * @param  other the period for which to determine the relative position.
+     * @return a temporal operator which is true when evaluated between this primitive and the period.
+     * @throws DateTimeException if the temporal objects cannot be compared.
+     */
+    final TemporalOperatorName relativeToPeriod(final Period other) {
+        TemporalOperatorName relation = relativeToInstant(other.getBeginning());
+        String erroneous;
+        if (relation == TemporalOperatorName.BEFORE) return relation;
+        if (relation == TemporalOperatorName.EQUALS) return TemporalOperatorName.BEGINS;
+        if (relation == TemporalOperatorName.AFTER) {
+            relation = relativeToInstant(other.getEnding());
+            if (relation == TemporalOperatorName.AFTER)  return relation;
+            if (relation == TemporalOperatorName.EQUALS) return TemporalOperatorName.ENDS;
+            if (relation == TemporalOperatorName.BEFORE) return TemporalOperatorName.DURING;
+            erroneous = "ending";
+        } else {
+            erroneous = "beginning";
+        }
+        // Should never happen.
+        throw new DateTimeException(Errors.format(Errors.Keys.IllegalMapping_2, erroneous, relation));
     }
 
     /**
