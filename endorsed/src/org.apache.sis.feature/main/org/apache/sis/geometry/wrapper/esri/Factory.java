@@ -291,7 +291,10 @@ public final class Factory extends Geometries<Geometry> {
      * @return the geometry object for the given WKB.
      */
     @Override
-    public GeometryWrapper parseWKB(final ByteBuffer data) {
+    public GeometryWrapper parseWKB(ByteBuffer data) {
+        if (data.position() != 0) {
+            data = data.slice();    // ESRI implementation seems to ignore the position and always starts reading at 0.
+        }
         return new Wrapper(OperatorImportFromWkb.local().execute(WkbImportFlags.wkbImportDefaults, Geometry.Type.Unknown, data, null));
     }
 }

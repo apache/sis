@@ -107,7 +107,7 @@ final class GeometryGetter<G, V extends G> extends ValueGetter<V> {
     public V getValue(final InfoStatements stmts, final ResultSet source, final int columnIndex) throws Exception {
         final byte[] wkb = encoding.getBytes(source, columnIndex);
         if (wkb == null) return null;
-        ByteBuffer buffer = ByteBuffer.wrap(wkb);
+        final ByteBuffer buffer = ByteBuffer.wrap(wkb);
         /*
          * The bytes should describe a geometry encoded in Well Known Binary (WKB) format,
          * but this implementation accepts also the Geopackage geometry encoding:
@@ -141,8 +141,7 @@ final class GeometryGetter<G, V extends G> extends ValueGetter<V> {
                 default: throw new DataStoreContentException(Errors.forLocale(stmts.getLocale())
                             .getString(Errors.Keys.UnexpectedValueInElement_2, "envelope contents indicator"));
             }
-            buffer = buffer.position(offset).slice();
-            // Result of slice is in BIG_ENDIAN.
+            buffer.position(offset).order(ByteOrder.BIG_ENDIAN);
         }
         final GeometryWrapper geom = geometryFactory.parseWKB(buffer);
         CoordinateReferenceSystem crs = defaultCRS;
