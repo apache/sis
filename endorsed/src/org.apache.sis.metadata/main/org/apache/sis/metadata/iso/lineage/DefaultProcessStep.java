@@ -37,10 +37,11 @@ import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.gml.TM_Primitive;
 import org.apache.sis.xml.bind.metadata.MD_Scope;
 import org.apache.sis.xml.privy.LegacyNamespaces;
-import org.apache.sis.pending.temporal.TemporalUtilities;
+import org.apache.sis.temporal.TemporalObjects;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.metadata.citation.ResponsibleParty;
+import org.apache.sis.temporal.TemporalDate;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.maintenance.Scope;
@@ -186,7 +187,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
         if (object != null) {
             description           = object.getDescription();
             rationale             = object.getRationale();
-            stepDateTime          = TemporalUtilities.createInstant(object.getDate());
+            stepDateTime          = toInstant(object.getDate());
             processors            = copyCollection(object.getProcessors(), ResponsibleParty.class);
             references            = copyCollection(object.getReferences(), Citation.class);
             sources               = copyCollection(object.getSources(), Source.class);
@@ -302,7 +303,7 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     @XmlElement(name = "dateTime", namespace = LegacyNamespaces.GMD)
     public Date getDate() {
         if (FilterByVersion.LEGACY_METADATA.accept()) {
-            Date date = TemporalUtilities.getAnyDate(getStepDateTime());
+            Date date = TemporalObjects.getAnyDate(getStepDateTime());
             if (date == null) {
                 date = ProcessStep.super.getDate();
             }
@@ -320,7 +321,14 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      */
     @Deprecated(since="1.0")
     public void setDate(final Date newValue) {
-        setStepDateTime(TemporalUtilities.createInstant(newValue == null ? null : newValue.toInstant()));
+        setStepDateTime(toInstant(newValue));
+    }
+
+    /**
+     * Converts the given date to a temporal primitive, which may be null.
+     */
+    private static TemporalPrimitive toInstant(final Date newValue) {
+        return (newValue == null) ? null : TemporalObjects.createInstant(TemporalDate.toTemporal(newValue));
     }
 
     /**

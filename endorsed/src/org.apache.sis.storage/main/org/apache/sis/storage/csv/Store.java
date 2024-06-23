@@ -52,7 +52,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.util.privy.Numerics;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.temporal.LenientDateFormat;
 import org.apache.sis.storage.DataOptionKey;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
@@ -381,8 +381,8 @@ final class Store extends URIDataStore implements FeatureSet {
                             ordinal++;  // Fall through
                     case 3: lowerCorner = CharSequences.parseDoubles(element, ORDINATE_SEPARATOR); continue;
                     case 4: upperCorner = CharSequences.parseDoubles(element, ORDINATE_SEPARATOR); continue;
-                    case 5: startTime   = StandardDateFormat.parseInstantUTC(element); continue;
-                    case 6: endTime     = StandardDateFormat.parseInstantUTC(element); continue;
+                    case 5: startTime   = LenientDateFormat.parseInstantUTC(element); continue;
+                    case 6: endTime     = LenientDateFormat.parseInstantUTC(element); continue;
                     case 7: switch (element.toLowerCase(Locale.US)) {
                                 case "sec":
                                 case "second":   /* Already SECOND. */    continue;

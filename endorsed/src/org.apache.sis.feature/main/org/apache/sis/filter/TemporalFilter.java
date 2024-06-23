@@ -16,7 +16,10 @@
  */
 package org.apache.sis.filter;
 
+import java.time.DateTimeException;
 import org.apache.sis.util.Classes;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.temporal.TimeMethods;
 import org.apache.sis.feature.privy.FeatureExpression;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -25,6 +28,7 @@ import org.opengis.filter.Filter;
 import org.opengis.filter.Expression;
 import org.opengis.filter.TemporalOperator;
 import org.opengis.filter.TemporalOperatorName;
+import org.opengis.filter.InvalidFilterValueException;
 
 
 /**
@@ -175,13 +179,15 @@ class TemporalFilter<R,T> extends BinaryFunction<R,T,T>
     /**
      * Determines if the test(s) represented by this filter passes with the given operands.
      * Values of {@link #expression1} and {@link #expression2} shall be two single values.
+     *
+     * @throws InvalidFilterValueException if two temporal objects cannot be compared.
      */
     @Override
     public boolean test(final R candidate) {
         final T left = expression1.apply(candidate);
         if (left != null) {
             final T right = expression2.apply(candidate);
-            if (right != null) {
+            if (right != null) try {
                 if (left instanceof Period) {
                     if (right instanceof Period) {
                         return operation.evaluate((Period) left, (Period) right);
@@ -193,6 +199,9 @@ class TemporalFilter<R,T> extends BinaryFunction<R,T,T>
                 } else {
                     return operation.evaluate(left, right);
                 }
+            } catch (DateTimeException e) {
+                throw new InvalidFilterValueException(Errors.format(
+                        Errors.Keys.CannotCompareInstanceOf_2, left.getClass(), right.getClass()));
             }
         }
         return false;
@@ -227,8 +236,11 @@ class TemporalFilter<R,T> extends BinaryFunction<R,T,T>
             final T left = expression1.apply(candidate);
             if (left != null) {
                 final T right = expression2.apply(candidate);
-                if (right != null) {
+                if (right != null) try {
                     return operation.evaluate(left, right);
+                } catch (DateTimeException e) {
+                    throw new InvalidFilterValueException(Errors.format(
+                            Errors.Keys.CannotCompareInstanceOf_2, left.getClass(), right.getClass()));
                 }
             }
             return false;
@@ -264,8 +276,11 @@ class TemporalFilter<R,T> extends BinaryFunction<R,T,T>
             final Period left = expression1.apply(candidate);
             if (left != null) {
                 final Period right = expression2.apply(candidate);
-                if (right != null) {
+                if (right != null) try {
                     return operation.evaluate(left, right);
+                } catch (DateTimeException e) {
+                    throw new InvalidFilterValueException(Errors.format(
+                            Errors.Keys.CannotCompareInstanceOf_2, left.getClass(), right.getClass()));
                 }
             }
             return false;

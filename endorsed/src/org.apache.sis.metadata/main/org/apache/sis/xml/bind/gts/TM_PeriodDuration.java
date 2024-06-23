@@ -20,7 +20,7 @@ import java.time.temporal.TemporalAmount;
 import javax.xml.datatype.Duration;
 import jakarta.xml.bind.annotation.XmlElement;
 import org.opengis.temporal.PeriodDuration;
-import org.apache.sis.pending.temporal.DefaultPeriodDuration;
+import org.apache.sis.temporal.DefaultPeriodDuration;
 import org.apache.sis.xml.bind.gco.PropertyType;
 
 

@@ -54,9 +54,9 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.system.Loggers;
 import org.apache.sis.util.privy.Constants;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.system.Loggers;
+import org.apache.sis.temporal.LenientDateFormat;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
 
@@ -1145,7 +1145,7 @@ public class WKTFormat extends CompoundFormat<Object> {
             return symbols.createNumberFormat();
         }
         if (valueType == Date.class) {
-            return new StandardDateFormat(symbols.getLocale(), getTimeZone());
+            return new LenientDateFormat(symbols.getLocale(), getTimeZone());
         }
         final Format format = super.createFormat(valueType);
         if (format instanceof UnitFormat) {

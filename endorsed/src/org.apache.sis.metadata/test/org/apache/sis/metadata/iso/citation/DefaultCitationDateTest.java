@@ -47,14 +47,14 @@ public final class DefaultCitationDateTest extends TestCase {
      */
     @Test
     public void testCopyConstructor() {
-        final CitationDate original = new CitationDate() {
+        final var original = new CitationDate() {
             @Override public Temporal getReferenceDate() {return Instant.ofEpochMilli(1305716658508L);}
             @Override public DateType getDateType()      {return DateType.CREATION;}
         };
-        final DefaultCitationDate copy = new DefaultCitationDate(original);
+        final var copy = new DefaultCitationDate(original);
         assertEquals(Instant.ofEpochMilli(1305716658508L), copy.getReferenceDate());
         assertEquals(DateType.CREATION, copy.getDateType());
-        assertTrue (copy.equals(original, ComparisonMode.BY_CONTRACT));
-        assertFalse(copy.equals(original, ComparisonMode.STRICT)); // Opportunist test.
+        assertTrue (copy.equals(original, ComparisonMode.DEBUG));
+        assertFalse(copy.equals(original, ComparisonMode.STRICT));          // Opportunist test.
     }
 }

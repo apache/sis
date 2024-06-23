@@ -31,7 +31,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreMock;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.netcdf.ucar.DecoderWrapper;
-import org.apache.sis.util.privy.TemporalDate;
+import org.apache.sis.temporal.TemporalDate;
 import org.apache.sis.setup.GeometryLibrary;
 
 // Test dependencies

@@ -237,7 +237,7 @@ public final class ElementTest extends TestCase {
     public void testClose() throws ParseException {
         final Element element = parse("A[\"B\", \"C\"]");
         var e = assertThrows(ParseException.class, () -> element.close(null));
-        assertEquals("Unexpected value “B” in “A” element.", e.getLocalizedMessage());
+        assertEquals("Unexpected value “B” in the “A” element.", e.getLocalizedMessage());
     }
 
     /**

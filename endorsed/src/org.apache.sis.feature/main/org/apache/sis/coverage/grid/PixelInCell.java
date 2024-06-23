@@ -115,6 +115,9 @@ public enum PixelInCell implements ControlledVocabulary {
      */
     @Override
     public String[] names() {
+        if (this == CELL_CENTER) {
+            return new String[] {name(), identifier, "cell centre"};
+        }
         return new String[] {name(), identifier};
     }
 

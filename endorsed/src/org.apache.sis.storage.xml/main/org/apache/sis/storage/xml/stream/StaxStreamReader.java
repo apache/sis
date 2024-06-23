@@ -40,8 +40,8 @@ import jakarta.xml.bind.JAXBElement;
 import jakarta.xml.bind.JAXBException;
 import org.apache.sis.xml.bind.Context;
 import org.apache.sis.util.privy.Strings;
-import org.apache.sis.util.privy.StandardDateFormat;
 import org.apache.sis.io.stream.IOUtilities;
+import org.apache.sis.temporal.LenientDateFormat;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -371,7 +371,7 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      */
     protected final Date getElementAsDate() throws XMLStreamException {
         final String text = getElementText();
-        return (text == null) ? null : Date.from(StandardDateFormat.parseInstantUTC(text));
+        return (text == null) ? null : Date.from(LenientDateFormat.parseInstantUTC(text));
     }
 
     /**
@@ -383,7 +383,7 @@ public abstract class StaxStreamReader extends StaxStreamIO implements XMLStream
      * @throws DateTimeParseException if the text cannot be parsed as a date.
      */
     protected final Temporal getElementAsTemporal() throws XMLStreamException {
-        return StandardDateFormat.parseBest(getElementText());
+        return LenientDateFormat.parseBest(getElementText());
     }
 
     /**

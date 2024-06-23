@@ -17,6 +17,7 @@
 package org.apache.sis.storage.shapefile.shx;
 
 import java.io.IOException;
+import java.nio.ByteOrder;
 import org.apache.sis.storage.shapefile.shp.ShapeHeader;
 import org.apache.sis.io.stream.ChannelDataOutput;
 
@@ -65,11 +66,12 @@ public final class IndexWriter implements AutoCloseable{
     /**
      * Write a new record.
      *
-     * @param offset record offset
-     * @param length record length
+     * @param offset record offset, in words (2 bytes)
+     * @param length record length, in words (2 bytes)
      * @throws IOException If an I/O error occurs
      */
     public void writeRecord(int offset, int length) throws IOException {
+        channel.buffer.order(ByteOrder.BIG_ENDIAN);
         channel.writeInt(offset);
         channel.writeInt(length);
     }

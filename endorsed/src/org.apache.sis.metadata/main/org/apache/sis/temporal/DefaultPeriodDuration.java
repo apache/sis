@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.pending.temporal;
+package org.apache.sis.temporal;
 
 import java.io.Serializable;
 import java.time.temporal.TemporalAmount;
@@ -27,11 +27,14 @@ import java.util.List;
 
 
 /**
- * Default implementation of GeoAPI period duration. This is a temporary class;
- * GeoAPI temporal interfaces are expected to change a lot in a future revision.
+ * Default implementation of GeoAPI period duration.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ *
+ * @deprecated This is a temporary class for compatibility with GeoAPI 3.x only.
+ * It should disappear with GeoAPI 4.0.
  */
+@Deprecated
 @SuppressWarnings("serial")
 public final class DefaultPeriodDuration implements PeriodDuration, Serializable {
     /**

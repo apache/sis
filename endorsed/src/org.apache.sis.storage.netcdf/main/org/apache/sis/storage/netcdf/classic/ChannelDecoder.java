@@ -58,12 +58,12 @@ import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.CollectionsExt;
-import org.apache.sis.util.privy.StandardDateFormat;
-import org.apache.sis.util.privy.TemporalDate;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
+import org.apache.sis.temporal.LenientDateFormat;
+import org.apache.sis.temporal.TemporalDate;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
@@ -863,7 +863,7 @@ public final class ChannelDecoder extends Decoder {
     public Temporal dateValue(final String name) {
         final Object value = findAttribute(name);
         if (value instanceof CharSequence) try {
-            return StandardDateFormat.parseBest((CharSequence) value);
+            return LenientDateFormat.parseBest((CharSequence) value);
         } catch (RuntimeException e) {
             listeners.warning(e);
         }
@@ -883,7 +883,7 @@ public final class ChannelDecoder extends Decoder {
         final Matcher parts = Variable.TIME_UNIT_PATTERN.matcher(symbol);
         if (parts.matches()) try {
             final UnitConverter converter = Units.valueOf(parts.group(1)).getConverterToAny(Units.SECOND);
-            final Instant epoch = StandardDateFormat.parseInstantUTC(parts.group(2));
+            final Instant epoch = LenientDateFormat.parseInstantUTC(parts.group(2));
             for (int i=0; i<values.length; i++) {
                 final Number value = values[i];
                 if (value != null) {

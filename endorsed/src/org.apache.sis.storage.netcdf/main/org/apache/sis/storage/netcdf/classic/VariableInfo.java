@@ -50,11 +50,11 @@ import org.apache.sis.io.stream.Region;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.privy.StandardDateFormat;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.temporal.LenientDateFormat;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Vector;
 
@@ -426,7 +426,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
              * The parse method will replace the space between date and time by 'T' letter.
              */
             try {
-                epoch = StandardDateFormat.parseInstantUTC(parts.group(2));
+                epoch = LenientDateFormat.parseInstantUTC(parts.group(2));
             } catch (DateTimeParseException e) {
                 dateError = e;
             }

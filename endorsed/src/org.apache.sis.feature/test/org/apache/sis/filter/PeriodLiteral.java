@@ -18,19 +18,13 @@ package org.apache.sis.filter;
 
 import java.time.Instant;
 import java.io.Serializable;
+import org.apache.sis.temporal.TemporalObjects;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import java.time.temporal.TemporalAmount;
 import org.opengis.feature.Feature;
 import org.opengis.filter.Expression;
 import org.opengis.filter.Literal;
 import org.opengis.temporal.Period;
-import org.opengis.temporal.RelativePosition;
-import org.opengis.temporal.TemporalPrimitive;
-import org.opengis.temporal.TemporalGeometricPrimitive;
-
-// Specific to the geoapi-3.1 branch:
-import org.opengis.referencing.ReferenceIdentifier;
 
 
 /**
@@ -55,18 +49,34 @@ final class PeriodLiteral implements Period, Literal<Feature,Period>, Serializab
     /**
      * Returns the constant value held by this object.
      */
-    @Override public Period getValue() {return this;}
+    @Override
+    public Period getValue() {
+        return this;
+    }
 
-    /** Returns a bound of this period. */
-    @Override public Instant getBeginning() {return Instant.ofEpochMilli(begin);}
-    @Override public Instant getEnding()    {return Instant.ofEpochMilli(end);}
+    /**
+     * Returns the beginning of this period.
+     */
+    @Override
+    public org.opengis.temporal.Instant getBeginning() {
+        return TemporalObjects.createInstant(Instant.ofEpochMilli(begin));
+    }
 
-    /** Not needed for the tests. */
-    @Override public ReferenceIdentifier getName()                           {throw new UnsupportedOperationException();}
-    @Override public RelativePosition relativePosition(TemporalPrimitive o)  {throw new UnsupportedOperationException();}
-    @Override public TemporalAmount   distance(TemporalGeometricPrimitive o) {throw new UnsupportedOperationException();}
-    @Override public TemporalAmount   length()                               {throw new UnsupportedOperationException();}
-    @Override public <N> Expression<Feature,N> toValueType(Class<N> target)  {throw new UnsupportedOperationException();}
+    /**
+     * Returns the ending of this period.
+     */
+    @Override
+    public org.opengis.temporal.Instant getEnding() {
+        return TemporalObjects.createInstant(Instant.ofEpochMilli(end));
+    }
+
+    /**
+     * Not needed for the tests.
+     */
+    @Override
+    public <N> Expression<Feature,N> toValueType(Class<N> target) {
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Hash code value. Used by the tests for checking the results of deserialization.

@@ -76,6 +76,15 @@ module org.apache.sis.metadata {
     /*
      * Internal API open only to other Apache SIS modules.
      */
+    exports org.apache.sis.temporal to
+            org.apache.sis.referencing,
+            org.apache.sis.feature,
+            org.apache.sis.storage,
+            org.apache.sis.storage.xml,
+            org.apache.sis.storage.netcdf,
+            org.apache.sis.storage.geotiff,
+            org.apache.sis.cql;                 // In the "incubator" sub-project.
+
     exports org.apache.sis.metadata.privy to
             org.apache.sis.referencing,
             org.apache.sis.feature,

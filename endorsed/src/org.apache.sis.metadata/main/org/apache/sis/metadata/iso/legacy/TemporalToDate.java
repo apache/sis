@@ -21,7 +21,7 @@ import java.util.AbstractCollection;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
-import org.apache.sis.util.privy.TemporalDate;
+import org.apache.sis.temporal.TemporalDate;
 
 
 /**

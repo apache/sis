@@ -40,7 +40,7 @@ import javax.xml.transform.stax.StAXSource;
 import javax.xml.namespace.QName;
 import jakarta.xml.bind.JAXBException;
 import org.apache.sis.io.stream.ChannelDataInput;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.temporal.LenientDateFormat;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.storage.geotiff.base.Tags;
@@ -490,8 +490,8 @@ public final class XMLMetadata implements Filter {
                 final String content = buffer.toString();
                 if (!content.isEmpty()) {
                     switch (attribute) {
-                        case "acquisitionStartDate": startTime = StandardDateFormat.parseInstantUTC(content); break;
-                        case "acquisitionEndDate":   endTime   = StandardDateFormat.parseInstantUTC(content); break;
+                        case "acquisitionStartDate": startTime = LenientDateFormat.parseInstantUTC(content); break;
+                        case "acquisitionEndDate":   endTime   = LenientDateFormat.parseInstantUTC(content); break;
                         case "title": metadata.addTitle(content); break;
                     }
                 }

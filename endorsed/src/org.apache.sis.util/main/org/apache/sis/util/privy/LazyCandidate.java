@@ -14,13 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.util.privy;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 
 /**
- * Place-holder for a future implementation of {@code org.opengis.temporal} interfaces.
- * Those interfaces should be derived from ISO 19108, but they overlap with {@code java.time} standard API.
- * Furthermore, the ISO 19108 standard also overlaps with ISO 19111. How to resolve those overlaps has not
- * yet been decided.
+ * Annotates fields that may be replaced by lazy initialization.
+ * This is a marker annotation for code to revisit if and when the
+ * JEP for Lazy Static Final Fields become available.
+ *
+ * <h2>Alternative</h2>
+ * We could have used the inner class pattern instead, but it it not clear that it is worth the cost.
  *
  * @author  Martin Desruisseaux (Geomatys)
+ *
+ * @see <a href="https://openjdk.org/jeps/8209964">JEP draft: Lazy Static Final Fields</a>
  */
-package org.apache.sis.pending.temporal;
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.SOURCE)
+public @interface LazyCandidate {
+}

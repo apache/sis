@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.metadata.xml.TestUsingFile;
 import static org.apache.sis.metadata.Assertions.assertXmlEquals;
+import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 
 
 /**
@@ -134,7 +135,7 @@ public final class DefaultExtentTest extends TestUsingFile {
         assertMarshalEqualsFile(openTestFile(format), extent, format.schemaVersion, STRICT,
                 new String[] {"gml:description"},                               // Ignored nodes.
                 new String[] {"xmlns:*", "xsi:schemaLocation", "gml:id"});      // Ignored attributes.
-        assertEquals(extent, unmarshalFile(DefaultExtent.class, openTestFile(format)));
+        assertEqualsIgnoreMetadata(extent, unmarshalFile(DefaultExtent.class, openTestFile(format)));
     }
 
     /**

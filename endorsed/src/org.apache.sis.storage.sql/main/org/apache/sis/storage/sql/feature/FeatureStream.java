@@ -366,7 +366,9 @@ final class FeatureStream extends DeferredStream<Feature> {
      * @param  connection  the connection to configure.
      */
     private void makeReadOnly(final Connection connection) throws SQLException {
-        connection.setReadOnly(true);
+        if (table.database.dialect.supportsReadOnlyUpdate) {
+            connection.setReadOnly(true);
+        }
         /*
          * Do not invoke `setAutoCommit(false)` because it causes the database to hold read locks,
          * even if we are doing only SELECT statements. On Derby database it causes the following

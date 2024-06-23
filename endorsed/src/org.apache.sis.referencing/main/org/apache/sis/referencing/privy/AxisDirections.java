@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.privy;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Objects;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
@@ -69,38 +68,6 @@ public final class AxisDirections extends Static {
     private static final int LAST_ORDINAL = UNSPECIFIED.ordinal();
 
     /**
-     * For each direction, the opposite direction.
-     * This map shall be immutable after construction.
-     */
-    private static final Map<AxisDirection,AxisDirection> OPPOSITES = new HashMap<>(24);
-    static {
-        put(UNSPECIFIED,       UNSPECIFIED);
-        put(NORTH,             SOUTH);
-        put(NORTH_NORTH_EAST,  SOUTH_SOUTH_WEST);
-        put(NORTH_EAST,        SOUTH_WEST);
-        put(EAST_NORTH_EAST,   WEST_SOUTH_WEST);
-        put(EAST,              WEST);
-        put(EAST_SOUTH_EAST,   WEST_NORTH_WEST);
-        put(SOUTH_EAST,        NORTH_WEST);
-        put(SOUTH_SOUTH_EAST,  NORTH_NORTH_WEST);
-        put(UP,                DOWN);
-        put(FUTURE,            PAST);
-        put(COLUMN_POSITIVE,   COLUMN_NEGATIVE);
-        put(ROW_POSITIVE,      ROW_NEGATIVE);
-        put(DISPLAY_RIGHT,     DISPLAY_LEFT);
-        put(DISPLAY_UP,        DISPLAY_DOWN);
-        put(COUNTER_CLOCKWISE, CLOCKWISE);
-    }
-
-    /**
-     * Stores the given directions in the {@link #OPPOSITES} array.
-     */
-    private static void put(final AxisDirection dir, final AxisDirection opposite) {
-        OPPOSITES.put(dir, opposite);
-        OPPOSITES.put(opposite, dir);
-    }
-
-    /**
      * Proposed abbreviations for some axis directions.
      */
     @SuppressWarnings("deprecation")
@@ -140,6 +107,7 @@ public final class AxisDirections extends Static {
      * <tr><td>{@code DISPLAY_RIGHT},   {@code DISPLAY_LEFT}</td>     <td>{@code DISPLAY_RIGHT}</td></tr>
      * <tr><td>{@code DISPLAY_UP},      {@code DISPLAY_DOWN}</td>     <td>{@code DISPLAY_UP}</td></tr>
      * <tr><td>{@code CLOCKWISE},       {@code COUNTERCLOCKWISE}</td> <td>{@code COUNTERCLOCKWISE}</td></tr>
+     * <tr><td>{@code AWAY_FROM},       {@code TOWARDS}</td>          <td>{@code AWAY_FROM}</td></tr>
      * <tr><td>{@code OTHER}</td>                                     <td>{@code OTHER}</td></tr>
      * </table>
      *
@@ -155,6 +123,8 @@ public final class AxisDirections extends Static {
             // Ordinal values do not have the desired order for this particular case.
             if (dir == CLOCKWISE) {
                 dir = COUNTER_CLOCKWISE;
+            } else if (dir == TOWARDS) {
+                dir = AWAY_FROM;
             }
         }
         return dir;
@@ -170,7 +140,7 @@ public final class AxisDirections extends Static {
      * @return the opposite direction, or {@code null} if none or unknown.
      */
     public static AxisDirection opposite(AxisDirection dir) {
-        return OPPOSITES.get(dir);
+        return (dir != null) ? dir.opposite().orElse(null) : null;
     }
 
     /**

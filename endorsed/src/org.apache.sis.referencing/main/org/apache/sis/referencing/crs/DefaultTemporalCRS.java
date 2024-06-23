@@ -46,7 +46,7 @@ import static org.apache.sis.util.privy.Constants.NANOS_PER_SECOND;
 import static org.apache.sis.util.privy.Constants.MILLIS_PER_SECOND;
 
 // Specific to the main and geoapi-3.1 branches:
-import org.apache.sis.util.privy.TemporalDate;
+import org.apache.sis.temporal.TemporalDate;
 
 
 /**
