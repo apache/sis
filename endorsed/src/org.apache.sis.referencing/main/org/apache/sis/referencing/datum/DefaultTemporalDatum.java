@@ -35,7 +35,7 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.FormattableObject;
 
 // Specific to the main and geoapi-3.1 branches:
-import org.apache.sis.util.privy.TemporalDate;
+import org.apache.sis.temporal.TemporalDate;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;

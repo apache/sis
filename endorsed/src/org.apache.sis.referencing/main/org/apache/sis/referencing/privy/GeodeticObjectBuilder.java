@@ -62,7 +62,7 @@ import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.parameter.Parameters;
 
 // Specific to the main branch:
-import org.apache.sis.util.privy.TemporalDate;
+import org.apache.sis.temporal.TemporalDate;
 
 
 /**

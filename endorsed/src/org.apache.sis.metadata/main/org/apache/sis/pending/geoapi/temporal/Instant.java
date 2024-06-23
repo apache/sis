@@ -16,7 +16,9 @@
  */
 package org.apache.sis.pending.geoapi.temporal;
 
+import java.util.Optional;
 import java.time.temporal.Temporal;
+import java.time.temporal.TemporalAmount;
 import org.opengis.temporal.TemporalPrimitive;
 
 
@@ -24,21 +26,32 @@ import org.opengis.temporal.TemporalPrimitive;
  * Placeholder for a GeoAPI interfaces not present in GeoAPI 3.0.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @since   0.3
+ * @since   1.5
  * @version 1.5
  */
-public interface Period extends TemporalPrimitive {
+public interface Instant extends TemporalPrimitive {
     /**
-     * Links this period to the instant at which it ends.
-     *
-     * @return The beginning instant.
+     * Returns the date, time or position on the time-scale represented by this primitive.
      */
-    Temporal getBeginning();
+    Temporal getPosition();
 
     /**
-     * Links this period to the instant at which it ends.
+     * Returns the reason why the temporal position is missing or inaccurate.
      *
-     * @return The end instant.
+     * @return the reason why the position is indeterminate.
      */
-    Temporal getEnding();
+    default Optional<IndeterminateValue> getIndeterminatePosition() {
+        return Optional.empty();
+    }
+
+    /**
+     * Returns the distance from this instant to another instant or a period (optional operation).
+     */
+    default TemporalAmount distance(TemporalPrimitive other) {
+        throw new UnsupportedOperationException();
+    }
+
+    default TemporalOperatorName findRelativePosition(TemporalPrimitive other) {
+        throw new UnsupportedOperationException();
+    }
 }

@@ -29,7 +29,7 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
 import org.apache.sis.pending.geoapi.temporal.Period;
-import org.apache.sis.pending.geoapi.filter.TemporalOperatorName;
+import org.apache.sis.pending.geoapi.temporal.TemporalOperatorName;
 
 
 /**

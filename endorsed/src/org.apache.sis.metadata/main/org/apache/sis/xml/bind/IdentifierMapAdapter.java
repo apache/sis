@@ -460,6 +460,7 @@ public class IdentifierMapAdapter extends AbstractMap<Citation,String> implement
                 while (it.hasNext()) {
                     final Identifier identifier = it.next();
                     if (identifier != null) {
+                        @SuppressWarnings("LocalVariableHidesMemberVariable")
                         final Citation authority = identifier.getAuthority();
                         final Boolean state = put(authority, Boolean.FALSE);
                         if (state == null) {

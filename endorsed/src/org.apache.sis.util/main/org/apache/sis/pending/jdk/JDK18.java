@@ -16,6 +16,8 @@
  */
 package org.apache.sis.pending.jdk;
 
+import java.time.Duration;
+
 
 /**
  * Place holder for some functionalities defined in a JDK more recent than Java 11.
@@ -61,5 +63,14 @@ public final class JDK18 {
             r++;
         }
         return r;
+    }
+
+    /**
+     * Checks if the duration is positive, excluding zero.
+     *
+     * @return true if this duration has a total length greater than zero.
+     */
+    public static boolean isPositive(final Duration d) {
+        return !(d.isNegative() || d.isZero());
     }
 }

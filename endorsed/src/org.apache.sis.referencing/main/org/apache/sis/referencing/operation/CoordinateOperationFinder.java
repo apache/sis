@@ -71,7 +71,7 @@ import org.apache.sis.util.resources.Vocabulary;
 import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 
 // Specific to the main and geoapi-3.1 branches:
-import org.apache.sis.util.privy.TemporalDate;
+import org.apache.sis.temporal.TemporalDate;
 
 
 /**

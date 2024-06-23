@@ -62,7 +62,7 @@ import org.apache.sis.util.Emptiable;
 import org.apache.sis.util.ObjectConverter;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.privy.CollectionsExt;
-import org.apache.sis.util.privy.TemporalDate;
+import org.apache.sis.temporal.TemporalDate;
 import org.apache.sis.metadata.MetadataCopier;
 import org.apache.sis.metadata.MetadataStandard;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;

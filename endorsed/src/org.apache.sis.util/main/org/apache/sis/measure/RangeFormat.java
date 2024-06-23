@@ -35,6 +35,12 @@ import java.text.ParsePosition;
 import java.time.Instant;
 import java.time.format.FormatStyle;
 import java.time.format.DateTimeFormatterBuilder;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.OffsetDateTime;
+import java.time.OffsetTime;
+import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.lang.reflect.InaccessibleObjectException;
 import javax.measure.Unit;
@@ -43,7 +49,6 @@ import org.apache.sis.util.Localized;
 import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.privy.LocalizedParseException;
-import org.apache.sis.util.privy.TemporalDate;
 import org.apache.sis.util.privy.Numerics;
 
 
@@ -362,8 +367,8 @@ public class RangeFormat extends Format implements Localized {
             elementFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale);
             unitFormat    = null;
         } else if (Temporal.class.isAssignableFrom(elementType)) {
-            final FormatStyle dateStyle = TemporalDate.hasDateFields(elementType) ? FormatStyle.SHORT : null;
-            final FormatStyle timeStyle = TemporalDate.hasTimeFields(elementType) ? FormatStyle.SHORT : null;
+            final FormatStyle dateStyle = hasDateFields(elementType) ? FormatStyle.SHORT : null;
+            final FormatStyle timeStyle = hasTimeFields(elementType) ? FormatStyle.SHORT : null;
             elementFormat = new DateTimeFormatterBuilder().appendLocalized(dateStyle, timeStyle).toFormatter(locale).toFormat();
             unitFormat    = null;
         } else {
@@ -400,6 +405,39 @@ public class RangeFormat extends Format implements Localized {
      */
     private boolean isClose(final int c) {
         return (c == closeInclusive) || (c == closeExclusive) || (c == closeExclusiveAlt);
+    }
+
+    /**
+     * Returns {@code true} if objects of the given class have day, month and hour fields.
+     * This method is defined here for having a single class where to concentrate such heuristic rules.
+     * Note that {@link Instant} does not have date fields.
+     *
+     * @param  date  class of object to test (may be {@code null}).
+     * @return whether the given class is {@link LocalDate} or one of the classes with date + time.
+     *         This list may be expanded in future versions.
+     */
+    public static boolean hasDateFields(final Class<?> date) {
+        return date == LocalDate.class
+            || date == LocalDateTime.class
+            || date == OffsetDateTime.class
+            || date == ZonedDateTime.class;
+    }
+
+    /**
+     * Returns {@code true} if objects of the given class have time fields.
+     * This method is defined here for having a single class where to concentrate such heuristic rules.
+     * Note that {@link Instant} does not have hour fields.
+     *
+     * @param  date  class of object to test (may be {@code null}).
+     * @return whether the given class is {@link LocalTime}, {@link OffsetTime} or one of the classes with date + time.
+     *         This list may be expanded in future versions.
+     */
+    public static boolean hasTimeFields(final Class<?> date) {
+        return date == LocalTime.class
+            || date == OffsetTime.class
+            || date == LocalDateTime.class
+            || date == OffsetDateTime.class
+            || date == ZonedDateTime.class;
     }
 
     /**

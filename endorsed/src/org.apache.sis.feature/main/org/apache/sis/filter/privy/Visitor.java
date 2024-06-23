@@ -29,8 +29,8 @@ import org.apache.sis.filter.Expression;
 import org.apache.sis.pending.geoapi.filter.LogicalOperatorName;
 import org.apache.sis.pending.geoapi.filter.SpatialOperatorName;
 import org.apache.sis.pending.geoapi.filter.DistanceOperatorName;
-import org.apache.sis.pending.geoapi.filter.TemporalOperatorName;
 import org.apache.sis.pending.geoapi.filter.ComparisonOperatorName;
+import org.apache.sis.pending.geoapi.temporal.TemporalOperatorName;
 
 
 /**

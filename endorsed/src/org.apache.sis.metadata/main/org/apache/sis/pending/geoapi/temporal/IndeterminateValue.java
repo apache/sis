@@ -14,13 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.pending.geoapi.temporal;
+
+import java.util.Locale;
+
 
 /**
- * Place-holder for a future implementation of {@code org.opengis.temporal} interfaces.
- * Those interfaces should be derived from ISO 19108, but they overlap with {@code java.time} standard API.
- * Furthermore, the ISO 19108 standard also overlaps with ISO 19111. How to resolve those overlaps has not
- * yet been decided.
+ * Indications that a temporal position is not precisely known.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-package org.apache.sis.pending.temporal;
+public enum IndeterminateValue {
+    UNKNOWN, NOW, BEFORE, AFTER;
+
+    public String identifier() {
+        return name().toLowerCase(Locale.US);
+    }
+}

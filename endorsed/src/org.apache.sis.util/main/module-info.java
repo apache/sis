@@ -126,10 +126,6 @@ module org.apache.sis.util {
             org.apache.sis.referencing.epsg,            // In the "non-free" sub-project.
             org.apache.sis.referencing.database;        // In the "non-free" sub-project.
 
-    exports org.apache.sis.pending.geoapi.temporal to
-            org.apache.sis.metadata,
-            org.apache.sis.feature;
-
     exports org.apache.sis.converter to
             org.apache.sis.metadata,
             org.apache.sis.referencing,

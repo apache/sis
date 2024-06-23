@@ -39,7 +39,7 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.xml.NilObject;
 import org.apache.sis.xml.NilReason;
-import org.apache.sis.util.privy.TemporalDate;
+import org.apache.sis.temporal.TemporalDate;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;

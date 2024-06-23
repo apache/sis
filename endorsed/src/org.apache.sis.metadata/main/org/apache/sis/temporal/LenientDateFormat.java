@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.privy;
+package org.apache.sis.temporal;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -42,6 +42,7 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
 import java.time.format.SignStyle;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.privy.Constants;
 
 
 /**
@@ -63,7 +64,7 @@ import org.apache.sis.util.CharSequences;
  * @author  Martin Desruisseaux (Geomatys)
  */
 @SuppressWarnings("serial")     // Not intended to be serialized.
-public final class StandardDateFormat extends DateFormat {
+public final class LenientDateFormat extends DateFormat {
     /**
      * Midnight (00:00) UTC.
      */
@@ -224,7 +225,7 @@ replace:    if (Character.isWhitespace(c)) {
     /**
      * Creates a new format for a default locale in the UTC timezone.
      */
-    public StandardDateFormat() {
+    public LenientDateFormat() {
         formatWithoutZone = format = FORMAT;
     }
 
@@ -233,7 +234,7 @@ replace:    if (Character.isWhitespace(c)) {
      *
      * @param locale  the locale of the format to create.
      */
-    public StandardDateFormat(final Locale locale) {
+    public LenientDateFormat(final Locale locale) {
         // Same instance as FORMAT if the locales are equal.
         formatWithoutZone = format = FORMAT.withLocale(locale);
     }
@@ -244,7 +245,7 @@ replace:    if (Character.isWhitespace(c)) {
      * @param locale  the locale of the format to create.
      * @param zone    the timezone.
      */
-    public StandardDateFormat(final Locale locale, final TimeZone zone) {
+    public LenientDateFormat(final Locale locale, final TimeZone zone) {
         this(locale);
         if (!Constants.UTC.equals(zone.getID())) {
             setTimeZone(zone);
@@ -252,7 +253,7 @@ replace:    if (Character.isWhitespace(c)) {
     }
 
     /**
-     * Returns the calendar, creating it when first needed. This {@code StandardDateFormat} class does not use the
+     * Returns the calendar, creating it when first needed. This {@code LenientDateFormat} class does not use the
      * calendar, but we nevertheless create it if requested in order to comply with {@code DateFormat} contract.
      *
      * @return a calendar, created when first needed.
@@ -266,7 +267,7 @@ replace:    if (Character.isWhitespace(c)) {
     }
 
     /**
-     * Returns the number format, creating it when first needed. This {@code StandardDateFormat} class does not use the
+     * Returns the number format, creating it when first needed. This {@code LenientDateFormat} class does not use the
      * number format, but we nevertheless create it if requested in order to comply with {@code DateFormat} contract.
      *
      * @return a number format, created when first needed.
@@ -416,6 +417,6 @@ replace:    if (Character.isWhitespace(c)) {
      */
     @Override
     public boolean equals(final Object obj) {
-        return (obj instanceof StandardDateFormat) && format.equals(((StandardDateFormat) obj).format);
+        return (obj instanceof LenientDateFormat) && format.equals(((LenientDateFormat) obj).format);
     }
 }

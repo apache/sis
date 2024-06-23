@@ -110,6 +110,9 @@ public enum PixelInCell {
      * @return all names of this constant. This array is never null and never empty.
      */
     public String[] names() {
+        if (this == CELL_CENTER) {
+            return new String[] {name(), identifier, "cell centre"};
+        }
         return new String[] {name(), identifier};
     }
 }

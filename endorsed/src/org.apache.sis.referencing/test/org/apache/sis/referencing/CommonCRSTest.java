@@ -52,7 +52,7 @@ import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.TestUtilities.*;
 
 // Specific to the main and geoapi-3.1 branches:
-import org.apache.sis.util.privy.TemporalDate;
+import org.apache.sis.temporal.TemporalDate;
 
 // Specific to the main branch:
 import org.opengis.referencing.datum.VerticalDatumType;

@@ -62,7 +62,6 @@ import org.apache.sis.measure.Longitude;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.Range;
 import org.apache.sis.pending.jdk.JDK23;
-import org.apache.sis.pending.temporal.DefaultPeriod;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
@@ -71,7 +70,7 @@ import org.apache.sis.util.Static;
 import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.TemporalDate;
+import org.apache.sis.temporal.TemporalDate;
 import static org.apache.sis.util.privy.CollectionsExt.nonNull;
 import static org.apache.sis.util.collection.Containers.isNullOrEmpty;
 import static org.apache.sis.metadata.privy.ReferencingServices.AUTHALIC_RADIUS;
@@ -495,9 +494,9 @@ public final class Extents extends Static {
      */
     @OptionalCandidate
     public static Range<Date> getTimeRange(final Extent extent) {
-        final DefaultPeriod period = getPeriod(extent);
-        final Date min = TemporalDate.toDate(period.getBeginning());
-        final Date max = TemporalDate.toDate(period.getEnding());
+        final Temporal[] period = getPeriod(extent);
+        final Date min = TemporalDate.toDate(period[0]);
+        final Date max = TemporalDate.toDate(period[1]);
         if (min == null && max == null) {
             return null;
         }
@@ -564,9 +563,9 @@ public final class Extents extends Static {
      */
     public static Optional<Instant> getInstant(final Extent extent, final ZoneId zone, final double location) {
         ArgumentChecks.ensureFinite("location", location);
-        final DefaultPeriod period = getPeriod(extent);
-        Instant min = TemporalDate.toInstant(period.getBeginning(), zone);
-        Instant max = TemporalDate.toInstant(period.getEnding(), zone);
+        final Temporal[] period = getPeriod(extent);
+        Instant min = TemporalDate.toInstant(period[0], zone);
+        Instant max = TemporalDate.toInstant(period[1], zone);
         if (min == null || location == 1) {
             return Optional.ofNullable(max);
         }
@@ -579,11 +578,11 @@ public final class Extents extends Static {
     /**
      * Returns the minimum and maximum temporal values in an array of length 2.
      *
-     * @param  extent    the extent on which to apply a function, or {@code null}.
+     * @param  extent  the extent on which to apply a function, or {@code null}.
      * @return the minimum and maximum values. Never null, but may contain null elements.
      * @throws DateTimeException if there is more than one temporal extent, and some temporal values are not comparable.
      */
-    private static DefaultPeriod getPeriod(final Extent extent) {
+    private static Temporal[] getPeriod(final Extent extent) {
         Temporal min = null;
         Temporal max = null;
         if (extent != null) {
@@ -603,7 +602,7 @@ public final class Extents extends Static {
                 if (  endTime != null && (max == null || TemporalDate.compare(  endTime, max) > 0)) max = endTime;
             }
         }
-        return new DefaultPeriod(min, max);
+        return new Temporal[] {min, max};
     }
 
     /**

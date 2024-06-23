@@ -18,6 +18,7 @@ package org.apache.sis.filter;
 
 import java.time.Instant;
 import java.io.Serializable;
+import org.apache.sis.temporal.TemporalObjects;
 
 // Specific to the main branch:
 import org.apache.sis.feature.AbstractFeature;
@@ -47,15 +48,38 @@ final class PeriodLiteral implements Period, Literal<AbstractFeature,Period>, Se
     /**
      * Returns the constant value held by this object.
      */
-    @Override public Period getValue() {return this;}
+    @Override
+    public Period getValue() {
+        return this;
+    }
+
     @Override public Period apply(AbstractFeature input) {return this;}
 
-    /** Returns a bound of this period. */
-    @Override public Instant getBeginning() {return Instant.ofEpochMilli(begin);}
-    @Override public Instant getEnding()    {return Instant.ofEpochMilli(end);}
+    /**
+     * Returns the beginning of this period.
+     */
+    @Override
+    public org.apache.sis.pending.geoapi.temporal.Instant getBeginning() {
+        return TemporalObjects.createInstant(Instant.ofEpochMilli(begin));
+    }
+
+    /**
+     * Returns the ending of this period.
+     */
+    @Override
+    public org.apache.sis.pending.geoapi.temporal.Instant getEnding() {
+        return TemporalObjects.createInstant(Instant.ofEpochMilli(end));
+    }
+
+    /**
+     * Not needed for the tests.
+     */
+    @Override
+    public <N> Expression<AbstractFeature,N> toValueType(Class<N> target) {
+        throw new UnsupportedOperationException();
+    }
 
     /** Not needed for the tests. */
-    @Override public <N> Expression<AbstractFeature,N> toValueType(Class<N> target) {throw new UnsupportedOperationException();}
     @Override public Class<AbstractFeature> getResourceClass() {return AbstractFeature.class;}
 
     /**

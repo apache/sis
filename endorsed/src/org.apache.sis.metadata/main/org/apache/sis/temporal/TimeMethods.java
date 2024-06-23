@@ -14,14 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.filter;
+package org.apache.sis.temporal;
 
 import java.util.Map;
 import java.util.Date;
+import java.util.function.Supplier;
+import java.util.function.BiPredicate;
 import java.time.Instant;
 import java.time.Year;
 import java.time.YearMonth;
 import java.time.MonthDay;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.LocalTime;
 import java.time.OffsetTime;
 import java.time.OffsetDateTime;
@@ -32,10 +37,10 @@ import java.time.chrono.ChronoZonedDateTime;
 import java.time.temporal.ChronoField;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAccessor;
-import java.util.function.BiPredicate;
 import java.lang.reflect.Modifier;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
+import org.apache.sis.util.Classes;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.resources.Errors;
 
@@ -44,8 +49,8 @@ import org.apache.sis.util.resources.Errors;
  * Provides the <i>is before</i> and <i>is after</i> operations for various {@code java.time} objects.
  * This class delegates to the {@code isBefore(T)} or {@code isAfter(T)} methods of each supported classes.
  *
- * Instances of this classes are immutable and thread-safe.
- * The same instance can be shared by many {@link TemporalOperation} instances.
+ * <p>Instances of this classes are immutable and thread-safe.
+ * The same instance can be shared by many {@link TemporalOperation} instances.</p>
  *
  * <h2>Design note about alternative approaches</h2>
  * We do not delegate to {@link Comparable#compareTo(Object)} because the latter method compares not only
@@ -58,7 +63,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-class TimeMethods<T> implements Serializable {
+public class TimeMethods<T> implements Serializable {
     /**
      * For cross-version compatibility.
      */
@@ -74,7 +79,7 @@ class TimeMethods<T> implements Serializable {
      *
      * @see #compare(int, T, TemporalAccessor)
      */
-    static final int BEFORE=1, AFTER=2, EQUAL=0;
+    public static final int BEFORE=1, AFTER=2, EQUAL=0;
 
     /**
      * Predicate to execute for testing the ordering between temporal objects.
@@ -84,18 +89,28 @@ class TimeMethods<T> implements Serializable {
     public final transient BiPredicate<T,T> isBefore, isAfter, isEqual;
 
     /**
+     * Supplier of the current time.
+     * May be {@code null} if we do not know how to create an object of the expected {@linkplain #type}.
+     *
+     * @see #now()
+     */
+    public final transient Supplier<T> now;
+
+    /**
      * Creates a new set of operators. This method is for subclasses only.
      * For getting a {@code TimeMethods} instance, see {@link #find(Class)}.
      */
     private TimeMethods(final Class<T> type,
             final BiPredicate<T,T> isBefore,
             final BiPredicate<T,T> isAfter,
-            final BiPredicate<T,T> isEqual)
+            final BiPredicate<T,T> isEqual,
+            final Supplier<T> now)
     {
         this.type     = type;
         this.isBefore = isBefore;
         this.isAfter  = isAfter;
         this.isEqual  = isEqual;
+        this.now      = now;
     }
 
     /**
@@ -135,14 +150,31 @@ class TimeMethods<T> implements Serializable {
      * @param  self   the object on which to invoke the method identified by {@code test}.
      * @param  other  the argument to give to the test method call.
      * @return the result of performing the comparison identified by {@code test}.
-     * @throws IllegalArgumentException if the two objects cannot be compared.
+     * @throws DateTimeException if the two objects cannot be compared.
      */
     @SuppressWarnings("unchecked")
-    final boolean compare(final int test, final T self, final TemporalAccessor other) {
+    public final boolean compare(final int test, final T self, final TemporalAccessor other) {
         if (type.isInstance(other)) {
             return delegate(test, self, (T) other);         // Safe because of above `isInstance(…)` check.
         }
         return compareAsInstants(test, accessor(self), other);
+    }
+
+    /**
+     * Returns {@code true} if both arguments are non-null and the specified comparison evaluates to {@code true}.
+     * The type of the objects being compared is determined dynamically, which has a performance cost.
+     * The {@code compare(…)} methods should be preferred when the type is known in advance.
+     *
+     * @param  test   {@link #BEFORE}, {@link #AFTER} or {@link #EQUAL}.
+     * @param  self   the object on which to invoke the method identified by {@code test}, or {@code null} if none.
+     * @param  other  the argument to give to the test method call, or {@code null} if none.
+     * @return the result of performing the comparison identified by {@code test}.
+     * @throws DateTimeException if the two objects cannot be compared.
+     */
+    @SuppressWarnings("unchecked")
+    public static boolean compareAny(final int test, final Temporal self, final Temporal other) {
+        return (self != null) && (other != null)
+                && compare(test, (Class) Classes.findCommonClass(self.getClass(), other.getClass()), self, other);
     }
 
     /**
@@ -156,9 +188,9 @@ class TimeMethods<T> implements Serializable {
      * @param  self   the object on which to invoke the method identified by {@code test}.
      * @param  other  the argument to give to the test method call.
      * @return the result of performing the comparison identified by {@code test}.
-     * @throws IllegalArgumentException if the two objects cannot be compared.
+     * @throws DateTimeException if the two objects cannot be compared.
      */
-    static <T> boolean compare(final int test, final Class<T> type, final T self, final T other) {
+    public static <T> boolean compare(final int test, final Class<T> type, final T self, final T other) {
         /*
          * The following cast is not strictly true, it should be `<? extends T>`.
          * However, because of the `isInstance(…)` check and because <T> is used
@@ -215,7 +247,7 @@ class TimeMethods<T> implements Serializable {
         } else if (value instanceof Date) {
             return ((Date) value).toInstant();      // Overridden in `Date` subclasses.
         } else {
-            throw new IllegalArgumentException(Errors.format(
+            throw new DateTimeException(Errors.format(
                     Errors.Keys.CannotCompareInstanceOf_2, value.getClass(), TemporalAccessor.class));
         }
     }
@@ -228,24 +260,19 @@ class TimeMethods<T> implements Serializable {
      * @param  self   the object on which to invoke the method identified by {@code test}.
      * @param  other  the argument to give to the test method call.
      * @return the result of performing the comparison identified by {@code test}.
-     * @throws IllegalArgumentException if the two objects cannot be compared.
+     * @throws DateTimeException if the two objects cannot be compared.
      */
     private static boolean compareAsInstants(final int test, final TemporalAccessor self, final TemporalAccessor other) {
-        try {
-            long t1 =  self.getLong(ChronoField.INSTANT_SECONDS);
-            long t2 = other.getLong(ChronoField.INSTANT_SECONDS);
+        long t1 =  self.getLong(ChronoField.INSTANT_SECONDS);
+        long t2 = other.getLong(ChronoField.INSTANT_SECONDS);
+        if (t1 == t2) {
+            t1 =  self.getLong(ChronoField.NANO_OF_SECOND);     // Should be present according Javadoc.
+            t2 = other.getLong(ChronoField.NANO_OF_SECOND);
             if (t1 == t2) {
-                t1 =  self.getLong(ChronoField.NANO_OF_SECOND);     // Should be present according Javadoc.
-                t2 = other.getLong(ChronoField.NANO_OF_SECOND);
-                if (t1 == t2) {
-                    return test == EQUAL;
-                }
+                return test == EQUAL;
             }
-            return test == ((t1 < t2) ? BEFORE : AFTER);
-        } catch (DateTimeException | ArithmeticException e) {
-            throw new IllegalArgumentException(Errors.format(
-                    Errors.Keys.CannotCompareInstanceOf_2, self.getClass(), other.getClass()), e);
         }
+        return test == ((t1 < t2) ? BEFORE : AFTER);
     }
 
     /**
@@ -292,9 +319,10 @@ class TimeMethods<T> implements Serializable {
                 return new TimeMethods<>(type,
                         (self, other) -> ((Comparable) self).compareTo(other) < 0,
                         (self, other) -> ((Comparable) self).compareTo(other) > 0,
-                        (self, other) -> ((Comparable) self).compareTo(other) == 0);
+                        (self, other) -> ((Comparable) self).compareTo(other) == 0,
+                        null);
             } else {
-                throw new IllegalArgumentException(Errors.format(Errors.Keys.CannotCompareInstanceOf_2, type, type));
+                throw new DateTimeException(Errors.format(Errors.Keys.CannotCompareInstanceOf_2, type, type));
             }
         } else {
             return fallback(type);
@@ -312,7 +340,8 @@ class TimeMethods<T> implements Serializable {
         return new TimeMethods<>(type,
                 (self, other) -> compare(BEFORE, type, self, other),
                 (self, other) -> compare(AFTER,  type, self, other),
-                (self, other) -> compare(EQUAL,  type, self, other))
+                (self, other) -> compare(EQUAL,  type, self, other),
+                null)
         {
             @Override public boolean isDynamic() {
                 return true;
@@ -335,15 +364,25 @@ class TimeMethods<T> implements Serializable {
     }
 
     /**
+     * Returns the current time as a temporal object.
+     *
+     * @return the current time.
+     * @throws ClassCastException if the {@linkplain #type} is {@link Date} or {@link MonthDay}.
+     */
+    public final Temporal now() {
+        return (now != null) ? (Temporal) now.get() : ZonedDateTime.now();
+    }
+
+    /**
      * Operators for all supported temporal types that are interfaces or non-final classes.
      * Those types need to be checked with {@link Class#isAssignableFrom(Class)} in iteration order.
      */
     @SuppressWarnings({"rawtypes", "unchecked"})            // For `Chrono*` interfaces, because they are parameterized.
     private static final TimeMethods<?>[] INTERFACES = {
-        new TimeMethods<>(ChronoZonedDateTime.class, ChronoZonedDateTime::isBefore, ChronoZonedDateTime::isAfter, ChronoZonedDateTime::isEqual),
-        new TimeMethods<>(ChronoLocalDateTime.class, ChronoLocalDateTime::isBefore, ChronoLocalDateTime::isAfter, ChronoLocalDateTime::isEqual),
-        new TimeMethods<>(    ChronoLocalDate.class,     ChronoLocalDate::isBefore,     ChronoLocalDate::isAfter,     ChronoLocalDate::isEqual),
-        new TimeMethods<>(               Date.class,                Date::  before,                Date::  after,                Date::equals)
+        new TimeMethods<>(ChronoZonedDateTime.class, ChronoZonedDateTime::isBefore, ChronoZonedDateTime::isAfter, ChronoZonedDateTime::isEqual, ZonedDateTime::now),
+        new TimeMethods<>(ChronoLocalDateTime.class, ChronoLocalDateTime::isBefore, ChronoLocalDateTime::isAfter, ChronoLocalDateTime::isEqual, LocalDateTime::now),
+        new TimeMethods<>(    ChronoLocalDate.class,     ChronoLocalDate::isBefore,     ChronoLocalDate::isAfter,     ChronoLocalDate::isEqual,     LocalDate::now),
+        new TimeMethods<>(               Date.class,                Date::  before,                Date::  after,                Date::equals,           Date::new)
     };
 
     /*
@@ -363,13 +402,16 @@ class TimeMethods<T> implements Serializable {
      * the code working on generic {@link Comparable} needs to check for special cases again.
      */
     private static final Map<Class<?>, TimeMethods<?>> FINAL_TYPES = Map.ofEntries(
-        entry(new TimeMethods<>(OffsetDateTime.class, OffsetDateTime::isBefore, OffsetDateTime::isAfter, OffsetDateTime::isEqual)),
-        entry(new TimeMethods<>(    OffsetTime.class,     OffsetTime::isBefore,     OffsetTime::isAfter,     OffsetTime::isEqual)),
-        entry(new TimeMethods<>(     LocalTime.class,      LocalTime::isBefore,      LocalTime::isAfter,      LocalTime::equals)),
-        entry(new TimeMethods<>(          Year.class,           Year::isBefore,           Year::isAfter,           Year::equals)),
-        entry(new TimeMethods<>(     YearMonth.class,      YearMonth::isBefore,      YearMonth::isAfter,      YearMonth::equals)),
-        entry(new TimeMethods<>(      MonthDay.class,       MonthDay::isBefore,       MonthDay::isAfter,       MonthDay::equals)),
-        entry(new TimeMethods<>(       Instant.class,        Instant::isBefore,        Instant::isAfter,        Instant::equals)),
+        entry(new TimeMethods<>(OffsetDateTime.class, OffsetDateTime::isBefore, OffsetDateTime::isAfter, OffsetDateTime::isEqual, OffsetDateTime::now)),
+        entry(new TimeMethods<>( ZonedDateTime.class,  ZonedDateTime::isBefore,  ZonedDateTime::isAfter,  ZonedDateTime::isEqual,  ZonedDateTime::now)),
+        entry(new TimeMethods<>( LocalDateTime.class,  LocalDateTime::isBefore,  LocalDateTime::isAfter,  LocalDateTime::isEqual,  LocalDateTime::now)),
+        entry(new TimeMethods<>(     LocalDate.class,      LocalDate::isBefore,      LocalDate::isAfter,      LocalDate::isEqual,      LocalDate::now)),
+        entry(new TimeMethods<>(    OffsetTime.class,     OffsetTime::isBefore,     OffsetTime::isAfter,     OffsetTime::isEqual,     OffsetTime::now)),
+        entry(new TimeMethods<>(     LocalTime.class,      LocalTime::isBefore,      LocalTime::isAfter,      LocalTime::equals,       LocalTime::now)),
+        entry(new TimeMethods<>(          Year.class,           Year::isBefore,           Year::isAfter,           Year::equals,            Year::now)),
+        entry(new TimeMethods<>(     YearMonth.class,      YearMonth::isBefore,      YearMonth::isAfter,      YearMonth::equals,       YearMonth::now)),
+        entry(new TimeMethods<>(      MonthDay.class,       MonthDay::isBefore,       MonthDay::isAfter,       MonthDay::equals,        MonthDay::now)),
+        entry(new TimeMethods<>(       Instant.class,        Instant::isBefore,        Instant::isAfter,        Instant::equals,         Instant::now)),
         entry(fallback(Temporal.class)),    // Frequently declared type. Intentionally no "instance of" checks.
         entry(fallback(Object.class)));     // Not a final class, but to be used when the declared type is Object.
 

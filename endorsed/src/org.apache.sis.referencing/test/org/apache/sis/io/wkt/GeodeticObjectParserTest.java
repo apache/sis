@@ -56,7 +56,7 @@ import static org.apache.sis.referencing.Assertions.assertDiagonalEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Specific to the main and geoapi-3.1 branches:
-import org.apache.sis.util.privy.TemporalDate;
+import org.apache.sis.temporal.TemporalDate;
 
 
 /**

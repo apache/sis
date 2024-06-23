@@ -33,6 +33,7 @@ import org.apache.sis.referencing.cs.HardCodedCS;
 import org.apache.sis.test.TestCase;
 
 // Specific to the main branch:
+import static org.apache.sis.referencing.privy.AxisDirections.TOWARDS;
 import static org.apache.sis.referencing.privy.AxisDirections.AWAY_FROM;
 import static org.apache.sis.referencing.privy.AxisDirections.CLOCKWISE;
 import static org.apache.sis.referencing.privy.AxisDirections.COUNTER_CLOCKWISE;
@@ -100,7 +101,7 @@ public final class AxisDirectionsTest extends TestCase {
         assertEquals(FUTURE,            AxisDirections.opposite(PAST));
         assertEquals(COUNTER_CLOCKWISE, AxisDirections.opposite(CLOCKWISE));
         assertEquals(CLOCKWISE,         AxisDirections.opposite(COUNTER_CLOCKWISE));
-        assertNull  (                   AxisDirections.opposite(AWAY_FROM));
+        assertEquals(TOWARDS,           AxisDirections.opposite(AWAY_FROM));
     }
 
     /**

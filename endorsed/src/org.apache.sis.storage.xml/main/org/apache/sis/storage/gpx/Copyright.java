@@ -44,11 +44,11 @@ import java.util.Date;
 import org.opengis.metadata.citation.Contact;
 import org.opengis.metadata.citation.Series;
 import org.opengis.metadata.citation.ResponsibleParty;
-import org.apache.sis.util.privy.TemporalDate;
 import org.apache.sis.metadata.iso.citation.AbstractParty;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultResponsibility;
 import org.apache.sis.metadata.iso.constraint.DefaultConstraints;
+import org.apache.sis.temporal.TemporalDate;
 
 
 /**

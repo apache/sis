@@ -14,46 +14,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.metadata.iso.citation;
+package org.apache.sis.temporal;
 
-import java.time.Instant;
-import org.opengis.metadata.citation.DateType;
-import org.opengis.metadata.citation.CitationDate;
-import org.apache.sis.util.ComparisonMode;
+import java.time.Period;
+import java.time.Duration;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
-// Specific to the main branch:
-import java.util.Date;
-
 
 /**
- * Tests {@link DefaultCitationDate}, especially the copy constructor.
+ * Tests the {@link GeneralDuration} class.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public final class DefaultCitationDateTest extends TestCase {
+public final class GeneralDurationTest extends TestCase {
     /**
      * Creates a new test case.
      */
-    public DefaultCitationDateTest() {
+    public GeneralDurationTest() {
     }
 
     /**
-     * Tests the copy constructor.
+     * Tests {@link GeneralDuration#parse(CharSequence)}.
      */
     @Test
-    public void testCopyConstructor() {
-        final var original = new CitationDate() {
-            @Override public Date     getDate()          {return new Date(1305716658508L);}
-            @Override public DateType getDateType()      {return DateType.CREATION;}
-        };
-        final var copy = new DefaultCitationDate(original);
-        assertEquals(Instant.ofEpochMilli(1305716658508L), copy.getReferenceDate());
-        assertEquals(DateType.CREATION, copy.getDateType());
-        assertFalse(copy.equals(original, ComparisonMode.STRICT));          // Opportunist test.
+    public void testParse() {
+        assertEquals(Period.of(2, 3, 4),    GeneralDuration.parse("P2Y3M4D"));
+        assertEquals(Duration.ofHours(100), GeneralDuration.parse("PT100H"));
+        assertEquals(Duration.ofHours(200), GeneralDuration.parse("pt200H"));
+        var r = assertInstanceOf(GeneralDuration.class, GeneralDuration.parse("P2Y3M4DT10H"));
+        assertEquals(Period.of(2, 3, 4),    r.period);
+        assertEquals(Duration.ofHours(10),  r.time);
     }
 }

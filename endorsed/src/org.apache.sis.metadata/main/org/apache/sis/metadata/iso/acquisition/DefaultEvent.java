@@ -31,7 +31,7 @@ import org.opengis.metadata.acquisition.PlatformPass;
 import org.opengis.metadata.acquisition.Sequence;
 import org.opengis.metadata.acquisition.Trigger;
 import org.apache.sis.metadata.iso.ISOMetadata;
-import org.apache.sis.util.privy.TemporalDate;
+import org.apache.sis.temporal.TemporalDate;
 
 // Specific to the main branch:
 import org.opengis.annotation.UML;

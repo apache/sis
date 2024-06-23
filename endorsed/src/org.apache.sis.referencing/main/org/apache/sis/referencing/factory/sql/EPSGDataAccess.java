@@ -92,9 +92,9 @@ import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.CollectionsExt;
-import org.apache.sis.util.privy.StandardDateFormat;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.privy.URLs;
+import org.apache.sis.temporal.LenientDateFormat;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
@@ -122,8 +122,8 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 import static org.apache.sis.referencing.internal.ServicesForMetadata.CONNECTION;
 
 // Specific to the main branch:
+import org.apache.sis.temporal.TemporalDate;
 import org.apache.sis.referencing.internal.ServicesForMetadata;
-import org.apache.sis.util.privy.TemporalDate;
 import org.apache.sis.referencing.cs.DefaultParametricCS;
 import org.apache.sis.referencing.datum.DefaultParametricDatum;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
@@ -1721,7 +1721,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                             throw new FactoryDataException(resources().getString(Resources.Keys.DatumOriginShallBeDate));
                         }
                         try {
-                            originDate = StandardDateFormat.parseBest(anchor);
+                            originDate = LenientDateFormat.parseBest(anchor);
                         } catch (RuntimeException e) {
                             throw new FactoryDataException(resources().getString(Resources.Keys.DatumOriginShallBeDate), e);
                         }

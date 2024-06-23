@@ -37,10 +37,11 @@ import org.apache.sis.xml.bind.FilterByVersion;
 import org.apache.sis.xml.bind.gml.TM_Primitive;
 import org.apache.sis.xml.bind.metadata.MD_Scope;
 import org.apache.sis.xml.privy.LegacyNamespaces;
-import org.apache.sis.pending.temporal.TemporalUtilities;
+import org.apache.sis.temporal.TemporalObjects;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.metadata.citation.ResponsibleParty;
+import org.apache.sis.temporal.TemporalDate;
 
 // Specific to the main branch:
 import org.opengis.metadata.quality.Scope;
@@ -189,15 +190,16 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
         if (object != null) {
             description           = object.getDescription();
             rationale             = object.getRationale();
-            stepDateTime          = TemporalUtilities.createInstant(object.getDate());
+            stepDateTime          = toInstant(object.getDate());
             processors            = copyCollection(object.getProcessors(), ResponsibleParty.class);
             sources               = copyCollection(object.getSources(), Source.class);
             outputs               = copyCollection(object.getOutputs(), Source.class);
             processingInformation = object.getProcessingInformation();
             reports               = copyCollection(object.getReports(), ProcessStepReport.class);
             if (object instanceof DefaultProcessStep) {
-                references = copyCollection(((DefaultProcessStep) object).getReferences(), Citation.class);
-                scope      = ((DefaultProcessStep) object).getScope();
+                final var c = (DefaultProcessStep) object;
+                references = copyCollection(c.getReferences(), Citation.class);
+                scope      = c.getScope();
             }
         }
     }
@@ -305,7 +307,11 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
     @Deprecated(since="1.0")
     @XmlElement(name = "dateTime", namespace = LegacyNamespaces.GMD)
     public Date getDate() {
-        return FilterByVersion.LEGACY_METADATA.accept() ? TemporalUtilities.getAnyDate(getStepDateTime()) : null;
+        if (FilterByVersion.LEGACY_METADATA.accept()) {
+            Date date = TemporalObjects.getAnyDate(getStepDateTime());
+            return date;
+        }
+        return null;
     }
 
     /**
@@ -317,7 +323,14 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      */
     @Deprecated(since="1.0")
     public void setDate(final Date newValue) {
-        setStepDateTime(TemporalUtilities.createInstant(newValue == null ? null : newValue.toInstant()));
+        setStepDateTime(toInstant(newValue));
+    }
+
+    /**
+     * Converts the given date to a temporal primitive, which may be null.
+     */
+    private static TemporalPrimitive toInstant(final Date newValue) {
+        return (newValue == null) ? null : TemporalObjects.createInstant(TemporalDate.toTemporal(newValue));
     }
 
     /**

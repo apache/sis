@@ -119,6 +119,13 @@ public final class AxisDirections extends Static {
     public static final AxisDirection AWAY_FROM = AxisDirection.valueOf("AWAY_FROM");
 
     /**
+     * Distance toward the origin.
+     * Added in ISO 19111:2019 (was not in ISO 19111:2007).
+     */
+    @UML(identifier="towards", obligation=CONDITIONAL, specification=ISO_19111)
+    public static final AxisDirection TOWARDS = AxisDirection.valueOf("TOWARDS");
+
+    /**
      * Axis positive direction is unspecified.
      */
     @UML(identifier="unspecified", obligation=CONDITIONAL, specification=ISO_19111)
@@ -146,6 +153,7 @@ public final class AxisDirections extends Static {
         put(DISPLAY_RIGHT,     DISPLAY_LEFT);
         put(DISPLAY_UP,        DISPLAY_DOWN);
         put(COUNTER_CLOCKWISE, CLOCKWISE);
+        put(AWAY_FROM,         TOWARDS);
     }
 
     /**
@@ -195,6 +203,7 @@ public final class AxisDirections extends Static {
      * <tr><td>{@code DISPLAY_RIGHT},   {@code DISPLAY_LEFT}</td>     <td>{@code DISPLAY_RIGHT}</td></tr>
      * <tr><td>{@code DISPLAY_UP},      {@code DISPLAY_DOWN}</td>     <td>{@code DISPLAY_UP}</td></tr>
      * <tr><td>{@code CLOCKWISE},       {@code COUNTERCLOCKWISE}</td> <td>{@code COUNTERCLOCKWISE}</td></tr>
+     * <tr><td>{@code AWAY_FROM},       {@code TOWARDS}</td>          <td>{@code AWAY_FROM}</td></tr>
      * <tr><td>{@code OTHER}</td>                                     <td>{@code OTHER}</td></tr>
      * </table>
      *
@@ -210,6 +219,8 @@ public final class AxisDirections extends Static {
             // Ordinal values do not have the desired order for this particular case.
             if (dir == CLOCKWISE) {
                 dir = COUNTER_CLOCKWISE;
+            } else if (dir == TOWARDS) {
+                dir = AWAY_FROM;
             }
         }
         return dir;

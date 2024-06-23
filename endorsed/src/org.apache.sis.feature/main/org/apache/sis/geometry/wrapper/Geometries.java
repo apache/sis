@@ -310,6 +310,7 @@ public abstract class Geometries<G> implements Serializable {
 
     /**
      * Reads the given bytes as a Well Known Binary (WKB) encoded geometry.
+     * The reading starts from the current buffer position.
      * Whether this method changes the buffer position or not is implementation-dependent.
      *
      * @param  data  the binary data in WKB format. Cannot be null.

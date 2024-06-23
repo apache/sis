@@ -37,7 +37,7 @@ import org.opengis.util.InternationalString;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.privy.StandardDateFormat;
+import org.apache.sis.temporal.LenientDateFormat;
 import org.apache.sis.measure.Units;
 import org.apache.sis.measure.UnitFormat;
 
@@ -391,7 +391,7 @@ abstract class AbstractParser implements Parser {
      */
     final Date parseDate(final String text, final ParsePosition position) {
         if (dateFormat == null) {
-            dateFormat = new StandardDateFormat(symbols.getLocale());
+            dateFormat = new LenientDateFormat(symbols.getLocale());
         }
         return dateFormat.parse(text, position);
     }

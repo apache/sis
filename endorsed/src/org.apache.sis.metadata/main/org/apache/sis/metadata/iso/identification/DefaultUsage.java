@@ -34,9 +34,9 @@ import org.apache.sis.xml.privy.LegacyNamespaces;
 import org.apache.sis.metadata.TitleProperty;
 import org.apache.sis.metadata.iso.ISOMetadata;
 import org.apache.sis.metadata.internal.Dependencies;
-import org.apache.sis.pending.temporal.TemporalUtilities;
+import org.apache.sis.temporal.TemporalObjects;
+import org.apache.sis.temporal.TemporalDate;
 import org.apache.sis.util.iso.Types;
-import org.apache.sis.util.privy.TemporalDate;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.metadata.citation.ResponsibleParty;
@@ -45,7 +45,6 @@ import org.opengis.metadata.citation.ResponsibleParty;
 import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.OPTIONAL;
 import static org.opengis.annotation.Specification.ISO_19115;
-import org.apache.sis.pending.temporal.DefaultPeriod;
 
 
 /**
@@ -182,9 +181,9 @@ public class DefaultUsage extends ISOMetadata implements Usage {
                 additionalDocumentation   = copyCollection(c.getAdditionalDocumentation(), Citation.class);
                 identifiedIssues          = copyCollection(c.getIdentifiedIssues(), Citation.class);
             } else {
-                TemporalPrimitive t = TemporalUtilities.createInstant(TemporalDate.toTemporal(object.getUsageDate()));
+                Date t = object.getUsageDate();
                 if (t != null) {
-                    usageDates = List.of(t);
+                    usageDates = List.of(TemporalObjects.createInstant(TemporalDate.toTemporal(t)));
                 }
             }
         }
@@ -253,11 +252,9 @@ public class DefaultUsage extends ISOMetadata implements Usage {
             final Collection<TemporalPrimitive> usageDates = getUsageDates();
             if (usageDates != null) {
                 for (TemporalPrimitive t : usageDates) {
-                    if (t instanceof DefaultPeriod) {
-                        Date p = TemporalDate.toDate(((DefaultPeriod) t).getBeginning());
-                        if (p != null) {
-                            return p;
-                        }
+                    Date p = TemporalDate.toDate(TemporalObjects.getInstant(t));
+                    if (p != null) {
+                        return p;
                     }
                 }
             }
@@ -274,7 +271,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      */
     @Deprecated(since="1.5")
     public void setUsageDate(final Date newValue)  {
-        setUsageDates(newValue == null ? List.of() : List.of(TemporalUtilities.createInstant(TemporalDate.toTemporal(newValue))));
+        setUsageDates(newValue == null ? List.of() : List.of(TemporalObjects.createInstant(TemporalDate.toTemporal(newValue))));
     }
 
     /**
@@ -312,7 +309,7 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * @since 1.5
      */
     public void addUsageDates(final Temporal beginning, final Temporal ending) {
-        TemporalPrimitive period = TemporalUtilities.createPeriod(beginning, ending);
+        TemporalPrimitive period = TemporalObjects.createPeriod(beginning, ending);
         if (period != null) {
             getUsageDates().add(period);
         }

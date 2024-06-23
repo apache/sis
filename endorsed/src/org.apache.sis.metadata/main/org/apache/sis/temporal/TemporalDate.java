@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.util.privy;
+package org.apache.sis.temporal;
 
 import java.util.Date;
 import java.time.DateTimeException;
@@ -23,10 +23,8 @@ import java.time.LocalTime;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.OffsetTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
@@ -34,6 +32,7 @@ import java.time.chrono.ChronoZonedDateTime;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.privy.Constants;
 
 
 /**
@@ -207,39 +206,6 @@ public final class TemporalDate extends Date implements LenientComparable {     
         }
         final long r = Math.round(value);
         return time.plusSeconds(r).plusNanos(Math.round((value - r) * Constants.NANOS_PER_SECOND));
-    }
-
-    /**
-     * Returns {@code true} if objects of the given class have day, month and hour fields.
-     * This method is defined here for having a single class where to concentrate such heuristic rules.
-     * Note that {@link Instant} does not have date fields.
-     *
-     * @param  date  class of object to test (may be {@code null}).
-     * @return whether the given class is {@link LocalDate} or one of the classes with date + time.
-     *         This list may be expanded in future versions.
-     */
-    public static boolean hasDateFields(final Class<?> date) {
-        return date == LocalDate.class
-            || date == LocalDateTime.class
-            || date == OffsetDateTime.class
-            || date == ZonedDateTime.class;
-    }
-
-    /**
-     * Returns {@code true} if objects of the given class have time fields.
-     * This method is defined here for having a single class where to concentrate such heuristic rules.
-     * Note that {@link Instant} does not have hour fields.
-     *
-     * @param  date  class of object to test (may be {@code null}).
-     * @return whether the given class is {@link LocalTime}, {@link OffsetTime} or one of the classes with date + time.
-     *         This list may be expanded in future versions.
-     */
-    public static boolean hasTimeFields(final Class<?> date) {
-        return date == LocalTime.class
-            || date == OffsetTime.class
-            || date == LocalDateTime.class
-            || date == OffsetDateTime.class
-            || date == ZonedDateTime.class;
     }
 
     /**
