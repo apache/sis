@@ -97,7 +97,7 @@ public final class AxisDirectionsTest extends TestCase {
         assertEquals(FUTURE,            AxisDirections.opposite(PAST));
         assertEquals(COUNTER_CLOCKWISE, AxisDirections.opposite(CLOCKWISE));
         assertEquals(CLOCKWISE,         AxisDirections.opposite(COUNTER_CLOCKWISE));
-        assertNull  (                   AxisDirections.opposite(AWAY_FROM));
+        assertEquals(TOWARDS,           AxisDirections.opposite(AWAY_FROM));
     }
 
     /**
