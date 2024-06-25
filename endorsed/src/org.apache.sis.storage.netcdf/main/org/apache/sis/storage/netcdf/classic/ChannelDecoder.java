@@ -347,7 +347,7 @@ public final class ChannelDecoder extends Decoder {
      * @return the localized error resource bundle.
      */
     final Errors errors() {
-        return Errors.forLocale(listeners.getLocale());
+        return Errors.forLocale(getLocale());
     }
 
     /**
@@ -355,7 +355,7 @@ public final class ChannelDecoder extends Decoder {
      * that the file should be a netCDF one, but we found some inconsistency or unknown tags.
      */
     private DataStoreContentException malformedHeader() {
-        return new DataStoreContentException(listeners.getLocale(), FORMAT_NAME, getFilename(), null);
+        return new DataStoreContentException(getLocale(), FORMAT_NAME, getFilename(), null);
     }
 
     /**

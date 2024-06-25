@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import org.opengis.util.FactoryException;
-import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.referencing.AuthorityFactory;
@@ -45,7 +44,6 @@ import org.apache.sis.util.Classes;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.privy.Constants;
-import org.apache.sis.util.privy.URLs;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
@@ -278,19 +276,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      */
     @Override
     public OperationMethod getOperationMethod(String name) throws FactoryException {
-        ArgumentChecks.ensureNonEmpty("name", name = name.strip());
-        @SuppressWarnings("LocalVariableHidesMemberVariable")
-        final MathTransformFactory mtFactory = getMathTransformFactory();
-        if (mtFactory instanceof DefaultMathTransformFactory) {
-            return ((DefaultMathTransformFactory) mtFactory).getOperationMethod(name);
-        }
-        final OperationMethod method = CoordinateOperations.getOperationMethod(
-                mtFactory.getAvailableMethods(SingleOperation.class), name);
-        if (method != null) {
-            return method;
-        }
-        throw new NoSuchIdentifierException(Resources.forProperties(defaultProperties)
-                .getString(Resources.Keys.NoSuchOperationMethod_2, name, URLs.OPERATION_METHODS), name);
+        return new ReferencingFactoryContainer(null, null, null, null, null, mtFactory).findOperationMethod(name);
     }
 
     /**
@@ -336,6 +322,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      *
      * @since 1.4
      */
+    @Override
     public OperationMethod createOperationMethod(final Map<String,?> properties,
             final ParameterDescriptorGroup parameters) throws FactoryException
     {
@@ -351,8 +338,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     /**
      * @deprecated The dimensions attributes have been removed in ISO 19111:2019 revision.
      */
-    @Override
-    @Deprecated(since = "1.4")
+    @Deprecated(since="1.4", forRemoval=true)
     public OperationMethod createOperationMethod(final Map<String,?> properties,
             final Integer sourceDimensions, final Integer targetDimensions,
             ParameterDescriptorGroup parameters) throws FactoryException

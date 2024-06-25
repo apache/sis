@@ -33,12 +33,10 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterValueException;
-import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.NoninvertibleTransformException;
 import org.opengis.referencing.operation.OperationMethod;
-import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.parameter.DefaultParameterValue;
@@ -120,7 +118,7 @@ class MathTransformParser extends AbstractParser {
     /**
      * The method for the last math transform passed, or {@code null} if none.
      *
-     * @see #getOperationMethod()
+     * @see #getOperationMethod(Element)
      */
     private transient OperationMethod lastMethod;
 
@@ -527,19 +525,23 @@ class MathTransformParser extends AbstractParser {
     }
 
     /**
-     * Returns the operation method for the last math transform parsed. This is used by
-     * {@link GeodeticObjectParser} in order to build {@link org.opengis.referencing.crs.DerivedCRS}.
+     * Returns the operation method for the last math transform parsed, or {@code null} if unspecified.
+     * This is used by {@link GeodeticObjectParser} in order to build {@link org.opengis.referencing.crs.DerivedCRS}.
+     *
+     * @param  element  the element being parsed. Used in case an exception must be thrown.
+     * @return last operation method used.
+     * @throws ParseException if the last method cannot be obtained.
      */
-    final OperationMethod getOperationMethod() {
+    final OperationMethod getOperationMethod(final Element element) throws ParseException {
         if (lastMethod == null) {
             /*
              * Safety in case some MathTransformFactory implementations do not support
              * getLastMethod(). Performs a slower and less robust check as a fallback.
              */
-            if (classification != null) {
-                final MathTransformFactory mtFactory = factories.getMathTransformFactory();
-                lastMethod = CoordinateOperations.getOperationMethod(
-                        mtFactory.getAvailableMethods(SingleOperation.class), classification);
+            if (classification != null) try {
+                lastMethod = factories.findOperationMethod(classification);
+            } catch (NoSuchIdentifierException e) {
+                throw element.parseFailed(e);
             }
         }
         return lastMethod;
