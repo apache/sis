@@ -631,8 +631,8 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      * Returns the symbol ("E", "N", "SW", <i>etc.</i>) for given axis direction.
      */
     private static String symbol(final AxisDirection direction) {
-        // Following cast uses or knowledge of `camelCaseToAcronym` implementation.
-        return ((StringBuilder) CharSequences.camelCaseToAcronym(direction.identifier()))
+        // Following cast uses our knowledge of `camelCaseToAcronym` implementation.
+        return ((StringBuilder) CharSequences.camelCaseToAcronym(direction.identifier().orElse(direction.name())))
                 .insert(0, Characters.NO_BREAK_SPACE).toString();
     }
 

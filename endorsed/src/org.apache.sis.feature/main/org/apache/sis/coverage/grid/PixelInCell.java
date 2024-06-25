@@ -16,6 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.util.Optional;
 import org.opengis.metadata.spatial.PixelOrientation;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -103,8 +104,8 @@ public enum PixelInCell implements ControlledVocabulary {
      * @return the legacy ISO/OGC identifier for this constant.
      */
     @Override
-    public String identifier() {
-        return identifier;
+    public Optional<String> identifier() {
+        return Optional.of(identifier);
     }
 
     /**

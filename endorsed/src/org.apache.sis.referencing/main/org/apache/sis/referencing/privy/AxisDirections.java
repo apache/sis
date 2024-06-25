@@ -702,8 +702,7 @@ next:       for (int i=0; i <= limit; i++) {
                 return "m";             // Arbitrary abbreviation, may change in any future SIS version.
             }
         }
-        final String id = direction.identifier();   // UML identifier, or null if none.
-        return camelCaseToAcronym(id != null ? id : direction.name()).toString().intern();
+        return camelCaseToAcronym(direction.identifier().orElse(direction.name())).toString().intern();
     }
 
     /**

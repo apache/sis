@@ -142,14 +142,14 @@ final class FilterToCQLVisitor extends Visitor<Feature,StringBuilder> {
         });
         for (final SpatialOperatorName type : SpatialOperatorName.values()) {
             if (type != SpatialOperatorName.BBOX) {
-                function(type, type.identifier().toUpperCase(Locale.US));
+                function(type, type.identifier().orElse(type.name()).toUpperCase(Locale.US));
                 if (type == SpatialOperatorName.OVERLAPS) break;
             }
         }
         function(DistanceOperatorName.WITHIN, "DWITHIN");
         function(DistanceOperatorName.BEYOND, "BEYOND");
         for (final TemporalOperatorName type : TemporalOperatorName.values()) {
-            function(type, type.identifier().toUpperCase(Locale.US));
+            function(type, type.identifier().orElse(type.name()).toUpperCase(Locale.US));
             if (type == TemporalOperatorName.ANY_INTERACTS) break;
         }
         /*
