@@ -57,7 +57,6 @@ import org.apache.sis.io.wkt.Parser;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.privy.URLs;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -464,11 +463,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         OperationMethod method = methodsByName.get(identifier);
         if (method == null) {
             synchronized (methods) {
-                method = CoordinateOperations.getOperationMethod(methods, identifier);
-            }
-            if (method == null) {
-                throw new NoSuchIdentifierException(Resources.format(
-                        Resources.Keys.NoSuchOperationMethod_2, identifier, URLs.OPERATION_METHODS), identifier);
+                method = CoordinateOperations.findOperationMethod(methods, identifier);
             }
             /*
              * Remember the method we just found, for faster check next time.

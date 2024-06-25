@@ -217,8 +217,8 @@ final class GridMapping {
              * than OGC names, but Apache SIS implementations of map projections know how to handle them, including
              * the redundant parameters like "inverse_flattening" and "earth_radius".
              */
-            final CoordinateOperationFactory opFactory = node.decoder.getCoordinateOperationFactory();
-            final OperationMethod method = opFactory.getOperationMethod((String) definition.remove(CF.GRID_MAPPING_NAME));
+            final String mappingName = (String) definition.remove(CF.GRID_MAPPING_NAME);
+            final OperationMethod method = node.decoder.findOperationMethod(mappingName);
             final ParameterValueGroup parameters = method.getParameters().createValue();
             for (final Iterator<Map.Entry<String,Object>> it = definition.entrySet().iterator(); it.hasNext();) {
                 final Map.Entry<String,Object> entry = it.next();
@@ -267,6 +267,7 @@ final class GridMapping {
                 baseToCRS = MathTransforms.linear(new Matrix3(0, 1, 0, 1, 0, 0, 0, 0, 1));
                 crs = baseCRS;
             } else {
+                final CoordinateOperationFactory opFactory = node.decoder.getCoordinateOperationFactory();
                 Map<String,?> properties = properties(definition, Convention.CONVERSION_NAME, node.getName());
                 final Conversion conversion = opFactory.createDefiningConversion(properties, method, parameters);
                 final CartesianCS cs = node.decoder.getStandardProjectedCS();

@@ -1341,10 +1341,7 @@ class CoordinateOperationRegistry {
                         method = factory.getOperationMethod(name.getCode());
                     }
                     if (method == null) {
-                        method = factory.createOperationMethod(properties,
-                                sourceCRS.getCoordinateSystem().getDimension(),
-                                targetCRS.getCoordinateSystem().getDimension(),
-                                descriptor);
+                        method = factory.createOperationMethod(properties, descriptor);
                     }
                 }
             }

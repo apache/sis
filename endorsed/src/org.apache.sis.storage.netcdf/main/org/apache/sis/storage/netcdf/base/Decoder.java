@@ -531,7 +531,18 @@ public abstract class Decoder extends ReferencingFactoryContainer {
      * @return the localized error resource bundle.
      */
     final Resources resources() {
-        return Resources.forLocale(listeners.getLocale());
+        return Resources.forLocale(getLocale());
+    }
+
+    /**
+     * Returns the locale used for error message, or {@code null} if unspecified.
+     * In the latter case, the platform default locale will be used.
+     *
+     * @return the locale for messages (typically specified by the data store), or {@code null} if unknown.
+     */
+    @Override
+    public final Locale getLocale() {
+        return listeners.getLocale();
     }
 
     /**

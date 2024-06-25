@@ -686,8 +686,7 @@ next:       for (int i=0; i <= limit; i++) {
                 return abbreviation;
             }
         }
-        final String id = direction.identifier();   // UML identifier, or null if none.
-        return camelCaseToAcronym(id != null ? id : direction.name()).toString().intern();
+        return camelCaseToAcronym(direction.identifier().orElse(direction.name())).toString().intern();
     }
 
     /**

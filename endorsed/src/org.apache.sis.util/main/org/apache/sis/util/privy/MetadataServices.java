@@ -138,7 +138,7 @@ public class MetadataServices extends OptionalDependency {
              * to pass.
              */
         }
-        return CharSequences.camelCaseToSentence(code.identifier()).toString();
+        return CharSequences.camelCaseToSentence(code.identifier().orElse(code.name())).toString();
     }
 
     /**

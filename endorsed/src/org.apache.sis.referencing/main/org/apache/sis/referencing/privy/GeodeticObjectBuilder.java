@@ -234,7 +234,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
         if (method != null) {
             throw new IllegalStateException(Errors.forLocale(locale).getString(Errors.Keys.ElementAlreadyPresent_1, "OperationMethod"));
         }
-        method = factories.getCoordinateOperationFactory().getOperationMethod(name);
+        method = factories.findOperationMethod(name);
         parameters = method.getParameters().createValue();
         return this;
     }
@@ -260,7 +260,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * @throws FactoryException if the operation method cannot be obtained.
      */
     public GeodeticObjectBuilder setConversion(final ParameterValueGroup parameters) throws FactoryException {
-        method = factories.getCoordinateOperationFactory().getOperationMethod(parameters.getDescriptor().getName().getCode());
+        method = factories.findOperationMethod(parameters.getDescriptor().getName().getCode());
         this.parameters = parameters;           // Set only if above line succeed.
         return this;
     }
