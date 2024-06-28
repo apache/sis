@@ -245,20 +245,50 @@ public final class DBFField {
 
     private Object readNumber(ChannelDataInput channel) throws IOException {
         final String str = new String(channel.readBytes(fieldLength)).trim();
-        if (str.isEmpty()) return 0L;
-        else return Double.parseDouble(str);
+        if (str.isEmpty()) return 0.0;
+        try {
+            return Double.valueOf(str);
+        } catch (NumberFormatException ex) {
+            /**
+             * We have encounter various files where null values of numbers are encoded
+             * as filled strings of * or - characters.
+             * DBF isn't clear on this, being an old format with many versions and variants
+             * we are tolerant
+             */
+            return 0.0;
+        }
     }
 
     private Object readNumberInt(ChannelDataInput channel) throws IOException {
         final String str = new String(channel.readBytes(fieldLength)).trim();
         if (str.isEmpty()) return 0;
-        else return Integer.parseInt(str);
+        try {
+            return Integer.valueOf(str);
+        } catch (NumberFormatException ex) {
+            /**
+             * We have encounter various files where null values of numbers are encoded
+             * as filled strings of * or - characters.
+             * DBF isn't clear on this, being an old format with many versions and variants
+             * we are tolerant
+             */
+            return 0;
+        }
     }
 
     private Object readNumberLong(ChannelDataInput channel) throws IOException {
         final String str = new String(channel.readBytes(fieldLength)).trim();
         if (str.isEmpty()) return 0L;
-        else return Long.parseLong(str);
+        try {
+            return Long.parseLong(str);
+        } catch (NumberFormatException ex) {
+            /**
+             * We have encounter various files where null values of numbers are encoded
+             * as filled strings of * or - characters.
+             * DBF isn't clear on this, being an old format with many versions and variants
+             * we are tolerant
+             */
+            return 0L;
+        }
     }
 
     private Object readLogic(ChannelDataInput channel) throws IOException {

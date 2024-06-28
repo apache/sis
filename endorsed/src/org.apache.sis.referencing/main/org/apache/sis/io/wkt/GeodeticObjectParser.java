@@ -1299,17 +1299,15 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
          * not use the identifier.
          */
         FactoryException suppressed = null;
-        final CoordinateOperationFactory opFactory = factories.getCoordinateOperationFactory();
-        final MathTransformFactory mtFactory = factories.getMathTransformFactory();
         if (id instanceof ReferenceIdentifier) try {
             // CodeSpace is a mandatory attribute in ID[…] elements, so we do not test for null values.
-            return ServicesForMetadata.getOperationMethod(opFactory, mtFactory,
-                    ((ReferenceIdentifier) id).getCodeSpace() + Constants.DEFAULT_SEPARATOR + id.getCode());
+            final var rid = (ReferenceIdentifier) id;
+            return factories.findOperationMethod(rid.getCodeSpace() + Constants.DEFAULT_SEPARATOR + rid.getCode());
         } catch (FactoryException e) {
             suppressed = e;
         }
         try {
-            return ServicesForMetadata.getOperationMethod(opFactory, mtFactory, name);
+            return factories.findOperationMethod(name);
         } catch (FactoryException e) {
             if (suppressed != null) {
                 e.addSuppressed(suppressed);
@@ -2236,7 +2234,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         }
         final String                    name    = element.pullString("name");
         final MathTransform             toBase  = parseMathTransform(element, true);
-        final OperationMethod           method  = getOperationMethod();
+        final OperationMethod           method  = getOperationMethod(element);
         final CoordinateReferenceSystem baseCRS = parseCoordinateReferenceSystem(element, true);
         if (!(baseCRS instanceof SingleCRS)) {
             throw new UnparsableObjectException(errorLocale, Errors.Keys.UnexpectedValueInElement_2,

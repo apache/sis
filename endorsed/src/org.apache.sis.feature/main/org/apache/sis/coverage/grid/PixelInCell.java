@@ -16,6 +16,7 @@
  */
 package org.apache.sis.coverage.grid;
 
+import java.util.Optional;
 import org.opengis.metadata.spatial.PixelOrientation;
 
 
@@ -99,8 +100,8 @@ public enum PixelInCell {
      *
      * @return the legacy ISO/OGC identifier for this constant.
      */
-    public String identifier() {
-        return identifier;
+    public Optional<String> identifier() {
+        return Optional.of(identifier);
     }
 
     /**

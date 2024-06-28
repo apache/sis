@@ -433,7 +433,7 @@ public final class DecoderWrapper extends Decoder implements CancelTask {
     private FeatureDataset getFeatureDataSet() throws IOException {
         if (features == null && file instanceof NetcdfDataset) {
             features = FeatureDatasetFactoryManager.wrap(null, (NetcdfDataset) file, this,
-                    new Formatter(new LogAdapter(listeners), listeners.getLocale()));
+                    new Formatter(new LogAdapter(listeners), getLocale()));
         }
         return features;
     }

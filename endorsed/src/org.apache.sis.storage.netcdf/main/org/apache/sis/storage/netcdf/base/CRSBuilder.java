@@ -50,6 +50,7 @@ import org.apache.sis.referencing.crs.DefaultGeographicCRS;
 import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.provider.Equirectangular;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
@@ -792,10 +793,9 @@ previous:   for (int i=components.size(); --i >= 0;) {
          */
         private static final Conversion UNKNOWN_PROJECTION;
         static {
-            final DefaultCoordinateOperationFactory factory = DefaultCoordinateOperationFactory.provider();
             try {
-                final OperationMethod method = factory.getOperationMethod(Equirectangular.NAME);
-                UNKNOWN_PROJECTION = factory.createDefiningConversion(
+                OperationMethod method = DefaultMathTransformFactory.provider().getOperationMethod(Equirectangular.NAME);
+                UNKNOWN_PROJECTION = DefaultCoordinateOperationFactory.provider().createDefiningConversion(
                         properties("Not specified (presumed Plate Carrée)"),
                         method, method.getParameters().createValue());
             } catch (FactoryException e) {

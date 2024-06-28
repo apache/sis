@@ -221,8 +221,20 @@ public final class Types extends Static {
         if (code == null) {
             return null;
         }
-        final String id = code.identifier();
-        return (id != null && !id.isEmpty()) ? id : code.name();
+        String id = null;
+        if (code instanceof CodeList<?>) {
+            id = ((CodeList<?>) code).identifier();
+        }
+        if (id == null) {
+            id = code.name();
+            for (String name : code.names()) {
+                if (!name.equals(id)) {
+                    id = name;
+                    break;
+                }
+            }
+        }
+        return id.isEmpty() ? code.name() : id;
     }
 
     /**
@@ -253,11 +265,8 @@ public final class Types extends Static {
         if (code == null) {
             return null;
         }
-        String id = code.identifier();
         final String name = code.name();
-        if (id == null) {
-            id = name;
-        }
+        String id = getCodeName(code);
         for (final String candidate : code.names()) {
             if (!candidate.equals(name) && candidate.length() >= id.length()) {
                 id = candidate;

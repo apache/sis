@@ -323,7 +323,9 @@ cmp:    if (canTestBefore | canTestAfter | canTestEqual) {
     public String toString() {
         final var s = new StringBuilder();
         if (indeterminate != null) {
-            s.append(indeterminate.identifier());
+            String id = indeterminate.identifier();
+            if (id == null) id = indeterminate.name();
+            s.append(id);
             if (position != null) {
                 s.append(' ').append(position);
             }

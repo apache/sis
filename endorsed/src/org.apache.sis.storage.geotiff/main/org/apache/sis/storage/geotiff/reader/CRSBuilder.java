@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.StringJoiner;
 import java.util.NoSuchElementException;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.lang.reflect.Array;
@@ -223,7 +224,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
      * @see GeoKeysLoader#warning(short, Object...)
      */
     final void warning(final short key, final Object... args) {
-        LogRecord record = Resources.forLocale(listeners.getLocale()).getLogRecord(Level.WARNING, key, args);
+        LogRecord record = Resources.forLocale(getLocale()).getLogRecord(Level.WARNING, key, args);
         // Logger name will be set by listeners.warning(record).
         record.setSourceClassName(GeoTiffStore.class.getName());
         record.setSourceMethodName("getMetadata");
@@ -1383,7 +1384,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
             case GeoCodes.userDefined: {
                 final Unit<Angle>         azimuthUnit = createAngularUnit(UnitKey.AZIMUTH);
                 final String              code        = methodCode(getMandatoryString(GeoKeys.ProjMethod));
-                final OperationMethod     method      = getCoordinateOperationFactory().getOperationMethod(code);
+                final OperationMethod     method      = findOperationMethod(code);
                 final ParameterValueGroup parameters  = method.getParameters().createValue();
                 final Map<Integer,String> toNames     = ReferencingUtilities.identifierToName(parameters.getDescriptor(), Citations.GEOTIFF);
                 final Map<Object,Number>  paramValues = new HashMap<>();    // Keys: [String|Short] instances for [known|unknown] parameters.
@@ -1424,7 +1425,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
                         String paramName = toNames.get(Short.toUnsignedInt(key));
                         if (paramName == null) {
                             paramName = GeoKeys.name(key);
-                            throw new ParameterNotFoundException(Errors.forLocale(listeners.getLocale())
+                            throw new ParameterNotFoundException(Errors.forLocale(getLocale())
                                         .getString(Errors.Keys.UnexpectedParameter_1, paramName), paramName);
                         }
                         final Number value  = paramValues.get(key);
@@ -1482,7 +1483,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
                     final String parent = IdentifiedObjects.getIdentifierOrName(projection);
                     warning(Resources.Keys.NotTheEpsgValue_5, parent, id.getCode(), key, code, "");
                 }
-                method = getCoordinateOperationFactory().getOperationMethod(methodCode(code));
+                method = findOperationMethod(methodCode(code));
             }
             /*
              * Compare the parameter values with the ones declared in the EPSG geodetic dataset.
@@ -1586,6 +1587,14 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
                 return getCRSAuthorityFactory().createVerticalCRS(String.valueOf(epsg));
             }
         }
+    }
+
+    /**
+     * Returns the locale to use for error messages.
+     */
+    @Override
+    public final Locale getLocale() {
+        return listeners.getLocale();
     }
 
     /**

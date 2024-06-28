@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.function.Supplier;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
+import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.referencing.ObjectFactory;
 import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.RangeMeaning;
@@ -39,10 +40,12 @@ import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.metadata.privy.NameToIdentifier;
+import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.privy.URLs;
 import org.apache.sis.util.collection.Containers;
 
 // Specific to the main and geoapi-3.1 branches:
@@ -155,17 +158,26 @@ public final class CoordinateOperations extends Static {
     }
 
     /**
-     * Returns the operation method for the specified name or identifier. The given argument shall be either a
-     * method name (e.g. <q>Transverse Mercator</q>) or one of its identifiers (e.g. {@code "EPSG:9807"}).
+     * Returns the operation method for the specified name or identifier. The given argument shall be either
+     * a method name (e.g. <q>Transverse Mercator</q>) or one of its identifiers (e.g. {@code "EPSG:9807"}).
+     * The search is case-insensitive and comparisons against method names can be
+     * {@linkplain org.apache.sis.referencing.operation.DefaultOperationMethod#isHeuristicMatchForName(String) heuristic}.
+     *
+     * <p>If more than one method match the given name, then the first (according iteration order)
+     * non-{@linkplain Deprecable#isDeprecated() deprecated} matching method is returned.
+     * If all matching methods are deprecated, the first one is returned.</p>
      *
      * @param  methods     the method candidates.
      * @param  identifier  the name or identifier of the operation method to search.
-     * @return the coordinate operation method for the given name or identifier, or {@code null} if none.
+     * @return the coordinate operation method for the given name or identifier.
+     * @throws NoSuchIdentifierException if the requested operation method cannot be found.
      *
      * @see org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory#getOperationMethod(String)
      * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#getOperationMethod(String)
      */
-    public static OperationMethod getOperationMethod(final Iterable<? extends OperationMethod> methods, final String identifier) {
+    public static OperationMethod findOperationMethod(final Iterable<? extends OperationMethod> methods, final String identifier)
+            throws NoSuchIdentifierException
+    {
         OperationMethod fallback = null;
         for (final OperationMethod method : methods) {
             if (NameToIdentifier.isHeuristicMatchForName(method, identifier) ||
@@ -183,7 +195,11 @@ public final class CoordinateOperations extends Static {
                 }
             }
         }
-        return fallback;
+        if (fallback != null) {
+            return fallback;
+        }
+        throw new NoSuchIdentifierException(Resources.format(
+                Resources.Keys.NoSuchOperationMethod_2, identifier, URLs.OPERATION_METHODS), identifier);
     }
 
     /**

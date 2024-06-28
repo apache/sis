@@ -17,8 +17,10 @@
 package org.apache.sis.referencing.privy;
 
 import java.util.Map;
+import java.util.Locale;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NameFactory;
+import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.CSAuthorityFactory;
@@ -26,6 +28,8 @@ import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.datum.DatumFactory;
 import org.opengis.referencing.datum.DatumAuthorityFactory;
+import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
@@ -33,6 +37,9 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
+import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.Localized;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.resources.Errors;
@@ -54,7 +61,7 @@ import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
  *
  * @see <a href="https://issues.apache.org/jira/browse/SIS-102">SIS-102</a>
  */
-public class ReferencingFactoryContainer {
+public class ReferencingFactoryContainer implements Localized {
     /**
      * The key for specifying a {@link NameFactory} instance to use for geodetic object constructions.
      */
@@ -213,7 +220,7 @@ public class ReferencingFactoryContainer {
         if (type == CRSFactory.class)                 return crsFactory       != (crsFactory       = (CRSFactory)                 factory);
         if (type == CoordinateOperationFactory.class) return operationFactory != (operationFactory = (DefaultCoordinateOperationFactory) factory);
         if (type == MathTransformFactory.class)       return mtFactory        != (mtFactory        = (MathTransformFactory)       factory);
-        throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "type", type));
+        throw new IllegalArgumentException(Errors.forLocale(getLocale()).getString(Errors.Keys.IllegalArgumentValue_2, "type", type));
     }
 
     /**
@@ -246,7 +253,8 @@ public class ReferencingFactoryContainer {
         else if (type == CoordinateOperationFactory.class) f = getCoordinateOperationFactory();
         else if (type == MathTransformFactory.class)       f = getMathTransformFactory();
         else {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "type", type));
+            throw new IllegalArgumentException(Errors.forLocale(getLocale())
+                    .getString(Errors.Keys.IllegalArgumentValue_2, "type", type));
         }
         return type.cast(f);
     }
@@ -399,5 +407,42 @@ public class ReferencingFactoryContainer {
      */
     public final CartesianCS getStandardProjectedCS() throws FactoryException {
         return getCSAuthorityFactory().createCartesianCS("4400");
+    }
+
+    /**
+     * Returns the locale to use for error messages, or {@code null} if unspecified.
+     * In the latter case, the platform default locale will be used.
+     * Subclasses should override if a locale is known.
+     *
+     * @return the locale to use for error messages, or {@code null} if unspecified.
+     */
+    @Override
+    public Locale getLocale() {
+        return Resources.getLocale(defaultProperties);
+    }
+
+    /**
+     * Returns the operation method for the specified name or identifier. The given argument shall be either
+     * a method name (e.g. <q>Transverse Mercator</q>) or one of its identifiers (e.g. {@code "EPSG:9807"}).
+     * The search is case-insensitive and comparisons against method names can be
+     * {@linkplain org.apache.sis.referencing.operation.DefaultOperationMethod#isHeuristicMatchForName(String) heuristic}.
+     *
+     * <p>If more than one method match the given name, then the first (according iteration order)
+     * non-{@linkplain org.apache.sis.util.Deprecable#isDeprecated() deprecated} matching method is returned.
+     * If all matching methods are deprecated, the first one is returned.</p>
+     *
+     * @param  name  the name of the operation method to fetch.
+     * @return the operation method of the given name.
+     * @throws NoSuchIdentifierException if the requested operation method cannot be found.
+     */
+    public final OperationMethod findOperationMethod(String name) throws NoSuchIdentifierException {
+        ArgumentChecks.ensureNonEmpty("name", name = name.strip());
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final MathTransformFactory mtFactory = getMathTransformFactory();
+        if (mtFactory instanceof DefaultMathTransformFactory) {
+            return ((DefaultMathTransformFactory) mtFactory).getOperationMethod(name);
+        }
+        return CoordinateOperations.findOperationMethod(
+                mtFactory.getAvailableMethods(SingleOperation.class), name);
     }
 }
