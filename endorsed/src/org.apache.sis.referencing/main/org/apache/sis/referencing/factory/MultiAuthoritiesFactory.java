@@ -46,6 +46,7 @@ import org.opengis.metadata.extent.Extent;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.util.FactoryException;
 import org.opengis.util.InternationalString;
+import org.opengis.util.NoSuchIdentifierException;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.ArgumentChecks;
@@ -61,6 +62,7 @@ import org.apache.sis.referencing.privy.LazySet;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.BackingStoreException;
@@ -289,8 +291,10 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
 
     /**
      * Returns the database or specification that defines the codes recognized by this factory.
-     * The default implementation returns {@code null} since {@code MultiAuthoritiesFactory} is not
-     * about a particular authority.
+     * The default implementation returns {@code null} because {@code MultiAuthoritiesFactory}
+     * is not about a particular authority.
+     *
+     * @return the organization responsible for definitions in the registry, or {@code null} if none or many.
      */
     @Override
     public Citation getAuthority() {
@@ -1430,12 +1434,24 @@ public class MultiAuthoritiesFactory extends GeodeticAuthorityFactory implements
      *   <li><code>http://www.opengis.net/def/<b>method</b>/</code><var>authority</var>{@code /}<var>version</var>{@code /}<var>code</var></li>
      * </ul>
      *
+     * If the given code is not found in the geodetic registry, then this method searches also among
+     * the {@linkplain DefaultMathTransformFactory#getOperationMethod(String) build-in methods}.
+     *
      * @return the operation method for the given code.
      * @throws FactoryException if the object creation failed.
      */
     @Override
     public OperationMethod createOperationMethod(final String code) throws FactoryException {
-        return create(AuthorityFactoryProxy.METHOD, code);
+        try {
+            return create(AuthorityFactoryProxy.METHOD, code);
+        } catch (NoSuchAuthorityCodeException e) {
+            try {
+                return DefaultMathTransformFactory.provider().getOperationMethod(code);
+            } catch (NoSuchIdentifierException s) {
+                e.addSuppressed(s);
+                throw e;
+            }
+        }
     }
 
     /**

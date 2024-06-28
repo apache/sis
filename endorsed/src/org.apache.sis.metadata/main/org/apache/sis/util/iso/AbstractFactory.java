@@ -19,13 +19,14 @@ package org.apache.sis.util.iso;
 import org.opengis.util.Factory;
 import org.opengis.metadata.citation.Citation;
 import org.apache.sis.metadata.simple.SimpleCitation;
+import org.apache.sis.util.privy.Strings;
 
 
 /**
  * Base class of factories provided in the Apache SIS library.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.3
+ * @version 1.5
  * @since   0.3
  */
 public abstract class AbstractFactory implements Factory {
@@ -54,5 +55,24 @@ public abstract class AbstractFactory implements Factory {
             }
         }
         return null;
+    }
+
+    /**
+     * Returns a string representation of this factory for debugging purposes.
+     * This string representation may change in any future version of Apache SIS.
+     *
+     * @return a string representation of this factory.
+     *
+     * @since 1.5
+     */
+    @Override
+    public String toString() {
+        final var args = new Object[2];
+        Citation c = getVendor();
+        if (c != null) {
+            args[0] = "vendor";
+            args[1] = c.getTitle();
+        }
+        return Strings.toString(getClass(), args);
     }
 }

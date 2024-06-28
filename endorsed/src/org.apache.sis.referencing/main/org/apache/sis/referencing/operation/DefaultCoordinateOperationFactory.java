@@ -273,8 +273,10 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * @throws FactoryException if the requested operation method cannot be fetched.
      *
      * @see DefaultMathTransformFactory#getOperationMethod(String)
+     *
+     * @deprecated Use {@link DefaultMathTransformFactory} instead.
      */
-    @Override
+    @Deprecated(since="1.5", forRemoval=true)
     public OperationMethod getOperationMethod(String name) throws FactoryException {
         return new ReferencingFactoryContainer(null, null, null, null, null, mtFactory).findOperationMethod(name);
     }

@@ -63,6 +63,7 @@ import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.privy.EllipsoidalHeightCombiner;
 import org.apache.sis.referencing.privy.PositionalAccuracyConstant;
+import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.internal.DeferredCoordinateOperation;
 import org.apache.sis.referencing.internal.Resources;
@@ -1337,7 +1338,9 @@ class CoordinateOperationRegistry {
                 if (descriptor != null) {
                     final Identifier name = descriptor.getName();
                     if (name != null) {
-                        method = factory.getOperationMethod(name.getCode());
+                        final MathTransformFactory mtFactory = factorySIS.getMathTransformFactory();
+                        var c = new ReferencingFactoryContainer(null, null, null, null, factory, mtFactory);
+                        method = c.findOperationMethod(name.getCode());
                     }
                     if (method == null) {
                         method = factory.createOperationMethod(properties, descriptor);
