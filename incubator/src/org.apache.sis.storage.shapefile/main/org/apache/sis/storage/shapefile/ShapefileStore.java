@@ -104,6 +104,7 @@ import org.apache.sis.storage.shapefile.shp.ShapeType;
 import org.apache.sis.storage.shapefile.shp.ShapeWriter;
 import org.apache.sis.storage.shapefile.shx.IndexWriter;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.collection.BackingStoreException;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -735,11 +736,26 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
 
                 //write prj
                 try {
-                    final WKTFormat format = new WKTFormat();
-                    format.setConvention(Convention.WKT1_COMMON_UNITS);
-                    format.setNameAuthority(Citations.ESRI);
-                    format.setIndentation(WKTFormat.SINGLE_LINE);
-                    Files.writeString(files.getPrj(true), format.format(crs), StandardCharsets.ISO_8859_1, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+                    final String wkt;
+
+                    if (Utilities.equalsApproximately(crs, CommonCRS.WGS84.normalizedGeographic())) {
+                        /*
+                         * TODO until we manage to understand the expected ESRI writing for CRS:84
+                         * we replace it by hand.
+                         * There is an odd recursive information that shapefiles are longitude first whatever the CRS.
+                         * But the ESRI specification do not say anything about it.
+                         * Generate WKT by tools like ogr,qgis do not declare the axes so we are clueless.
+                         */
+                        wkt = "GEOGCS[\"GCS_WGS_84_CRS84\",DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_1984\",6378137.0,298.257223563]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]]";
+                    } else {
+                        final WKTFormat format = new WKTFormat();
+                        format.setConvention(Convention.WKT1_COMMON_UNITS);
+                        format.setNameAuthority(Citations.ESRI);
+                        format.setIndentation(WKTFormat.SINGLE_LINE);
+                        wkt = format.format(crs);
+                    }
+                    Files.writeString(files.getPrj(true), wkt, StandardCharsets.ISO_8859_1, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
+
                 } catch (IOException ex) {
                     throw new DataStoreException("Failed to create shapefile (prj).", ex);
                 }
@@ -1188,6 +1204,7 @@ public final class ShapefileStore extends DataStore implements WritableFeatureSe
             try {
                 shpWriter.close();
                 dbfWriter.close();
+                shxWriter.getHeader().bbox = shpWriter.getHeader().bbox;
                 shxWriter.close();
                 tempFiles.scan();
                 if (replaceOriginals) {
