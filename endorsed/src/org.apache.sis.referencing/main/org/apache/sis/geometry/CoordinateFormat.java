@@ -632,7 +632,9 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
      */
     private static String symbol(final AxisDirection direction) {
         // Following cast uses our knowledge of `camelCaseToAcronym` implementation.
-        return ((StringBuilder) CharSequences.camelCaseToAcronym(direction.identifier().orElse(direction.name())))
+        String id = direction.identifier();
+        if (id == null) id = direction.name();
+        return ((StringBuilder) CharSequences.camelCaseToAcronym(id))
                 .insert(0, Characters.NO_BREAK_SPACE).toString();
     }
 

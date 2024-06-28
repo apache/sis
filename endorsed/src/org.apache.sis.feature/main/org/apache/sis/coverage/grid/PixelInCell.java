@@ -103,7 +103,6 @@ public enum PixelInCell implements ControlledVocabulary {
      *
      * @return the legacy ISO/OGC identifier for this constant.
      */
-    @Override
     public Optional<String> identifier() {
         return Optional.of(identifier);
     }

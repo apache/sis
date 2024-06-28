@@ -686,7 +686,9 @@ next:       for (int i=0; i <= limit; i++) {
                 return abbreviation;
             }
         }
-        return camelCaseToAcronym(direction.identifier().orElse(direction.name())).toString().intern();
+        String id = direction.identifier();
+        if (id == null) id = direction.name();
+        return camelCaseToAcronym(id).toString().intern();
     }
 
     /**

@@ -22,8 +22,10 @@ import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlTransient;
 
+// Specific to the main and geoapi-3.1 branches:
+import org.apache.sis.util.iso.Types;
+
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.temporal.IndeterminateValue;
 import org.opengis.temporal.Instant;
 
 
@@ -106,8 +108,7 @@ public abstract class TimePeriodBound {
                 value = TimeInstant.toXML(instant.getPosition());
                 if (value == null) {
                     instant.getIndeterminatePosition()
-                            .flatMap(IndeterminateValue::identifier)
-                            .ifPresent((p) -> indeterminatePosition = p);
+                            .ifPresent((p) -> indeterminatePosition = Types.getCodeName(p));
                 }
             }
             if (value == null && indeterminatePosition == null) {

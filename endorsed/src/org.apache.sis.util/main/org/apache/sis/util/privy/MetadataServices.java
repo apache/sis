@@ -29,9 +29,6 @@ import org.apache.sis.system.OptionalDependency;
 import org.apache.sis.util.CharSequences;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import java.util.MissingResourceException;
-import org.opengis.annotation.UML;
-import org.opengis.annotation.ResourceBundles;
 import org.opengis.util.ControlledVocabulary;
 
 
@@ -122,23 +119,7 @@ public class MetadataServices extends OptionalDependency {
      * @see org.apache.sis.util.iso.Types#getCodeTitle(ControlledVocabulary)
      */
     public String getCodeTitle(final ControlledVocabulary code, final Locale locale) {
-        /*
-         * Following code reproduces the work done by `org.apache.sis.util.iso.Types.getCodeList(…)` with
-         * less handling of special cases. It is executed only if the `org.apache.sis.metadata` module is
-         * not on the module path, otherwise the `org.apache.sis.metadata` implementation will be used.
-         */
-        final UML uml = code.getClass().getAnnotation(UML.class);
-        if (uml != null) try {
-            return ResourceBundles.codeLists(locale).getString(uml.identifier() + '.' + code.identifier());
-        } catch (MissingResourceException e) {
-            /*
-             * Ignore. The reason for not finding the resource may because of above code not covering enough cases.
-             * Usually the `org.apache.sis.metadata` module will be present on the module path, in which case this
-             * implementation will not be used. We need just enough code for allowing `org.apache.sis.util` tests
-             * to pass.
-             */
-        }
-        return CharSequences.camelCaseToSentence(code.identifier().orElse(code.name())).toString();
+        return CharSequences.camelCaseToSentence(code.name()).toString();
     }
 
     /**

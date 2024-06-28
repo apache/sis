@@ -352,7 +352,7 @@ public final class FilterReadingTest extends CQLTestCase {
     }
 
     private Filter<?> testSpatialOperators(final CodeList<?> operator, final String suffix) throws CQLException {
-        final String name = operator.identifier().get().toUpperCase(Locale.US);
+        final String name = operator.identifier().toUpperCase(Locale.US);
         final String cql = name + "(\"att\", POLYGON((10 20, 30 40, 50 60, 10 20))" + suffix + ')';
         final Filter<?> filter = CQL.parseFilter(cql);
         assertInstanceOf(SpatialOperator.class, filter, name);
@@ -429,7 +429,7 @@ public final class FilterReadingTest extends CQLTestCase {
     @Test
     public void testTemporalOperators() throws CQLException, ParseException {
         for (final TemporalOperatorName operator : TemporalOperatorName.values()) {
-            final String name = operator.identifier().get().toUpperCase(Locale.US);
+            final String name = operator.identifier().toUpperCase(Locale.US);
             final String cql  = "att " + name + " 2012-03-21T05:42:36Z";
             final Filter<?> filter = CQL.parseFilter(cql);
             assertInstanceOf(TemporalOperator.class, filter, name);
