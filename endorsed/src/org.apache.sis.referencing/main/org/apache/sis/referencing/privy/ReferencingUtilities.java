@@ -54,7 +54,8 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
-import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory.Context;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
+import org.apache.sis.parameter.Parameters;
 
 
 /**
@@ -511,58 +512,35 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
-     * Creates a context with source and target ellipsoids and coordinate systems inferred from the given CRS.
+     * Creates a builder with source and target ellipsoids and coordinate systems inferred from the given CRSs.
      * The ellipsoids will be non-null only if the given CRS is geodetic (geographic or geocentric).
      *
-     * @param  sourceCRS  the CRS from which to get the source coordinate system and ellipsoid, or {@code null}.
-     * @param  targetCRS  the CRS from which to get the target coordinate system and ellipsoid, or {@code null}.
+     * @param  factory     the factory on which to create the builder.
+     * @param  parameters  the operation parameter value group.
+     * @param  sourceCRS   the CRS from which to get the source coordinate system and ellipsoid, or {@code null}.
+     * @param  targetCRS   the CRS from which to get the target coordinate system and ellipsoid, or {@code null}.
      * @return the context to provides to math transform factory.
+     * @throws FactoryException if the builder cannot be created.
      */
-    public static Context createTransformContext(final CoordinateReferenceSystem sourceCRS,
-                                                 final CoordinateReferenceSystem targetCRS)
-    {
-        final Context context = new Context();
-        if (sourceCRS instanceof GeodeticCRS) {
-            context.setSource((GeodeticCRS) sourceCRS);
-        } else if (sourceCRS != null) {
-            context.setSource(sourceCRS.getCoordinateSystem());
-        }
-        if (targetCRS instanceof GeodeticCRS) {
-            context.setTarget((GeodeticCRS) targetCRS);
-        } else if (targetCRS != null) {
-            context.setTarget(targetCRS.getCoordinateSystem());
-        }
-        return context;
-    }
-
-    /**
-     * Substitute for the deprecated {@link MathTransformFactory#createBaseToDerived createBaseToDerived(…)} method.
-     * This substitute uses the full {@code targetCRS} instead of only the coordinate system of the target.
-     * This is needed for setting the {@code "tgt_semi_minor"} and {@code "tgt_semi_major"} parameters of
-     * Molodensky transformation for example.
-     *
-     * @param  factory     the factory to use for creating the transform.
-     * @param  sourceCRS   the source (base) coordinate reference system.
-     * @param  parameters  the parameter values for the transform.
-     * @param  targetCRS   the target (derived) coordinate system.
-     * @return the parameterized transform from {@code sourceCRS} to {@code targetCRS},
-     *         including unit conversions and axis swapping.
-     * @throws FactoryException if the object creation failed. This exception is thrown
-     *         if some required parameter has not been supplied, or has illegal value.
-     *
-     * @see <a href="https://issues.apache.org/jira/browse/SIS-512">SIS-512 on issues tracker</a>
-     */
-    public static MathTransform createBaseToDerived(final MathTransformFactory factory,
-            final CoordinateReferenceSystem sourceCRS, final ParameterValueGroup parameters,
+    public static MathTransform.Builder builder(
+            final MathTransformFactory factory,
+            final ParameterValueGroup parameters,
+            final CoordinateReferenceSystem sourceCRS,
             final CoordinateReferenceSystem targetCRS) throws FactoryException
     {
-        if (factory instanceof DefaultMathTransformFactory) {
-            return ((DefaultMathTransformFactory) factory).createParameterizedTransform(
-                    parameters, createTransformContext(sourceCRS, targetCRS));
-        } else {
-            // Fallback for non-SIS implementations. Work for map projections but not for Molodensky.
-            return factory.createBaseToDerived(sourceCRS, parameters, targetCRS.getCoordinateSystem());
+        final var builder = factory.builder(parameters.getDescriptor().getName().getCode());
+        try {
+            Parameters.copy(parameters, builder.parameters());
+        } catch (IllegalArgumentException e) {
+            throw new InvalidGeodeticParameterException(e.getMessage(), e);
         }
+        if (sourceCRS != null) {
+            builder.setSourceAxes(sourceCRS.getCoordinateSystem(), getEllipsoid(sourceCRS));
+        }
+        if (targetCRS != null) {
+            builder.setTargetAxes(targetCRS.getCoordinateSystem(), getEllipsoid(targetCRS));
+        }
+        return builder;
     }
 
     /**

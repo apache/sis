@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.ServiceLoader;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -29,7 +30,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.lang.reflect.Constructor;
-import java.io.Serializable;
 import javax.measure.Unit;
 import javax.measure.IncommensurableException;
 import javax.measure.quantity.Length;
@@ -45,6 +45,7 @@ import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CartesianCS;
+import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
@@ -84,6 +85,9 @@ import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.util.UnimplementedServiceException;
 
 
 /**
@@ -477,6 +481,39 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     }
 
     /**
+     * Returns a builder for a parameterized math transform using the specified operation method.
+     * The {@code method} argument should be the name or identifier of an {@link OperationMethod}
+     * instance returned by <code>{@link #getAvailableMethods(Class) getAvailableMethods}(null)</code>.
+     *
+     * <p>The returned builder allows to specify not only the operation parameter values,
+     * but also some contextual information such as the source and target axes.
+     * The builder uses these information for:</p>
+     *
+     * <ol>
+     *   <li>Inferring the {@code "semi_major"}, {@code "semi_minor"}, {@code "src_semi_major"},
+     *       {@code "src_semi_minor"}, {@code "tgt_semi_major"} or {@code "tgt_semi_minor"} parameter values
+     *       from the {@link Ellipsoid} associated to the source or target CRS, if these parameters are
+     *       not explicitly given and if they are relevant for the coordinate operation method.</li>
+     *   <li>{@linkplain #createConcatenatedTransform Concatenating} the parameterized transform
+     *       with any other transforms required for performing units changes and coordinates swapping.</li>
+     * </ol>
+     *
+     * The complete group of parameters, including {@code "semi_major"}, {@code "semi_minor"} or other
+     * calculated values, can be obtained by a call to {@link Context#getCompletedParameters()}.
+     *
+     * @param  method  the case insensitive name or identifier of the desired coordinate operation method.
+     * @return a builder for a meth transform implementing the formulas identified by the given method.
+     * @throws NoSuchIdentifierException if there is no supported method for the given name or identifier.
+     *
+     * @see #getAvailableMethods(Class)
+     * @since 1.5
+     */
+    @Override
+    public MathTransform.Builder builder(final String method) throws NoSuchIdentifierException {
+        return new Context(this, getOperationMethod(method));
+    }
+
+    /**
      * Returns the default parameter values for a math transform using the given operation method.
      * The {@code method} argument is the name of any {@code OperationMethod} instance returned by
      * <code>{@link #getAvailableMethods(Class) getAvailableMethods}({@linkplain SingleOperation}.class)</code>.
@@ -500,36 +537,16 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     }
 
     /**
-     * Creates a transform from a group of parameters.
-     * The set of expected parameters varies for each operation.
-     *
-     * @param  parameters  the parameter values. The {@linkplain ParameterDescriptorGroup#getName() parameter group name}
-     *         shall be the name of the desired {@linkplain DefaultOperationMethod operation method}.
-     * @return the transform created from the given parameters.
-     * @throws NoSuchIdentifierException if there is no method for the given parameter group name.
-     * @throws FactoryException if the object creation failed. This exception is thrown
-     *         if some required parameter has not been supplied, or has illegal value.
-     *
-     * @deprecated Replaced by {@link #createParameterizedTransform(ParameterValueGroup, Context)}
-     *             where the {@code Context} argument can be null.
-     */
-    @Override
-    @Deprecated(since="0.7")
-    public MathTransform createParameterizedTransform(final ParameterValueGroup parameters)
-            throws NoSuchIdentifierException, FactoryException
-    {
-        return createParameterizedTransform(parameters, null);
-    }
-
-    /**
-     * Source and target coordinate systems for which a new parameterized transform is going to be used.
+     * Builder of a parameterized math transform identified by a name or code.
+     * A builder can optionally contain the source and target coordinate systems
+     * for which a new parameterized transform is going to be used.
      * {@link DefaultMathTransformFactory} uses this information for:
      *
      * <ul>
      *   <li>Completing some parameters if they were not provided. In particular, the {@linkplain #getSourceEllipsoid()
      *       source ellipsoid} can be used for providing values for the {@code "semi_major"} and {@code "semi_minor"}
      *       parameters in map projections.</li>
-     *   <li>{@linkplain CoordinateSystems#swapAndScaleAxes Swapping and scaling axes} if the source or the target
+     *   <li>{@linkplain #swapAndScaleAxes Swapping and scaling axes} if the source or the target
      *       coordinate systems are not {@linkplain AxesConvention#NORMALIZED normalized}.</li>
      * </ul>
      *
@@ -538,25 +555,19 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * or anything else related to datum. Datum changes have dedicated {@link OperationMethod},
      * for example <q>Longitude rotation</q> (EPSG:9601) for changing the prime meridian.
      *
-     * <h2>Scope</h2>
-     * Instances of this class should be short-lived
-     * (they exist only the time needed for creating a {@link MathTransform})
-     * and should not be shared (because they provide no immutability guarantees).
-     * This class is not thread-safe.
+     * <p>Each instance is created by {@link #builder(String)} and should be used only once.
+     * This class is <em>not</em> thread-safe.</p>
      *
      * @author  Martin Desruisseaux (Geomatys)
      * @version 1.5
      * @since   0.7
+     *
+     * @see #builder(String)
      */
-    @SuppressWarnings("serial")         // All field values are usually serializable instances.
-    public static class Context implements MathTransformProvider.Context, Serializable {
-        /**
-         * For cross-version compatibility.
-         */
-        private static final long serialVersionUID = -239563539875674709L;
-
+    public static class Context implements MathTransform.Builder, MathTransformProvider.Context {
         /**
          * The factory to use if the provider needs to create other math transforms as operation steps.
+         * @todo Replace by non-static inner class after deprecated methods have been removed.
          *
          * @see #getFactory()
          */
@@ -569,21 +580,23 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
 
         /**
          * The ellipsoid of the source or target ellipsoidal coordinate system, or {@code null} if it does not apply.
-         * Valid only if {@link #sourceCS} or {@link #targetCS} is an instance of {@link EllipsoidalCS}.
          */
         private Ellipsoid sourceEllipsoid, targetEllipsoid;
 
         /**
          * The provider that created the parameterized {@link MathTransform} instance, or {@code null}
-         * if this information does not apply. This field is used for transferring information between
-         * {@code createParameterizedTransform(…)} and {@code swapAndScaleAxes(…)}.
+         * if this information does not apply. This is initially set to the operation method specified
+         * in the call to {@link #builder(String)}, but may be modified by {@link #create()}.
+         *
+         * @see #getMethod()
          */
         private OperationMethod provider;
 
         /**
          * The parameters actually used.
+         * @todo Make final after the deprecated methods have been removed.
          *
-         * @see #getCompletedParameters()
+         * @see #parameters()
          */
         private ParameterValueGroup parameters;
 
@@ -595,16 +608,46 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         private final Map<String,Boolean> contextualParameters;
 
         /**
-         * Creates a new context with all properties initialized to {@code null}.
+         * Whether the user-specified parameters have been completed with the contextual parameters.
+         * This set to {@code true} the first time that {@link #getCompletedParameters()} is invoked.
+         * After this flag became {@code true}, this {@code Context} should not be modified anymore.
+         *
+         * @see #completeParameters()
          */
+        private boolean completedParameters;
+
+        /**
+         * The warning that occurred during parameters completion, or {@code null} if none.
+         * This warning is not necessarily fatal, but will be appended to the suppressed exceptions
+         * of {@link FactoryException} if the {@link MathTransform} creation nevertheless fail.
+         */
+        private RuntimeException warning;
+
+        /**
+         * Creates a new context with all properties initialized to {@code null}.
+         *
+         * @deprecated Use {@link #builder(String)} instead.
+         */
+        @Deprecated(since="1.5", forRemoval=true)
         public Context() {
             contextualParameters = new HashMap<>();
         }
 
         /**
+         * Creates a new context with all properties initialized to {@code null}.
+         *
+         * @param  method  a method known to the enclosing factory.
+         */
+        Context(final DefaultMathTransformFactory factory, final OperationMethod method) {
+            this.factory = factory;
+            provider = method;
+            parameters = method.getParameters().createValue();
+            contextualParameters = new HashMap<>();
+        }
+
+        /**
          * Returns the factory to use if the provider needs to create other math transforms as operation steps.
-         * This is the factory on which {@link #createParameterizedTransform(ParameterValueGroup, Context)} is
-         * invoked, or the {@linkplain #provider() default factory} otherwise.
+         * This is the factory on which {@link #builder(String)} has been invoked.
          *
          * @since 1.5
          */
@@ -614,14 +657,38 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         }
 
         /**
+         * Gives hints about axis lengths and their orientations in input coordinates.
+         * The {@code ellipsoid} argument is often provided together with an {@link EllipsoidalCS}, but not only.
+         * For example, a two-dimensional {@link SphericalCS} may also require information about the ellipsoid.
+         *
+         * <p>Each call to this method replaces the values of the previous call.
+         * However, this method cannot be invoked anymore after {@link #getCompletedParameters()} has been invoked.</p>
+         *
+         * @param  cs  the coordinate system defining source axis order and units, or {@code null} if none.
+         * @param  ellipsoid  the ellipsoid providing source semi-axis lengths, or {@code null} if none.
+         * @throws IllegalStateException if {@link #getCompletedParameters()} has already been invoked.
+         *
+         * @since 1.5
+         */
+        @Override
+        public void setSourceAxes(CoordinateSystem cs, Ellipsoid ellipsoid) {
+            if (completedParameters) {
+                throw new IllegalStateException(Errors.format(Errors.Keys.AlreadyInitialized_1, "completedParameters"));
+            }
+            sourceCS = cs;
+            sourceEllipsoid = ellipsoid;
+        }
+
+        /**
          * Sets the source coordinate system to the given value.
          * The source ellipsoid is unconditionally set to {@code null}.
          *
          * @param  cs  the coordinate system to set as the source (can be {@code null}).
+         * @deprecated Replaced by {@link #setSourceAxes(CoordinateSystem, Ellipsoid)} for simplifying the API.
          */
+        @Deprecated(since="1.5", forRemoval=true)
         public void setSource(final CoordinateSystem cs) {
-            sourceCS = cs;
-            sourceEllipsoid = null;
+            setSourceAxes(cs, null);
         }
 
         /**
@@ -636,15 +703,38 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * @param  crs  the coordinate system and ellipsoid to set as the source, or {@code null}.
          *
          * @since 1.3
+         * @deprecated Replaced by {@link #setSourceAxes(CoordinateSystem, Ellipsoid)} for simplifying the API.
          */
+        @Deprecated(since="1.5", forRemoval=true)
         public void setSource(final GeodeticCRS crs) {
             if (crs != null) {
-                sourceCS = crs.getCoordinateSystem();
-                sourceEllipsoid = crs.getDatum().getEllipsoid();
+                setSourceAxes(crs.getCoordinateSystem(), crs.getDatum().getEllipsoid());
             } else {
-                sourceCS = null;
-                sourceEllipsoid = null;
+                setSourceAxes(null, null);
             }
+        }
+
+        /**
+         * Gives hints about axis lengths and their orientations in output coordinates.
+         * The {@code ellipsoid} argument is often provided together with an {@link EllipsoidalCS}, but not only.
+         * For example, a two-dimensional {@link SphericalCS} may also require information about the ellipsoid.
+         *
+         * <p>Each call to this method replaces the values of the previous call.
+         * However, this method cannot be invoked anymore after {@link #getCompletedParameters()} has been invoked.</p>
+         *
+         * @param  cs  the coordinate system defining target axis order and units, or {@code null} if none.
+         * @param  ellipsoid  the ellipsoid providing target semi-axis lengths, or {@code null} if none.
+         * @throws IllegalStateException if {@link #getCompletedParameters()} has already been invoked.
+         *
+         * @since 1.5
+         */
+        @Override
+        public void setTargetAxes(CoordinateSystem cs, Ellipsoid ellipsoid) {
+            if (completedParameters) {
+                throw new IllegalStateException(Errors.format(Errors.Keys.AlreadyInitialized_1, "completedParameters"));
+            }
+            targetCS = cs;
+            targetEllipsoid = ellipsoid;
         }
 
         /**
@@ -652,10 +742,11 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * The target ellipsoid is unconditionally set to {@code null}.
          *
          * @param  cs  the coordinate system to set as the target (can be {@code null}).
+         * @deprecated Replaced by {@link #setTargetAxes(CoordinateSystem, Ellipsoid)} for simplifying the API.
          */
+        @Deprecated(since="1.5", forRemoval=true)
         public void setTarget(final CoordinateSystem cs) {
-            targetCS = cs;
-            targetEllipsoid = null;
+            setTargetAxes(cs, null);
         }
 
         /**
@@ -670,14 +761,14 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * @param  crs  the coordinate system and ellipsoid to set as the target, or {@code null}.
          *
          * @since 1.3
+         * @deprecated Replaced by {@link #setTargetAxes(CoordinateSystem, Ellipsoid)} for simplifying the API.
          */
+        @Deprecated(since="1.5", forRemoval=true)
         public void setTarget(final GeodeticCRS crs) {
             if (crs != null) {
-                targetCS = crs.getCoordinateSystem();
-                targetEllipsoid = crs.getDatum().getEllipsoid();
+                setTargetAxes(crs.getCoordinateSystem(), crs.getDatum().getEllipsoid());
             } else {
-                targetCS = null;
-                targetEllipsoid = null;
+                setTargetAxes(null, null);
             }
         }
 
@@ -691,10 +782,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         }
 
         /**
-         * Returns the ellipsoid of the source ellipsoidal coordinate system, or {@code null} if it does not apply.
-         * This information is valid only if {@link #getSourceCS()} returns an instance of {@link EllipsoidalCS}.
+         * Returns the ellipsoid used together with the source coordinate system, or {@code null} if none.
          *
-         * @return the ellipsoid of the source ellipsoidal coordinate system, or {@code null} if it does not apply.
+         * @return the ellipsoid used together with the source coordinate system, or {@code null} if none.
          */
         public Ellipsoid getSourceEllipsoid() {
             return sourceEllipsoid;
@@ -721,10 +811,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         }
 
         /**
-         * Returns the ellipsoid of the target ellipsoidal coordinate system, or {@code null} if it does not apply.
-         * This information is valid only if {@link #getTargetCS()} returns an instance of {@link EllipsoidalCS}.
+         * Returns the ellipsoid used together with the target coordinate system, or {@code null} if none.
          *
-         * @return the ellipsoid of the target ellipsoidal coordinate system, or {@code null} if it does not apply.
+         * @return the ellipsoid used together with the target coordinate system, or {@code null} if none.
          */
         public Ellipsoid getTargetEllipsoid() {
             return targetEllipsoid;
@@ -802,6 +891,21 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         }
 
         /**
+         * Returns the operation method used for creating the math transform from the parameter values.
+         * This is initially the operation method specified in the call to {@link #builder(String)},
+         * but may change after the call to {@link #create()} if the method has been adjusted because
+         * of the parameter values.
+         *
+         * @return the operation method used for creating the math transform from the parameter values.
+         *
+         * @since 1.5
+         */
+        @Override
+        public Optional<OperationMethod> getMethod() {
+            return Optional.ofNullable(provider);
+        }
+
+        /**
          * Returns the operation method used for the math transform creation.
          * This is the same information as {@link #getLastMethodUsed()} but more stable
          * (not affected by transforms created with other contexts).
@@ -810,15 +914,34 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * @throws IllegalStateException if {@link #createParameterizedTransform(ParameterValueGroup, Context)}
          *         has not yet been invoked.
          *
-         * @see #getLastMethodUsed()
+         * @deprecated Replaced by {@link #getMethod()}.
          *
          * @since 1.3
          */
+        @Deprecated(since="1.5", forRemoval=true)
         public OperationMethod getMethodUsed() {
             if (provider != null) {
                 return provider;
             }
             throw new IllegalStateException(Resources.format(Resources.Keys.UnspecifiedParameterValues));
+        }
+
+        /**
+         * Returns the parameter values to modify for defining the transform to create.
+         * Those parameters are initialized to default values, which are {@linkplain #getMethod() method} depend.
+         * User-supplied values should be set directly in the returned instance with codes like
+         * <code>parameter(</code><var>name</var><code>).setValue(</code><var>value</var><code>)</code>.
+         *
+         * @return the parameter values to modify for defining the transform to create.
+         *
+         * @since 1.5
+         */
+        @Override
+        public ParameterValueGroup parameters() {
+            if (parameters == null) {
+                parameters = provider.getParameters().createValue();
+            }
+            return parameters;
         }
 
         /**
@@ -831,15 +954,15 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * The parameters named in that set are included in the parameters
          * returned by {@link #getCompletedParameters()}.
          *
-         * <h4>Associated boolean values</h4>
-         * The associated boolean in the map tells whether the named parameter value is really contextual.
-         * The boolean is {@code FALSE} if the user explicitly specified a value in the parameters given to
+         * <h4>Associated Boolean values</h4>
+         * The associated Boolean in the map tells whether the named parameter value is really contextual.
+         * The Boolean is {@code FALSE} if the user explicitly specified a value in the parameters given to
          * the {@link #createParameterizedTransform(ParameterValueGroup, Context)} method,
          * and that value is different than the value inferred from the context.
          * Such inconsistencies are also logged at {@link Level#WARNING}.
          * In all other cases
          * (no value specified by the user, or a value was specified but is consistent with the context),
-         * the associated boolean in the map is {@code TRUE}.
+         * the associated Boolean in the map is {@code TRUE}.
          *
          * <h4>Mutability</h4>
          * The returned map is modifiable for making easier for callers to amend the contextual information.
@@ -858,15 +981,26 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         /**
          * Returns the parameter values used for the math transform creation,
          * including the parameters completed by the factory.
-         * The parameters inferred from the context are listed by {@link #getContextualParameters()}.
+         * This is the union of {@link #parameters()} with {@link #getContextualParameters()}.
+         * The completed parameters may only have additional parameters compared to the user-supplied parameters.
+         * {@linkplain #parameters() Parameter} values that were explicitly set by the user are not overwritten.
+         *
+         * <p>After this method has been invoked, the {@link #setSourceAxes setSourceAxes(…)}
+         * and {@link #setTargetAxes setTargetAxes(…)} methods can no longer be invoked.</p>
          *
          * @return the parameter values used by the factory.
-         * @throws IllegalStateException if {@link #createParameterizedTransform(ParameterValueGroup, Context)}
-         *         has not yet been invoked.
          */
         @Override
         public ParameterValueGroup getCompletedParameters() {
             if (parameters != null) {
+                /*
+                 * If the user's parameters do not contain semi-major and semi-minor axis lengths, infer
+                 * them from the ellipsoid. We have to do that because those parameters are often omitted,
+                 * since the standard place where to provide this information is in the ellipsoid object.
+                 */
+                if (!completedParameters) {
+                    warning = completeParameters();
+                }
                 return parameters;
             }
             throw new IllegalStateException(Resources.format(Resources.Keys.UnspecifiedParameterValues));
@@ -885,6 +1019,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
          * @param  writable  {@code true} if this method should also check that the parameters group is editable.
          * @throws IllegalArgumentException if the copy cannot be performed because a parameter has
          *         a unrecognized name or an illegal value.
+         *
+         * @todo We should be able to remove this method after we removed the other deprecated methods.
          */
         private void ensureCompatibleParameters(final boolean writable) throws IllegalArgumentException {
             final ParameterDescriptorGroup expected = provider.getParameters();
@@ -1053,41 +1189,16 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         /**
          * Completes the parameter group with information about source and target ellipsoid axis lengths,
          * if available. This method writes semi-major and semi-minor parameter values only if they do not
-         * already exists in the given parameters.
+         * already exists in the current parameters.
          *
-         * <p>The given method and parameters are stored in the {@link #provider} and {@link #parameters}
-         * fields respectively. The actual stored values may differ from the values given to this method.
-         * The {@link #factory} field must be set before this method is invoked.</p>
-         *
-         * @param  method   description of the transform to be created, or {@code null} if unknown.
          * @return the exception if the operation failed, or {@code null} if none. This exception is not thrown now
          *         because the caller may succeed in creating the transform anyway, or otherwise may produce a more
          *         informative exception.
-         * @throws IllegalArgumentException if the operation fails because a parameter has a unrecognized name or an
-         *         illegal value.
          *
          * @see #getCompletedParameters()
          */
-        final RuntimeException completeParameters(OperationMethod method, final ParameterValueGroup userParams)
-                throws FactoryException, IllegalArgumentException
-        {
-            /*
-             * The "Geographic/geocentric conversions" conversion (EPSG:9602) can be either:
-             *
-             *    - "Ellipsoid_To_Geocentric"
-             *    - "Geocentric_To_Ellipsoid"
-             *
-             * EPSG defines both by a single operation, but Apache SIS needs to distinguish them.
-             */
-            if (method instanceof AbstractProvider) {
-                final String alt = ((AbstractProvider) method).resolveAmbiguity(this);
-                if (alt != null) {
-                    method = factory.getOperationMethod(alt);
-                }
-            }
-            provider   = method;
-            parameters = userParams;
-            ensureCompatibleParameters(false);      // Invoke only after we set `provider` to its final instance.
+        private RuntimeException completeParameters() throws IllegalArgumentException {
+            completedParameters = true;     // Need to be first.
             /*
              * Get a mask telling us if we need to set parameters for the source and/or target ellipsoid.
              * This information should preferably be given by the provider. But if the given provider is
@@ -1129,9 +1240,64 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         }
 
         /**
+         * Creates the parameterized transform. The operation method is given by {@link #getMethod()}
+         * and the parameter values should have been set on the group returned by {@link #parameters()}
+         * before to invoke this constructor.
+         *
+         * @return the parameterized transform.
+         * @throws FactoryException if the transform creation failed.
+         * This exception is thrown if some required parameters have not been supplied, or have illegal values.
+         *
+         * @since 1.5
+         */
+        @Override
+        public MathTransform create() throws FactoryException {
+            try {
+                if (provider instanceof AbstractProvider) {
+                    /*
+                     * The "Geographic/geocentric conversions" conversion (EPSG:9602) can be either:
+                     *
+                     *    - "Ellipsoid_To_Geocentric"
+                     *    - "Geocentric_To_Ellipsoid"
+                     *
+                     * EPSG defines both by a single operation, but Apache SIS needs to distinguish them.
+                     */
+                    final String method = ((AbstractProvider) provider).resolveAmbiguity(this);
+                    if (method != null) {
+                        provider = factory.getOperationMethod(method);
+                    }
+                }
+                final MathTransform transform;
+                if (provider instanceof MathTransformProvider) try {
+                    transform = ((MathTransformProvider) provider).createMathTransform(this);
+                } catch (IllegalArgumentException | IllegalStateException exception) {
+                    throw new InvalidGeodeticParameterException(exception.getLocalizedMessage(), exception);
+                } else {
+                    throw new UnimplementedServiceException(Errors.format(
+                            Errors.Keys.UnsupportedImplementation_1, Classes.getClass(provider)));
+                }
+                /*
+                 * Make sure that the number of dimensions is compatible with the OperationMethod instance.
+                 * Then make final adjustment for axis directions and units of measurement.
+                 */
+                if (provider instanceof AbstractProvider) {
+                    provider = ((AbstractProvider) provider).variantFor(transform);
+                }
+                return factory.unique(factory.swapAndScaleAxes(transform, this));
+            } catch (FactoryException exception) {
+                if (warning != null) {
+                    exception.addSuppressed(warning);
+                }
+                throw exception;
+            } finally {
+                factory.lastMethod.set(provider);
+            }
+        }
+
+        /**
          * Returns a string representation of this context for debugging purposes.
-         * Current implementation write the name of source/target coordinate systems and ellipsoids.
-         * If {@linkplain #getContextualParameters() contextual parameters} have already been inferred,
+         * The current implementation writes the name of source/target coordinate systems and ellipsoids.
+         * If the {@linkplain #getContextualParameters() contextual parameters} have already been inferred,
          * then their names are appended with inconsistent parameters (if any) written on a separated line.
          *
          * @return a string representation of this context.
@@ -1186,32 +1352,11 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *     }
      *
      * Sometimes the {@code "semi_major"} and {@code "semi_minor"} parameter values are not explicitly provided,
-     * but rather inferred from the {@linkplain org.apache.sis.referencing.datum.DefaultGeodeticDatum geodetic
-     * datum} of the source Coordinate Reference System. If the given {@code context} argument is non-null,
-     * then this method will use those contextual information for:
-     *
-     * <ol>
-     *   <li>Inferring the {@code "semi_major"}, {@code "semi_minor"}, {@code "src_semi_major"},
-     *       {@code "src_semi_minor"}, {@code "tgt_semi_major"} or {@code "tgt_semi_minor"} parameter values
-     *       from the {@linkplain org.apache.sis.referencing.datum.DefaultEllipsoid ellipsoids} associated to
-     *       the source or target CRS, if those parameters are not explicitly given and if they are relevant
-     *       for the coordinate operation method.</li>
-     *   <li>{@linkplain #createConcatenatedTransform Concatenating} the parameterized transform
-     *       with any other transforms required for performing units changes and coordinates swapping.</li>
-     * </ol>
-     *
-     * The complete group of parameters, including {@code "semi_major"}, {@code "semi_minor"} or other calculated values,
-     * can be obtained by a call to {@link Context#getCompletedParameters()} after {@code createParameterizedTransform(…)}
-     * returned. Note that the completed parameters may only have additional parameters compared to the given parameter
-     * group; existing parameter values should not be modified.
-     *
-     * <p>The {@code OperationMethod} instance used by this constructor can be obtained by a call to
-     * {@link #getLastMethodUsed()}.</p>
+     * but rather inferred from the {@linkplain org.opengis.referencing.datum.GeodeticDatum geodetic
+     * reference frame} of the source Coordinate Reference System.
      *
      * @param  parameters  the parameter values. The {@linkplain ParameterDescriptorGroup#getName() parameter group name}
-     *                     shall be the name of the desired {@linkplain DefaultOperationMethod operation method}.
-     * @param  context     information about the context (for example source and target coordinate systems)
-     *                     in which the new transform is going to be used, or {@code null} if none.
+     *         shall be the name of the desired {@linkplain DefaultOperationMethod operation method}.
      * @return the transform created from the given parameters.
      * @throws NoSuchIdentifierException if there is no method for the given parameter group name.
      * @throws FactoryException if the object creation failed. This exception is thrown
@@ -1222,8 +1367,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @see #getLastMethodUsed()
      * @see org.apache.sis.parameter.ParameterBuilder#createGroupForMapProjection(ParameterDescriptor...)
      */
-    public MathTransform createParameterizedTransform(final ParameterValueGroup parameters,
-            final Context context) throws NoSuchIdentifierException, FactoryException
+    @Override
+    public MathTransform createParameterizedTransform(final ParameterValueGroup parameters)
+            throws NoSuchIdentifierException, FactoryException
     {
         OperationMethod  method  = null;
         RuntimeException failure = null;
@@ -1247,50 +1393,30 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             } catch (NoSuchIdentifierException exception) {
                 if (methodIdentifier.equals(methodName)) {
                     throw exception;
+                } else try {
+                    method = getOperationMethod(methodName);
+                } catch (NoSuchIdentifierException e) {
+                    e.addSuppressed(exception);
+                    throw e;
                 }
-                method = getOperationMethod(methodName);
                 Logging.recoverableException(AbstractMathTransform.LOGGER,
                         DefaultMathTransformFactory.class, "createParameterizedTransform", exception);
-            }
-            if (!(method instanceof MathTransformProvider)) {
-                throw new NoSuchIdentifierException(Errors.format(          // For now, handle like an unknown operation.
-                        Errors.Keys.UnsupportedImplementation_1, Classes.getClass(method)), methodName);
             }
             /*
              * Will catch only exceptions that may be the result of improper parameter usage (e.g. a value out
              * of range). Do not catch exceptions caused by programming errors (e.g. null pointer exception).
              */
-            try {
-                /*
-                 * If the user's parameters do not contain semi-major and semi-minor axis lengths, infer
-                 * them from the ellipsoid. We have to do that because those parameters are often omitted,
-                 * since the standard place where to provide this information is in the ellipsoid object.
-                 */
-                if (context != null) {
-                    context.factory = this;
-                    failure = context.completeParameters(method, parameters);
-                    method  = context.provider;
-                    transform = ((MathTransformProvider) method).createMathTransform(context);
-                } else {
-                    transform = ((MathTransformProvider) method).createMathTransform(this, parameters);
-                }
+            if (method instanceof MathTransformProvider) try {
+                transform = ((MathTransformProvider) method).createMathTransform(this, parameters);
             } catch (IllegalArgumentException | IllegalStateException exception) {
                 throw new InvalidGeodeticParameterException(exception.getLocalizedMessage(), exception);
+            } else {
+                throw new UnimplementedServiceException(Errors.format(
+                        Errors.Keys.UnsupportedImplementation_1, Classes.getClass(method)));
             }
-            /*
-             * Cache the transform that we just created and make sure that the number of dimensions
-             * is compatible with the OperationMethod instance. Then make final adjustment for axis
-             * directions and units of measurement.
-             */
             transform = unique(transform);
             if (method instanceof AbstractProvider) {
                 method = ((AbstractProvider) method).variantFor(transform);
-                if (context != null) {
-                    context.provider = method;
-                }
-            }
-            if (context != null) {
-                transform = swapAndScaleAxes(transform, context);
             }
         } catch (FactoryException e) {
             if (failure != null) {
@@ -1301,6 +1427,52 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             lastMethod.set(method);     // May be null in case of failure, which is intended.
         }
         return transform;
+    }
+
+    /**
+     * Creates a transform from a group of parameters and a context.
+     *
+     * @param  parameters  the parameter values.
+     * @param  context     information about the context, or {@code null} if none.
+     * @return the transform created from the given parameters.
+     * @throws NoSuchIdentifierException if there is no method for the given parameter group name.
+     * @throws FactoryException if the object creation failed.
+     * @deprecated Replaced by a builder pattern with {@link #builder(String)}.
+     */
+    @Deprecated(since="1.5", forRemoval=true)
+    public MathTransform createParameterizedTransform(final ParameterValueGroup parameters,
+            final Context context) throws NoSuchIdentifierException, FactoryException
+    {
+        // TODO: After the deprecated methods have been removed
+        //   - Make the `Context.parameters` field final (initialized in constructor).
+        //   - Delete `Context.ensureCompatibleParameters(boolean)`.
+        //   - Remove the null check on `Context.getCompletedParameters()` method body.
+        if (context == null) {
+            return createParameterizedTransform(parameters);
+        }
+        final ParameterDescriptorGroup descriptor = parameters.getDescriptor();
+        final String methodName = descriptor.getName().getCode();
+        String methodIdentifier = IdentifiedObjects.toString(IdentifiedObjects.getIdentifier(descriptor, Citations.EPSG));
+        if (methodIdentifier == null) {
+            methodIdentifier = methodName;
+        }
+        OperationMethod method;
+        try {
+            method = getOperationMethod(methodIdentifier);
+        } catch (NoSuchIdentifierException exception) {
+            if (methodIdentifier.equals(methodName)) {
+                throw exception;
+            }
+            method = getOperationMethod(methodName);
+            Logging.recoverableException(AbstractMathTransform.LOGGER,
+                    DefaultMathTransformFactory.class, "createParameterizedTransform", exception);
+        }
+        context.factory    = this;
+        context.provider   = method;
+        context.parameters = parameters;
+        context.completedParameters = false;
+        context.ensureCompatibleParameters(false);
+        return context.create();
     }
 
     /**
@@ -1509,9 +1681,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         ArgumentChecks.ensureNonNull("baseCRS",    baseCRS);
         ArgumentChecks.ensureNonNull("parameters", parameters);
         ArgumentChecks.ensureNonNull("derivedCS",  derivedCS);
-        final Context context = ReferencingUtilities.createTransformContext(baseCRS, null);
-        context.setTarget(derivedCS);
-        return createParameterizedTransform(parameters, context);
+        var builder = ReferencingUtilities.builder(this, parameters, baseCRS, null);
+        builder.setTargetAxes(derivedCS, null);
+        return builder.create();
     }
 
     /**
@@ -1551,22 +1723,17 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                  * EllipsoidalCS and SphericalCS or other coordinate systems.
                  */
                 if ((isEllipsoidalSource ? target : source) instanceof CartesianCS) {
-                    final Context context = new Context();
-                    final EllipsoidalCS cs;
-                    final String operation;
+                    final var context = new Context(this, getOperationMethod(
+                            isEllipsoidalSource ? GeographicToGeocentric.NAME
+                                                : GeocentricToGeographic.NAME));
                     if (isEllipsoidalSource) {
-                        operation = GeographicToGeocentric.NAME;
-                        context.setSource(cs = (EllipsoidalCS) source);
-                        context.setTarget(target);
-                        context.sourceEllipsoid = ellipsoid;
+                        context.setSourceAxes(source, ellipsoid);
+                        context.setTargetAxes(target, null);
                     } else {
-                        operation = GeocentricToGeographic.NAME;
-                        context.setSource(source);
-                        context.setTarget(cs = (EllipsoidalCS) target);
-                        context.targetEllipsoid = ellipsoid;
+                        context.setSourceAxes(source, null);
+                        context.setTargetAxes(target, ellipsoid);
                     }
-                    final ParameterValueGroup pg = getDefaultParameters(operation);
-                    return createParameterizedTransform(pg, context);
+                    return context.create();
                 }
             }
         }
@@ -1764,8 +1931,11 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *
      * @see #createParameterizedTransform(ParameterValueGroup, Context)
      * @see Context#getMethodUsed()
+     *
+     * @deprecated Replaced by {@link MathTransform.Builder#getMethod()}.
      */
     @Override
+    @Deprecated(since = "1.5")
     public OperationMethod getLastMethodUsed() {
         return lastMethod.get();
     }

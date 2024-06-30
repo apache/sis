@@ -102,6 +102,7 @@ public final class MathTransformFactoryMock implements MathTransformFactory {
      * @return the method given at construction time.
      */
     @Override
+    @Deprecated
     public OperationMethod getLastMethodUsed() {
         return method;
     }
@@ -192,9 +193,21 @@ public final class MathTransformFactoryMock implements MathTransformFactory {
      * @return never returned.
      */
     @Override
+    @Deprecated
     public MathTransform createBaseToDerived(CoordinateReferenceSystem baseCRS,
             ParameterValueGroup parameters, CoordinateSystem derivedCS)
     {
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Unimplemented method.
+     *
+     * @param  code  ignored.
+     * @return never returned.
+     */
+    @Override
+    public MathTransform.Builder builder(String code) {
         throw new UnsupportedOperationException();
     }
 

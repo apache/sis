@@ -468,8 +468,8 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
         final CoordinateReferenceSystem sourceCRS = super.getSourceCRS();
         final CoordinateReferenceSystem targetCRS = super.getTargetCRS();
         if (transform == null && sourceCRS != null && targetCRS != null && parameters != null) try {
-            transform = ReferencingUtilities.createBaseToDerived(DefaultMathTransformFactory.provider(),
-                                                                 sourceCRS, parameters, targetCRS);
+            transform = ReferencingUtilities.builder(DefaultMathTransformFactory.provider(),
+                                                     parameters, sourceCRS, targetCRS).create();
         } catch (FactoryException e) {
             Context.warningOccured(Context.current(), AbstractSingleOperation.class, "afterUnmarshal", e, true);
         }

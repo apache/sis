@@ -513,6 +513,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                                                             final GeodeticCRS targetCRS)
             throws FactoryException
     {
+        final CoordinateSystem sourceCS = sourceCRS.getCoordinateSystem();
+        final CoordinateSystem targetCS = targetCRS.getCoordinateSystem();
         final GeodeticDatum sourceDatum = sourceCRS.getDatum();
         final GeodeticDatum targetDatum = targetCRS.getDatum();
         Matrix datumShift = null;
@@ -525,8 +527,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * prime meridians are not the same, then the target meridian must be Greenwich.
          */
         final DefaultMathTransformFactory.Context context = new MathTransformContext(sourceDatum, targetDatum);
-        context.setSource(sourceCRS);
-        context.setTarget(targetCRS);
+        context.setSourceAxes(sourceCS, sourceDatum.getEllipsoid());
+        context.setTargetAxes(targetCS, targetDatum.getEllipsoid());
         /*
          * If both CRS use the same datum and the same prime meridian, then the coordinate operation is only axis
          * swapping, unit conversion or change of coordinate system type (Ellipsoidal ↔ Cartesian ↔ Spherical).
@@ -536,8 +538,6 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          */
         Identifier identifier;
         boolean isGeographicToGeocentric = false;
-        final CoordinateSystem sourceCS = context.getSourceCS();
-        final CoordinateSystem targetCS = context.getTargetCS();
         if (equalsIgnoreMetadata(sourceDatum, targetDatum)) {
             final boolean isGeocentricToGeographic;
             isGeographicToGeocentric = (sourceCS instanceof EllipsoidalCS && targetCS instanceof CartesianCS);
@@ -612,8 +612,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                 final CoordinateSystem normalized = CommonCRS.WGS84.geocentric().getCoordinateSystem();
                 before = mtFactory.createCoordinateSystemChange(sourceCS, normalized, sourceDatum.getEllipsoid());
                 after  = mtFactory.createCoordinateSystemChange(normalized, targetCS, targetDatum.getEllipsoid());
-                context.setSource(normalized);
-                context.setTarget(normalized);
+                context.setSourceAxes(normalized, null);
+                context.setTargetAxes(normalized, null);
                 /*
                  * The name of the `parameters` group determines the `OperationMethod` later in this method.
                  * We cannot leave that name to "Affine" if `before` or `after` transforms are not identity.
@@ -655,7 +655,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                  */
                 before = mtFactory.createCoordinateSystemChange(sourceCS, targetCS,
                         (sourceCS instanceof EllipsoidalCS ? sourceDatum : targetDatum).getEllipsoid());
-                context.setSource(targetCS);
+                context.setSourceAxes(targetCS, null);
                 method = mtFactory.getLastMethodUsed();
             }
         }
@@ -675,7 +675,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          */
         MathTransform transform = mtFactory.createParameterizedTransform(parameters, context);
         if (method == null) {
-            method = context.getMethodUsed();
+            method = context.getMethod().orElse(null);
         }
         if (before != null) {
             parameters = null;      // Providing parameters would be misleading because they apply to only a step of the operation.

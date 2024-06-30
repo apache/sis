@@ -2950,7 +2950,8 @@ next:                   while (r.next()) {
                          */
                         opProperties = new HashMap<>(opProperties);             // Because this class uses a shared map.
                         final MathTransformFactory mtFactory = owner.mtFactory;
-                        final MathTransform mt = ReferencingUtilities.createBaseToDerived(mtFactory, sourceCRS, parameters, targetCRS);
+                        final MathTransform mt = ReferencingUtilities.builder(
+                                mtFactory, parameters, sourceCRS, targetCRS).create();
                         /*
                          * Give a hint to the factory about the type of the coordinate operation. ISO 19111 defines
                          * Conversion and Transformation, but SIS also have more specific sub-types.  We begin with

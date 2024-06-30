@@ -53,7 +53,6 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
@@ -1023,13 +1022,11 @@ class CoordinateOperationRegistry {
             CoordinateReferenceSystem crs;
             if (Utilities.equalsApproximately(sourceCRS, crs = operation.getSourceCRS())) sourceCRS = crs;
             if (Utilities.equalsApproximately(targetCRS, crs = operation.getTargetCRS())) targetCRS = crs;
-            final MathTransformFactory mtFactory = factorySIS.getMathTransformFactory();
-            if (mtFactory instanceof DefaultMathTransformFactory) {
-                MathTransform mt = ((DefaultMathTransformFactory) mtFactory).createParameterizedTransform(
-                        parameters, ReferencingUtilities.createTransformContext(sourceCRS, targetCRS));
-                return factorySIS.createSingleOperation(IdentifiedObjects.getProperties(operation),
-                        sourceCRS, targetCRS, null, operation.getMethod(), mt);
-            }
+            var builder = ReferencingUtilities.builder(
+                    factorySIS.getMathTransformFactory(), parameters, sourceCRS, targetCRS);
+            final MathTransform mt = builder.create();      // Must be before `operation.getMethod()`.
+            return factorySIS.createSingleOperation(IdentifiedObjects.getProperties(operation),
+                    sourceCRS, targetCRS, null, operation.getMethod(), mt);
         } else {
             // Should never happen because parameters are mandatory, but let be safe.
             log(resources().getLogRecord(Level.WARNING, Resources.Keys.MissingParameterValues_1,
@@ -1141,22 +1138,20 @@ class CoordinateOperationRegistry {
             if (matrix == null) {
                 if (op instanceof SingleOperation) {
                     final MathTransformFactory mtFactory = factorySIS.getMathTransformFactory();
-                    if (mtFactory instanceof DefaultMathTransformFactory) {
-                        if (forward) sourceCRS = toGeodetic3D(sourceCRS, source3D);
-                        else         targetCRS = toGeodetic3D(targetCRS, target3D);
-                        final DefaultMathTransformFactory.Context context;
-                        final MathTransform mt;
-                        try {
-                            context = ReferencingUtilities.createTransformContext(sourceCRS, targetCRS);
-                            mt = ((DefaultMathTransformFactory) mtFactory).createParameterizedTransform(
-                                    ((SingleOperation) op).getParameterValues(), context);
-                        } catch (InvalidGeodeticParameterException e) {
-                            log(null, e);
-                            break;
-                        }
-                        operations.set(recreate(op, sourceCRS, targetCRS, mt, context.getMethodUsed()));
-                        return true;
+                    if (forward) sourceCRS = toGeodetic3D(sourceCRS, source3D);
+                    else         targetCRS = toGeodetic3D(targetCRS, target3D);
+                    final MathTransform.Builder builder;
+                    final MathTransform mt;
+                    try {
+                        final var parameters = ((SingleOperation) op).getParameterValues();
+                        builder = ReferencingUtilities.builder(mtFactory, parameters, sourceCRS, targetCRS);
+                        mt = builder.create();
+                    } catch (InvalidGeodeticParameterException e) {
+                        log(null, e);
+                        break;
                     }
+                    operations.set(recreate(op, sourceCRS, targetCRS, mt, builder.getMethod().orElse(null)));
+                    return true;
                 }
                 break;
             }

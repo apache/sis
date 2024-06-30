@@ -506,7 +506,8 @@ next:   for (int i=components.size(); --i >= 0;) {
             if (parameters == null) {
                 throw new NullPointerException(Errors.format(Errors.Keys.NullArgument_1, "transform"));
             }
-            transform = ReferencingUtilities.createBaseToDerived(getMathTransformFactory(), sourceCRS, parameters, targetCRS);
+            transform = ReferencingUtilities.builder(
+                    getMathTransformFactory(), parameters, sourceCRS, targetCRS).create();
         }
         /*
          * The "operationType" property is currently undocumented. The intent is to help this factory method in

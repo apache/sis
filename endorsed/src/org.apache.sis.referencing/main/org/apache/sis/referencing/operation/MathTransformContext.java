@@ -44,11 +44,6 @@ import org.apache.sis.measure.Units;
  */
 final class MathTransformContext extends Context {
     /**
-     * For cross-version compatibility.
-     */
-    private static final long serialVersionUID = 8765209303733056283L;
-
-    /**
      * The longitude of the source and target prime meridian, in number of degrees East of Greenwich.
      */
     private double sourceMeridian, targetMeridian;

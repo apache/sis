@@ -310,9 +310,9 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
     @Test
     public void testSwapAndScaleAxes() throws FactoryException {
         final DefaultMathTransformFactory factory = factory();
-        final DefaultMathTransformFactory.Context context = new DefaultMathTransformFactory.Context();
-        context.setSource(HardCodedCS.GEODETIC_3D);
-        context.setTarget(HardCodedCS.CARTESIAN_3D);
+        final var context = new DefaultMathTransformFactory.Context();
+        context.setSourceAxes(HardCodedCS.GEODETIC_3D,  null);
+        context.setTargetAxes(HardCodedCS.CARTESIAN_3D, null);
         /*
          * Simulate a case where the parameterized transform is a two-dimensional map projection,
          * but the input and output CRS are three-dimensional geographic and projected CRS respectively.
@@ -324,8 +324,8 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
         /*
          * Transform from 3D to 2D. Height dimension is dropped.
          */
-        context.setSource(HardCodedCS.GEODETIC_3D);
-        context.setTarget(HardCodedCS.GEODETIC_2D);
+        context.setSourceAxes(HardCodedCS.GEODETIC_3D, null);
+        context.setTargetAxes(HardCodedCS.GEODETIC_2D, null);
         mt = factory.swapAndScaleAxes(MathTransforms.identity(2), context);
         var expected = Matrices.create(3, 4, new double[] {
             1, 0, 0, 0,
@@ -337,8 +337,8 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
          * Transform from 2D to 3D. Coordinate values in the height dimension are unknown (NaN).
          * This case happen when the third dimension is handled as a "pass through" dimension.
          */
-        context.setSource(HardCodedCS.GEODETIC_2D);
-        context.setTarget(HardCodedCS.GEODETIC_3D);
+        context.setSourceAxes(HardCodedCS.GEODETIC_2D, null);
+        context.setTargetAxes(HardCodedCS.GEODETIC_3D, null);
         mt = factory.swapAndScaleAxes(MathTransforms.identity(2), context);
         expected = Matrices.create(4, 3, new double[] {
             1, 0, 0,
@@ -362,8 +362,8 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
         /*
          * Test error message when adding a dimension that is not ellipsoidal height.
          */
-        context.setSource(HardCodedCS.CARTESIAN_2D);
-        context.setTarget(HardCodedCS.CARTESIAN_3D);
+        context.setSourceAxes(HardCodedCS.CARTESIAN_2D, null);
+        context.setTargetAxes(HardCodedCS.CARTESIAN_3D, null);
         var e = assertThrows(InvalidGeodeticParameterException.class,
                 () -> factory.swapAndScaleAxes(MathTransforms.identity(2), context),
                 "Should not have accepted the given coordinate systems.");

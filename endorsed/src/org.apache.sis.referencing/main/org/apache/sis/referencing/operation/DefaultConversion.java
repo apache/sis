@@ -237,41 +237,31 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
             if (parameters == null) {
                 throw new IllegalArgumentException(Resources.format(Resources.Keys.UnspecifiedParameterValues));
             }
-            if (factory instanceof DefaultMathTransformFactory) {
-                /*
-                 * Apache SIS specific API (not yet defined in GeoAPI, but could be proposed).
-                 * Note that setTarget(…) intentionally uses only the CoordinateSystem instead of the full
-                 * CoordinateReferenceSystem because the targetCRS is typically under construction when this
-                 * method in invoked, and attempts to use it can cause NullPointerException.
-                 */
-                final DefaultMathTransformFactory.Context context;
-                if (target instanceof DerivedCRS) {
-                    context = ReferencingUtilities.createTransformContext(source, null);
-                    context.setTarget(target.getCoordinateSystem());    // Using `target` would be unsafe here.
-                } else {
-                    context = ReferencingUtilities.createTransformContext(source, target);
-                }
-                transform = ((DefaultMathTransformFactory) factory).createParameterizedTransform(parameters, context);
+            /*
+             * Note that setTargetAxes(…) intentionally uses only the CoordinateSystem instead of the full
+             * CoordinateReferenceSystem because the targetCRS is typically under construction when this
+             * method in invoked, and attempts to use it can cause NullPointerException.
+             */
+            final boolean isDerived = (target instanceof DerivedCRS);
+            var builder = ReferencingUtilities.builder(factory, parameters, source, isDerived ? null : target);
+            if (isDerived) {
+                builder.setTargetAxes(target.getCoordinateSystem(), null);
+            }
+            transform = builder.create();
+            if (builder instanceof DefaultMathTransformFactory.Context) {
+                final var context = (DefaultMathTransformFactory.Context) builder;
                 setParameterValues(context.getCompletedParameters(), context.getContextualParameters());
-            } else {
-                /*
-                 * Fallback for non-SIS implementation. Equivalent to the above code, except that we can
-                 * not get the parameters completed with semi-major and semi-minor axis lengths. Most of
-                 * the code should work anyway.
-                 */
-                transform = factory.createBaseToDerived(source, parameters, target.getCoordinateSystem());
             }
         } else {
             /*
              * If the user specified explicitly a MathTransform, we may still need to swap or scale axes.
              * If this conversion is a defining conversion (which is usually the case when creating a new
-             * ProjectedCRS), then DefaultMathTransformFactory has a specialized createBaseToDerived(…)
-             * method for this job.
+             * ProjectedCRS), then MathTransformFactory has a specialized builder(…) method for this job.
              */
             if (sourceCRS == null && targetCRS == null && factory instanceof DefaultMathTransformFactory) {
                 final var context = new DefaultMathTransformFactory.Context();
-                context.setSource(source.getCoordinateSystem());
-                context.setTarget(target.getCoordinateSystem());    // See comment on the other setTarget(…) call.
+                context.setSourceAxes(source.getCoordinateSystem(), null);
+                context.setTargetAxes(target.getCoordinateSystem(), null);    // See comment on the other setTargetAxes(…) call.
                 transform = ((DefaultMathTransformFactory) factory).swapAndScaleAxes(transform, context);
             } else {
                 /*
