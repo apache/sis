@@ -159,6 +159,7 @@ module org.apache.sis.metadata {
     exports org.apache.sis.metadata.sql.privy to
             org.apache.sis.referencing,
             org.apache.sis.storage.sql,
+            org.apache.sis.storage.geopackage,      // In the "incubator" sub-project.
             org.apache.sis.referencing.database;    // In the "non-free" subproject.
 
     exports org.apache.sis.metadata.simple to

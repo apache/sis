@@ -56,6 +56,7 @@ module org.apache.sis.storage {
             org.apache.sis.storage.coveragejson,        // In the "incubator" sub-project.
             org.apache.sis.storage.gimi,                // In the "incubator" sub-project.
             org.apache.sis.storage.shapefile,           // In the "incubator" sub-project.
+            org.apache.sis.storage.geopackage,          // In the "incubator" sub-project.
             org.apache.sis.util,                        // For the "About" command.
             org.apache.sis.console,
             org.apache.sis.openoffice,
@@ -69,6 +70,7 @@ module org.apache.sis.storage {
             org.apache.sis.storage.coveragejson,        // In the "incubator" sub-project.
             org.apache.sis.storage.gimi,                // In the "incubator" sub-project.
             org.apache.sis.storage.shapefile,           // In the "incubator" sub-project.
+            org.apache.sis.storage.geopackage,          // In the "incubator" sub-project.
             org.apache.sis.cloud.aws,
             org.apache.sis.console,
             org.apache.sis.gui;                         // In the "optional" sub-project.

@@ -47,6 +47,7 @@ dependencies {
     api(files("../endorsed/build/classes/java/main/org.apache.sis.referencing"))
     api(files("../endorsed/build/classes/java/main/org.apache.sis.feature"))
     api(files("../endorsed/build/classes/java/main/org.apache.sis.storage"))
+    api(files("../endorsed/build/classes/java/main/org.apache.sis.storage.sql"))
     api(files("../endorsed/build/classes/java/main/org.apache.sis.portrayal"))
 
     // Test dependencies
@@ -57,6 +58,8 @@ dependencies {
      * in the global `settings.gradle.kts` because incubated modules are not released.
      */
     implementation(group = "org.antlr",       name = "antlr4-maven-plugin", version = "4.11.1")
+    implementation(group = "org.xerial",      name = "sqlite-jdbc",         version = "3.45.1.0")
+    implementation(group = "com.zaxxer",      name = "HikariCP",            version = "5.1.0")
     compileOnly   (group = "jakarta.servlet", name = "jakarta.servlet-api", version = "6.0.0")
     compileOnly   (group = "org.osgi",        name = "osgi.core",           version = "8.0.0")
     antlr         (group = "org.antlr",       name = "antlr4",              version = "4.11.1")
@@ -185,6 +188,18 @@ publishing {
             pom {
                 name        = "Apache SIS GIMI Coverage storage"
                 description = "Read files in ISOBMFF GIMI format."
+            }
+        }
+        create<MavenPublication>("storage.geopackage") {
+            var module = "org.apache.sis.storage.geopackage"
+            groupId    = "org.apache.sis.storage"
+            artifactId = "sis-geopackage"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS GeoPackage storage"
+                description = "Read and write files in the GeoPackage format."
             }
         }
         create<MavenPublication>("storage.gsf") {

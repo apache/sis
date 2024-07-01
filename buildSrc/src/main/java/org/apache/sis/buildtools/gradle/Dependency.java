@@ -74,6 +74,7 @@ public final class Dependency {
         Map.entry("storage.shapefile",        "core:sis-shapefile"),
         Map.entry("storage.gimi",             "core:sis-gimi"),
         Map.entry("storage.gsf",              "core:sis-gsf"),
+        Map.entry("storage.geopackage",       "core:sis-geopackage"),
         Map.entry("storage.coveragejson",     "core:sis-coveragejson"),
         Map.entry("portrayal.map",            "core:sis-portrayal-map"),
         Map.entry("webapp",                   "application:sis-webapp")
