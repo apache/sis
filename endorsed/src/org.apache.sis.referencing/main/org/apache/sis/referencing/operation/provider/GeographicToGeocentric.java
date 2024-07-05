@@ -27,7 +27,6 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.transform.EllipsoidToCentricTransform;
-import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.privy.Constants;
@@ -91,8 +90,10 @@ public final class GeographicToGeocentric extends AbstractProvider {
      *         {@code "Ellipsoid_To_Geocentric"} operation, or {@code null} if none.
      */
     @Override
-    public String resolveAmbiguity(final DefaultMathTransformFactory.Context context) {
-        if (context.getSourceCS() instanceof CartesianCS && context.getTargetCS() instanceof EllipsoidalCS) {
+    public String resolveAmbiguity(final Context context) {
+        if (CartesianCS.class.isAssignableFrom(context.getSourceCSType()) &&
+            EllipsoidalCS.class.isAssignableFrom(context.getTargetCSType()))
+        {
             return GeocentricToGeographic.NAME;
         }
         return super.resolveAmbiguity(context);

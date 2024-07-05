@@ -32,6 +32,7 @@ import java.util.logging.LogRecord;
 import java.util.function.Predicate;
 import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
+import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Citation;
@@ -62,7 +63,6 @@ import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.privy.EllipsoidalHeightCombiner;
 import org.apache.sis.referencing.privy.PositionalAccuracyConstant;
-import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.internal.DeferredCoordinateOperation;
 import org.apache.sis.referencing.internal.Resources;
@@ -124,11 +124,11 @@ class CoordinateOperationRegistry {
     static final Identifier AXIS_CHANGES = createIdentifier(Vocabulary.Keys.AxisChanges);
 
     /**
-     * The identifier for a transformation which is a datum shift without
-     * {@link org.apache.sis.referencing.datum.BursaWolfParameters}.
+     * The identifier for a transformation which is a datum shift without Bursa-Wolf parameters.
      * Only the changes in ellipsoid axis-length are taken in account.
-     * Such ellipsoid shifts are approximations and may have 1 kilometre error.
+     * Such "ellipsoid shifts" are approximations and may have 1 kilometre error.
      *
+     * @see org.apache.sis.referencing.datum.BursaWolfParameters
      * @see org.apache.sis.referencing.privy.PositionalAccuracyConstant#DATUM_SHIFT_OMITTED
      */
     static final Identifier ELLIPSOID_CHANGE = createIdentifier(Vocabulary.Keys.EllipsoidChange);
@@ -1331,13 +1331,10 @@ class CoordinateOperationRegistry {
             } else {
                 final ParameterDescriptorGroup descriptor = AbstractCoordinateOperation.getParameterDescriptors(transform);
                 if (descriptor != null) {
-                    final Identifier name = descriptor.getName();
-                    if (name != null) {
-                        final MathTransformFactory mtFactory = factorySIS.getMathTransformFactory();
-                        var c = new ReferencingFactoryContainer(null, null, null, null, factory, mtFactory);
-                        method = c.findOperationMethod(name.getCode());
-                    }
-                    if (method == null) {
+                    try {
+                        method = CoordinateOperations.findMethod(factorySIS.getMathTransformFactory(), descriptor);
+                    } catch (NoSuchIdentifierException e) {
+                        recoverableException("createFromMathTransform", e);
                         method = factory.createOperationMethod(properties, descriptor);
                     }
                 }

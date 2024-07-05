@@ -16,12 +16,14 @@
  */
 package org.apache.sis.referencing.operation.transform;
 
+import java.util.Map;
 import java.util.OptionalInt;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterNotFoundException;
 import org.opengis.parameter.InvalidParameterNameException;
 import org.opengis.parameter.InvalidParameterValueException;
+import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 
@@ -134,6 +136,14 @@ public interface MathTransformProvider {
      * The parameter values that define the transform to create, together with its context.
      * The context includes the desired number of source and target dimensions,
      * and the factory to use if the provider needs to create math transform steps.
+     * The context intentionally (by design) excludes the following information:
+     *
+     * <ul>
+     *   <li>Details about coordinate systems (only their types is provided),
+     *       because axis order and unit conversions are handled separately.</li>
+     *   <li>Datum, because inferring datum shifts is the task of other classes,
+     *       generally requiring a connection to a geodetic registry.</li>
+     * </ul>
      *
      * <h2>Purpose of the dimension properties</h2>
      * If the operation method accepts different number of dimensions (for example, operations
@@ -177,6 +187,8 @@ public interface MathTransformProvider {
          * Other operation methods will fallback on a hard-coded number of dimensions, typically 2 or 3.</p>
          *
          * @return desired number of source dimensions.
+         *
+         * @see MathTransform#getSourceDimensions()
          */
         default OptionalInt getSourceDimensions() {
             return OptionalInt.empty();
@@ -193,9 +205,58 @@ public interface MathTransformProvider {
          * Other operation methods will fallback on a hard-coded number of dimensions, typically 2 or 3.</p>
          *
          * @return desired number of target dimensions.
+         *
+         * @see MathTransform#getTargetDimensions()
          */
         default OptionalInt getTargetDimensions() {
             return OptionalInt.empty();
+        }
+
+        /**
+         * Returns the type of the source coordinate system.
+         * The returned value may be an interface or an implementation class.
+         * If the coordinate system type is unknown, then this method returns {@code CoordinateSystem.class}.
+         *
+         * @return the type of the source coordinate system, or {@code CoordinateSystem.class} if unknown.
+         */
+        default Class<? extends CoordinateSystem> getSourceCSType() {
+            return CoordinateSystem.class;
+        }
+
+        /**
+         * Returns the type of the target coordinate system.
+         * The returned value may be an interface or an implementation class.
+         * If the coordinate system type is unknown, then this method returns {@code CoordinateSystem.class}.
+         *
+         * @return the type of the target coordinate system, or {@code CoordinateSystem.class} if unknown.
+         */
+        default Class<? extends CoordinateSystem> getTargetCSType() {
+            return CoordinateSystem.class;
+        }
+
+        /**
+         * Returns the names of parameters that have been inferred from the context.
+         * The set of keys can contain any of {@code "dim"},
+         * {@code     "semi_major"}, {@code     "semi_minor"},
+         * {@code "src_semi_major"}, {@code "src_semi_minor"},
+         * {@code "tgt_semi_major"}, {@code "tgt_semi_minor"} and/or
+         * {@code "inverse_flattening"}, depending on the operation method used.
+         * The parameters named in that set are included in the parameters
+         * returned by {@link #getCompletedParameters()}.
+         *
+         * <h4>Associated Boolean values</h4>
+         * The associated Boolean in the map tells whether the named parameter value is really contextual.
+         * The Boolean is {@code TRUE} if the value was inferred from the context, or was explicitly set
+         * by the user to the same value as what would have been inferred from the context.
+         * OTherwise (i.e., if there is a mismatch between inferred and user-defined value),
+         * the Boolean is {@code FALSE}, a warning should be logged by the implementation,
+         * and the user-supplied value should have precedence in the parameters returned by
+         * {@link #getCompletedParameters()}.
+         *
+         * @return names of parameters inferred from context.
+         */
+        default Map<String,Boolean> getContextualParameters() {
+            return Map.of();
         }
 
         /**

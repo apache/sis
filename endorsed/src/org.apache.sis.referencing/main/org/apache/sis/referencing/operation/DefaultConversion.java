@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation;
 
 import java.util.Map;
+import java.util.HashMap;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import javax.measure.IncommensurableException;
@@ -31,7 +32,10 @@ import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.datum.Datum;
 import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
+import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
+import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.internal.Resources;
@@ -192,7 +196,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * @param transform   transform from positions in the source CRS to positions in the target CRS, or {@code null}.
      * @param parameters  the {@code transform} parameter values, or {@code null}.
      *
-     * @see DefaultMathTransformFactory#swapAndScaleAxes(MathTransform, DefaultMathTransformFactory.Context)
+     * @see DefaultMathTransformFactory#swapAndScaleAxes(MathTransform, MathTransformProvider.Context)
      */
     @SuppressWarnings("this-escape")    // False positive.
     public DefaultConversion(final Map<String,?>       properties,
@@ -230,12 +234,12 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
         if (transform == null) {
             /*
              * If the user did not specified explicitly a MathTransform, we will need to create it from the parameters.
-             * This case happen when creating a ProjectedCRS because the length of semi-major and semi-minor axes are
-             * often missing at defining conversion creation time. Since this constructor know those semi-axis lengths
+             * This case happens when creating a ProjectedCRS because the length of semi-major and semi-minor axes are
+             * often missing at defining conversion creation time. Since this constructor knows those semi-axis lengths
              * thanks to the `sourceCRS` argument, we can complete the parameters.
              */
             if (parameters == null) {
-                throw new IllegalArgumentException(Resources.format(Resources.Keys.UnspecifiedParameterValues));
+                throw new InvalidGeodeticParameterException(Resources.format(Resources.Keys.UnspecifiedParameterValues));
             }
             /*
              * Note that setTargetAxes(…) intentionally uses only the CoordinateSystem instead of the full
@@ -248,27 +252,27 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                 builder.setTargetAxes(target.getCoordinateSystem(), null);
             }
             transform = builder.create();
-            if (builder instanceof DefaultMathTransformFactory.Context) {
-                final var context = (DefaultMathTransformFactory.Context) builder;
-                setParameterValues(context.getCompletedParameters(), context.getContextualParameters());
+            if (builder instanceof MathTransformProvider.Context) {
+                final var context = (MathTransformProvider.Context) builder;
+                setParameterValues(context.getCompletedParameters(), new HashMap<>(context.getContextualParameters()));
             }
         } else {
             /*
              * If the user specified explicitly a MathTransform, we may still need to swap or scale axes.
              * If this conversion is a defining conversion (which is usually the case when creating a new
-             * ProjectedCRS), then MathTransformFactory has a specialized builder(…) method for this job.
+             * ProjectedCRS), then there is a method for this job.
              */
-            if (sourceCRS == null && targetCRS == null && factory instanceof DefaultMathTransformFactory) {
-                final var context = new DefaultMathTransformFactory.Context();
+            if (sourceCRS == null && targetCRS == null) {
+                var context = new ParameterizedTransformBuilder(factory, null);
                 context.setSourceAxes(source.getCoordinateSystem(), null);
                 context.setTargetAxes(target.getCoordinateSystem(), null);    // See comment on the other setTargetAxes(…) call.
-                transform = ((DefaultMathTransformFactory) factory).swapAndScaleAxes(transform, context);
+                transform = context.swapAndScaleAxes(transform);
             } else {
                 /*
-                 * If we cannot use our SIS factory implementation, or if this conversion is not a defining
-                 * conversion (i.e. if this is the conversion of an existing ProjectedCRS, in which case the
-                 * math transform may not be normalized), then we fallback on a simpler swapAndScaleAxes(…)
-                 * method defined in this class. This is needed for AbstractCRS.forConvention(AxisConvention).
+                 * If this conversion is not a defining conversion (i.e. if this is the conversion of an existing
+                 * `ProjectedCRS`, in which case the math transform may not be normalized), then we fallback on a
+                 * simpler `swapAndScaleAxes(…)` method defined in this class.
+                 * This is needed for `AbstractCRS.forConvention(AxisConvention)`.
                  */
                 transform = swapAndScaleAxes(transform, source, sourceCRS, interpDim, true,  factory);
                 transform = swapAndScaleAxes(transform, targetCRS, target, interpDim, false, factory);
@@ -350,8 +354,6 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
      * @throws FactoryException if the creation of a {@link MathTransform} from the {@linkplain #getParameterValues()
      *         parameter values}, or a {@linkplain CoordinateSystems#swapAndScaleAxes change of axis order or units}
      *         failed.
-     *
-     * @see DefaultMathTransformFactory#createParameterizedTransform(ParameterValueGroup, DefaultMathTransformFactory.Context)
      *
      * @since 1.5
      */
@@ -446,7 +448,7 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
                                                                 isSource ? transform : s);
             }
         } catch (IncommensurableException e) {
-            throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2,
+            throw new InvalidGeodeticParameterException(Errors.format(Errors.Keys.IllegalArgumentValue_2,
                     (isSource ? "sourceCRS" : "targetCRS"),
                     (isSource ?  sourceCRS  :  targetCRS).getName()), e);
         }

@@ -246,18 +246,6 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     }
 
     /**
-     * Returns the Apache SIS implementation of math transform factory.
-     * This method is used only when we need SIS-specific methods.
-     */
-    final DefaultMathTransformFactory getDefaultMathTransformFactory() {
-        MathTransformFactory factory = getMathTransformFactory();
-        if (factory instanceof DefaultMathTransformFactory) {
-            return (DefaultMathTransformFactory) factory;
-        }
-        return DefaultMathTransformFactory.provider();
-    }
-
-    /**
      * Returns the operation method of the given name. The given argument shall be either a method
      * {@linkplain DefaultOperationMethod#getName() name} (e.g. <q>Transverse Mercator</q>)
      * or one of its {@linkplain DefaultOperationMethod#getIdentifiers() identifiers} (e.g. {@code "EPSG:9807"}).
@@ -278,7 +266,7 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      */
     @Deprecated(since="1.5", forRemoval=true)
     public OperationMethod getOperationMethod(String name) throws FactoryException {
-        return new ReferencingFactoryContainer(null, null, null, null, null, mtFactory).findOperationMethod(name);
+        return CoordinateOperations.findMethod(mtFactory, name);
     }
 
     /**

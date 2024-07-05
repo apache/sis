@@ -33,7 +33,6 @@ import org.apache.sis.parameter.Parameterized;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.operation.DefaultConversion;
 import org.apache.sis.referencing.operation.matrix.Matrix2;
-import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.operation.provider.Mercator1SP;
 import org.apache.sis.referencing.operation.provider.MapProjection;
@@ -299,75 +298,6 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
             count++;
         }
         assertTrue(count >= 15, "Map projection methods not found.");
-    }
-
-    /**
-     * Tests {@link DefaultMathTransformFactory#swapAndScaleAxes(MathTransform, DefaultMathTransformFactory.Context)}
-     * with different number of dimensions.
-     *
-     * @throws FactoryException if the transform construction failed.
-     */
-    @Test
-    public void testSwapAndScaleAxes() throws FactoryException {
-        final DefaultMathTransformFactory factory = factory();
-        final var context = new DefaultMathTransformFactory.Context();
-        context.setSourceAxes(HardCodedCS.GEODETIC_3D,  null);
-        context.setTargetAxes(HardCodedCS.CARTESIAN_3D, null);
-        /*
-         * Simulate a case where the parameterized transform is a two-dimensional map projection,
-         * but the input and output CRS are three-dimensional geographic and projected CRS respectively.
-         */
-        MathTransform mt = factory.swapAndScaleAxes(MathTransforms.identity(2), context);
-        assertEquals(3, mt.getSourceDimensions());
-        assertEquals(3, mt.getTargetDimensions());
-        assertTrue(mt.isIdentity());
-        /*
-         * Transform from 3D to 2D. Height dimension is dropped.
-         */
-        context.setSourceAxes(HardCodedCS.GEODETIC_3D, null);
-        context.setTargetAxes(HardCodedCS.GEODETIC_2D, null);
-        mt = factory.swapAndScaleAxes(MathTransforms.identity(2), context);
-        var expected = Matrices.create(3, 4, new double[] {
-            1, 0, 0, 0,
-            0, 1, 0, 0,
-            0, 0, 0, 1
-        });
-        assertMatrixEquals(expected, MathTransforms.getMatrix(mt), STRICT, "3D → 2D");
-        /*
-         * Transform from 2D to 3D. Coordinate values in the height dimension are unknown (NaN).
-         * This case happen when the third dimension is handled as a "pass through" dimension.
-         */
-        context.setSourceAxes(HardCodedCS.GEODETIC_2D, null);
-        context.setTargetAxes(HardCodedCS.GEODETIC_3D, null);
-        mt = factory.swapAndScaleAxes(MathTransforms.identity(2), context);
-        expected = Matrices.create(4, 3, new double[] {
-            1, 0, 0,
-            0, 1, 0,
-            0, 0, Double.NaN,
-            0, 0, 1
-        });
-        assertMatrixEquals(expected, MathTransforms.getMatrix(mt), STRICT, "2D → 3D");
-        /*
-         * Same transform from 2D to 3D, but this time with the height consumed by the parameterized operation.
-         * This is differentiated from the previous case by the fact that the parameterized operation is three-dimensional.
-         */
-        mt = factory.swapAndScaleAxes(MathTransforms.identity(3), context);
-        expected = Matrices.create(4, 3, new double[] {
-            1, 0, 0,
-            0, 1, 0,
-            0, 0, 0,
-            0, 0, 1
-        });
-        assertMatrixEquals(expected, MathTransforms.getMatrix(mt), STRICT, "2D → 3D");
-        /*
-         * Test error message when adding a dimension that is not ellipsoidal height.
-         */
-        context.setSourceAxes(HardCodedCS.CARTESIAN_2D, null);
-        context.setTargetAxes(HardCodedCS.CARTESIAN_3D, null);
-        var e = assertThrows(InvalidGeodeticParameterException.class,
-                () -> factory.swapAndScaleAxes(MathTransforms.identity(2), context),
-                "Should not have accepted the given coordinate systems.");
-        assertMessageContains(e, "2D → tr(2D → 2D) → 3D");
     }
 
     /**

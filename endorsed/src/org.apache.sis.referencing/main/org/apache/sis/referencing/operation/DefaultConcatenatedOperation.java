@@ -45,6 +45,7 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.Formatter;
 
@@ -170,13 +171,11 @@ final class DefaultConcatenatedOperation extends AbstractCoordinateOperation imp
 
         if (targetCRS == null) {
             targetCRS = crs;
-        } else if (mtFactory instanceof DefaultMathTransformFactory) {
-            final var dmf = (DefaultMathTransformFactory) mtFactory;
-            final MathTransform t = dmf.createCoordinateSystemChange(
-                    crs.getCoordinateSystem(),
-                    targetCRS.getCoordinateSystem(),
-                    ReferencingUtilities.getEllipsoid(crs));
-            transform = dmf.createConcatenatedTransform(transform, t);
+        } else if (mtFactory != null) {
+            var builder = mtFactory.builder(Constants.COORDINATE_SYSTEM_CONVERSION);
+            builder.setSourceAxes(crs.getCoordinateSystem(), ReferencingUtilities.getEllipsoid(crs));
+            builder.setTargetAxes(targetCRS.getCoordinateSystem(), null);
+            transform = mtFactory.createConcatenatedTransform(transform, builder.create());
         }
         /*
          * At this point we should have flattened.size() >= 2, except if some operations
