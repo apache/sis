@@ -44,22 +44,16 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.apache.sis.io.wkt.Parser;
 import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.util.Classes;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.iso.AbstractFactory;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
-import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.system.Reflect;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.util.UnimplementedServiceException;
 
 
 /**
@@ -191,12 +185,14 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     /**
      * The last coordinate operation method used by a {@code create(…)} constructor.
      */
-    private final ThreadLocal<OperationMethod> lastMethod;
+    final ThreadLocal<OperationMethod> lastMethod;
 
     /**
      * The math transforms created so far. This pool is used in order to return instances of existing
      * math transforms when possible. If {@code null}, then no pool should be used. A null value is
      * preferable when the transforms are known to be short-lived, for avoiding the cost of caching them.
+     *
+     * @see #unique(MathTransform)
      */
     private final WeakHashSet<MathTransform> pool;
 
@@ -482,38 +478,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     @Override
     public MathTransform.Builder builder(final String method) throws NoSuchIdentifierException {
         if (method.replace('_', ' ').equalsIgnoreCase(Constants.COORDINATE_SYSTEM_CONVERSION)) {
-            return new CoordinateSystemTransformBuilder(this) {
-                @Override public MathTransform create() throws FactoryException {
-                    try {
-                        return super.create();
-                    } finally {
-                        ((DefaultMathTransformFactory) factory).lastMethod.set(getMethod().orElse(null));
-                    }
-                }
-            };
+            return new CoordinateSystemTransformBuilder(this);
         }
-        return new ContextBuilder(this, getOperationMethod(method));
-    }
-
-    /**
-     * Builder of a parameterized math transform, which is also the context for transform providers.
-     * Instances are created by {@link #builder(String)}. The same instance is also used for context
-     * given to {@link MathTransformProvider}.
-     */
-    private static final class ContextBuilder extends ParameterizedTransformBuilder {
-        /** Creates a new builder for the given operation method. */
-        ContextBuilder(final DefaultMathTransformFactory factory, final OperationMethod method) {
-            super(factory, method);
-        }
-
-        /** Creates the parameterized transform. */
-        @Override public MathTransform create() throws FactoryException {
-            try {
-                return super.create();
-            } finally {
-                ((DefaultMathTransformFactory) getFactory()).lastMethod.set(provider);
-            }
-        }
+        return new ParameterizedTransformBuilder(this, getOperationMethod(method));
     }
 
     /**
@@ -533,8 +500,12 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @see #getAvailableMethods(Class)
      * @see #createParameterizedTransform(ParameterValueGroup)
      * @see AbstractMathTransform#getParameterValues()
+     *
+     * @deprecated This {@linkplain #createParameterizedTransform way to create parameterized transform} is ambiguous.
+     * Use {@link #builder(String)} instead.
      */
     @Override
+    @Deprecated(since="1.5")
     public ParameterValueGroup getDefaultParameters(final String method) throws NoSuchIdentifierException {
         return getOperationMethod(method).getParameters().createValue();
     }
@@ -571,7 +542,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         /**
          * The builder, created when first needed.
          */
-        private ContextBuilder builder;
+        private ParameterizedTransformBuilder builder;
 
         /**
          * The parameters actually used.
@@ -703,12 +674,12 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         /**
          * Returns the builder on which to delegate the {@code MathTransform} creation.
          */
-        final ContextBuilder builder() throws FactoryException {
+        final ParameterizedTransformBuilder builder() throws FactoryException {
             if (builder == null) {
                 if (factory == null) {
                     factory = provider();
                 }
-                builder = new ContextBuilder(factory, null);
+                builder = new ParameterizedTransformBuilder(factory, null);
                 if (parameters != null) {
                     builder.setParameters(parameters, false);
                 }
@@ -880,41 +851,19 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      * @see #getAvailableMethods(Class)
      * @see #getLastMethodUsed()
      * @see org.apache.sis.parameter.ParameterBuilder#createGroupForMapProjection(ParameterDescriptor...)
+     *
+     * @deprecated This constructor is ambiguous when axis directions are parts of the map projection definition
+     * as in <q>Transverse Mercator (South Orientated)</q>.
+     * Use {@link #builder(String)} instead for allowing the implementation to resolve such ambiguities.
      */
     @Override
+    @Deprecated(since="1.5")
     public MathTransform createParameterizedTransform(final ParameterValueGroup parameters)
             throws NoSuchIdentifierException, FactoryException
     {
-        OperationMethod  method  = null;
-        RuntimeException failure = null;
-        MathTransform transform;
-        try {
-            method = CoordinateOperations.findMethod(this, parameters.getDescriptor());
-            /*
-             * Will catch only exceptions that may be the result of improper parameter usage (e.g. a value out
-             * of range). Do not catch exceptions caused by programming errors (e.g. null pointer exception).
-             */
-            if (method instanceof MathTransformProvider) try {
-                transform = ((MathTransformProvider) method).createMathTransform(this, parameters);
-            } catch (IllegalArgumentException | IllegalStateException exception) {
-                throw new InvalidGeodeticParameterException(exception.getLocalizedMessage(), exception);
-            } else {
-                throw new UnimplementedServiceException(Errors.format(
-                        Errors.Keys.UnsupportedImplementation_1, Classes.getClass(method)));
-            }
-            transform = unique(transform);
-            if (method instanceof AbstractProvider) {
-                method = ((AbstractProvider) method).variantFor(transform);
-            }
-        } catch (FactoryException e) {
-            if (failure != null) {
-                e.addSuppressed(failure);
-            }
-            throw e;
-        } finally {
-            lastMethod.set(method);     // May be null in case of failure, which is intended.
-        }
-        return transform;
+        final var builder = new ParameterizedTransformBuilder(this, null);
+        builder.setParameters(parameters, false);
+        return builder.create();
     }
 
     /**
@@ -1008,7 +957,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         ArgumentChecks.ensureNonNull("baseCRS",    baseCRS);
         ArgumentChecks.ensureNonNull("parameters", parameters);
         ArgumentChecks.ensureNonNull("derivedCS",  derivedCS);
-        final var builder = new ContextBuilder(this, null);
+        final var builder = new ParameterizedTransformBuilder(this, null);
         builder.setParameters(parameters, true);
         builder.setSourceAxes(baseCRS);
         builder.setTargetAxes(derivedCS, null);
@@ -1234,7 +1183,7 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     /**
      * Replaces the given transform by a unique instance, if one already exists.
      */
-    private MathTransform unique(final MathTransform tr) {
+    final MathTransform unique(final MathTransform tr) {
         return (pool != null) ? pool.unique(tr) : tr;
     }
 

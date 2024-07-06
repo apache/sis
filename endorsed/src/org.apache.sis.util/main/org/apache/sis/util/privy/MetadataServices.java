@@ -129,7 +129,7 @@ public class MetadataServices extends OptionalDependency {
          */
         final UML uml = code.getClass().getAnnotation(UML.class);
         if (uml != null) try {
-            return ResourceBundles.codeLists(locale).getString(uml.identifier() + '.' + code.identifier());
+            return ResourceBundles.codeLists(locale).getString(uml.identifier() + '.' + code.identifier().orElse(code.name()));
         } catch (MissingResourceException e) {
             /*
              * Ignore. The reason for not finding the resource may because of above code not covering enough cases.

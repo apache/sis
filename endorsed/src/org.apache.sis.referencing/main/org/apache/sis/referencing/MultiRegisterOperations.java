@@ -416,7 +416,7 @@ public class MultiRegisterOperations extends AbstractFactory implements Register
      * @throws IllegalArgumentException if the specified type is not one of the above-cited values.
      */
     @Override
-    public <T extends Factory> Optional<T> getFactory(final Class<T> type) {
+    public <T extends Factory> Optional<T> getFactory(final Class<? extends T> type) {
         final Factory factory;
         final Boolean b = FACTORY_TYPES.get(type);
         if (b != null) {

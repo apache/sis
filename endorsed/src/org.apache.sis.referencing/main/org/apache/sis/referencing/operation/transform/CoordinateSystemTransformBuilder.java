@@ -18,7 +18,6 @@ package org.apache.sis.referencing.operation.transform;
 
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Optional;
 import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
@@ -32,7 +31,6 @@ import org.opengis.referencing.cs.PolarCS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationNotFoundException;
-import org.opengis.referencing.operation.OperationMethod;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.cs.DefaultCompoundCS;
@@ -48,12 +46,7 @@ import org.apache.sis.util.resources.Errors;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-class CoordinateSystemTransformBuilder implements MathTransform.Builder {
-    /**
-     * The factory to use for building the transform.
-     */
-    protected final MathTransformFactory factory;
-
+final class CoordinateSystemTransformBuilder extends MathTransformBuilder {
     /**
      * The source and target coordinate systems.
      */
@@ -67,17 +60,12 @@ class CoordinateSystemTransformBuilder implements MathTransform.Builder {
     private Ellipsoid ellipsoid;
 
     /**
-     * The operation method used for the transform.
-     */
-    private OperationMethod method;
-
-    /**
      * Creates a new builder.
      *
      * @param  factory  the factory to use for building the transform.
      */
     CoordinateSystemTransformBuilder(final MathTransformFactory factory) {
-        this.factory = factory;
+        super(factory);
     }
 
     /**
@@ -108,15 +96,6 @@ class CoordinateSystemTransformBuilder implements MathTransform.Builder {
             }
             ellipsoid = value;
         }
-    }
-
-    /**
-     * Returns the operation method used for creating the math transform from the parameter values.
-     * This information is known only after {@link #create()} has been invoked.
-     */
-    @Override
-    public Optional<OperationMethod> getMethod() {
-        return Optional.ofNullable(method);
     }
 
     /**
@@ -213,7 +192,7 @@ class CoordinateSystemTransformBuilder implements MathTransform.Builder {
         if (result == null) {
             result = single(source, target);
         }
-        return result;
+        return unique(result);
     }
 
     /**
@@ -263,7 +242,7 @@ class CoordinateSystemTransformBuilder implements MathTransform.Builder {
                         CoordinateSystems.replaceAxes(stepTarget, AxesConvention.NORMALIZED), stepTarget));
                 final MathTransform result = factory.createConcatenatedTransform(before,
                                              factory.createConcatenatedTransform(tr, after));
-                method = (passthrough == 0 ? kernel.method : kernel.method3D);
+                provider = (passthrough == 0 ? kernel.method : kernel.method3D);
                 return result;
             }
         } catch (IllegalArgumentException | IncommensurableException e) {

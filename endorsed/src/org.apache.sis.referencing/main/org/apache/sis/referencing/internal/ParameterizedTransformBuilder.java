@@ -19,7 +19,6 @@ package org.apache.sis.referencing.internal;
 import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Collections;
-import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -55,6 +54,7 @@ import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import org.apache.sis.referencing.operation.provider.VerticalOffset;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
+import org.apache.sis.referencing.operation.transform.MathTransformBuilder;
 import org.apache.sis.referencing.operation.transform.ContextualParameters;
 import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
@@ -87,7 +87,7 @@ import org.opengis.util.UnimplementedServiceException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public class ParameterizedTransformBuilder implements MathTransform.Builder, MathTransformProvider.Context {
+public class ParameterizedTransformBuilder extends MathTransformBuilder implements MathTransformProvider.Context {
     /**
      * Minimal precision of ellipsoid semi-major and semi-minor axis lengths, in metres.
      * If the length difference between the axis of two ellipsoids is greater than this threshold,
@@ -95,11 +95,6 @@ public class ParameterizedTransformBuilder implements MathTransform.Builder, Mat
      * on the {@code MathTransform} objects to be created by the factory.
      */
     private static final double ELLIPSOID_PRECISION = Formulas.LINEAR_TOLERANCE;
-
-    /**
-     * The factory to use for building the transform.
-     */
-    private final MathTransformFactory factory;
 
     /**
      * Coordinate system of the source or target points.
@@ -110,15 +105,6 @@ public class ParameterizedTransformBuilder implements MathTransform.Builder, Mat
      * The ellipsoid of the source or target ellipsoidal coordinate system, or {@code null} if it does not apply.
      */
     private Ellipsoid sourceEllipsoid, targetEllipsoid;
-
-    /**
-     * The provider that created the parameterized {@link MathTransform} instance, or {@code null}
-     * if this information does not apply. This is initially set to the operation method specified
-     * in the call to {@link #builder(String)}, but may be modified by {@link #create()}.
-     *
-     * @see #getMethod()
-     */
-    protected OperationMethod provider;
 
     /**
      * The parameters of the transform to create. This is initialized to default values.
@@ -163,7 +149,7 @@ public class ParameterizedTransformBuilder implements MathTransform.Builder, Mat
      * @param  method   a method known to the given factory, or {@code null} if none.
      */
     public ParameterizedTransformBuilder(final MathTransformFactory factory, final OperationMethod method) {
-        this.factory = factory;
+        super(factory);
         if (method != null) {
             provider   = method;
             parameters = method.getParameters().createValue();
@@ -366,19 +352,6 @@ public class ParameterizedTransformBuilder implements MathTransform.Builder, Mat
     }
 
     /**
-     * Returns the operation method used for creating the math transform from the parameter values.
-     * This is initially the operation method specified in the call to {@link #builder(String)},
-     * but may change after the call to {@link #create()} if the method has been adjusted because
-     * of the parameter values.
-     *
-     * @return the operation method used for creating the math transform from the parameter values.
-     */
-    @Override
-    public final Optional<OperationMethod> getMethod() {
-        return Optional.ofNullable(provider);
-    }
-
-    /**
      * Returns the parameter values to modify for defining the transform to create.
      * Those parameters are initialized to default values, which are {@linkplain #getMethod() method} depend.
      * User-supplied values should be set directly in the returned instance with codes like
@@ -453,7 +426,7 @@ public class ParameterizedTransformBuilder implements MathTransform.Builder, Mat
      * Returns the value of the given parameter in the given unit, or {@code NaN} if the parameter is not set.
      *
      * <p><b>NOTE:</b> Do not merge this function with {@code ensureSet(…)}. We keep those two methods
-     * separated in order to give to {@code createParameterizedTransform(…)} a "all or nothing" behavior.</p>
+     * separated in order to give to {@code completeParameters()} an "all or nothing" behavior.</p>
      */
     private static double getValue(final ParameterValue<?> parameter, final Unit<?> unit) {
         return (parameter.getValue() != null) ? parameter.doubleValue(unit) : Double.NaN;
@@ -665,6 +638,10 @@ public class ParameterizedTransformBuilder implements MathTransform.Builder, Mat
                             :  DefaultMathTransformFactory.provider()).getOperationMethod(method);
                 }
             }
+            /*
+             * Will catch only exceptions that may be the result of improper parameter usage (e.g. a value out
+             * of range). Do not catch exceptions caused by programming errors (e.g. null pointer exception).
+             */
             final MathTransform transform;
             if (provider instanceof MathTransformProvider) try {
                 transform = ((MathTransformProvider) provider).createMathTransform(this);
@@ -677,7 +654,7 @@ public class ParameterizedTransformBuilder implements MathTransform.Builder, Mat
             if (provider instanceof AbstractProvider) {
                 provider = ((AbstractProvider) provider).variantFor(transform);
             }
-            return swapAndScaleAxes(transform);
+            return swapAndScaleAxes(unique(transform));
         } catch (FactoryException exception) {
             if (warning != null) {
                 exception.addSuppressed(warning);
@@ -807,7 +784,9 @@ public class ParameterizedTransformBuilder implements MathTransform.Builder, Mat
          * created transform; it does not change the operation.
          */
         if (normalized instanceof ParameterizedAffine && !(mt instanceof ParameterizedAffine)) {
-            mt = ((ParameterizedAffine) normalized).newTransform(mt);
+            if (mt != (mt = ((ParameterizedAffine) normalized).newTransform(mt))) {
+                mt = unique(mt);
+            }
         }
         return mt;
     }

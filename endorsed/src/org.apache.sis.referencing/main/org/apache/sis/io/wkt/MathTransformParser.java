@@ -415,10 +415,9 @@ class MathTransformParser extends AbstractParser {
             return null;
         }
         classification = element.pullString("classification");
-        final MathTransformFactory mtFactory = factories.getMathTransformFactory();
-        final ParameterValueGroup parameters;
+        final MathTransform.Builder builder;
         try {
-            parameters = mtFactory.getDefaultParameters(classification);
+            builder = factories.getMathTransformFactory().builder(classification);
         } catch (NoSuchIdentifierException exception) {
             throw element.parseFailed(exception);
         }
@@ -426,18 +425,18 @@ class MathTransformParser extends AbstractParser {
          * Scan over all PARAMETER["name", value] elements and
          * set the corresponding parameter in the parameter group.
          */
-        parseParameters(element, parameters, null, null);
+        parseParameters(element, builder.parameters(), null, null);
         element.close(ignoredElements);
         /*
          * We now have all information for constructing the math transform.
          */
         final MathTransform transform;
         try {
-            transform = mtFactory.createParameterizedTransform(parameters);
+            transform = builder.create();
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
-        lastMethod = mtFactory.getLastMethodUsed();
+        lastMethod = builder.getMethod().orElse(null);
         return transform;
     }
 
