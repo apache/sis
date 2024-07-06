@@ -247,10 +247,10 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
              * method in invoked, and attempts to use it can cause NullPointerException.
              */
             final boolean isDerived = (target instanceof DerivedCRS);
-            var builder = ReferencingUtilities.builder(factory, parameters, source, isDerived ? null : target);
-            if (isDerived) {
-                builder.setTargetAxes(target.getCoordinateSystem(), null);
-            }
+            final var builder = new ParameterizedTransformBuilder(factory, null);
+            builder.setParameters(parameters, true);
+            builder.setSourceAxes(source);
+            builder.setTargetAxes(target.getCoordinateSystem(), isDerived ? null : ReferencingUtilities.getEllipsoid(target));
             transform = builder.create();
             if (builder instanceof MathTransformProvider.Context) {
                 final var context = (MathTransformProvider.Context) builder;
@@ -263,10 +263,10 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
              * ProjectedCRS), then there is a method for this job.
              */
             if (sourceCRS == null && targetCRS == null) {
-                var context = new ParameterizedTransformBuilder(factory, null);
-                context.setSourceAxes(source.getCoordinateSystem(), null);
-                context.setTargetAxes(target.getCoordinateSystem(), null);    // See comment on the other setTargetAxes(…) call.
-                transform = context.swapAndScaleAxes(transform);
+                var builder = new ParameterizedTransformBuilder(factory, null);
+                builder.setSourceAxes(source.getCoordinateSystem(), null);
+                builder.setTargetAxes(target.getCoordinateSystem(), null);    // See comment on the other setTargetAxes(…) call.
+                transform = builder.swapAndScaleAxes(transform);
             } else {
                 /*
                  * If this conversion is not a defining conversion (i.e. if this is the conversion of an existing

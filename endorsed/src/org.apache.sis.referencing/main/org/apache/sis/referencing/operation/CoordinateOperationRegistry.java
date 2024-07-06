@@ -64,6 +64,7 @@ import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.privy.EllipsoidalHeightCombiner;
 import org.apache.sis.referencing.privy.PositionalAccuracyConstant;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
+import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.referencing.internal.DeferredCoordinateOperation;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.operation.provider.Affine;
@@ -1022,8 +1023,7 @@ class CoordinateOperationRegistry {
             CoordinateReferenceSystem crs;
             if (Utilities.equalsApproximately(sourceCRS, crs = operation.getSourceCRS())) sourceCRS = crs;
             if (Utilities.equalsApproximately(targetCRS, crs = operation.getTargetCRS())) targetCRS = crs;
-            var builder = ReferencingUtilities.builder(
-                    factorySIS.getMathTransformFactory(), parameters, sourceCRS, targetCRS);
+            final var builder = createTransformBuilder(parameters, sourceCRS, targetCRS);
             final MathTransform mt = builder.create();      // Must be before `operation.getMethod()`.
             return factorySIS.createSingleOperation(IdentifiedObjects.getProperties(operation),
                     sourceCRS, targetCRS, null, operation.getMethod(), mt);
@@ -1137,14 +1137,13 @@ class CoordinateOperationRegistry {
             Matrix matrix = MathTransforms.getMatrix(op.getMathTransform());
             if (matrix == null) {
                 if (op instanceof SingleOperation) {
-                    final MathTransformFactory mtFactory = factorySIS.getMathTransformFactory();
                     if (forward) sourceCRS = toGeodetic3D(sourceCRS, source3D);
                     else         targetCRS = toGeodetic3D(targetCRS, target3D);
                     final MathTransform.Builder builder;
                     final MathTransform mt;
                     try {
                         final var parameters = ((SingleOperation) op).getParameterValues();
-                        builder = ReferencingUtilities.builder(mtFactory, parameters, sourceCRS, targetCRS);
+                        builder = createTransformBuilder(parameters, sourceCRS, targetCRS);
                         mt = builder.create();
                     } catch (InvalidGeodeticParameterException e) {
                         log(null, e);
@@ -1249,6 +1248,30 @@ class CoordinateOperationRegistry {
                                             : PositionalAccuracyConstant.DATUM_SHIFT_OMITTED});
         }
         return properties;
+    }
+
+    /**
+     * Creates a transform builder which will use the given <abbr>CRS</abbr> as contextual information.
+     * The ellipsoids will be used for completing the axis-length parameters, and the coordinate systems will
+     * be used for axis order and units of measurement. This method does not perform <abbr>CRS</abbr> changes
+     * other than axis order and units.
+     *
+     * @param  parameters  the operation parameter value group.
+     * @param  sourceCRS   the CRS from which to get the source coordinate system and ellipsoid.
+     * @param  targetCRS   the CRS from which to get the target coordinate system and ellipsoid.
+     * @return the parameterized transform.
+     * @throws FactoryException if the transform cannot be created.
+     */
+    private MathTransform.Builder createTransformBuilder(
+            final ParameterValueGroup parameters,
+            final CoordinateReferenceSystem sourceCRS,
+            final CoordinateReferenceSystem targetCRS) throws FactoryException
+    {
+        final var builder = new ParameterizedTransformBuilder(factorySIS.getMathTransformFactory(), null);
+        builder.setParameters(parameters, true);
+        builder.setSourceAxes(sourceCRS);
+        builder.setTargetAxes(targetCRS);
+        return builder;
     }
 
     /**

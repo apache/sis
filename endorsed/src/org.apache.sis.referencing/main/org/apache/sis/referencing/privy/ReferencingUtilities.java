@@ -24,10 +24,8 @@ import org.opengis.annotation.UML;
 import org.opengis.annotation.Specification;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.GeneralParameterDescriptor;
-import org.opengis.util.FactoryException;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
@@ -36,7 +34,6 @@ import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.VerticalDatum;
-import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.Classes;
@@ -54,8 +51,6 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.DefaultEllipsoidalCS;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
-import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
-import org.apache.sis.parameter.Parameters;
 
 
 /**
@@ -509,38 +504,6 @@ public final class ReferencingUtilities extends Static {
             factory = DefaultMathTransformFactory.provider().caching(false);
         }
         return factory;
-    }
-
-    /**
-     * Creates a builder with source and target ellipsoids and coordinate systems inferred from the given CRSs.
-     * The ellipsoids will be non-null only if the given CRS is geodetic (geographic or geocentric).
-     *
-     * @param  factory     the factory on which to create the builder.
-     * @param  parameters  the operation parameter value group.
-     * @param  sourceCRS   the CRS from which to get the source coordinate system and ellipsoid, or {@code null}.
-     * @param  targetCRS   the CRS from which to get the target coordinate system and ellipsoid, or {@code null}.
-     * @return the context to provides to math transform factory.
-     * @throws FactoryException if the builder cannot be created.
-     */
-    public static MathTransform.Builder builder(
-            final MathTransformFactory factory,
-            final ParameterValueGroup parameters,
-            final CoordinateReferenceSystem sourceCRS,
-            final CoordinateReferenceSystem targetCRS) throws FactoryException
-    {
-        final var builder = factory.builder(parameters.getDescriptor().getName().getCode());
-        try {
-            Parameters.copy(parameters, builder.parameters());
-        } catch (IllegalArgumentException e) {
-            throw new InvalidGeodeticParameterException(e.getMessage(), e);
-        }
-        if (sourceCRS != null) {
-            builder.setSourceAxes(sourceCRS.getCoordinateSystem(), getEllipsoid(sourceCRS));
-        }
-        if (targetCRS != null) {
-            builder.setTargetAxes(targetCRS.getCoordinateSystem(), getEllipsoid(targetCRS));
-        }
-        return builder;
     }
 
     /**

@@ -50,14 +50,12 @@ import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.referencing.privy.CoordinateOperations;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
-import org.apache.sis.parameter.Parameters;
 import org.apache.sis.system.Reflect;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -712,9 +710,8 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                 }
                 builder = new ContextBuilder(factory, null);
                 if (parameters != null) {
-                    builder.setParameters(parameters);
+                    builder.setParameters(parameters, false);
                 }
-                Parameters.copy(parameters, builder.parameters());
             }
             return builder;
         }
@@ -1011,7 +1008,9 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         ArgumentChecks.ensureNonNull("baseCRS",    baseCRS);
         ArgumentChecks.ensureNonNull("parameters", parameters);
         ArgumentChecks.ensureNonNull("derivedCS",  derivedCS);
-        var builder = ReferencingUtilities.builder(this, parameters, baseCRS, null);
+        final var builder = new ContextBuilder(this, null);
+        builder.setParameters(parameters, true);
+        builder.setSourceAxes(baseCRS);
         builder.setTargetAxes(derivedCS, null);
         return builder.create();
     }

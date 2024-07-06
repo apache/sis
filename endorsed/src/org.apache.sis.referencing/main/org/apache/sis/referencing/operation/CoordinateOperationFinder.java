@@ -674,7 +674,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * Context parameter. The operation name is inferred from the parameters, unless a method has been
          * specified in advance.
          */
-        context.setParameters(parameters);
+        context.setParameters(parameters, false);
         MathTransform transform = context.create();
         if (method == null) {
             method = context.getMethod().orElse(null);

@@ -38,7 +38,6 @@ import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.MergedProperties;
 import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Utilities;
@@ -46,6 +45,7 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
+import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.collection.WeakHashSet;
@@ -494,8 +494,11 @@ next:   for (int i=components.size(); --i >= 0;) {
             if (parameters == null) {
                 throw new NullPointerException(Errors.format(Errors.Keys.NullArgument_1, "transform"));
             }
-            transform = ReferencingUtilities.builder(
-                    getMathTransformFactory(), parameters, sourceCRS, targetCRS).create();
+            final var builder = new ParameterizedTransformBuilder(getMathTransformFactory(), null);
+            builder.setParameters(parameters, false);
+            builder.setSourceAxes(sourceCRS);
+            builder.setTargetAxes(targetCRS);
+            transform = builder.create();
         }
         /*
          * The "operationType" property is currently undocumented. The intent is to help this factory method in

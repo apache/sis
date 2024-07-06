@@ -38,6 +38,7 @@ import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.OperationMethod;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.util.ArgumentChecks;
@@ -59,8 +60,10 @@ import org.apache.sis.referencing.operation.transform.MathTransformProvider;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.privy.CoordinateOperations;
+import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.parameter.Parameterized;
+import org.apache.sis.parameter.Parameters;
 import org.apache.sis.measure.Units;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -126,7 +129,7 @@ public class ParameterizedTransformBuilder implements MathTransform.Builder, Mat
      * <p>This reference is {@code null} if this builder has been constructed without
      * specifying a method or parameters. In such case, calls to {@link #parameters()}
      * or {@link #getCompletedParameters()} will throw {@link IllegalStateException},
-     * unless {@link #setParameters(ParameterValueGroup)} is invoked.</p>
+     * unless {@link #setParameters(ParameterValueGroup, boolean)} is invoked.</p>
      */
     private ParameterValueGroup parameters;
 
@@ -169,14 +172,29 @@ public class ParameterizedTransformBuilder implements MathTransform.Builder, Mat
     }
 
     /**
-     * Replaces the parameters by the given values;
+     * Replaces the parameters by the given values. If {@code copy} is {@code false}, the given parameters
+     * will be used directly and may be modified. If {@code true}, the parameters will be copied in a group
+     * created by the provider. The latter group may contain more parameters than the given {@code values}.
+     * In particular, the copy may contain parameters such as {@code "semi_major"} that may not be present
+     * in the given values.
      *
      * @param  values  the parameter values.
+     * @param  copy    whether to copy the given parameter values.
      * @throws NoSuchIdentifierException if no method has been found for the given parameters.
+     * @throws InvalidGeodeticParameterException if the parameters cannot be set to the given values.
      */
-    public void setParameters(final ParameterValueGroup values) throws NoSuchIdentifierException {
-        parameters = values;
-        provider   = CoordinateOperations.findMethod(factory, parameters.getDescriptor());
+    public void setParameters(final ParameterValueGroup values, final boolean copy)
+            throws NoSuchIdentifierException, InvalidGeodeticParameterException
+    {
+        provider = CoordinateOperations.findMethod(factory, values.getDescriptor());
+        if (copy) try {
+            parameters = provider.getParameters().createValue();
+            Parameters.copy(values, parameters);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidGeodeticParameterException(e.getMessage(), e);
+        } else {
+            parameters = values;
+        }
     }
 
     /**
@@ -187,6 +205,28 @@ public class ParameterizedTransformBuilder implements MathTransform.Builder, Mat
     @Override
     public final MathTransformFactory getFactory() {
         return factory;
+    }
+
+    /**
+     * Gives input coordinates hints derived from the given <abbr>CRS</abbr>. The hints are used for axis order and
+     * units conversions, and for completing parameters with axis lengths. No change of <abbr>CRS</abbr> other than
+     * axis order and units are performed. This method is not public for that reason.
+     *
+     * @param  crs  the <abbr>CRS</abbr> from which to fetch the hints, or {@code null}.
+     */
+    public final void setSourceAxes(final CoordinateReferenceSystem crs) {
+        setSourceAxes(crs != null ? crs.getCoordinateSystem() : null, ReferencingUtilities.getEllipsoid(crs));
+    }
+
+    /**
+     * Gives output coordinates hints derived from the given <abbr>CRS</abbr>. The hints are used for axis order and
+     * units conversions, and for completing parameters with axis lengths. No change of <abbr>CRS</abbr> other than
+     * axis order and units are performed. This method is not public for that reason.
+     *
+     * @param  crs  the <abbr>CRS</abbr> from which to fetch the hints, or {@code null}.
+     */
+    public final void setTargetAxes(final CoordinateReferenceSystem crs) {
+        setTargetAxes(crs != null ? crs.getCoordinateSystem() : null, ReferencingUtilities.getEllipsoid(crs));
     }
 
     /**
