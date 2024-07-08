@@ -406,8 +406,9 @@ final class Element {
      * @return the exception to be thrown.
      */
     final ParseException parseFailed(final Exception cause) {
-        return new UnparsableObjectException(errorLocale, Resources.Keys.CannotParseElement_2,
-                new String[] {keyword, Exceptions.getLocalizedMessage(cause, errorLocale)}, offset).initCause(cause);
+        String message = Resources.forLocale(errorLocale).getString(Resources.Keys.CannotParseElement_1, keyword);
+        message = message + ' ' + Exceptions.getLocalizedMessage(cause, errorLocale);
+        return new UnparsableObjectException(message, offset).initCause(cause);
     }
 
     /**

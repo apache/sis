@@ -168,9 +168,9 @@ public class Resources extends IndexedResourceBundle {
         public static final short CanNotUseGeodeticParameters_2 = 9;
 
         /**
-         * Cannot parse the “{0}” element: {1}
+         * Cannot parse the “{0}” element:
          */
-        public static final short CannotParseElement_2 = 101;
+        public static final short CannotParseElement_1 = 101;
 
         /**
          * Axis directions {0} and {1} are colinear.

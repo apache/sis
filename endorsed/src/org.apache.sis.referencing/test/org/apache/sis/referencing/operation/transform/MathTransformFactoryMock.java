@@ -24,9 +24,10 @@ import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
 import org.apache.sis.referencing.operation.provider.AbstractProvider;
@@ -93,7 +94,7 @@ public final class MathTransformFactoryMock implements MathTransformFactory {
      */
     @Override
     public Set<OperationMethod> getAvailableMethods(Class<? extends SingleOperation> type) {
-        return type.isInstance(method) ? Set.of(method) : Set.of();
+        return type.isAssignableFrom(Conversion.class) ? Set.of(method) : Set.of();
     }
 
     /**
