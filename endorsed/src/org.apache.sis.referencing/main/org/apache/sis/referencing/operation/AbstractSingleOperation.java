@@ -45,10 +45,10 @@ import org.apache.sis.xml.bind.referencing.CC_OperationParameterGroup;
 import org.apache.sis.xml.bind.referencing.CC_OperationMethod;
 import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.referencing.privy.CoordinateOperations;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
+import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.metadata.privy.Identifiers;
-import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.collection.Containers;
@@ -468,8 +468,11 @@ class AbstractSingleOperation extends AbstractCoordinateOperation implements Sin
         final CoordinateReferenceSystem sourceCRS = super.getSourceCRS();
         final CoordinateReferenceSystem targetCRS = super.getTargetCRS();
         if (transform == null && sourceCRS != null && targetCRS != null && parameters != null) try {
-            transform = ReferencingUtilities.createBaseToDerived(DefaultMathTransformFactory.provider(),
-                                                                 sourceCRS, parameters, targetCRS);
+            final var builder = new ParameterizedTransformBuilder(DefaultMathTransformFactory.provider(), null);
+            builder.setParameters(parameters, true);
+            builder.setSourceAxes(sourceCRS);
+            builder.setTargetAxes(targetCRS);
+            transform = builder.create();
         } catch (FactoryException e) {
             Context.warningOccured(Context.current(), AbstractSingleOperation.class, "afterUnmarshal", e, true);
         }

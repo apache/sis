@@ -99,9 +99,8 @@
  * The real axis flip is performed outside this projection package, upon
  * {@linkplain org.opengis.referencing.cs.CoordinateSystemAxis coordinate system axis} inspection,
  * as a concatenation of the North oriented cartographic projection with an affine transform.
- * Such axis analysis and transforms concatenation can be performed automatically by the
- * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createBaseToDerived
- * createBaseToDerived(…)} method defined in the {@code MathTransformFactory} interface.
+ * Such axis analysis and transforms concatenation can be performed automatically by
+ * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory.Context}.
  * The same rule applies to the <cite>Krovak</cite> projection as well (at the opposite of what ESRI does).
  *
  * <p>In order to reduce the risk of confusion, this package never defines south oriented map projection.

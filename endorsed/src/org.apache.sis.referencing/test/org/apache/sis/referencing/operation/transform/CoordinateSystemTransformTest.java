@@ -30,12 +30,8 @@ import org.apache.sis.measure.Units;
 import org.apache.sis.util.ArraysExt;
 
 // Test dependencies
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.opengis.test.referencing.TransformTestCase;
 import org.apache.sis.test.FailureDetailsReporter;
@@ -47,9 +43,7 @@ import org.apache.sis.referencing.cs.HardCodedCS;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@Execution(ExecutionMode.SAME_THREAD)
 @ExtendWith(FailureDetailsReporter.class)
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public final class CoordinateSystemTransformTest extends TransformTestCase {
     /**
      * A right-handed spherical coordinate system.
@@ -57,36 +51,18 @@ public final class CoordinateSystemTransformTest extends TransformTestCase {
     private final SphericalCS spherical;
 
     /**
-     * The factory to use for creating the affine transforms and concatenated transforms.
+     * The builder to use for creating the transforms.
      */
-    private final MathTransformFactory factory;
-
-    /**
-     * The operation method used.
-     */
-    private final ThreadLocal<OperationMethod> lastMethod;
+    private final CoordinateSystemTransformBuilder builder;
 
     /**
      * Creates the {@link MathTransformFactory} to be used for the tests.
      * We do not use the system-wide factory in order to have better tests isolation.
      */
     public CoordinateSystemTransformTest() {
-        factory = new DefaultMathTransformFactory();
         spherical = (SphericalCS) DefaultGeocentricCRS.castOrCopy(CommonCRS.WGS84.spherical())
                             .forConvention(AxesConvention.RIGHT_HANDED).getCoordinateSystem();
-        lastMethod = new ThreadLocal<>();
-    }
-
-    /**
-     * Resets all fields that may be modified by test methods in this class.
-     * This is needed because we reuse the same instance for all methods,
-     * in order to reuse the factory and parser created in the constructor.
-     */
-    @BeforeEach
-    public void reset() {
-        transform = null;
-        lastMethod.remove();
-        tolerance = 0;
+        builder = new CoordinateSystemTransformBuilder(DefaultMathTransformFactory.provider());
     }
 
     /**
@@ -114,20 +90,19 @@ public final class CoordinateSystemTransformTest extends TransformTestCase {
     }
 
     /**
-     * Invokes {@link CoordinateSystemTransform#create CoordinateSystemTransform.create(…)}
-     * and stores the result in {@link #transform}.
+     * Creates the transform and stores the result in {@link #transform}.
      */
     private void createTransform(final CoordinateSystem source, final CoordinateSystem target) throws FactoryException {
-        lastMethod.remove();
-        transform = CoordinateSystemTransform.create(factory, source, target, lastMethod);
+        builder.setSourceAxes(source, null);
+        builder.setTargetAxes(target, null);
+        transform = builder.create();
     }
 
     /**
      * Verifies that {@link #lastMethod} has the expected value.
      */
     private void assertMethodEquals(final String expected) {
-        final OperationMethod method = lastMethod.get();
-        assertNotNull(method);
+        final OperationMethod method = builder.getMethod().orElseThrow();
         assertEquals(expected, method.getName().getCode());
     }
 
@@ -149,7 +124,6 @@ public final class CoordinateSystemTransformTest extends TransformTestCase {
             ArraysExt.swap(source, i, i+1);
         }
         verifyTransform(source, target);
-        assertNull(lastMethod.get());           // Null for now, but a method may be provided in a future version.
     }
 
     /**

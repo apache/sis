@@ -34,20 +34,6 @@
  *     — changes a <i>defining conversion</i> into a complete conversion.</li>
  * </ul>
  *
- * <h2>Apache SIS specific behavior</h2>
- * The following operations have a behavior in Apache SIS which may be different
- * than the behavior found in other software products. Those particularities apply only when the math transform is
- * {@linkplain org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createParameterizedTransform
- * created directly}. Users do not need to care about them when the coordinate operation is
- * {@linkplain org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory#createOperation
- * inferred by Apache SIS for a given pair of CRS}.
- *
- * <ul>
- *   <li><b>Longitude rotation</b> (EPSG:9601) — the longitude offset may be specified in any units,
- *     but SIS unconditionally converts the value to degrees. Consequently, the user is responsible
- *     for converting the longitude axis of source and target CRS to degrees before this operation is applied.</li>
- * </ul>
- *
  * <h2><i>Early binding</i> versus <i>late binding</i> implementations</h2>
  * There is sometimes multiple ways of transforming coordinates for a given pair of source and target CRS.
  * For example, the {@linkplain org.apache.sis.referencing.datum.BursaWolfParameters Bursa-Wolf parameters}

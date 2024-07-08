@@ -99,8 +99,7 @@ import org.opengis.referencing.ReferenceIdentifier;
  * The first matrix on the left side is for {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes
  * swapping axes} from (<var>latitude</var>, <var>longitude</var>) to (<var>longitude</var>, <var>latitude</var>) order.
  * This matrix is shown here for completeness, but is not managed by this projection package. Axes swapping is managed
- * at a {@linkplain org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#createParameterizedTransform
- * higher level}.</div>
+ * at a {@linkplain org.apache.sis.referencing.internal.ParameterizedTransformBuilder higher level}.</div>
  *
  * {@code NormalizedProjection} does not store the above cited parameters (central meridian, scale factor, <i>etc.</i>)
  * on intent (except indirectly), in order to make clear that those parameters are not used by subclasses.

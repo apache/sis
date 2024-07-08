@@ -56,7 +56,6 @@ import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
-import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.operation.provider.Affine;
 import org.apache.sis.referencing.operation.provider.DatumShiftMethod;
 import org.apache.sis.referencing.operation.provider.Geographic2Dto3D;
@@ -516,20 +515,23 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                                                             final GeodeticCRS targetCRS)
             throws FactoryException
     {
+        final CoordinateSystem sourceCS = sourceCRS.getCoordinateSystem();
+        final CoordinateSystem targetCS = targetCRS.getCoordinateSystem();
         final GeodeticDatum sourceDatum = sourceCRS.getDatum();
         final GeodeticDatum targetDatum = targetCRS.getDatum();
         Matrix datumShift = null;
         /*
          * If the prime meridian is not the same, we will concatenate a longitude rotation before or after datum shift
-         * (that concatenation will be performed by the customized DefaultMathTransformFactory.Context created below).
+         * (that concatenation will be performed by the `MathTransformContext` builder created below).
          * Actually we do not know if the longitude rotation should be before or after datum shift. But this ambiguity
          * can usually be ignored because Bursa-Wolf parameters are always used with source and target prime meridians
          * set to Greenwich in EPSG dataset 8.9.  For safety, the SIS's DefaultGeodeticDatum class ensures that if the
          * prime meridians are not the same, then the target meridian must be Greenwich.
          */
-        final DefaultMathTransformFactory.Context context = new MathTransformContext(sourceDatum, targetDatum);
-        context.setSource(sourceCRS);
-        context.setTarget(targetCRS);
+        final MathTransformFactory mtFactory = factorySIS.getMathTransformFactory();
+        final var context = new MathTransformContext(mtFactory, sourceDatum, targetDatum);
+        context.setSourceAxes(sourceCS, sourceDatum.getEllipsoid());
+        context.setTargetAxes(targetCS, targetDatum.getEllipsoid());
         /*
          * If both CRS use the same datum and the same prime meridian, then the coordinate operation is only axis
          * swapping, unit conversion or change of coordinate system type (Ellipsoidal ↔ Cartesian ↔ Spherical).
@@ -539,8 +541,6 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          */
         Identifier identifier;
         boolean isGeographicToGeocentric = false;
-        final CoordinateSystem sourceCS = context.getSourceCS();
-        final CoordinateSystem targetCS = context.getTargetCS();
         if (equalsIgnoreMetadata(sourceDatum, targetDatum)) {
             final boolean isGeocentricToGeographic;
             isGeographicToGeocentric = (sourceCS instanceof EllipsoidalCS && targetCS instanceof CartesianCS);
@@ -579,7 +579,6 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          *      the rotation sign, etc. We try to use the most specific name if we can find one, and fallback
          *      on an arbitrary name only in last resort.
          */
-        final DefaultMathTransformFactory mtFactory = factorySIS.getDefaultMathTransformFactory();
         MathTransform before = null, after = null;
         ParameterValueGroup parameters;
         OperationMethod method = null;
@@ -613,10 +612,10 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                     parameters = Affine.identity(3);                        // Dimension of geocentric CRS.
                 }
                 final CoordinateSystem normalized = CommonCRS.WGS84.geocentric().getCoordinateSystem();
-                before = mtFactory.createCoordinateSystemChange(sourceCS, normalized, sourceDatum.getEllipsoid());
-                after  = mtFactory.createCoordinateSystemChange(normalized, targetCS, targetDatum.getEllipsoid());
-                context.setSource(normalized);
-                context.setTarget(normalized);
+                before = context.createCoordinateSystemChange(sourceCS, normalized, sourceDatum.getEllipsoid());
+                after  = context.createCoordinateSystemChange(normalized, targetCS, targetDatum.getEllipsoid());
+                context.setSourceAxes(normalized, null);
+                context.setTargetAxes(normalized, null);
                 /*
                  * The name of the `parameters` group determines the `OperationMethod` later in this method.
                  * We cannot leave that name to "Affine" if `before` or `after` transforms are not identity.
@@ -652,14 +651,16 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             } else {
                 parameters = Affine.identity(targetDim);
                 /*
-                 * createCoordinateSystemChange(…) needs the ellipsoid associated to the ellipsoidal coordinate system,
-                 * if any. If none or both coordinate systems are ellipsoidal, then the ellipsoid will be ignored (see
-                 * createCoordinateSystemChange(…) javadoc for the rational) so it does not matter which one we pick.
+                 * "Coordinate system conversion" needs the ellipsoid associated to the ellipsoidal coordinate system,
+                 * if any. If none or both coordinate systems are ellipsoidal, then the ellipsoid will be ignored.
                  */
-                before = mtFactory.createCoordinateSystemChange(sourceCS, targetCS,
-                        (sourceCS instanceof EllipsoidalCS ? sourceDatum : targetDatum).getEllipsoid());
-                context.setSource(targetCS);
-                method = mtFactory.getLastMethodUsed();
+                var ellipsoid = (sourceCS instanceof EllipsoidalCS ? sourceDatum : targetDatum).getEllipsoid();
+                var builder   = CoordinateOperations.builder(mtFactory, Constants.COORDINATE_SYSTEM_CONVERSION);
+                builder.setSourceAxes(sourceCS, ellipsoid);
+                builder.setTargetAxes(targetCS, ellipsoid);
+                before = builder.create();
+                method = builder.getMethod().orElse(null);
+                context.setSourceAxes(targetCS, null);
             }
         }
         /*
@@ -676,9 +677,10 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * Context parameter. The operation name is inferred from the parameters, unless a method has been
          * specified in advance.
          */
-        MathTransform transform = mtFactory.createParameterizedTransform(parameters, context);
+        context.setParameters(parameters, false);
+        MathTransform transform = context.create();
         if (method == null) {
-            method = context.getMethodUsed();
+            method = context.getMethod().orElse(null);
         }
         if (before != null) {
             parameters = null;      // Providing parameters would be misleading because they apply to only a step of the operation.

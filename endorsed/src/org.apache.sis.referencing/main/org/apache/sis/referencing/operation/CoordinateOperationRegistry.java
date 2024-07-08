@@ -32,6 +32,7 @@ import java.util.logging.LogRecord;
 import java.util.function.Predicate;
 import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
+import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Citation;
@@ -53,7 +54,6 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
-import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
@@ -64,6 +64,7 @@ import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.privy.EllipsoidalHeightCombiner;
 import org.apache.sis.referencing.privy.PositionalAccuracyConstant;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
+import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.referencing.internal.DeferredCoordinateOperation;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.operation.provider.Affine;
@@ -82,6 +83,7 @@ import org.apache.sis.util.resources.Vocabulary;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.crs.GeneralDerivedCRS;
+import org.apache.sis.referencing.operation.transform.MathTransformBuilder;
 
 
 /**
@@ -124,11 +126,11 @@ class CoordinateOperationRegistry {
     static final Identifier AXIS_CHANGES = createIdentifier(Vocabulary.Keys.AxisChanges);
 
     /**
-     * The identifier for a transformation which is a datum shift without
-     * {@link org.apache.sis.referencing.datum.BursaWolfParameters}.
+     * The identifier for a transformation which is a datum shift without Bursa-Wolf parameters.
      * Only the changes in ellipsoid axis-length are taken in account.
-     * Such ellipsoid shifts are approximations and may have 1 kilometre error.
+     * Such "ellipsoid shifts" are approximations and may have 1 kilometre error.
      *
+     * @see org.apache.sis.referencing.datum.BursaWolfParameters
      * @see org.apache.sis.referencing.privy.PositionalAccuracyConstant#DATUM_SHIFT_OMITTED
      */
     static final Identifier ELLIPSOID_CHANGE = createIdentifier(Vocabulary.Keys.EllipsoidChange);
@@ -1022,13 +1024,10 @@ class CoordinateOperationRegistry {
             CoordinateReferenceSystem crs;
             if (Utilities.equalsApproximately(sourceCRS, crs = operation.getSourceCRS())) sourceCRS = crs;
             if (Utilities.equalsApproximately(targetCRS, crs = operation.getTargetCRS())) targetCRS = crs;
-            final MathTransformFactory mtFactory = factorySIS.getMathTransformFactory();
-            if (mtFactory instanceof DefaultMathTransformFactory) {
-                MathTransform mt = ((DefaultMathTransformFactory) mtFactory).createParameterizedTransform(
-                        parameters, ReferencingUtilities.createTransformContext(sourceCRS, targetCRS));
-                return factorySIS.createSingleOperation(IdentifiedObjects.getProperties(operation),
-                        sourceCRS, targetCRS, null, operation.getMethod(), mt);
-            }
+            final var builder = createTransformBuilder(parameters, sourceCRS, targetCRS);
+            final MathTransform mt = builder.create();      // Must be before `operation.getMethod()`.
+            return factorySIS.createSingleOperation(IdentifiedObjects.getProperties(operation),
+                    sourceCRS, targetCRS, null, operation.getMethod(), mt);
         } else {
             // Should never happen because parameters are mandatory, but let be safe.
             log(resources().getLogRecord(Level.WARNING, Resources.Keys.MissingParameterValues_1,
@@ -1139,23 +1138,20 @@ class CoordinateOperationRegistry {
             Matrix matrix = MathTransforms.getMatrix(op.getMathTransform());
             if (matrix == null) {
                 if (SubTypes.isSingleOperation(op)) {
-                    final MathTransformFactory mtFactory = factorySIS.getMathTransformFactory();
-                    if (mtFactory instanceof DefaultMathTransformFactory) {
-                        if (forward) sourceCRS = toGeodetic3D(sourceCRS, source3D);
-                        else         targetCRS = toGeodetic3D(targetCRS, target3D);
-                        final DefaultMathTransformFactory.Context context;
-                        final MathTransform mt;
-                        try {
-                            context = ReferencingUtilities.createTransformContext(sourceCRS, targetCRS);
-                            mt = ((DefaultMathTransformFactory) mtFactory).createParameterizedTransform(
-                                    ((SingleOperation) op).getParameterValues(), context);
-                        } catch (InvalidGeodeticParameterException e) {
-                            log(null, e);
-                            break;
-                        }
-                        operations.set(recreate(op, sourceCRS, targetCRS, mt, context.getMethodUsed()));
-                        return true;
+                    if (forward) sourceCRS = toGeodetic3D(sourceCRS, source3D);
+                    else         targetCRS = toGeodetic3D(targetCRS, target3D);
+                    final MathTransformBuilder builder;
+                    final MathTransform mt;
+                    try {
+                        final var parameters = ((SingleOperation) op).getParameterValues();
+                        builder = createTransformBuilder(parameters, sourceCRS, targetCRS);
+                        mt = builder.create();
+                    } catch (InvalidGeodeticParameterException e) {
+                        log(null, e);
+                        break;
                     }
+                    operations.set(recreate(op, sourceCRS, targetCRS, mt, builder.getMethod().orElse(null)));
+                    return true;
                 }
                 break;
             }
@@ -1256,6 +1252,30 @@ class CoordinateOperationRegistry {
     }
 
     /**
+     * Creates a transform builder which will use the given <abbr>CRS</abbr> as contextual information.
+     * The ellipsoids will be used for completing the axis-length parameters, and the coordinate systems will
+     * be used for axis order and units of measurement. This method does not perform <abbr>CRS</abbr> changes
+     * other than axis order and units.
+     *
+     * @param  parameters  the operation parameter value group.
+     * @param  sourceCRS   the CRS from which to get the source coordinate system and ellipsoid.
+     * @param  targetCRS   the CRS from which to get the target coordinate system and ellipsoid.
+     * @return the parameterized transform.
+     * @throws FactoryException if the transform cannot be created.
+     */
+    private MathTransformBuilder createTransformBuilder(
+            final ParameterValueGroup parameters,
+            final CoordinateReferenceSystem sourceCRS,
+            final CoordinateReferenceSystem targetCRS) throws FactoryException
+    {
+        final var builder = new ParameterizedTransformBuilder(factorySIS.getMathTransformFactory(), null);
+        builder.setParameters(parameters, true);
+        builder.setSourceAxes(sourceCRS);
+        builder.setTargetAxes(targetCRS);
+        return builder;
+    }
+
+    /**
      * Creates a coordinate operation from a math transform.
      * The method performs the following steps:
      *
@@ -1335,11 +1355,10 @@ class CoordinateOperationRegistry {
             } else {
                 final ParameterDescriptorGroup descriptor = AbstractCoordinateOperation.getParameterDescriptors(transform);
                 if (descriptor != null) {
-                    final Identifier name = descriptor.getName();
-                    if (name != null) {
-                        method = factorySIS.getOperationMethod(name.getCode());
-                    }
-                    if (method == null) {
+                    try {
+                        method = CoordinateOperations.findMethod(factorySIS.getMathTransformFactory(), descriptor);
+                    } catch (NoSuchIdentifierException e) {
+                        recoverableException("createFromMathTransform", e);
                         method = factorySIS.createOperationMethod(properties, descriptor);
                     }
                 }

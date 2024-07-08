@@ -22,15 +22,22 @@ import org.opengis.referencing.cs.SphericalCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.datum.GeodeticDatum;
+import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.MathTransformFactory;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.Matrix4;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.transform.ContextualParameters.MatrixRole;
-import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory.Context;
+import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.measure.Units;
+
+// Specific to the main branch:
+import org.apache.sis.referencing.privy.CoordinateOperations;
 
 
 /**
@@ -42,12 +49,7 @@ import org.apache.sis.measure.Units;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class MathTransformContext extends Context {
-    /**
-     * For cross-version compatibility.
-     */
-    private static final long serialVersionUID = 8765209303733056283L;
-
+final class MathTransformContext extends ParameterizedTransformBuilder {
     /**
      * The longitude of the source and target prime meridian, in number of degrees East of Greenwich.
      */
@@ -57,7 +59,8 @@ final class MathTransformContext extends Context {
      * Creates a new context which add some datum-related information in addition
      * to the information provided by the super-class.
      */
-    MathTransformContext(final GeodeticDatum source, final GeodeticDatum target) {
+    MathTransformContext(final MathTransformFactory factory, final GeodeticDatum source, final GeodeticDatum target) {
+        super(factory, null);
         final double rs = ReferencingUtilities.getGreenwichLongitude(source.getPrimeMeridian(), Units.DEGREE);
         final double rt = ReferencingUtilities.getGreenwichLongitude(target.getPrimeMeridian(), Units.DEGREE);
         if (rs != rt) {
@@ -67,31 +70,65 @@ final class MathTransformContext extends Context {
     }
 
     /**
+     * Creates a math transform that represent a change of coordinate system.
+     * If one argument is an ellipsoidal coordinate systems, then the {@code ellipsoid} argument is mandatory.
+     * In other cases (including the case where both coordinate systems are ellipsoidal),
+     * the ellipsoid argument is ignored and can be {@code null}.
+     *
+     * <p>This method does not change the state of this {@code MathTransformContext}.
+     * This method is defined here for {@link CoordinateOperationFinder} convenience,
+     * because this method is invoked together with {@code setSource/TargetAxes(…)}.</p>
+     *
+     * <h4>Design note</h4>
+     * This method does not accept separated ellipsoid arguments for {@code source} and {@code target} because
+     * this method should not be used for datum shifts. If the two given coordinate systems are ellipsoidal,
+     * then they are assumed to use the same ellipsoid. If different ellipsoids are desired, then a
+     * parameterized transform like <q>Molodensky</q>, <q>Geocentric translations</q>, <q>Coordinate Frame Rotation</q>
+     * or <q>Position Vector transformation</q> should be used instead.
+     *
+     * @param  source     the source coordinate system.
+     * @param  target     the target coordinate system.
+     * @param  ellipsoid  the ellipsoid of {@code EllipsoidalCS}, or {@code null} if none.
+     * @return a conversion from the given source to the given target coordinate system.
+     * @throws FactoryException if the conversion cannot be created.
+     */
+    final MathTransform createCoordinateSystemChange(final CoordinateSystem source,
+                                                     final CoordinateSystem target,
+                                                     final Ellipsoid ellipsoid)
+            throws FactoryException
+    {
+        final var builder = CoordinateOperations.builder(getFactory(), Constants.COORDINATE_SYSTEM_CONVERSION);
+        builder.setSourceAxes(source, ellipsoid);
+        builder.setTargetAxes(target, ellipsoid);
+        return builder.create();
+    }
+
+    /**
      * Returns the normalization or denormalization matrix.
      */
     @Override
     @SuppressWarnings("fallthrough")
     public Matrix getMatrix(final MatrixRole role) throws FactoryException {
-        final CoordinateSystem cs;
+        final Class<? extends CoordinateSystem> userCS;
         boolean inverse = false;
         double rotation;
         switch (role) {
             default: throw new IllegalArgumentException(Errors.format(Errors.Keys.IllegalArgumentValue_2, "role", role));
             case INVERSE_NORMALIZATION:   inverse  = true;              // Fall through
             case NORMALIZATION:           rotation = sourceMeridian;
-                                          cs       = getSourceCS();
+                                          userCS   = getSourceCSType();
                                           break;
             case INVERSE_DENORMALIZATION: inverse  = true;              // Fall through
             case DENORMALIZATION:         inverse  = !inverse;
                                           rotation = targetMeridian;
-                                          cs       = getTargetCS();
+                                          userCS   = getTargetCSType();
                                           break;
         }
         Matrix matrix = super.getMatrix(role);
         if (rotation != 0) {
             if (inverse) rotation = -rotation;
             MatrixSIS cm = MatrixSIS.castOrCopy(matrix);
-            if (cs instanceof CartesianCS) {
+            if (CartesianCS.class.isAssignableFrom(userCS)) {
                 rotation = Math.toRadians(rotation);
                 final Matrix4 rot = new Matrix4();
                 rot.m00 =   rot.m11 = Math.cos(rotation);
@@ -101,7 +138,10 @@ final class MathTransformContext extends Context {
                 } else {
                     matrix = cm.multiply(rot);                  // Apply the rotation before normalization.
                 }
-            } else if (cs == null || cs instanceof EllipsoidalCS || cs instanceof SphericalCS) {
+            } else if (userCS == CoordinateSystem.class
+                    || EllipsoidalCS.class.isAssignableFrom(userCS)
+                    ||   SphericalCS.class.isAssignableFrom(userCS))
+            {
                 final Double value = rotation;
                 if (inverse) {
                     cm.convertBefore(0, null, value);           // Longitude is the first axis in normalized CS.
@@ -110,7 +150,7 @@ final class MathTransformContext extends Context {
                 }
                 matrix = cm;
             } else {
-                throw new FactoryException(Errors.format(Errors.Keys.UnsupportedCoordinateSystem_1, cs.getName()));
+                throw new FactoryException(Errors.format(Errors.Keys.UnsupportedCoordinateSystem_1, userCS.getName()));
             }
         }
         return matrix;

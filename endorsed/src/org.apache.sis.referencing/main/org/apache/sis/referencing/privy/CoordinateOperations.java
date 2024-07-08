@@ -20,9 +20,12 @@ import java.util.Set;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.opengis.util.NoSuchIdentifierException;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ObjectFactory;
 import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.RangeMeaning;
@@ -35,21 +38,28 @@ import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
-import org.apache.sis.metadata.privy.NameToIdentifier;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.metadata.privy.NameToIdentifier;
 import org.apache.sis.util.Deprecable;
 import org.apache.sis.util.Static;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.util.privy.URLs;
 import org.apache.sis.util.collection.Containers;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.system.Loggers;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.crs.GeneralDerivedCRS;
+import org.apache.sis.referencing.operation.transform.MathTransformBuilder;
+import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.util.FactoryException;
 
 
 /**
@@ -58,6 +68,11 @@ import org.opengis.referencing.crs.GeneralDerivedCRS;
  * @author  Martin Desruisseaux (Geomatys)
  */
 public final class CoordinateOperations extends Static {
+    /**
+     * The logger where to report warnings.
+     */
+    public static final Logger LOGGER = Logger.getLogger(Loggers.COORDINATE_OPERATION);
+
     /**
      * The {@link org.apache.sis.referencing.datum.DefaultGeodeticDatum#BURSA_WOLF_KEY} value.
      */
@@ -158,6 +173,67 @@ public final class CoordinateOperations extends Static {
     }
 
     /**
+     * Returns the operation method for the name of the given identified object.
+     * The given object is typically a {@code ParameterDescriptorGroup}.
+     *
+     * @param  mtFactory   the factory where to search.
+     * @param  descriptor  object from which to take the name of the operation method to fetch.
+     * @return the operation method of the desired name.
+     * @throws NoSuchIdentifierException if the requested operation method cannot be found.
+     */
+    public static OperationMethod findMethod(final MathTransformFactory mtFactory, final IdentifiedObject descriptor)
+            throws NoSuchIdentifierException
+    {
+        final String methodName = descriptor.getName().getCode();
+        String methodIdentifier = IdentifiedObjects.toString(IdentifiedObjects.getIdentifier(descriptor, Citations.EPSG));
+        if (methodIdentifier == null) {
+            methodIdentifier = methodName;
+        }
+        /*
+         * Get the MathTransformProvider of the same name or identifier than the given parameter group.
+         * We give precedence to EPSG identifier because operation method names are sometimes ambiguous
+         * (e.g. "Lambert Azimuthal Equal Area (Spherical)"). If we fail to find the method by its EPSG code,
+         * we will try searching by method name. As a side effect, this second attempt will produce a better
+         * error message if the method is really not found.
+         */
+        OperationMethod method;
+        try {
+            method = findMethod(mtFactory, methodIdentifier);
+        } catch (NoSuchIdentifierException exception) {
+            if (methodIdentifier.equals(methodName)) {
+                throw exception;
+            } else try {
+                method = findMethod(mtFactory, methodName);
+            } catch (NoSuchIdentifierException e) {
+                e.addSuppressed(exception);
+                throw e;
+            }
+            // Source class and method name will be inferred from the stack trace.
+            Logging.recoverableException(LOGGER, null, null, exception);
+        }
+        return method;
+    }
+
+    /**
+     * Returns the operation method for the specified name or identifier, using user-overrideable method if possible.
+     * If the given factory is an instance of {@link DefaultMathTransformFactory}, then this method delegates to it.
+     * Otherwise, this method delegates to {@link #findMethod(Iterable, String)}.
+     *
+     * @param  mtFactory  the factory where to search for a method.
+     * @param  name  the name of the operation method to fetch.
+     * @return the operation method of the given name.
+     * @throws NoSuchIdentifierException if the requested operation method cannot be found.
+     */
+    public static OperationMethod findMethod(final MathTransformFactory mtFactory, final String name)
+            throws NoSuchIdentifierException
+    {
+        if (mtFactory instanceof DefaultMathTransformFactory) {
+            return ((DefaultMathTransformFactory) mtFactory).getOperationMethod(name);
+        }
+        return findMethod(mtFactory.getAvailableMethods(SingleOperation.class), name);
+    }
+
+    /**
      * Returns the operation method for the specified name or identifier. The given argument shall be either
      * a method name (e.g. <q>Transverse Mercator</q>) or one of its identifiers (e.g. {@code "EPSG:9807"}).
      * The search is case-insensitive and comparisons against method names can be
@@ -172,10 +248,9 @@ public final class CoordinateOperations extends Static {
      * @return the coordinate operation method for the given name or identifier.
      * @throws NoSuchIdentifierException if the requested operation method cannot be found.
      *
-     * @see org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory#getOperationMethod(String)
-     * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#getOperationMethod(String)
+     * @see DefaultMathTransformFactory#getOperationMethod(String)
      */
-    public static OperationMethod findOperationMethod(final Iterable<? extends OperationMethod> methods, final String identifier)
+    public static OperationMethod findMethod(final Iterable<? extends OperationMethod> methods, final String identifier)
             throws NoSuchIdentifierException
     {
         OperationMethod fallback = null;
@@ -203,13 +278,40 @@ public final class CoordinateOperations extends Static {
     }
 
     /**
+     * Returns the transform builder for the specified method name, using user-overrideable method if possible.
+     * If the given factory is an instance of {@link DefaultMathTransformFactory}, then this method delegates to it.
+     *
+     * @param  mtFactory  the factory to use for a builder.
+     * @param  method     the name of the operation method to fetch.
+     * @return the transform builder for the operation method of the given name.
+     * @throws NoSuchIdentifierException if the requested operation method cannot be found.
+     */
+    public static MathTransformBuilder builder(final MathTransformFactory mtFactory, final String method)
+            throws NoSuchIdentifierException
+    {
+        if (mtFactory instanceof DefaultMathTransformFactory) {
+            return ((DefaultMathTransformFactory) mtFactory).builder(method);
+        } else {
+            final var m = findMethod(mtFactory.getAvailableMethods(SingleOperation.class), method);
+            return new ParameterizedTransformBuilder(mtFactory, m) {
+                @Override public MathTransform create() throws FactoryException {
+                    if (sourceCS == null && targetCS == null && sourceEllipsoid == null && targetEllipsoid == null) {
+                        return swapAndScaleAxes(factory.createParameterizedTransform(parameters()));
+                    }
+                    return super.create();
+                }
+            };
+        }
+    }
+
+    /**
      * Returns {@code true} if the given transform factory is the default instances used by Apache SIS.
      *
-     * @param  factory  the factory to test. May be null.
+     * @param  mtFactory  the factory to test. May be null.
      * @return whether the given factory is the default instance.
      */
-    public static boolean isDefaultInstance(final MathTransformFactory factory) {
-        return factory == DefaultMathTransformFactory.provider();
+    public static boolean isDefaultInstance(final MathTransformFactory mtFactory) {
+        return mtFactory == DefaultMathTransformFactory.provider();
     }
 
     /**

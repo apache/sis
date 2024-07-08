@@ -47,6 +47,10 @@ import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.measure.UnitFormat;
 import org.apache.sis.measure.Units;
 
+// Specific to the main branch:
+import org.apache.sis.referencing.privy.CoordinateOperations;
+import org.apache.sis.referencing.operation.transform.MathTransformBuilder;
+
 
 /**
  * Well Known Text (WKT) parser for {@linkplain MathTransform math transform}s.
@@ -415,10 +419,9 @@ class MathTransformParser extends AbstractParser {
             return null;
         }
         classification = element.pullString("classification");
-        final MathTransformFactory mtFactory = factories.getMathTransformFactory();
-        final ParameterValueGroup parameters;
+        final MathTransformBuilder builder;
         try {
-            parameters = mtFactory.getDefaultParameters(classification);
+            builder = CoordinateOperations.builder(factories.getMathTransformFactory(), classification);
         } catch (NoSuchIdentifierException exception) {
             throw element.parseFailed(exception);
         }
@@ -426,18 +429,18 @@ class MathTransformParser extends AbstractParser {
          * Scan over all PARAMETER["name", value] elements and
          * set the corresponding parameter in the parameter group.
          */
-        parseParameters(element, parameters, null, null);
+        parseParameters(element, builder.parameters(), null, null);
         element.close(ignoredElements);
         /*
          * We now have all information for constructing the math transform.
          */
         final MathTransform transform;
         try {
-            transform = mtFactory.createParameterizedTransform(parameters);
+            transform = builder.create();
         } catch (FactoryException exception) {
             throw element.parseFailed(exception);
         }
-        lastMethod = mtFactory.getLastMethodUsed();
+        lastMethod = builder.getMethod().orElse(null);
         return transform;
     }
 

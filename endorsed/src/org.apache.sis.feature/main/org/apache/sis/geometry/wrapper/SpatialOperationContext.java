@@ -357,8 +357,8 @@ select: if (commonCRS == null) {
 
         /** Creates the {@link #INSTANCE} singleton. */
         private Projector() throws FactoryException {
-            final ReferencingFactoryContainer f = new ReferencingFactoryContainer();
-            method = f.getCoordinateOperationFactory().getOperationMethod("Mercator_2SP");
+            final var f = new ReferencingFactoryContainer();
+            method = f.findOperationMethod("Mercator_2SP");
             cartCS = f.getStandardProjectedCS();
             name   = Map.of(DefaultConversion.NAME_KEY,
                             new ImmutableIdentifier(Citations.SIS, "SIS", "Mercator for geometry"));
