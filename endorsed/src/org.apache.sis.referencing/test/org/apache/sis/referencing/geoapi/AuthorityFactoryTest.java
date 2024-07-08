@@ -18,6 +18,7 @@ package org.apache.sis.referencing.geoapi;
 
 import org.opengis.util.FactoryException;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.MultiRegisterOperations;
 
 // Test dependencies
 import org.junit.jupiter.api.Disabled;
@@ -44,7 +45,7 @@ public final class AuthorityFactoryTest extends org.opengis.test.referencing.Aut
      * @throws FactoryException if no factory can be returned for the given authority.
      */
     public AuthorityFactoryTest() throws FactoryException {
-        super(CRS.getAuthorityFactory(null), null, null);
+        super(MultiRegisterOperations.provider());
     }
 
     /**

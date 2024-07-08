@@ -65,6 +65,7 @@ class MathTransformFactoryBase implements MathTransformFactory {
 
     /** Default implementation unconditionally returns {@code null}. */
     @Override
+    @Deprecated
     public OperationMethod getLastMethodUsed() {
         return null;
     }
@@ -77,8 +78,15 @@ class MathTransformFactoryBase implements MathTransformFactory {
 
     /** Default implementation throws an exception. */
     @Override
+    @Deprecated
     public MathTransform createBaseToDerived(CoordinateReferenceSystem baseCRS, ParameterValueGroup parameters, CoordinateSystem derivedCS) throws FactoryException {
         throw new FactoryException(MESSAGE);
+    }
+
+    /** Default implementation throws an exception. */
+    @Override
+    public MathTransform.Builder builder(String code) throws NoSuchIdentifierException {
+        throw new NoSuchIdentifierException(MESSAGE, code);
     }
 
     /** Default implementation throws an exception. */

@@ -235,7 +235,7 @@ public abstract class AbstractProvider extends DefaultOperationMethod implements
      * @param  context   the potentially ambiguous context.
      * @return name of the provider to use, or {@code null} if there is nothing to change.
      */
-    public String resolveAmbiguity(DefaultMathTransformFactory.Context context) {
+    public String resolveAmbiguity(Context context) {
         return null;
     }
 

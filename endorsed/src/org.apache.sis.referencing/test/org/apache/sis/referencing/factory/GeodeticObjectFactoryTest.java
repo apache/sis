@@ -22,13 +22,16 @@ import javax.measure.quantity.Angle;
 import javax.measure.quantity.Length;
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.IdentifiedObject;
+import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.CartesianCS;
 import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.AxisDirection;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
+import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.ProjectedCRS;
+import org.opengis.referencing.datum.DatumFactory;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -36,8 +39,9 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.MultiRegisterOperations;
 import org.apache.sis.referencing.operation.DefaultConversion;
-import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.measure.Units;
 
@@ -63,10 +67,7 @@ public final class GeodeticObjectFactoryTest extends ObjectFactoryTest {
      * Creates a new test suite using the singleton factory instance.
      */
     public GeodeticObjectFactoryTest() {
-        super(GeodeticObjectFactory.provider(),
-              GeodeticObjectFactory.provider(),
-              GeodeticObjectFactory.provider(),
-              DefaultCoordinateOperationFactory.provider());
+        super(MultiRegisterOperations.provider());
     }
 
     /**
@@ -78,6 +79,7 @@ public final class GeodeticObjectFactoryTest extends ObjectFactoryTest {
      */
     @Test
     public void testCreateFromWKT() throws FactoryException {
+        final CRSFactory crsFactory = factories.getFactory(CRSFactory.class).orElseThrow();
         final GeodeticCRS crs = (GeodeticCRS) crsFactory.createFromWKT(
                 "GEOGCS[“WGS 84”,\n" +
                 "  DATUM[“World Geodetic System 1984”,\n" +
@@ -97,6 +99,7 @@ public final class GeodeticObjectFactoryTest extends ObjectFactoryTest {
      */
     @Test
     public void testInvalidParameterInWKT() throws FactoryException {
+        final CRSFactory crsFactory = factories.getFactory(CRSFactory.class).orElseThrow();
         var e = assertThrows(InvalidGeodeticParameterException.class,
                 () -> crsFactory.createFromWKT(
                 "PROJCRS[“Custom”,\n" +
@@ -134,6 +137,9 @@ public final class GeodeticObjectFactoryTest extends ObjectFactoryTest {
      */
     @Test
     public void testStepByStepCreation() throws FactoryException {
+        final CRSFactory   crsFactory   = factories.getFactory(CRSFactory.class).orElseThrow();
+        final CSFactory    csFactory    = factories.getFactory(CSFactory.class).orElseThrow();
+        final DatumFactory datumFactory = factories.getFactory(DatumFactory.class).orElseThrow();
         /*
          * List of all objects to be created in this test.
          */
@@ -189,7 +195,7 @@ public final class GeodeticObjectFactoryTest extends ObjectFactoryTest {
         /*
          * Defining conversion
          */
-        method = copFactory.getOperationMethod("Transverse_Mercator");
+        method = DefaultMathTransformFactory.provider().getOperationMethod("Transverse_Mercator");
         parameters = method.getParameters().createValue();
         parameters.parameter("semi_major")        .setValue(ellipsoid.getSemiMajorAxis());
         parameters.parameter("semi_minor")        .setValue(ellipsoid.getSemiMinorAxis());

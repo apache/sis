@@ -36,9 +36,6 @@ import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
  *
  * <h2>Future evolution</h2>
  * A cleaner approach would be to replace those methods by a concatenation of standard methods.
- * {@link org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#getLastMethodUsed()}
- * can be invoked after {@code factory.createCoordinateSystemChange(…)} for getting pieces of information
- * needed, but we still have to put all the pieces together.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *

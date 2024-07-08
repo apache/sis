@@ -73,7 +73,6 @@ import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.metadata.sql.privy.SQLUtilities;
 import org.apache.sis.referencing.internal.DeferredCoordinateOperation;
@@ -109,6 +108,7 @@ import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
+import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
@@ -2950,8 +2950,11 @@ next:                   while (r.next()) {
                          * GeoAPI method cannot handle Molodensky transform because it does not give the target datum).
                          */
                         opProperties = new HashMap<>(opProperties);             // Because this class uses a shared map.
-                        final MathTransformFactory mtFactory = owner.mtFactory;
-                        final MathTransform mt = ReferencingUtilities.createBaseToDerived(mtFactory, sourceCRS, parameters, targetCRS);
+                        final var builder = new ParameterizedTransformBuilder(owner.mtFactory, null);
+                        builder.setParameters(parameters, true);
+                        builder.setSourceAxes(sourceCRS);
+                        builder.setTargetAxes(targetCRS);
+                        final MathTransform mt = builder.create();
                         /*
                          * Give a hint to the factory about the type of the coordinate operation. ISO 19111 defines
                          * Conversion and Transformation, but SIS also have more specific sub-types.  We begin with
@@ -2966,7 +2969,7 @@ next:                   while (r.next()) {
                         } else {
                             opType = SingleOperation.class;
                         }
-                        final OperationMethod provider = mtFactory.getLastMethodUsed();
+                        final OperationMethod provider = builder.getMethod().orElse(null);
                         if (provider instanceof DefaultOperationMethod) {                 // SIS-specific
                             final Class<?> s = ((DefaultOperationMethod) provider).getOperationType();
                             if (s != null && opType.isAssignableFrom(s)) {

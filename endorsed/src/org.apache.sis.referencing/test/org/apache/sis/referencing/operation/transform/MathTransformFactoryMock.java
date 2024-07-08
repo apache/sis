@@ -17,6 +17,7 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Set;
+import java.util.Optional;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.metadata.citation.Citation;
@@ -28,7 +29,6 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
-import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.provider.AbstractProvider;
 
 // Test dependencies
@@ -48,7 +48,7 @@ public final class MathTransformFactoryMock implements MathTransformFactory {
     /**
      * The operation method.
      */
-    private final DefaultOperationMethod method;
+    private final AbstractProvider method;
 
     /**
      * Parameters used during the last creation of a math transform.
@@ -70,7 +70,7 @@ public final class MathTransformFactoryMock implements MathTransformFactory {
      *
      * @param  method  the operation method to put in this factory.
      */
-    public MathTransformFactoryMock(final DefaultOperationMethod method) {
+    public MathTransformFactoryMock(final AbstractProvider method) {
         this.method = method;
     }
 
@@ -102,8 +102,39 @@ public final class MathTransformFactoryMock implements MathTransformFactory {
      * @return the method given at construction time.
      */
     @Override
+    @Deprecated
     public OperationMethod getLastMethodUsed() {
         return method;
+    }
+
+    /**
+     * Returns the builder for the operation method.
+     *
+     * @param  name  shall be the operation method name.
+     * @return the builder.
+     * @throws NoSuchIdentifierException if the given name is not the name
+     *         of the operation method known to this factory.
+     */
+    @Override
+    public MathTransform.Builder builder(final String name) throws NoSuchIdentifierException {
+        if (method.isHeuristicMatchForName(name)) {
+            final ParameterValueGroup parameters = method.getParameters().createValue();
+            return new MathTransform.Builder() {
+                @Override public Optional<OperationMethod> getMethod() {
+                    return Optional.of(method);
+                }
+
+                @Override public ParameterValueGroup parameters() {
+                    return parameters;
+                }
+
+                @Override public MathTransform create() throws FactoryException {
+                    lastParameters = parameters;
+                    return method.createMathTransform(MathTransformFactoryMock.this, parameters);
+                }
+            };
+        }
+        throw new NoSuchIdentifierException(null, name);
     }
 
     /**
@@ -115,6 +146,7 @@ public final class MathTransformFactoryMock implements MathTransformFactory {
      *         of the operation method known to this factory.
      */
     @Override
+    @Deprecated
     public ParameterValueGroup getDefaultParameters(final String name) throws NoSuchIdentifierException {
         if (method.isHeuristicMatchForName(name)) {
             return method.getParameters().createValue();
@@ -130,9 +162,10 @@ public final class MathTransformFactoryMock implements MathTransformFactory {
      * @throws FactoryException if the provider cannot create the transform.
      */
     @Override
+    @Deprecated
     public MathTransform createParameterizedTransform(ParameterValueGroup parameters) throws FactoryException {
         lastParameters = parameters;
-        return ((MathTransformProvider) method).createMathTransform(this, parameters);
+        return method.createMathTransform(this, parameters);
     }
 
     /**
@@ -192,6 +225,7 @@ public final class MathTransformFactoryMock implements MathTransformFactory {
      * @return never returned.
      */
     @Override
+    @Deprecated
     public MathTransform createBaseToDerived(CoordinateReferenceSystem baseCRS,
             ParameterValueGroup parameters, CoordinateSystem derivedCS)
     {

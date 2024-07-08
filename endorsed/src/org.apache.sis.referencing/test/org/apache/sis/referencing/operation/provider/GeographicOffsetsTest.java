@@ -124,19 +124,18 @@ public final class GeographicOffsetsTest extends TransformTestCase {
     @Test
     public void testCreateWithContext() throws FactoryException, TransformException {
         final DefaultMathTransformFactory factory = DefaultMathTransformFactory.provider();
-        final ParameterValueGroup pv = factory.getDefaultParameters("Vertical Offset");
-        pv.parameter("Vertical Offset").setValue(15.55, Units.FOOT);
         /*
          * Now create the MathTransform. But at the difference of the above testVerticalOffset() method,
          * we supply information about axis directions. The operation parameter shall have the same sign
-         * than in the EPSG database (which is positive), and the source and target coordinates shall have
+         * as in the EPSG database (which is positive), and the source and target coordinates shall have
          * the same sign as in the EPSG example (positive too). However, we do not test unit conversion
          * in this method (EPSG sample point uses feet units), only axis direction.
          */
-        final DefaultMathTransformFactory.Context context = new DefaultMathTransformFactory.Context();
-        context.setSource(HardCodedCS.GRAVITY_RELATED_HEIGHT);  // Direction up, in metres.
-        context.setTarget(HardCodedCS.DEPTH);                   // Direction down, in metres.
-        transform = factory.createParameterizedTransform(pv, context);
+        final var builder = factory.builder("Vertical Offset");
+        builder.parameters().parameter("Vertical Offset").setValue(15.55, Units.FOOT);
+        builder.setSourceAxes(HardCodedCS.GRAVITY_RELATED_HEIGHT, null);  // Direction up, in metres.
+        builder.setTargetAxes(HardCodedCS.DEPTH, null);                   // Direction down, in metres.
+        transform = builder.create();
         tolerance = Formulas.LINEAR_TOLERANCE;
         final double[] source = new double[transform.getSourceDimensions()];
         final double[] target = new double[transform.getTargetDimensions()];

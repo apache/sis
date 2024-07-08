@@ -29,6 +29,7 @@ import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.provider.MapProjection;
+import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
 import org.apache.sis.referencing.operation.transform.MathTransformFactoryMock;
 import org.apache.sis.referencing.operation.transform.MathTransformProvider;
@@ -150,7 +151,7 @@ abstract class MapProjectionTestCase extends MathTransformTestCase {
      * Initializes a complete projection (including conversion from degrees to radians) for the given provider.
      * Base CRS axis order is (longitude, latitude).
      */
-    final void createCompleteProjection(final DefaultOperationMethod provider,
+    final void createCompleteProjection(final AbstractProvider provider,
             final double semiMajor,
             final double semiMinor,
             final double centralMeridian,

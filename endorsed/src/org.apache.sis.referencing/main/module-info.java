@@ -33,6 +33,9 @@ module org.apache.sis.referencing {
     provides org.apache.sis.metadata.sql.privy.Initializer
         with org.apache.sis.referencing.internal.DatabaseListener;
 
+    provides org.opengis.referencing.RegisterOperations
+        with org.apache.sis.referencing.MultiRegisterOperations;
+
     provides org.opengis.referencing.crs.CRSFactory
         with org.apache.sis.referencing.factory.GeodeticObjectFactory;
 

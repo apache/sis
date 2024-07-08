@@ -37,27 +37,27 @@ public final class DBFField {
     /**
      * Binary, String : b or B
      */
-    public static final char TYPE_BINARY = 'b';
+    public static final char TYPE_BINARY = 'B';
     /**
      * Characters : c or C
      */
-    public static final char TYPE_CHAR = 'c';
+    public static final char TYPE_CHAR = 'C';
     /**
      * Date : d or D
      */
-    public static final char TYPE_DATE = 'd';
+    public static final char TYPE_DATE = 'D';
     /**
      * Numeric : n or N
      */
-    public static final char TYPE_NUMBER = 'n';
+    public static final char TYPE_NUMBER = 'N';
     /**
      * Logical : l or L
      */
-    public static final char TYPE_LOGIC = 'l';
+    public static final char TYPE_LOGIC = 'L';
     /**
      * Memo, String : m or M
      */
-    public static final char TYPE_MEMO = 'm';
+    public static final char TYPE_MEMO = 'M';
     /**
      * TimeStamp : 8 bytes, two longs, first for date, second for time.
      * The date is the number of days since  01/01/4713 BC.
@@ -67,7 +67,7 @@ public final class DBFField {
     /**
      * Long : i or I on 4 bytes, first bit is the sign, 0 = negative
      */
-    public static final char TYPE_LONG = 'i';
+    public static final char TYPE_LONG = 'I';
     /**
      * Autoincrement : same as Long
      */
@@ -75,15 +75,15 @@ public final class DBFField {
     /**
      * Floats : f or F
      */
-    public static final char TYPE_FLOAT = 'f';
+    public static final char TYPE_FLOAT = 'F';
     /**
      * Double : o or O, real double on 8bytes, not string encoded
      */
-    public static final char TYPE_DOUBLE = 'o';
+    public static final char TYPE_DOUBLE = 'O';
     /**
      * OLE : g or G
      */
-    public static final char TYPE_OLE = 'g';
+    public static final char TYPE_OLE = 'G';
 
     /**
      * Field name.
@@ -139,7 +139,7 @@ public final class DBFField {
         this.fieldDecimals = fieldDecimals;
         this.charset = charset;
 
-        switch (Character.toLowerCase(fieldType)) {
+        switch (Character.toUpperCase(fieldType)) {
             case TYPE_BINARY : valueClass = Long.class;      reader = this::readBinary; writer = this::writeBinary; break;
             case TYPE_CHAR :   valueClass = String.class;    reader = this::readChar;   writer = this::writeChar; break;
             case TYPE_DATE :   valueClass = LocalDate.class; reader = this::readDate;   writer = this::writeDate; break;

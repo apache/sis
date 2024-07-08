@@ -29,7 +29,6 @@ import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.datum.DatumFactory;
 import org.opengis.referencing.datum.DatumAuthorityFactory;
 import org.opengis.referencing.operation.OperationMethod;
-import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
@@ -432,12 +431,6 @@ public class ReferencingFactoryContainer implements Localized {
      */
     public final OperationMethod findOperationMethod(String name) throws NoSuchIdentifierException {
         ArgumentChecks.ensureNonEmpty("name", name = name.strip());
-        @SuppressWarnings("LocalVariableHidesMemberVariable")
-        final MathTransformFactory mtFactory = getMathTransformFactory();
-        if (mtFactory instanceof DefaultMathTransformFactory) {
-            return ((DefaultMathTransformFactory) mtFactory).getOperationMethod(name);
-        }
-        return CoordinateOperations.findOperationMethod(
-                mtFactory.getAvailableMethods(SingleOperation.class), name);
+        return CoordinateOperations.findMethod(getMathTransformFactory(), name);
     }
 }

@@ -38,7 +38,6 @@ import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.MergedProperties;
 import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Utilities;
@@ -46,6 +45,7 @@ import org.apache.sis.util.Debug;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
+import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.collection.WeakHashSet;
@@ -250,18 +250,6 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     }
 
     /**
-     * Returns the Apache SIS implementation of math transform factory.
-     * This method is used only when we need SIS-specific methods.
-     */
-    final DefaultMathTransformFactory getDefaultMathTransformFactory() {
-        MathTransformFactory factory = getMathTransformFactory();
-        if (factory instanceof DefaultMathTransformFactory) {
-            return (DefaultMathTransformFactory) factory;
-        }
-        return DefaultMathTransformFactory.provider();
-    }
-
-    /**
      * Returns the operation method of the given name. The given argument shall be either a method
      * {@linkplain DefaultOperationMethod#getName() name} (e.g. <q>Transverse Mercator</q>)
      * or one of its {@linkplain DefaultOperationMethod#getIdentifiers() identifiers} (e.g. {@code "EPSG:9807"}).
@@ -277,10 +265,12 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
      * @throws FactoryException if the requested operation method cannot be fetched.
      *
      * @see DefaultMathTransformFactory#getOperationMethod(String)
+     *
+     * @deprecated Use {@link DefaultMathTransformFactory} instead.
      */
-    @Override
+    @Deprecated(since="1.5", forRemoval=true)
     public OperationMethod getOperationMethod(String name) throws FactoryException {
-        return new ReferencingFactoryContainer(null, null, null, null, null, mtFactory).findOperationMethod(name);
+        return CoordinateOperations.findMethod(mtFactory, name);
     }
 
     /**
@@ -508,7 +498,11 @@ next:   for (int i=components.size(); --i >= 0;) {
             if (parameters == null) {
                 throw new NullPointerException(Errors.format(Errors.Keys.NullArgument_1, "transform"));
             }
-            transform = ReferencingUtilities.createBaseToDerived(getMathTransformFactory(), sourceCRS, parameters, targetCRS);
+            final var builder = new ParameterizedTransformBuilder(getMathTransformFactory(), null);
+            builder.setParameters(parameters, false);
+            builder.setSourceAxes(sourceCRS);
+            builder.setTargetAxes(targetCRS);
+            transform = builder.create();
         }
         /*
          * The "operationType" property is currently undocumented. The intent is to help this factory method in

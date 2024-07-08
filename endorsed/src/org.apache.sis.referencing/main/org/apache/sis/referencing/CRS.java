@@ -1579,8 +1579,7 @@ check:  while (lower != 0 || upper != dimension) {
      * @return the system-wide authority factory used by SIS for the given authority.
      * @throws FactoryException if no factory can be returned for the given authority.
      *
-     * @see #forCode(String)
-     * @see org.apache.sis.referencing.factory.MultiAuthoritiesFactory
+     * @see MultiRegisterOperations
      *
      * @since 0.7
      */

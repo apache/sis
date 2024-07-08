@@ -218,6 +218,11 @@ public final class Constants extends Static {
                                STANDARD_PARALLEL_2 = "standard_parallel_2";
 
     /**
+     * Name of the pseudo-method for change of coordinate system (specific to Apache SIS).
+     */
+    public static final String COORDINATE_SYSTEM_CONVERSION = "Coordinate system conversion";
+
+    /**
      * The OGC parameter name for the scale factor.
      * While Apache SIS uses EPSG names when possible, the OGC names are convenient in this case
      * because they do not depend on the projection. For example, EPSG has at least three different

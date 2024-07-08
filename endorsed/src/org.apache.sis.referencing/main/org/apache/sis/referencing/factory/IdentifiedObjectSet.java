@@ -533,9 +533,8 @@ public class IdentifiedObjectSet<T extends IdentifiedObject> extends AbstractSet
      *   <li>If {@link NoSuchAuthorityCodeException}, returns {@code false} since failure to find a code declared
      *       in the collection would be an inconsistency. Note that this exception is a subtype of
      *       {@code NoSuchIdentifierException}, so it must be tested before the last case below.</li>
-     *   <li>If {@link NoSuchIdentifierException}, returns {@code true} since this exception is caused by an attempt to
-     *       {@linkplain org.opengis.referencing.operation.MathTransformFactory#createParameterizedTransform
-     *       create a parameterized transform} for an unimplemented operation.</li>
+     *   <li>If {@link NoSuchIdentifierException}, returns {@code true} because this exception is caused
+     *       by an attempt to create a parameterized transform for an unimplemented operation.</li>
      *   <li>If {@link MissingFactoryResourceException}, returns {@code true}.</li>
      *   <li>Otherwise returns {@code false}.</li>
      * </ul>
