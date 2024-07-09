@@ -265,13 +265,6 @@ public enum Convention {
     }
 
     /**
-     * {@code true} if the identifiers should be formatted for all elements instead of only the last one.
-     */
-    final boolean showIdentifiers() {
-        return this == WKT2_SIMPLIFIED || this == INTERNAL;
-    }
-
-    /**
      * Returns the default authority to look for when fetching identified object names and identifiers.
      * The difference between various authorities are most easily seen in projection and parameter names.
      * The value returned by this method can be overwritten by {@link WKTFormat#setNameAuthority(Citation)}.

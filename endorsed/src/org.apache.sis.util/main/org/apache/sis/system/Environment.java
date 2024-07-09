@@ -50,6 +50,7 @@ public final class Environment extends Static {
      * from a JShell session resulted in wrong characters being printed, sometime followed by JShell errors.
      * This flag is set only if the commands are run from JShell.
      */
+    @Configuration(writeAccess = Configuration.Access.INTERNAL)
     @Workaround(library="jshell", version="21")
     public static void avoidConsoleWriter() {
         avoidConsoleWriter = true;
