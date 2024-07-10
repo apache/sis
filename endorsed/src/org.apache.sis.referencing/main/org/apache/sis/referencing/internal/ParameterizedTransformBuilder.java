@@ -654,8 +654,7 @@ public class ParameterizedTransformBuilder extends MathTransformBuilder implemen
             if (provider instanceof AbstractProvider) {
                 provider = ((AbstractProvider) provider).variantFor(transform);
             }
-            // A call to `unique` needs to be last because it set `factory.lastMethod` as a side-effect.
-            return unique(swapAndScaleAxes(unique(transform)));
+            return swapAndScaleAxes(unique(transform));
         } catch (FactoryException exception) {
             if (warning != null) {
                 exception.addSuppressed(warning);
@@ -785,7 +784,9 @@ public class ParameterizedTransformBuilder extends MathTransformBuilder implemen
          * created transform; it does not change the operation.
          */
         if (normalized instanceof ParameterizedAffine && !(mt instanceof ParameterizedAffine)) {
-            return ((ParameterizedAffine) normalized).newTransform(mt);
+            if (mt != (mt = ((ParameterizedAffine) normalized).newTransform(mt))) {
+                mt = unique(mt);
+            }
         }
         return mt;
     }

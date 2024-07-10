@@ -181,11 +181,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     private final Map<Class<?>, OperationMethodSet> methodsByType;
 
     /**
-     * The last coordinate operation method used by a {@code create(…)} constructor.
-     */
-    final ThreadLocal<OperationMethod> lastMethod;
-
-    /**
      * The math transforms created so far. This pool is used in order to return instances of existing
      * math transforms when possible. If {@code null}, then no pool should be used. A null value is
      * preferable when the transforms are known to be short-lived, for avoiding the cost of caching them.
@@ -276,7 +271,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         this.methods  = Objects.requireNonNull(methods);
         methodsByName = new ConcurrentHashMap<>();
         methodsByType = new IdentityHashMap<>();
-        lastMethod    = new ThreadLocal<>();
         pool          = new WeakHashSet<>(MathTransform.class);
         parser        = new AtomicReference<>();
     }
@@ -288,7 +282,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         methods       = parent.methods;
         methodsByName = parent.methodsByName;
         methodsByType = parent.methodsByType;
-        lastMethod    = new ThreadLocal<>();
         pool          = null;
         parser        = parent.parser;
         oppositeCachingPolicy = parent;
@@ -889,7 +882,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     {
         ArgumentChecks.ensureNonNull("source", source);
         ArgumentChecks.ensureNonNull("target", target);
-        lastMethod.remove();                                // In case an exception is thrown before completion.
         final var builder = builder(Constants.COORDINATE_SYSTEM_CONVERSION);
         builder.setSourceAxes(source, ellipsoid);
         builder.setTargetAxes(target, ellipsoid);
@@ -912,11 +904,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      */
     @Override
     public MathTransform createAffineTransform(final Matrix matrix) throws FactoryException {
-        /*
-         * Performance note: we could set lastMethod to the "Affine" operation method provider, but we do not
-         * because setting this value is not free (e.g. it depends on matrix size) and it is rarely needed.
-         */
-        lastMethod.remove();
         return unique(MathTransforms.linear(matrix));
     }
 
@@ -955,7 +942,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                                                      final MathTransform tr2)
             throws FactoryException
     {
-        lastMethod.remove();
         ArgumentChecks.ensureNonNull("tr1", tr1);
         ArgumentChecks.ensureNonNull("tr2", tr2);
         final MathTransform tr;
@@ -996,7 +982,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
                                                     final int numTrailingCoordinates)
             throws FactoryException
     {
-        lastMethod.remove();
         final MathTransform tr;
         try {
             tr = MathTransforms.passThrough(firstAffectedCoordinate, subTransform, numTrailingCoordinates);
@@ -1026,7 +1011,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      */
     @Override
     public MathTransform createFromWKT(final String wkt) throws FactoryException {
-        lastMethod.remove();
         ArgumentChecks.ensureNonEmpty("wkt", wkt);
         Parser p = parser.getAndSet(null);
         if (p == null) try {

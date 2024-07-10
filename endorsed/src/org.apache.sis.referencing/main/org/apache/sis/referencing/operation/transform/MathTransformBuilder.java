@@ -91,7 +91,6 @@ public abstract class MathTransformBuilder implements MathTransform.Builder {
     protected MathTransform unique(MathTransform result) {
         if (factory instanceof DefaultMathTransformFactory) {
             final var df = (DefaultMathTransformFactory) factory;
-            df.lastMethod.set(getMethod().orElse(null));
             result = df.unique(result);
         }
         return result;
