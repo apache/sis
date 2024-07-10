@@ -30,8 +30,8 @@ import static org.apache.sis.temporal.TimeMethods.EQUAL;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.temporal.Period;
 import org.opengis.temporal.Instant;
-import org.opengis.filter.TemporalOperatorName;
 import org.opengis.temporal.IndeterminateValue;
+import org.opengis.filter.TemporalOperatorName;
 
 
 /**

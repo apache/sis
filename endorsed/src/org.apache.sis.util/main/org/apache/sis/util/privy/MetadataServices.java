@@ -29,10 +29,12 @@ import org.apache.sis.system.OptionalDependency;
 import org.apache.sis.util.CharSequences;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.util.ControlledVocabulary;
+
+// Specific to the geoapi-4.0 branch:
 import java.util.MissingResourceException;
 import org.opengis.annotation.UML;
 import org.opengis.annotation.ResourceBundles;
-import org.opengis.util.ControlledVocabulary;
 
 
 /**

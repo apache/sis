@@ -25,6 +25,8 @@ import org.opengis.temporal.TemporalPrimitive;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.filter.TemporalOperatorName;
 
 

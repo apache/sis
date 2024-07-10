@@ -47,11 +47,13 @@ import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
-import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.system.Reflect;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.apache.sis.referencing.operation.matrix.Matrices;
 
 
 /**

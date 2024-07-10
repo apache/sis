@@ -23,6 +23,7 @@ import java.time.DateTimeException;
 import java.time.ZonedDateTime;
 import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAmount;
+import org.opengis.temporal.TemporalPrimitive;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
@@ -31,10 +32,9 @@ import org.apache.sis.util.resources.Errors;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.temporal.Period;
 import org.opengis.temporal.Instant;
-import org.opengis.temporal.TemporalPrimitive;
 import org.opengis.temporal.IndeterminateValue;
-import org.opengis.filter.TemporalOperatorName;
 import org.opengis.temporal.IndeterminatePositionException;
+import org.opengis.filter.TemporalOperatorName;
 
 
 /**

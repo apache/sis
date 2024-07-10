@@ -41,7 +41,6 @@ import org.opengis.metadata.content.TransferFunctionType;
 import org.opengis.metadata.maintenance.ScopeCode;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.ProjectedCRS;
-import org.opengis.referencing.operation.MathTransform;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.measure.Units;
@@ -67,6 +66,9 @@ import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.Strings;
 import static org.apache.sis.util.privy.CollectionsExt.singletonOrNull;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.operation.MathTransform;
 
 
 /**

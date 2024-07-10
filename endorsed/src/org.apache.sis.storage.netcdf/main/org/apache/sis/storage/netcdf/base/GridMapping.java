@@ -45,6 +45,7 @@ import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.Conversion;
+import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.datum.DatumFactory;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
@@ -76,9 +77,6 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.measure.Units;
-
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.referencing.operation.CoordinateOperationFactory;
 
 
 /**
