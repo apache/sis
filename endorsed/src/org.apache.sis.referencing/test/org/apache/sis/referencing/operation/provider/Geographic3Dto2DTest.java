@@ -31,8 +31,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
 // Specific to the main branch:
-import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 import static org.apache.sis.referencing.privy.CoordinateOperations.builder;
+import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 
 
 /**

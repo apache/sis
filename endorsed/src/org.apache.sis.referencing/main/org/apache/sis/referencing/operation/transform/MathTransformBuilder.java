@@ -25,7 +25,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.util.privy.Strings;
 
-// Specific to the main and geoapi-3.1 branches:
+// Specific to the main branch:
 import org.opengis.util.FactoryException;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.cs.CoordinateSystem;

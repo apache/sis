@@ -83,6 +83,8 @@ import org.apache.sis.util.resources.Vocabulary;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.crs.GeneralDerivedCRS;
+
+// Specific to the main branch:
 import org.apache.sis.referencing.operation.transform.MathTransformBuilder;
 
 

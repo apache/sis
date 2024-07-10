@@ -23,7 +23,6 @@ import java.util.function.Supplier;
 import java.util.logging.Logger;
 import javax.measure.UnitConverter;
 import javax.measure.IncommensurableException;
-import org.apache.sis.metadata.iso.citation.Citations;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ObjectFactory;
@@ -38,6 +37,7 @@ import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.operation.AbstractCoordinateOperation;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
@@ -56,10 +56,12 @@ import org.apache.sis.system.Loggers;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.crs.GeneralDerivedCRS;
+
+// Specific to the main branch:
+import org.opengis.util.FactoryException;
+import org.opengis.referencing.operation.MathTransform;
 import org.apache.sis.referencing.operation.transform.MathTransformBuilder;
 import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.util.FactoryException;
 
 
 /**

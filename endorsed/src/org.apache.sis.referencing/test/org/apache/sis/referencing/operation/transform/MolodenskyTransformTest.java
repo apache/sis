@@ -35,6 +35,8 @@ import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolati
 import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.referencing.datum.HardCodedDatum;
+
+// Specific to the main branch:
 import static org.apache.sis.referencing.privy.CoordinateOperations.builder;
 
 

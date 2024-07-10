@@ -43,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+// Specific to the main and geoapi-3.1 branches:
 import org.apache.sis.referencing.operation.CoordinateOperationContext;
 
 

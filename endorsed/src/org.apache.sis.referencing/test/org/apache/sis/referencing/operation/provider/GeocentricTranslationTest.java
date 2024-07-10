@@ -37,6 +37,8 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
+
+// Specific to the main branch:
 import static org.apache.sis.referencing.privy.CoordinateOperations.builder;
 
 

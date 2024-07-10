@@ -50,8 +50,8 @@ import org.apache.sis.referencing.crs.HardCodedCRS;
 import static org.apache.sis.test.Assertions.assertMessageContains;
 
 // Specific to the main branch:
-import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 import static org.apache.sis.referencing.privy.CoordinateOperations.builder;
+import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 
 
 /**

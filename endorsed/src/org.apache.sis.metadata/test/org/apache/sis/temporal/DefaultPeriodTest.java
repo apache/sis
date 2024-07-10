@@ -26,7 +26,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 
-// Specific to the main branch
+// Specific to the main branch:
 import org.apache.sis.pending.geoapi.temporal.TemporalOperatorName;
 
 

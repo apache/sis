@@ -20,9 +20,6 @@ import java.util.Set;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
@@ -31,6 +28,11 @@ import org.opengis.referencing.operation.MathTransformFactory;
 
 // Test dependencies
 import org.apache.sis.metadata.iso.citation.HardCodedCitations;
+
+// Specific to the main branch:
+import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 
 
 /**

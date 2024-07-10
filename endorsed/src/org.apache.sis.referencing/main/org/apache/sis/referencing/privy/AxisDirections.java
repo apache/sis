@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.privy;
 
 import java.util.Map;
-import java.util.HashMap;
 import java.util.Objects;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
@@ -36,6 +35,7 @@ import org.apache.sis.measure.Units;
 import static org.apache.sis.util.CharSequences.*;
 
 // Specific to the main branch:
+import java.util.HashMap;
 import org.opengis.annotation.UML;
 import static org.opengis.annotation.Obligation.CONDITIONAL;
 import static org.opengis.annotation.Specification.ISO_19111;

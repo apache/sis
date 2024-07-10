@@ -80,6 +80,7 @@ import org.apache.sis.referencing.internal.DeprecatedCode;
 import org.apache.sis.referencing.internal.EPSGParameterDomain;
 import org.apache.sis.referencing.internal.SignReversalComment;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.util.SimpleInternationalString;
@@ -108,7 +109,6 @@ import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.factory.FactoryDataException;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
-import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.resources.Vocabulary;
 import org.apache.sis.util.resources.Errors;
@@ -122,8 +122,8 @@ import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 import static org.apache.sis.referencing.internal.ServicesForMetadata.CONNECTION;
 
 // Specific to the main branch:
-import org.apache.sis.temporal.TemporalDate;
 import org.apache.sis.referencing.internal.ServicesForMetadata;
+import org.apache.sis.temporal.TemporalDate;
 import org.apache.sis.referencing.cs.DefaultParametricCS;
 import org.apache.sis.referencing.datum.DefaultParametricDatum;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;

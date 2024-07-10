@@ -32,7 +32,6 @@ import org.apache.sis.util.Utilities;
 
 // Specific to the main branch:
 import org.opengis.geometry.MismatchedDimensionException;
-import org.apache.sis.referencing.MultiRegisterOperations;
 
 
 /**
