@@ -44,7 +44,7 @@ import org.apache.sis.util.privy.Numerics;
  *
  * @author  Martin Desruisseaux (Geomatys)
  * @author  Alexis Manin (Geomatys)
- * @version 1.1
+ * @version 1.5
  *
  * @see org.apache.sis.math.Vector
  *
@@ -275,6 +275,34 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     }
 
     /**
+     * Gets the first element.
+     *
+     * @return the first element.
+     * @throws NoSuchElementException if this collection is empty.
+     * @since 1.5
+     */
+    public Integer getFirst() {
+        if (size != 0) {
+            return getUnchecked(0);
+        }
+        throw new NoSuchElementException();
+    }
+
+    /**
+     * Gets the last element.
+     *
+     * @return the last element.
+     * @throws NoSuchElementException if this collection is empty.
+     * @since 1.5
+     */
+    public Integer getLast() {
+        if (size != 0) {
+            return getUnchecked(size - 1);
+        }
+        throw new NoSuchElementException();
+    }
+
+    /**
      * Returns the element at the given index as the {@code int} primitive type.
      *
      * @param  index  the element index.
@@ -377,12 +405,28 @@ public class IntegerList extends AbstractList<Integer> implements RandomAccess, 
     }
 
     /**
-     * Retrieves and remove the last element of this list.
+     * Retrieves and removes the first element of this list.
+     *
+     * @return the head of this list.
+     * @throws NoSuchElementException if this list is empty.
+     *
+     * @since 1.5
+     */
+    public Integer removeFirst() throws NoSuchElementException {
+        if (size != 0) {
+            modCount++;
+            return getUnchecked(0);
+        }
+        throw new NoSuchElementException();
+    }
+
+    /**
+     * Retrieves and removes the last element of this list.
      *
      * @return the tail of this list.
      * @throws NoSuchElementException if this list is empty.
      */
-    public int removeLast() throws NoSuchElementException {
+    public Integer removeLast() throws NoSuchElementException {
         if (size != 0) {
             modCount++;
             return getUnchecked(--size);

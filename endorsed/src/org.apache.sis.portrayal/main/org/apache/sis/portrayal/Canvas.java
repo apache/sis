@@ -1200,7 +1200,7 @@ public class Canvas extends Observable implements Localized {
      */
     private CoordinateOperation objectiveToGeographic(final CoordinateReferenceSystem crs) throws FactoryException {
         final GeographicCRS geoCRS = ReferencingUtilities.toNormalizedGeographicCRS(crs, false, false);
-        return (geoCRS != null) ? coordinateOperationFactory.createOperation(crs, geoCRS) : null;
+        return (geoCRS != null) ? coordinateOperationFactory.createOperation(crs, geoCRS, (CanvasContext) null) : null;
     }
 
     /**

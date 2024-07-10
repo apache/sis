@@ -376,8 +376,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *               for operations defined by empirical parameters, <i>etc</i>.
      * @return methods available in this factory for coordinate operations of the given type.
      *
-     * @see #getDefaultParameters(String)
-     * @see #createParameterizedTransform(ParameterValueGroup)
      * @see DefaultOperationMethod#getOperationType()
      */
     @Override

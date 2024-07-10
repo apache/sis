@@ -63,6 +63,7 @@ import org.apache.sis.parameter.Parameters;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.ObjectDomain;
+import org.opengis.referencing.operation.MathTransform;
 
 
 /**
@@ -255,13 +256,13 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      * Sets the conversion method together with all parameters. This method does not set the conversion name.
      * If a name different than the default is desired, {@link #setConversionName(String)} should be invoked.
      *
-     * @param  parameters  the map projection parameter values.
+     * @param  builder  the map projection parameter values.
      * @return {@code this}, for method calls chaining.
      * @throws FactoryException if the operation method cannot be obtained.
      */
-    public GeodeticObjectBuilder setConversion(final ParameterValueGroup parameters) throws FactoryException {
-        method = factories.findOperationMethod(parameters.getDescriptor().getName().getCode());
-        this.parameters = parameters;           // Set only if above line succeed.
+    public GeodeticObjectBuilder setConversion(final MathTransform.Builder builder) throws FactoryException {
+        method = builder.getMethod().orElseThrow(() -> new FactoryException());
+        parameters = builder.parameters();    // Set only if above line succeed.
         return this;
     }
 

@@ -127,7 +127,7 @@ public final class ProjectionBenchmark {
         values.parameter(Constants.CENTRAL_MERIDIAN)   .setValue(centralMeridian);
         values.parameter(Constants.STANDARD_PARALLEL_1).setValue(standardParallel1);
         values.parameter(Constants.STANDARD_PARALLEL_2).setValue(standardParallel2);
-        forward = new Transforms("Forward", new MathTransformFactoryMock(provider).createParameterizedTransform(values));
+        forward = new Transforms("Forward", provider.createMathTransform(new MathTransformFactoryMock(provider), values));
         inverse = new Transforms("Inverse", forward.projection.inverse());
         coordinates = new double[NUM_POINTS * DIMENSION];
         final double λmin = centralMeridian - 40;

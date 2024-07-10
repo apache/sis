@@ -84,9 +84,6 @@ public class ChannelDataInput extends ChannelData implements DataInput {
      * If the buffer already contains some data, then the {@code filled} argument shall be {@code true}.
      * Otherwise (e.g. if it is a newly created buffer), then {@code filled} shall be {@code false}.
      *
-     * <p><b>Tip:</b>
-     * for building a data input from an input stream, see {@link InputStreamArrayGetter}.</p>
-     *
      * @param  filename  a short identifier (typically a filename without path) used for formatting error message.
      * @param  channel   the channel from where data are read.
      * @param  buffer    the buffer where to copy the data.

@@ -79,7 +79,7 @@ tasks.generateGrammarSource {
 }
 tasks.compileJava {
     dependsOn(":endorsed:compileJava")
-    options.release.set(11)         // The version of both Java source code and compiled byte code.
+    options.release.set(22)         // The version of both Java source code and compiled byte code.
 }
 tasks.compileTestJava {
     options.compilerArgs.add("-source")         // "source", not "release", because we accept any target version.

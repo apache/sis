@@ -20,9 +20,6 @@ import java.util.Set;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.referencing.cs.CoordinateSystem;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.SingleOperation;
@@ -63,36 +60,10 @@ class MathTransformFactoryBase implements MathTransformFactory {
         return Set.of();
     }
 
-    /** Default implementation unconditionally returns {@code null}. */
-    @Override
-    @Deprecated
-    public OperationMethod getLastMethodUsed() {
-        return null;
-    }
-
-    /** Default implementation throws an exception. */
-    @Override
-    public ParameterValueGroup getDefaultParameters(String method) throws NoSuchIdentifierException {
-        throw new NoSuchIdentifierException(MESSAGE, method);
-    }
-
-    /** Default implementation throws an exception. */
-    @Override
-    @Deprecated
-    public MathTransform createBaseToDerived(CoordinateReferenceSystem baseCRS, ParameterValueGroup parameters, CoordinateSystem derivedCS) throws FactoryException {
-        throw new FactoryException(MESSAGE);
-    }
-
     /** Default implementation throws an exception. */
     @Override
     public MathTransform.Builder builder(String code) throws NoSuchIdentifierException {
         throw new NoSuchIdentifierException(MESSAGE, code);
-    }
-
-    /** Default implementation throws an exception. */
-    @Override
-    public MathTransform createParameterizedTransform(ParameterValueGroup parameters) throws FactoryException {
-        throw new FactoryException(MESSAGE);
     }
 
     /** Default implementation throws an exception. */

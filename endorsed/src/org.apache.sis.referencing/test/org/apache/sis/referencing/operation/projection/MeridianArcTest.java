@@ -20,7 +20,6 @@ import java.util.Random;
 import static java.lang.StrictMath.*;
 import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform1D;
 import org.apache.sis.referencing.internal.Resources;
 
@@ -49,8 +48,8 @@ public final class MeridianArcTest extends MapProjectionTestCase {
      * @return a test instance of the projection.
      */
     private MeridianArcBased create(final boolean ellipsoidal) {
-        final DefaultOperationMethod provider = new org.apache.sis.referencing.operation.provider.Sinusoidal();
-        final Sinusoidal projection = new Sinusoidal(provider, parameters(provider, ellipsoidal));
+        final var provider = new org.apache.sis.referencing.operation.provider.Sinusoidal();
+        final var projection = new Sinusoidal(provider, parameters(provider, ellipsoidal));
         tolerance = NormalizedProjection.ANGULAR_TOLERANCE;     // = linear tolerance on a sphere of radius 1.
         return projection;
     }

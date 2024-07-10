@@ -189,7 +189,7 @@ public final class GeocentricTranslationTest extends MathTransformTestCase {
      * @throws FactoryException if an error occurred while creating a transform.
      */
     public static MathTransform createDatumShiftForGeographic2D(final MathTransformFactory factory) throws FactoryException {
-        final Parameters values = Parameters.castOrWrap(factory.getDefaultParameters("Geocentric translations (geog2D domain)"));
+        final Parameters values = Parameters.castOrWrap(factory.builder("Geocentric translations (geog2D domain)").parameters());
         setTranslation(values);
         setEllipsoids(values, CommonCRS.WGS84.ellipsoid(), CommonCRS.ED50.ellipsoid());
         final MathTransform gt = new GeocentricTranslation().createMathTransform(factory, values);
