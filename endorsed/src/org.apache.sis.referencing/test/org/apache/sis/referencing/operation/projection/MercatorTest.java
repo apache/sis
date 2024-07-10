@@ -304,12 +304,12 @@ public final class MercatorTest extends MapProjectionTestCase {
      * @throws FactoryException if an error occurred while creating the map projection.
      */
     private void createAuxiliarySphereProjection(final int type) throws FactoryException {
-        final MercatorAuxiliarySphere provider = new MercatorAuxiliarySphere();
+        final var provider = new MercatorAuxiliarySphere();
         final Parameters values = Parameters.castOrWrap(provider.getParameters().createValue());
         values.parameter(Constants.SEMI_MAJOR).setValue(WGS84_A);
         values.parameter(Constants.SEMI_MINOR).setValue(WGS84_B);
         values.parameter("Auxiliary_Sphere_Type").setValue(type);
-        transform = new MathTransformFactoryMock(provider).createParameterizedTransform(values);
+        transform = provider.createMathTransform(new MathTransformFactoryMock(provider), values);
         validate();
     }
 

@@ -25,9 +25,7 @@ import java.util.Objects;
 import java.util.Optional;
 import org.opengis.util.Factory;
 import org.opengis.util.FactoryException;
-import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.extent.GeographicBoundingBox;
-import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.AuthorityFactory;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
@@ -191,26 +189,6 @@ public class MultiRegisterOperations extends AbstractFactory {
     }
 
     /**
-     * Returns the <abbr>CRS</abbr> authority factory.
-     */
-    private CRSAuthorityFactory crsFactory() {
-        return (crsFactory != null) ? crsFactory : AuthorityFactories.ALL;
-    }
-
-    /**
-     * Returns the organization or party responsible for definition and maintenance of the register.
-     * If an authority has been specified by a call to {@link #withAuthority(String)}, then this method
-     * returns that authority. Otherwise, this method returns {@code null}.
-     *
-     * @return the organization responsible for definitions in the registry, or {@code null} if none or many.
-     *
-     * @see MultiAuthoritiesFactory#getAuthority()
-     */
-    public Citation getAuthority() {
-        return crsFactory().getAuthority();
-    }
-
-    /**
      * Returns an instance for a geodetic registry of the specified authority, such as "EPSG".
      * If a {@linkplain #withVersion(String) version number was specified} previously, that version is cleared.
      * If an area of interest was specified, the same area of interest is reused.
@@ -273,23 +251,6 @@ public class MultiRegisterOperations extends AbstractFactory {
         } else {
             return new MultiRegisterOperations(this, newValue);
         }
-    }
-
-    /**
-     * Returns the set of authority codes for objects of the given type.
-     * The {@code type} argument specifies the base type of identified objects.
-     * For example, {@code CoordinateReferenceSystem.class} is for requesting the <abbr>CRS</abbr> codes.
-     *
-     * <h4>Limitations</h4>
-     * In the current implementation, codes are filtered by authority and registry version,
-     * but not for the area of interest.
-     *
-     * @param  type  the type of referencing object for which to get authority codes.
-     * @return the set of authority codes for referencing objects of the given type.
-     * @throws FactoryException if access to the underlying database failed.
-     */
-    public Set<String> getAuthorityCodes(Class<? extends IdentifiedObject> type) throws FactoryException {
-        return crsFactory().getAuthorityCodes(type);
     }
 
     /**

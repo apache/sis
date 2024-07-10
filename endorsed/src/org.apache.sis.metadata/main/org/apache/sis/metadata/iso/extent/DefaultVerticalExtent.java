@@ -326,9 +326,7 @@ public class DefaultVerticalExtent extends ISOMetadata implements VerticalExtent
      */
     private MathTransform1D getConversionFrom(final VerticalCRS source) throws FactoryException {
         if (!Utilities.equalsIgnoreMetadata(verticalCRS, source) && verticalCRS != null && source != null) {
-            final MathTransform1D cv = (MathTransform1D) ReferencingServices.getInstance()
-                    .getCoordinateOperationFactory().createOperation(source, verticalCRS)
-                    .getMathTransform();
+            final MathTransform1D cv = ReferencingServices.getInstance().findTransform(source, verticalCRS);
             if (!cv.isIdentity()) {
                 return cv;
             }

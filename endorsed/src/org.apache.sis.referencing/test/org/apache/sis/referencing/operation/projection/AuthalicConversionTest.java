@@ -19,7 +19,6 @@ package org.apache.sis.referencing.operation.projection;
 import java.util.Random;
 import static java.lang.StrictMath.*;
 import org.apache.sis.parameter.Parameters;
-import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.provider.LambertCylindricalEqualArea;
 import org.apache.sis.util.privy.Constants;
 import static org.apache.sis.math.MathFunctions.atanh;
@@ -49,8 +48,8 @@ public final class AuthalicConversionTest extends MapProjectionTestCase {
      * @return a test instance of the projection.
      */
     private AuthalicConversion create(final boolean ellipsoidal) {
-        final DefaultOperationMethod provider = new LambertCylindricalEqualArea();
-        final CylindricalEqualArea projection = new CylindricalEqualArea(provider, parameters(provider, ellipsoidal));
+        final var provider   = new LambertCylindricalEqualArea();
+        final var projection = new CylindricalEqualArea(provider, parameters(provider, ellipsoidal));
         tolerance = NormalizedProjection.ANGULAR_TOLERANCE;     // = linear tolerance on a sphere of radius 1.
         return projection;
     }
@@ -110,7 +109,7 @@ public final class AuthalicConversionTest extends MapProjectionTestCase {
     @SuppressWarnings("UseOfSystemOutOrSystemErr")
     public void searchThreshold() throws ProjectionException {
         tolerance = NormalizedProjection.ANGULAR_TOLERANCE;
-        final DefaultOperationMethod provider = new LambertCylindricalEqualArea();
+        final var provider = new LambertCylindricalEqualArea();
         final Parameters parameters = parameters(provider, true);
         for (double e = 0.05; e <= 0.2; e += 0.001) {
             final double a = parameters.parameter(Constants.SEMI_MAJOR).doubleValue();

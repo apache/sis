@@ -37,6 +37,7 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
+import static org.apache.sis.referencing.privy.CoordinateOperations.builder;
 
 
 /**
@@ -184,7 +185,7 @@ public final class GeocentricTranslationTest extends MathTransformTestCase {
      * @throws FactoryException if an error occurred while creating a transform.
      */
     public static MathTransform createDatumShiftForGeographic2D(final MathTransformFactory factory) throws FactoryException {
-        final Parameters values = Parameters.castOrWrap(factory.getDefaultParameters("Geocentric translations (geog2D domain)"));
+        final Parameters values = Parameters.castOrWrap(builder(factory, "Geocentric translations (geog2D domain)").parameters());
         setTranslation(values);
         setEllipsoids(values, CommonCRS.WGS84.ellipsoid(), CommonCRS.ED50.ellipsoid());
         final MathTransform gt = new GeocentricTranslation().createMathTransform(factory, values);

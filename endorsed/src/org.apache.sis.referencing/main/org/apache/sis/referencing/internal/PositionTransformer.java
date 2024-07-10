@@ -17,30 +17,31 @@
 package org.apache.sis.referencing.internal;
 
 import java.util.Objects;
+import java.util.NoSuchElementException;
 import org.opengis.util.FactoryException;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.CoordinateOperation;
-import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.TransformException;
-import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
+import org.apache.sis.referencing.MultiRegisterOperations;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.geometry.GeneralDirectPosition;
 import org.apache.sis.util.Utilities;
 
 // Specific to the main branch:
 import org.opengis.geometry.MismatchedDimensionException;
+import org.apache.sis.referencing.MultiRegisterOperations;
 
 
 /**
- * A direct position capable to {@linkplain #transform transform} another position from its arbitrary CRS to
- * {@linkplain #getCoordinateReferenceSystem() the CRS of this position}. This class caches the last transform
- * used in order to improve performance when {@linkplain CoordinateOperation#getSourceCRS() source}
- * and {@linkplain CoordinateOperation#getTargetCRS() target} CRS do not change often.
- * Using this class is faster than invoking <code>{@linkplain CoordinateOperationFactory#createOperation
- * CoordinateOperationFactory.createOperation}(lastCRS, targetCRS)</code> for every points.
+ * A direct position capable to transform another position from its arbitrary CRS to the CRS of this position.
+ * This class caches the last transform used in order to improve performance when
+ * {@linkplain CoordinateOperation#getSourceCRS() source} and
+ * {@linkplain CoordinateOperation#getTargetCRS() target} CRS do not change often.
+ * Using this class is faster than invoking <code>{@linkplain MultiRegisterOperations#findCoordinateOperations
+ * RegisterOperations.findCoordinateOperations}(lastCRS, targetCRS)</code> for every points.
  *
  * <ul class="verbose">
  *   <li><b>Note 1:</b>
@@ -87,7 +88,7 @@ public final class PositionTransformer extends GeneralDirectPosition {
     /**
      * The factory to use for creating new coordinate operation.
      */
-    private final CoordinateOperationFactory factory;
+    private final MultiRegisterOperations factory;
 
     /**
      * The default CRS to assume when {@link #transform(DirectPosition)} has been invoked without associated CRS.
@@ -126,11 +127,11 @@ public final class PositionTransformer extends GeneralDirectPosition {
      * @param  factory  the factory to use for creating coordinate operations, or {@code null} for the default.
      */
     public PositionTransformer(final CoordinateReferenceSystem defaultCRS, final CoordinateReferenceSystem targetCRS,
-            final CoordinateOperationFactory factory)
+            final MultiRegisterOperations factory)
     {
         super(targetCRS);
         this.defaultCRS = (defaultCRS != null) ? defaultCRS : targetCRS;
-        this.factory    = (factory != null) ? factory : DefaultCoordinateOperationFactory.provider();
+        this.factory    = (factory != null) ? factory : MultiRegisterOperations.provider();
     }
 
     /**
@@ -160,8 +161,8 @@ public final class PositionTransformer extends GeneralDirectPosition {
         final CoordinateReferenceSystem targetCRS = getCoordinateReferenceSystem();
         final CoordinateOperation operation;
         try {
-            operation = factory.createOperation(crs, targetCRS);
-        } catch (FactoryException exception) {
+            operation = factory.findCoordinateOperations(crs, targetCRS).iterator().next();
+        } catch (FactoryException | NoSuchElementException exception) {
             throw new TransformException(exception.getLocalizedMessage(), exception);
         }
         /*

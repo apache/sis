@@ -27,7 +27,6 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.util.privy.Constants;
-import org.apache.sis.referencing.operation.DefaultOperationMethod;
 import org.apache.sis.referencing.operation.provider.MapProjection;
 import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import org.apache.sis.referencing.operation.transform.CoordinateDomain;
@@ -117,7 +116,7 @@ abstract class MapProjectionTestCase extends MathTransformTestCase {
      * @param  ellipsoidal  {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      * @return the parameters to use for instantiating the projection.
      */
-    static Parameters parameters(final DefaultOperationMethod provider, final boolean ellipsoidal) {
+    static Parameters parameters(final AbstractProvider provider, final boolean ellipsoidal) {
         final Parameters parameters = Parameters.castOrWrap(provider.getParameters().createValue());
         final Ellipsoid ellipsoid = (ellipsoidal ? GeodeticDatumMock.WGS84 : GeodeticDatumMock.SPHERE).getEllipsoid();
         parameters.parameter(Constants.SEMI_MAJOR).setValue(ellipsoid.getSemiMajorAxis());
@@ -156,7 +155,7 @@ abstract class MapProjectionTestCase extends MathTransformTestCase {
         if (!isNaN(scaleFactor))       values.parameter(Constants.SCALE_FACTOR)       .setValue(scaleFactor);
         if (!isNaN(falseEasting))      values.parameter(Constants.FALSE_EASTING)      .setValue(falseEasting);
         if (!isNaN(falseNorthing))     values.parameter(Constants.FALSE_NORTHING)     .setValue(falseNorthing);
-        transform = new MathTransformFactoryMock(provider).createParameterizedTransform(values);
+        transform = provider.createMathTransform(new MathTransformFactoryMock(provider), values);
         validate();
     }
 

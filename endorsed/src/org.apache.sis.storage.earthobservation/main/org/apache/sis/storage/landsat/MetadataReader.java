@@ -67,6 +67,10 @@ import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.Strings;
 import static org.apache.sis.util.privy.CollectionsExt.singletonOrNull;
 
+// Specific to the main branch:
+import org.apache.sis.referencing.privy.CoordinateOperations;
+import org.apache.sis.referencing.operation.transform.MathTransformBuilder;
+
 
 /**
  * Parses Landsat metadata as {@linkplain DefaultMetadata ISO 19115 Metadata} object.
@@ -223,7 +227,7 @@ final class MetadataReader extends MetadataBuilder {
     /**
      * The map projection parameters. This is used only for the polar stereographic case.
      */
-    private ParameterValueGroup projection;
+    private MathTransformBuilder projection;
 
     /**
      * The referencing objects factories.
@@ -672,8 +676,8 @@ final class MetadataReader extends MetadataBuilder {
                 if ("UTM".equalsIgnoreCase(value)) {
                     projection = null;
                 } else if ("PS".equalsIgnoreCase(value)) try {
-                    projection = factories.getMathTransformFactory()
-                                    .getDefaultParameters(Constants.EPSG + ':' + PolarStereographicB.IDENTIFIER);
+                    projection = CoordinateOperations.builder(factories.getMathTransformFactory(),
+                                        Constants.EPSG + ':' + PolarStereographicB.IDENTIFIER);
                     utmZone = -1;
                 } catch (NoSuchIdentifierException e) {
                     // Should never happen with Apache SIS implementation of MathTransformFactory.
@@ -790,7 +794,8 @@ final class MetadataReader extends MetadataBuilder {
      */
     private void setProjectionParameter(final String key, final String name, final String value, final boolean isLinear) {
         if (projection != null) {
-            projection.parameter(name).setValue(Double.parseDouble(value), isLinear ? Units.METRE : Units.DEGREE);
+            projection.parameters().parameter(name)
+                    .setValue(Double.parseDouble(value), isLinear ? Units.METRE : Units.DEGREE);
         } else {
             listeners.warning(errors().getString(Errors.Keys.UnexpectedProperty_2, filename, key));
         }
@@ -867,14 +872,15 @@ final class MetadataReader extends MetadataBuilder {
                 addReferenceSystem(datum.universal(1, TransverseMercator.Zoner.UTM.centralMeridian(utmZone)));
             }
             if (projection != null) {
-                final double sp = projection.parameter(Constants.STANDARD_PARALLEL_1).doubleValue();
+                final ParameterValueGroup p = projection.parameters();
+                final double sp = p.parameter(Constants.STANDARD_PARALLEL_1).doubleValue();
                 ProjectedCRS crs = (ProjectedCRS) CRS.forCode(Constants.EPSG + ":" +
                         (sp >= 0 ? Constants.EPSG_ARCTIC_POLAR_STEREOGRAPHIC         // Standard parallel = 71°N
                                  : Constants.EPSG_ANTARCTIC_POLAR_STEREOGRAPHIC));   // Standard parallel = 71°S
                 if (datum != CommonCRS.WGS84 || Math.abs(sp) != 71
-                        || projection.parameter(Constants.FALSE_EASTING)   .doubleValue() != 0
-                        || projection.parameter(Constants.FALSE_NORTHING)  .doubleValue() != 0
-                        || projection.parameter(Constants.CENTRAL_MERIDIAN).doubleValue() != 0)
+                        || p.parameter(Constants.FALSE_EASTING)   .doubleValue() != 0
+                        || p.parameter(Constants.FALSE_NORTHING)  .doubleValue() != 0
+                        || p.parameter(Constants.CENTRAL_MERIDIAN).doubleValue() != 0)
                 {
                     crs = new GeodeticObjectBuilder(factories, listeners.getLocale())
                             .addName("Polar stereographic").setConversion(projection)

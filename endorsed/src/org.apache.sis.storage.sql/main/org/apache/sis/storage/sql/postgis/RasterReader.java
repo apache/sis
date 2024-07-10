@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.nio.ByteOrder;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.io.InputStream;
 import java.io.IOException;
 import java.lang.reflect.Array;
@@ -47,7 +48,6 @@ import org.apache.sis.coverage.privy.ColorModelFactory;
 import org.apache.sis.coverage.privy.ObservableImage;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.privy.AffineTransform2D;
-import org.apache.sis.io.stream.InputStreamArrayGetter;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.sql.feature.InfoStatements;
 import org.apache.sis.util.privy.Constants;
@@ -396,11 +396,9 @@ public final class RasterReader extends RasterFormat {
      * @throws IOException if an error occurred while reading data from the input stream.
      */
     public ChannelDataInput channel(final InputStream input) throws IOException {
-        return InputStreamArrayGetter.channel("raster", input, () -> {
-            if (buffer == null) {
-                buffer = ByteBuffer.allocate(8192);
-            }
-            return buffer;
-        });
+        if (buffer == null) {
+            buffer = ByteBuffer.allocate(8192);
+        }
+        return new ChannelDataInput("raster", Channels.newChannel(input), buffer, false);
     }
 }

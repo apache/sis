@@ -26,7 +26,6 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
-import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.apache.sis.math.MathFunctions;
 import org.apache.sis.referencing.CRS;
@@ -44,6 +43,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.referencing.operation.transform.MathTransformTestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.apache.sis.referencing.operation.CoordinateOperationContext;
+
 
 /**
  * Tests mixing use of EPSG dataset, change of axes convention, application of math transforms,
@@ -55,9 +57,14 @@ import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
  */
 public final class CoordinateOperationTest extends MathTransformTestCase {
     /**
+     * For avoiding ambiguity.
+     */
+    private static final CoordinateOperationContext CONTEXT = null;
+
+    /**
      * The transformation factory to use for testing.
      */
-    private final CoordinateOperationFactory opFactory;
+    private final DefaultCoordinateOperationFactory opFactory;
 
     /**
      * Creates the test suite.
@@ -81,7 +88,7 @@ public final class CoordinateOperationTest extends MathTransformTestCase {
         final Ellipsoid                 ellipsoid = CommonCRS.WGS84.ellipsoid();
         final CoordinateReferenceSystem sourceCRS = AbstractCRS.castOrCopy(CommonCRS.WGS84.geographic3D()).forConvention(AxesConvention.RIGHT_HANDED);
         final CoordinateReferenceSystem targetCRS = CommonCRS.WGS84.geocentric();
-        final CoordinateOperation       operation = opFactory.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation       operation = opFactory.createOperation(sourceCRS, targetCRS, CONTEXT);
         transform = operation.getMathTransform();
         final int dimension = transform.getSourceDimensions();
         assertEquals(3, dimension);
@@ -237,7 +244,7 @@ public final class CoordinateOperationTest extends MathTransformTestCase {
         CoordinateReferenceSystem sourceCRS = crsFactory.createCoordinateReferenceSystem("3001");
         CoordinateReferenceSystem targetCRS = crsFactory.createCoordinateReferenceSystem("4211");
 
-        CoordinateOperation operation = opFactory.createOperation(sourceCRS, targetCRS);
+        CoordinateOperation operation = opFactory.createOperation(sourceCRS, targetCRS, CONTEXT);
         MathTransform mt = operation.getMathTransform();
 
         double[] expectedXyValues = new double[] {-2.0, -71.0};

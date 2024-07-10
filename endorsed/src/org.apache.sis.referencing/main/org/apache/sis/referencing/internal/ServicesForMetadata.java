@@ -31,9 +31,9 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
-import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.OnlineResource;
@@ -53,7 +53,6 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.referencing.privy.TemporalAccessor;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
-import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
@@ -71,19 +70,13 @@ import org.apache.sis.util.logging.Logging;
 
 // Specific to the main branch:
 import java.util.Map;
-import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.util.TypeName;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
-import org.opengis.referencing.operation.MathTransformFactory;
-import org.opengis.referencing.operation.OperationMethod;
-import org.opengis.referencing.operation.SingleOperation;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.referencing.datum.DatumFactory;
-import org.apache.sis.metadata.privy.NameToIdentifier;
-import org.apache.sis.util.Deprecable;
 import org.apache.sis.referencing.cs.DefaultParametricCS;
 import org.apache.sis.referencing.datum.DefaultParametricDatum;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
@@ -145,9 +138,8 @@ public final class ServicesForMetadata extends ReferencingServices {
                 !Utilities.equalsIgnoreMetadata(cs2.getAxis(1), cs1.getAxis(1)))
             {
                 final CoordinateOperation operation;
-                final CoordinateOperationFactory factory = DefaultCoordinateOperationFactory.provider();
                 try {
-                    operation = factory.createOperation(crs, normalizedCRS);
+                    operation = CRS.findOperation(crs, normalizedCRS, null);
                 } catch (FactoryException e) {
                     if (findOpCaller != null) {
                         // See javadoc for the assumption that optional mode is used by Envelopes.findOperation(…).
@@ -572,74 +564,18 @@ public final class ServicesForMetadata extends ReferencingServices {
         return new CoordinateFormat(locale, timezone);
     }
 
+
     /**
-     * Returns the default coordinate operation factory.
+     * Returns transform between a pair of vertical CRS.
      *
-     * @return the coordinate operation factory to use.
+     * @param  source  first CRS.
+     * @param  target  second CRS.
+     * @return transform between the given pair of CRS.
+     * @throws FactoryException if the transform cannot be found.
      */
     @Override
-    public CoordinateOperationFactory getCoordinateOperationFactory() {
-        return DefaultCoordinateOperationFactory.provider();
-    }
-
-    /**
-     * Returns the coordinate operation method for the given classification.
-     * This method checks if the given {@code opFactory} is a SIS implementation
-     * before to fallback on a slower fallback.
-     *
-     * <p>This method is actually not needed anymore for {@code sis-metadata} module,
-     * but is still defined here for historical reason. This method is removed on SIS
-     * branches using a GeoAPI versions more recent than 3.0.</p>
-     *
-     * @param  opFactory  The coordinate operation factory to use if it is a SIS implementation.
-     * @param  mtFactory  The math transform factory to use as a fallback.
-     * @param  identifier The name or identifier of the operation method to search.
-     * @return The coordinate operation method for the given name or identifier.
-     * @throws FactoryException if an error occurred which searching for the given method.
-     */
-    public static OperationMethod getOperationMethod(final CoordinateOperationFactory opFactory,
-            final MathTransformFactory mtFactory, final String identifier) throws FactoryException
-    {
-        if (opFactory instanceof DefaultCoordinateOperationFactory) {
-            ((DefaultCoordinateOperationFactory) opFactory).getOperationMethod(identifier);
-        }
-        final OperationMethod method = getOperationMethod(mtFactory.getAvailableMethods(SingleOperation.class), identifier);
-        if (method != null) {
-            return method;
-        }
-        throw new NoSuchIdentifierException("No such operation method: " + identifier, identifier);
-    }
-
-    /**
-     * Returns the operation method for the specified name or identifier. The given argument shall be either a
-     * method name (e.g. <cite>"Transverse Mercator"</cite>) or one of its identifiers (e.g. {@code "EPSG:9807"}).
-     *
-     * @param  methods     the method candidates.
-     * @param  identifier  the name or identifier of the operation method to search.
-     * @return the coordinate operation method for the given name or identifier, or {@code null} if none.
-     *
-     * @see org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory#getOperationMethod(String)
-     * @see org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory#getOperationMethod(String)
-     */
-    private static OperationMethod getOperationMethod(final Iterable<? extends OperationMethod> methods, final String identifier) {
-        OperationMethod fallback = null;
-        for (final OperationMethod method : methods) {
-            if (IdentifiedObjects.isHeuristicMatchForName(method, identifier) ||
-                    NameToIdentifier.isHeuristicMatchForIdentifier(method.getIdentifiers(), identifier))
-            {
-                /*
-                 * Stop the iteration at the first non-deprecated method.
-                 * If we find only deprecated methods, take the first one.
-                 */
-                if (!(method instanceof Deprecable) || !((Deprecable) method).isDeprecated()) {
-                    return method;
-                }
-                if (fallback == null) {
-                    fallback = method;
-                }
-            }
-        }
-        return fallback;
+    public MathTransform1D findTransform(final VerticalCRS source, final VerticalCRS target) throws FactoryException {
+        return (MathTransform1D) CRS.findOperation(source, target, null).getMathTransform();
     }
 
     /**

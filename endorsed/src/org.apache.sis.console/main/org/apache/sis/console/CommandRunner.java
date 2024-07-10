@@ -35,6 +35,7 @@ import org.apache.sis.util.Locales;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.privy.X364;
+import org.apache.sis.pending.jdk.JDK22;
 import org.apache.sis.storage.DataOptionKey;
 import org.apache.sis.storage.StorageConnector;
 
@@ -232,7 +233,8 @@ abstract class CommandRunner {
 
             value = options.get(option = Option.COLORS);
             console = System.console();
-            colors = (value != null) ? Option.COLORS.parseBoolean(value) : (console != null) && X364.isAnsiSupported();
+            colors = (value != null) ? Option.COLORS.parseBoolean(value)
+                    : (console != null) && JDK22.isTerminal(console) && X364.isAnsiSupported();
         } catch (RuntimeException e) {
             @SuppressWarnings("null")                   // `option` has been assigned in `get` argument.
             final String name = option.label();

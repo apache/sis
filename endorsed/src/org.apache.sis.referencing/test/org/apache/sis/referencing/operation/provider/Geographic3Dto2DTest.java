@@ -32,6 +32,7 @@ import org.apache.sis.test.TestCase;
 
 // Specific to the main branch:
 import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
+import static org.apache.sis.referencing.privy.CoordinateOperations.builder;
 
 
 /**
@@ -115,14 +116,15 @@ public final class Geographic3Dto2DTest extends TestCase {
          * Create a "Geographic to Geocentric" conversion with ellipsoid axis length units converted to metres
          * (the unit implied by SRC_SEMI_MAJOR) because it is the unit of Bursa-Wolf parameters that we created above.
          */
-        Parameters step = Parameters.castOrWrap(factory.getDefaultParameters(GeographicToGeocentric.NAME));
+        var builder = builder(factory, GeographicToGeocentric.NAME);
+        Parameters step = Parameters.castOrWrap(builder.parameters());
         step.getOrCreate(MapProjection.SEMI_MAJOR).setValue(pv.doubleValue(GeocentricAffineBetweenGeographic.SRC_SEMI_MAJOR));
         step.getOrCreate(MapProjection.SEMI_MINOR).setValue(pv.doubleValue(GeocentricAffineBetweenGeographic.SRC_SEMI_MINOR));
-        MathTransform toGeocentric = factory.createParameterizedTransform(step);
+        MathTransform toGeocentric = builder.create();
         assertEquals(3, toGeocentric.getSourceDimensions());
         assertEquals(3, toGeocentric.getTargetDimensions());
 
-        final MathTransform reduce = factory.createParameterizedTransform(factory.getDefaultParameters("Geographic3D to 2D conversion"));
+        final MathTransform reduce = builder(factory, "Geographic3D to 2D conversion").create();
         assertEquals(3, reduce.getSourceDimensions());
         assertEquals(2, reduce.getTargetDimensions());
         try {
@@ -136,10 +138,11 @@ public final class Geographic3Dto2DTest extends TestCase {
          * Create a "Geocentric to Geographic" conversion with ellipsoid axis length units converted to metres
          * because this is the unit of the Geocentric CRS used above.
          */
-        step = Parameters.castOrWrap(factory.getDefaultParameters(GeocentricToGeographic.NAME));
+        builder = builder(factory, GeocentricToGeographic.NAME);
+        step = Parameters.castOrWrap(builder.parameters());
         step.getOrCreate(MapProjection.SEMI_MAJOR).setValue(pv.doubleValue(GeocentricAffineBetweenGeographic.TGT_SEMI_MAJOR));
         step.getOrCreate(MapProjection.SEMI_MINOR).setValue(pv.doubleValue(GeocentricAffineBetweenGeographic.TGT_SEMI_MINOR));
-        MathTransform toGeographic = factory.createParameterizedTransform(step);
+        MathTransform toGeographic = builder.create();
         assertEquals(3, toGeographic.getSourceDimensions());
         assertEquals(3, toGeographic.getTargetDimensions());
 

@@ -675,8 +675,11 @@ next:   for (int i=components.size(); --i >= 0;) {
      * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
      * @throws OperationNotFoundException if no operation path was found from {@code sourceCRS} to {@code targetCRS}.
      * @throws FactoryException if the operation creation failed for some other reason.
+     *
+     * @deprecated Replaced by {@link #createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)}.
      */
     @Override
+    @Deprecated(since="1.5")
     public CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
                                                final CoordinateReferenceSystem targetCRS)
             throws OperationNotFoundException, FactoryException

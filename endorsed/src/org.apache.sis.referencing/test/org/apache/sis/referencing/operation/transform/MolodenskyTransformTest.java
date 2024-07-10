@@ -35,6 +35,7 @@ import org.apache.sis.referencing.operation.provider.FranceGeocentricInterpolati
 import org.apache.sis.referencing.operation.provider.GeocentricTranslationTest;
 import org.apache.sis.test.TestUtilities;
 import org.apache.sis.referencing.datum.HardCodedDatum;
+import static org.apache.sis.referencing.privy.CoordinateOperations.builder;
 
 
 /**
@@ -229,7 +230,8 @@ public final class MolodenskyTransformTest extends MathTransformTestCase {
     @Test
     public void testProvider() throws FactoryException, TransformException {
         final MathTransformFactory factory = new MathTransformFactoryMock(new Molodensky());
-        final ParameterValueGroup parameters = factory.getDefaultParameters("Molodenski");
+        final var builder = builder(factory, "Molodenski");
+        final ParameterValueGroup parameters = builder.parameters();
         parameters.parameter("dim").setValue(3);
         parameters.parameter("dx").setValue(-3.0);
         parameters.parameter("dy").setValue(142.0);
@@ -238,7 +240,7 @@ public final class MolodenskyTransformTest extends MathTransformTestCase {
         parameters.parameter("src_semi_minor").setValue(6356583.8);
         parameters.parameter("tgt_semi_major").setValue(6378137.0);
         parameters.parameter("tgt_semi_minor").setValue(6356752.31414036);
-        transform = factory.createParameterizedTransform(parameters);
+        transform = builder.create();
         assertEquals(3, transform.getSourceDimensions());
         assertEquals(3, transform.getTargetDimensions());
         tolerance  = Formulas.ANGULAR_TOLERANCE * 5;
