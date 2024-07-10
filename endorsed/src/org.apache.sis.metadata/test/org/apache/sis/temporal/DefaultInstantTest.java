@@ -24,16 +24,16 @@ import java.time.ZonedDateTime;
 import java.time.ZoneOffset;
 import org.opengis.temporal.TemporalPrimitive;
 
-// Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.filter.TemporalOperatorName;
-import org.opengis.temporal.IndeterminateValue;
-import org.opengis.temporal.IndeterminatePositionException;
-
 // Test dependencies
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.temporal.IndeterminateValue;
+import org.opengis.temporal.IndeterminatePositionException;
+import org.opengis.filter.TemporalOperatorName;
 
 
 /**

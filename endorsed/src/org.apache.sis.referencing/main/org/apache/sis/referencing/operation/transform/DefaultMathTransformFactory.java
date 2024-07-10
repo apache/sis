@@ -28,9 +28,7 @@ import java.util.logging.Level;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.EllipsoidalCS;
@@ -49,14 +47,19 @@ import org.apache.sis.util.iso.AbstractFactory;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.operation.DefaultOperationMethod;
-import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.parameter.DefaultParameterValueGroup;
 import org.apache.sis.system.Reflect;
 
 // Specific to the main and geoapi-3.1 branches:
+import org.opengis.parameter.ParameterDescriptorGroup;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.util.resources.Errors;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.apache.sis.referencing.operation.matrix.Matrices;
+
 
 /**
  * Low level factory for creating {@linkplain AbstractMathTransform math transforms}.

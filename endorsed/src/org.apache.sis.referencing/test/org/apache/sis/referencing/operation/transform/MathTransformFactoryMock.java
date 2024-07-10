@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.operation.transform;
 
 import java.util.Set;
-import java.util.Optional;
 import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.metadata.citation.Citation;
@@ -34,6 +33,7 @@ import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import static org.junit.jupiter.api.Assertions.*;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.Optional;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 
 

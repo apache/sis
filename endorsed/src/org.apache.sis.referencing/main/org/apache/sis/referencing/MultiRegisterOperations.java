@@ -27,8 +27,6 @@ import org.opengis.util.Factory;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.AuthorityFactory;
-import org.opengis.referencing.RegisterOperations;
-import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -45,10 +43,14 @@ import org.apache.sis.referencing.factory.MultiAuthoritiesFactory;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
-import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.AbstractFactory;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.RegisterOperations;
+import org.opengis.referencing.crs.SingleCRS;
+import org.apache.sis.util.Utilities;
 
 
 /**
