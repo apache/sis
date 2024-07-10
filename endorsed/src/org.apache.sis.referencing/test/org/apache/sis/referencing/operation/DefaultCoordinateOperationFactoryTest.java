@@ -153,7 +153,7 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
     public void testProjectionAndLongitudeRotation() throws ParseException, FactoryException, TransformException {
         final CoordinateReferenceSystem sourceCRS = parse("$NTF");
         final CoordinateReferenceSystem targetCRS = parse("$Mercator");
-        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS, null);
         assertSame      (sourceCRS, operation.getSourceCRS());
         assertSame      (targetCRS, operation.getTargetCRS());
         assertInstanceOf(ConcatenatedOperation.class, operation);
@@ -214,7 +214,7 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
                 "      TimeUnit[“day”, 86400]]]");
 
         final CoordinateReferenceSystem targetCRS = parse("$Mercator");
-        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS, null);
         assertSame      (sourceCRS, operation.getSourceCRS());
         assertSame      (targetCRS, operation.getTargetCRS());
         assertInstanceOf(ConcatenatedOperation.class, operation);
@@ -297,7 +297,7 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
                 "    Unit[“metre”, 1],\n" +
                 "  Id[“EPSG”, 3857]]");
 
-        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS, null);
         assertSame      (sourceCRS, operation.getSourceCRS());
         assertSame      (targetCRS, operation.getTargetCRS());
         assertInstanceOf(ConcatenatedOperation.class, operation);
@@ -330,7 +330,7 @@ public final class DefaultCoordinateOperationFactoryTest extends MathTransformTe
     public void testPositionVectorTransformation() throws ParseException, FactoryException, TransformException {
         final CoordinateReferenceSystem sourceCRS = CommonCRS.WGS84.geographic();
         final CoordinateReferenceSystem targetCRS = parse(CoordinateOperationFinderTest.AGD66());
-        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS);
+        final CoordinateOperation operation = factory.createOperation(sourceCRS, targetCRS, null);
         transform  = operation.getMathTransform();
         tolerance  = Formulas.LINEAR_TOLERANCE;
         λDimension = new int[] {0};

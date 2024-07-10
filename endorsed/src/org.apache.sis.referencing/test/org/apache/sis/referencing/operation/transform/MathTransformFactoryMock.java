@@ -22,8 +22,6 @@ import org.opengis.util.FactoryException;
 import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.MathTransformFactory;
@@ -98,17 +96,6 @@ public final class MathTransformFactoryMock implements MathTransformFactory {
     }
 
     /**
-     * Returns the last method used, which can only be null or the method given at construction time.
-     *
-     * @return the method given at construction time.
-     */
-    @Override
-    @Deprecated
-    public OperationMethod getLastMethodUsed() {
-        return method;
-    }
-
-    /**
      * Returns the builder for the operation method.
      *
      * @param  name  shall be the operation method name.
@@ -136,37 +123,6 @@ public final class MathTransformFactoryMock implements MathTransformFactory {
             };
         }
         throw new NoSuchIdentifierException(null, name);
-    }
-
-    /**
-     * Returns the parameters for the operation method.
-     *
-     * @param  name  shall be the operation method name.
-     * @return the parameters.
-     * @throws NoSuchIdentifierException if the given name is not the name
-     *         of the operation method known to this factory.
-     */
-    @Override
-    @Deprecated
-    public ParameterValueGroup getDefaultParameters(final String name) throws NoSuchIdentifierException {
-        if (method.isHeuristicMatchForName(name)) {
-            return method.getParameters().createValue();
-        }
-        throw new NoSuchIdentifierException(null, name);
-    }
-
-    /**
-     * Delegates to the method given at construction time.
-     *
-     * @param  parameters  the parameters to give to the math transform provider.
-     * @return the transform created by the provider.
-     * @throws FactoryException if the provider cannot create the transform.
-     */
-    @Override
-    @Deprecated
-    public MathTransform createParameterizedTransform(ParameterValueGroup parameters) throws FactoryException {
-        lastParameters = parameters;
-        return method.createMathTransform(this, parameters);
     }
 
     /**
@@ -214,22 +170,6 @@ public final class MathTransformFactoryMock implements MathTransformFactory {
      */
     @Override
     public MathTransform createPassThroughTransform(int firstAffectedCoordinate, MathTransform subTransform, int numTrailingCoordinates) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Unimplemented method.
-     *
-     * @param  baseCRS     ignored.
-     * @param  parameters  ignored.
-     * @param  derivedCS   ignored.
-     * @return never returned.
-     */
-    @Override
-    @Deprecated
-    public MathTransform createBaseToDerived(CoordinateReferenceSystem baseCRS,
-            ParameterValueGroup parameters, CoordinateSystem derivedCS)
-    {
         throw new UnsupportedOperationException();
     }
 

@@ -31,9 +31,9 @@ import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.cs.CoordinateSystem;
+import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.referencing.operation.CoordinateOperation;
-import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.citation.OnLineFunction;
 import org.opengis.metadata.citation.OnlineResource;
@@ -52,7 +52,6 @@ import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.referencing.privy.TemporalAccessor;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
-import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.parameter.DefaultParameterDescriptor;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
@@ -127,9 +126,8 @@ public final class ServicesForMetadata extends ReferencingServices {
                 !Utilities.equalsIgnoreMetadata(cs2.getAxis(1), cs1.getAxis(1)))
             {
                 final CoordinateOperation operation;
-                final CoordinateOperationFactory factory = DefaultCoordinateOperationFactory.provider();
                 try {
-                    operation = factory.createOperation(crs, normalizedCRS);
+                    operation = CRS.findOperation(crs, normalizedCRS, null);
                 } catch (FactoryException e) {
                     if (findOpCaller != null) {
                         // See javadoc for the assumption that optional mode is used by Envelopes.findOperation(…).
@@ -471,14 +469,18 @@ public final class ServicesForMetadata extends ReferencingServices {
         return new CoordinateFormat(locale, timezone);
     }
 
+
     /**
-     * Returns the default coordinate operation factory.
+     * Returns transform between a pair of vertical CRS.
      *
-     * @return the coordinate operation factory to use.
+     * @param  source  first CRS.
+     * @param  target  second CRS.
+     * @return transform between the given pair of CRS.
+     * @throws FactoryException if the transform cannot be found.
      */
     @Override
-    public CoordinateOperationFactory getCoordinateOperationFactory() {
-        return DefaultCoordinateOperationFactory.provider();
+    public MathTransform1D findTransform(final VerticalCRS source, final VerticalCRS target) throws FactoryException {
+        return (MathTransform1D) CRS.findOperation(source, target, null).getMathTransform();
     }
 
     /**

@@ -24,7 +24,8 @@ import org.opengis.geometry.Envelope;
 import org.opengis.geometry.DirectPosition;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.operation.CoordinateOperationFactory;
+import org.opengis.referencing.crs.VerticalCRS;
+import org.opengis.referencing.operation.MathTransform1D;
 import org.opengis.referencing.operation.TransformException;
 import org.opengis.util.FactoryException;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
@@ -272,11 +273,14 @@ public class ReferencingServices extends OptionalDependency {
     }
 
     /**
-     * Returns the default coordinate operation factory.
+     * Returns transform between a pair of vertical CRS.
      *
-     * @return the coordinate operation factory to use.
+     * @param  source  first CRS.
+     * @param  target  second CRS.
+     * @return transform between the given pair of CRS.
+     * @throws FactoryException if the transform cannot be found.
      */
-    public CoordinateOperationFactory getCoordinateOperationFactory() {
+    public MathTransform1D findTransform(VerticalCRS source, VerticalCRS target) throws FactoryException {
         throw moduleNotFound();
     }
 

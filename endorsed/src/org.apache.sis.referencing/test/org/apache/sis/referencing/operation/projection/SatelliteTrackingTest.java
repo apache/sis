@@ -83,7 +83,7 @@ public final class SatelliteTrackingTest extends MapProjectionTestCase {
         values.parameter("satellite_orbit_inclination").setValue(  99.092);
         values.parameter("satellite_orbital_period")   .setValue( 103.267, Units.MINUTE);
         values.parameter("ascending_node_period")      .setValue(1440.0,   Units.MINUTE);
-        transform = new MathTransformFactoryMock(provider).createParameterizedTransform(values);
+        transform = provider.createMathTransform(new MathTransformFactoryMock(provider), values);
         validate();
         /*
          * Assuming that tolerance has been set to the number of fraction digits published in Snyder tables,

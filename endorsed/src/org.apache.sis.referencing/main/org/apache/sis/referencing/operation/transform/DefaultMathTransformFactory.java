@@ -28,9 +28,7 @@ import java.util.logging.Level;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterNotFoundException;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.EllipsoidalCS;
@@ -374,8 +372,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      *               for operations defined by empirical parameters, <i>etc</i>.
      * @return methods available in this factory for coordinate operations of the given type.
      *
-     * @see #getDefaultParameters(String)
-     * @see #createParameterizedTransform(ParameterValueGroup)
      * @see DefaultOperationMethod#getOperationType()
      */
     @Override
@@ -481,33 +477,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
             return new CoordinateSystemTransformBuilder(this);
         }
         return new ParameterizedTransformBuilder(this, getOperationMethod(method));
-    }
-
-    /**
-     * Returns the default parameter values for a math transform using the given operation method.
-     * The {@code method} argument is the name of any {@code OperationMethod} instance returned by
-     * <code>{@link #getAvailableMethods(Class) getAvailableMethods}({@linkplain SingleOperation}.class)</code>.
-     * Valid names are <a href="https://sis.apache.org/tables/CoordinateOperationMethods.html">listed here</a>.
-     *
-     * <p>This function creates new parameter instances at every call.
-     * Parameters are intended to be modified by the user before to be given to the
-     * {@link #createParameterizedTransform createParameterizedTransform(…)} method.</p>
-     *
-     * @param  method  the case insensitive name of the coordinate operation method to search for.
-     * @return a new group of parameter values for the {@code OperationMethod} identified by the given name.
-     * @throws NoSuchIdentifierException if there is no method registered for the given name or identifier.
-     *
-     * @see #getAvailableMethods(Class)
-     * @see #createParameterizedTransform(ParameterValueGroup)
-     * @see AbstractMathTransform#getParameterValues()
-     *
-     * @deprecated This {@linkplain #createParameterizedTransform way to create parameterized transform} is ambiguous.
-     * Use {@link #builder(String)} instead.
-     */
-    @Override
-    @Deprecated(since="1.5")
-    public ParameterValueGroup getDefaultParameters(final String method) throws NoSuchIdentifierException {
-        return getOperationMethod(method).getParameters().createValue();
     }
 
     /**
@@ -823,50 +792,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     }
 
     /**
-     * Creates a transform from a group of parameters.
-     * The set of expected parameters varies for each operation.
-     * The easiest way to provide parameter values is to get an initially empty group for the desired
-     * operation by calling {@link #getDefaultParameters(String)}, then to fill the parameter values.
-     * Example:
-     *
-     * {@snippet lang="java" :
-     *     ParameterValueGroup group = factory.getDefaultParameters("Transverse_Mercator");
-     *     group.parameter("semi_major").setValue(6378137.000);
-     *     group.parameter("semi_minor").setValue(6356752.314);
-     *     MathTransform mt = factory.createParameterizedTransform(group);
-     *     }
-     *
-     * Sometimes the {@code "semi_major"} and {@code "semi_minor"} parameter values are not explicitly provided,
-     * but rather inferred from the {@linkplain org.opengis.referencing.datum.GeodeticDatum geodetic
-     * reference frame} of the source Coordinate Reference System.
-     *
-     * @param  parameters  the parameter values. The {@linkplain ParameterDescriptorGroup#getName() parameter group name}
-     *         shall be the name of the desired {@linkplain DefaultOperationMethod operation method}.
-     * @return the transform created from the given parameters.
-     * @throws NoSuchIdentifierException if there is no method for the given parameter group name.
-     * @throws FactoryException if the object creation failed. This exception is thrown
-     *         if some required parameter has not been supplied, or has illegal value.
-     *
-     * @see #getDefaultParameters(String)
-     * @see #getAvailableMethods(Class)
-     * @see #getLastMethodUsed()
-     * @see org.apache.sis.parameter.ParameterBuilder#createGroupForMapProjection(ParameterDescriptor...)
-     *
-     * @deprecated This constructor is ambiguous when axis directions are parts of the map projection definition
-     * as in <q>Transverse Mercator (South Orientated)</q>.
-     * Use {@link #builder(String)} instead for allowing the implementation to resolve such ambiguities.
-     */
-    @Override
-    @Deprecated(since="1.5")
-    public MathTransform createParameterizedTransform(final ParameterValueGroup parameters)
-            throws NoSuchIdentifierException, FactoryException
-    {
-        final var builder = new ParameterizedTransformBuilder(this, null);
-        builder.setParameters(parameters, false);
-        return builder.create();
-    }
-
-    /**
      * Creates a transform from a group of parameters and a context.
      *
      * @param  parameters  the parameter values.
@@ -880,9 +805,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
     public MathTransform createParameterizedTransform(final ParameterValueGroup parameters,
             final Context context) throws NoSuchIdentifierException, FactoryException
     {
-        if (context == null) {
-            return createParameterizedTransform(parameters);
-        }
         context.builder    = null;
         context.factory    = this;
         context.parameters = parameters;
@@ -928,40 +850,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
         context.builder = null;
         context.factory = this;
         return context.builder().swapAndScaleAxes(parameterized);
-    }
-
-    /**
-     * Creates a transform from a base CRS to a derived CS using the given parameters.
-     * If this method needs to set the values of {@code "semi_major"} and {@code "semi_minor"} parameters,
-     * then it sets those values directly on the given {@code parameters} instance – not on a clone – for
-     * allowing the caller to get back the complete parameter values.
-     * However, this method only fills missing values, it never modify existing values.
-     *
-     * @param  baseCRS     the source coordinate reference system.
-     * @param  parameters  the parameter values for the transform.
-     * @param  derivedCS   the target coordinate system.
-     * @return the parameterized transform from {@code baseCRS} to {@code derivedCS},
-     *         including unit conversions and axis swapping.
-     * @throws NoSuchIdentifierException if there is no transform registered for the coordinate operation method.
-     * @throws FactoryException if the object creation failed. This exception is thrown
-     *         if some required parameter has not been supplied, or has illegal value.
-     *
-     * @deprecated Replaced by {@link #builder(String)}.
-     */
-    @Override
-    @Deprecated(since="0.7")
-    public MathTransform createBaseToDerived(final CoordinateReferenceSystem baseCRS,
-            final ParameterValueGroup parameters, final CoordinateSystem derivedCS)
-            throws NoSuchIdentifierException, FactoryException
-    {
-        ArgumentChecks.ensureNonNull("baseCRS",    baseCRS);
-        ArgumentChecks.ensureNonNull("parameters", parameters);
-        ArgumentChecks.ensureNonNull("derivedCS",  derivedCS);
-        final var builder = new ParameterizedTransformBuilder(this, null);
-        builder.setParameters(parameters, true);
-        builder.setSourceAxes(baseCRS);
-        builder.setTargetAxes(derivedCS, null);
-        return builder.create();
     }
 
     /**
@@ -1185,25 +1073,6 @@ public class DefaultMathTransformFactory extends AbstractFactory implements Math
      */
     final MathTransform unique(final MathTransform tr) {
         return (pool != null) ? pool.unique(tr) : tr;
-    }
-
-    /**
-     * Returns the operation method used by the latest call to a {@code create(…)} constructor
-     * in the currently running thread. Returns {@code null} if not applicable.
-     *
-     * <p>Invoking {@code getLastMethodUsed()} can be useful after a call to
-     * {@link #createParameterizedTransform createParameterizedTransform(…)}.</p>
-     *
-     * @return the last method used by a {@code create(…)} constructor, or {@code null} if unknown of unsupported.
-     *
-     * @see #createParameterizedTransform(ParameterValueGroup)
-     *
-     * @deprecated Replaced by {@link MathTransform.Builder#getMethod()}.
-     */
-    @Override
-    @Deprecated(since = "1.5")
-    public OperationMethod getLastMethodUsed() {
-        return lastMethod.get();
     }
 
     /**

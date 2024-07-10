@@ -99,11 +99,11 @@ public final class PolarStereographicTest extends MapProjectionTestCase {
      */
     @Test
     public void testPolarStereographicNorth() throws FactoryException, TransformException {
-        final PolarStereographicNorth method = new PolarStereographicNorth();
+        final var method = new PolarStereographicNorth();
         final Parameters pg = parameters(method, true);
         pg.parameter("standard_parallel_1").setValue(71.0);
         pg.parameter("central_meridian").setValue(-96.0);
-        transform = new MathTransformFactoryMock(method).createParameterizedTransform(pg);
+        transform = method.createMathTransform(new MathTransformFactoryMock(method), pg);
         tolerance = 0.02;
         verifyTransform(new double[] {
             -121 - (20 + 22.380/60)/60,     // 121°20'22.380"W

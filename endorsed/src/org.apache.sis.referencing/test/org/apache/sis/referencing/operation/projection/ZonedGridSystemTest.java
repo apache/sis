@@ -50,13 +50,13 @@ public final class ZonedGridSystemTest extends MapProjectionTestCase {
      * @param  ellipsoidal  {@code false} for a sphere, or {@code true} for WGS84 ellipsoid.
      */
     private void createProjection(final boolean ellipsoidal) throws FactoryException {
-        final ZonedTransverseMercator method = new ZonedTransverseMercator();
+        final var method = new ZonedTransverseMercator();
         final Parameters values = parameters(method, ellipsoidal);
         values.parameter(Constants.SCALE_FACTOR) .setValue(0.9996, Units.UNITY );
         values.parameter(Constants.FALSE_EASTING).setValue(500000, Units.METRE );
         values.parameter("Initial longitude")    .setValue(  -180, Units.DEGREE);
         values.parameter("Zone width")           .setValue(     6, Units.DEGREE);
-        transform = new MathTransformFactoryMock(method).createParameterizedTransform(values);
+        transform = method.createMathTransform(new MathTransformFactoryMock(method), values);
         tolerance = Formulas.LINEAR_TOLERANCE;
         validate();
     }

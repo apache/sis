@@ -54,9 +54,9 @@ public final class EquirectangularTest extends MapProjectionTestCase {
      * for the whole projection (not only the normalized part).
      */
     private void createCompleteProjection() throws FactoryException {
-        final Equirectangular provider = new Equirectangular();
+        final var provider = new Equirectangular();
         final Parameters parameters = parameters(provider, false);
-        transform = new MathTransformFactoryMock(provider).createParameterizedTransform(parameters);
+        transform = provider.createMathTransform(new MathTransformFactoryMock(provider), parameters);
         tolerance = Formulas.LINEAR_TOLERANCE;  // Not NORMALIZED_TOLERANCE since this is not a NormalizedProjection.
         validate();
     }

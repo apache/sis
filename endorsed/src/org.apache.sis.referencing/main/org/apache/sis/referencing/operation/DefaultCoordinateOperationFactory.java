@@ -658,28 +658,6 @@ next:   for (int i=components.size(); --i >= 0;) {
 
     /**
      * Finds or creates an operation for conversion or transformation between two coordinate reference systems.
-     * If an operation exists, it is returned. If more than one operation exists, the operation having the widest
-     * domain of validity is returned. If no operation exists, then an exception is thrown.
-     *
-     * <p>The default implementation delegates to <code>{@linkplain #createOperation(CoordinateReferenceSystem,
-     * CoordinateReferenceSystem, CoordinateOperationContext) createOperation}(sourceCRS, targetCRS, null)}</code>.</p>
-     *
-     * @param  sourceCRS  input coordinate reference system.
-     * @param  targetCRS  output coordinate reference system.
-     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
-     * @throws OperationNotFoundException if no operation path was found from {@code sourceCRS} to {@code targetCRS}.
-     * @throws FactoryException if the operation creation failed for some other reason.
-     */
-    @Override
-    public CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
-                                               final CoordinateReferenceSystem targetCRS)
-            throws OperationNotFoundException, FactoryException
-    {
-        return createOperation(sourceCRS, targetCRS, (CoordinateOperationContext) null);
-    }
-
-    /**
-     * Finds or creates an operation for conversion or transformation between two coordinate reference systems.
      * If an operation exists, it is returned. If more than one operation exists, then the operation having the
      * widest intersection between its {@linkplain org.apache.sis.referencing.DefaultObjectDomain#getDomainOfValidity()
      * domain of validity} and the {@linkplain CoordinateOperationContext#getAreaOfInterest() area of interest}
@@ -807,34 +785,5 @@ next:   for (int i=components.size(); --i >= 0;) {
             final CoordinateOperationContext context) throws FactoryException
     {
         return new CoordinateOperationFinder(registry, this, context);
-    }
-
-    /**
-     * Returns an operation using a particular method for conversion or transformation between
-     * two coordinate reference systems. If an operation exists using the given method, then it
-     * is returned. If no operation using the given method is found, then the implementation has
-     * the option of inferring the operation from the argument objects.
-     *
-     * <p>Current implementation ignores the {@code method} argument.
-     * This behavior may change in a future Apache SIS version.</p>
-     *
-     * @param  sourceCRS  input coordinate reference system.
-     * @param  targetCRS  output coordinate reference system.
-     * @param  method     the algorithmic method for conversion or transformation.
-     * @return a coordinate operation from {@code sourceCRS} to {@code targetCRS}.
-     * @throws OperationNotFoundException if no operation path was found from {@code sourceCRS} to {@code targetCRS}.
-     * @throws FactoryException if the operation creation failed for some other reason.
-     *
-     * @deprecated Replaced by {@link #createOperation(CoordinateReferenceSystem, CoordinateReferenceSystem, CoordinateOperationContext)}.
-     */
-    @Override
-    @Deprecated(since="0.7")
-    public CoordinateOperation createOperation(final CoordinateReferenceSystem sourceCRS,
-                                               final CoordinateReferenceSystem targetCRS,
-                                               final OperationMethod method)
-            throws FactoryException
-    {
-        ArgumentChecks.ensureNonNull("method", method);     // As a matter of principle.
-        return createOperation(sourceCRS, targetCRS, (CoordinateOperationContext) null);
     }
 }

@@ -216,7 +216,8 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
                 continue;
             }
             final String classification = method.getName().getCode();
-            ParameterValueGroup pg = factory.getDefaultParameters(classification);
+            final var builder = factory.builder(classification);
+            ParameterValueGroup pg = builder.parameters();
             pg.parameter("semi_major").setValue(6377563.396);
             pg.parameter("semi_minor").setValue(6356256.909237285);
             /*
@@ -263,7 +264,7 @@ public final class DefaultMathTransformFactoryTest extends TestCase {
             }
             final MathTransform mt;
             try {
-                mt = factory.createParameterizedTransform(pg);
+                mt = builder.create();
             } catch (InvalidGeodeticParameterException e) {
                 fail(classification + ": " + e.getLocalizedMessage());
                 continue;
