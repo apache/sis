@@ -145,7 +145,6 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      * @param specificUsage    brief description of the resource and/or resource series usage, or {@code null} if none.
      * @param userContactInfo  means of communicating with person(s) and organization(s), or {@code null} if none.
      */
-    @SuppressWarnings("this-escape")
     public DefaultUsage(final CharSequence specificUsage,
                         final Responsibility userContactInfo)
     {
@@ -162,7 +161,6 @@ public class DefaultUsage extends ISOMetadata implements Usage {
      *
      * @see #castOrCopy(Usage)
      */
-    @SuppressWarnings("this-escape")
     public DefaultUsage(final Usage object) {
         super(object);
         if (object != null) {

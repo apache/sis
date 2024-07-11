@@ -27,9 +27,10 @@ import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.Static;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.OptionalCandidate;
 import org.apache.sis.util.UnknownNameException;
-import static org.apache.sis.util.ArgumentChecks.ensureNonNull;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -130,7 +131,7 @@ public final class Names extends Static {
      * @todo Bug in current implementation: the {@code separator} argument is ignored if {@code namespace} is null.
      */
     public static GenericName parseGenericName(final CharSequence namespace, final String separator, final CharSequence scopedName) {
-        ensureNonNull("localPart", scopedName);
+        ArgumentChecks.ensureNonNull("localPart", scopedName);
         final NameFactory factory = DefaultNameFactory.provider();
         return factory.parseGenericName(createNameSpace(factory, namespace, separator), scopedName);
     }
@@ -151,7 +152,7 @@ public final class Names extends Static {
      * @since 1.0
      */
     public static GenericName createGenericName(final CharSequence namespace, final String separator, final CharSequence... parsedNames) {
-        ensureNonNull("parsedNames", parsedNames);
+        ArgumentChecks.ensureNonNull("parsedNames", parsedNames);
         final NameFactory factory = DefaultNameFactory.provider();
         return factory.createGenericName(createNameSpace(factory, namespace, separator), parsedNames);
     }
@@ -220,7 +221,7 @@ public final class Names extends Static {
      * @see DefaultNameFactory#createLocalName(NameSpace, CharSequence)
      */
     public static LocalName createLocalName(final CharSequence namespace, final String separator, final CharSequence localPart) {
-        ensureNonNull("localPart", localPart);
+        ArgumentChecks.ensureNonNull("localPart", localPart);
         final NameFactory factory = DefaultNameFactory.provider();
         return factory.createLocalName(createNameSpace(factory, namespace, separator), localPart);
     }
@@ -249,7 +250,7 @@ public final class Names extends Static {
      * @see DefaultNameFactory#createTypeName(NameSpace, CharSequence)
      */
     public static TypeName createTypeName(final CharSequence namespace, final String separator, final CharSequence localPart) {
-        ensureNonNull("localPart", localPart);
+        ArgumentChecks.ensureNonNull("localPart", localPart);
         final NameFactory factory = DefaultNameFactory.provider();
         return factory.createTypeName(createNameSpace(factory, namespace, separator), localPart);
     }
@@ -268,7 +269,7 @@ public final class Names extends Static {
      * @since 1.3
      */
     public static TypeName createTypeName(final Class<?> valueClass) {
-        ensureNonNull("valueClass", valueClass);
+        ArgumentChecks.ensureNonNull("valueClass", valueClass);
         final var factory = DefaultNameFactory.provider();
         return factory.toTypeName(valueClass);    // SIS-specific method.
     }
@@ -306,8 +307,8 @@ public final class Names extends Static {
     public static MemberName createMemberName(final CharSequence namespace, final String separator,
             final CharSequence localPart, final Class<?> valueClass)
     {
-        ensureNonNull("localPart",  localPart);
-        ensureNonNull("valueClass", valueClass);
+        ArgumentChecks.ensureNonNull("localPart",  localPart);
+        ArgumentChecks.ensureNonNull("valueClass", valueClass);
         final var factory = DefaultNameFactory.provider();
         return factory.createMemberName(createNameSpace(factory, namespace, separator), localPart,
                factory.toTypeName(valueClass));     // SIS-specific method.
@@ -330,8 +331,8 @@ public final class Names extends Static {
     public static MemberName createMemberName(final CharSequence namespace, final String separator,
             final CharSequence localPart, final TypeName attributeType)
     {
-        ensureNonNull("localPart", localPart);
-        ensureNonNull("attributeType", attributeType);
+        ArgumentChecks.ensureNonNull("localPart", localPart);
+        ArgumentChecks.ensureNonNull("attributeType", attributeType);
         final NameFactory factory = DefaultNameFactory.provider();
         return factory.createMemberName(createNameSpace(factory, namespace, separator), localPart, attributeType);
     }
@@ -425,16 +426,17 @@ public final class Names extends Static {
         if (t instanceof Class<?>) {
             return (Class<?>) t;
         }
-        final Class<?> c;
+        ClassNotFoundException cause;
         try {
-            c = TypeNames.toClass(TypeNames.namespace(type.scope()), type.toString());
+            final Class<?> c = TypeNames.toClass(TypeNames.namespace(type.scope()), type.toString());
+            if (c != Void.TYPE) {
+                return c;
+            }
+            cause = null;
         } catch (ClassNotFoundException e) {
-            throw new UnknownNameException(TypeNames.unknown(type), e);
+            cause = e;
         }
-        if (c == Void.TYPE) {
-            throw new UnknownNameException(TypeNames.unknown(type));
-        }
-        return c;
+        throw new UnknownNameException(Errors.format(Errors.Keys.UnknownType_1, type.toFullyQualifiedName()), cause);
     }
 
     /**

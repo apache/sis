@@ -359,7 +359,8 @@ public class ImagePropertyExplorer extends Widget {
      *
      * @param  background  the image background color, or {@code null} if none.
      */
-    ImagePropertyExplorer(final Locale locale,  final ObjectProperty<Background> background) {
+    @SuppressWarnings({"this-escape", "unchecked"})         // Generic array construction.
+    ImagePropertyExplorer(final Locale locale, final ObjectProperty<Background> background) {
         final Vocabulary vocabulary = Vocabulary.forLocale(locale);
         final Resources  resources  = Resources.forLocale(locale);
 

@@ -276,7 +276,7 @@ public final class LogHandler extends Handler implements StoreListener<WarningEv
      */
     public static Long loadingStart(final Resource source) {
         if (source == null) return null;
-        final Long id = Thread.currentThread().getId();
+        final Long id = org.apache.sis.pending.jdk.JDK19.threadId(Thread.currentThread());
         INSTANCE.inProgress.merge(id, getRecords(source), Destination::startNested);
         return id;
     }

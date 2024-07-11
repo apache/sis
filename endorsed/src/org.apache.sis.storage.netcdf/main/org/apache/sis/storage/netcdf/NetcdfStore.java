@@ -105,6 +105,7 @@ public class NetcdfStore extends DataStore implements Aggregate {
      *
      * @since 0.8
      */
+    @SuppressWarnings("this-escape")        // The invoked method does not store `this` and is not overrideable.
     public NetcdfStore(final NetcdfStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
         location = connector.getStorageAs(URI.class);

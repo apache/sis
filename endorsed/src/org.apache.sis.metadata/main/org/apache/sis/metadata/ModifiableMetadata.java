@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Currency;
-import java.util.NoSuchElementException;
 import java.lang.reflect.Modifier;
 import java.nio.charset.Charset;
 import jakarta.xml.bind.annotation.XmlTransient;
@@ -419,10 +418,10 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * @see #nonNullList(List, Class)
      */
     @SuppressWarnings("unchecked")
-    protected final <E> List<E> writeList(Collection<? extends E> source, List<E> target,
-            Class<E> elementType) throws UnmodifiableMetadataException
+    protected final <E> List<E> writeList(Collection<? extends E> source, List<E> target, Class<E> elementType)
+            throws UnmodifiableMetadataException
     {
-        return (List<E>) write(source, target, elementType, Boolean.FALSE);
+        return (List<E>) write(source, target, elementType, List.class);
     }
 
     /**
@@ -447,10 +446,10 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *
      * @see #nonNullSet(Set, Class)
      */
-    protected final <E> Set<E> writeSet(Collection<? extends E> source, Set<E> target,
-            Class<E> elementType) throws UnmodifiableMetadataException
+    protected final <E> Set<E> writeSet(Collection<? extends E> source, Set<E> target, Class<E> elementType)
+            throws UnmodifiableMetadataException
     {
-        return (Set<E>) write(source, target, elementType, Boolean.TRUE);
+        return (Set<E>) write(source, target, elementType, Set.class);
     }
 
     /**
@@ -481,8 +480,8 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *         or {@code null} if the source was null.
      * @throws UnmodifiableMetadataException if this metadata is unmodifiable.
      */
-    protected final <E> Collection<E> writeCollection(Collection<? extends E> source, Collection<E> target,
-            Class<E> elementType) throws UnmodifiableMetadataException
+    protected final <E> Collection<E> writeCollection(Collection<? extends E> source, Collection<E> target, Class<E> elementType)
+            throws UnmodifiableMetadataException
     {
         return write(source, target, elementType, null);
     }
@@ -491,12 +490,11 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * Writes the content of the {@code source} collection into the {@code target} list or set,
      * creating it if needed.
      *
-     * @param  useSet  {@link Boolean#TRUE} for creating a set, {@link Boolean#FALSE} for creating a list,
-     *                 or null for automatic choice.
+     * @param  collectionType  {@code Set.class}, {@code List.class} or null for automatic choice.
      */
     @SuppressWarnings("unchecked")
     private <E> Collection<E> write(final Collection<? extends E> source, Collection<E> target,
-            final Class<E> elementType, Boolean useSet) throws UnmodifiableMetadataException
+            final Class<E> elementType, Class<?> collectionType) throws UnmodifiableMetadataException
     {
         /*
          * It is not worth to copy the content if the current and the new instance are the
@@ -510,7 +508,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
                  * transitionTo(State.FINAL) is under progress. The source collection is already
                  * an unmodifiable instance created by StateChanger.
                  */
-                assert (useSet != null) || collectionType(elementType).isInstance(source) : elementType;
+                assert (collectionType != null) || collectionType(elementType).isInstance(source) : elementType;
                 return (Collection<E>) source;
             }
             checkWritePermission(valueIfDefined(target));
@@ -524,18 +522,20 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
                 if (target != null && state != COMPLETABLE) {
                     target.clear();
                 } else {
-                    if (useSet == null) {
-                        useSet = useSet(elementType);
+                    if (collectionType == null) {
+                        collectionType = collectionType(elementType);
                     }
-                    if (useSet) {
+                    if (collectionType == Set.class) {
                         target = createSet(elementType, source);
-                    } else {
+                    } else if (collectionType == List.class) {
                         target = createList(elementType, source);
+                    } else {
+                        throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnsupportedType_1, collectionType));
                     }
                 }
                 target.addAll(source);
                 if (state == COMPLETABLE) {
-                    if (useSet) {
+                    if (collectionType == Set.class) {
                         target = CollectionsExt.unmodifiableOrCopy((Set<E>) target);
                     } else {
                         target = CollectionsExt.unmodifiableOrCopy((List<E>) target);
@@ -612,7 +612,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * @return a list containing the {@code source} elements,
      *         or {@code null} if the source was null or empty.
      */
-    protected final <E> List<E> copyList(final Collection<? extends E> source, final Class<E> elementType) {
+    protected static <E> List<E> copyList(final Collection<? extends E> source, final Class<E> elementType) {
         if (isNullOrEmpty(source)) {
             return null;
         }
@@ -632,7 +632,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * @return a set containing the {@code source} elements,
      *         or {@code null} if the source was null or empty.
      */
-    protected final <E> Set<E> copySet(final Collection<? extends E> source, final Class<E> elementType) {
+    protected static <E> Set<E> copySet(final Collection<? extends E> source, final Class<E> elementType) {
         if (isNullOrEmpty(source)) {
             return null;
         }
@@ -646,16 +646,13 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * or returns {@code null} if the source is {@code null} or empty.
      * This is a convenience method for copying fields in subclass copy constructors.
      *
-     * <p>The collection type is selected as described in the
-     * {@link #nonNullCollection(Collection, Class)}.</p>
-     *
      * @param  <E>          the type represented by the {@code Class} argument.
      * @param  source       the source collection, or {@code null}.
      * @param  elementType  the base type of elements to put in the collection.
      * @return a collection containing the {@code source} elements,
      *         or {@code null} if the source was null or empty.
      */
-    protected final <E> Collection<E> copyCollection(final Collection<? extends E> source, final Class<E> elementType) {
+    protected static <E> Collection<E> copyCollection(final Collection<? extends E> source, final Class<E> elementType) {
         if (isNullOrEmpty(source)) {
             return null;
         }
@@ -683,7 +680,7 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      *
      * @since 1.0
      */
-    protected final <K,V> Map<K,V> copyMap(final Map<? extends K, ? extends V> source, final Class<K> keyType) {
+    protected static <K,V> Map<K,V> copyMap(final Map<? extends K, ? extends V> source, final Class<K> keyType) {
         if (isNullOrEmpty(source)) {
             return null;
         }
@@ -696,16 +693,13 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * Creates a singleton list or set containing only the given value, if non-null.
      * This is a convenience method for initializing fields in subclass constructors.
      *
-     * <p>The collection type is selected as described in the
-     * {@link #nonNullCollection(Collection, Class)}.</p>
-     *
      * @param  <E>          the type represented by the {@code Class} argument.
      * @param  value        the singleton value to put in the returned collection, or {@code null}.
      * @param  elementType  the element type (used only if {@code value} is non-null).
      * @return a new modifiable collection containing the given value,
      *         or {@code null} if the given value was null.
      */
-    protected final <E> Collection<E> singleton(final E value, final Class<E> elementType) {
+    protected static <E> Collection<E> singleton(final E value, final Class<E> elementType) {
         if (value == null) {
             return null;
         }
@@ -799,18 +793,21 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
             return null;
         }
         final boolean isModifiable = (state < FREEZING);
-        if (useSet(elementType)) {
+        final Class<?> collectionType = collectionType(elementType);
+        if (collectionType == Set.class) {
             if (isModifiable) {
                 return createSet(elementType, current);         // `current` given as a matter of principle even if null.
             } else {
                 return Collections.emptySet();
             }
-        } else {
+        } else if (collectionType == List.class) {
             if (isModifiable) {
                 return createList(elementType, current);        // `current` given as a matter of principle even if null.
             } else {
                 return Collections.emptyList();
             }
+        } else {
+            throw new UnsupportedOperationException(Errors.format(Errors.Keys.UnsupportedType_1, collectionType));
         }
     }
 
@@ -906,46 +903,39 @@ public abstract class ModifiableMetadata extends AbstractMetadata {
      * Returns {@code true} if we should use a {@link Set} instead of a {@link List}
      * for elements of the given type.
      */
-    private <E> boolean useSet(final Class<E> elementType) {
-        final Class<?> type = collectionType(elementType);
-        if (Set .class == type) return true;
-        if (List.class == type) return false;
-        throw new NoSuchElementException(Errors.format(Errors.Keys.UnsupportedType_1, type));
+    private static boolean useSet(final Class<?> elementType) {
+        return CodeList.class.isAssignableFrom(elementType)
+                ||          Enum.class.isAssignableFrom(elementType)
+                ||       Charset.class.isAssignableFrom(elementType)
+                ||        String.class ==               elementType
+                ||        Locale.class ==               elementType
+                ||      Currency.class ==               elementType;
     }
 
     /**
      * Returns the type of collection to use for the given type. The current implementation can
      * return only two values: <code>{@linkplain Set}.class</code> if the property should not
-     * accept duplicated values, or <code>{@linkplain List}.class</code> otherwise. Future SIS
-     * versions may accept other types.
+     * accept duplicated values, or <code>{@linkplain List}.class</code> otherwise.
+     * Future SIS versions may accept other types.
      *
-     * <p>The default implementation returns <code>{@linkplain Set}.class</code> if the element type
-     * is assignable to {@link CodeList}, {@link Enum}, {@link String}, {@link Charset},
+     * <p>The default implementation returns <code>{@linkplain Set}.class</code> if the element
+     * type is assignable to {@link CodeList}, {@link Enum}, {@link String}, {@link Charset},
      * {@link Locale} or {@link Currency}, and <code>{@linkplain List}.class</code> otherwise.
      * Subclasses can override this method for choosing different kind of collections.
-     *
-     * <h4>Constraints</h4>
-     * Implementations should comply to the following constraints:
-     * <ul>
-     *   <li><em>This method may be invoked (indirectly) at construction time.</em>
-     *        Therefor, the implementation should not depend on the object state.</li>
-     *   <li><em>The {@link Set} type should be returned only when the set elements are immutable.</em>
-     *        This is needed for {@linkplain Object#hashCode() hash code} stability.</li>
-     * </ul>
+     * As a general rule, implementations should return the {@link Set} type
+     * only when the set elements are immutable.
+     * This is needed for {@linkplain Object#hashCode() hash code} stability.</p>
      *
      * @param  <E>          the type of elements in the collection to be created.
      * @param  elementType  the type of elements in the collection to be created.
      * @return {@code List.class} or {@code Set.class} depending on whether the
      *         property shall accept duplicated values or not.
+     *
+     * @deprecated This method will be removed because it can cause {@code this} to escape at construction time.
      */
+    @Deprecated(since="1.5", forRemoval=true)
     @SuppressWarnings({"rawtypes","unchecked"})
     protected <E> Class<? extends Collection<E>> collectionType(final Class<E> elementType) {
-        return (Class) (CodeList.class.isAssignableFrom(elementType)
-                ||          Enum.class.isAssignableFrom(elementType)
-                ||       Charset.class.isAssignableFrom(elementType)
-                ||        String.class ==               elementType
-                ||        Locale.class ==               elementType
-                ||      Currency.class ==               elementType
-                ? Set.class : List.class);
+        return (Class) (useSet(elementType) ? Set.class : List.class);
     }
 }

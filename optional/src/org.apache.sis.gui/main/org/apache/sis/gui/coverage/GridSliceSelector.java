@@ -171,6 +171,7 @@ public class GridSliceSelector extends Widget {
      *
      * @param  locale  the locale to use for axis labels, or {@code null} for a default locale.
      */
+    @SuppressWarnings("this-escape")    // `this` appears in a cyclic graph.
     public GridSliceSelector(final Locale locale) {
         this.locale = locale;
         view = new GridPane();

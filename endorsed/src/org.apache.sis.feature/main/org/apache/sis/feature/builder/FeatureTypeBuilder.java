@@ -210,6 +210,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      *
      * @see #setAll(FeatureType)
      */
+    @SuppressWarnings("this-escape")    // The invoked method does not store `this` and is not overrideable.
     public FeatureTypeBuilder(final FeatureType template) {
         this(null, null, null);
         if (template != null) {

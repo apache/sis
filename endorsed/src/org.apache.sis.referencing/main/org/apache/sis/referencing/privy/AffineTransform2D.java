@@ -87,6 +87,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
      *
      * @param transform  the affine transform to copy.
      */
+    @SuppressWarnings("this-escape")        // This class is internal API and should be used safely.
     public AffineTransform2D(final AffineTransform transform) {
         super(transform);
         freeze();
@@ -98,6 +99,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
      *
      * @param elements  the matrix elements in an array of length 4 or 6.
      */
+    @SuppressWarnings("this-escape")        // This class is internal API and should be used safely.
     public AffineTransform2D(final double[] elements) {
         super(elements);
         freeze();
@@ -134,6 +136,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
      * @param m02 the X coordinate translation.
      * @param m12 the Y coordinate translation.
      */
+    @SuppressWarnings("this-escape")        // This class is internal API and should be used safely.
     public AffineTransform2D(double m00, double m10, double m01, double m11, double m02, double m12) {
         super(pz(m00), pz(m10), pz(m01), pz(m11), pz(m02), pz(m12));
         matrix = new AffineMatrix(this);
@@ -151,6 +154,7 @@ public class AffineTransform2D extends ImmutableAffineTransform
      * @param m12 the Y coordinate translation.
      * @param modifiable  whether the transform should be modifiable.
      */
+    @SuppressWarnings("this-escape")        // This class is internal API and should be used safely.
     public AffineTransform2D(double m00, double m10, double m01, double m11, double m02, double m12, final boolean modifiable) {
         super(m00, m10, m01, m11, m02, m12);
         if (!modifiable) {

@@ -225,6 +225,7 @@ public class NamedIdentifier extends ImmutableIdentifier implements GenericName 
      *          identifier code or name, optionally from a controlled list or pattern defined by the authority.
      *          The code cannot be null.
      */
+    @SuppressWarnings("this-escape")    // The invoked method does not store `this` and is not overrideable.
     public NamedIdentifier(final Citation authority, final CharSequence code) {
         super(authority, Citations.toCodeSpace(authority), toString(code));
         if (code instanceof InternationalString) {

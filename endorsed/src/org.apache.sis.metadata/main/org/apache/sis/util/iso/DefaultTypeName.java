@@ -24,6 +24,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import org.opengis.util.TypeName;
 import org.opengis.util.NameSpace;
 import org.apache.sis.util.UnknownNameException;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
@@ -133,7 +134,7 @@ import org.apache.sis.util.UnknownNameException;
  * @author  Guilhem Legal (Geomatys)
  * @author  Cédric Briançon (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see DefaultMemberName
  * @see DefaultNameFactory
@@ -197,16 +198,20 @@ public class DefaultTypeName extends DefaultLocalName implements TypeName {
      *
      * @see DefaultNameFactory#createTypeName(NameSpace, CharSequence)
      */
+    @SuppressWarnings("this-escape")    // The invoked method does not store `this` and is not overrideable.
     protected DefaultTypeName(final NameSpace scope, final CharSequence name) throws UnknownNameException {
         super(scope, name);
+        ClassNotFoundException cause;
         try {
             javaType = TypeNames.toClass(TypeNames.namespace(scope), super.toString());
+            if (javaType != Void.TYPE) {
+                return;
+            }
+            cause = null;
         } catch (ClassNotFoundException e) {
-            throw new UnknownNameException(TypeNames.unknown(super.toFullyQualifiedName()), e);
+            cause = e;
         }
-        if (javaType == Void.TYPE) {
-            throw new UnknownNameException(TypeNames.unknown(super.toFullyQualifiedName()));
-        }
+        throw new UnknownNameException(Errors.format(Errors.Keys.UnknownType_1, super.toFullyQualifiedName()), cause);
     }
 
     /**

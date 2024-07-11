@@ -223,6 +223,7 @@ public abstract class ComputedImage extends PlanarImage implements Disposable {
      * @param  sampleModel  the sample model shared by all tiles in this image.
      * @param  sources      sources of this image (may be an empty array), or a null array if unknown.
      */
+    @SuppressWarnings("this-escape")        // `this` escaped as weak reference only.
     protected ComputedImage(final SampleModel sampleModel, RenderedImage... sources) {
         this.sampleModel = Objects.requireNonNull(sampleModel);
         /*

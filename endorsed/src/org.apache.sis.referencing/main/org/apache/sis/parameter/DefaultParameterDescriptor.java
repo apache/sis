@@ -193,7 +193,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      *                       from the code list or enumeration are valid.
      * @param defaultValue   the default value for the parameter, or {@code null} if none.
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"this-escape", "unchecked"})
     public DefaultParameterDescriptor(final Map<String,?> properties,
                                       final int           minimumOccurs,
                                       final int           maximumOccurs,

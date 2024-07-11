@@ -141,7 +141,6 @@ public class DefaultRequirement extends ISOMetadata implements Requirement {
      *
      * @see #castOrCopy(Requirement)
      */
-    @SuppressWarnings("this-escape")
     public DefaultRequirement(final Requirement object) {
         super(object);
         if (object != null) {

@@ -68,6 +68,7 @@ final class BandRangeTable implements Callback<TableColumn<SampleDimension,Numbe
      *
      * @param  vocabulary  resources for the locale in use.
      */
+    @SuppressWarnings("unchecked")     // Generic array construction.
     TableView<SampleDimension> create(final Vocabulary vocabulary) {
         final TableView<SampleDimension> table = new TableView<>();
         table.setPrefHeight(NUM_VISIBLE_ROW * Styles.ROW_HEIGHT);
