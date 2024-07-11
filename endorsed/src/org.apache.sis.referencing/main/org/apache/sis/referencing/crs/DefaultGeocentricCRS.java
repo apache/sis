@@ -29,6 +29,9 @@ import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.io.wkt.Formatter;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.datum.DatumEnsemble;
+
 
 /**
  * A 2- or 3-dimensional coordinate reference system with the origin at the approximate centre of mass of the earth.
@@ -86,6 +89,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS {
 
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
+     * At least one of the {@code datum} and {@code ensemble} arguments shall be non-null.
      * The properties given in argument follow the same rules as for the
      * {@linkplain AbstractReferenceSystem#AbstractReferenceSystem(Map) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
@@ -120,35 +124,46 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS {
      * </table>
      *
      * @param  properties  the properties to be given to the coordinate reference system.
-     * @param  datum       the datum.
+     * @param  datum       the datum, or {@code null} if the CRS is associated only to a datum ensemble.
+     * @param  ensemble    collection of reference frames which for low accuracy requirements may be considered to be
+     *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
      * @param  cs          the coordinate system, which must be three-dimensional.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeodeticCRS(Map, GeodeticDatum, CartesianCS)
+     *
+     * @since 1.5
      */
     public DefaultGeocentricCRS(final Map<String,?> properties,
                                 final GeodeticDatum datum,
-                                final CartesianCS   cs)
+                                final DatumEnsemble<GeodeticDatum> ensemble,
+                                final CartesianCS cs)
     {
-        super(properties, datum, cs);
+        super(properties, datum, ensemble, cs);
         checkDimension(3, 3, cs);
     }
 
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
+     * At least one of the {@code datum} and {@code ensemble} arguments shall be non-null.
      * The properties given in argument are the same as for the
      * {@linkplain #DefaultGeocentricCRS(Map, GeodeticDatum, CartesianCS) above constructor}.
      *
      * @param  properties  the properties to be given to the coordinate reference system.
-     * @param  datum       the datum.
+     * @param  datum       the datum, or {@code null} if the CRS is associated only to a datum ensemble.
+     * @param  ensemble    collection of reference frames which for low accuracy requirements may be considered to be
+     *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
      * @param  cs          the coordinate system.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeodeticCRS(Map, GeodeticDatum, SphericalCS)
+     *
+     * @since 1.5
      */
     public DefaultGeocentricCRS(final Map<String,?> properties,
                                 final GeodeticDatum datum,
-                                final SphericalCS   cs)
+                                final DatumEnsemble<GeodeticDatum> ensemble,
+                                final SphericalCS cs)
     {
-        super(properties, datum, cs);
+        super(properties, datum, ensemble, cs);
         checkDimension(2, 3, cs);
     }
 
@@ -182,6 +197,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS {
         } else if (!(cs instanceof SphericalCS)) {
             throw illegalCoordinateSystemType(cs);
         }
+        checkDimension(2, 3, cs);
     }
 
     /**
@@ -213,13 +229,31 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS {
 
     /**
      * Returns the geodetic reference frame associated to this geocentric CRS.
-     * This is the datum given at construction time.
+     * This property may be null if this <abbr>CRS</abbr> is related to an object
+     * identified only by a {@linkplain #getDatumEnsemble() datum ensemble}.
      *
-     * @return the geodetic reference frame associated to this geocentric CRS.
+     * @return the geodetic reference frame, or {@code null} if this <abbr>CRS</abbr> is related to
+     *         an object identified only by a {@linkplain #getDatumEnsemble() datum ensemble}.
      */
     @Override
     public final GeodeticDatum getDatum() {
         return super.getDatum();
+    }
+
+    /**
+     * Returns a collection of datums which, for low accuracy requirements,
+     * may be considered to be insignificantly different from each other.
+     * This property may be null if this <abbr>CRS</abbr> is related to an object
+     * identified only by a single {@linkplain #getDatum() datum}.
+     *
+     * @return the datum ensemble, or {@code null} if this <abbr>CRS</abbr> is related
+     *         to an object identified only by a single {@linkplain #getDatum() datum}.
+     *
+     * @since 1.5
+     */
+    @Override
+    public DatumEnsemble<GeodeticDatum> getDatumEnsemble() {
+        return ensemble;
     }
 
     /**

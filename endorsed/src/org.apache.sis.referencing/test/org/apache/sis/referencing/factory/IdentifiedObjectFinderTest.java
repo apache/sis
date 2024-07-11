@@ -75,7 +75,7 @@ public final class IdentifiedObjectFinderTest extends TestCase {
          */
         final CoordinateReferenceSystem search = new DefaultGeographicCRS(
                 Map.of(DefaultGeographicCRS.NAME_KEY, CRS84.getName()),
-                CRS84.getDatum(), CRS84.getCoordinateSystem());
+                CRS84.getDatum(), CRS84.getDatumEnsemble(), CRS84.getCoordinateSystem());
         assertEqualsIgnoreMetadata(CRS84, search);              // Required condition for next test.
 
         finder.setSearchDomain(IdentifiedObjectFinder.Domain.DECLARATION);

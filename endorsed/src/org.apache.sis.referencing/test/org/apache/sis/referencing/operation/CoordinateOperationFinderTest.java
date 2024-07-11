@@ -1039,7 +1039,7 @@ public final class CoordinateOperationFinderTest extends MathTransformTestCase {
      */
     private static DefaultEngineeringCRS createEngineering(final String datumName, final AxisDirection yDirection) {
         return new DefaultEngineeringCRS(properties("A test CRS"),
-                new DefaultEngineeringDatum(properties(datumName)),
+                new DefaultEngineeringDatum(properties(datumName)), null,
                 new DefaultCartesianCS(properties("A test CS"),
                         new DefaultCoordinateSystemAxis(properties("x"), "x", AxisDirection.DISPLAY_RIGHT, Units.METRE),
                         new DefaultCoordinateSystemAxis(properties("y"), "y", yDirection, Units.METRE)));

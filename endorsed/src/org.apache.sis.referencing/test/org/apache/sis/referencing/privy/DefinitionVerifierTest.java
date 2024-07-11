@@ -87,7 +87,7 @@ public final class DefinitionVerifierTest extends TestCase {
         properties.put(DefaultGeographicCRS.NAME_KEY, "WGS 84");
         properties.put(DefaultGeographicCRS.IDENTIFIERS_KEY, new NamedIdentifier(HardCodedCitations.EPSG, "4326"));
         DefaultGeographicCRS crs = HardCodedCRS.WGS84;
-        crs = new DefaultGeographicCRS(properties, crs.getDatum(), crs.getCoordinateSystem());
+        crs = new DefaultGeographicCRS(properties, crs.getDatum(), crs.getDatumEnsemble(), crs.getCoordinateSystem());
 
         final DefinitionVerifier ver = DefinitionVerifier.withAuthority(crs, null, false, null);
         assertNotNull(ver, "Should replace by normalized CRS");

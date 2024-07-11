@@ -53,7 +53,7 @@ public final class HardCodedCRS {
      * <p>This CRS is equivalent to {@code EPSG:4326}.</p>
      */
     public static final DefaultGeographicCRS WGS84_LATITUDE_FIRST = new DefaultGeographicCRS(
-            properties("WGS 84 (φ,λ)", "4326"), HardCodedDatum.WGS84, HardCodedCS.GEODETIC_φλ);
+            properties("WGS 84 (φ,λ)", "4326"), HardCodedDatum.WGS84, null, HardCodedCS.GEODETIC_φλ);
 
     /**
      * A two-dimensional geographic coordinate reference system using the WGS84 datum.
@@ -65,7 +65,7 @@ public final class HardCodedCRS {
      * since EPSG puts latitude before longitude.</p>
      */
     public static final DefaultGeographicCRS WGS84 = new DefaultGeographicCRS(
-            properties("WGS 84", null), HardCodedDatum.WGS84, HardCodedCS.GEODETIC_2D);
+            properties("WGS 84", null), HardCodedDatum.WGS84, null, HardCodedCS.GEODETIC_2D);
 
     /**
      * A three-dimensional geographic coordinate reference system using the WGS84 datum.
@@ -77,7 +77,7 @@ public final class HardCodedCRS {
      * to {@code EPSG:4327}) except for axis order, since EPSG puts latitude before longitude.</p>
      */
     public static final DefaultGeographicCRS WGS84_3D = new DefaultGeographicCRS(
-            properties("WGS 84 (3D)", null), HardCodedDatum.WGS84, HardCodedCS.GEODETIC_3D);
+            properties("WGS 84 (3D)", null), HardCodedDatum.WGS84, null, HardCodedCS.GEODETIC_3D);
 
     /**
      * A four-dimensional geographic coordinate reference system using the WGS84 datum.
@@ -119,7 +119,7 @@ public final class HardCodedCRS {
      */
     public static final DefaultGeographicCRS NTF = new DefaultGeographicCRS(
             Map.of(DefaultGeographicCRS.NAME_KEY, "NTF (Paris)"),
-            HardCodedDatum.NTF, HardCodedCS.ELLIPSOIDAL_gon);
+            HardCodedDatum.NTF, null, HardCodedCS.ELLIPSOIDAL_gon);
 
     /**
      * A two-dimensional geographic coordinate reference system using the Paris prime meridian.
@@ -135,7 +135,7 @@ public final class HardCodedCRS {
      */
     public static final DefaultGeographicCRS NTF_NORMALIZED_AXES = new DefaultGeographicCRS(
             Map.of(DefaultGeographicCRS.NAME_KEY, NTF.getName()),
-            HardCodedDatum.NTF, HardCodedCS.GEODETIC_2D);
+            HardCodedDatum.NTF, null, HardCodedCS.GEODETIC_2D);
 
     /**
      * A three-dimensional geographic coordinate reference system using the Tokyo datum.
@@ -149,7 +149,7 @@ public final class HardCodedCRS {
      */
     public static final DefaultGeographicCRS TOKYO = new DefaultGeographicCRS(
             Map.of(DefaultGeographicCRS.NAME_KEY, "Tokyo"),
-            HardCodedDatum.TOKYO, HardCodedCS.GEODETIC_3D);
+            HardCodedDatum.TOKYO, null, HardCodedCS.GEODETIC_3D);
 
     /**
      * A two-dimensional geographic coordinate reference system using the JGD2000 datum.
@@ -163,7 +163,7 @@ public final class HardCodedCRS {
      */
     public static final DefaultGeographicCRS JGD2000 = new DefaultGeographicCRS(
             Map.of(DefaultGeographicCRS.NAME_KEY, "JGD2000"),
-            HardCodedDatum.JGD2000, HardCodedCS.GEODETIC_3D);
+            HardCodedDatum.JGD2000, null, HardCodedCS.GEODETIC_3D);
 
     /**
      * A two-dimensional geographic coordinate reference system using an unknown datum based on the GRS 1980 ellipsoid.
@@ -176,7 +176,7 @@ public final class HardCodedCRS {
      */
     public static final DefaultGeographicCRS GRS80 = new DefaultGeographicCRS(
             Map.of(DefaultGeographicCRS.NAME_KEY, "Unknown datum based on GRS 1980 ellipsoid"),
-            GeodeticDatumMock.GRS80, HardCodedCS.GEODETIC_2D);
+            GeodeticDatumMock.GRS80, null, HardCodedCS.GEODETIC_2D);
 
     /**
      * A two-dimensional geographic coordinate reference system using a spherical datum.
@@ -185,7 +185,7 @@ public final class HardCodedCRS {
      * The angular units are decimal degrees and the prime meridian is Greenwich.
      */
     public static final DefaultGeographicCRS SPHERE = new DefaultGeographicCRS(
-            getProperties(HardCodedDatum.SPHERE), HardCodedDatum.SPHERE, HardCodedCS.GEODETIC_2D);
+            getProperties(HardCodedDatum.SPHERE), HardCodedDatum.SPHERE, null, HardCodedCS.GEODETIC_2D);
 
     /**
      * A two-dimensional geographic coordinate reference system using a spherical datum.
@@ -194,7 +194,7 @@ public final class HardCodedCRS {
      * The angular units are decimal degrees and the prime meridian is Greenwich.
      */
     public static final DefaultGeographicCRS SPHERE_LATITUDE_FIRST = new DefaultGeographicCRS(
-            getProperties(HardCodedDatum.SPHERE), HardCodedDatum.SPHERE, HardCodedCS.GEODETIC_φλ);
+            getProperties(HardCodedDatum.SPHERE), HardCodedDatum.SPHERE, null, HardCodedCS.GEODETIC_φλ);
 
     /**
      * A geocentric CRS with a spherical coordinate system.
@@ -202,7 +202,7 @@ public final class HardCodedCRS {
      */
     @SuppressWarnings("deprecation")
     public static final DefaultGeocentricCRS SPHERICAL = new DefaultGeocentricCRS(
-            getProperties(HardCodedCS.SPHERICAL), HardCodedDatum.WGS84, HardCodedCS.SPHERICAL);
+            getProperties(HardCodedCS.SPHERICAL), HardCodedDatum.WGS84, null, HardCodedCS.SPHERICAL);
 
     /**
      * A geocentric CRS with a Cartesian coordinate system.
@@ -213,7 +213,7 @@ public final class HardCodedCRS {
      */
     @SuppressWarnings("deprecation")
     public static final DefaultGeocentricCRS GEOCENTRIC = new DefaultGeocentricCRS(
-            getProperties(HardCodedCS.GEOCENTRIC), HardCodedDatum.WGS84, HardCodedCS.GEOCENTRIC);
+            getProperties(HardCodedCS.GEOCENTRIC), HardCodedDatum.WGS84, null, HardCodedCS.GEOCENTRIC);
 
     /**
      * A two-dimensional Cartesian coordinate reference system with (x,y) axes in metres.
@@ -221,7 +221,7 @@ public final class HardCodedCRS {
      * this CS cannot be reprojected to a geographic coordinate reference system for example).
      */
     public static final DefaultEngineeringCRS CARTESIAN_2D = new DefaultEngineeringCRS(
-            getProperties(HardCodedCS.CARTESIAN_2D), HardCodedDatum.UNKNOWN, HardCodedCS.CARTESIAN_2D);
+            getProperties(HardCodedCS.CARTESIAN_2D), HardCodedDatum.UNKNOWN, null, HardCodedCS.CARTESIAN_2D);
 
     /**
      * A two-dimensional Cartesian coordinate reference system with (x,y,z) axes in metres.
@@ -229,7 +229,7 @@ public final class HardCodedCRS {
      * this CS cannot be reprojected to a geographic coordinate reference system for example).
      */
     public static final DefaultEngineeringCRS CARTESIAN_3D = new DefaultEngineeringCRS(
-            getProperties(HardCodedCS.CARTESIAN_3D), HardCodedDatum.UNKNOWN, HardCodedCS.CARTESIAN_3D);
+            getProperties(HardCodedCS.CARTESIAN_3D), HardCodedDatum.UNKNOWN, null, HardCodedCS.CARTESIAN_3D);
 
     /**
      * A vertical coordinate reference system using ellipsoidal datum.
@@ -239,7 +239,7 @@ public final class HardCodedCRS {
      * This CRS is used by Apache SIS for internal calculation.</p>
      */
     public static final DefaultVerticalCRS ELLIPSOIDAL_HEIGHT = new DefaultVerticalCRS(
-            getProperties(HardCodedCS.ELLIPSOIDAL_HEIGHT), HardCodedDatum.ELLIPSOID, HardCodedCS.ELLIPSOIDAL_HEIGHT);
+            getProperties(HardCodedCS.ELLIPSOIDAL_HEIGHT), HardCodedDatum.ELLIPSOID, null, HardCodedCS.ELLIPSOIDAL_HEIGHT);
 
     /**
      * A vertical coordinate reference system using ellipsoidal datum.
@@ -249,25 +249,25 @@ public final class HardCodedCRS {
      * This CRS is used by Apache SIS for internal calculation.</p>
      */
     public static final DefaultVerticalCRS ELLIPSOIDAL_HEIGHT_cm = new DefaultVerticalCRS(
-            getProperties(HardCodedCS.ELLIPSOIDAL_HEIGHT_cm), HardCodedDatum.ELLIPSOID, HardCodedCS.ELLIPSOIDAL_HEIGHT_cm);
+            getProperties(HardCodedCS.ELLIPSOIDAL_HEIGHT_cm), HardCodedDatum.ELLIPSOID, null, HardCodedCS.ELLIPSOIDAL_HEIGHT_cm);
 
     /**
      * A vertical coordinate reference system using Mean Sea Level datum.
      */
     public static final DefaultVerticalCRS GRAVITY_RELATED_HEIGHT = new DefaultVerticalCRS(
-            properties("MSL height", "5714"), HardCodedDatum.MEAN_SEA_LEVEL, HardCodedCS.GRAVITY_RELATED_HEIGHT);
+            properties("MSL height", "5714"), HardCodedDatum.MEAN_SEA_LEVEL, null, HardCodedCS.GRAVITY_RELATED_HEIGHT);
 
     /**
      * A vertical coordinate reference system using Mean Sea Level datum.
      */
     public static final DefaultVerticalCRS DEPTH = new DefaultVerticalCRS(
-            getProperties(HardCodedCS.DEPTH), HardCodedDatum.MEAN_SEA_LEVEL, HardCodedCS.DEPTH);
+            getProperties(HardCodedCS.DEPTH), HardCodedDatum.MEAN_SEA_LEVEL, null, HardCodedCS.DEPTH);
 
     /**
      * A temporal coordinate reference system for time in days elapsed since November 17, 1858 at 00:00 UTC.
      */
     public static final DefaultTemporalCRS TIME = new DefaultTemporalCRS(
-            getProperties(HardCodedCS.DAYS), HardCodedDatum.MODIFIED_JULIAN, HardCodedCS.DAYS);
+            getProperties(HardCodedCS.DAYS), HardCodedDatum.MODIFIED_JULIAN, null, HardCodedCS.DAYS);
 
     static {
         // Declared here because otherwise it would be illegal forward references.
@@ -280,7 +280,7 @@ public final class HardCodedCRS {
      * The axis is cyclic: after day 365 we restart at day 1.
      */
     public static final DefaultParametricCRS DAY_OF_YEAR = new DefaultParametricCRS(
-            getProperties(HardCodedCS.DAY_OF_YEAR), HardCodedDatum.DAY_OF_YEAR, HardCodedCS.DAY_OF_YEAR);
+            getProperties(HardCodedCS.DAY_OF_YEAR), HardCodedDatum.DAY_OF_YEAR, null, HardCodedCS.DAY_OF_YEAR);
 
     static {
         WGS84_WITH_TIME = new DefaultCompoundCRS(properties("WGS 84 + time", null), WGS84, TIME);

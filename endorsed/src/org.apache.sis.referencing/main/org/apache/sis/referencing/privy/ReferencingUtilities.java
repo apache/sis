@@ -343,9 +343,10 @@ public final class ReferencingUtilities extends Static {
             if (crs instanceof GeographicCRS && Utilities.equalsIgnoreMetadata(normalizedCS, cs)) {
                 return (GeographicCRS) crs;
             }
+            final var source = (GeodeticCRS) crs;
             return new DefaultGeographicCRS(
                     Map.of(DefaultGeographicCRS.NAME_KEY, NilReferencingObject.UNNAMED),
-                    ((GeodeticCRS) crs).getDatum(), normalizedCS);
+                    source.getDatum(), source.getDatumEnsemble(), normalizedCS);
         }
         if (crs instanceof CompoundCRS) {
             for (final CoordinateReferenceSystem e : ((CompoundCRS) crs).getComponents()) {

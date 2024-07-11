@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import java.util.Objects;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -45,6 +44,9 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.datum.DatumEnsemble;
 
 
 /**
@@ -76,7 +78,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {   // If ma
     private static final long serialVersionUID = -6205678223972395910L;
 
     /**
-     * The datum.
+     * The datum, or {@code null} if the CRS is associated only to a datum ensemble.
      *
      * <p><b>Consider this field as final!</b>
      * This field is modified only at unmarshalling time by {@link #setDatum(GeodeticDatum)}</p>
@@ -87,6 +89,15 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {   // If ma
     private GeodeticDatum datum;
 
     /**
+     * Collection of reference frames which for low accuracy requirements may be considered to be
+     * insignificantly different from each other. May be {@code null} if there is no such ensemble.
+     *
+     * @see #getDatumEnsemble()
+     */
+    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
+    final DatumEnsemble<GeodeticDatum> ensemble;
+
+    /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
      * The properties given in argument follow the same rules as for the
      * {@linkplain AbstractReferenceSystem#AbstractReferenceSystem(Map) super-class constructor}.
@@ -94,15 +105,20 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {   // If ma
      * <p>This constructor is not public because it does not verify the {@code cs} type.</p>
      *
      * @param  properties  the properties to be given to the coordinate reference system.
-     * @param  datum       the datum.
+     * @param  datum       the datum, or {@code null} if the CRS is associated only to a datum ensemble.
+     * @param  ensemble    collection of reference frames which for low accuracy requirements may be considered to be
+     *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
      * @param  cs          the coordinate system.
      */
     DefaultGeodeticCRS(final Map<String,?> properties,
                        final GeodeticDatum datum,
+                       final DatumEnsemble<GeodeticDatum> ensemble,
                        final CoordinateSystem cs)
     {
         super(properties, cs);
-        this.datum = Objects.requireNonNull(datum);
+        this.datum    = datum;
+        this.ensemble = ensemble;
+        checkDatum(datum, ensemble);
     }
 
     /**
@@ -111,7 +127,8 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {   // If ma
      */
     DefaultGeodeticCRS(final DefaultGeodeticCRS original, final Identifier id, final AbstractCS cs) {
         super(original, id, cs);
-        datum = original.datum;
+        datum    = original.datum;
+        ensemble = original.ensemble;
     }
 
     /**
@@ -125,7 +142,9 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {   // If ma
      */
     protected DefaultGeodeticCRS(final GeodeticCRS crs) {
         super(crs);
-        datum = crs.getDatum();
+        datum    = crs.getDatum();
+        ensemble = crs.getDatumEnsemble();
+        checkDatum(datum, ensemble);
     }
 
     /**
@@ -153,7 +172,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {   // If ma
     }
 
     /**
-     * Returns the datum.
+     * Returns the datum, or {@code null} if the CRS is associated only to a datum ensemble.
      *
      * This method is overridden is subclasses for documentation purpose only, mostly for showing
      * this method in the appropriate position in javadoc (instead of at the bottom of the page).
@@ -310,9 +329,10 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {   // If ma
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     DefaultGeodeticCRS() {
+        ensemble = null;
         /*
          * The datum and the coordinate system are mandatory for SIS working. We do not verify their presence
-         * here because the verification would have to be done in an 'afterMarshal(…)' method and throwing an
+         * here because the verification would have to be done in an `afterMarshal(…)` method and throwing an
          * exception in that method causes the whole unmarshalling to fail.  But the SC_CRS adapter does some
          * verifications.
          */
