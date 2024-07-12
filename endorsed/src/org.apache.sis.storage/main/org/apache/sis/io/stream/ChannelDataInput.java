@@ -111,6 +111,7 @@ public class ChannelDataInput extends ChannelData implements DataInput {
      * @param channel  the new channel to use. Stream position shall be the same as {@code other.channel} position.
      * @param buffer   the new buffer to use. Its content will be discarded (limit set to 0).
      */
+    @SuppressWarnings("this-escape")    // `moveBufferForward(int)` is safe.
     public ChannelDataInput(final ChannelDataInput other, final ReadableByteChannel channel, final ByteBuffer buffer) {
         super(other, buffer, false);
         this.channel = channel;

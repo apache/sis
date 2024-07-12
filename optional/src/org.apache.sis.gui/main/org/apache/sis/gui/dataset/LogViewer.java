@@ -226,6 +226,7 @@ public class LogViewer extends Widget {
     /**
      * Creates a new view of log records.
      */
+    @SuppressWarnings({"this-escape", "unchecked"})         // Generic array construction.
     LogViewer(final Vocabulary vocabulary) {
         source     = new SimpleObjectProperty<>(this, "source");
         systemLogs = new SimpleBooleanProperty (this, "systemLogs");

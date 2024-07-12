@@ -16,6 +16,7 @@
  */
 package org.apache.sis.pending.jdk;
 
+import java.util.Locale;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -59,5 +60,25 @@ public final class JDK19 {
 
     public static <K, V> LinkedHashMap<K,V> newLinkedHashMap(int n) {
         return new LinkedHashMap<>(hashMapCapacity(n));
+    }
+
+    @SuppressWarnings("deprecation")
+    public static long threadId(Thread thread) {
+        return thread.getId();
+    }
+
+    @SuppressWarnings("deprecation")
+    public static Locale localeOf(String language) {
+        return new Locale(language);
+    }
+
+    @SuppressWarnings("deprecation")
+    public static Locale localeOf(String language, String country) {
+        return new Locale(language, country);
+    }
+
+    @SuppressWarnings("deprecation")
+    public static Locale localeOf(String language, String country, String variant) {
+        return new Locale(language, country, variant);
     }
 }

@@ -59,6 +59,7 @@ public class CanNotProbeException extends DataStoreException {
      * @param connector  the stream, file or other kind of resource that the store provider tried to probe.
      * @param cause      the reason why the data store cannot be probed.
      */
+    @SuppressWarnings("this-escape")    // The invoked method does not store `this` and is not overrideable.
     public CanNotProbeException(final DataStoreProvider provider, final StorageConnector connector, final Throwable cause) {
         super(null, provider.getShortName(), connector.getStorageName(), connector.storage);
         this.provider = provider;

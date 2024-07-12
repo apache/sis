@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import java.util.Objects;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -30,6 +29,9 @@ import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.datum.DatumEnsemble;
 
 
 /**
@@ -69,7 +71,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
     private static final long serialVersionUID = 3565878468719941800L;
 
     /**
-     * The datum.
+     * The datum, or {@code null} if the CRS is associated only to a datum ensemble.
      *
      * <p><b>Consider this field as final!</b>
      * This field is modified only at unmarshalling time by {@link #setDatum(VerticalDatum)}</p>
@@ -80,7 +82,17 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
     private VerticalDatum datum;
 
     /**
+     * Collection of reference frames which for low accuracy requirements may be considered to be
+     * insignificantly different from each other. May be {@code null} if there is no such ensemble.
+     *
+     * @see #getDatumEnsemble()
+     */
+    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
+    private final DatumEnsemble<VerticalDatum> ensemble;
+
+    /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
+     * At least one of the {@code datum} and {@code ensemble} arguments shall be non-null.
      * The properties given in argument follow the same rules as for the
      * {@linkplain AbstractReferenceSystem#AbstractReferenceSystem(Map) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
@@ -115,18 +127,36 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      * </table>
      *
      * @param  properties  the properties to be given to the coordinate reference system.
-     * @param  datum  the datum.
-     * @param  cs  the coordinate system.
+     * @param  datum       the datum, or {@code null} if the CRS is associated only to a datum ensemble.
+     * @param  ensemble    collection of reference frames which for low accuracy requirements may be considered to be
+     *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
+     * @param  cs          the coordinate system.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createVerticalCRS(Map, VerticalDatum, VerticalCS)
+     *
+     * @since 1.5
      */
     public DefaultVerticalCRS(final Map<String,?> properties,
                               final VerticalDatum datum,
-                              final VerticalCS    cs)
+                              final DatumEnsemble<VerticalDatum> ensemble,
+                              final VerticalCS cs)
     {
         super(properties, cs);
-        this.datum = Objects.requireNonNull(datum);
+        this.datum    = datum;
+        this.ensemble = ensemble;
+        checkDatum(datum, ensemble);
         checkDimension(1, 1, cs);
+    }
+
+    /**
+     * @deprecated A {@code DatumEnsemble} argument has been added.
+     */
+    @Deprecated(since="1.5", forRemoval=true)
+    public DefaultVerticalCRS(final Map<String,?> properties,
+                              final VerticalDatum datum,
+                              final VerticalCS cs)
+    {
+        this(properties, datum, null, cs);
     }
 
     /**
@@ -135,7 +165,8 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      */
     private DefaultVerticalCRS(final DefaultVerticalCRS original, final AbstractCS cs) {
         super(original, null, cs);
-        datum = original.datum;
+        datum    = original.datum;
+        ensemble = original.ensemble;
     }
 
     /**
@@ -151,7 +182,9 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      */
     protected DefaultVerticalCRS(final VerticalCRS crs) {
         super(crs);
-        datum = crs.getDatum();
+        datum    = crs.getDatum();
+        ensemble = crs.getDatumEnsemble();
+        checkDatum(datum, ensemble);
     }
 
     /**
@@ -186,14 +219,33 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
     }
 
     /**
-     * Returns the datum.
+     * Returns an identification of a particular reference level surface used as a zero-height surface.
+     * This property may be null if this <abbr>CRS</abbr> is related to an object
+     * identified only by a {@linkplain #getDatumEnsemble() datum ensemble}.
      *
-     * @return the datum.
+     * @return the vertical datum, or {@code null} if this <abbr>CRS</abbr> is related to
+     *         an object identified only by a {@linkplain #getDatumEnsemble() datum ensemble}.
      */
     @Override
     @XmlElement(name = "verticalDatum", required = true)
     public VerticalDatum getDatum() {
         return datum;
+    }
+
+    /**
+     * Returns a collection of datums which, for low accuracy requirements,
+     * may be considered to be insignificantly different from each other.
+     * This property may be null if this <abbr>CRS</abbr> is related to an object
+     * identified only by a single {@linkplain #getDatum() datum}.
+     *
+     * @return the datum ensemble, or {@code null} if this <abbr>CRS</abbr> is related
+     *         to an object identified only by a single {@linkplain #getDatum() datum}.
+     *
+     * @since 1.5
+     */
+    @Override
+    public DatumEnsemble<VerticalDatum> getDatumEnsemble() {
+        return ensemble;
     }
 
     /**
@@ -262,6 +314,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultVerticalCRS() {
+        ensemble = null;
         /*
          * The datum and the coordinate system are mandatory for SIS working. We do not verify their presence
          * here because the verification would have to be done in an 'afterMarshal(…)' method and throwing an

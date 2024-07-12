@@ -109,7 +109,7 @@ public final class DefaultGeocentricCRSTest extends TestCase {
     @Test
     public void testWKT1_kilometres() {
         DefaultGeocentricCRS crs = HardCodedCRS.GEOCENTRIC;
-        crs = new DefaultGeocentricCRS(IdentifiedObjects.getProperties(crs), crs.getDatum(),
+        crs = new DefaultGeocentricCRS(IdentifiedObjects.getProperties(crs), crs.getDatum(), null,
                 Legacy.replaceUnit((CartesianCS) crs.getCoordinateSystem(), Units.KILOMETRE));
         assertWktEquals(Convention.WKT1,
                 "GEOCCS[“Geocentric”,\n" +

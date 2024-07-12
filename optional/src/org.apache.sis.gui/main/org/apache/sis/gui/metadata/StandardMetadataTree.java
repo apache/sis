@@ -83,6 +83,7 @@ public class StandardMetadataTree extends MetadataTree {
      *
      * @param  controller  the widget to watch, or {@code null} if none.
      */
+    @SuppressWarnings("this-escape")        // `this` appears in a cyclic graph.
     public StandardMetadataTree(final MetadataSummary controller) {
         super(controller, true);
         setRowFactory(Row::new);

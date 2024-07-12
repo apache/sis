@@ -131,7 +131,6 @@ public class DefaultEvent extends ISOMetadata implements Event {
      *
      * @see #castOrCopy(Event)
      */
-    @SuppressWarnings("this-escape")
     public DefaultEvent(final Event object) {
         super(object);
         if (object != null) {

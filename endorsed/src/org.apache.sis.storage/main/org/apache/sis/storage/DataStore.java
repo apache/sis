@@ -110,6 +110,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
     /**
      * Creates a new instance with no provider and initially no listener.
      */
+    @SuppressWarnings("this-escape")    // `this` appears in a cyclic graph.
     protected DataStore() {
         provider  = null;
         name      = null;
@@ -128,6 +129,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      *
      * @since 0.8
      */
+    @SuppressWarnings("this-escape")    // `this` appears in a cyclic graph. Should not be accessible before completion.
     protected DataStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         this.provider  = provider;
         this.name      = connector.getStorageName();
@@ -155,6 +157,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      *
      * @since 1.1
      */
+    @SuppressWarnings("this-escape")    // `this` appears in a cyclic graph. Should not be accessible before completion.
     protected DataStore(final DataStore parent, final DataStoreProvider provider, final StorageConnector connector,
                         final boolean hidden) throws DataStoreException
     {

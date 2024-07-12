@@ -107,6 +107,7 @@ public class FeatureTable extends TableView<Feature> {
      * @see #getFeatures()
      * @see #setFeatures(FeatureSet)
      */
+    @SuppressWarnings("this-escape")
     public final ObjectProperty<FeatureSet> featuresProperty = new SimpleObjectProperty<>(this, "features");
 
     /**
@@ -119,6 +120,7 @@ public class FeatureTable extends TableView<Feature> {
     /**
      * Creates an initially empty table.
      */
+    @SuppressWarnings("this-escape")    // `this` appears in a cyclic graph.
     public FeatureTable() {
         super(new FeatureList());
         textLocale = Locale.getDefault(Locale.Category.DISPLAY);
@@ -132,6 +134,7 @@ public class FeatureTable extends TableView<Feature> {
      *
      * @param  other  the other table from which to get the feature list.
      */
+    @SuppressWarnings("this-escape")                // `this` appears in a cyclic graph.
     public FeatureTable(final FeatureTable other) {
         super(other.getFeatureList());
         other.isSharingList = true;

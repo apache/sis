@@ -137,11 +137,10 @@ public class DefaultDataIdentification extends AbstractIdentification implements
                                      final Locale language,
                                      final TopicCategory topicCategory)
     {
-        super(citation, abstracts);
+        super(citation, abstracts, topicCategory);
         if (language != null) {
-            locales = writeMap(Collections.singletonMap(language, null), null, Locale.class);
+            locales = copyMap(Collections.singletonMap(language, null), Locale.class);
         }
-        super.setTopicCategories(singleton(topicCategory, TopicCategory.class));
     }
 
     /**

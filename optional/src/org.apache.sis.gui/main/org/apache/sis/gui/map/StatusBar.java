@@ -477,6 +477,7 @@ public class StatusBar extends Widget implements EventHandler<MouseEvent> {
      *
      * @param  systemChooser  the manager of reference systems chosen by user, or {@code null} if none.
      */
+    @SuppressWarnings("this-escape")    // `this` appears in a cyclic graph.
     public StatusBar(final RecentReferenceSystems systemChooser) {
         positionReferenceSystem = new PositionSystem();
         localToObjectiveCRS     = new LocalToObjective();

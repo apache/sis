@@ -29,6 +29,7 @@ import jakarta.xml.bind.annotation.XmlSeeAlso;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.datum.Datum;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.IdentifiedObjects;
@@ -50,7 +51,7 @@ import org.opengis.metadata.Identifier;
 
 
 /**
- * Specifies the relationship of a {@linkplain org.apache.sis.referencing.cs.AbstractCS Coordinate System} to the earth.
+ * Specifies the relationship of a Coordinate System to the earth.
  * A datum can be defined as a set of real points on the earth that have coordinates.
  * Each datum subtype can be associated with only specific types of
  * {@linkplain org.apache.sis.referencing.cs.AbstractCS coordinate systems}, thus creating specific types of
@@ -106,7 +107,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     private InternationalString anchorDefinition;
 
     /**
-     * The time after which this datum definition is valid.
+     * The epoch at which a static datum matches a dynamic datum from which it has been derived.
      * This time may be precise (e.g. 1997 for IRTF97) or merely a year (e.g. 1983 for NAD83).
      *
      * <p><b>Consider this field as final!</b>
@@ -116,6 +117,22 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     @SuppressWarnings("serial")                     // Standard Java implementations are serializable.
     private Temporal anchorEpoch;
+
+    /**
+     * The date on which the datum definition was published.
+     *
+     * @see #getPublicationDate()
+     */
+    @SuppressWarnings("serial")                     // Standard Java implementations are serializable.
+    private final Temporal publicationDate;
+
+    /**
+     * Name, identifier, alias and remarks for the reference system realized by this reference frame.
+     *
+     * @see #getConventionalRS()
+     */
+    @SuppressWarnings("serial")                     // Most SIS implementations are serializable.
+    private final IdentifiedObject conventionalRS;
 
     /**
      * Creates a datum from the given properties.
@@ -137,6 +154,14 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      *     <td>{@value org.opengis.referencing.datum.Datum#ANCHOR_EPOCH_KEY}</td>
      *     <td>{@link Temporal}</td>
      *     <td>{@link #getAnchorEpoch()}</td>
+     *   </tr><tr>
+     *     <td>{@value org.opengis.referencing.datum.Datum#PUBLICATION_DATE_KEY}</td>
+     *     <td>{@link Temporal}</td>
+     *     <td>{@link #getPublicationDate()}</td>
+     *   </tr><tr>
+     *     <td>{@value org.opengis.referencing.datum.Datum#CONVENTIONAL_RS_KEY}</td>
+     *     <td>{@link IdentifiedObject}</td>
+     *     <td>{@link #getConventionalRS()}</td>
      *   </tr><tr>
      *     <th colspan="3" class="hsep">Defined in parent class (reminder)</th>
      *   </tr><tr>
@@ -178,6 +203,8 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
                 anchorEpoch = date.toInstant();
             }
         }
+        publicationDate = property(properties, PUBLICATION_DATE_KEY, Temporal.class);
+        conventionalRS  = property(properties, CONVENTIONAL_RS_KEY, IdentifiedObject.class);
     }
 
     /**
@@ -191,8 +218,10 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     protected AbstractDatum(final Datum datum) {
         super(datum);
-        anchorEpoch = datum.getAnchorEpoch().orElse(null);
+        anchorEpoch      = datum.getAnchorEpoch().orElse(null);
         anchorDefinition = datum.getAnchorDefinition().orElse(null);
+        publicationDate  = datum.getPublicationDate().orElse(null);
+        conventionalRS   = datum.getConventionalRS().orElse(null);
     }
 
     /**
@@ -309,6 +338,32 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     }
 
     /**
+     * Returns the date on which the datum definition was published.
+     *
+     * @return date on which the datum definition was published.
+     *
+     * @since 1.5
+     */
+    @Override
+    public Optional<Temporal> getPublicationDate() {
+        return Optional.ofNullable(publicationDate);
+    }
+
+    /**
+     * Returns the name, identifier, alias and remarks for the reference system realized by this reference frame.
+     * All datums that are members of a {@linkplain DefaultDatumEnsemble datum ensemble} shall have the same
+     * conventional reference system.
+     *
+     * @return reference system realized by this reference frame.
+     *
+     * @since 1.5
+     */
+    @Override
+    public Optional<IdentifiedObject> getConventionalRS() {
+        return Optional.ofNullable(conventionalRS);
+    }
+
+    /**
      * Returns {@code true} if either the {@linkplain #getName() primary name} or at least
      * one {@linkplain #getAlias() alias} matches the given string according heuristic rules.
      * This method performs the comparison documented in the
@@ -379,9 +434,9 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
         }
         switch (mode) {
             case STRICT: {
-                final AbstractDatum that = (AbstractDatum) object;
-                return Objects.equals(this.anchorEpoch,      that.anchorEpoch) &&
-                       Objects.equals(this.anchorDefinition, that.anchorDefinition);
+                final var that = (AbstractDatum) object;
+                return Objects.equals(anchorEpoch,      that.anchorEpoch) &&
+                       Objects.equals(anchorDefinition, that.anchorDefinition);
             }
             case BY_CONTRACT: {
                 final Datum that = (Datum) object;
@@ -398,7 +453,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
                  * identifiers shall have precedence over name at least in the case of operation methods
                  * and parameters. We extend this rule to datum as well.
                  */
-                final Datum that = (Datum) object;
+                final var that = (Datum) object;
                 final Boolean match = Identifiers.hasCommonIdentifier(getIdentifiers(), that.getIdentifiers());
                 if (match != null) {
                     return match;
@@ -470,6 +525,8 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      */
     AbstractDatum() {
         super(org.apache.sis.referencing.privy.NilReferencingObject.INSTANCE);
+        publicationDate = null;
+        conventionalRS  = null;
     }
 
     /**

@@ -226,6 +226,7 @@ public class GridView extends Control {
      *
      * @param  controls  the controls of this grid view, or {@code null} if none.
      */
+    @SuppressWarnings("this-escape")        // `this` appears in a cyclic graph.
     GridView(final GridControls controls) {
         this.controls    = controls;
         bandProperty     = new BandProperty();

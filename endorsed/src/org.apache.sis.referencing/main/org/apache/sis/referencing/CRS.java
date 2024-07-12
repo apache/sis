@@ -1293,7 +1293,8 @@ public final class CRS extends Static {
                  */
                 final Map<String, ?> properties = ReferencingUtilities.getPropertiesForModifiedCRS(crs);
                 if (crs instanceof GeodeticCRS) {
-                    return new DefaultGeographicCRS(properties, ((GeodeticCRS) crs).getDatum(), (EllipsoidalCS) cs);
+                    final var source = (GeodeticCRS) crs;
+                    return new DefaultGeographicCRS(properties, source.getDatum(), source.getDatumEnsemble(), (EllipsoidalCS) cs);
                 }
                 /*
                  * In Apache SIS implementation, the Conversion contains the source and target CRS together with
@@ -1311,7 +1312,8 @@ public final class CRS extends Static {
                 /*
                  * If the CRS is neither geographic or projected, then it is engineering.
                  */
-                return new DefaultEngineeringCRS(properties, ((EngineeringCRS) crs).getDatum(), cs);
+                final var source = (EngineeringCRS) crs;
+                return new DefaultEngineeringCRS(properties, source.getDatum(), source.getDatumEnsemble(), cs);
             }
         }
         if (crs instanceof CompoundCRS) {
@@ -1382,7 +1384,7 @@ public final class CRS extends Static {
                 VerticalCRS c = CommonCRS.Vertical.ELLIPSOIDAL.crs();
                 if (!c.getCoordinateSystem().getAxis(0).equals(axis)) {
                     final Map<String,?> properties = IdentifiedObjects.getProperties(c);
-                    c = new DefaultVerticalCRS(properties, c.getDatum(), new DefaultVerticalCS(properties, axis));
+                    c = new DefaultVerticalCRS(properties, c.getDatum(), c.getDatumEnsemble(), new DefaultVerticalCS(properties, axis));
                 }
                 return c;
             }

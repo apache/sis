@@ -99,7 +99,7 @@ public final class CoordinateSystemTransformTest extends TransformTestCase {
     }
 
     /**
-     * Verifies that {@link #lastMethod} has the expected value.
+     * Verifies that {@code builder.getMethod()} has the expected value.
      */
     private void assertMethodEquals(final String expected) {
         final OperationMethod method = builder.getMethod().orElseThrow();

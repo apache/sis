@@ -18,6 +18,7 @@ package org.apache.sis.util;
 
 import java.util.Locale;
 import java.util.IllformedLocaleException;
+import org.apache.sis.pending.jdk.JDK19;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -66,9 +67,8 @@ public final class LocalesTest extends TestCase {
      */
     @Test
     public void testUnique() {
-        // TODO: use Locale.of(…) with JDK19.
-        assertSame(Locale.ENGLISH, Locales.unique(new Locale("en")));
-        assertSame(Locale.FRENCH,  Locales.unique(new Locale("fr")));
+        assertSame(Locale.ENGLISH, Locales.unique(JDK19.localeOf("en")));
+        assertSame(Locale.FRENCH,  Locales.unique(JDK19.localeOf("fr")));
     }
 
     /**
@@ -86,11 +86,10 @@ public final class LocalesTest extends TestCase {
         assertSame(Locale.JAPAN,         Locales.parse("ja_JP"));
         assertSame(Locale.US,            Locales.parse("en; USA"));
 
-        // TODO: use Locale.of(…) with JDK19.
-        assertEquals(new Locale("de", "DE"),            Locales.parse("de_DE"));
-        assertEquals(new Locale("",   "GB"),            Locales.parse("_GB"));
-        assertEquals(new Locale("en", "US", "WINDOWS"), Locales.parse("en_US_WINDOWS"));
-        assertEquals(new Locale("de", "",   "POSIX"),   Locales.parse("de__POSIX"));
+        assertEquals(JDK19.localeOf("de", "DE"),            Locales.parse("de_DE"));
+        assertEquals(JDK19.localeOf("",   "GB"),            Locales.parse("_GB"));
+        assertEquals(JDK19.localeOf("en", "US", "WINDOWS"), Locales.parse("en_US_WINDOWS"));
+        assertEquals(JDK19.localeOf("de", "",   "POSIX"),   Locales.parse("de__POSIX"));
     }
 
     /**
@@ -99,7 +98,7 @@ public final class LocalesTest extends TestCase {
     @Test
     public void testParseIETF() {
         assertEquals(Locale.JAPAN, Locales.parse("ja-JP"));
-        assertEquals(new Locale("en", "US", "POSIX"), Locales.parse("en-US-x-lvariant-POSIX"));
+        assertEquals(JDK19.localeOf("en", "US", "POSIX"), Locales.parse("en-US-x-lvariant-POSIX"));
     }
 
     /**

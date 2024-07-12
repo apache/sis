@@ -48,7 +48,7 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * but should be avoided when not imposed by compatibility reasons.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.6
+ * @version 1.5
  *
  * @see WKTFormat#getConvention()
  * @see WKTFormat#setConvention(Convention)
@@ -56,6 +56,10 @@ import org.apache.sis.metadata.iso.citation.Citations;
  * @since 0.4
  */
 public enum Convention {
+    /*
+     * NOTE: Enumeration order matter. It should be roughly from most recent versions to oldest versions.
+     */
+
     /**
      * The ISO 19162 format, also known as “WKT 2”.
      * This convention follows the ISO recommendations.
@@ -76,12 +80,11 @@ public enum Convention {
      * to the {@link #WKT2} convention except for the following aspects:
      *
      * <ul>
-     *   <li>By {@linkplain KeywordStyle#DEFAULT default} long keywords are used instead of short ones
-     *       (e.g. {@code "GeodeticCRS"} instead of {@code "GeodCRS"}) except for the {@code "Unit"} keyword,
-     *       because they match the class or interface names.</li>
-     *   <li>{@code PrimeMeridian} element omitted if the meridian is Greenwich.</li>
-     *   <li>{@code Axis} element omits the {@code Order} sub-element.</li>
-     *   <li>{@code Unit} elements are less verbose:<ul>
+     *   <li>By {@linkplain KeywordStyle#DEFAULT default}, this convention uses the keywords that are the closest matches
+     *       to the Java interface names. For example, {@code "GeodeticCRS"} is preferred to {@code "GeodCRS"}.</li>
+     *   <li>The {@code PrimeMeridian} element is omitted if the meridian is Greenwich.</li>
+     *   <li>The {@code Axis} element omits the {@code Order} sub-element.</li>
+     *   <li>The {@code Unit} elements are less verbose:<ul>
      *     <li>{@code Ellipsoid} and {@code VerticalExtent} elements omit the {@code LengthUnit} sub-element
      *         if that unit is {@link org.apache.sis.measure.Units#METRE}.</li>
      *     <li>{@code Parameter} elements omit the {@code LengthUnit} sub-element
@@ -93,7 +96,7 @@ public enum Convention {
      *     <li>{@code AngleUnit}, {@code LengthUnit}, {@code ScaleUnit}, {@code ParametricUnit}
      *         and {@code TimeUnit} are formatted as plain {@code Unit} elements.</li>
      *     </ul></li>
-     *   <li>{@code Id} is formatted only for the root element
+     *   <li>The {@code Id} element is formatted only for the root element
      *       (omit parameters and operation methods {@code Id}).</li>
      * </ul>
      *
@@ -102,6 +105,20 @@ public enum Convention {
      * <p>This is the default convention used by {@link FormattableObject#toString()}.</p>
      */
     WKT2_SIMPLIFIED(false, false, false),
+
+    /**
+     * The ISO 19162:2007 format, also known as “WKT 2”.
+     * This version has been replaced by ISO 19162:2019.
+     * This enumeration value can be used when compatibility with this older standard is required.
+     *
+     * <p>This was the default convention used by {@link FormattableObject#toWKT()}
+     * in Apache <abbr>SIS</abbr> versions prior to 1.5.</p>
+     *
+     * @see <a href="http://docs.opengeospatial.org/is/12-063r5/12-063r5.html">WKT 2 specification</a>
+     *
+     * @since 1.5
+     */
+    WKT2_2015(false, true, false),
 
     /**
      * The OGC 01-009 format, also known as “WKT 1”.

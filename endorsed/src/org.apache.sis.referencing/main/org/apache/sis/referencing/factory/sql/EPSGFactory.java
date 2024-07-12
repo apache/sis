@@ -248,13 +248,15 @@ public class EPSGFactory extends ConcurrentAuthorityFactory<EPSGDataAccess> impl
      * @throws IllegalArgumentException if a property value is invalid.
      * @throws FactoryException if an error occurred while creating the EPSG factory.
      */
+    @SuppressWarnings("this-escape")    // The invoked method does not store `this` and is not overrideable.
     public EPSGFactory(Map<String,?> properties) throws FactoryException {
         super(EPSGDataAccess.class);
         if (properties == null) {
             properties = Map.of();
         }
-        DataSource ds  = (DataSource)                 properties.get("dataSource");
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         Locale locale  = (Locale)                     properties.get("locale");
+        DataSource ds  = (DataSource)                 properties.get("dataSource");
         schema         = (String)                     properties.get("schema");
         catalog        = (String)                     properties.get("catalog");
         scriptProvider = (InstallationScriptProvider) properties.get("scriptProvider");

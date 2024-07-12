@@ -88,28 +88,28 @@ abstract class AbstractDerivedCRS<C extends Conversion> extends AbstractCRS impl
      * The properties given in argument follow the same rules as for the
      * {@linkplain AbstractCRS#AbstractCRS(Map, CoordinateSystem) super-class constructor}.
      *
-     * @param  properties  the properties to be given to the new derived CRS object.
-     * @param  baseCRS     coordinate reference system to base the derived CRS on.
-     * @param  conversion  the defining conversion from a normalized base to a normalized derived CRS.
-     * @param  derivedCS   the coordinate system for the derived CRS. The number of axes must match
-     *                     the target dimension of the {@code baseToDerived} transform.
+     * @param  properties     the properties to be given to the new derived CRS object.
+     * @param  baseCRS        coordinate reference system to base the derived CRS on.
+     * @param  baseToDerived  the defining conversion from a normalized base to a normalized derived CRS.
+     * @param  derivedCS      the coordinate system for the derived CRS. The number of axes must match
+     *                        the target dimension of the {@code baseToDerived} transform.
      * @throws MismatchedDimensionException if the source and target dimensions of {@code baseToDerived}
      *         do not match the dimensions of {@code base} and {@code derivedCS} respectively.
      */
     AbstractDerivedCRS(final Map<String,?>    properties,
                        final SingleCRS        baseCRS,
-                       final Conversion       conversion,
+                       final Conversion       baseToDerived,
                        final CoordinateSystem derivedCS)
             throws MismatchedDimensionException
     {
         super(properties, derivedCS);
         ArgumentChecks.ensureNonNull("baseCRS", baseCRS);
-        ArgumentChecks.ensureNonNull("conversion", conversion);
+        ArgumentChecks.ensureNonNull("baseToDerived", baseToDerived);
         ArgumentChecks.ensureDimensionsMatch("baseToDerived",
                 baseCRS.getCoordinateSystem().getDimension(),
                 derivedCS.getDimension(),
-                conversion.getMathTransform());
-        conversionFromBase = createConversionFromBase(properties, baseCRS, conversion);
+                baseToDerived.getMathTransform());
+        conversionFromBase = createConversionFromBase(properties, baseCRS, baseToDerived);
     }
 
     /**

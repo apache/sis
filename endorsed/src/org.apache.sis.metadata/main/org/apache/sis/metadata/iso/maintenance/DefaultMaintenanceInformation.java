@@ -152,7 +152,6 @@ public class DefaultMaintenanceInformation extends ISOMetadata implements Mainte
      *
      * @see #castOrCopy(MaintenanceInformation)
      */
-    @SuppressWarnings("this-escape")
     public DefaultMaintenanceInformation(final MaintenanceInformation object) {
         super(object);
         if (object != null) {

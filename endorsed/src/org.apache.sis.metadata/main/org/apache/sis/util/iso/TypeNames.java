@@ -195,12 +195,4 @@ search: if (CharSequence.class.isAssignableFrom(valueClass)) {
         }
         return null;
     }
-
-    /**
-     * Formats the error message for an unknown type.
-     * This is a helper method for callers of {@link #toClass(String, String)}.
-     */
-    static String unknown(final GenericName name) {
-        return Errors.format(Errors.Keys.UnknownType_1, name.toFullyQualifiedName());
-    }
 }

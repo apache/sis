@@ -19,7 +19,8 @@ package org.apache.sis.gui.dataset;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.FileSystemNotFoundException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.MalformedURLException;
 import java.util.Locale;
 import java.util.Queue;
@@ -117,6 +118,7 @@ public class ResourceTree extends TreeView<Resource> {
      * Creates a new tree of resources with initially no resource to show.
      * For showing a resource, invoke {@link #setResource(Resource)} after construction.
      */
+    @SuppressWarnings("this-escape")    // `this` appears in a cyclic graph.
     public ResourceTree() {
         locale = Locale.getDefault();
         pendingItems = new LinkedList<>();
@@ -301,9 +303,9 @@ public class ResourceTree extends TreeView<Resource> {
         } else {
             final String url = db.getUrl();
             if (url != null) try {
-                loadResource(new URL(url));
+                loadResource(new URI(url).toURL());
                 success = true;
-            } catch (MalformedURLException e) {
+            } catch (URISyntaxException | MalformedURLException e) {
                 /*
                  * Try to take only the filename, taken as the text after last '/' ignoring
                  * the very last character (this is the purpose of the `length - 2` part).

@@ -31,13 +31,16 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.privy.WKTUtilities;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
@@ -48,6 +51,7 @@ import org.opengis.geometry.MismatchedDimensionException;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
+import org.opengis.referencing.datum.DatumEnsemble;
 
 
 /**
@@ -205,6 +209,30 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
         }
         throw new MismatchedDimensionException(Errors.format(
                 Errors.Keys.MismatchedDimension_3, "cs", expected, actual));
+    }
+
+    /**
+     * Verifies the consistency between the datum and the ensemble.
+     * At least one of the {@code datum} and {@code ensemble} arguments shall be non-null.
+     *
+     * @param  datum       the datum, or {@code null} if the CRS is associated only to a datum ensemble.
+     * @param  ensemble    collection of reference frames which for low accuracy requirements may be considered to be
+     *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
+     * @throws NullPointerException if both arguments are null.
+     * @throws IllegalArgumentException
+     */
+    static <D extends Datum> void checkDatum(final D datum, final DatumEnsemble<D> ensemble) {
+        if (ensemble == null) {
+            ArgumentChecks.ensureNonNull("datum", datum);
+        } else if (datum != null) {
+            for (final D member : ensemble.getMembers()) {
+                if (Utilities.equalsIgnoreMetadata(datum, member)) {
+                    return;
+                }
+            }
+            throw new IllegalArgumentException(Resources.format(Resources.Keys.NotAMemberOfDatumEnsemble_2,
+                    IdentifiedObjects.getDisplayName(ensemble), IdentifiedObjects.getDisplayName(datum)));
+        }
     }
 
     /**

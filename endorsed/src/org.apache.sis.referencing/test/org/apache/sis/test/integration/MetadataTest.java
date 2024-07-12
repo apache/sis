@@ -233,7 +233,7 @@ public final class MetadataTest extends TestCase.WithLogs {
                         nameAndIdentifier("D28", "Depth below D28", "For testing purpose"), (RealizationMethod) null);
 
                 final var vcrs = new DefaultVerticalCRS(
-                        nameAndIdentifier("D28", "Depth below D28", "CRS for testing purpose"), datum, cs);
+                        nameAndIdentifier("D28", "Depth below D28", "CRS for testing purpose"), datum, null, cs);
 
                 final var temporal = new DefaultTemporalExtent(
                         OffsetDateTime.parse("1990-06-05T00:00Z"),

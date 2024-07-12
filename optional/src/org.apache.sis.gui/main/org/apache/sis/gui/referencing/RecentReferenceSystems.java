@@ -290,6 +290,7 @@ public class RecentReferenceSystems {
      *
      * @see org.apache.sis.referencing.CRS#getAuthorityFactory(String)
      */
+    @SuppressWarnings("this-escape")    // `this` appears in a cyclic graph.
     public RecentReferenceSystems(final CRSAuthorityFactory factory, final Locale locale) {
         this.factory         = factory;
         this.locale          = locale;
