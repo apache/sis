@@ -148,6 +148,17 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
     }
 
     /**
+     * @deprecated A {@code DatumEnsemble} argument has been added.
+     */
+    @Deprecated(since="1.5", forRemoval=true)
+    public DefaultParametricCRS(final Map<String,?> properties,
+                                final ParametricDatum datum,
+                                final ParametricCS cs)
+    {
+        this(properties, datum, null, cs);
+    }
+
+    /**
      * Creates a new CRS derived from the specified one, but with different axis order or unit.
      * This is for implementing the {@link #createSameType(AbstractCS)} method only.
      */

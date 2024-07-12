@@ -185,6 +185,17 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     }
 
     /**
+     * @deprecated A {@code DatumEnsemble} argument has been added.
+     */
+    @Deprecated(since="1.5", forRemoval=true)
+    public DefaultTemporalCRS(final Map<String,?> properties,
+                              final TemporalDatum datum,
+                              final TimeCS cs)
+    {
+        this(properties, datum, null, cs);
+    }
+
+    /**
      * Creates a new CRS derived from the specified one, but with different axis order or unit.
      * This is for implementing the {@link #createSameType(AbstractCS)} method only.
      */

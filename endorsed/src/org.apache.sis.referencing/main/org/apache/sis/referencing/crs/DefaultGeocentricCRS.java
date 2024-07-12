@@ -168,6 +168,28 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS {
     }
 
     /**
+     * @deprecated A {@code DatumEnsemble} argument has been added.
+     */
+    @Deprecated(since="1.5", forRemoval=true)
+    public DefaultGeocentricCRS(final Map<String,?> properties,
+                                final GeodeticDatum datum,
+                                final CartesianCS cs)
+    {
+        this(properties, datum, null, cs);
+    }
+
+    /**
+     * @deprecated A {@code DatumEnsemble} argument has been added.
+     */
+    @Deprecated(since="1.5", forRemoval=true)
+    public DefaultGeocentricCRS(final Map<String,?> properties,
+                                final GeodeticDatum datum,
+                                final SphericalCS cs)
+    {
+        this(properties, datum, null, cs);
+    }
+
+    /**
      * Creates a new CRS derived from the specified one, but with different axis order or unit.
      * This is for implementing the {@link #createSameType(AbstractCS)} method only.
      * This constructor does not verify the coordinate system type.

@@ -165,6 +165,17 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     }
 
     /**
+     * @deprecated A {@code DatumEnsemble} argument has been added.
+     */
+    @Deprecated(since="1.5", forRemoval=true)
+    public DefaultGeographicCRS(final Map<String,?> properties,
+                                final GeodeticDatum datum,
+                                final EllipsoidalCS cs)
+    {
+        this(properties, datum, null, cs);
+    }
+
+    /**
      * Creates a new CRS derived from the specified one, but with different axis order or unit.
      * This is for implementing the {@link #createSameType(AbstractCS)} method only.
      */
