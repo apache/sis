@@ -127,6 +127,7 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
      * @param  source  the canvas which is the source of zoom, pan or rotation events.
      * @param  target  the canvas on which to apply the changes of zoom, pan or rotation.
      */
+    @SuppressWarnings("this-escape")    // The invoked method does not store `this` and is not overrideable.
     public GestureFollower(final MapCanvas source, final MapCanvas target) {
         super(source, target);
         super.setDisabled(true);

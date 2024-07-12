@@ -27,13 +27,16 @@ import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.parameter.GeneralParameterValue;
 import org.apache.sis.util.Numbers;
 
+// Specific to the main branch:
+import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
+
 
 /**
  * Kind of an element in a <i>Well Known Text</i>.
  * Different kinds of elements can be associated to different {@linkplain Colors colors}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.5
  * @since   0.4
  */
 public enum ElementKind {
@@ -100,6 +103,15 @@ public enum ElementKind {
     DATUM,
 
     /**
+     * Ensemble of datum or reference frames, represented by {@code ENSEMBLE[…]} elements.
+     *
+     * @see org.apache.sis.referencing.datum.DefaultDatumEnsemble
+     *
+     * @since 1.5
+     */
+    ENSEMBLE,
+
+    /**
      * CRS, datum or operation scope, often represented by {@code SCOPE[…]} elements.
      *
      * @see org.apache.sis.referencing.DefaultObjectDomain#getScope()
@@ -145,6 +157,7 @@ public enum ElementKind {
      *   <caption>Mapping from Java type to WKT element</caption>
      *   <tr><th>Base type</th>                     <th>Kind</th></tr>
      *   <tr><td>{@link Datum}</td>                 <td>{@link #DATUM}</td></tr>
+     *   <tr><td>{@link DefaultDatumEnsemble}</td>  <td>{@link #ENSEMBLE}</td></tr>
      *   <tr><td>{@link OperationMethod}</td>       <td>{@link #METHOD}</td></tr>
      *   <tr><td>{@link GeneralParameterValue}</td> <td>{@link #PARAMETER}</td></tr>
      *   <tr><td>{@link CoordinateSystemAxis}</td>  <td>{@link #AXIS}</td></tr>
@@ -165,6 +178,7 @@ public enum ElementKind {
     public static ElementKind forType(final Class<?> type) {
         if (type != null) {
             if (Datum                .class.isAssignableFrom(type)) return DATUM;
+            if (DefaultDatumEnsemble .class.isAssignableFrom(type)) return ENSEMBLE;
             if (OperationMethod      .class.isAssignableFrom(type)) return METHOD;
             if (GeneralParameterValue.class.isAssignableFrom(type)) return PARAMETER;
             if (CoordinateSystemAxis .class.isAssignableFrom(type)) return AXIS;

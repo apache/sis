@@ -235,6 +235,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      *
      * @since 1.1
      */
+    @SuppressWarnings("this-escape")        // `this` appears in a cyclic graph.
     public GeoTiffStore(final DataStore parent, final DataStoreProvider provider, final StorageConnector connector,
                         final boolean hidden) throws DataStoreException
     {

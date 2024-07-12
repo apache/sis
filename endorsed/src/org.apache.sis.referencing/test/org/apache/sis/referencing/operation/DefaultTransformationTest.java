@@ -63,7 +63,7 @@ public final class DefaultTransformationTest extends TestCase {
             copy.put(DefaultGeocentricCRS.NAME_KEY, name);
             properties = copy;
         }
-        return new DefaultGeocentricCRS(properties, datum, HardCodedCS.GEOCENTRIC);
+        return new DefaultGeocentricCRS(properties, datum, null, HardCodedCS.GEOCENTRIC);
     }
 
     /**

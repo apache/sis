@@ -30,6 +30,9 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
 import static org.apache.sis.test.Assertions.assertEqualsIgnoreMetadata;
 
+// Specific to the main branch:
+import static org.apache.sis.pending.geoapi.referencing.MissingMethods.getDatumEnsemble;
+
 
 /**
  * Tests {@link IdentifiedObjectFinder}.
@@ -75,7 +78,7 @@ public final class IdentifiedObjectFinderTest extends TestCase {
          */
         final CoordinateReferenceSystem search = new DefaultGeographicCRS(
                 Map.of(DefaultGeographicCRS.NAME_KEY, CRS84.getName()),
-                CRS84.getDatum(), CRS84.getCoordinateSystem());
+                CRS84.getDatum(), getDatumEnsemble(CRS84), CRS84.getCoordinateSystem());
         assertEqualsIgnoreMetadata(CRS84, search);              // Required condition for next test.
 
         finder.setSearchDomain(IdentifiedObjectFinder.Domain.DECLARATION);

@@ -27,6 +27,7 @@ import org.apache.sis.metadata.simple.SimpleCitation;
 import org.apache.sis.xml.privy.LegacyNamespaces;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.io.wkt.Convention;
+import org.apache.sis.pending.jdk.JDK19;
 
 // Test dependencies
 import org.junit.jupiter.api.Test;
@@ -86,8 +87,7 @@ public final class ImmutableIdentifierTest extends TestCase {
         assertEquals     ("There is a description", identifier.getDescription().toString(Locale.ENGLISH));
         assertEquals     ("Voici une description",  identifier.getDescription().toString(Locale.FRENCH));
         assertEquals     ("Pareil",                 identifier.getDescription().toString(Locale.CANADA_FRENCH));
-        assertEquals     ("Voici une description",  identifier.getDescription().toString(new Locale("fr", "BE")));
-        // TODO: use Locale.of(…) with JDK19.
+        assertEquals     ("Voici une description",  identifier.getDescription().toString(JDK19.localeOf("fr", "BE")));
     }
 
     /**

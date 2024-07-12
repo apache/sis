@@ -52,6 +52,7 @@ import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 // Specific to the main branch:
 import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
+import static org.apache.sis.pending.geoapi.referencing.MissingMethods.getDatumEnsemble;
 
 
 /**
@@ -89,16 +90,19 @@ public final class DefaultConversionTest extends TestCase {
             datum = new DefaultGeodeticDatum(Map.of(DefaultGeodeticDatum.NAME_KEY, datum.getName()),
                                              datum.getEllipsoid(), HardCodedDatum.GREENWICH);
         }
-        return new DefaultGeographicCRS(Map.of(GeographicCRS.NAME_KEY, isSource ? HardCodedCRS.NTF.getName() : "Back to Greenwich"),
-                                        datum, cs);
+        return new DefaultGeographicCRS(
+                Map.of(GeographicCRS.NAME_KEY, isSource ? HardCodedCRS.NTF.getName() : "Back to Greenwich"),
+                datum, null, cs);
     }
 
     /**
      * Changes only the coordinate system of the given CRS, which is supposed geographic.
      */
     private static GeographicCRS changeCS(final CoordinateReferenceSystem crs, final EllipsoidalCS cs) {
-        return new DefaultGeographicCRS(Map.of(DefaultGeographicCRS.NAME_KEY, crs.getName()),
-                                        ((GeodeticCRS) crs).getDatum(), cs);
+        final var source = (GeodeticCRS) crs;
+        return new DefaultGeographicCRS(
+                Map.of(DefaultGeographicCRS.NAME_KEY, crs.getName()),
+                source.getDatum(), getDatumEnsemble(source), cs);
     }
 
     /**

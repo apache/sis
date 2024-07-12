@@ -144,7 +144,6 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      * @param  verticalElements    a vertical component, or {@code null} if none.
      * @param  temporalElements    a temporal component, or {@code null} if none.
      */
-    @SuppressWarnings("this-escape")
     public DefaultExtent(final CharSequence     description,
                          final GeographicExtent geographicElements,
                          final VerticalExtent   verticalElements,
@@ -165,7 +164,6 @@ public class DefaultExtent extends ISOMetadata implements Extent {
      *
      * @see #castOrCopy(Extent)
      */
-    @SuppressWarnings("this-escape")
     public DefaultExtent(final Extent object) {
         super(object);
         if (object != null) {

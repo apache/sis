@@ -183,6 +183,7 @@ public class GridCoverage2D extends GridCoverage {
      *
      * @since 1.2
      */
+    @SuppressWarnings("this-escape")    // The invoked method does not store `this` and is not overrideable.
     public GridCoverage2D(final GridCoverage source, RenderedImage data) {
         super(source, source.getGridGeometry());
         this.data = data = unwrapIfSameSize(Objects.requireNonNull(data));

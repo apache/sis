@@ -210,6 +210,7 @@ public class FeatureTypeBuilder extends TypeBuilder {
      *
      * @param template  an existing feature type to use as a template, or {@code null} if none.
      */
+    @SuppressWarnings("this-escape")    // The invoked method does not store `this` and is not overrideable.
     public FeatureTypeBuilder(final DefaultFeatureType template) {
         this(null, null, null);
         if (template != null) {

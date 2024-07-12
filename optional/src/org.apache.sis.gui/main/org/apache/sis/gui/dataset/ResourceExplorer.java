@@ -168,6 +168,7 @@ public class ResourceExplorer extends Widget {
     /**
      * Creates a new panel for exploring resources.
      */
+    @SuppressWarnings("this-escape")    // `this` appears in a cyclic graph.
     public ResourceExplorer() {
         /*
          * Build the controls on the left side, which will initially contain only the resource explorer.

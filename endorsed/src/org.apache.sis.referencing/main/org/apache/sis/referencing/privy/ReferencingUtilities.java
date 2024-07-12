@@ -56,6 +56,7 @@ import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactor
 import java.util.Collection;
 import java.util.NoSuchElementException;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.pending.geoapi.referencing.MissingMethods;
 import org.apache.sis.metadata.privy.Identifiers;
 import org.apache.sis.xml.NilObject;
 
@@ -395,9 +396,10 @@ public final class ReferencingUtilities extends Static {
             if (crs instanceof GeographicCRS && Utilities.equalsIgnoreMetadata(normalizedCS, cs)) {
                 return (GeographicCRS) crs;
             }
+            final var source = (GeodeticCRS) crs;
             return new DefaultGeographicCRS(
                     Map.of(DefaultGeographicCRS.NAME_KEY, NilReferencingObject.UNNAMED),
-                    ((GeodeticCRS) crs).getDatum(), normalizedCS);
+                    source.getDatum(), MissingMethods.getDatumEnsemble(source), normalizedCS);
         }
         if (crs instanceof CompoundCRS) {
             for (final CoordinateReferenceSystem e : ((CompoundCRS) crs).getComponents()) {

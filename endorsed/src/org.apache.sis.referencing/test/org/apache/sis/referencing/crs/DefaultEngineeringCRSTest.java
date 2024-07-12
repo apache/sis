@@ -55,7 +55,7 @@ public final class DefaultEngineeringCRSTest extends TestCase {
      */
     private static DefaultEngineeringCRS createCartesian() {
         return new DefaultEngineeringCRS(Map.of(DefaultEngineeringCRS.NAME_KEY, "A construction site CRS"),
-                new DefaultEngineeringDatum(Map.of(DefaultEngineeringDatum.NAME_KEY, "P1")),
+                new DefaultEngineeringDatum(Map.of(DefaultEngineeringDatum.NAME_KEY, "P1")), null,
                 HardCodedCS.CARTESIAN_2D);
     }
 
@@ -64,7 +64,7 @@ public final class DefaultEngineeringCRSTest extends TestCase {
      */
     private static DefaultEngineeringCRS createSpherical() {
         return new DefaultEngineeringCRS(Map.of(DefaultEngineeringCRS.NAME_KEY, "A spherical CRS"),
-                new DefaultEngineeringDatum(Map.of(DefaultEngineeringDatum.NAME_KEY, "Centre")),
+                new DefaultEngineeringDatum(Map.of(DefaultEngineeringDatum.NAME_KEY, "Centre")), null,
                 HardCodedCS.SPHERICAL);
     }
 

@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import java.util.Objects;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlType;
@@ -30,6 +29,7 @@ import org.apache.sis.io.wkt.Formatter;
 // Specific to the main branch:
 import org.apache.sis.referencing.cs.DefaultParametricCS;
 import org.apache.sis.referencing.datum.DefaultParametricDatum;
+import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
 
 
 /**
@@ -69,7 +69,7 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
     private static final long serialVersionUID = 4013698133331342649L;
 
     /**
-     * The datum.
+     * The datum, or {@code null} if the CRS is associated only to a datum ensemble.
      *
      * <p><b>Consider this field as final!</b>
      * This field is modified only at unmarshalling time by {@code setDatum(ParametricDatum)}</p>
@@ -79,7 +79,17 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
     private DefaultParametricDatum datum;
 
     /**
+     * Collection of reference frames which for low accuracy requirements may be considered to be
+     * insignificantly different from each other. May be {@code null} if there is no such ensemble.
+     *
+     * @see #getDatumEnsemble()
+     */
+    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
+    private final DefaultDatumEnsemble<DefaultParametricDatum> ensemble;
+
+    /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
+     * At least one of the {@code datum} and {@code ensemble} arguments shall be non-null.
      * The properties given in argument follow the same rules as for the
      * {@linkplain org.apache.sis.referencing.AbstractReferenceSystem#AbstractReferenceSystem(Map)
      * super-class constructor}. The following table is a reminder of main (not all) properties:
@@ -118,16 +128,34 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
      * Those change are pending GeoAPI revision.</div>
      *
      * @param  properties  the properties to be given to the coordinate reference system.
-     * @param  datum       the datum.
+     * @param  datum       the datum, or {@code null} if the CRS is associated only to a datum ensemble.
+     * @param  ensemble    collection of reference frames which for low accuracy requirements may be considered to be
+     *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
      * @param  cs          the coordinate system.
+     *
+     * @since 1.5
      */
+    public DefaultParametricCRS(final Map<String,?> properties,
+                                final DefaultParametricDatum datum,
+                                final DefaultDatumEnsemble<DefaultParametricDatum> ensemble,
+                                final DefaultParametricCS cs)
+    {
+        super(properties, cs);
+        this.datum    = datum;
+        this.ensemble = ensemble;
+        checkDatum(datum, ensemble);
+        checkDimension(1, 1, cs);
+    }
+
+    /**
+     * @deprecated A {@code DefaultDatumEnsemble} argument has been added.
+     */
+    @Deprecated(since="1.5", forRemoval=true)
     public DefaultParametricCRS(final Map<String,?> properties,
                                 final DefaultParametricDatum datum,
                                 final DefaultParametricCS cs)
     {
-        super(properties, cs);
-        this.datum = Objects.requireNonNull(datum);
-        checkDimension(1, 1, cs);
+        this(properties, datum, null, cs);
     }
 
     /**
@@ -136,7 +164,8 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
      */
     private DefaultParametricCRS(final DefaultParametricCRS original, final AbstractCS cs) {
         super(original, null, cs);
-        datum = original.datum;
+        datum    = original.datum;
+        ensemble = original.ensemble;
     }
 
     /**
@@ -153,18 +182,43 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
      */
     protected DefaultParametricCRS(final DefaultParametricCRS crs) {
         super(crs);
-        datum = crs.getDatum();
+        datum    = crs.getDatum();
+        ensemble = crs.getDatumEnsemble();
+        checkDatum(datum, ensemble);
     }
 
     /**
-     * Returns the datum.
+     * Returns the reference surface used as the origin of this <abbr>CRS</abbr>.
+     * This property may be null if this <abbr>CRS</abbr> is related to an object
+     * identified only by a {@linkplain #getDatumEnsemble() datum ensemble}.
      *
-     * @return the datum.
+     * @return the parametric datum, or {@code null} if this <abbr>CRS</abbr> is related to
+     *         an object identified only by a {@linkplain #getDatumEnsemble() datum ensemble}.
      */
     @Override
     @XmlElement(name = "parametricDatum", required = true)
     public DefaultParametricDatum getDatum() {
         return datum;
+    }
+
+    /**
+     * Returns a collection of datums which, for low accuracy requirements,
+     * may be considered to be insignificantly different from each other.
+     * This property may be null if this <abbr>CRS</abbr> is related to an object
+     * identified only by a single {@linkplain #getDatum() datum}.
+     *
+     * <div class="warning"><b>Warning:</b> in a future SIS version, the return type may
+     * be changed to the {@code org.opengis.referencing.datum.DatumEnsemble} interface.
+     * This change is pending GeoAPI revision.</div>
+     *
+     * @return the datum ensemble, or {@code null} if this <abbr>CRS</abbr> is related
+     *         to an object identified only by a single {@linkplain #getDatum() datum}.
+     *
+     * @since 1.5
+     */
+    @Override
+    public DefaultDatumEnsemble<DefaultParametricDatum> getDatumEnsemble() {
+        return ensemble;
     }
 
     /**
@@ -241,6 +295,7 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultParametricCRS() {
+        ensemble = null;
         /*
          * The datum and the coordinate system are mandatory for SIS working. We do not verify their presence
          * here because the verification would have to be done in an 'afterMarshal(…)' method and throwing an

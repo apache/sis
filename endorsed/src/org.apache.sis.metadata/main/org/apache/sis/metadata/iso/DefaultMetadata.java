@@ -380,7 +380,6 @@ public class DefaultMetadata extends ISOMetadata implements Metadata {
      *
      * @since 1.5
      */
-    @SuppressWarnings("this-escape")
     public DefaultMetadata(final ResponsibleParty contact,
                            final Temporal       dateStamp,
                            final Identification identificationInfo)

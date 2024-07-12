@@ -40,6 +40,7 @@ import static org.apache.sis.util.privy.Constants.CRS84;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
 
 
 /**
@@ -110,6 +111,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
 
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
+     * At least one of the {@code datum} and {@code ensemble} arguments shall be non-null.
      * The properties given in argument follow the same rules as for the
      * {@linkplain AbstractReferenceSystem#AbstractReferenceSystem(Map) super-class constructor}.
      * The following table is a reminder of main (not all) properties:
@@ -144,17 +146,33 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      * </table>
      *
      * @param  properties  the properties to be given to the coordinate reference system.
-     * @param  datum       the datum.
+     * @param  datum       the datum, or {@code null} if the CRS is associated only to a datum ensemble.
+     * @param  ensemble    collection of reference frames which for low accuracy requirements may be considered to be
+     *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
      * @param  cs          the two- or three-dimensional coordinate system.
      *
      * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeographicCRS(Map, GeodeticDatum, EllipsoidalCS)
+     *
+     * @since 1.5
      */
+    public DefaultGeographicCRS(final Map<String,?> properties,
+                                final GeodeticDatum datum,
+                                final DefaultDatumEnsemble<GeodeticDatum> ensemble,
+                                final EllipsoidalCS cs)
+    {
+        super(properties, datum, ensemble, cs);
+        checkDimension(2, 3, cs);
+    }
+
+    /**
+     * @deprecated A {@code DefaultDatumEnsemble} argument has been added.
+     */
+    @Deprecated(since="1.5", forRemoval=true)
     public DefaultGeographicCRS(final Map<String,?> properties,
                                 final GeodeticDatum datum,
                                 final EllipsoidalCS cs)
     {
-        super(properties, datum, cs);
-        checkDimension(2, 3, cs);
+        this(properties, datum, null, cs);
     }
 
     /**
@@ -228,13 +246,35 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
 
     /**
      * Returns the geodetic reference frame associated to this geographic CRS.
-     * This is the datum given at construction time.
+     * This property may be null if this <abbr>CRS</abbr> is related to an object
+     * identified only by a {@linkplain #getDatumEnsemble() datum ensemble}.
      *
-     * @return the geodetic reference frame associated to this geographic CRS.
+     * @return the geodetic reference frame, or {@code null} if this <abbr>CRS</abbr> is related to
+     *         an object identified only by a {@linkplain #getDatumEnsemble() datum ensemble}.
      */
     @Override
     public final GeodeticDatum getDatum() {
         return super.getDatum();
+    }
+
+    /**
+     * Returns a collection of datums which, for low accuracy requirements,
+     * may be considered to be insignificantly different from each other.
+     * This property may be null if this <abbr>CRS</abbr> is related to an object
+     * identified only by a single {@linkplain #getDatum() datum}.
+     *
+     * <div class="warning"><b>Warning:</b> in a future SIS version, the return type may
+     * be changed to the {@code org.opengis.referencing.datum.DatumEnsemble} interface.
+     * This change is pending GeoAPI revision.</div>
+     *
+     * @return the datum ensemble, or {@code null} if this <abbr>CRS</abbr> is related
+     *         to an object identified only by a single {@linkplain #getDatum() datum}.
+     *
+     * @since 1.5
+     */
+    @Override
+    public DefaultDatumEnsemble<GeodeticDatum> getDatumEnsemble() {
+        return ensemble;
     }
 
     /**

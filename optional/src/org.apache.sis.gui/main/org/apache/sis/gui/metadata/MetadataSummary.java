@@ -123,6 +123,7 @@ public class MetadataSummary extends Widget {
     /**
      * Creates an initially empty metadata overview.
      */
+    @SuppressWarnings("this-escape")    // `this` appears in a cyclic graph.
     public MetadataSummary() {
         vocabulary  = Vocabulary.forLocale(null);
         formats     = new VerboseFormats(vocabulary.getLocale());

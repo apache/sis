@@ -60,6 +60,7 @@ public final class FileAccessView extends Widget implements UnaryOperator<Channe
      * @param  resources   localized resources, provided because already known by caller.
      * @param  vocabulary  localized resources, provided because already known by caller.
      */
+    @SuppressWarnings("unchecked")      // Generic array construction.
     public FileAccessView(final Resources resources, final Vocabulary vocabulary) {
         final TableColumn<FileAccessItem, String> filenameColumn;
         final TableColumn<FileAccessItem,Pane> accessColumn;

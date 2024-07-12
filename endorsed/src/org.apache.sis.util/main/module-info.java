@@ -156,5 +156,6 @@ module org.apache.sis.util {
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.geotiff,
             org.apache.sis.console,
-            org.apache.sis.portrayal;
+            org.apache.sis.portrayal,
+            org.apache.sis.gui;                         // In the "optional" sub-project.
 }

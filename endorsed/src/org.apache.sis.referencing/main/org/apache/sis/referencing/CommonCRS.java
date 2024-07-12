@@ -89,6 +89,7 @@ import static org.apache.sis.util.privy.Constants.SECONDS_PER_DAY;
 // Specific to the main branch:
 import org.opengis.referencing.crs.GeocentricCRS;
 import org.opengis.referencing.datum.VerticalDatumType;
+import static org.apache.sis.pending.geoapi.referencing.MissingMethods.getDatumEnsemble;
 
 
 /**
@@ -717,7 +718,7 @@ public enum CommonCRS {
                         cs = (EllipsoidalCS) StandardDefinitions.createCoordinateSystem(StandardDefinitions.ELLIPSOIDAL_3D, true);
                     }
                     // Use same name and datum than the geographic CRS.
-                    object = new DefaultGeographicCRS(properties(base, geo3D), base.getDatum(), cs);
+                    object = new DefaultGeographicCRS(properties(base, geo3D), base.getDatum(), getDatumEnsemble(base), cs);
                     cachedGeo3D = object;
                 }
             }
@@ -782,7 +783,7 @@ public enum CommonCRS {
                     if (cs == null) {
                         cs = (CartesianCS) StandardDefinitions.createCoordinateSystem(StandardDefinitions.EARTH_CENTRED, true);
                     }
-                    object = new DefaultGeocentricCRS(properties(base, geocentric), base.getDatum(), cs);
+                    object = new DefaultGeocentricCRS(properties(base, geocentric), base.getDatum(), getDatumEnsemble(base), cs);
                     cachedGeocentric = object;
                 }
             }
@@ -837,7 +838,7 @@ public enum CommonCRS {
                     if (cs == null) {
                         cs = (SphericalCS) StandardDefinitions.createCoordinateSystem(StandardDefinitions.SPHERICAL, true);
                     }
-                    object = new DefaultGeocentricCRS(IdentifiedObjects.getProperties(base, exclude()), base.getDatum(), cs);
+                    object = new DefaultGeocentricCRS(IdentifiedObjects.getProperties(base, exclude()), base.getDatum(), getDatumEnsemble(base), cs);
                     cachedSpherical = object;
                 }
             }
@@ -1407,7 +1408,7 @@ public enum CommonCRS {
                             object = StandardDefinitions.createVerticalCRS(crs, datum());
                         } else {
                             final VerticalCS cs = cs();
-                            object = new DefaultVerticalCRS(IdentifiedObjects.getProperties(cs, exclude()), datum(), cs);
+                            object = new DefaultVerticalCRS(IdentifiedObjects.getProperties(cs, exclude()), datum(), null, cs);
                         }
                         cached = object;
                     }
@@ -1775,7 +1776,7 @@ public enum CommonCRS {
                         final Map<String,Object> properties = new HashMap<>(source);
                         properties.put(TemporalCRS.IDENTIFIERS_KEY,
                                 new NamedIdentifier(isOGC ? Citations.OGC : Citations.SIS, identifier));
-                        object = new DefaultTemporalCRS(properties, datum, cs());
+                        object = new DefaultTemporalCRS(properties, datum, null, cs());
                         cached = object;
                     }
                 }
@@ -2022,7 +2023,7 @@ public enum CommonCRS {
                             new DefaultCoordinateSystemAxis(Map.of(CartesianCS.NAME_KEY, x), x, dx, Units.PIXEL),
                             new DefaultCoordinateSystemAxis(Map.of(CartesianCS.NAME_KEY, y), y, dy, Units.PIXEL));
                 }
-                crs = new DefaultEngineeringCRS(properties, datum, cs);
+                crs = new DefaultEngineeringCRS(properties, datum, null, cs);
             }
             return crs;
         }

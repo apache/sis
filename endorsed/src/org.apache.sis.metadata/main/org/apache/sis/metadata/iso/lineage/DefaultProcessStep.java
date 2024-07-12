@@ -184,7 +184,6 @@ public class DefaultProcessStep extends ISOMetadata implements ProcessStep {
      *
      * @see #castOrCopy(ProcessStep)
      */
-    @SuppressWarnings("this-escape")
     public DefaultProcessStep(final ProcessStep object) {
         super(object);
         if (object != null) {

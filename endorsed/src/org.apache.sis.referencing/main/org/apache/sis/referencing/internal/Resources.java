@@ -478,6 +478,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short NonUniformScale = 57;
 
         /**
+         * Datum “{1}” is not a member of the “{0}” datum ensemble.
+         */
+        public static final short NotAMemberOfDatumEnsemble_2 = 104;
+
+        /**
          * Matrix is not skew-symmetric.
          */
         public static final short NotASkewSymmetricMatrix = 58;
@@ -517,6 +522,11 @@ public class Resources extends IndexedResourceBundle {
          * The only valid entries are ±90° or equivalent in alternative angle units.
          */
         public static final short RestrictedToPoleLatitudes = 71;
+
+        /**
+         * All members of a datum ensemble shall have the same conventional reference system.
+         */
+        public static final short ShallHaveSameConventionalRS = 103;
 
         /**
          * Matrix is singular.

@@ -133,7 +133,6 @@ public class DefaultDigitalTransferOptions extends ISOMetadata implements Digita
      *
      * @see #castOrCopy(DigitalTransferOptions)
      */
-    @SuppressWarnings("this-escape")
     public DefaultDigitalTransferOptions(final DigitalTransferOptions object) {
         super(object);
         if (object != null) {

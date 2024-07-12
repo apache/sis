@@ -36,7 +36,7 @@ import org.apache.sis.util.resources.Errors;
  * The above list may be expanded in any future SIS version.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 0.4
+ * @version 1.5
  *
  * @see WKTFormat#getColors()
  * @see WKTFormat#setColors(Colors)
@@ -67,6 +67,7 @@ public class Colors implements Cloneable, Serializable {
         map.put(ElementKind.PARAMETER,  X364.FOREGROUND_GREEN);
         map.put(ElementKind.METHOD,     X364.FOREGROUND_GREEN);
         map.put(ElementKind.DATUM,      X364.FOREGROUND_GREEN);     // Note: datum names in SIS are like identifiers.
+        map.put(ElementKind.ENSEMBLE,   X364.FOREGROUND_CYAN);
         map.put(ElementKind.IDENTIFIER, X364.FOREGROUND_RED);
         map.put(ElementKind.SCOPE,      X364.FOREGROUND_GRAY);
         map.put(ElementKind.EXTENT,     X364.FOREGROUND_GRAY);

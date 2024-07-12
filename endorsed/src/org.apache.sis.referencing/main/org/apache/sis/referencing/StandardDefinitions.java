@@ -226,7 +226,7 @@ final class StandardDefinitions {
             default:   throw new AssertionError(code);
         }
         final Map<String, Object> properties = properties(code, name, null, world);
-        return new DefaultGeographicCRS(properties, datum, cs);
+        return new DefaultGeographicCRS(properties, datum, null, cs);
     }
 
     /**
@@ -331,7 +331,7 @@ final class StandardDefinitions {
         if (wms != null) {
             addWMS(properties, wms);
         }
-        return new DefaultVerticalCRS(properties, datum, cs);
+        return new DefaultVerticalCRS(properties, datum, null, cs);
     }
 
     /**

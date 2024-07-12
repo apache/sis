@@ -274,6 +274,21 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
     }
 
     /**
+     * Creates an identification initialized to the specified values.
+     *
+     * @param citation       the citation data for the resource(s), or {@code null} if none.
+     * @param abstracts      a brief narrative summary of the content of the resource(s), or {@code null} if none.
+     * @param topicCategory  the main theme of the dataset, or {@code null} if none.
+     *
+     * @since 1.5
+     */
+    public AbstractIdentification(final Citation citation, final CharSequence abstracts, final TopicCategory topicCategory) {
+        this.citation = citation;
+        this.abstracts = Types.toInternationalString(abstracts);
+        topicCategories = singleton(topicCategory, TopicCategory.class);
+    }
+
+    /**
      * Constructs a new instance initialized with the values from the specified metadata object.
      * This is a <em>shallow</em> copy constructor, because the other metadata contained in the
      * given object are not recursively copied.
@@ -282,7 +297,6 @@ public class AbstractIdentification extends ISOMetadata implements Identificatio
      *
      * @see #castOrCopy(Identification)
      */
-    @SuppressWarnings("this-escape")
     public AbstractIdentification(final Identification object) {
         super(object);
         if (object != null) {

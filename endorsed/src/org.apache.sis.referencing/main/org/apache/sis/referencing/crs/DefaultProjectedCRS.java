@@ -122,12 +122,12 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      * for performing {@linkplain org.apache.sis.referencing.cs.CoordinateSystems#swapAndScaleAxes unit
      * conversions and change of axis order} since those operations will be inferred by this constructor.
      *
-     * @param  properties  the properties to be given to the new derived CRS object.
-     * @param  baseCRS     coordinate reference system to base the derived CRS on.
-     * @param  conversion  the defining conversion from a {@linkplain AxesConvention#NORMALIZED normalized}
-     *                     base to a normalized derived CRS.
-     * @param  derivedCS   the coordinate system for the derived CRS. The number of axes must match
-     *                     the target dimension of the {@code baseToDerived} transform.
+     * @param  properties     the properties to be given to the new derived CRS object.
+     * @param  baseCRS        coordinate reference system to base the derived CRS on.
+     * @param  baseToDerived  the defining conversion from a {@linkplain AxesConvention#NORMALIZED normalized}
+     *                        base to a normalized derived CRS.
+     * @param  derivedCS      the coordinate system for the derived CRS. The number of axes must match
+     *                        the target dimension of the {@code baseToDerived} transform.
      * @throws MismatchedDimensionException if the source and target dimensions of {@code baseToDerived}
      *         do not match the dimensions of {@code base} and {@code derivedCS} respectively.
      *
@@ -135,11 +135,11 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS<Projection> implemen
      */
     public DefaultProjectedCRS(final Map<String,?> properties,
                                final GeographicCRS baseCRS,
-                               final Conversion    conversion,
+                               final Conversion    baseToDerived,
                                final CartesianCS   derivedCS)
             throws MismatchedDimensionException
     {
-        super(properties, checkDimensions(baseCRS, derivedCS), conversion, derivedCS);
+        super(properties, checkDimensions(baseCRS, derivedCS), baseToDerived, derivedCS);
     }
 
     /**

@@ -125,6 +125,7 @@ public class LandsatStore extends DataStore implements Aggregate {
      * @param  connector  information about the storage (URL, stream, reader instance, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the Landsat file.
      */
+    @SuppressWarnings("this-escape")    // The invoked method does not store `this` and is not overrideable.
     public LandsatStore(final LandsatStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
         Path path = connector.getStorageAs(Path.class);

@@ -88,6 +88,7 @@ public final class WKTKeywords extends Static {
             PrimeM        = "PrimeM",
             Ellipsoid     = "Ellipsoid",
             Spheroid      = "Spheroid",
+            Ensemble      = "Ensemble",
             ToWGS84       = "ToWGS84";
 
     /**
