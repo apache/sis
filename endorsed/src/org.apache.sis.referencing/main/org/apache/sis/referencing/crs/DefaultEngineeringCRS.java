@@ -149,7 +149,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
      * @param  cs          the coordinate system.
      *
-     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createEngineeringCRS(Map, EngineeringDatum, CoordinateSystem)
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createEngineeringCRS(Map, EngineeringDatum, DatumEnsemble, CoordinateSystem)
      *
      * @since 1.5
      */

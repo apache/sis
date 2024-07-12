@@ -166,7 +166,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
      * @param  cs          the coordinate system.
      *
-     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createTemporalCRS(Map, TemporalDatum, TimeCS)
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createTemporalCRS(Map, TemporalDatum, DatumEnsemble, TimeCS)
      *
      * @since 1.5
      */

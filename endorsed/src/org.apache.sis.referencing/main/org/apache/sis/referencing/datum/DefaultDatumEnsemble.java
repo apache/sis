@@ -230,11 +230,11 @@ public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObj
         }
         switch (mode) {
             case STRICT: {
-                final var that = (DefaultDatumEnsemble) object;
+                final var that = (DefaultDatumEnsemble<?>) object;
                 return members.equals(that.members) && ensembleAccuracy.equals(that.ensembleAccuracy);
             }
             default: {
-                final var that = (DatumEnsemble) object;
+                final var that = (DatumEnsemble<?>) object;
                 return Utilities.deepEquals(getMembers(), that.getMembers(), mode) &&
                        Utilities.deepEquals(getEnsembleAccuracy(), that.getEnsembleAccuracy(), mode);
             }

@@ -132,7 +132,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
      * @param  cs          the coordinate system.
      *
-     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createVerticalCRS(Map, VerticalDatum, VerticalCS)
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createVerticalCRS(Map, VerticalDatum, DatumEnsemble, VerticalCS)
      *
      * @since 1.5
      */

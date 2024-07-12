@@ -151,7 +151,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
      * @param  cs          the two- or three-dimensional coordinate system.
      *
-     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeographicCRS(Map, GeodeticDatum, EllipsoidalCS)
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeographicCRS(Map, GeodeticDatum, DatumEnsemble, EllipsoidalCS)
      *
      * @since 1.5
      */

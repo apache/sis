@@ -131,7 +131,7 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
      *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
      * @param  cs          the coordinate system.
      *
-     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createParametricCRS(Map, ParametricDatum, ParametricCS)
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createParametricCRS(Map, ParametricDatum, DatumEnsemble, ParametricCS)
      *
      * @since 1.5
      */
