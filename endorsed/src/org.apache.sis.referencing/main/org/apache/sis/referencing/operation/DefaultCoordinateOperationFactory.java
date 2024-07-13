@@ -30,24 +30,24 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.cs.CSFactory;
-import org.opengis.referencing.datum.Datum;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.referencing.factory.GeodeticObjectFactory;
+import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
+import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
+import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.MergedProperties;
 import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
+import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.privy.Constants;
-import org.apache.sis.referencing.factory.GeodeticObjectFactory;
-import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
-import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
-import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
 import org.apache.sis.util.collection.WeakHashSet;
 import org.apache.sis.util.collection.Containers;
 import org.apache.sis.util.collection.Cache;
@@ -409,13 +409,13 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     {
         List<SingleCRS> components = CRS.getSingleComponents(sourceCRS);
         int n = components.size();                      // Number of remaining datum from sourceCRS to verify.
-        final Datum[] datum = new Datum[n];
+        final IdentifiedObject[] datum = new IdentifiedObject[n];
         for (int i=0; i<n; i++) {
-            datum[i] = components.get(i).getDatum();
+            datum[i] = ReferencingUtilities.getDatumOrEnsemble(components.get(i));
         }
         components = CRS.getSingleComponents(targetCRS);
 next:   for (int i=components.size(); --i >= 0;) {
-            final Datum d = components.get(i).getDatum();
+            final IdentifiedObject d = ReferencingUtilities.getDatumOrEnsemble(components.get(i));
             for (int j=n; --j >= 0;) {
                 if (Utilities.equalsIgnoreMetadata(d, datum[j])) {
                     System.arraycopy(datum, j+1, datum, j, --n - j);    // Remove the datum from the list.

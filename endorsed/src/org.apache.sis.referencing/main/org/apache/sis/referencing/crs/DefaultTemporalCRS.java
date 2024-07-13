@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.crs;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Date;
 import java.time.Instant;
@@ -33,6 +34,7 @@ import javax.measure.quantity.Time;
 import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.datum.TemporalDatum;
+import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
@@ -41,6 +43,7 @@ import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Fraction;
+import org.apache.sis.util.resources.Errors;
 import static org.apache.sis.util.privy.Constants.NANOS_PER_SECOND;
 import static org.apache.sis.util.privy.Constants.MILLIS_PER_SECOND;
 
@@ -118,9 +121,9 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     private transient UnitConverter toSeconds;
 
     /**
-     * The {@linkplain TemporalDatum#getOrigin origin} in seconds since January 1st, 1970.
-     * This field could be implicit in the {@link #toSeconds} converter, but we still handle
-     * it explicitly in order to use integer arithmetic.
+     * The {@linkplain #getOrigin origin} in seconds since January 1st, 1970.
+     * This field could be implicit in the {@link #toSeconds} converter,
+     * but we still handle it explicitly in order to use integer arithmetic.
      */
     private transient long origin;
 
@@ -258,7 +261,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      */
     private void initializeConverter() {
         toSeconds = getUnit().getConverterTo(Units.SECOND);
-        final Temporal t = datum.getOrigin();
+        final Temporal t = getOrigin();
         origin = t.getLong(ChronoField.INSTANT_SECONDS);
         int r = t.get(ChronoField.NANO_OF_SECOND);
         if (r != 0) {
@@ -348,6 +351,34 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      */
     public final Unit<Time> getUnit() {
         return super.getCoordinateSystem().getAxis(0).getUnit().asType(Time.class);
+    }
+
+    /**
+     * Returns the temporal origin which is indirectly (through a datum) associated to this <abbr>CRS</abbr>.
+     * If the {@linkplain #getDatum() datum} is non-null, then this method returns the datum origin.
+     * Otherwise, if all members of the {@linkplain #getDatumEnsemble() datum ensemble} use the same origin,
+     * then this method returns that origin.
+     *
+     * @return the origin indirectly associated to this <abbr>CRS</abbr>.
+     * @throws NullPointerException if an origin, which are mandatory, is null.
+     * @throws GeodeticException if the origin is not the same for all members of the datum ensemble.
+     *
+     * @since 1.5
+     */
+    public final Temporal getOrigin() {     // Must be final because invoked at construction time.
+        if (datum != null) {
+            return datum.getOrigin();       // Has precedence regardless the value.
+        }
+        // If the datum is null, then the datum ensemble must be non-null.
+        final Iterator<TemporalDatum> it = ensemble.getMembers().iterator();
+        final Temporal origin = it.next().getOrigin();
+        while (it.hasNext()) {
+            final Temporal actual = it.next().getOrigin();
+            if (!origin.equals(actual)) {
+                throw new GeodeticException(Errors.format(Errors.Keys.NonUniformValue_2, origin, actual));
+            }
+        }
+        return origin;
     }
 
     /**

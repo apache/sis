@@ -219,7 +219,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * @param  ensemble    collection of reference frames which for low accuracy requirements may be considered to be
      *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
      * @throws NullPointerException if both arguments are null.
-     * @throws IllegalArgumentException
+     * @throws IllegalArgumentException if the datum is not a member of the ensemble.
      */
     static <D extends Datum> void checkDatum(final D datum, final DatumEnsemble<D> ensemble) {
         if (ensemble == null) {
@@ -232,6 +232,8 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
             }
             throw new IllegalArgumentException(Resources.format(Resources.Keys.NotAMemberOfDatumEnsemble_2,
                     IdentifiedObjects.getDisplayName(ensemble), IdentifiedObjects.getDisplayName(datum)));
+        } else {
+            ArgumentChecks.ensureNonEmpty("ensemble", ensemble.getMembers());
         }
     }
 

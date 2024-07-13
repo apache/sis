@@ -78,6 +78,9 @@ import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.measure.Units;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.datum.DatumEnsemble;
+
 
 /**
  * Temporary objects for creating a {@link GridGeometry} instance defined by attributes on a variable.
@@ -367,6 +370,7 @@ final class GridMapping {
          */
         final Object bursaWolf = definition.remove(Convention.TOWGS84);
         final GeodeticDatum datum;
+        DatumEnsemble<GeodeticDatum> ensemble = null;
         if (isSpecified | bursaWolf != null) {
             Map<String,Object> properties = properties(definition, Convention.GEODETIC_DATUM_NAME, ellipsoid);
             if (bursaWolf instanceof BursaWolfParameters) {
@@ -377,13 +381,16 @@ final class GridMapping {
             datum = datumFactory.createGeodeticDatum(properties, ellipsoid, meridian);
         } else {
             datum = defaultDefinitions.datum();
+            if (datum == null) {
+                ensemble = defaultDefinitions.datumEnsemble();
+            }
         }
         /*
          * Geographic CRS from all above properties.
          */
         if (isSpecified) {
             final Map<String,?> properties = properties(definition, Convention.GEOGRAPHIC_CRS_NAME, datum);
-            return decoder.getCRSFactory().createGeographicCRS(properties, datum,
+            return decoder.getCRSFactory().createGeographicCRS(properties, datum, ensemble,
                     defaultDefinitions.geographic().getCoordinateSystem());
         } else {
             return defaultDefinitions.geographic();

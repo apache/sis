@@ -69,6 +69,7 @@ import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.provider.TransverseMercator;
+import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.system.SystemListener;
@@ -87,6 +88,7 @@ import org.apache.sis.measure.Units;
 import static org.apache.sis.util.privy.Constants.SECONDS_PER_DAY;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.datum.DatumEnsemble;
 import org.opengis.referencing.datum.RealizationMethod;
 
 
@@ -508,6 +510,9 @@ public enum CommonCRS {
 
     /**
      * Returns the {@code CommonCRS} enumeration value for the given datum, or {@code null} if none.
+     *
+     * @param  datum  the datum to represent as an enumeration value, or {@code null}.
+     * @return enumeration value for the given datum, or {@code null} if none.
      */
     static CommonCRS forDatum(final GeodeticDatum datum) {
         /*
@@ -828,7 +833,10 @@ public enum CommonCRS {
                     if (cs == null) {
                         cs = (SphericalCS) StandardDefinitions.createCoordinateSystem(StandardDefinitions.SPHERICAL, true);
                     }
-                    object = new DefaultGeocentricCRS(IdentifiedObjects.getProperties(base, exclude()), base.getDatum(), base.getDatumEnsemble(), cs);
+                    object = new DefaultGeocentricCRS(IdentifiedObjects.getProperties(base, exclude()),
+                                                      base.getDatum(),
+                                                      base.getDatumEnsemble(),
+                                                      cs);
                     cachedSpherical = object;
                 }
             }
@@ -854,7 +862,7 @@ public enum CommonCRS {
      *   <tr><td>World Geodetic System 1984</td>                        <td>{@link #WGS84}</td>  <td>6326</td></tr>
      * </table></blockquote>
      *
-     * @return the geodetic reference frame associated to this enum.
+     * @return the geodetic reference frame associated to this enum, or {@code null} for a datum ensemble.
      *
      * @see #forDatum(CoordinateReferenceSystem)
      * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum
@@ -881,6 +889,17 @@ public enum CommonCRS {
             }
         }
         return object;
+    }
+
+    /**
+     * Returns the datum ensemble associated to this geodetic object.
+     *
+     * @return the datum ensemble associated to this enum, or {@code null} if none.
+     *
+     * @since 1.5
+     */
+    public DatumEnsemble<GeodeticDatum> datumEnsemble() {
+        return geographic().getDatumEnsemble();
     }
 
     /**
@@ -997,8 +1016,13 @@ public enum CommonCRS {
         if (object instanceof Ellipsoid) {
             return (Ellipsoid) object;
         }
-        final GeodeticDatum datum = datum(object);
-        return (datum != null) ? datum.getEllipsoid() : null;
+        if (object instanceof GeodeticDatum) {
+            return ((GeodeticDatum) object).getEllipsoid();
+        }
+        if (object instanceof CoordinateReferenceSystem) {
+            return ReferencingUtilities.getEllipsoid((CoordinateReferenceSystem) object);
+        }
+        return null;
     }
 
     /**
@@ -1008,8 +1032,13 @@ public enum CommonCRS {
         if (object instanceof PrimeMeridian) {
             return (PrimeMeridian) object;
         }
-        final GeodeticDatum datum = datum(object);
-        return (datum != null) ? datum.getPrimeMeridian() : null;
+        if (object instanceof GeodeticDatum) {
+            return ((GeodeticDatum) object).getPrimeMeridian();
+        }
+        if (object instanceof CoordinateReferenceSystem) {
+            return ReferencingUtilities.getPrimeMeridian((CoordinateReferenceSystem) object);
+        }
+        return null;
     }
 
     /*

@@ -740,6 +740,11 @@ public class Errors extends IndexedResourceBundle {
         public static final short NonTemporalUnit_1 = 133;
 
         /**
+         * Expected the “{0}” value for all members, but found a member with the “{1}” value.
+         */
+        public static final short NonUniformValue_2 = 207;
+
+        /**
          * No element for the “{0}” identifier, or the identifier is a forward reference.
          */
         public static final short NotABackwardReference_1 = 134;

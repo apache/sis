@@ -39,6 +39,9 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import static org.apache.sis.referencing.privy.ReferencingUtilities.getPropertiesForModifiedCRS;
 
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.datum.DatumEnsemble;
+
 
 /**
  * Helper class for separating the ellipsoidal height from the horizontal part of a CRS.
@@ -55,18 +58,24 @@ final class EllipsoidalHeightSeparator implements AxisFilter {
     private final GeodeticDatum datum;
 
     /**
+     * The datum ensemble of the <abbr>CRS</abbr> to separate, or {@code null} if none.
+     */
+    private final DatumEnsemble<GeodeticDatum> ensemble;
+
+    /**
      * Whether to extract the vertical component ({@code true}) or the horizontal component ({@code false}).
      */
     private final boolean vertical;
 
     /**
-     * Creates a new separator for a CRS having the given datum.
+     * Creates a new separator for a CRS having the given base.
      *
-     * @param  datum     the datum of the CRS to separate.
+     * @param  baseCRS   the CRS to separate, or the base CRS of the projected CRS to separate.
      * @param  vertical  whether to extract the vertical component ({@code true}) or the horizontal component ({@code false}).
      */
-    EllipsoidalHeightSeparator(final GeodeticDatum datum, final boolean vertical) {
-        this.datum    = datum;
+    EllipsoidalHeightSeparator(final GeodeticCRS baseCRS, final boolean vertical) {
+        this.datum    = baseCRS.getDatum();
+        this.ensemble = baseCRS.getDatumEnsemble();
         this.vertical = vertical;
     }
 
@@ -100,7 +109,10 @@ final class EllipsoidalHeightSeparator implements AxisFilter {
         if (vertical) {
             VerticalCRS component = CommonCRS.Vertical.ELLIPSOIDAL.crs();
             if (!Utilities.equalsIgnoreMetadata(component.getCoordinateSystem(), cs)) {
-                component = factory().createVerticalCRS(getPropertiesForModifiedCRS(component), component.getDatum(), (VerticalCS) cs);
+                component = factory().createVerticalCRS(getPropertiesForModifiedCRS(component),
+                                                        component.getDatum(),
+                                                        component.getDatumEnsemble(),
+                                                        (VerticalCS) cs);
             }
             return component;
         }
@@ -121,7 +133,7 @@ final class EllipsoidalHeightSeparator implements AxisFilter {
                 final CommonCRS c = CommonCRS.forDatum(datum);
                 if (c != null) return c.normalizedGeographic();
             }
-            return factory().createGeographicCRS(getPropertiesForModifiedCRS(crs), datum, (EllipsoidalCS) cs);
+            return factory().createGeographicCRS(getPropertiesForModifiedCRS(crs), datum, ensemble, (EllipsoidalCS) cs);
         }
         /*
          * In the projected CRS case, in addition of reducing the number of dimensions in the CartesianCS,

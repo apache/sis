@@ -903,11 +903,11 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
                 name = Strings.toUpperCase(name, Characters.Filter.LETTERS_AND_DIGITS, true);
                 lastName = datum.getName();
                 try {
-                    final GeodeticDatum predefined = CommonCRS.valueOf(name).datum();
-                    if (equalsIgnoreMetadata(predefined.getEllipsoid(), ellipsoid) &&
-                        equalsIgnoreMetadata(predefined.getPrimeMeridian(), meridian))
+                    final CommonCRS predefined = CommonCRS.valueOf(name);
+                    if (equalsIgnoreMetadata(predefined.ellipsoid(), ellipsoid) &&
+                        equalsIgnoreMetadata(predefined.primeMeridian(), meridian))
                     {
-                        return predefined;
+                        return predefined.datum();
                     }
                 } catch (IllegalArgumentException e) {
                     // Not a name that can be mapped to CommonCRS. Ignore.

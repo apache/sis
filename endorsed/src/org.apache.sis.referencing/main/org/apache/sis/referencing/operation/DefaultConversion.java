@@ -23,6 +23,7 @@ import jakarta.xml.bind.annotation.XmlRootElement;
 import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.OperationMethod;
 import org.opengis.referencing.operation.MathTransform;
@@ -30,7 +31,6 @@ import org.opengis.referencing.operation.MathTransformFactory;
 import org.opengis.referencing.operation.Matrix;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.datum.Datum;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
@@ -409,8 +409,17 @@ public class DefaultConversion extends AbstractSingleOperation implements Conver
             final CoordinateReferenceSystem actual)
     {
         if ((expected instanceof SingleCRS) && (actual instanceof SingleCRS)) {
-            final Datum datum = ((SingleCRS) expected).getDatum();
-            if (datum != null && !Utilities.equalsIgnoreMetadata(datum, ((SingleCRS) actual).getDatum())) {
+            final var crs1 = (SingleCRS) expected;
+            final var crs2 = (SingleCRS) actual;
+            IdentifiedObject datum = crs1.getDatum();
+            IdentifiedObject other;
+            if (datum != null) {
+                other = crs2.getDatum();
+            } else {
+                datum = crs1.getDatumEnsemble();
+                other = crs2.getDatumEnsemble();
+            }
+            if (datum != null && other != null && !Utilities.equalsIgnoreMetadata(datum, other)) {
                 throw new MismatchedDatumException(Resources.format(
                         Resources.Keys.IncompatibleDatum_2, datum.getName(), param));
             }

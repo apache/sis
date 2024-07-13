@@ -60,7 +60,7 @@ import org.opengis.referencing.gazetteer.LocationType;
  *
  * @author  Chris Mattmann (JPL)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see <a href="https://en.wikipedia.org/wiki/Geohash">Geohash on Wikipedia</a>
  *
@@ -315,7 +315,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
          */
         @Override
         public Quantity<Length> getPrecision(DirectPosition position) {
-            final Ellipsoid ellipsoid = normalizedCRS.getDatum().getEllipsoid();
+            final Ellipsoid ellipsoid = normalizedCRS.getEllipsoid();
             final Unit<Length> unit = ellipsoid.getAxisUnit();
             final int latNumBits = (5*length) >>> 1;            // Number of bits for latitude value.
             final int lonNumBits = latNumBits + (length & 1);   // Longitude has 1 more bit when length is odd.
@@ -353,7 +353,7 @@ public class GeohashReferenceSystem extends ReferencingByIdentifiers {
                 numLat = Latitude .MAX_VALUE / p;
                 numLon = Longitude.MAX_VALUE / p;
             } else {
-                final Ellipsoid ellipsoid = normalizedCRS.getDatum().getEllipsoid();
+                final Ellipsoid ellipsoid = normalizedCRS.getEllipsoid();
                 p = unit.getConverterToAny(ellipsoid.getAxisUnit()).convert(p);
                 if (position != null) try {
                     position = toGeographic(position);

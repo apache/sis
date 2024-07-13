@@ -50,7 +50,8 @@ import org.apache.sis.util.iso.AbstractFactory;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.RegisterOperations;
 import org.opengis.referencing.crs.SingleCRS;
-import org.apache.sis.util.Utilities;
+import org.opengis.referencing.crs.CompoundCRS;
+import org.apache.sis.referencing.privy.ReferencingUtilities;
 
 
 /**
@@ -341,10 +342,22 @@ public class MultiRegisterOperations extends AbstractFactory implements Register
     public boolean areMembersOfSameEnsemble(CoordinateReferenceSystem source, CoordinateReferenceSystem target)
             throws FactoryException
     {
-        return (source instanceof SingleCRS) && (target instanceof SingleCRS)
-                && Utilities.equalsIgnoreMetadata(
-                        ((SingleCRS) source).getDatumEnsemble(),
-                        ((SingleCRS) target).getDatumEnsemble());
+        if (source instanceof SingleCRS && target instanceof SingleCRS) {
+            return ReferencingUtilities.areMembersOfSameEnsemble((SingleCRS) source, (SingleCRS) target);
+        }
+        if (source instanceof CompoundCRS && target instanceof CompoundCRS) {
+            final List<SingleCRS> sources = ((CompoundCRS) source).getSingleComponents();
+            final List<SingleCRS> targets = ((CompoundCRS) target).getSingleComponents();
+            final int n = targets.size();
+            if (sources.size() == n) {
+                for (int i=0; i<n; i++) {
+                    if (!ReferencingUtilities.areMembersOfSameEnsemble(sources.get(i), targets.get(i))) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     /**

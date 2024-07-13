@@ -325,37 +325,41 @@ public final class GeoEncoder {
         writeModelType(isBaseCRS ? GeoCodes.ModelTypeProjected : type);
         if (writeEPSG(GeoKeys.GeodeticCRS, crs)) {
             writeName(GeoKeys.GeodeticCitation, "GCS Name", crs);
-            final GeodeticDatum datum = crs.getDatum();
-            if (writeEPSG(GeoKeys.GeodeticDatum, datum)) {
-                appendName(WKTKeywords.Datum, datum);
-                final PrimeMeridian primem = datum.getPrimeMeridian();
-                final double longitude;
-                if (writeEPSG(GeoKeys.PrimeMeridian, primem)) {
-                    appendName(WKTKeywords.PrimeM, datum);
-                    longitude = primem.getGreenwichLongitude();
+            final GeodeticDatum  datum = crs.getDatum();
+            final Ellipsoid  ellipsoid = ReferencingUtilities.getEllipsoid(crs);
+            if (datum == null && ellipsoid != null) {
+                // Case of a datum ensemble instead of a single datum.
+                writeShort(GeoKeys.GeodeticDatum, GeoCodes.userDefined);
+            } else if (!writeEPSG(GeoKeys.GeodeticDatum, datum)) {
+                return true;
+            }
+            appendName(WKTKeywords.Datum, datum);
+            final PrimeMeridian primem = ReferencingUtilities.getPrimeMeridian(crs);
+            final double longitude;
+            if (writeEPSG(GeoKeys.PrimeMeridian, primem)) {
+                appendName(WKTKeywords.PrimeM, primem);
+                longitude = primem.getGreenwichLongitude();
+            } else {
+                longitude = 0;                                      // Means "do not write prime meridian".
+            }
+            final Unit<Length>  axisUnit   = ellipsoid.getAxisUnit();
+            final Unit<?>       linearUnit = units.putIfAbsent(UnitKey.LINEAR, axisUnit);
+            final UnitConverter toLinear   = axisUnit.getConverterToAny(linearUnit != null ? linearUnit : axisUnit);
+            writeUnit(UnitKey.LINEAR);     // Must be after the `units` map have been updated.
+            writeUnit(UnitKey.ANGULAR);
+            if (writeEPSG(GeoKeys.Ellipsoid, ellipsoid)) {
+                appendName(WKTKeywords.Ellipsoid, ellipsoid);
+                writeDouble(GeoKeys.SemiMajorAxis, toLinear.convert(ellipsoid.getSemiMajorAxis()));
+                if (ellipsoid.isSphere() || !ellipsoid.isIvfDefinitive()) {
+                    writeDouble(GeoKeys.SemiMinorAxis, toLinear.convert(ellipsoid.getSemiMinorAxis()));
                 } else {
-                    longitude = 0;                                      // Means "do not write prime meridian".
+                    writeDouble(GeoKeys.InvFlattening, ellipsoid.getInverseFlattening());
                 }
-                final Ellipsoid     ellipsoid  = datum.getEllipsoid();
-                final Unit<Length>  axisUnit   = ellipsoid.getAxisUnit();
-                final Unit<?>       linearUnit = units.putIfAbsent(UnitKey.LINEAR, axisUnit);
-                final UnitConverter toLinear   = axisUnit.getConverterToAny(linearUnit != null ? linearUnit : axisUnit);
-                writeUnit(UnitKey.LINEAR);     // Must be after the `units` map have been updated.
-                writeUnit(UnitKey.ANGULAR);
-                if (writeEPSG(GeoKeys.Ellipsoid, ellipsoid)) {
-                    appendName(WKTKeywords.Ellipsoid, ellipsoid);
-                    writeDouble(GeoKeys.SemiMajorAxis, toLinear.convert(ellipsoid.getSemiMajorAxis()));
-                    if (ellipsoid.isSphere() || !ellipsoid.isIvfDefinitive()) {
-                        writeDouble(GeoKeys.SemiMinorAxis, toLinear.convert(ellipsoid.getSemiMinorAxis()));
-                    } else {
-                        writeDouble(GeoKeys.InvFlattening, ellipsoid.getInverseFlattening());
-                    }
-                }
-                if (longitude != 0) {
-                    Unit<Angle> unit = primem.getAngularUnit();
-                    UnitConverter c = unit.getConverterToAny(units.getOrDefault(UnitKey.ANGULAR, Units.DEGREE));
-                    writeDouble(GeoKeys.PrimeMeridianLongitude, c.convert(longitude));
-                }
+            }
+            if (longitude != 0) {
+                Unit<Angle> unit = primem.getAngularUnit();
+                UnitConverter c = unit.getConverterToAny(units.getOrDefault(UnitKey.ANGULAR, Units.DEGREE));
+                writeDouble(GeoKeys.PrimeMeridianLongitude, c.convert(longitude));
             }
         } else if (isBaseCRS) {
             writeUnit(UnitKey.ANGULAR);         // Map projection parameters may need this unit.
