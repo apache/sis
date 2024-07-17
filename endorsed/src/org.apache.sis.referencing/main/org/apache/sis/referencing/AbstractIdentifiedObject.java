@@ -449,10 +449,13 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      *
      * <p>This constructor performs a shallow copy, i.e. the properties are not cloned.</p>
      *
-     * @param object  the object to shallow copy.
+     * @param  object  the object to shallow copy.
      */
     protected AbstractIdentifiedObject(final IdentifiedObject object) {
-        name        =          object.getName();
+        name = object.getName();
+        if (name == null) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingValueForProperty_1, NAME_KEY));
+        }
         alias       = nonEmpty(object.getAlias()); // Favor null for empty set in case it is not Collections.EMPTY_SET
         identifiers = nonEmpty(object.getIdentifiers());
         domains     = nonEmpty(object.getDomains());

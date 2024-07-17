@@ -42,6 +42,7 @@ import org.apache.sis.util.Workaround;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.coordinate.MismatchedDimensionException;
+import org.opengis.referencing.datum.DatumEnsemble;
 
 
 /**
@@ -209,13 +210,31 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
     }
 
     /**
-     * Returns the datum of the {@linkplain #getBaseCRS() base CRS}.
+     * Returns the datum of the base <abbr>CRS</abbr>.
+     * This property may be null if this <abbr>CRS</abbr> is related to an object
+     * identified only by a {@linkplain #getDatumEnsemble() datum ensemble}.
      *
-     * @return the datum of the base CRS.
+     * @return the datum of the {@linkplain #getBaseCRS() base CRS}, or {@code null} if this <abbr>CRS</abbr>
+     *         is related to an object identified only by a {@linkplain #getDatumEnsemble() datum ensemble}.
      */
     @Override
     public GeodeticDatum getDatum() {
         return getBaseCRS().getDatum();
+    }
+
+    /**
+     * Returns the datum ensemble of the base <abbr>CRS</abbr>.
+     * This property may be null if this <abbr>CRS</abbr> is related to an object
+     * identified only by a {@linkplain #getDatum() reference frame}.
+     *
+     * @return the datum ensemble of the {@linkplain #getBaseCRS() base CRS}, or {@code null} if this
+     *         <abbr>CRS</abbr> is related to an object identified only by a {@linkplain #getDatum() datum}.
+     *
+     * @since 1.5
+     */
+    @Override
+    public DatumEnsemble<GeodeticDatum> getDatumEnsemble() {
+        return getBaseCRS().getDatumEnsemble();
     }
 
     /**

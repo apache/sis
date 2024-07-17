@@ -84,11 +84,15 @@ import org.opengis.referencing.crs.GeodeticCRS;
 public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     /**
      * The geodetic reference frame, or {@code null} if none.
+     *
+     * @see #getDatumOrEnsemble()
      */
     private GeodeticDatum datum;
 
     /**
      * The datum ensemble, or {@code null} if none.
+     *
+     * @see #getDatumOrEnsemble()
      */
     private DatumEnsemble<GeodeticDatum> ensemble;
 
@@ -516,11 +520,19 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      */
     public ProjectedCRS createProjectedCRS() throws FactoryException {
         GeographicCRS crs = getBaseCRS();
-        if (datum != null || ensemble != null) {
-            crs = factories.getCRSFactory().createGeographicCRS(
-                    name(datum != null ? datum : ensemble), datum, ensemble, crs.getCoordinateSystem());
+        final IdentifiedObject id = getDatumOrEnsemble();
+        if (id != null) {
+            crs = factories.getCRSFactory().createGeographicCRS(name(id), datum, ensemble, crs.getCoordinateSystem());
         }
         return createProjectedCRS(crs, factories.getStandardProjectedCS());
+    }
+
+    /**
+     * Returns the datum if defined, or the datum ensemble otherwise.
+     * Both of them may be {@code null}.
+     */
+    private IdentifiedObject getDatumOrEnsemble() {
+        return (datum != null) ? datum : ensemble;
     }
 
     /**
@@ -540,8 +552,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      */
     public GeographicCRS createGeographicCRS() throws FactoryException {
         final GeographicCRS crs = getBaseCRS();
-        IdentifiedObject id = datum;
-        if (id == null) id = ensemble;
+        final IdentifiedObject id = getDatumOrEnsemble();
         if (id != null) {
             properties.putIfAbsent(GeographicCRS.NAME_KEY, id.getName());
         }

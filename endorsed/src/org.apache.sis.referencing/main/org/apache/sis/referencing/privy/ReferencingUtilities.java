@@ -207,35 +207,27 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
-     * Returns whether the given <abbr>CRS</abbr> use the same datum or the same datum ensemble.
+     * Returns whether the given <abbr>CRS</abbr> uses the given datum.
      *
-     * @param  crs1  the first <abbr>CRS</abbr>.
-     * @param  crs2  the second <abbr>CRS</abbr>.
-     * @return whether the two reference systems use the same datum or the same datum ensemble.
+     * @param  crs    the <abbr>CRS</abbr>, or {@code null}.
+     * @param  datum  the datum to compare with the <abbr>CRS</abbr> datum or datum ensemble.
+     * @return whether the given CRS <abbr>CRS</abbr> uses the specified datum.
      */
-    public static boolean areMembersOfSameEnsemble(final SingleCRS crs1, final SingleCRS crs2) {
-        IdentifiedObject d1 = crs1.getDatum();
-        IdentifiedObject d2 = crs2.getDatum();
-        if (d1 == null && d2 == null) {
-            d1 = crs1.getDatumEnsemble();
-            d2 = crs2.getDatumEnsemble();
-            if (d1 == null && d2 == null) {
-                return false;
+    public static boolean uses(final SingleCRS crs, final Datum datum) {
+        if (crs != null && datum != null) {
+            if (Utilities.equalsIgnoreMetadata(crs.getDatum(), datum)) {
+                return true;
+            }
+            final var ensemble = crs.getDatumEnsemble();
+            if (ensemble != null) {
+                for (final Datum member : ensemble.getMembers()) {
+                    if (Utilities.equalsIgnoreMetadata(member, datum)) {
+                        return true;
+                    }
+                }
             }
         }
-        return Utilities.equalsIgnoreMetadata(d1, d2);
-    }
-
-    /**
-     * Returns the datum of the given <abbr>CRS</abbr> if presents, or the datum ensemble otherwise.
-     *
-     * @param  crs  the <abbr>CRS</abbr> from which to get the datum or ensemble, or {@code null}.
-     * @return the datum if present, or the datum ensemble otherwise.
-     */
-    public static IdentifiedObject getDatumOrEnsemble(final SingleCRS crs) {
-        if (crs == null) return null;
-        final Datum datum = crs.getDatum();
-        return (datum != null) ? datum : crs.getDatumEnsemble();
+        return false;
     }
 
     /**
@@ -295,6 +287,8 @@ public final class ReferencingUtilities extends Static {
 
     /**
      * Implementation of {@code getEllipsoid(CRS)} and {@code getPrimeMeridian(CRS)}.
+     * The difference between this method and {@link org.apache.sis.referencing.datum.PseudoDatum}
+     * is that this method ignore null values and does not throw an exception in case of mismatch.
      *
      * @param  <P>     the type of object to get.
      * @param  crs     the coordinate reference system for which to get the ellipsoid or prime meridian.

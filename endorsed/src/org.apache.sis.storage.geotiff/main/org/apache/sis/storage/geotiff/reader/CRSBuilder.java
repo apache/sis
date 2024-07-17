@@ -66,6 +66,7 @@ import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.crs.DefaultProjectedCRS;
 import org.apache.sis.referencing.crs.DefaultGeographicCRS;
+import org.apache.sis.referencing.datum.PseudoDatum;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.privy.NilReferencingObject;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
@@ -1105,7 +1106,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
          * were specified in the GeoTIFF file or if we got the default values. We do not compare units for that reason.
          */
         final Unit<Length> linearUnit = createLinearUnit(UnitKey.LINEAR);
-        final GeodeticDatum datum = crs.getDatum();
+        final GeodeticDatum datum = PseudoDatum.of(crs);
         verifyIdentifier(crs, datum, GeoKeys.GeodeticDatum);
         verify(datum, angularUnit, linearUnit);
         geoKeys.remove(GeoKeys.GeodeticCitation);
@@ -1174,7 +1175,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
          */
         final Unit<Length> linearUnit = createLinearUnit(UnitKey.LINEAR);
         final Unit<Angle> angularUnit = createAngularUnit(UnitKey.ANGULAR);
-        final GeodeticDatum datum = crs.getDatum();
+        final GeodeticDatum datum = PseudoDatum.of(crs);
         verifyIdentifier(crs, datum, GeoKeys.GeodeticDatum);
         verify(datum, angularUnit, linearUnit);
     }

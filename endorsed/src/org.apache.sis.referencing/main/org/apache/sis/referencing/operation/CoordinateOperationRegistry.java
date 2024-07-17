@@ -51,8 +51,11 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.datum.PseudoDatum;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.matrix.Matrices;
+import org.apache.sis.referencing.operation.provider.Affine;
+import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
@@ -67,8 +70,6 @@ import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.referencing.internal.DeferredCoordinateOperation;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.referencing.operation.provider.Affine;
-import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.system.Semaphores;
@@ -1194,6 +1195,9 @@ class CoordinateOperationRegistry {
     /**
      * If the given CRS is two-dimensional, appends an ellipsoidal height to it.
      * It is caller's responsibility to ensure that the given CRS is geographic.
+     *
+     * @param  crs        the two-dimensional CRS to replace by a three-dimensional CRS.
+     * @param  candidate  an existing three-dimensional instance that may be suitable, or {@code null}.
      */
     private CoordinateReferenceSystem toGeodetic3D(CoordinateReferenceSystem crs,
             final CoordinateReferenceSystem candidate) throws FactoryException
@@ -1208,7 +1212,9 @@ class CoordinateOperationRegistry {
          * to return the existing instance.
          */
         if (crs.getClass() == candidate.getClass() && candidate.getCoordinateSystem().getDimension() == 3) {
-            if (Utilities.equalsIgnoreMetadata(((SingleCRS) crs).getDatum(), ((SingleCRS) candidate).getDatum())) {
+            if (Utilities.equalsIgnoreMetadata(PseudoDatum.getDatumOrEnsemble((SingleCRS) candidate),
+                                               PseudoDatum.getDatumOrEnsemble((SingleCRS) crs)))
+            {
                 return candidate;               // Keep the existing instance since it may contain useful metadata.
             }
         }

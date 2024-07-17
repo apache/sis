@@ -275,7 +275,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS {
      */
     @Override
     public DatumEnsemble<GeodeticDatum> getDatumEnsemble() {
-        return ensemble;
+        return super.getDatumEnsemble();
     }
 
     /**

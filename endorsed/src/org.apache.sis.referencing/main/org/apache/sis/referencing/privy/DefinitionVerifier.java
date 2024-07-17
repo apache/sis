@@ -32,6 +32,7 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.datum.PseudoDatum;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.internal.Resources;
@@ -332,7 +333,9 @@ public final class DefinitionVerifier {
                 {
                     return PRIME_MERIDIAN;
                 }
-                if (!Utilities.equalsApproximately(crsA.getDatum(), crsG.getDatum())) {
+                if (!Utilities.equalsApproximately(PseudoDatum.getDatumOrEnsemble(crsA),
+                                                   PseudoDatum.getDatumOrEnsemble(crsG)))
+                {
                     return DATUM;
                 }
                 break;

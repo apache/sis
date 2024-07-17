@@ -18,9 +18,8 @@ package org.apache.sis.referencing.crs;
 
 import java.util.Map;
 import java.util.Arrays;
-import java.util.Iterator;
+import java.util.NoSuchElementException;
 import jakarta.xml.bind.annotation.XmlTransient;
-import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
@@ -31,12 +30,11 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.GeodeticException;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.referencing.datum.PseudoDatum;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Longitude;
 import static org.apache.sis.util.privy.Constants.CRS;
@@ -253,6 +251,38 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     }
 
     /**
+     * Returns the prime meridian which is indirectly (through a datum) associated to this <abbr>CRS</abbr>.
+     * If the {@linkplain #getDatum() datum} is non-null, then this method returns the datum prime meridian.
+     * Otherwise, if all members of the {@linkplain #getDatumEnsemble() datum ensemble} use the same prime meridian,
+     * then this method returns that meridian.
+     *
+     * @return the prime meridian indirectly associated to this <abbr>CRS</abbr>.
+     * @throws NoSuchElementException if there is no datum and the ensemble does not contain at least one member.
+     * @throws GeodeticException if the prime meridian is not the same for all members of the datum ensemble.
+     *
+     * @since 1.5
+     */
+    public PrimeMeridian getPrimeMeridian() {
+        return PseudoDatum.of(this).getPrimeMeridian();
+    }
+
+    /**
+     * Returns the ellipsoid which is indirectly (through a datum) associated to this <abbr>CRS</abbr>.
+     * If the {@linkplain #getDatum() datum} is non-null, then this method returns the datum ellipsoid.
+     * Otherwise, if all members of the {@linkplain #getDatumEnsemble() datum ensemble} use the same ellipsoid,
+     * then this method returns that ellipsoid.
+     *
+     * @return the ellipsoid indirectly associated to this <abbr>CRS</abbr>.
+     * @throws NoSuchElementException if there is no datum and the ensemble does not contain at least one member.
+     * @throws GeodeticException if the ellipsoid is not the same for all members of the datum ensemble.
+     *
+     * @since 1.5
+     */
+    public Ellipsoid getEllipsoid() {
+        return PseudoDatum.of(this).getEllipsoid();
+    }
+
+    /**
      * Returns the geodetic reference frame associated to this geographic CRS.
      * This property may be null if this <abbr>CRS</abbr> is related to an object
      * identified only by a {@linkplain #getDatumEnsemble() datum ensemble}.
@@ -278,7 +308,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      */
     @Override
     public DatumEnsemble<GeodeticDatum> getDatumEnsemble() {
-        return ensemble;
+        return super.getDatumEnsemble();
     }
 
     /**
@@ -289,68 +319,6 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     @Override
     public EllipsoidalCS getCoordinateSystem() {
         return (EllipsoidalCS) super.getCoordinateSystem();
-    }
-
-    /**
-     * Returns the ellipsoid which is indirectly (through a datum) associated to this <abbr>CRS</abbr>.
-     * If the {@linkplain #getDatum() datum} is non-null, then this method returns the datum ellipsoid.
-     * Otherwise, if all members of the {@linkplain #getDatumEnsemble() datum ensemble} use the same ellipsoid,
-     * then this method returns that ellipsoid.
-     *
-     * @return the ellipsoid indirectly associated to this <abbr>CRS</abbr>.
-     * @throws NullPointerException if an ellipsoid, which are mandatory in the context of geographic <abbr>CRS</abbr>, is null.
-     * @throws GeodeticException if the ellipsoid is not the same for all members of the datum ensemble.
-     *
-     * @since 1.5
-     */
-    public Ellipsoid getEllipsoid() {
-        final GeodeticDatum datum = super.getDatum();
-        if (datum != null) {
-            return datum.getEllipsoid();        // Has precedence regardless the value.
-        }
-        // If the datum is null, then the datum ensemble must be non-null.
-        final Iterator<GeodeticDatum> it = ensemble.getMembers().iterator();
-        final Ellipsoid ellipsoid = it.next().getEllipsoid();  // Mandatory
-        while (it.hasNext()) {
-            checkDatumConsistency(ellipsoid, it.next().getEllipsoid());
-        }
-        return ellipsoid;
-    }
-
-    /**
-     * Returns the prime meridian which is indirectly (through a datum) associated to this <abbr>CRS</abbr>.
-     * If the {@linkplain #getDatum() datum} is non-null, then this method returns the datum prime meridian.
-     * Otherwise, if all members of the {@linkplain #getDatumEnsemble() datum ensemble} use the same prime meridian,
-     * then this method returns that meridian.
-     *
-     * @return the prime meridian indirectly associated to this <abbr>CRS</abbr>.
-     * @throws NullPointerException if a prime meridian, which are mandatory, is null.
-     * @throws GeodeticException if the prime meridian is not the same for all members of the datum ensemble.
-     *
-     * @since 1.5
-     */
-    public PrimeMeridian getPrimeMeridian() {
-        final GeodeticDatum datum = super.getDatum();
-        if (datum != null) {
-            return datum.getPrimeMeridian();    // Has precedence regardless the value.
-        }
-        // If the datum is null, then the datum ensemble must be non-null.
-        final Iterator<GeodeticDatum> it = ensemble.getMembers().iterator();
-        final PrimeMeridian pm = it.next().getPrimeMeridian();  // Mandatory
-        while (it.hasNext()) {
-            checkDatumConsistency(pm, it.next().getPrimeMeridian());
-        }
-        return pm;
-    }
-
-    /**
-     * Ensures that the ellipsoid or prime meridian has the same value in all members of a datum ensemble.
-     */
-    private static void checkDatumConsistency(final IdentifiedObject expected, final IdentifiedObject actual) {
-        if (!expected.equals(actual)) {
-            throw new GeodeticException(Errors.format(Errors.Keys.NonUniformValue_2,
-                    IdentifiedObjects.getDisplayName(expected), IdentifiedObjects.getDisplayName(actual)));
-        }
     }
 
     /**

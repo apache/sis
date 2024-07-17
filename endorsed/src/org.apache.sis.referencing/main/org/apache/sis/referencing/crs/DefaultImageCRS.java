@@ -17,7 +17,6 @@
 package org.apache.sis.referencing.crs;
 
 import java.util.Map;
-import java.util.Objects;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -27,7 +26,6 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
-import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
 
 // Specific to the geoapi-4.0 branch:
@@ -69,21 +67,11 @@ import org.apache.sis.referencing.datum.DefaultImageDatum;
     "datum"
 })
 @XmlRootElement(name = "ImageCRS")
-public final class DefaultImageCRS extends AbstractCRS {
+public final class DefaultImageCRS extends AbstractSingleCRS<DefaultImageDatum> {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 7312452786096397847L;
-
-    /**
-     * The datum.
-     *
-     * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time.</p>
-     *
-     * @see #getDatum()
-     */
-    private DefaultImageDatum datum;
+    private static final long serialVersionUID = 7222610270977351462L;
 
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
@@ -128,8 +116,7 @@ public final class DefaultImageCRS extends AbstractCRS {
                            final DefaultImageDatum datum,
                            final AffineCS cs)
     {
-        super(properties, cs);
-        this.datum = Objects.requireNonNull(datum);
+        super(properties, DefaultImageDatum.class, datum, null, cs);
     }
 
     /**
@@ -138,7 +125,6 @@ public final class DefaultImageCRS extends AbstractCRS {
      */
     private DefaultImageCRS(final DefaultImageCRS original, final AbstractCS cs) {
         super(original, null, cs);
-        datum = original.datum;
     }
 
     /**
@@ -149,7 +135,7 @@ public final class DefaultImageCRS extends AbstractCRS {
     @Override
     @XmlElement(name = "imageDatum", required = true)
     public DefaultImageDatum getDatum() {
-        return datum;
+        return super.getDatum();
     }
 
     /**
@@ -239,11 +225,7 @@ public final class DefaultImageCRS extends AbstractCRS {
      * @see #getDatum()
      */
     private void setDatum(final DefaultImageDatum value) {
-        if (datum == null) {
-            datum = value;
-        } else {
-            ImplementationHelper.propertyAlreadySet(DefaultImageCRS.class, "setDatum", "imageDatum");
-        }
+        setDatum("imageDatum", value);
     }
 
     /**

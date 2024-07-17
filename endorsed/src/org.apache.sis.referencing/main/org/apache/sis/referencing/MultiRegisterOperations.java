@@ -38,11 +38,13 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.opengis.referencing.operation.MathTransformFactory;
+import org.apache.sis.referencing.datum.PseudoDatum;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.factory.MultiAuthoritiesFactory;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.AbstractFactory;
@@ -50,7 +52,6 @@ import org.apache.sis.util.iso.AbstractFactory;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.RegisterOperations;
 import org.opengis.referencing.crs.SingleCRS;
-import org.opengis.referencing.crs.CompoundCRS;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 
 
@@ -342,22 +343,24 @@ public class MultiRegisterOperations extends AbstractFactory implements Register
     public boolean areMembersOfSameEnsemble(CoordinateReferenceSystem source, CoordinateReferenceSystem target)
             throws FactoryException
     {
-        if (source instanceof SingleCRS && target instanceof SingleCRS) {
-            return ReferencingUtilities.areMembersOfSameEnsemble((SingleCRS) source, (SingleCRS) target);
+        final List<SingleCRS> sources = CRS.getSingleComponents(source);
+        final List<SingleCRS> targets = CRS.getSingleComponents(target);
+        final int n = targets.size();
+        if (sources.size() != n) {
+            return false;
         }
-        if (source instanceof CompoundCRS && target instanceof CompoundCRS) {
-            final List<SingleCRS> sources = ((CompoundCRS) source).getSingleComponents();
-            final List<SingleCRS> targets = ((CompoundCRS) target).getSingleComponents();
-            final int n = targets.size();
-            if (sources.size() == n) {
-                for (int i=0; i<n; i++) {
-                    if (!ReferencingUtilities.areMembersOfSameEnsemble(sources.get(i), targets.get(i))) {
-                        return false;
-                    }
-                }
+        for (int i=0; i<n; i++) {
+            final var crs1 = sources.get(i);
+            final var crs2 = targets.get(i);
+            if (!(Utilities.equalsIgnoreMetadata(PseudoDatum.getDatumOrEnsemble(crs1),
+                                                 PseudoDatum.getDatumOrEnsemble(crs2))
+                    || ReferencingUtilities.uses(crs1, crs2.getDatum())
+                    || ReferencingUtilities.uses(crs2, crs1.getDatum())))
+            {
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     /**

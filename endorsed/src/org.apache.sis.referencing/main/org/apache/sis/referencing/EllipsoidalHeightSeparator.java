@@ -127,10 +127,10 @@ final class EllipsoidalHeightSeparator implements AxisFilter {
             }
             final CommonCRS ref = CommonCRS.WGS84;
             if (Utilities.equalsIgnoreMetadata(ref.geographic().getCoordinateSystem(), cs)) {
-                final CommonCRS c = CommonCRS.forDatum(datum);
+                final CommonCRS c = CommonCRS.forDatum(datum, ensemble);
                 if (c != null) return c.geographic();
             } else if (Utilities.equalsIgnoreMetadata(ref.normalizedGeographic().getCoordinateSystem(), cs)) {
-                final CommonCRS c = CommonCRS.forDatum(datum);
+                final CommonCRS c = CommonCRS.forDatum(datum, ensemble);
                 if (c != null) return c.normalizedGeographic();
             }
             return factory().createGeographicCRS(getPropertiesForModifiedCRS(crs), datum, ensemble, (EllipsoidalCS) cs);

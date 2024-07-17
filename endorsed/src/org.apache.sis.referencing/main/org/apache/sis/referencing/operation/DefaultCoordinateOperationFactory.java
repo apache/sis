@@ -37,12 +37,12 @@ import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.factory.InvalidGeodeticParameterException;
 import org.apache.sis.referencing.operation.transform.AbstractMathTransform;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
+import org.apache.sis.referencing.datum.PseudoDatum;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.internal.MergedProperties;
 import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
 import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Utilities;
@@ -411,11 +411,11 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
         int n = components.size();                      // Number of remaining datum from sourceCRS to verify.
         final IdentifiedObject[] datum = new IdentifiedObject[n];
         for (int i=0; i<n; i++) {
-            datum[i] = ReferencingUtilities.getDatumOrEnsemble(components.get(i));
+            datum[i] = PseudoDatum.getDatumOrEnsemble(components.get(i));
         }
         components = CRS.getSingleComponents(targetCRS);
 next:   for (int i=components.size(); --i >= 0;) {
-            final IdentifiedObject d = ReferencingUtilities.getDatumOrEnsemble(components.get(i));
+            final IdentifiedObject d = PseudoDatum.getDatumOrEnsemble(components.get(i));
             for (int j=n; --j >= 0;) {
                 if (Utilities.equalsIgnoreMetadata(d, datum[j])) {
                     System.arraycopy(datum, j+1, datum, j, --n - j);    // Remove the datum from the list.

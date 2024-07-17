@@ -54,6 +54,7 @@ import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.datum.BursaWolfParameters;
 import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
+import org.apache.sis.referencing.datum.PseudoDatum;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.matrix.MatrixSIS;
 import org.apache.sis.referencing.operation.provider.Affine;
@@ -338,8 +339,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         ////                                                                        ////
         ////////////////////////////////////////////////////////////////////////////////
         if (sourceCRS instanceof SingleCRS && targetCRS instanceof SingleCRS) {
-            final Datum sourceDatum = ((SingleCRS) sourceCRS).getDatum();
-            final Datum targetDatum = ((SingleCRS) targetCRS).getDatum();
+            final IdentifiedObject sourceDatum = PseudoDatum.getDatumOrEnsemble((SingleCRS) sourceCRS);
+            final IdentifiedObject targetDatum = PseudoDatum.getDatumOrEnsemble((SingleCRS) targetCRS);
             if (equalsIgnoreMetadata(sourceDatum, targetDatum)) try {
                 /*
                  * Because the CRS type is determined by the datum type (sometimes completed by the CS type),
@@ -514,8 +515,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     {
         final CoordinateSystem sourceCS = sourceCRS.getCoordinateSystem();
         final CoordinateSystem targetCS = targetCRS.getCoordinateSystem();
-        final GeodeticDatum sourceDatum = sourceCRS.getDatum();
-        final GeodeticDatum targetDatum = targetCRS.getDatum();
+        final GeodeticDatum sourceDatum = PseudoDatum.of(sourceCRS);
+        final GeodeticDatum targetDatum = PseudoDatum.of(targetCRS);
         Matrix datumShift = null;
         /*
          * If the prime meridian is not the same, we will concatenate a longitude rotation before or after datum shift
@@ -741,7 +742,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             final EllipsoidalCS cs = CommonCRS.WGS84.geographic3D().getCoordinateSystem();
             if (!equalsIgnoreMetadata(interpolationCS, cs)) {
                 final GeographicCRS stepCRS = factorySIS.crsFactory
-                        .createGeographicCRS(derivedFrom(sourceCRS), sourceCRS.getDatum(), cs);
+                        .createGeographicCRS(derivedFrom(sourceCRS), sourceCRS.getDatum(), sourceCRS.getDatumEnsemble(), cs);
                 step1 = createOperation(sourceCRS, toAuthorityDefinition(GeographicCRS.class, stepCRS));
                 interpolationCRS = step1.getTargetCRS();
                 interpolationCS  = interpolationCRS.getCoordinateSystem();
@@ -765,7 +766,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         VerticalCRS heightCRS = targetCRS;      // First candidate, will be replaced if it doesn't fit.
         VerticalCS  heightCS  = heightCRS.getCoordinateSystem();
         if (equalsIgnoreMetadata(heightCS.getAxis(0), expectedAxis)) {
-            isEllipsoidalHeight = ReferencingUtilities.isEllipsoidalHeight(heightCRS.getDatum());
+            isEllipsoidalHeight = ReferencingUtilities.isEllipsoidalHeight(PseudoDatum.of(heightCRS));
         } else {
             heightCRS = CommonCRS.Vertical.ELLIPSOIDAL.crs();
             heightCS  = heightCRS.getCoordinateSystem();
@@ -823,8 +824,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                                                             final VerticalCRS targetCRS)
             throws FactoryException
     {
-        final VerticalDatum sourceDatum = sourceCRS.getDatum();
-        final VerticalDatum targetDatum = targetCRS.getDatum();
+        final VerticalDatum sourceDatum = PseudoDatum.of(sourceCRS);
+        final VerticalDatum targetDatum = PseudoDatum.of(targetCRS);
         if (!equalsIgnoreMetadata(sourceDatum, targetDatum)) {
             throw new OperationNotFoundException(notFoundMessage(sourceDatum, targetDatum));
         }
@@ -857,8 +858,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                                                             final TemporalCRS targetCRS)
             throws FactoryException
     {
-        final TemporalDatum sourceDatum = sourceCRS.getDatum();
-        final TemporalDatum targetDatum = targetCRS.getDatum();
+        final TemporalDatum sourceDatum = PseudoDatum.of(sourceCRS);
+        final TemporalDatum targetDatum = PseudoDatum.of(targetCRS);
         final TimeCS sourceCS = sourceCRS.getCoordinateSystem();
         final TimeCS targetCS = targetCRS.getCoordinateSystem();
         /*
