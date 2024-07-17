@@ -26,7 +26,6 @@ import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.datum.EngineeringDatum;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.*;
-import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.xml.bind.referencing.CS_CoordinateSystem;
 import org.apache.sis.io.wkt.Formatter;
@@ -81,31 +80,11 @@ import org.opengis.referencing.datum.DatumEnsemble;
     "datum"
 })
 @XmlRootElement(name = "EngineeringCRS")
-public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS {
+public class DefaultEngineeringCRS extends AbstractSingleCRS<EngineeringDatum> implements EngineeringCRS {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 6695541732063382701L;
-
-    /**
-     * The datum, or {@code null} if the CRS is associated only to a datum ensemble.
-     *
-     * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setDatum(EngineeringDatum)}</p>
-     *
-     * @see #getDatum()
-     */
-    @SuppressWarnings("serial")         // Most SIS implementations are serializable.
-    private EngineeringDatum datum;
-
-    /**
-     * Collection of reference frames which for low accuracy requirements may be considered to be
-     * insignificantly different from each other. May be {@code null} if there is no such ensemble.
-     *
-     * @see #getDatumEnsemble()
-     */
-    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
-    private final DatumEnsemble<EngineeringDatum> ensemble;
+    private static final long serialVersionUID = -5716016061569447341L;
 
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
@@ -149,7 +128,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
      * @param  cs          the coordinate system.
      *
-     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createEngineeringCRS(Map, EngineeringDatum, CoordinateSystem)
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createEngineeringCRS(Map, EngineeringDatum, DatumEnsemble, CoordinateSystem)
      *
      * @since 1.5
      */
@@ -158,10 +137,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
                                  final DatumEnsemble<EngineeringDatum> ensemble,
                                  final CoordinateSystem cs)
     {
-        super(properties, cs);
-        this.datum    = datum;
-        this.ensemble = ensemble;
-        checkDatum(datum, ensemble);
+        super(properties, EngineeringDatum.class, datum, ensemble, cs);
     }
 
     /**
@@ -181,8 +157,6 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      */
     private DefaultEngineeringCRS(final DefaultEngineeringCRS original, final AbstractCS cs) {
         super(original, null, cs);
-        datum    = original.datum;
-        ensemble = original.ensemble;
     }
 
     /**
@@ -198,9 +172,6 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      */
     protected DefaultEngineeringCRS(final EngineeringCRS crs) {
         super(crs);
-        datum    = crs.getDatum();
-        ensemble = crs.getDatumEnsemble();
-        checkDatum(datum, ensemble);
     }
 
     /**
@@ -245,7 +216,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
     @Override
     @XmlElement(name = "engineeringDatum", required = true)
     public EngineeringDatum getDatum() {
-        return datum;
+        return super.getDatum();
     }
 
     /**
@@ -261,7 +232,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      */
     @Override
     public DatumEnsemble<EngineeringDatum> getDatumEnsemble() {
-        return ensemble;
+        return super.getDatumEnsemble();
     }
 
     /**
@@ -322,7 +293,6 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultEngineeringCRS() {
-        ensemble = null;
         /*
          * The datum and the coordinate system are mandatory for SIS working. We do not verify their presence
          * here because the verification would have to be done in an 'afterMarshal(…)' method and throwing an
@@ -337,11 +307,7 @@ public class DefaultEngineeringCRS extends AbstractCRS implements EngineeringCRS
      * @see #getDatum()
      */
     private void setDatum(final EngineeringDatum value) {
-        if (datum == null) {
-            datum = value;
-        } else {
-            ImplementationHelper.propertyAlreadySet(DefaultEngineeringCRS.class, "setDatum", "engineeringDatum");
-        }
+        setDatum("engineeringDatum", value);
     }
 
     /**

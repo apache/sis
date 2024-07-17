@@ -32,14 +32,14 @@ import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
+import org.apache.sis.util.resources.Errors;
 
 
 /**
  * Collection of datums which for low accuracy requirements may be considered
  * to be insignificantly different from each other.
  *
- * @author  OGC Topic 2 (for abstract model and documentation)
- * @author  Martin Desruisseaux (IRD, Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
  *
  * @param <D> the type of datum contained in this ensemble.
@@ -158,10 +158,15 @@ public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObj
 
     /**
      * Verifies this ensemble. All members shall have the same conventional reference system.
+     * No member can be an instance of {@link PseudoDatum}.
      */
     private void validate() {
         IdentifiedObject rs = null;
         for (final D datum : members) {
+            if (datum instanceof PseudoDatum<?>) {
+                throw new IllegalArgumentException(
+                        Errors.format(Errors.Keys.IllegalPropertyValueClass_2, "members", PseudoDatum.class));
+            }
             final IdentifiedObject dr = datum.getConventionalRS().orElse(null);
             if (dr != null) {
                 if (rs == null) {
@@ -224,17 +229,20 @@ public class DefaultDatumEnsemble<D extends Datum> extends AbstractIdentifiedObj
      * @return {@code true} if both objects are equal.
      */
     @Override
-    public boolean equals(final Object object, final ComparisonMode mode) {
+    public boolean equals(Object object, final ComparisonMode mode) {
+        if (mode != ComparisonMode.STRICT && object instanceof PseudoDatum<?>) {
+            object = ((PseudoDatum<?>) object).ensemble;
+        }
         if (!super.equals(object, mode)) {
             return false;
         }
         switch (mode) {
             case STRICT: {
-                final var that = (DefaultDatumEnsemble) object;
+                final var that = (DefaultDatumEnsemble<?>) object;
                 return members.equals(that.members) && ensembleAccuracy.equals(that.ensembleAccuracy);
             }
             default: {
-                final var that = (DatumEnsemble) object;
+                final var that = (DatumEnsemble<?>) object;
                 return Utilities.deepEquals(getMembers(), that.getMembers(), mode) &&
                        Utilities.deepEquals(getEnsembleAccuracy(), that.getEnsembleAccuracy(), mode);
             }

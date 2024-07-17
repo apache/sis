@@ -35,6 +35,7 @@ import org.opengis.referencing.datum.VerticalDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.datum.PseudoDatum;
 import org.apache.sis.metadata.iso.extent.Extents;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
@@ -113,17 +114,17 @@ public final class EllipsoidalHeightCombiner {
         for (int i=0; i<components.length; i++) {
             final CoordinateReferenceSystem vertical = components[i];
             if (vertical instanceof VerticalCRS) {
-                final VerticalDatum datum = ((VerticalCRS) vertical).getDatum();
+                final VerticalDatum datum = PseudoDatum.of((VerticalCRS) vertical);
                 if (ReferencingUtilities.isEllipsoidalHeight(datum)) {
                     int axisPosition = 0;
-                    CoordinateSystem cs = null;
+                    CoordinateSystem cs2D;
                     CoordinateReferenceSystem crs = null;
-                    if (i == 0 || (cs = getCsIfHorizontal2D(crs = components[i - 1])) == null) {
+                    if (i == 0 || (cs2D = getCsIfHorizontal2D(crs = components[i - 1])) == null) {
                         /*
                          * GeographicCRS are normally before VerticalCRS. But Apache SIS is tolerant to the
                          * opposite order (note however that such ordering is illegal according ISO 19162).
                          */
-                        if (i+1 >= components.length || (cs = getCsIfHorizontal2D(crs = components[i + 1])) == null) {
+                        if (i+1 >= components.length || (cs2D = getCsIfHorizontal2D(crs = components[i + 1])) == null) {
                             continue;
                         }
                         axisPosition = 1;
@@ -136,15 +137,17 @@ public final class EllipsoidalHeightCombiner {
                      * implementation recycles the properties of the existing two-dimensional CRS.
                      */
                     final CoordinateSystemAxis[] axes = new CoordinateSystemAxis[3];
-                    axes[axisPosition++   ] = cs.getAxis(0);
-                    axes[axisPosition++   ] = cs.getAxis(1);
+                    axes[axisPosition++   ] = cs2D.getAxis(0);
+                    axes[axisPosition++   ] = cs2D.getAxis(1);
                     axes[axisPosition %= 3] = vertical.getCoordinateSystem().getAxis(0);
-                    final Map<String,?> csProps  = IdentifiedObjects.getProperties(cs, CoordinateSystem.IDENTIFIERS_KEY);
+                    final Map<String,?> csProps  = IdentifiedObjects.getProperties(cs2D, CoordinateSystem.IDENTIFIERS_KEY);
                     final Map<String,?> crsProps = (components.length == 2) ? properties
                                                  : IdentifiedObjects.getProperties(crs, CoordinateReferenceSystem.IDENTIFIERS_KEY);
                     if (crs instanceof GeodeticCRS) {
-                        cs  = factories.getCSFactory() .createEllipsoidalCS(csProps, axes[0], axes[1], axes[2]);
-                        crs = factories.getCRSFactory().createGeographicCRS(crsProps, ((GeodeticCRS) crs).getDatum(), (EllipsoidalCS) cs);
+                        final var geod = (GeodeticCRS) crs;
+                        final EllipsoidalCS cs3D;
+                        cs3D = factories.getCSFactory() .createEllipsoidalCS(csProps, axes[0], axes[1], axes[2]);
+                        crs  = factories.getCRSFactory().createGeographicCRS(crsProps, geod.getDatum(), geod.getDatumEnsemble(), cs3D);
                     } else {
                         final ProjectedCRS proj = (ProjectedCRS) crs;
                         GeographicCRS base = proj.getBaseCRS();
@@ -161,8 +164,10 @@ public final class EllipsoidalHeightCombiner {
                         fromBase = factories.getCoordinateOperationFactory().createDefiningConversion(
                                     IdentifiedObjects.getProperties(fromBase),
                                     fromBase.getMethod(), fromBase.getParameterValues());
-                        cs  = factories.getCSFactory() .createCartesianCS(csProps, axes[0], axes[1], axes[2]);
-                        crs = factories.getCRSFactory().createProjectedCRS(crsProps, base, fromBase, (CartesianCS) cs);
+
+                        final CartesianCS cs3D;
+                        cs3D = factories.getCSFactory() .createCartesianCS(csProps, axes[0], axes[1], axes[2]);
+                        crs  = factories.getCRSFactory().createProjectedCRS(crsProps, base, fromBase, cs3D);
                     }
                     /*
                      * Remove the VerticalCRS and store the three-dimensional GeographicCRS in place of the previous

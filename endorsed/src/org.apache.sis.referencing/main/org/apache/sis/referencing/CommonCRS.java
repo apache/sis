@@ -67,10 +67,11 @@ import org.apache.sis.referencing.crs.DefaultGeocentricCRS;
 import org.apache.sis.referencing.crs.DefaultEngineeringCRS;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.UnavailableFactoryException;
-import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.referencing.operation.provider.TransverseMercator;
+import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.system.SystemListener;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.OptionalCandidate;
@@ -87,6 +88,7 @@ import org.apache.sis.measure.Units;
 import static org.apache.sis.util.privy.Constants.SECONDS_PER_DAY;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.datum.DatumEnsemble;
 import org.opengis.referencing.datum.RealizationMethod;
 
 
@@ -499,7 +501,7 @@ public enum CommonCRS {
         }
         final Datum datum = single.getDatum();
         if (datum instanceof GeodeticDatum) {
-            final CommonCRS c = forDatum((GeodeticDatum) datum);
+            final CommonCRS c = forDatum((GeodeticDatum) datum, single.getDatumEnsemble());
             if (c != null) return c;
         }
         throw new IllegalArgumentException(Errors.format(
@@ -508,8 +510,12 @@ public enum CommonCRS {
 
     /**
      * Returns the {@code CommonCRS} enumeration value for the given datum, or {@code null} if none.
+     *
+     * @param  datum     the datum to represent as an enumeration value, or {@code null}.
+     * @param  ensemble  the datum ensemble to represent as an enumeration value, or {@code null}.
+     * @return enumeration value for the given datum, or {@code null} if none.
      */
-    static CommonCRS forDatum(final GeodeticDatum datum) {
+    static CommonCRS forDatum(final GeodeticDatum datum, final DatumEnsemble<?> ensemble) {
         /*
          * First, try to search using only the EPSG code. This approach avoid initializing unneeded
          * geodetic objects (such initializations are costly if they require connection to the EPSG
@@ -526,7 +532,15 @@ public enum CommonCRS {
             }
         }
         for (final CommonCRS c : values()) {
-            if ((epsg != 0) ? c.datum == epsg : Utilities.equalsIgnoreMetadata(c.datum(), datum)) {
+            final boolean filter;
+            if (epsg != 0) {
+                filter = c.datum == epsg;
+            } else if (datum != null) {
+                filter = Utilities.equalsIgnoreMetadata(c.datum(), datum);
+            } else {
+                filter = Utilities.equalsIgnoreMetadata(c.datumEnsemble(), ensemble);
+            }
+            if (filter) {
                 return c;
             }
         }
@@ -828,7 +842,10 @@ public enum CommonCRS {
                     if (cs == null) {
                         cs = (SphericalCS) StandardDefinitions.createCoordinateSystem(StandardDefinitions.SPHERICAL, true);
                     }
-                    object = new DefaultGeocentricCRS(IdentifiedObjects.getProperties(base, exclude()), base.getDatum(), base.getDatumEnsemble(), cs);
+                    object = new DefaultGeocentricCRS(IdentifiedObjects.getProperties(base, exclude()),
+                                                      base.getDatum(),
+                                                      base.getDatumEnsemble(),
+                                                      cs);
                     cachedSpherical = object;
                 }
             }
@@ -854,7 +871,7 @@ public enum CommonCRS {
      *   <tr><td>World Geodetic System 1984</td>                        <td>{@link #WGS84}</td>  <td>6326</td></tr>
      * </table></blockquote>
      *
-     * @return the geodetic reference frame associated to this enum.
+     * @return the geodetic reference frame associated to this enum, or {@code null} for a datum ensemble.
      *
      * @see #forDatum(CoordinateReferenceSystem)
      * @see org.apache.sis.referencing.datum.DefaultGeodeticDatum
@@ -881,6 +898,17 @@ public enum CommonCRS {
             }
         }
         return object;
+    }
+
+    /**
+     * Returns the datum ensemble associated to this geodetic object.
+     *
+     * @return the datum ensemble associated to this enum, or {@code null} if none.
+     *
+     * @since 1.5
+     */
+    public DatumEnsemble<GeodeticDatum> datumEnsemble() {
+        return geographic().getDatumEnsemble();
     }
 
     /**
@@ -997,8 +1025,13 @@ public enum CommonCRS {
         if (object instanceof Ellipsoid) {
             return (Ellipsoid) object;
         }
-        final GeodeticDatum datum = datum(object);
-        return (datum != null) ? datum.getEllipsoid() : null;
+        if (object instanceof GeodeticDatum) {
+            return ((GeodeticDatum) object).getEllipsoid();
+        }
+        if (object instanceof CoordinateReferenceSystem) {
+            return ReferencingUtilities.getEllipsoid((CoordinateReferenceSystem) object);
+        }
+        return null;
     }
 
     /**
@@ -1008,8 +1041,13 @@ public enum CommonCRS {
         if (object instanceof PrimeMeridian) {
             return (PrimeMeridian) object;
         }
-        final GeodeticDatum datum = datum(object);
-        return (datum != null) ? datum.getPrimeMeridian() : null;
+        if (object instanceof GeodeticDatum) {
+            return ((GeodeticDatum) object).getPrimeMeridian();
+        }
+        if (object instanceof CoordinateReferenceSystem) {
+            return ReferencingUtilities.getPrimeMeridian((CoordinateReferenceSystem) object);
+        }
+        return null;
     }
 
     /*
@@ -2033,6 +2071,24 @@ public enum CommonCRS {
          */
         public EngineeringDatum datum() {
             return datum;
+        }
+
+        /**
+         * Returns {@code true} is the given <abbr>CRS</abbr> uses the datum identified by this enumeration value.
+         * The association may be direct through {@link SingleCRS#getDatum()}, or indirect throw at least one of
+         * the members of {@link SingleCRS#getDatumEnsemble()}.
+         *
+         * @param  crs  the CRS to compare against the datum of this enumeration value. May be {@code null}.
+         * @return whether the given <abbr>CRS</abbr> uses the datum, directly or indirectly.
+         * @since 1.5
+         */
+        public boolean datumUsedBy(final CoordinateReferenceSystem crs) {
+            for (final SingleCRS component : CRS.getSingleComponents(crs)) {
+                if (ReferencingUtilities.uses(component, datum)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 

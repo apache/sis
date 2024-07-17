@@ -96,7 +96,7 @@ public final class SingletonAttributeTest extends TestCase {
         DataQuality quality = attribute.quality();
         assertEquals(ScopeCode.ATTRIBUTE, quality.getScope().getLevel());
         assertDomainConsistencyEquals("population",
-                "Missing value for “population” property.",
+                "Missing value for the “population” property.",
                 (DomainConsistency) getSingleton(quality.getReports()));
         /*
          * Intentionally store a value of the wrong type, and test again.
