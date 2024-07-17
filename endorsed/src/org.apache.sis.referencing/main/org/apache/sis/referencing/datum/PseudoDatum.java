@@ -40,6 +40,7 @@ import org.apache.sis.referencing.GeodeticException;
 
 // Specific to the main and geoapi-3.1 branches:
 import java.util.Date;
+import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.ReferenceIdentifier;
 
 
@@ -189,6 +190,8 @@ public abstract class PseudoDatum<D extends Datum> implements Datum, LenientComp
      * @return the datum or pseudo-datum of the given <abbr>CRS</abbr>.
      * @throws NullPointerException if the given argument is {@code null},
      *         or if both the datum and datum ensemble are null.
+     *
+     * @since 2.0 (temporary version number until this branch is released)
      */
     public static ParametricDatum of(final ParametricCRS crs) {
         ParametricDatum datum = crs.getDatum();
@@ -269,6 +272,42 @@ public abstract class PseudoDatum<D extends Datum> implements Datum, LenientComp
     }
 
     /**
+     * Returns the domain of validity common to all datum members, if any.
+     *
+     * @return value common to all ensemble members, or {@code null} if none.
+     * @hidden
+     */
+    @Override
+    @Deprecated
+    public Extent getDomainOfValidity() {
+        return getCommonNullableValue(Datum::getDomainOfValidity);
+    }
+
+    /**
+     * Returns the scope common to all datum members, if any.
+     *
+     * @return value common to all ensemble members, or {@code null} if none.
+     * @hidden
+     */
+    @Override
+    @Deprecated
+    public InternationalString getScope() {
+        return getCommonNullableValue(Datum::getScope);
+    }
+
+    /**
+     * Returns the anchor point common to all datum members, if any.
+     *
+     * @return value common to all ensemble members, or {@code null} if none.
+     * @hidden
+     */
+    @Override
+    @Deprecated
+    public InternationalString getAnchorPoint() {
+        return getCommonNullableValue(Datum::getAnchorPoint);
+    }
+
+    /**
      * Returns an anchor definition which is common to all members of the datum ensemble.
      * If the value is not the same for all members (including the case where a member
      * has an empty value), then this method returns an empty value.
@@ -290,6 +329,18 @@ public abstract class PseudoDatum<D extends Datum> implements Datum, LenientComp
     @Override
     public Optional<Temporal> getAnchorEpoch() {
         return getCommonOptionalValue(Datum::getAnchorEpoch);
+    }
+
+    /**
+     * Returns the realization epoch common to all datum members, if any.
+     *
+     * @return value common to all ensemble members, or {@code null} if none.
+     * @hidden
+     */
+    @Override
+    @Deprecated
+    public Date getRealizationEpoch() {
+        return getCommonNullableValue(Datum::getRealizationEpoch);
     }
 
     /**
@@ -315,6 +366,30 @@ public abstract class PseudoDatum<D extends Datum> implements Datum, LenientComp
     @Override
     public Optional<IdentifiedObject> getConventionalRS() {
         return getCommonOptionalValue(Datum::getConventionalRS);
+    }
+
+    /**
+     * Returns an optional value which is common to all ensemble members.
+     * If all members do not have the same value, returns {@code null}.
+     *
+     * @param  <V>     type of value.
+     * @param  getter  method to invoke on each member for getting the value.
+     * @return a value common to all members, or {@code null} if none.
+     */
+    final <V> V getCommonNullableValue(final Function<D, V> getter) {
+        final Iterator<D> it = ensemble.getMembers().iterator();
+check:  if (it.hasNext()) {
+            final V value = getter.apply(it.next());
+            if (value != null) {
+                while (it.hasNext()) {
+                    if (!value.equals(getter.apply(it.next()))) {
+                        break check;
+                    }
+                }
+                return value;
+            }
+        }
+        return null;
     }
 
     /**
@@ -525,7 +600,7 @@ check:  if (it.hasNext()) {
         @Override
         @Deprecated
         public VerticalDatumType getVerticalDatumType() {
-            return getCommonMandatoryValue(VerticalDatum::getVerticalDatumType);
+            return getCommonNullableValue(VerticalDatum::getVerticalDatumType);
         }
     }
 
