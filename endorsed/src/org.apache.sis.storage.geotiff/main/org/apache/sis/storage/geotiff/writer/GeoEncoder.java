@@ -53,6 +53,7 @@ import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.datum.PseudoDatum;
 import org.apache.sis.referencing.cs.CoordinateSystems;
 import org.apache.sis.referencing.operation.matrix.Matrices;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
@@ -276,7 +277,7 @@ public final class GeoEncoder {
             if (writeEPSG(GeoKeys.Vertical, crs)) {
                 writeName(GeoKeys.VerticalCitation, null, crs);
                 addUnits(UnitKey.VERTICAL, crs.getCoordinateSystem());
-                final VerticalDatum datum = crs.getDatum();
+                final VerticalDatum datum = PseudoDatum.of(crs);
                 if (writeEPSG(GeoKeys.VerticalDatum, datum)) {
                     /*
                      * OGC requirement 25.5 said "VerticalCitationGeoKey SHALL be populated."
@@ -325,7 +326,7 @@ public final class GeoEncoder {
         writeModelType(isBaseCRS ? GeoCodes.ModelTypeProjected : type);
         if (writeEPSG(GeoKeys.GeodeticCRS, crs)) {
             writeName(GeoKeys.GeodeticCitation, "GCS Name", crs);
-            final GeodeticDatum datum = crs.getDatum();
+            final GeodeticDatum  datum = PseudoDatum.of(crs);
             if (writeEPSG(GeoKeys.GeodeticDatum, datum)) {
                 appendName(WKTKeywords.Datum, datum);
                 final PrimeMeridian primem = datum.getPrimeMeridian();

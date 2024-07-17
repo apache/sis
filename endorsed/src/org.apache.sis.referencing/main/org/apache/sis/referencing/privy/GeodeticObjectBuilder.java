@@ -63,6 +63,7 @@ import org.apache.sis.parameter.Parameters;
 
 // Specific to the main branch:
 import org.apache.sis.temporal.TemporalDate;
+import org.apache.sis.referencing.datum.PseudoDatum;
 import org.apache.sis.referencing.operation.transform.MathTransformBuilder;
 
 
@@ -80,6 +81,8 @@ import org.apache.sis.referencing.operation.transform.MathTransformBuilder;
 public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
     /**
      * The geodetic reference frame, or {@code null} if none.
+     *
+     * @see #getDatumOrEnsemble()
      */
     private GeodeticDatum datum;
 
@@ -357,7 +360,7 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
         conversionName = c.getName().getCode();
         method         = c.getMethod();
         parameters     = c.getParameterValues();
-        datum          = crs.getDatum();
+        datum          = PseudoDatum.of(crs.getBaseCRS());
         properties.putAll(IdentifiedObjects.getProperties(crs, ProjectedCRS.IDENTIFIERS_KEY));
         return this;
     }
@@ -506,10 +509,19 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      */
     public ProjectedCRS createProjectedCRS() throws FactoryException {
         GeographicCRS crs = getBaseCRS();
-        if (datum != null) {
-            crs = factories.getCRSFactory().createGeographicCRS(name(datum), datum, crs.getCoordinateSystem());
+        final IdentifiedObject id = getDatumOrEnsemble();
+        if (id != null) {
+            crs = factories.getCRSFactory().createGeographicCRS(name(id), datum, crs.getCoordinateSystem());
         }
         return createProjectedCRS(crs, factories.getStandardProjectedCS());
+    }
+
+    /**
+     * Returns the datum if defined, or the datum ensemble otherwise.
+     * Both of them may be {@code null}.
+     */
+    private IdentifiedObject getDatumOrEnsemble() {
+        return datum;   // There is more code in the GeoAPI 3.1/4.0 branches.
     }
 
     /**
@@ -529,7 +541,10 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
      */
     public GeographicCRS createGeographicCRS() throws FactoryException {
         final GeographicCRS crs = getBaseCRS();
-        if (datum != null) properties.putIfAbsent(GeographicCRS.NAME_KEY, datum.getName());
+        final IdentifiedObject id = getDatumOrEnsemble();
+        if (id != null) {
+            properties.putIfAbsent(GeographicCRS.NAME_KEY, id.getName());
+        }
         return factories.getCRSFactory().createGeographicCRS(properties, datum, crs.getCoordinateSystem());
     }
 
@@ -548,19 +563,19 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
          * This not only saves a little bit of memory, but also provides better names.
          */
         TimeCS cs = null;
-        TemporalDatum datum = null;
+        TemporalDatum td = null;
         for (final CommonCRS.Temporal c : CommonCRS.Temporal.values()) {
-            if (datum == null) {
+            if (td == null) {
                 final TemporalDatum candidate = c.datum();
                 if (origin.equals(candidate.getOrigin())) {
-                    datum = candidate;
+                    td = candidate;
                 }
             }
             if (cs == null) {
                 final TemporalCRS crs = c.crs();
                 final TimeCS candidate = crs.getCoordinateSystem();
                 if (unit.equals(candidate.getAxis(0).getUnit())) {
-                    if (datum == candidate && properties.isEmpty()) {
+                    if (td == candidate && properties.isEmpty()) {
                         return crs;
                     }
                     cs = candidate;
@@ -583,15 +598,15 @@ public class GeodeticObjectBuilder extends Builder<GeodeticObjectBuilder> {
             if (properties.get(TemporalCRS.NAME_KEY) == null) {
                 properties.putAll(name(cs));
             }
-            if (datum == null) {
+            if (td == null) {
                 final Object remarks    = properties.remove(TemporalCRS.REMARKS_KEY);
                 final Object identifier = properties.remove(TemporalCRS.IDENTIFIERS_KEY);
-                datum = factories.getDatumFactory().createTemporalDatum(properties, TemporalDate.toDate(origin));
+                td = factories.getDatumFactory().createTemporalDatum(properties, TemporalDate.toDate(origin));
                 properties.put(TemporalCRS.IDENTIFIERS_KEY, identifier);
                 properties.put(TemporalCRS.REMARKS_KEY,     remarks);
-                properties.put(TemporalCRS.NAME_KEY, datum.getName());      // Share the Identifier instance.
+                properties.put(TemporalCRS.NAME_KEY, td.getName());     // Share the Identifier instance.
             }
-            return factories.getCRSFactory().createTemporalCRS(properties, datum, cs);
+            return factories.getCRSFactory().createTemporalCRS(properties, td, cs);
         } finally {
             onCreate(true);
         }

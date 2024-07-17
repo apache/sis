@@ -56,12 +56,14 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.netcdf.internal.Resources;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 
 // Specific to the main branch:
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
+import org.apache.sis.referencing.datum.PseudoDatum;
 import org.apache.sis.temporal.TemporalDate;
 
 
@@ -137,7 +139,6 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
 
     /**
      * The datum created by {@link #createDatum(DatumFactory, Map)}.
-     * At least one of {@code datum} and {@link #datumEnsemble} shall be initialized.
      */
     protected D datum;
 
@@ -619,8 +620,15 @@ previous:   for (int i=components.size(); --i >= 0;) {
          * This method is invoked only if {@link #setPredefinedComponents(Decoder)} failed to create a datum.
          */
         @Override final void createDatum(DatumFactory factory, Map<String,?> properties) throws FactoryException {
-            final GeodeticDatum template = defaultCRS.datum();
-            datum = factory.createGeodeticDatum(properties, template.getEllipsoid(), template.getPrimeMeridian());
+            datum = factory.createGeodeticDatum(properties, defaultCRS.ellipsoid(), defaultCRS.primeMeridian());
+        }
+
+        /**
+         * Sets the datum from the enumeration value of a predefined CRS.
+         * The predefined CRS is {@link #defaultCRS} or a spherical CRS.
+         */
+        protected final void setDatum(final CommonCRS crs) {
+            datum = PseudoDatum.of(crs.geographic());
         }
 
         /**
@@ -673,9 +681,9 @@ previous:   for (int i=components.size(); --i >= 0;) {
                 }
                 referenceSystem  = crs;
                 coordinateSystem = (SphericalCS) crs.getCoordinateSystem();
-                datum            = crs.getDatum();
+                datum            = PseudoDatum.of(crs);
             } else {
-                datum = defaultCRS.datum();
+                setDatum(defaultCRS);
             }
         }
 
@@ -738,9 +746,9 @@ previous:   for (int i=components.size(); --i >= 0;) {
                 }
                 referenceSystem  = crs;
                 coordinateSystem = crs.getCoordinateSystem();
-                datum            = crs.getDatum();
+                datum            = PseudoDatum.of(crs);
             } else {
-                datum = defaultCRS.datum();
+                setDatum(defaultCRS);
                 final Integer epsg = epsgCandidateCS(Units.DEGREE);
                 if (epsg != null) try {
                     coordinateSystem = decoder.getCSAuthorityFactory().createEllipsoidalCS(epsg.toString());
@@ -817,7 +825,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
         @Override void setPredefinedComponents(final Decoder decoder) throws FactoryException {
             super.setPredefinedComponents(decoder);
             sphericalDatum = decoder.convention().defaultHorizontalCRS(true);
-            datum = sphericalDatum.datum();
+            setDatum(sphericalDatum);
             if (isPredefinedCS(Units.METRE)) {
                 coordinateSystem = decoder.getStandardProjectedCS();
             }
@@ -843,7 +851,8 @@ previous:   for (int i=components.size(); --i >= 0;) {
         @Override void createCRS(CRSFactory factory, Map<String,?> properties) throws FactoryException {
             final boolean is3D = (coordinateSystem.getDimension() >= 3);
             GeographicCRS baseCRS = is3D ? sphericalDatum.geographic3D() : sphericalDatum.geographic();
-            if (!baseCRS.getDatum().equals(datum)) {
+            if (!Utilities.equalsIgnoreMetadata(baseCRS.getDatum(), datum))
+            {
                 baseCRS = factory.createGeographicCRS(properties, datum, baseCRS.getCoordinateSystem());
             }
             referenceSystem = factory.createProjectedCRS(properties, baseCRS, UNKNOWN_PROJECTION, coordinateSystem);

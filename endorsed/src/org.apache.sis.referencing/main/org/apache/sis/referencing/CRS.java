@@ -45,7 +45,6 @@ import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.crs.VerticalCRS;
 import org.opengis.referencing.crs.EngineeringCRS;
 import org.opengis.referencing.datum.Datum;
-import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.operation.Conversion;
 import org.opengis.referencing.operation.OperationNotFoundException;
 import org.opengis.referencing.operation.CoordinateOperation;
@@ -1081,7 +1080,7 @@ public final class CRS extends Static {
     {
         final long current = (Numerics.bitmask(dimension) - 1) << previous;
         final long intersect = selected & current;
-        if (intersect != 0) {
+choice: if (intersect != 0) {
             if (intersect == current) {
                 addTo.add(crs);
                 selected &= ~current;
@@ -1092,18 +1091,23 @@ public final class CRS extends Static {
                     if ((selected & current) == 0) break;           // Stop if it would be useless to continue.
                     previous += dimension;
                 }
-            } else if (dimension == 3 && crs instanceof SingleCRS) {
-                final Datum datum = ((SingleCRS) crs).getDatum();
-                if (datum instanceof GeodeticDatum) {
-                    final boolean isVertical = Long.bitCount(intersect) == 1;               // Presumed for now, verified later.
-                    final int verticalDimension = Long.numberOfTrailingZeros((isVertical ? intersect : ~intersect) >>> previous);
-                    final CoordinateSystemAxis verticalAxis = crs.getCoordinateSystem().getAxis(verticalDimension);
-                    if (AxisDirections.isVertical(verticalAxis.getDirection())) try {
-                        addTo.add(new EllipsoidalHeightSeparator((GeodeticDatum) datum, isVertical).separate((SingleCRS) crs));
-                        selected &= ~current;
-                    } catch (IllegalArgumentException | ClassCastException e) {
-                        throw new FactoryException(Resources.format(Resources.Keys.CanNotSeparateCRS_1, crs.getName()));
-                    }
+            } else if (dimension == 3) {
+                final GeodeticCRS baseCRS;
+                if (crs instanceof GeodeticCRS) {
+                    baseCRS = (GeodeticCRS) crs;
+                } else if (crs instanceof ProjectedCRS) {
+                    baseCRS = ((ProjectedCRS) crs).getBaseCRS();
+                } else {
+                    break choice;
+                }
+                final boolean isVertical = Long.bitCount(intersect) == 1;               // Presumed for now, verified later.
+                final int verticalDimension = Long.numberOfTrailingZeros((isVertical ? intersect : ~intersect) >>> previous);
+                final CoordinateSystemAxis verticalAxis = crs.getCoordinateSystem().getAxis(verticalDimension);
+                if (AxisDirections.isVertical(verticalAxis.getDirection())) try {
+                    addTo.add(new EllipsoidalHeightSeparator(baseCRS, isVertical).separate((SingleCRS) crs));
+                    selected &= ~current;
+                } catch (IllegalArgumentException | ClassCastException e) {
+                    throw new FactoryException(Resources.format(Resources.Keys.CanNotSeparateCRS_1, crs.getName()));
                 }
             }
         }
@@ -1515,7 +1519,7 @@ check:  while (lower != 0 || upper != dimension) {
      * @since 0.5
      */
     public static double getGreenwichLongitude(final GeodeticCRS crs) {
-        return ReferencingUtilities.getGreenwichLongitude(crs.getDatum().getPrimeMeridian(), Units.DEGREE);
+        return ReferencingUtilities.getGreenwichLongitude(ReferencingUtilities.getPrimeMeridian(crs), Units.DEGREE);
     }
 
     /**

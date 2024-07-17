@@ -20,7 +20,7 @@ import org.opengis.geometry.Envelope;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.opengis.referencing.ReferenceSystem;
-import org.opengis.referencing.crs.SingleCRS;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
@@ -100,7 +100,7 @@ final class Utils {
      * Returns {@code true} if the given reference system should be ignored.
      */
     static boolean isIgnoreable(final ReferenceSystem system) {
-        return (system instanceof SingleCRS)
-                && CommonCRS.Engineering.DISPLAY.datum().equals(((SingleCRS) system).getDatum());
+        return (system instanceof CoordinateReferenceSystem) &&
+                CommonCRS.Engineering.DISPLAY.datumUsedBy((CoordinateReferenceSystem) system);
     }
 }

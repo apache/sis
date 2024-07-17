@@ -38,7 +38,6 @@ import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.privy.WKTUtilities;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
-import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
@@ -72,31 +71,11 @@ import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
     "datum"
 })
 @XmlRootElement(name = "GeodeticCRS")
-class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {   // If made public, see comment in getDatum().
+class DefaultGeodeticCRS extends AbstractSingleCRS<GeodeticDatum> implements GeodeticCRS {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = -6205678223972395910L;
-
-    /**
-     * The datum, or {@code null} if the CRS is associated only to a datum ensemble.
-     *
-     * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setDatum(GeodeticDatum)}</p>
-     *
-     * @see #getDatum()
-     */
-    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
-    private GeodeticDatum datum;
-
-    /**
-     * Collection of reference frames which for low accuracy requirements may be considered to be
-     * insignificantly different from each other. May be {@code null} if there is no such ensemble.
-     *
-     * @see #getDatumEnsemble()
-     */
-    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
-    final DefaultDatumEnsemble<GeodeticDatum> ensemble;
+    private static final long serialVersionUID = -1634312292667977126L;
 
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
@@ -116,10 +95,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {   // If ma
                        final DefaultDatumEnsemble<GeodeticDatum> ensemble,
                        final CoordinateSystem cs)
     {
-        super(properties, cs);
-        this.datum    = datum;
-        this.ensemble = ensemble;
-        checkDatum(datum, ensemble);
+        super(properties, GeodeticDatum.class, datum, ensemble, cs);
     }
 
     /**
@@ -128,8 +104,6 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {   // If ma
      */
     DefaultGeodeticCRS(final DefaultGeodeticCRS original, final ReferenceIdentifier id, final AbstractCS cs) {
         super(original, id, cs);
-        datum    = original.datum;
-        ensemble = original.ensemble;
     }
 
     /**
@@ -143,9 +117,6 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {   // If ma
      */
     protected DefaultGeodeticCRS(final GeodeticCRS crs) {
         super(crs);
-        datum    = crs.getDatum();
-        ensemble = (crs instanceof DefaultGeodeticCRS) ? ((DefaultGeodeticCRS) crs).getDatumEnsemble() : null;
-        checkDatum(datum, ensemble);
     }
 
     /**
@@ -185,17 +156,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {   // If ma
     @Override
     @XmlElement(name = "geodeticDatum", required = true)
     public GeodeticDatum getDatum() {
-        return datum;
-    }
-
-    /**
-     * Returns the datum ensemble.
-     *
-     * @return the datum ensemble, or {@code null} if none.
-     */
-    @Override
-    DefaultDatumEnsemble<GeodeticDatum> getDatumEnsemble() {
-        return ensemble;
+        return super.getDatum();
     }
 
     /**
@@ -348,7 +309,6 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {   // If ma
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     DefaultGeodeticCRS() {
-        ensemble = null;
         /*
          * The datum and the coordinate system are mandatory for SIS working. We do not verify their presence
          * here because the verification would have to be done in an `afterMarshal(…)` method and throwing an
@@ -363,11 +323,7 @@ class DefaultGeodeticCRS extends AbstractCRS implements GeodeticCRS {   // If ma
      * @see #getDatum()
      */
     private void setDatum(final GeodeticDatum value) {
-        if (datum == null) {
-            datum = value;
-        } else {
-            ImplementationHelper.propertyAlreadySet(DefaultGeodeticCRS.class, "setDatum", "geodeticDatum");
-        }
+        setDatum("geodeticDatum", value);
     }
 
     /**

@@ -353,8 +353,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  cs          the three-dimensional Cartesian coordinate system for the created CRS.
      * @throws FactoryException if the object creation failed.
      *
+     * @see DefaultGeocentricCRS#DefaultGeocentricCRS(Map, GeodeticDatum, DefaultDatumEnsemble, CartesianCS)
      * @see GeodeticAuthorityFactory#createGeodeticCRS(String)
-     * @see DefaultGeocentricCRS#DefaultGeocentricCRS(Map, GeodeticDatum, CartesianCS)
      *
      * @since 1.5
      */
@@ -468,8 +468,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  cs          the spherical coordinate system for the created CRS.
      * @throws FactoryException if the object creation failed.
      *
-     * @see DefaultGeocentricCRS#DefaultGeocentricCRS(Map, GeodeticDatum, SphericalCS)
-     * @see GeodeticAuthorityFactory#createGeocentricCRS(String)
+     * @see DefaultGeocentricCRS#DefaultGeocentricCRS(Map, GeodeticDatum, DefaultDatumEnsemble, SphericalCS)
+     * @see GeodeticAuthorityFactory#createGeodeticCRS(String)
      *
      * @since 1.5
      */
@@ -616,7 +616,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  cs          the two- or three-dimensional ellipsoidal coordinate system for the created CRS.
      * @throws FactoryException if the object creation failed.
      *
-     * @see DefaultGeographicCRS#DefaultGeographicCRS(Map, GeodeticDatum, EllipsoidalCS)
+     * @see DefaultGeographicCRS#DefaultGeographicCRS(Map, GeodeticDatum, DefaultDatumEnsemble, EllipsoidalCS)
      * @see GeodeticAuthorityFactory#createGeographicCRS(String)
      *
      * @since 1.5
@@ -1047,7 +1047,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  cs          the vertical coordinate system for the created CRS.
      * @throws FactoryException if the object creation failed.
      *
-     * @see DefaultVerticalCRS#DefaultVerticalCRS(Map, VerticalDatum, VerticalCS)
+     * @see DefaultVerticalCRS#DefaultVerticalCRS(Map, VerticalDatum, DefaultDatumEnsemble, VerticalCS)
      * @see GeodeticAuthorityFactory#createVerticalCRS(String)
      *
      * @since 1.5
@@ -1165,7 +1165,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  cs          the temporal coordinate system for the created CRS.
      * @throws FactoryException if the object creation failed.
      *
-     * @see DefaultTemporalCRS#DefaultTemporalCRS(Map, TemporalDatum, TimeCS)
+     * @see DefaultTemporalCRS#DefaultTemporalCRS(Map, TemporalDatum, DefaultDatumEnsemble, TimeCS)
      * @see GeodeticAuthorityFactory#createTemporalCRS(String)
      *
      * @since 1.5
@@ -1290,7 +1290,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  cs          the parametric coordinate system for the created CRS.
      * @throws FactoryException if the object creation failed.
      *
-     * @see DefaultParametricCRS#DefaultParametricCRS(Map, DefaultParametricDatum, DefaultParametricCS)
+     * @see DefaultParametricCRS#DefaultParametricCRS(Map, DefaultParametricDatum, DefaultDatumEnsemble, ParametricCS)
      * @see GeodeticAuthorityFactory#createParametricCRS(String)
      *
      * @since 1.5
@@ -1312,7 +1312,7 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
 
     /**
      * Creates a parametric <abbr>CRS</abbr> from a datum.
-     * This is a shortcut for the {@linkplain #createParametricCRS(Map, ParametricDatum, DatumEnsemble, ParametricCS)
+     * This is a shortcut for the {@linkplain #createParametricCRS(Map, ParametricDatum, DefaultDatumEnsemble, ParametricCS)
      * more generic method} without datum ensemble.
      *
      * @param  properties  name and other properties to give to the new object.

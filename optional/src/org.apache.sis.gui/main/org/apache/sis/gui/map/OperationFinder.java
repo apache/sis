@@ -20,18 +20,17 @@ import java.util.function.Predicate;
 import javafx.concurrent.Task;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.TransformException;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.gui.coverage.CoverageCanvas;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.util.logging.Logging;
 import static org.apache.sis.gui.internal.LogHandler.LOGGER;
 
@@ -173,7 +172,7 @@ abstract class OperationFinder extends Task<MathTransform> {
      * We use the {@link org.apache.sis.referencing.CommonCRS.Engineering#GRID} datum as a signature.
      */
     private static boolean isGridCRS(final CoordinateReferenceSystem crs) {
-        return (crs instanceof SingleCRS) && CommonCRS.Engineering.GRID.datum().equals(((SingleCRS) crs).getDatum());
+        return CommonCRS.Engineering.GRID.datumUsedBy(crs);
     }
 
     /**

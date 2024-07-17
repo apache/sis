@@ -51,6 +51,7 @@ import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.datum.Ellipsoid;
 import org.apache.sis.referencing.CRS;
+import org.apache.sis.referencing.crs.DefaultTemporalCRS;
 import org.apache.sis.referencing.privy.Formulas;
 import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
@@ -58,13 +59,13 @@ import org.apache.sis.system.Loggers;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Characters;
+import org.apache.sis.util.logging.Logging;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.privy.LocalizedParseException;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.Numerics;
 import org.apache.sis.math.DecimalFunctions;
 import org.apache.sis.math.MathFunctions;
-import org.apache.sis.util.logging.Logging;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.temporal.TemporalDate;
 import org.apache.sis.measure.Angle;
 import org.apache.sis.measure.AngleFormat;
@@ -580,7 +581,7 @@ public class CoordinateFormat extends CompoundFormat<DirectPosition> {
                     }
                     types  [i] = DATE;
                     formats[i] = getFormat(Date.class);
-                    epochs [i] = TemporalDate.toInstant(((TemporalCRS) t).getDatum().getOrigin());
+                    epochs [i] = TemporalDate.toInstant(DefaultTemporalCRS.castOrCopy((TemporalCRS) t).getOrigin(), null);
                     setConverter(dimension, i, unit.asType(Time.class).getConverterTo(Units.SECOND));
                     if (direction == AxisDirection.PAST) {
                         negate(i);

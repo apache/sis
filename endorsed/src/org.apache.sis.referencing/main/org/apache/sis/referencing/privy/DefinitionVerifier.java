@@ -24,8 +24,6 @@ import org.opengis.util.FactoryException;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
-import org.opengis.referencing.datum.Datum;
-import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.referencing.crs.SingleCRS;
@@ -34,6 +32,7 @@ import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.crs.AbstractCRS;
 import org.apache.sis.referencing.cs.AxesConvention;
+import org.apache.sis.referencing.datum.PseudoDatum;
 import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.internal.Resources;
@@ -301,13 +300,13 @@ public final class DefinitionVerifier {
      * Indicates in which part of CRS description a difference has been found. Numerical values must match the number
      * in the {@code {choice}} instruction in the message associated to {@link Resources.Keys#NonConformCRS_3}.
      */
-    private static final int METHOD=0, CONVERSION=1, CS=2, DATUM=3, PRIME_MERIDIAN=4, OTHER=5;
+    private static final int METHOD=0, CONVERSION=1, CS=2, DATUM=3, PRIME_MERIDIAN=4, ELLIPSOID=5, OTHER=6;
 
     /**
      * Returns a code indicating in which part the two given CRS differ. The given iterators usually iterate over
      * exactly one element, but may iterate over more elements if the CRS were instance of {@code CompoundCRS}.
      * The returned value is one of {@link #METHOD}, {@link #CONVERSION}, {@link #CS}, {@link #DATUM},
-     * {@link #PRIME_MERIDIAN} or {@link #OTHER} constants.
+     * {@link #PRIME_MERIDIAN}, {@link #ELLIPSOID} or {@link #OTHER} constants.
      */
     private static int diffCode(final Iterator<SingleCRS> authoritative, final Iterator<SingleCRS> given) {
         while (authoritative.hasNext() && given.hasNext()) {
@@ -324,15 +323,19 @@ public final class DefinitionVerifier {
                 if (!Utilities.equalsApproximately(crsA.getCoordinateSystem(), crsG.getCoordinateSystem())) {
                     return CS;
                 }
-                final Datum datumA = crsA.getDatum();
-                final Datum datumG = crsG.getDatum();
-                if (!Utilities.equalsApproximately(datumA, datumG)) {
-                    if ((datumA instanceof GeodeticDatum) && (datumG instanceof GeodeticDatum) &&
-                        !Utilities.equalsApproximately(((GeodeticDatum) datumA).getPrimeMeridian(),
-                                                       ((GeodeticDatum) datumG).getPrimeMeridian()))
-                    {
-                        return PRIME_MERIDIAN;
-                    }
+                if (!Utilities.equalsApproximately(ReferencingUtilities.getEllipsoid(crsA),
+                                                   ReferencingUtilities.getEllipsoid(crsG)))
+                {
+                    return ELLIPSOID;
+                }
+                if (!Utilities.equalsApproximately(ReferencingUtilities.getPrimeMeridian(crsA),
+                                                   ReferencingUtilities.getPrimeMeridian(crsG)))
+                {
+                    return PRIME_MERIDIAN;
+                }
+                if (!Utilities.equalsApproximately(PseudoDatum.getDatumOrEnsemble(crsA),
+                                                   PseudoDatum.getDatumOrEnsemble(crsG)))
+                {
                     return DATUM;
                 }
                 break;

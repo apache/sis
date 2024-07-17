@@ -18,7 +18,10 @@ package org.apache.sis.referencing.crs;
 
 import java.util.Map;
 import java.util.Arrays;
+import java.util.NoSuchElementException;
 import jakarta.xml.bind.annotation.XmlTransient;
+import org.opengis.referencing.datum.Ellipsoid;
+import org.opengis.referencing.datum.PrimeMeridian;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.GeographicCRS;
@@ -26,8 +29,10 @@ import org.opengis.referencing.cs.EllipsoidalCS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.cs.CoordinateSystemAxis;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.AbstractReferenceSystem;
+import org.apache.sis.referencing.datum.PseudoDatum;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.io.wkt.Formatter;
@@ -151,7 +156,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
      * @param  cs          the two- or three-dimensional coordinate system.
      *
-     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeographicCRS(Map, GeodeticDatum, EllipsoidalCS)
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeographicCRS(Map, GeodeticDatum, DefaultDatumEnsemble, EllipsoidalCS)
      *
      * @since 1.5
      */
@@ -196,6 +201,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
         if (!(cs instanceof EllipsoidalCS)) {
             throw illegalCoordinateSystemType(cs);
         }
+        checkDimension(2, 3, cs);
     }
 
     /**
@@ -245,6 +251,38 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
     }
 
     /**
+     * Returns the prime meridian which is indirectly (through a datum) associated to this <abbr>CRS</abbr>.
+     * If the {@linkplain #getDatum() datum} is non-null, then this method returns the datum prime meridian.
+     * Otherwise, if all members of the {@linkplain #getDatumEnsemble() datum ensemble} use the same prime meridian,
+     * then this method returns that meridian.
+     *
+     * @return the prime meridian indirectly associated to this <abbr>CRS</abbr>.
+     * @throws NoSuchElementException if there is no datum and the ensemble does not contain at least one member.
+     * @throws GeodeticException if the prime meridian is not the same for all members of the datum ensemble.
+     *
+     * @since 1.5
+     */
+    public PrimeMeridian getPrimeMeridian() {
+        return PseudoDatum.of(this).getPrimeMeridian();
+    }
+
+    /**
+     * Returns the ellipsoid which is indirectly (through a datum) associated to this <abbr>CRS</abbr>.
+     * If the {@linkplain #getDatum() datum} is non-null, then this method returns the datum ellipsoid.
+     * Otherwise, if all members of the {@linkplain #getDatumEnsemble() datum ensemble} use the same ellipsoid,
+     * then this method returns that ellipsoid.
+     *
+     * @return the ellipsoid indirectly associated to this <abbr>CRS</abbr>.
+     * @throws NoSuchElementException if there is no datum and the ensemble does not contain at least one member.
+     * @throws GeodeticException if the ellipsoid is not the same for all members of the datum ensemble.
+     *
+     * @since 1.5
+     */
+    public Ellipsoid getEllipsoid() {
+        return PseudoDatum.of(this).getEllipsoid();
+    }
+
+    /**
      * Returns the geodetic reference frame associated to this geographic CRS.
      * This property may be null if this <abbr>CRS</abbr> is related to an object
      * identified only by a {@linkplain #getDatumEnsemble() datum ensemble}.
@@ -274,7 +312,7 @@ public class DefaultGeographicCRS extends DefaultGeodeticCRS implements Geograph
      */
     @Override
     public DefaultDatumEnsemble<GeodeticDatum> getDatumEnsemble() {
-        return ensemble;
+        return super.getDatumEnsemble();
     }
 
     /**

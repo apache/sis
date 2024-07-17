@@ -27,6 +27,7 @@ import org.opengis.referencing.cs.CSFactory;
 import org.opengis.referencing.cs.VerticalCS;
 import org.opengis.referencing.crs.CRSFactory;
 import org.opengis.referencing.crs.VerticalCRS;
+import org.apache.sis.referencing.datum.PseudoDatum;
 import org.apache.sis.metadata.privy.AxisNames;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
@@ -107,8 +108,10 @@ final class VerticalInfo {
      *         became empty as a result of this operation.
      */
     final VerticalInfo resolve(final VerticalCRS crs) {
-        if (crs != null && crs.getDatum().getVerticalDatumType() == VerticalDatumType.GEOIDAL) {
-            return resolve(crs, crs.getCoordinateSystem().getAxis(0));
+        if (crs != null) {
+            if (PseudoDatum.of(crs).getVerticalDatumType() == VerticalDatumType.GEOIDAL) {
+                return resolve(crs, crs.getCoordinateSystem().getAxis(0));
+            }
         }
         return this;
     }
@@ -179,8 +182,9 @@ final class VerticalInfo {
          *     cases the previous name may contain terms like "depth", which are not appropriate for our new CRS.
          */
         final VerticalCS cs = csFactory.createVerticalCS (properties(axis.getName()), axis);
-        extent.setVerticalCRS(crsFactory.createVerticalCRS(
-                properties((isUP ? compatibleCRS : axis).getName()), compatibleCRS.getDatum(), cs));
+        extent.setVerticalCRS(crsFactory.createVerticalCRS(properties((isUP ? compatibleCRS : axis).getName()),
+                                                           PseudoDatum.of(compatibleCRS),
+                                                           cs));
         return next;
     }
 

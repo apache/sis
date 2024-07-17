@@ -31,17 +31,14 @@ import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.AbstractReferenceSystem;
-import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.cs.AxesConvention;
-import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.privy.WKTUtilities;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.pending.geoapi.referencing.MissingMethods;
-import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
@@ -97,13 +94,7 @@ import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
 @XmlType(name = "AbstractCRSType")
 @XmlRootElement(name = "AbstractCRS")
 @XmlSeeAlso({
-    AbstractDerivedCRS.class,
-    DefaultGeodeticCRS.class,
-    DefaultVerticalCRS.class,
-    DefaultTemporalCRS.class,
-    DefaultParametricCRS.class,
-    DefaultEngineeringCRS.class,
-    DefaultImageCRS.class,
+    AbstractSingleCRS.class,
     DefaultCompoundCRS.class
 })
 public class AbstractCRS extends AbstractReferenceSystem implements CoordinateReferenceSystem {
@@ -116,7 +107,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * The coordinate system.
      *
      * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setCoordinateSystem(String, CoordinateSystem)}</p>
+     * This field is modified only at unmarshalling time by {@link #setCoordinateSystem(String, CoordinateSystem)}.</p>
      *
      * @see #getCoordinateSystem()
      */
@@ -135,13 +126,13 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
 
     /**
      * Creates the value to assign to the {@link #forConvention} map by constructors.
+     * {@code this} instance will be the <abbr>CRS</abbr> to declare as the original one.
      *
-     * @param  original  the coordinate system to declare as the original one.
      * @return map to assign to the {@link #forConvention} field.
      */
-    private static EnumMap<AxesConvention,AbstractCRS> forConvention(final AbstractCRS original) {
+    private EnumMap<AxesConvention,AbstractCRS> forConvention() {
         var m = new EnumMap<AxesConvention,AbstractCRS>(AxesConvention.class);
-        m.put(AxesConvention.ORIGINAL, original);
+        m.put(AxesConvention.ORIGINAL, this);
         return m;
     }
 
@@ -187,7 +178,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     public AbstractCRS(final Map<String,?> properties, final CoordinateSystem cs) {
         super(properties);
         coordinateSystem = Objects.requireNonNull(cs);
-        forConvention = forConvention(this);
+        forConvention = forConvention();
     }
 
     /**
@@ -213,33 +204,9 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
-     * Verifies the consistency between the datum and the ensemble.
-     * At least one of the {@code datum} and {@code ensemble} arguments shall be non-null.
-     *
-     * @param  datum       the datum, or {@code null} if the CRS is associated only to a datum ensemble.
-     * @param  ensemble    collection of reference frames which for low accuracy requirements may be considered to be
-     *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
-     * @throws NullPointerException if both arguments are null.
-     * @throws IllegalArgumentException
-     */
-    static <D extends Datum> void checkDatum(final D datum, final DefaultDatumEnsemble<D> ensemble) {
-        if (ensemble == null) {
-            ArgumentChecks.ensureNonNull("datum", datum);
-        } else if (datum != null) {
-            for (final D member : ensemble.getMembers()) {
-                if (Utilities.equalsIgnoreMetadata(datum, member)) {
-                    return;
-                }
-            }
-            throw new IllegalArgumentException(Resources.format(Resources.Keys.NotAMemberOfDatumEnsemble_2,
-                    IdentifiedObjects.getDisplayName(ensemble), IdentifiedObjects.getDisplayName(datum)));
-        }
-    }
-
-    /**
      * Creates a new CRS derived from the specified one, but with different axis order or unit.
      *
-     * @param original  the original coordinate system from which to derive a new one.
+     * @param original  the original CRS from which to derive a new one.
      * @param id        new identifier for this CRS, or {@code null} if none.
      * @param cs        coordinate system with new axis order or units of measurement.
      *
@@ -248,7 +215,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     AbstractCRS(final AbstractCRS original, final ReferenceIdentifier id, final AbstractCS cs) {
         super(ReferencingUtilities.getPropertiesWithoutIdentifiers(original, (id == null) ? null : Map.of(IDENTIFIERS_KEY, id)));
         coordinateSystem = cs;
-        forConvention = cs.hasSameAxes(original.coordinateSystem) ? original.forConvention : forConvention(original);
+        forConvention = cs.hasSameAxes(original.coordinateSystem) ? original.forConvention : original.forConvention();
     }
 
     /**
@@ -266,7 +233,10 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     protected AbstractCRS(final CoordinateReferenceSystem crs) {
         super(crs);
         coordinateSystem = crs.getCoordinateSystem();
-        forConvention = forConvention(this);
+        if (coordinateSystem == null) {
+            throw new IllegalArgumentException(Errors.format(Errors.Keys.MissingValueForProperty_1, "coordinateSystem"));
+        }
+        forConvention = forConvention();
     }
 
     /**
@@ -319,10 +289,8 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      * Returns the datum, or {@code null} if none.
      *
      * This property does not exist in {@code CoordinateReferenceSystem} interface — it is defined in the
-     * {@link SingleCRS} sub-interface instead. But Apache SIS does not define an {@code AbstractSingleCRS} class
-     * in order to simplify our class hierarchy, so we provide a datum getter in this class has a hidden property.
-     * Subclasses implementing {@code SingleCRS} (basically all SIS subclasses except {@link DefaultCompoundCRS})
-     * will override this method with public access and more specific return type.
+     * {@link SingleCRS} sub-interface instead. This method is defined here for the convenience of the
+     * {@link #formatTo(Formatter)} method implementation.
      *
      * @return the datum, or {@code null} if none.
      */
@@ -397,8 +365,8 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     }
 
     /**
-     * Returns a coordinate reference system equivalent to this one but with axes rearranged according the given
-     * convention. If this CRS is already compatible with the given convention, then this method returns {@code this}.
+     * Returns a <abbr>CRS</abbr> equivalent to this one but with axes rearranged according the given convention.
+     * If this <abbr>CRS</abbr> is already compatible with the given convention, then this method returns {@code this}.
      *
      * @param  convention  the axes convention for which a coordinate reference system is desired.
      * @return a coordinate reference system compatible with the given convention (may be {@code this}).
@@ -451,16 +419,14 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
         if (super.equals(object, mode)) {
-            final Datum datum = getDatum();
             switch (mode) {
                 case STRICT: {
-                    final AbstractCRS that = (AbstractCRS) object;
-                    return Objects.equals(datum, that.getDatum()) &&
-                           Objects.equals(coordinateSystem, that.coordinateSystem);
+                    final var that = (AbstractCRS) object;
+                    return Objects.equals(coordinateSystem, that.coordinateSystem);
                 }
                 default: {
-                    return Utilities.deepEquals(datum, (object instanceof SingleCRS) ? ((SingleCRS) object).getDatum() : null, mode) &&
-                           Utilities.deepEquals(getCoordinateSystem(), ((CoordinateReferenceSystem) object).getCoordinateSystem(), mode);
+                    final var that = (CoordinateReferenceSystem) object;
+                    return Utilities.deepEquals(getCoordinateSystem(), that.getCoordinateSystem(), mode);
                 }
             }
         }
@@ -476,7 +442,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      */
     @Override
     protected long computeHashCode() {
-        return super.computeHashCode() + Objects.hash(getDatum(), coordinateSystem);
+        return super.computeHashCode() + coordinateSystem.hashCode();
     }
 
     /**
@@ -607,7 +573,7 @@ public class AbstractCRS extends AbstractReferenceSystem implements CoordinateRe
      */
     AbstractCRS() {
         super(org.apache.sis.referencing.privy.NilReferencingObject.INSTANCE);
-        forConvention = forConvention(this);
+        forConvention = forConvention();
         /*
          * The coordinate system is mandatory for SIS working. We do not verify its presence here
          * because the verification would have to be done in an `afterMarshal(…)` method and throwing

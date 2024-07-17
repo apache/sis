@@ -393,7 +393,7 @@ public class Resources extends IndexedResourceBundle {
         public static final short MissingReferenceFrameEpoch_1 = 102;
 
         /**
-         * Missing value for “{0}” parameter.
+         * Missing value for the “{0}” parameter.
          */
         public static final short MissingValueForParameter_1 = 44;
 
@@ -438,7 +438,7 @@ public class Resources extends IndexedResourceBundle {
         /**
          * The given “{0}” description does not conform to the “{1}” authoritative description.
          * Differences are found in {2,choice,0#conversion method|1#conversion description|2#coordinate
-         * system|3#datum|4#prime meridian|5#CRS}.
+         * system|3#datum|4#prime meridian|5#ellipsoid|6#CRS}.
          */
         public static final short NonConformCRS_3 = 73;
 

@@ -78,6 +78,9 @@ import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;
 import org.apache.sis.measure.Units;
 
+// Specific to the main branch:
+import org.apache.sis.referencing.datum.PseudoDatum;
+
 
 /**
  * Temporary objects for creating a {@link GridGeometry} instance defined by attributes on a variable.
@@ -376,7 +379,7 @@ final class GridMapping {
             }
             datum = datumFactory.createGeodeticDatum(properties, ellipsoid, meridian);
         } else {
-            datum = defaultDefinitions.datum();
+            datum = PseudoDatum.of(defaultDefinitions.geographic());
         }
         /*
          * Geographic CRS from all above properties.

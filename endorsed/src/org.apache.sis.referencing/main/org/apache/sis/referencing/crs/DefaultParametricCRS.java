@@ -20,7 +20,6 @@ import java.util.Map;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
 import jakarta.xml.bind.annotation.XmlType;
-import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
@@ -62,30 +61,11 @@ import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
     "datum"
 })
 @XmlRootElement(name = "ParametricCRS")
-public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
+public class DefaultParametricCRS extends AbstractSingleCRS<DefaultParametricDatum> implements ParametricCRS {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 4013698133331342649L;
-
-    /**
-     * The datum, or {@code null} if the CRS is associated only to a datum ensemble.
-     *
-     * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@code setDatum(ParametricDatum)}</p>
-     *
-     * @see #getDatum()
-     */
-    private DefaultParametricDatum datum;
-
-    /**
-     * Collection of reference frames which for low accuracy requirements may be considered to be
-     * insignificantly different from each other. May be {@code null} if there is no such ensemble.
-     *
-     * @see #getDatumEnsemble()
-     */
-    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
-    private final DefaultDatumEnsemble<DefaultParametricDatum> ensemble;
+    private static final long serialVersionUID = -5443671973122639841L;
 
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
@@ -140,10 +120,7 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
                                 final DefaultDatumEnsemble<DefaultParametricDatum> ensemble,
                                 final DefaultParametricCS cs)
     {
-        super(properties, cs);
-        this.datum    = datum;
-        this.ensemble = ensemble;
-        checkDatum(datum, ensemble);
+        super(properties, DefaultParametricDatum.class, datum, ensemble, cs);
         checkDimension(1, 1, cs);
     }
 
@@ -164,8 +141,6 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
      */
     private DefaultParametricCRS(final DefaultParametricCRS original, final AbstractCS cs) {
         super(original, null, cs);
-        datum    = original.datum;
-        ensemble = original.ensemble;
     }
 
     /**
@@ -182,9 +157,6 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
      */
     protected DefaultParametricCRS(final DefaultParametricCRS crs) {
         super(crs);
-        datum    = crs.getDatum();
-        ensemble = crs.getDatumEnsemble();
-        checkDatum(datum, ensemble);
     }
 
     /**
@@ -198,7 +170,7 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
     @Override
     @XmlElement(name = "parametricDatum", required = true)
     public DefaultParametricDatum getDatum() {
-        return datum;
+        return super.getDatum();
     }
 
     /**
@@ -218,7 +190,7 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
      */
     @Override
     public DefaultDatumEnsemble<DefaultParametricDatum> getDatumEnsemble() {
-        return ensemble;
+        return super.getDatumEnsemble();
     }
 
     /**
@@ -295,7 +267,6 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultParametricCRS() {
-        ensemble = null;
         /*
          * The datum and the coordinate system are mandatory for SIS working. We do not verify their presence
          * here because the verification would have to be done in an 'afterMarshal(…)' method and throwing an
@@ -310,11 +281,7 @@ public class DefaultParametricCRS extends AbstractCRS implements ParametricCRS {
      * @see #getDatum()
      */
     private void setDatum(final DefaultParametricDatum value) {
-        if (datum == null) {
-            datum = value;
-        } else {
-            ImplementationHelper.propertyAlreadySet(DefaultParametricCRS.class, "setDatum", "parametricDatum");
-        }
+        setDatum("parametricDatum", value);
     }
 
     /**

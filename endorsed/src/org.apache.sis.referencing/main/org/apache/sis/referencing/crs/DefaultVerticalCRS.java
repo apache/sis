@@ -27,7 +27,6 @@ import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.referencing.privy.WKTKeywords;
-import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
 
 // Specific to the main branch:
@@ -64,31 +63,11 @@ import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
     "datum"
 })
 @XmlRootElement(name = "VerticalCRS")
-public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
+public class DefaultVerticalCRS extends AbstractSingleCRS<VerticalDatum> implements VerticalCRS {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 3565878468719941800L;
-
-    /**
-     * The datum, or {@code null} if the CRS is associated only to a datum ensemble.
-     *
-     * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setDatum(VerticalDatum)}</p>
-     *
-     * @see #getDatum()
-     */
-    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
-    private VerticalDatum datum;
-
-    /**
-     * Collection of reference frames which for low accuracy requirements may be considered to be
-     * insignificantly different from each other. May be {@code null} if there is no such ensemble.
-     *
-     * @see #getDatumEnsemble()
-     */
-    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
-    private final DefaultDatumEnsemble<VerticalDatum> ensemble;
+    private static final long serialVersionUID = 5807645386129942811L;
 
     /**
      * Creates a coordinate reference system from the given properties, datum and coordinate system.
@@ -132,7 +111,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
      * @param  cs          the coordinate system.
      *
-     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createVerticalCRS(Map, VerticalDatum, VerticalCS)
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createVerticalCRS(Map, VerticalDatum, DefaultDatumEnsemble, VerticalCS)
      *
      * @since 1.5
      */
@@ -141,10 +120,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
                               final DefaultDatumEnsemble<VerticalDatum> ensemble,
                               final VerticalCS cs)
     {
-        super(properties, cs);
-        this.datum    = datum;
-        this.ensemble = ensemble;
-        checkDatum(datum, ensemble);
+        super(properties, VerticalDatum.class, datum, ensemble, cs);
         checkDimension(1, 1, cs);
     }
 
@@ -165,8 +141,6 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      */
     private DefaultVerticalCRS(final DefaultVerticalCRS original, final AbstractCS cs) {
         super(original, null, cs);
-        datum    = original.datum;
-        ensemble = original.ensemble;
     }
 
     /**
@@ -182,9 +156,6 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      */
     protected DefaultVerticalCRS(final VerticalCRS crs) {
         super(crs);
-        datum    = crs.getDatum();
-        ensemble = (crs instanceof DefaultVerticalCRS) ? ((DefaultVerticalCRS) crs).getDatumEnsemble() : null;
-        checkDatum(datum, ensemble);
     }
 
     /**
@@ -229,7 +200,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
     @Override
     @XmlElement(name = "verticalDatum", required = true)
     public VerticalDatum getDatum() {
-        return datum;
+        return super.getDatum();
     }
 
     /**
@@ -249,7 +220,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      */
     @Override
     public DefaultDatumEnsemble<VerticalDatum> getDatumEnsemble() {
-        return ensemble;
+        return super.getDatumEnsemble();
     }
 
     /**
@@ -318,7 +289,6 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultVerticalCRS() {
-        ensemble = null;
         /*
          * The datum and the coordinate system are mandatory for SIS working. We do not verify their presence
          * here because the verification would have to be done in an 'afterMarshal(…)' method and throwing an
@@ -333,11 +303,7 @@ public class DefaultVerticalCRS extends AbstractCRS implements VerticalCRS {
      * @see #getDatum()
      */
     private void setDatum(final VerticalDatum value) {
-        if (datum == null) {
-            datum = value;
-        } else {
-            ImplementationHelper.propertyAlreadySet(DefaultVerticalCRS.class, "setDatum", "verticalDatum");
-        }
+        setDatum("verticalDatum", value);
     }
 
     /**

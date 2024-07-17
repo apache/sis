@@ -47,11 +47,13 @@ import org.apache.sis.feature.DefaultFeatureType;
 import org.apache.sis.feature.FoliationRepresentation;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.CommonCRS;
+import org.apache.sis.referencing.datum.PseudoDatum;
 import org.apache.sis.referencing.privy.GeodeticObjectBuilder;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.util.privy.Numerics;
+import org.apache.sis.util.resources.Errors;
 import org.apache.sis.temporal.LenientDateFormat;
 import org.apache.sis.storage.DataOptionKey;
 import org.apache.sis.storage.DataStoreException;
@@ -61,17 +63,16 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.URIDataStore;
-import org.apache.sis.io.InvalidSeekException;
-import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.storage.internal.RewindableLineReader;
 import org.apache.sis.storage.internal.Resources;
+import org.apache.sis.io.InvalidSeekException;
+import org.apache.sis.io.stream.IOUtilities;
 import org.apache.sis.geometry.GeneralEnvelope;
 import org.apache.sis.geometry.ImmutableEnvelope;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.metadata.iso.DefaultMetadata;
 import org.apache.sis.metadata.sql.MetadataStoreException;
 import org.apache.sis.setup.OptionKey;
-import org.apache.sis.util.resources.Errors;
 import org.apache.sis.measure.Units;
 
 // Specific to the main branch:
@@ -448,7 +449,7 @@ final class Store extends URIDataStore implements FeatureSet {
                     timeEncoding = TimeEncoding.ABSOLUTE;
                 } else {
                     temporal = builder.createTemporalCRS(startTime, timeUnit);
-                    timeEncoding = new TimeEncoding(temporal.getDatum(), timeUnit);
+                    timeEncoding = new TimeEncoding(PseudoDatum.of(temporal), timeUnit);
                 }
                 components[count++] = temporal;
                 name = name + " + " + temporal.getName().getCode();

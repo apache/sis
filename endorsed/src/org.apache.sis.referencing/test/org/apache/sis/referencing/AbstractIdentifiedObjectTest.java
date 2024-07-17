@@ -118,7 +118,7 @@ public final class AbstractIdentifiedObjectTest extends TestCase {
         // Try again, with error messages forced to English.
         assertNull(properties.put(AbstractIdentifiedObject.LOCALE_KEY, Locale.US));
         exception = assertThrows(IllegalArgumentException.class, test, "Should not allow unnamed object.");
-        assertEquals("Missing value for “name” property.", exception.getMessage());
+        assertEquals("Missing value for the “name” property.", exception.getMessage());
 
         // "code" with String value is accepted as well.
         assertNull(properties.put("code", "Test"));

@@ -33,11 +33,12 @@ import javax.measure.quantity.Time;
 import org.opengis.referencing.cs.TimeCS;
 import org.opengis.referencing.crs.TemporalCRS;
 import org.opengis.referencing.datum.TemporalDatum;
+import org.apache.sis.referencing.GeodeticException;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.cs.AbstractCS;
+import org.apache.sis.referencing.datum.PseudoDatum;
 import org.apache.sis.referencing.privy.WKTKeywords;
-import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.measure.Units;
 import org.apache.sis.math.Fraction;
@@ -85,31 +86,11 @@ import org.apache.sis.temporal.TemporalDate;
     "datum"
 })
 @XmlRootElement(name = "TemporalCRS")
-public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
+public class DefaultTemporalCRS extends AbstractSingleCRS<TemporalDatum> implements TemporalCRS {
     /**
      * Serial number for inter-operability with different versions.
      */
-    private static final long serialVersionUID = 3000119849197222007L;
-
-    /**
-     * The datum, or {@code null} if the CRS is associated only to a datum ensemble.
-     *
-     * <p><b>Consider this field as final!</b>
-     * This field is modified only at unmarshalling time by {@link #setDatum(TemporalDatum)}</p>
-     *
-     * @see #getDatum()
-     */
-    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
-    private TemporalDatum datum;
-
-    /**
-     * Collection of reference frames which for low accuracy requirements may be considered to be
-     * insignificantly different from each other. May be {@code null} if there is no such ensemble.
-     *
-     * @see #getDatumEnsemble()
-     */
-    @SuppressWarnings("serial")     // Most SIS implementations are serializable.
-    private final DefaultDatumEnsemble<TemporalDatum> ensemble;
+    private static final long serialVersionUID = 369537220141768472L;
 
     /**
      * Conversion factor from values in this CRS to values in seconds. We use {@link UnitConverter}
@@ -121,9 +102,9 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     private transient UnitConverter toSeconds;
 
     /**
-     * The {@linkplain TemporalDatum#getOrigin origin} in seconds since January 1st, 1970.
-     * This field could be implicit in the {@link #toSeconds} converter, but we still handle
-     * it explicitly in order to use integer arithmetic.
+     * The {@linkplain #getOrigin origin} in seconds since January 1st, 1970.
+     * This field could be implicit in the {@link #toSeconds} converter,
+     * but we still handle it explicitly in order to use integer arithmetic.
      */
     private transient long origin;
 
@@ -169,7 +150,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
      * @param  cs          the coordinate system.
      *
-     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createTemporalCRS(Map, TemporalDatum, TimeCS)
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createTemporalCRS(Map, TemporalDatum, DefaultDatumEnsemble, TimeCS)
      *
      * @since 1.5
      */
@@ -179,10 +160,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
                               final DefaultDatumEnsemble<TemporalDatum> ensemble,
                               final TimeCS cs)
     {
-        super(properties, cs);
-        this.datum    = datum;
-        this.ensemble = ensemble;
-        checkDatum(datum, ensemble);
+        super(properties, TemporalDatum.class, datum, ensemble, cs);
         checkDimension(1, 1, cs);
         initializeConverter();
     }
@@ -204,8 +182,6 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      */
     private DefaultTemporalCRS(final DefaultTemporalCRS original, final AbstractCS cs) {
         super(original, null, cs);
-        datum    = original.datum;
-        ensemble = original.ensemble;
         initializeConverter();
     }
 
@@ -223,9 +199,6 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     @SuppressWarnings("this-escape")
     protected DefaultTemporalCRS(final TemporalCRS crs) {
         super(crs);
-        datum    = crs.getDatum();
-        ensemble = (crs instanceof DefaultTemporalCRS) ? ((DefaultTemporalCRS) crs).getDatumEnsemble() : null;
-        checkDatum(datum, ensemble);
         initializeConverter();
     }
 
@@ -257,11 +230,11 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     }
 
     /**
-     * Initialize the fields required for {@link #toInstant(double)} and {@link #toValue(Instant)} operations.
+     * Initializes the fields required for {@link #toInstant(double)} and {@link #toValue(Instant)} operations.
      */
     private void initializeConverter() {
         toSeconds = getUnit().getConverterTo(Units.SECOND);
-        final Temporal t = TemporalDate.toTemporal(datum.getOrigin());
+        final Temporal t = getOrigin();
         origin = t.getLong(ChronoField.INSTANT_SECONDS);
         int r = t.get(ChronoField.NANO_OF_SECOND);
         if (r != 0) {
@@ -302,7 +275,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
     @Override
     @XmlElement(name = "temporalDatum", required = true)
     public TemporalDatum getDatum() {
-        return datum;
+        return super.getDatum();
     }
 
     /**
@@ -322,7 +295,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      */
     @Override
     public DefaultDatumEnsemble<TemporalDatum> getDatumEnsemble() {
-        return ensemble;
+        return super.getDatumEnsemble();
     }
 
     /**
@@ -355,6 +328,22 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      */
     public final Unit<Time> getUnit() {
         return super.getCoordinateSystem().getAxis(0).getUnit().asType(Time.class);
+    }
+
+    /**
+     * Returns the temporal origin which is indirectly (through a datum) associated to this <abbr>CRS</abbr>.
+     * If the {@linkplain #getDatum() datum} is non-null, then this method returns the datum origin.
+     * Otherwise, if all members of the {@linkplain #getDatumEnsemble() datum ensemble} use the same origin,
+     * then this method returns that origin.
+     *
+     * @return the origin indirectly associated to this <abbr>CRS</abbr>.
+     * @throws NullPointerException if an origin, which are mandatory, is null.
+     * @throws GeodeticException if the origin is not the same for all members of the datum ensemble.
+     *
+     * @since 1.5
+     */
+    public final Temporal getOrigin() {     // Must be final because invoked at construction time.
+        return TemporalDate.toTemporal(PseudoDatum.of(this).getOrigin());
     }
 
     /**
@@ -551,7 +540,6 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * reserved to JAXB, which will assign values to the fields using reflection.
      */
     private DefaultTemporalCRS() {
-        ensemble = null;
         /*
          * The datum and the coordinate system are mandatory for SIS working. We do not verify their presence
          * here because the verification would have to be done in an 'afterMarshal(…)' method and throwing an
@@ -566,13 +554,9 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      * @see #getDatum()
      */
     private void setDatum(final TemporalDatum value) {
-        if (datum == null) {
-            datum = value;
-            if (super.getCoordinateSystem() != null) {
-                initializeConverter();
-            }
-        } else {
-            ImplementationHelper.propertyAlreadySet(DefaultVerticalCRS.class, "setDatum", "temporalDatum");
+        setDatum("temporalDatum", value);
+        if (super.getCoordinateSystem() != null) {
+            initializeConverter();
         }
     }
 
@@ -583,7 +567,7 @@ public class DefaultTemporalCRS extends AbstractCRS implements TemporalCRS {
      */
     private void setCoordinateSystem(final TimeCS cs) {
         setCoordinateSystem("timeCS", cs);
-        if (toSeconds == null && datum != null) {
+        if (toSeconds == null && super.getDatum() != null) {
             initializeConverter();
         }
     }

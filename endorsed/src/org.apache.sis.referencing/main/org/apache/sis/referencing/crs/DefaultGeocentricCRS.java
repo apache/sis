@@ -132,7 +132,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
      * @param  cs          the coordinate system, which must be three-dimensional.
      *
-     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeocentricCRS(Map, GeodeticDatum, CartesianCS)
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeodeticCRS(Map, GeodeticDatum, DefaultDatumEnsemble, CartesianCS)
      *
      * @since 1.5
      */
@@ -157,7 +157,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      *                     insignificantly different from each other, or {@code null} if there is no such ensemble.
      * @param  cs          the coordinate system.
      *
-     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeocentricCRS(Map, GeodeticDatum, SphericalCS)
+     * @see org.apache.sis.referencing.factory.GeodeticObjectFactory#createGeodeticCRS(Map, GeodeticDatum, DefaultDatumEnsemble, SphericalCS)
      *
      * @since 1.5
      */
@@ -287,7 +287,7 @@ public class DefaultGeocentricCRS extends DefaultGeodeticCRS implements Geocentr
      */
     @Override
     public DefaultDatumEnsemble<GeodeticDatum> getDatumEnsemble() {
-        return ensemble;
+        return super.getDatumEnsemble();
     }
 
     /**
