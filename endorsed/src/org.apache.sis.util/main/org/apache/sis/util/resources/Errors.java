@@ -619,17 +619,17 @@ public class Errors extends IndexedResourceBundle {
         public static final short MissingRequiredModule_1 = 109;
 
         /**
-         * Missing value for “{0}” option.
+         * Missing value for the “{0}” option.
          */
         public static final short MissingValueForOption_1 = 110;
 
         /**
-         * Missing value for “{0}” property.
+         * Missing value for the “{0}” property.
          */
         public static final short MissingValueForProperty_1 = 111;
 
         /**
-         * Missing value for “{1}” property in “{0}”.
+         * Missing value for the “{1}” property in “{0}”.
          */
         public static final short MissingValueForProperty_2 = 112;
 

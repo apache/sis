@@ -797,7 +797,7 @@ public abstract class AbstractFeature implements Feature, Serializable {
      *         │   └─Code………………………………………… population
      *         ├─Evaluation method type…… Direct internal
      *         └─Result
-     *             ├─Explanation……………………… Missing value for “population” property.
+     *             ├─Explanation……………………… Missing value for the “population” property.
      *             └─Pass………………………………………… false</pre>
      *
      * @return reports on all constraint violations found.

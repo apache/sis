@@ -393,7 +393,7 @@ public class Resources extends IndexedResourceBundle {
         public static final short MissingReferenceFrameEpoch_1 = 102;
 
         /**
-         * Missing value for “{0}” parameter.
+         * Missing value for the “{0}” parameter.
          */
         public static final short MissingValueForParameter_1 = 44;
 
