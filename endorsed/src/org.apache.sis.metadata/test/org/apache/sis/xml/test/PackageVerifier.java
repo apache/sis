@@ -499,7 +499,7 @@ final class PackageVerifier {
 
     /**
      * Returns a message beginning with "Error in …", to be completed by the caller.
-     * This is an helper method for exception messages.
+     * This is a helper method for exception messages.
      *
      * @param  name  the property name, or {@code null} if none.
      */

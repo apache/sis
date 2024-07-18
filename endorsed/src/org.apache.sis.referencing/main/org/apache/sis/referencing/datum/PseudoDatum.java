@@ -186,6 +186,8 @@ public abstract class PseudoDatum<D extends Datum> implements Datum, LenientComp
      * @return the datum or pseudo-datum of the given <abbr>CRS</abbr>.
      * @throws NullPointerException if the given argument is {@code null},
      *         or if both the datum and datum ensemble are null.
+     *
+     * @since 2.0 (temporary version number until this branch is released)
      */
     public static ParametricDatum of(final ParametricCRS crs) {
         ParametricDatum datum = crs.getDatum();
@@ -320,7 +322,7 @@ public abstract class PseudoDatum<D extends Datum> implements Datum, LenientComp
      *
      * @param  <V>     type of value.
      * @param  getter  method to invoke on each member for getting the value.
-     * @return a value common to all members, or {@code null} if none.
+     * @return a value common to all members, or empty if there is no common value.
      */
     final <V> Optional<V> getCommonOptionalValue(final Function<D, Optional<V>> getter) {
         final Iterator<D> it = ensemble.getMembers().iterator();

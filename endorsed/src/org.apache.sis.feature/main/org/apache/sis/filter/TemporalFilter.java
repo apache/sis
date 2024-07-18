@@ -158,7 +158,7 @@ class TemporalFilter<R,T> extends BinaryFunction<R,T,T>
 
     /**
      * Casts an expression returning values of unknown type.
-     * This is an helper function for {@code recreate(…)} method implementations.
+     * This is a helper function for {@code recreate(…)} method implementations.
      *
      * @param  effective  the expression to cast.
      * @return an expression that can be used with this temporal filter.

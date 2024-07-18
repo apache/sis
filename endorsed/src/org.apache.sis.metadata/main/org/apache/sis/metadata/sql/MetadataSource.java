@@ -705,7 +705,7 @@ public class MetadataSource implements AutoCloseable {
      * @param  columns   the table columns as given by {@link #getExistingColumns(String)}, or {@code null}.
      * @param  metadata  a map view of the metadata to search for.
      * @param  stmt      the statement to use for executing the query.
-     * @param  helper    an helper class for creating the SQL query.
+     * @param  helper    a helper class for creating the SQL query.
      * @return the identifier of the given metadata, or {@code null} if none.
      * @throws SQLException if an error occurred while searching in the database.
      */

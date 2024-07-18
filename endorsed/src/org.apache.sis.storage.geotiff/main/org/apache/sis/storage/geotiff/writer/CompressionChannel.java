@@ -62,7 +62,7 @@ abstract class CompressionChannel extends PixelChannel {
 
     /**
      * {@return a proposed buffer capacity}.
-     * This is an helper method for {@link #createBuffer()} implementations.
+     * This is a helper method for {@link #createBuffer()} implementations.
      */
     final int bufferCapacity() {
         /*
