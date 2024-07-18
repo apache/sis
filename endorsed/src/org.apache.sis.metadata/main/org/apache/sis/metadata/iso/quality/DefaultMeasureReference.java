@@ -24,6 +24,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.quality.Element;
 import org.apache.sis.util.privy.CollectionsExt;
+import org.apache.sis.util.iso.Types;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.quality.MeasureReference;
@@ -44,7 +45,7 @@ import org.opengis.metadata.quality.MeasureReference;
  *
  * @author  Alexis Gaillard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.3
  */
 @XmlType(name = "DQ_MeasureReference_Type", propOrder = {
@@ -81,6 +82,17 @@ public class DefaultMeasureReference extends ISOMetadata implements MeasureRefer
      * Constructs an initially empty measure reference.
      */
     public DefaultMeasureReference() {
+    }
+
+    /**
+     * Constructs a measure reference initialized with the given name.
+     *
+     * @param name  the name of the measure as a {@link String} or an {@link InternationalString} object,
+     *              or {@code null} if none.
+     * @since 1.5
+     */
+    public DefaultMeasureReference(final CharSequence name) {
+        namesOfMeasure = singleton(Types.toInternationalString(name), InternationalString.class);
     }
 
     /**

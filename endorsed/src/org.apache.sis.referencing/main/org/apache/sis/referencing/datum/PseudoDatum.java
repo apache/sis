@@ -28,6 +28,7 @@ import java.io.Serializable;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Identifier;
+import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.ObjectDomain;
 import org.opengis.referencing.datum.*;
@@ -38,6 +39,7 @@ import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.GeodeticException;
+import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 
 
 /**
@@ -94,26 +96,6 @@ public abstract class PseudoDatum<D extends Datum> implements Datum, LenientComp
      */
     protected PseudoDatum(final DatumEnsemble<D> ensemble) {
         this.ensemble = Objects.requireNonNull(ensemble);
-    }
-
-    /**
-     * Returns the datum of the given <abbr>CRS</abbr> if presents, or the datum ensemble otherwise.
-     * This is an alternative to the {@code of(…)} methods when the caller does not need to view the
-     * object as a datum.
-     *
-     * @param  crs  the <abbr>CRS</abbr> from which to get the datum or ensemble, or {@code null}.
-     * @return the datum if present, or the datum ensemble otherwise, or {@code null}.
-     */
-    public static IdentifiedObject getDatumOrEnsemble(final SingleCRS crs) {
-        if (crs == null) return null;
-        final Datum datum = crs.getDatum();
-        if (datum != null) {
-            if (datum instanceof PseudoDatum<?>) {
-                return ((PseudoDatum) datum).ensemble;
-            }
-            return datum;
-        }
-        return crs.getDatumEnsemble();
     }
 
     /**
@@ -213,6 +195,116 @@ public abstract class PseudoDatum<D extends Datum> implements Datum, LenientComp
             datum = new PseudoDatum.Engineering(crs.getDatumEnsemble());
         }
         return datum;
+    }
+
+    /**
+     * Returns the datum of the given <abbr>CRS</abbr> if presents, or the datum ensemble otherwise.
+     * This is an alternative to the {@code of(…)} methods when the caller does not need to view the
+     * object as a datum.
+     *
+     * @param  crs  the <abbr>CRS</abbr> from which to get the datum or ensemble, or {@code null}.
+     * @return the datum if present, or the datum ensemble otherwise, or {@code null}.
+     */
+    public static IdentifiedObject getDatumOrEnsemble(final SingleCRS crs) {
+        if (crs == null) return null;
+        final Datum datum = crs.getDatum();
+        if (datum != null) {
+            if (datum instanceof PseudoDatum<?>) {
+                return ((PseudoDatum) datum).ensemble;
+            }
+            return datum;
+        }
+        return crs.getDatumEnsemble();
+    }
+
+    /**
+     * Returns the inaccuracy that would have an operation using datum ensembles.
+     * This method makes the following choice:
+     *
+     * <ul>
+     *   <li>If the two reference systems are associated to the same datum, returns an arbitrary value.</li>
+     *   <li>Otherwise, if the datum of one <abbr>CRS</abbr> is a member of the datum ensemble of the other
+     *       <abbr>CRS</abbr>, returns the ensemble accuracy.</li>
+     *   <li>OTherwise, if the datum ensemble of one <abbr>CRS</abbr> is fully contained in the datum ensemble
+     *       of the other <abbr>CRS</abbr>, returns the accuracy of the larger ensemble.</li>
+     *   <li>Otherwise, returns an empty value.</li>
+     * </ul>
+     *
+     * An empty value means that the two <abbr>CRS</abbr> are not compatible according the datum and datum ensemble
+     * properties. However, a transformation path may exist in a geodetic registry such as <abbr>EPSG</abbr>.
+     *
+     * @param  source  the first <abbr>CRS</abbr> for which to compare the datum.
+     * @param  target  the second <abbr>CRS</abbr> for which to compare the datum.
+     * @return a non-null value if it is okay, for low accuracy requirements, to ignore the datum shift.
+     */
+    public static Optional<PositionalAccuracy> getOperationAccuracy(final SingleCRS source, final SingleCRS target) {
+        final Datum sourceDatum = source.getDatum();
+        final Datum targetDatum = target.getDatum();
+        if (sourceDatum != null && targetDatum != null && Utilities.equalsIgnoreMetadata(sourceDatum, targetDatum)) {
+            return Optional.of(PositionalAccuracyConstant.SAME_DATUM_ENSEMBLE);
+        }
+        DatumEnsemble<?> sourceEnsemble;
+        DatumEnsemble<?> targetEnsemble;
+        PositionalAccuracy accuracy;
+        if ((accuracy = accuracyIfMember(sourceDatum, targetEnsemble = target.getDatumEnsemble())) != null ||
+            (accuracy = accuracyIfMember(targetDatum, sourceEnsemble = source.getDatumEnsemble())) != null ||
+            (sourceEnsemble == null || targetEnsemble == null))
+        {
+            return Optional.of(accuracy);
+        }
+        var sources = sourceEnsemble.getMembers();
+        var targets = targetEnsemble.getMembers();
+        if (sources.size() > targets.size()) {
+            var tmp = targets;          // Want as if transforming from smaller ensemble to larger ensemble.
+            targets = sources;
+            sources = tmp;
+
+            var te = targetEnsemble;
+            targetEnsemble = sourceEnsemble;
+            sourceEnsemble = te;
+        }
+        final Datum[] remaining = sources.toArray(Datum[]::new);
+        int count = remaining.length;
+        for (final Datum member : targets) {
+            for (int i=0; i<count; i++) {
+                if (Utilities.equalsIgnoreMetadata(member, remaining[i])) {
+                    System.arraycopy(remaining, i+1, remaining, i, --count - i);
+                    if (count == 0) {
+                        /*
+                         * Found all members of the smaller ensemble. Take the accuracy
+                         * of the larger ensemble, as it contains the smaller ensemble.
+                         */
+                        if ((accuracy = targetEnsemble.getEnsembleAccuracy()) == null &&
+                            (accuracy = sourceEnsemble.getEnsembleAccuracy()) == null) {
+                             accuracy = PositionalAccuracyConstant.SAME_DATUM_ENSEMBLE;
+                        }
+                        return Optional.of(accuracy);
+                    }
+                    break;      // For removing only the first match.
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * If the given datum is a member of the given ensemble, returns the ensemble accuracy.
+     * Otherwise, returns {@code null}.
+     *
+     * @param  datum     the datum to test, or {@code null}.
+     * @param  ensemble  the ensemble to test, or {@code null}.
+     * @return a non-null value if the datum is a member of the given ensemble.
+     */
+    private static PositionalAccuracy accuracyIfMember(final Datum datum, final DatumEnsemble<?> ensemble) {
+        if (ensemble != null) {
+            for (final Datum member : ensemble.getMembers()) {
+                if (Utilities.equalsIgnoreMetadata(datum, member)) {
+                    PositionalAccuracy accuracy = ensemble.getEnsembleAccuracy();
+                    return (accuracy != null) ? accuracy : PositionalAccuracyConstant.SAME_DATUM_ENSEMBLE;
+                }
+            }
+        }
+        return null;
     }
 
     /**

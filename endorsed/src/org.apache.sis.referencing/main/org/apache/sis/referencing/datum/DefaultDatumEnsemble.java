@@ -24,7 +24,6 @@ import org.apache.sis.io.wkt.Formatter;
 import org.apache.sis.io.wkt.Convention;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.datum.Datum;
-import org.opengis.referencing.datum.DatumEnsemble;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.internal.Resources;
@@ -33,6 +32,9 @@ import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.datum.DatumEnsemble;
 
 
 /**

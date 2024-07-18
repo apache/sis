@@ -570,6 +570,30 @@ public class WeakValueHashMap<K,V> extends AbstractMap<K,V> {
     }
 
     /**
+     * Returns the value associated to the given key, computing the value if it does not exist.
+     * This implementation is thread-safe.
+     *
+     * @param  key      key of the value to get.
+     * @param  creator  function to invoke for creating the value if it does not already exist.
+     * @return value (potentially newly created) for the given key.
+     * @since 1.5
+     */
+    @Override
+    public V computeIfAbsent(final K key, final Function<? super K, ? extends V> creator) {
+        V value = get(key);
+        if (value == null) {
+            V newValue = creator.apply(key);
+            if (newValue != null) {
+                value = putIfAbsent(key, newValue);     // A value may have been created concurrently.
+                if (value == null) {
+                    return newValue;
+                }
+            }
+        }
+        return value;
+    }
+
+    /**
      * Replaces the entry for the specified key only if it is currently mapped to some value.
      *
      * @param  key    key with which the specified value is to be associated.

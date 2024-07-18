@@ -207,30 +207,6 @@ public final class ReferencingUtilities extends Static {
     }
 
     /**
-     * Returns whether the given <abbr>CRS</abbr> uses the given datum.
-     *
-     * @param  crs    the <abbr>CRS</abbr>, or {@code null}.
-     * @param  datum  the datum to compare with the <abbr>CRS</abbr> datum or datum ensemble.
-     * @return whether the given CRS <abbr>CRS</abbr> uses the specified datum.
-     */
-    public static boolean uses(final SingleCRS crs, final Datum datum) {
-        if (crs != null && datum != null) {
-            if (Utilities.equalsIgnoreMetadata(crs.getDatum(), datum)) {
-                return true;
-            }
-            final var ensemble = crs.getDatumEnsemble();
-            if (ensemble != null) {
-                for (final Datum member : ensemble.getMembers()) {
-                    if (Utilities.equalsIgnoreMetadata(member, datum)) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    /**
      * Returns {@code true} if the type of the given datum is ellipsoidal. A vertical datum is not allowed
      * to be ellipsoidal according ISO 19111, but Apache SIS relaxes this restriction in some limited cases,
      * for example when parsing a string in the legacy WKT 1 format. Apache SIS should not expose those

@@ -44,7 +44,6 @@ import org.apache.sis.referencing.factory.MultiAuthoritiesFactory;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
 import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
 import org.apache.sis.referencing.operation.transform.DefaultMathTransformFactory;
-import org.apache.sis.util.Utilities;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.iso.AbstractFactory;
@@ -52,7 +51,6 @@ import org.apache.sis.util.iso.AbstractFactory;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.RegisterOperations;
 import org.opengis.referencing.crs.SingleCRS;
-import org.apache.sis.referencing.privy.ReferencingUtilities;
 
 
 /**
@@ -350,13 +348,7 @@ public class MultiRegisterOperations extends AbstractFactory implements Register
             return false;
         }
         for (int i=0; i<n; i++) {
-            final var crs1 = sources.get(i);
-            final var crs2 = targets.get(i);
-            if (!(Utilities.equalsIgnoreMetadata(PseudoDatum.getDatumOrEnsemble(crs1),
-                                                 PseudoDatum.getDatumOrEnsemble(crs2))
-                    || ReferencingUtilities.uses(crs1, crs2.getDatum())
-                    || ReferencingUtilities.uses(crs2, crs1.getDatum())))
-            {
+            if (PseudoDatum.getOperationAccuracy(sources.get(i), targets.get(i)).isEmpty()) {
                 return false;
             }
         }

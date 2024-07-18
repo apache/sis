@@ -40,7 +40,7 @@ import org.opengis.referencing.operation.OperationNotFoundException;
 import org.opengis.referencing.operation.Matrix;
 import org.apache.sis.referencing.CommonCRS;
 import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.privy.PositionalAccuracyConstant;
+import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.referencing.operation.transform.LinearTransform;
 import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.referencing.operation.matrix.Matrices;
@@ -55,7 +55,7 @@ import org.apache.sis.measure.Units;
 import static org.apache.sis.util.privy.Constants.SECONDS_PER_DAY;
 import static org.apache.sis.referencing.privy.Formulas.LINEAR_TOLERANCE;
 import static org.apache.sis.referencing.privy.Formulas.ANGULAR_TOLERANCE;
-import static org.apache.sis.referencing.privy.PositionalAccuracyConstant.DATUM_SHIFT_APPLIED;
+import static org.apache.sis.referencing.internal.PositionalAccuracyConstant.DATUM_SHIFT_APPLIED;
 
 // Test dependencies
 import org.junit.jupiter.api.BeforeEach;
