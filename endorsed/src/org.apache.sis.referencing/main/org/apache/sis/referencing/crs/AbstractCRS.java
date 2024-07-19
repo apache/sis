@@ -38,7 +38,6 @@ import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.metadata.privy.ImplementationHelper;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.pending.geoapi.referencing.MissingMethods;
 import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.resources.Errors;
@@ -49,6 +48,7 @@ import org.opengis.geometry.MismatchedDimensionException;
 
 // Specific to the main branch:
 import org.opengis.referencing.ReferenceIdentifier;
+import org.apache.sis.pending.geoapi.referencing.MissingMethods;
 import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
 
 

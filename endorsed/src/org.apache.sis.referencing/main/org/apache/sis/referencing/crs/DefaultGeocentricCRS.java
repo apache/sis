@@ -29,11 +29,11 @@ import org.apache.sis.referencing.cs.AbstractCS;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.io.wkt.Formatter;
 
-// Specific to the main branch:
-import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
-
 // Specific to the main and geoapi-3.1 branches:
 import org.opengis.referencing.crs.GeocentricCRS;
+
+// Specific to the main branch:
+import org.apache.sis.referencing.datum.DefaultDatumEnsemble;
 
 
 /**

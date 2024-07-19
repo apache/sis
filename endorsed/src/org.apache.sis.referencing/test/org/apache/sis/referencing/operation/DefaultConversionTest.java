@@ -51,8 +51,8 @@ import static org.apache.sis.test.Assertions.assertMessageContains;
 import static org.apache.sis.test.Assertions.assertSerializedEquals;
 
 // Specific to the main branch:
-import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 import static org.apache.sis.pending.geoapi.referencing.MissingMethods.getDatumEnsemble;
+import static org.apache.sis.test.GeoapiAssert.assertMatrixEquals;
 
 
 /**

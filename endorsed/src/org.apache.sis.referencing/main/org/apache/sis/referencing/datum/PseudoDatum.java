@@ -38,13 +38,13 @@ import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.GeodeticException;
 
-// Specific to the main branch:
-import static org.apache.sis.pending.geoapi.referencing.MissingMethods.getDatumEnsemble;
-
 // Specific to the main and geoapi-3.1 branches:
 import java.util.Date;
-import org.opengis.metadata.extent.Extent;
 import org.opengis.referencing.ReferenceIdentifier;
+import org.opengis.metadata.extent.Extent;
+
+// Specific to the main branch:
+import static org.apache.sis.pending.geoapi.referencing.MissingMethods.getDatumEnsemble;
 
 
 /**
