@@ -45,8 +45,8 @@ import org.opengis.referencing.crs.GeographicCRS;
 import org.opengis.referencing.operation.Projection;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.referencing.datum.DatumEnsemble;
+import org.opengis.coordinate.MismatchedDimensionException;
 
 
 /**

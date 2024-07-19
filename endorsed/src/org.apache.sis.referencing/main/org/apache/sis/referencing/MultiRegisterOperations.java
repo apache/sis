@@ -38,7 +38,6 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.CoordinateOperationFactory;
 import org.opengis.referencing.operation.CoordinateOperationAuthorityFactory;
 import org.opengis.referencing.operation.MathTransformFactory;
-import org.apache.sis.referencing.datum.PseudoDatum;
 import org.apache.sis.referencing.factory.GeodeticObjectFactory;
 import org.apache.sis.referencing.factory.MultiAuthoritiesFactory;
 import org.apache.sis.referencing.factory.NoSuchAuthorityFactoryException;
@@ -51,6 +50,7 @@ import org.apache.sis.util.iso.AbstractFactory;
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.RegisterOperations;
 import org.opengis.referencing.crs.SingleCRS;
+import org.apache.sis.referencing.datum.PseudoDatum;
 
 
 /**
