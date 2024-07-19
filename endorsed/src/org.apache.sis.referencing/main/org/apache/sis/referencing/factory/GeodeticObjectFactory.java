@@ -349,8 +349,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
      * @param  cs          the three-dimensional Cartesian coordinate system for the created CRS.
      * @throws FactoryException if the object creation failed.
      *
-     * @see GeodeticAuthorityFactory#createGeodeticCRS(String)
      * @see DefaultGeocentricCRS#DefaultGeocentricCRS(Map, GeodeticDatum, DatumEnsemble, CartesianCS)
+     * @see GeodeticAuthorityFactory#createGeodeticCRS(String)
      *
      * @since 1.5
      */

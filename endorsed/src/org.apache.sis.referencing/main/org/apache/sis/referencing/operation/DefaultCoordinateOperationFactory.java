@@ -19,6 +19,8 @@ package org.apache.sis.referencing.operation;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayDeque;
+import java.util.Iterator;
 import java.util.Objects;
 import org.opengis.util.FactoryException;
 import org.opengis.parameter.ParameterValueGroup;
@@ -45,7 +47,6 @@ import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.Classes;
-import org.apache.sis.util.Utilities;
 import org.apache.sis.util.Debug;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.collection.WeakHashSet;
@@ -411,22 +412,16 @@ public class DefaultCoordinateOperationFactory extends AbstractFactory implement
     private static boolean isConversion(final CoordinateReferenceSystem sourceCRS,
                                         final CoordinateReferenceSystem targetCRS)
     {
-        List<SingleCRS> components = CRS.getSingleComponents(sourceCRS);
-        int n = components.size();                      // Number of remaining datum from sourceCRS to verify.
-        final IdentifiedObject[] datum = new IdentifiedObject[n];
-        for (int i=0; i<n; i++) {
-            datum[i] = PseudoDatum.getDatumOrEnsemble(components.get(i));
-        }
-        components = CRS.getSingleComponents(targetCRS);
-next:   for (int i=components.size(); --i >= 0;) {
-            final IdentifiedObject d = PseudoDatum.getDatumOrEnsemble(components.get(i));
-            for (int j=n; --j >= 0;) {
-                if (Utilities.equalsIgnoreMetadata(d, datum[j])) {
-                    System.arraycopy(datum, j+1, datum, j, --n - j);    // Remove the datum from the list.
+        final var components = new ArrayDeque<>(CRS.getSingleComponents(sourceCRS));
+next:   for (SingleCRS component : CRS.getSingleComponents(targetCRS)) {
+            final Iterator<SingleCRS> it = components.iterator();
+            while (it.hasNext()) {
+                if (PseudoDatum.getDatumOrEnsemble(component, it.next()).isPresent()) {
+                    it.remove();
                     continue next;
                 }
             }
-            return false;                               // Datum from `targetCRS` not found in `sourceCRS`.
+            return false;       // Datum from `targetCRS` not found in `sourceCRS`.
         }
         return true;
     }

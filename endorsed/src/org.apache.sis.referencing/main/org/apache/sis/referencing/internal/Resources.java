@@ -55,6 +55,11 @@ public class Resources extends IndexedResourceBundle {
         }
 
         /**
+         * Accuracy declared in a geodetic dataset.
+         */
+        public static final short AccuracyFromGeodeticDatase = 105;
+
+        /**
          * Ambiguity between inverse flattening and semi minor axis length for “{0}”. Using inverse
          * flattening.
          */
@@ -502,6 +507,11 @@ public class Resources extends IndexedResourceBundle {
          * Operation “{1}” of class ‘{0}’ has no mathematical transform.
          */
         public static final short OperationHasNoTransform_2 = 43;
+
+        /**
+         * Coordinate operation between reference frames in the same datum ensemble.
+         */
+        public static final short OperationSameDatumEnsemble = 106;
 
         /**
          * No parameter named “{1}” has been found in “{0}”.

@@ -50,7 +50,7 @@ final class DimensionReducer {
     private CoordinateReferenceSystem reducedCRS;
 
     /**
-     * Creates an helper which will retain only the {@code targetCRS} dimensions that are found in the base grid.
+     * Creates a helper which will retain only the {@code targetCRS} dimensions that are found in the base grid.
      * This will be used by caller for creating a valid {@code sourceCRS} to {@code targetCRS} transform.
      *
      * @param  base       the grid geometry which will be derived. Cannot be null.

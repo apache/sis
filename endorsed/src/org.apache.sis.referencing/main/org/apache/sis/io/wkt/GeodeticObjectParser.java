@@ -68,6 +68,7 @@ import org.apache.sis.referencing.privy.WKTUtilities;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.internal.Legacy;
 import org.apache.sis.referencing.internal.VerticalDatumTypes;
+import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.metadata.iso.citation.Citations;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
@@ -75,7 +76,6 @@ import org.apache.sis.metadata.iso.extent.DefaultGeographicDescription;
 import org.apache.sis.metadata.iso.extent.DefaultVerticalExtent;
 import org.apache.sis.metadata.iso.extent.DefaultTemporalExtent;
 import org.apache.sis.metadata.privy.AxisNames;
-import org.apache.sis.metadata.privy.TransformationAccuracy;
 import org.apache.sis.referencing.operation.provider.AbstractProvider;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.privy.Constants;
@@ -2312,7 +2312,7 @@ class GeodeticObjectParser extends MathTransformParser implements Comparator<Coo
         final Map<String,Object>        properties       = parseParametersAndClose(element, name, method);
         if (accuracy != null) {
             properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY,
-                    TransformationAccuracy.create(accuracy.pullDouble("accuracy")));
+                    PositionalAccuracyConstant.create(accuracy.pullDouble("accuracy")));
             accuracy.close(ignoredElements);
         }
         try {

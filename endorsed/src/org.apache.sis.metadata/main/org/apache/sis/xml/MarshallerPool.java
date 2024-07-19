@@ -463,7 +463,7 @@ public class MarshallerPool {
 
     /**
      * Appends the size of the marshaller or unmarshaller pool to the given buffer.
-     * This is an helper method for {@link #toString()} only.
+     * This is a helper method for {@link #toString()} only.
      */
     private static boolean appendSize(final StringBuilder buffer, final Deque<?> pool, final String label, boolean s) {
         int n = pool.size();

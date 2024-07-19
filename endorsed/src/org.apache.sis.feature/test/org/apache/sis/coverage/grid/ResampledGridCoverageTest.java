@@ -688,7 +688,7 @@ public final class ResampledGridCoverageTest extends TestCase {
 
     /**
      * Returns an image with only the queries part of the given image.
-     * This is an helper tools which can be invoked during debugging
+     * This is a helper tools which can be invoked during debugging
      * session in IDE capable to display images.
      *
      * <h4>Usage</h4>

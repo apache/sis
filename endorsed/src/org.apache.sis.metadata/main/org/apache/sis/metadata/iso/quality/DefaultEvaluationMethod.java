@@ -30,6 +30,7 @@ import org.opengis.util.InternationalString;
 import org.opengis.metadata.citation.Citation;
 import org.opengis.metadata.quality.EvaluationMethodType;
 import org.apache.sis.system.Semaphores;
+import org.apache.sis.util.iso.Types;
 import org.apache.sis.util.privy.CloneAccess;
 import org.apache.sis.util.collection.CheckedContainer;
 import org.apache.sis.util.resources.Errors;
@@ -57,7 +58,7 @@ import org.opengis.metadata.quality.AggregationDerivation;
  *
  * @author  Alexis Gaillard (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.3
  */
 @XmlType(name = "DQ_EvaluationMethod_Type", propOrder = {
@@ -272,6 +273,19 @@ public class DefaultEvaluationMethod extends ISOMetadata implements EvaluationMe
      * Constructs an initially empty evaluation method.
      */
     public DefaultEvaluationMethod() {
+    }
+
+    /**
+     * Constructs an evaluation method initialized to the given description.
+     *
+     * @param type  the method type, or {@code null} if none.
+     * @param name  the method description as a {@link String} or an {@link InternationalString} object,
+     *              or {@code null} if none.
+     * @since 1.5
+     */
+    public DefaultEvaluationMethod(final EvaluationMethodType type, final CharSequence description) {
+        evaluationMethodType = type;
+        evaluationMethodDescription = Types.toInternationalString(description);
     }
 
     /**

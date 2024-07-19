@@ -354,7 +354,7 @@ public final class XmlUtilities extends SystemListener {
 
     /**
      * Closes the given byte stream and character stream if non-null.
-     * This is an helper method for {@link #close(Source)} only.
+     * This is a helper method for {@link #close(Source)} only.
      */
     private static void close(final Closeable b, final Closeable c) throws IOException {
         if (c != null) c.close();

@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ListIterator;
+import java.util.Optional;
 import java.time.Duration;
 import javax.measure.Unit;
 import javax.measure.IncommensurableException;
@@ -64,11 +65,11 @@ import org.apache.sis.referencing.operation.provider.Geographic3Dto2D;
 import org.apache.sis.referencing.operation.provider.GeographicToGeocentric;
 import org.apache.sis.referencing.operation.provider.GeocentricToGeographic;
 import org.apache.sis.referencing.operation.provider.GeocentricAffine;
+import org.apache.sis.util.Utilities;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.DoubleDouble;
 import org.apache.sis.util.resources.Vocabulary;
-import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 
 // Specific to the main and geoapi-3.1 branches:
 import org.apache.sis.temporal.TemporalDate;
@@ -237,8 +238,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     {
         ArgumentChecks.ensureNonNull("sourceCRS", sourceCRS);
         ArgumentChecks.ensureNonNull("targetCRS", targetCRS);
-        if (equalsIgnoreMetadata(sourceCRS, targetCRS)) try {
-            return asList(createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS,
+        if (Utilities.equalsIgnoreMetadata(sourceCRS, targetCRS)) try {
+            return asList(createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS, null,
                             CoordinateSystems.swapAndScaleAxes(sourceCRS.getCoordinateSystem(),
                                                                targetCRS.getCoordinateSystem())));
         } catch (IllegalArgumentException | IncommensurableException e) {
@@ -343,14 +344,16 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         ////                                                                        ////
         ////////////////////////////////////////////////////////////////////////////////
         if (sourceCRS instanceof SingleCRS && targetCRS instanceof SingleCRS) {
-            final IdentifiedObject sourceDatum = PseudoDatum.getDatumOrEnsemble((SingleCRS) sourceCRS);
-            final IdentifiedObject targetDatum = PseudoDatum.getDatumOrEnsemble((SingleCRS) targetCRS);
-            if (equalsIgnoreMetadata(sourceDatum, targetDatum)) try {
+            final Optional<IdentifiedObject> datumOrEnsemble =
+                    PseudoDatum.getDatumOrEnsemble((SingleCRS) sourceCRS,
+                                                   (SingleCRS) targetCRS);
+            if (datumOrEnsemble.isPresent()) try {
                 /*
                  * Because the CRS type is determined by the datum type (sometimes completed by the CS type),
                  * having equivalent datum and compatible CS should be a sufficient criterion.
                  */
                 return asList(createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS,
+                                PseudoDatum.getEnsembleAccuracy(datumOrEnsemble.get()).orElse(null),
                                 CoordinateSystems.swapAndScaleAxes(sourceCRS.getCoordinateSystem(),
                                                                    targetCRS.getCoordinateSystem())));
             } catch (IllegalArgumentException | IncommensurableException e) {
@@ -546,7 +549,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          */
         Identifier identifier;
         boolean isGeographicToGeocentric = false;
-        if (equalsIgnoreMetadata(sourceDatum, targetDatum)) {
+        final Optional<GeodeticDatum> commonDatum = PseudoDatum.ofOperation(sourceCRS, targetCRS);
+        if (commonDatum.isPresent()) {
             final boolean isGeocentricToGeographic;
             isGeographicToGeocentric = (sourceCS instanceof EllipsoidalCS && targetCS instanceof CartesianCS);
             isGeocentricToGeographic = (sourceCS instanceof CartesianCS && targetCS instanceof EllipsoidalCS);
@@ -570,7 +574,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             }
         }
         /*
-         * Conceptually, all transformations below could done by first converting from the source coordinate
+         * Conceptually, all transformations below could be done by first converting from source coordinate
          * system to geocentric Cartesian coordinates (X,Y,Z), apply an affine transform represented by the
          * datum shift matrix, then convert from the (X′,Y′,Z′) coordinates to the target coordinate system.
          * However, there are two exceptions to this path:
@@ -700,10 +704,12 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
          * specified datum.
          */
         final Map<String, Object> properties = properties(identifier);
-        if (datumShift instanceof AnnotatedMatrix) {
-            properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY, new PositionalAccuracy[] {
-                ((AnnotatedMatrix) datumShift).accuracy
-            });
+        PositionalAccuracy accuracy = commonDatum.flatMap(PseudoDatum::getEnsembleAccuracy).orElse(null);
+        if (accuracy == null && datumShift instanceof AnnotatedMatrix) {
+            accuracy = ((AnnotatedMatrix) datumShift).accuracy;
+        }
+        if (accuracy != null) {
+            properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY, accuracy);
         }
         return asList(createFromMathTransform(properties, sourceCRS, targetCRS, transform, method, parameters, null));
     }
@@ -747,7 +753,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         CoordinateSystem interpolationCS = interpolationCRS.getCoordinateSystem();
         if (!(interpolationCS instanceof EllipsoidalCS)) {
             final EllipsoidalCS cs = CommonCRS.WGS84.geographic3D().getCoordinateSystem();
-            if (!equalsIgnoreMetadata(interpolationCS, cs)) {
+            if (!Utilities.equalsIgnoreMetadata(interpolationCS, cs)) {
                 final GeographicCRS stepCRS = factorySIS.crsFactory
                         .createGeographicCRS(derivedFrom(sourceCRS), sourceCRS.getDatum(), sourceCRS.getDatumEnsemble(), cs);
                 step1 = createOperation(sourceCRS, toAuthorityDefinition(GeographicCRS.class, stepCRS));
@@ -772,12 +778,12 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final boolean isEllipsoidalHeight;      // Whether heightCRS is okay or need to be recreated.
         VerticalCRS heightCRS = targetCRS;      // First candidate, will be replaced if it doesn't fit.
         VerticalCS  heightCS  = heightCRS.getCoordinateSystem();
-        if (equalsIgnoreMetadata(heightCS.getAxis(0), expectedAxis)) {
+        if (Utilities.equalsIgnoreMetadata(heightCS.getAxis(0), expectedAxis)) {
             isEllipsoidalHeight = ReferencingUtilities.isEllipsoidalHeight(PseudoDatum.of(heightCRS));
         } else {
             heightCRS = CommonCRS.Vertical.ELLIPSOIDAL.crs();
             heightCS  = heightCRS.getCoordinateSystem();
-            isEllipsoidalHeight = equalsIgnoreMetadata(heightCS.getAxis(0), expectedAxis);
+            isEllipsoidalHeight = Utilities.equalsIgnoreMetadata(heightCS.getAxis(0), expectedAxis);
             if (!isEllipsoidalHeight) {
                 heightCS = toAuthorityDefinition(VerticalCS.class, factorySIS.csFactory
                         .createVerticalCS(derivedFrom(heightCS), expectedAxis));
@@ -807,7 +813,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final Matrix matrix = Matrices.createZero(tgtDim + 1, srcDim + 1);
         matrix.setElement(0,      i,      1);                                       // Scale factor for height.
         matrix.setElement(tgtDim, srcDim, 1);                                       // Always 1 for affine transform.
-        step2 = createFromAffineTransform(AXIS_CHANGES, interpolationCRS, heightCRS, matrix);
+        step2 = createFromAffineTransform(AXIS_CHANGES, interpolationCRS, heightCRS, null, matrix);
         return asList(concatenate(step1, step2, step3));
     }
 
@@ -831,10 +837,10 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                                                             final VerticalCRS targetCRS)
             throws FactoryException
     {
-        final VerticalDatum sourceDatum = PseudoDatum.of(sourceCRS);
-        final VerticalDatum targetDatum = PseudoDatum.of(targetCRS);
-        if (!equalsIgnoreMetadata(sourceDatum, targetDatum)) {
-            throw new OperationNotFoundException(notFoundMessage(sourceDatum, targetDatum));
+        final Optional<VerticalDatum> commonDatum = PseudoDatum.ofOperation(sourceCRS, targetCRS);
+        if (commonDatum.isEmpty()) {
+            throw new OperationNotFoundException(notFoundMessage(PseudoDatum.getDatumOrEnsemble(sourceCRS),
+                                                                 PseudoDatum.getDatumOrEnsemble(targetCRS)));
         }
         final VerticalCS sourceCS = sourceCRS.getCoordinateSystem();
         final VerticalCS targetCS = targetCRS.getCoordinateSystem();
@@ -844,7 +850,8 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         } catch (IllegalArgumentException | IncommensurableException exception) {
             throw new OperationNotFoundException(notFoundMessage(sourceCRS, targetCRS), exception);
         }
-        return asList(createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS, matrix));
+        return asList(createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS,
+                PseudoDatum.getEnsembleAccuracy(commonDatum.get()).orElse(null), matrix));
     }
 
     /**
@@ -855,6 +862,14 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * <p>This method returns only <em>one</em> step for a chain of concatenated operations (to be built by the caller).
      * But a list is returned because the same step may be implemented by different operation methods. Only one element
      * in the returned list should be selected (usually the first one).</p>
+     *
+     * @todo The current version performs only unit conversion and change of datum epoch,
+     *       assuming that everything else is equivalent. This is probably not sufficient,
+     *       as the relationship between two temporal datum may be non-linear.
+     *       We should invoke {@link PseudoDatum#ofOperation(TemporalCRS, TemporalCRS)}
+     *       for checking if the datum are equivalent, but doing so require that we remove
+     *       the origin attribute from {@link TemporalDatum}.
+     *       This change has been proposed to <abbr>OGC</abbr>.
      *
      * @param  sourceCRS  input coordinate reference system.
      * @param  targetCRS  output coordinate reference system.
@@ -898,7 +913,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
         final int translationColumn = matrix.getNumCol() - 1;           // Paranoiac check: should always be 1.
         final var translation = DoubleDouble.of(matrix.getNumber(0, translationColumn), true);
         matrix.setNumber(0, translationColumn, translation.add(epochShift));
-        return asList(createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS, matrix));
+        return asList(createFromAffineTransform(AXIS_CHANGES, sourceCRS, targetCRS, null, matrix));
     }
 
     /**
@@ -964,7 +979,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
                 CompoundCRS crs = factorySIS.crsFactory.createCompoundCRS(derivedFrom(sourceCRS), stepComponents);
                 stepSourceCRS = toAuthorityDefinition(CoordinateReferenceSystem.class, crs);
             }
-            operation = createFromAffineTransform(AXIS_CHANGES, sourceCRS, stepSourceCRS, select);
+            operation = createFromAffineTransform(AXIS_CHANGES, sourceCRS, stepSourceCRS, null, select);
         }
         /*
          * For each sub-operation, create a PassThroughOperation for the (stepSourceCRS → stepTargetCRS) operation.
@@ -1040,7 +1055,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
             final Matrix m = SubOperationInfo.createConstantOperation(infos, stepComponents.length,
                     stepSourceCRS.getCoordinateSystem().getDimension(),
                         targetCRS.getCoordinateSystem().getDimension());
-            operation = concatenate(operation, createFromAffineTransform(CONSTANTS, stepSourceCRS, targetCRS, m));
+            operation = concatenate(operation, createFromAffineTransform(CONSTANTS, stepSourceCRS, targetCRS, null, m));
         }
         return asList(operation);
     }
@@ -1066,6 +1081,7 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
      * @param  name       the identifier for the operation to be created.
      * @param  sourceCRS  the source coordinate reference system.
      * @param  targetCRS  the target coordinate reference system.
+     * @param  accuracy   the positional accuracy, or {@code null} if unspecified.
      * @param  matrix     the matrix which describe an affine transform operation.
      * @return the conversion or transformation.
      * @throws FactoryException if the operation cannot be created.
@@ -1073,11 +1089,16 @@ public class CoordinateOperationFinder extends CoordinateOperationRegistry {
     private CoordinateOperation createFromAffineTransform(final Identifier                name,
                                                           final CoordinateReferenceSystem sourceCRS,
                                                           final CoordinateReferenceSystem targetCRS,
+                                                          final PositionalAccuracy        accuracy,
                                                           final Matrix                    matrix)
             throws FactoryException
     {
         final MathTransform transform  = factorySIS.getMathTransformFactory().createAffineTransform(matrix);
-        return createFromMathTransform(properties(name), sourceCRS, targetCRS, transform, null, null, null);
+        final Map<String, Object> properties = properties(name);
+        if (accuracy != null) {
+            properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY, accuracy);
+        }
+        return createFromMathTransform(properties, sourceCRS, targetCRS, transform, null, null, null);
     }
 
     /**

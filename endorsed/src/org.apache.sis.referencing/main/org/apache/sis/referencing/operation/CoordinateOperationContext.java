@@ -126,7 +126,7 @@ public class CoordinateOperationContext implements Serializable {
                 areaOfInterest.getWestBoundLongitude() > Longitude.MIN_VALUE ||
                 areaOfInterest.getEastBoundLongitude() < Longitude.MAX_VALUE)
             {
-                final CoordinateOperationContext context = new CoordinateOperationContext();
+                final var context = new CoordinateOperationContext();
                 context.setAreaOfInterest(areaOfInterest);
                 return context;
             }

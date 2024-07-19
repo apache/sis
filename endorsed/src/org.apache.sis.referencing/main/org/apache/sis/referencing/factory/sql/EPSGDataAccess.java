@@ -66,21 +66,31 @@ import org.opengis.referencing.cs.*;
 import org.opengis.referencing.crs.*;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.operation.*;
-import org.apache.sis.metadata.privy.TransformationAccuracy;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.ImmutableIdentifier;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
+import org.apache.sis.referencing.cs.CoordinateSystems;
+import org.apache.sis.referencing.datum.BursaWolfParameters;
+import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
+import org.apache.sis.referencing.operation.DefaultOperationMethod;
+import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
+import org.apache.sis.referencing.factory.FactoryDataException;
+import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
+import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.privy.WKTKeywords;
 import org.apache.sis.referencing.privy.CoordinateOperations;
 import org.apache.sis.referencing.privy.ReferencingFactoryContainer;
 import org.apache.sis.referencing.privy.Formulas;
-import org.apache.sis.metadata.sql.privy.SQLUtilities;
 import org.apache.sis.referencing.internal.DeferredCoordinateOperation;
 import org.apache.sis.referencing.internal.DeprecatedCode;
 import org.apache.sis.referencing.internal.EPSGParameterDomain;
+import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
+import org.apache.sis.referencing.internal.PositionalAccuracyConstant;
 import org.apache.sis.referencing.internal.SignReversalComment;
 import org.apache.sis.referencing.internal.Resources;
-import org.apache.sis.referencing.internal.ParameterizedTransformBuilder;
+import static org.apache.sis.referencing.internal.ServicesForMetadata.CONNECTION;
+import org.apache.sis.parameter.DefaultParameterDescriptor;
+import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
 import org.apache.sis.system.Loggers;
 import org.apache.sis.system.Semaphores;
 import org.apache.sis.util.SimpleInternationalString;
@@ -90,36 +100,26 @@ import org.apache.sis.util.Localized;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.collection.BackingStoreException;
+import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.resources.Errors;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.privy.CollectionsExt;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.privy.URLs;
+import static org.apache.sis.util.privy.Constants.UTC;
+import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
 import org.apache.sis.temporal.LenientDateFormat;
 import org.apache.sis.metadata.iso.citation.DefaultCitation;
 import org.apache.sis.metadata.iso.citation.DefaultOnlineResource;
 import org.apache.sis.metadata.iso.extent.DefaultExtent;
 import org.apache.sis.metadata.iso.extent.DefaultGeographicBoundingBox;
-import org.apache.sis.parameter.DefaultParameterDescriptor;
-import org.apache.sis.parameter.DefaultParameterDescriptorGroup;
-import org.apache.sis.referencing.cs.CoordinateSystems;
-import org.apache.sis.referencing.datum.BursaWolfParameters;
-import org.apache.sis.referencing.datum.DefaultGeodeticDatum;
-import org.apache.sis.referencing.operation.DefaultOperationMethod;
-import org.apache.sis.referencing.operation.DefaultCoordinateOperationFactory;
-import org.apache.sis.referencing.factory.FactoryDataException;
-import org.apache.sis.referencing.factory.GeodeticAuthorityFactory;
-import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
-import org.apache.sis.util.collection.BackingStoreException;
-import org.apache.sis.util.resources.Vocabulary;
-import org.apache.sis.util.resources.Errors;
-import org.apache.sis.util.logging.Logging;
+import org.apache.sis.metadata.sql.privy.SQLUtilities;
 import org.apache.sis.measure.MeasurementRange;
 import org.apache.sis.measure.NumberRange;
 import org.apache.sis.measure.Units;
 import org.apache.sis.pending.jdk.JDK16;
-import static org.apache.sis.util.privy.Constants.UTC;
-import static org.apache.sis.util.Utilities.equalsIgnoreMetadata;
-import static org.apache.sis.referencing.internal.ServicesForMetadata.CONNECTION;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
@@ -2897,7 +2897,7 @@ next:                   while (r.next()) {
                     opProperties.put(CoordinateOperation.OPERATION_VERSION_KEY, version);
                     if (!Double.isNaN(accuracy)) {
                         opProperties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY,
-                                TransformationAccuracy.create(accuracy));
+                                PositionalAccuracyConstant.create(accuracy));
                     }
                     /*
                      * Creates the operation. Conversions should be the only operations allowed to have
