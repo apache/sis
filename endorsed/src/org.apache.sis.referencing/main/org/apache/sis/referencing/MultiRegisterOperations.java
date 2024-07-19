@@ -348,7 +348,7 @@ public class MultiRegisterOperations extends AbstractFactory implements Register
             return false;
         }
         for (int i=0; i<n; i++) {
-            if (PseudoDatum.getOperationAccuracy(sources.get(i), targets.get(i)).isEmpty()) {
+            if (PseudoDatum.getDatumOrEnsemble(sources.get(i), targets.get(i)).isEmpty()) {
                 return false;
             }
         }

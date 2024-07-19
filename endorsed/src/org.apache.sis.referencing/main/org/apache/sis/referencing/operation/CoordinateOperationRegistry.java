@@ -36,7 +36,6 @@ import org.opengis.util.NoSuchIdentifierException;
 import org.opengis.metadata.Identifier;
 import org.opengis.metadata.extent.Extent;
 import org.opengis.metadata.citation.Citation;
-import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.parameter.ParameterDescriptorGroup;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.IdentifiedObject;
@@ -1249,9 +1248,9 @@ class CoordinateOperationRegistry {
         final Map<String,Object> properties = new HashMap<>(4);
         properties.put(CoordinateOperation.NAME_KEY, name);
         if ((name == DATUM_SHIFT) || (name == ELLIPSOID_CHANGE)) {
-            properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY, new PositionalAccuracy[] {
-                      (name == DATUM_SHIFT) ? PositionalAccuracyConstant.DATUM_SHIFT_APPLIED
-                                            : PositionalAccuracyConstant.DATUM_SHIFT_OMITTED});
+            properties.put(CoordinateOperation.COORDINATE_OPERATION_ACCURACY_KEY,
+                    (name == DATUM_SHIFT) ? PositionalAccuracyConstant.DATUM_SHIFT_APPLIED
+                                          : PositionalAccuracyConstant.DATUM_SHIFT_OMITTED);
         }
         return properties;
     }
@@ -1330,7 +1329,7 @@ class CoordinateOperationRegistry {
          * source and target CRS) are compatible with the specified ones, then that operation is returned as-is.
          */
         if (transform instanceof CoordinateOperation) {
-            final CoordinateOperation operation = (CoordinateOperation) transform;
+            final var operation = (CoordinateOperation) transform;
             if (Objects.equals(operation.getSourceCRS(),     sourceCRS) &&
                 Objects.equals(operation.getTargetCRS(),     targetCRS) &&
                 Objects.equals(operation.getMathTransform(), transform) &&
