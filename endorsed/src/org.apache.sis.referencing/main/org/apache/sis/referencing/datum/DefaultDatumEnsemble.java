@@ -19,12 +19,11 @@ package org.apache.sis.referencing.datum;
 import java.util.Map;
 import java.util.List;
 import java.util.Collection;
-import java.util.Objects;
-import org.apache.sis.io.wkt.Formatter;
-import org.apache.sis.io.wkt.Convention;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.datum.Datum;
 import org.opengis.metadata.quality.PositionalAccuracy;
+import org.apache.sis.io.wkt.Formatter;
+import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.referencing.AbstractIdentifiedObject;
 import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.referencing.privy.WKTKeywords;
@@ -34,6 +33,7 @@ import org.apache.sis.util.Utilities;
 import org.apache.sis.util.resources.Errors;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.util.Objects;
 import org.opengis.referencing.datum.DatumEnsemble;
 
 

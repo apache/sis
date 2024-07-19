@@ -21,7 +21,6 @@ import java.util.Objects;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import jakarta.xml.bind.annotation.XmlRootElement;
-import org.opengis.metadata.Identifier;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.cs.CoordinateSystem;
 import org.opengis.referencing.datum.Datum;
@@ -36,6 +35,7 @@ import org.apache.sis.referencing.internal.Resources;
 import org.apache.sis.metadata.privy.ImplementationHelper;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.DatumEnsemble;
 
 

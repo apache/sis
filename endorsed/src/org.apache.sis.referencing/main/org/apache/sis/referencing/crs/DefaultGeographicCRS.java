@@ -44,8 +44,8 @@ import static org.apache.sis.util.privy.Constants.CRS83;
 import static org.apache.sis.util.privy.Constants.CRS84;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.metadata.Identifier;
 import org.opengis.referencing.datum.DatumEnsemble;
+import org.opengis.metadata.Identifier;
 
 
 /**

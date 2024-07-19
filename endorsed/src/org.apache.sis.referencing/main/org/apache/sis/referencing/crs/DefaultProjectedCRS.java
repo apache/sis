@@ -41,8 +41,8 @@ import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.Workaround;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.coordinate.MismatchedDimensionException;
 import org.opengis.referencing.datum.DatumEnsemble;
+import org.opengis.coordinate.MismatchedDimensionException;
 
 
 /**

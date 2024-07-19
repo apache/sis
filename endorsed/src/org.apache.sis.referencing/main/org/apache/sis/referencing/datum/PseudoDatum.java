@@ -24,14 +24,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.NoSuchElementException;
 import java.util.function.Function;
-import java.time.temporal.Temporal;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
-import org.opengis.metadata.Identifier;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.referencing.IdentifiedObject;
-import org.opengis.referencing.ObjectDomain;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.crs.*;
 import org.apache.sis.util.Utilities;
@@ -40,6 +37,13 @@ import org.apache.sis.util.LenientComparable;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.referencing.IdentifiedObjects;
 import org.apache.sis.referencing.GeodeticException;
+
+// Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import java.time.temporal.Temporal;
+import org.opengis.referencing.ObjectDomain;
+
+// Specific to the geoapi-4.0 branch:
+import org.opengis.metadata.Identifier;
 
 
 /**

@@ -30,7 +30,6 @@ import org.opengis.referencing.crs.GeodeticCRS;
 import org.opengis.referencing.crs.SingleCRS;
 import org.opengis.referencing.datum.GeodeticDatum;
 import org.opengis.referencing.datum.PrimeMeridian;
-import org.opengis.metadata.Identifier;
 import org.apache.sis.referencing.AbstractReferenceSystem;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.cs.AbstractCS;
@@ -46,6 +45,7 @@ import org.apache.sis.measure.Units;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.referencing.datum.DatumEnsemble;
+import org.opengis.metadata.Identifier;
 
 
 /**
