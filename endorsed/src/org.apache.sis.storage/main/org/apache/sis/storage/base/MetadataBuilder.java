@@ -3135,7 +3135,7 @@ public class MetadataBuilder {
 
     /**
      * Appends information from the metadata of a component.
-     * This is an helper method for building the metadata of an aggregate.
+     * This is a helper method for building the metadata of an aggregate.
      * Aggregate metadata should be set before to invoke this method, in particular:
      *
      * <ul>

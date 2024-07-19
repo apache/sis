@@ -65,7 +65,7 @@ public final class FontGIS extends Static {
     }
 
     /**
-     * Default font size in points. The value was choosen empirically.
+     * Default font size in points. The value was chosen empirically.
      */
     private static final int DEFAULT_SIZE = 18;
 

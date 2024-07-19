@@ -235,7 +235,7 @@ public final class CRSBuilder extends ReferencingFactoryContainer {
     /**
      * Returns a map with the given name associated to {@value org.opengis.referencing.IdentifiedObject#NAME_KEY}.
      * The given name shall be either an instance of {@link String} or {@link Identifier}.
-     * This is an helper method for creating geodetic objects with {@link #getCRSFactory()}.
+     * This is a helper method for creating geodetic objects with {@link #getCRSFactory()}.
      */
     private Map<String,?> properties(Object name) {
         if (name == null) {

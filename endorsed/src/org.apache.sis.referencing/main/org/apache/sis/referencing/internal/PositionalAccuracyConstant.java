@@ -14,16 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.referencing.privy;
+package org.apache.sis.referencing.internal;
 
-import java.util.Set;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.io.ObjectStreamException;
 import jakarta.xml.bind.annotation.XmlTransient;
 import javax.measure.Unit;
 import javax.measure.quantity.Length;
 import org.opengis.util.Record;
-import org.opengis.util.InternationalString;
+import org.opengis.util.RecordType;
 import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.metadata.quality.EvaluationMethodType;
 import org.opengis.metadata.quality.QuantitativeResult;
@@ -34,11 +35,16 @@ import org.opengis.referencing.operation.CoordinateOperation;
 import org.opengis.referencing.operation.Transformation;
 import org.apache.sis.measure.Units;
 import org.apache.sis.metadata.iso.citation.Citations;
+import org.apache.sis.metadata.iso.quality.DefaultMeasureReference;
+import org.apache.sis.metadata.iso.quality.DefaultEvaluationMethod;
 import org.apache.sis.metadata.iso.quality.DefaultConformanceResult;
 import org.apache.sis.metadata.iso.quality.DefaultAbsoluteExternalPositionalAccuracy;
-import org.apache.sis.system.Configuration;
-import org.apache.sis.referencing.internal.Resources;
+import org.apache.sis.metadata.iso.quality.DefaultQuantitativeResult;
+import org.apache.sis.metadata.privy.RecordSchemaSIS;
+import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.resources.Vocabulary;
+import org.apache.sis.util.iso.DefaultRecord;
+import org.apache.sis.system.Configuration;
 
 
 /**
@@ -77,7 +83,7 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
      * @see org.apache.sis.referencing.operation.AbstractCoordinateOperation#getLinearAccuracy()
      */
     @Configuration
-    private static final double DATUM_SHIFT_ACCURACY = 25;
+    public static final double DATUM_SHIFT_ACCURACY = 25;
 
     /**
      * Default accuracy of datum shifts when using an intermediate datum (typically WGS 84).
@@ -92,7 +98,9 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
      * Indicates that a {@linkplain org.opengis.referencing.operation.Transformation transformation}
      * requires a datum shift and some method has been applied. Datum shift methods often use
      * {@linkplain org.apache.sis.referencing.datum.BursaWolfParameters Bursa Wolf parameters},
-     * but other kind of method may have been applied as well.
+     * but other kinds of method may have been applied as well.
+     *
+     * @todo Should use the accuracy defined in {@code BoundCRS} instead.
      */
     public static final PositionalAccuracy DATUM_SHIFT_APPLIED;
 
@@ -110,28 +118,105 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
      * an intermediate datum, typically WGS 84.
      */
     public static final PositionalAccuracy INDIRECT_SHIFT_APPLIED;
+
+    /**
+     * Coordinate operation between reference frames in the same datum ensemble.
+     * Should be used only with coordinate operations that are conversion,
+     * but may also be used as a fallback if a datum ensemble didn't specified its accuracy.
+     */
+    public static final PositionalAccuracy SAME_DATUM_ENSEMBLE;
+
+    /**
+     * Name for accuracy metadata of coordinate transformations.
+     */
+    private static final DefaultMeasureReference TRANSFORMATION_REFERENCE =
+            new DefaultMeasureReference(Vocabulary.formatInternational(Vocabulary.Keys.TransformationAccuracy));
+
+    /**
+     * The evaluation method for coordinate transformations when the accuracy is specified in the EPSG database.
+     * Those evaluation method are considered "external" on the assumption that the operation results have been
+     * compared by the database maintainers against some results taken as true. By contrast, the accuracies that
+     * we have set to conservative values are considered "direct internal".
+     */
+    private static final DefaultEvaluationMethod TRANSFORMATION_METHOD =
+            new DefaultEvaluationMethod(EvaluationMethodType.DIRECT_EXTERNAL,
+                    Resources.formatInternational(Resources.Keys.AccuracyFromGeodeticDatase));
+
     static {
-        final InternationalString desc = Vocabulary.formatInternational(Vocabulary.Keys.TransformationAccuracy);
-        final InternationalString eval = Resources .formatInternational(Resources.Keys.ConformanceMeansDatumShift);
-        DATUM_SHIFT_APPLIED    = new PositionalAccuracyConstant(desc, eval, true);
-        DATUM_SHIFT_OMITTED    = new PositionalAccuracyConstant(desc, eval, false);
-        INDIRECT_SHIFT_APPLIED = new PositionalAccuracyConstant(desc, eval, true);
+        TRANSFORMATION_REFERENCE.transitionTo(DefaultMeasureReference.State.FINAL);
+        TRANSFORMATION_METHOD   .transitionTo(DefaultEvaluationMethod.State.FINAL);
+        final var desc   = Resources.formatInternational(Resources.Keys.ConformanceMeansDatumShift);
+        final var method = new DefaultEvaluationMethod(EvaluationMethodType.DIRECT_INTERNAL, desc);
+        final var pass   = new DefaultConformanceResult(Citations.SIS, desc, true);
+        final var fail   = new DefaultConformanceResult(Citations.SIS, desc, false);
+
+        DATUM_SHIFT_APPLIED    = new PositionalAccuracyConstant(TRANSFORMATION_REFERENCE, method, pass, DATUM_SHIFT_ACCURACY);
+        DATUM_SHIFT_OMITTED    = new PositionalAccuracyConstant(TRANSFORMATION_REFERENCE, method, fail, UNKNOWN_ACCURACY);
+        INDIRECT_SHIFT_APPLIED = new PositionalAccuracyConstant(TRANSFORMATION_REFERENCE, method, pass, INDIRECT_SHIFT_ACCURACY);
+
+        final var reference = new DefaultMeasureReference(Resources.formatInternational(Resources.Keys.OperationSameDatumEnsemble));
+        SAME_DATUM_ENSEMBLE = new PositionalAccuracyConstant(reference, null, null, null);
     }
 
     /**
-     * Creates an positional accuracy initialized to the given result.
+     * Creates a positional accuracy initialized to the given result.
+     *
+     * @param  reference  description of the positional accuracy.
+     * @param  method     method used for accuracy measurement, or {@code null}.
+     * @param  result     qualitative result, or {@code null} if none.
+     * @param  accuracy   the linear accuracy in metres, or {@code null} if none.
      */
-    @SuppressWarnings("deprecation")
-    private PositionalAccuracyConstant(final InternationalString measureDescription,
-            final InternationalString evaluationMethodDescription, final boolean pass)
+    private PositionalAccuracyConstant(final DefaultMeasureReference  reference,
+                                       final DefaultEvaluationMethod  method,
+                                       final DefaultConformanceResult result,
+                                       final Double accuracy)
     {
-        DefaultConformanceResult result = new DefaultConformanceResult(Citations.SIS, evaluationMethodDescription, pass);
-        setResults(Set.of(result));
-        setMeasureDescription(measureDescription);
-        setEvaluationMethodDescription(evaluationMethodDescription);
-        setEvaluationMethodType(EvaluationMethodType.DIRECT_INTERNAL);
+        setMeasureReference(reference);
+        setEvaluationMethod(method);
+        final var results = new ArrayList<Result>(2);
+        if (result != null) {
+            results.add(result);
+        }
+        if (accuracy != null) {
+            final RecordType type = RecordSchemaSIS.REAL;
+            final var record = new DefaultRecord(type);
+            record.setAll(accuracy);
+
+            final var r = new DefaultQuantitativeResult();
+            r.setValues(List.of(record));
+            r.setValueUnit(Units.METRE);        // In metres by definition in the EPSG database.
+            r.setValueType(type);
+            results.add(r);
+        }
+        setResults(results);
         transitionTo(State.FINAL);
     }
+
+    /**
+     * Creates a positional accuracy for a value specified in the EPSG database.
+     *
+     * @param  accuracy  the linear accuracy in metres.
+     */
+    private PositionalAccuracyConstant(final Double accuracy) {
+        this(TRANSFORMATION_REFERENCE, TRANSFORMATION_METHOD, null, accuracy);
+    }
+
+    /**
+     * Creates a positional accuracy for the given value, in metres.
+     * This method may return a cached value.
+     *
+     * @param  accuracy  the accuracy in metres.
+     * @return a positional accuracy with the given value.
+     */
+    public static PositionalAccuracy create(final Double accuracy) {
+        return CACHE.computeIfAbsent(accuracy, PositionalAccuracyConstant::new);
+    }
+
+    /**
+     * Cache the positional accuracies of coordinate transformations.
+     * Most coordinate operations use a small set of accuracy values.
+     */
+    private static final WeakValueHashMap<Double,PositionalAccuracy> CACHE = new WeakValueHashMap<>(Double.class);
 
     /**
      * Invoked on deserialization. Replace this instance by one of the constants, if applicable.
@@ -143,6 +228,7 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
         if (equals(DATUM_SHIFT_APPLIED))    return DATUM_SHIFT_APPLIED;
         if (equals(DATUM_SHIFT_OMITTED))    return DATUM_SHIFT_OMITTED;
         if (equals(INDIRECT_SHIFT_APPLIED)) return INDIRECT_SHIFT_APPLIED;
+        if (equals(SAME_DATUM_ENSEMBLE))    return SAME_DATUM_ENSEMBLE;
         return this;
     }
 
@@ -206,22 +292,6 @@ public final class PositionalAccuracyConstant extends DefaultAbsoluteExternalPos
              */
             if (operation instanceof Conversion) {
                 return 0;
-            }
-            /*
-             * If the coordinate operation is actually a transformation, checks if Bursa-Wolf parameters
-             * were available for the datum shift. This is SIS-specific. See field javadoc for a rational
-             * about the return values chosen.
-             */
-            if (operation instanceof Transformation) {
-                for (final PositionalAccuracy element : accuracies) {
-                    /*
-                     * Really need identity comparisons, not Object.equals(Object), because the latter
-                     * does not distinguish between DATUM_SHIFT_APPLIED and INDIRECT_SHIFT_APPLIED.
-                     */
-                    if (element == DATUM_SHIFT_APPLIED)    return DATUM_SHIFT_ACCURACY;
-                    if (element == DATUM_SHIFT_OMITTED)    return UNKNOWN_ACCURACY;
-                    if (element == INDIRECT_SHIFT_APPLIED) return INDIRECT_SHIFT_ACCURACY;
-                }
             }
             /*
              * If the coordinate operation is a compound of other coordinate operations, returns the sum of their accuracy,

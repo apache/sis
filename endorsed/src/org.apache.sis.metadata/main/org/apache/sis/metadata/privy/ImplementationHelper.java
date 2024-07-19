@@ -35,7 +35,7 @@ import org.apache.sis.util.privy.CollectionsExt;
 /**
  * Miscellaneous utility methods for implementation of metadata classes.
  * Many methods in this class are related to (un)marshalling.
- * This is not an helper class for <em>usage</em> of metadata.
+ * This is not a helper class for <em>usage</em> of metadata.
  *
  * @author  Martin Desruisseaux (Geomatys)
  */

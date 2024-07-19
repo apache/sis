@@ -2086,8 +2086,16 @@ public enum CommonCRS {
          */
         public boolean datumUsedBy(final CoordinateReferenceSystem crs) {
             for (final SingleCRS component : CRS.getSingleComponents(crs)) {
-                if (ReferencingUtilities.uses(component, datum)) {
+                if (Utilities.equalsIgnoreMetadata(datum, component.getDatum())) {
                     return true;
+                }
+                final var ensemble = getDatumEnsemble(component);
+                if (ensemble != null) {
+                    for (final Datum member : ensemble.getMembers()) {
+                        if (Utilities.equalsIgnoreMetadata(datum, member)) {
+                            return true;
+                        }
+                    }
                 }
             }
             return false;

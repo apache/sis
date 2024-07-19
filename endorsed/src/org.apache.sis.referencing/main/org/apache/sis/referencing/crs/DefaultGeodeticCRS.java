@@ -146,7 +146,7 @@ class DefaultGeodeticCRS extends AbstractSingleCRS<GeodeticDatum> implements Geo
     /**
      * Returns the datum, or {@code null} if the CRS is associated only to a datum ensemble.
      *
-     * This method is overridden is subclasses for documentation purpose only, mostly for showing
+     * This method is overridden in subclasses for documentation purpose only, mostly for showing
      * this method in the appropriate position in javadoc (instead of at the bottom of the page).
      * If {@code DefaultGeodeticCRS} is made public in a future SIS version, then we could remove
      * the overridden methods.

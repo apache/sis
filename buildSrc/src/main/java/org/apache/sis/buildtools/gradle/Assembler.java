@@ -90,7 +90,7 @@ final class Assembler extends ZipWriter.Apache implements FileFilter {
     private boolean includeDependencies;
 
     /**
-     * Creates an helper object for creating the assembly.
+     * Creates a helper object for creating the assembly.
      *
      * @param  project  the project for which to create an assembly.
      * @param  out      output stream of the ZIP file to create.

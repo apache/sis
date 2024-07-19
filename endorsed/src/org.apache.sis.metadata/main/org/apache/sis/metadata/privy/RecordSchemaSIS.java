@@ -14,11 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.metadata.internal;
+package org.apache.sis.metadata.privy;
 
 import java.util.Map;
 import java.io.Serializable;
 import java.io.ObjectStreamException;
+import org.apache.sis.metadata.internal.Resources;
 import org.opengis.util.TypeName;
 import org.opengis.util.InternationalString;
 import org.apache.sis.util.privy.Constants;
@@ -32,7 +33,7 @@ import org.apache.sis.util.resources.Vocabulary;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-@SuppressWarnings("serial")  // serialVersionUID not needed because of writeReplace().
+@SuppressWarnings({"serial", "removal"})  // serialVersionUID not needed because of writeReplace().
 public final class RecordSchemaSIS extends DefaultRecordSchema implements Serializable {
     /**
      * The schema used in SIS for creating records.

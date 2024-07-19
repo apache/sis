@@ -174,6 +174,9 @@ fun addExportForTests(args : MutableList<String>) {
     addExport(args, "org.apache.sis.metadata",          "org.apache.sis.xml.bind.gcx",
                     "org.apache.sis.referencing")
 
+    addExport(args, "org.apache.sis.referencing",       "org.apache.sis.referencing.internal",
+                    "org.apache.sis.openoffice")
+
     addExport(args, "org.apache.sis.feature",           "org.apache.sis.feature.privy",
                     "org.apache.sis.storage.sql")
 

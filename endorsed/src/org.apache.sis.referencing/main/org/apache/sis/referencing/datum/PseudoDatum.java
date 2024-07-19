@@ -16,6 +16,7 @@
  */
 package org.apache.sis.referencing.datum;
 
+import java.util.ArrayDeque;
 import java.util.Set;
 import java.util.Collection;
 import java.util.Iterator;
@@ -26,6 +27,7 @@ import java.util.function.Function;
 import java.io.Serializable;
 import org.opengis.util.GenericName;
 import org.opengis.util.InternationalString;
+import org.opengis.metadata.quality.PositionalAccuracy;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.datum.*;
 import org.opengis.referencing.crs.*;
@@ -99,26 +101,6 @@ public abstract class PseudoDatum<D extends Datum> implements Datum, LenientComp
      */
     protected PseudoDatum(final DefaultDatumEnsemble<D> ensemble) {
         this.ensemble = Objects.requireNonNull(ensemble);
-    }
-
-    /**
-     * Returns the datum of the given <abbr>CRS</abbr> if presents, or the datum ensemble otherwise.
-     * This is an alternative to the {@code of(…)} methods when the caller does not need to view the
-     * object as a datum.
-     *
-     * @param  crs  the <abbr>CRS</abbr> from which to get the datum or ensemble, or {@code null}.
-     * @return the datum if present, or the datum ensemble otherwise, or {@code null}.
-     */
-    public static IdentifiedObject getDatumOrEnsemble(final SingleCRS crs) {
-        if (crs == null) return null;
-        final Datum datum = crs.getDatum();
-        if (datum != null) {
-            if (datum instanceof PseudoDatum<?>) {
-                return ((PseudoDatum) datum).ensemble;
-            }
-            return datum;
-        }
-        return getDatumEnsemble(crs);
     }
 
     /**
@@ -201,6 +183,210 @@ public abstract class PseudoDatum<D extends Datum> implements Datum, LenientComp
     }
 
     /**
+     * Returns the datum or pseudo-datum of the result of an operation between the given geodetic <abbr>CRS</abbr>s.
+     * If the two given coordinate reference systems are associated to the same datum, then this method returns
+     * the <var>target</var> datum. Otherwise, this method returns a pseudo-datum for the largest ensemble which
+     * fully contains the datum or datum ensemble of the other <abbr>CRS</abbr>. If none of the <var>source</var>
+     * or <var>target</var> datum ensembles met that criterion, then this method returns an empty value.
+     * A non-empty value means that it is okay, for low accuracy requirements, to ignore the datum shift.
+     *
+     * @param  source  the source <abbr>CRS</abbr> of a coordinate operation.
+     * @param  target  the target <abbr>CRS</abbr> of a coordinate operation.
+     * @return datum or pseudo-datum of the coordinate operation result if it is okay to ignore datum shift.
+     */
+    public static Optional<GeodeticDatum> ofOperation(final GeodeticCRS source, final GeodeticCRS target) {
+        return ofOperation(source, source.getDatum(),
+                           target, target.getDatum(),
+                           Geodetic::new);
+    }
+
+    /**
+     * Returns the datum or pseudo-datum of the result of an operation between the given vertical <abbr>CRS</abbr>s.
+     * See {@link #ofOperation(GeodeticCRS, GeodeticCRS)} for more information.
+     *
+     * @param  source  the source <abbr>CRS</abbr> of a coordinate operation.
+     * @param  target  the target <abbr>CRS</abbr> of a coordinate operation.
+     * @return datum or pseudo-datum of the coordinate operation result if it is okay to ignore datum shift.
+     */
+    public static Optional<VerticalDatum> ofOperation(final VerticalCRS source, final VerticalCRS target) {
+        return ofOperation(source, source.getDatum(),
+                           target, target.getDatum(),
+                           Vertical::new);
+    }
+
+    /**
+     * Returns the datum or pseudo-datum of the result of an operation between the given temporal <abbr>CRS</abbr>s.
+     * See {@link #ofOperation(GeodeticCRS, GeodeticCRS)} for more information.
+     *
+     * @param  source  the source <abbr>CRS</abbr> of a coordinate operation.
+     * @param  target  the target <abbr>CRS</abbr> of a coordinate operation.
+     * @return datum or pseudo-datum of the coordinate operation result if it is okay to ignore datum shift.
+     */
+    public static Optional<TemporalDatum> ofOperation(final TemporalCRS source, final TemporalCRS target) {
+        return ofOperation(source, source.getDatum(),
+                           target, target.getDatum(),
+                           Time::new);
+    }
+
+    /**
+     * Returns the datum or pseudo-datum of the result of an operation between the given engineering <abbr>CRS</abbr>s.
+     * See {@link #ofOperation(GeodeticCRS, GeodeticCRS)} for more information.
+     *
+     * @param  source  the source <abbr>CRS</abbr> of a coordinate operation.
+     * @param  target  the target <abbr>CRS</abbr> of a coordinate operation.
+     * @return datum or pseudo-datum of the coordinate operation result if it is okay to ignore datum shift.
+     */
+    public static Optional<EngineeringDatum> ofOperation(final EngineeringCRS source, final EngineeringCRS target) {
+        return ofOperation(source, source.getDatum(),
+                           target, target.getDatum(),
+                           Engineering::new);
+    }
+
+    /**
+     * Returns the datum or pseudo-datum of a coordinate operation from <var>source</var> to <var>target</var>.
+     * If the two given coordinate reference systems are associated to the same datum, then this method returns
+     * the <var>target</var> datum. Otherwise, this method returns a pseudo-datum for the largest ensemble which
+     * fully contains the datum or datum ensemble of the other <abbr>CRS</abbr>. If none of the <var>source</var>
+     * or <var>target</var> datum ensembles met that criterion, then this method returns an empty value.
+     * A non-empty value means that it is okay, for low accuracy requirements, to ignore the datum shift.
+     *
+     * @param  source       the source <abbr>CRS</abbr> of a coordinate operation.
+     * @param  sourceDatum  the datum of the source <abbr>CRS</abbr>.
+     * @param  target       the target <abbr>CRS</abbr> of a coordinate operation.
+     * @param  targetDatum  the datum of the target <abbr>CRS</abbr>.
+     * @param  constructor  function to invoke for wrapping a datum ensemble in a pseudo-datum.
+     * @return datum or pseudo-datum of the coordinate operation result if it is okay to ignore datum shift.
+     */
+    @SuppressWarnings("unchecked")          // Casts are safe because callers know the method signature of <D>.
+    private static <C extends SingleCRS, D extends Datum, R extends IdentifiedObject> Optional<R> ofOperation(
+            final C source, final R sourceDatum,
+            final C target, final R targetDatum,
+            final Function<DefaultDatumEnsemble<D>, R> constructor)
+    {
+        if (sourceDatum != null && Utilities.equalsIgnoreMetadata(sourceDatum, targetDatum)) {
+            return Optional.of(targetDatum);
+        }
+        DefaultDatumEnsemble<D> sourceEnsemble;
+        DefaultDatumEnsemble<D> targetEnsemble;
+        DefaultDatumEnsemble<D> selected;
+        if ((isMember(selected = targetEnsemble = (DefaultDatumEnsemble<D>) getDatumEnsemble(target), sourceDatum)) ||
+            (isMember(selected = sourceEnsemble = (DefaultDatumEnsemble<D>) getDatumEnsemble(source), targetDatum)))
+        {
+            return Optional.of(constructor.apply(selected));
+        }
+        if (sourceEnsemble != null && targetEnsemble != null) {
+            selected = targetEnsemble;
+            Collection<D> large = targetEnsemble.getMembers();
+            Collection<D> small = sourceEnsemble.getMembers();
+            if (small.size() > large.size()) {
+                selected = sourceEnsemble;
+                var t = large;
+                large = small;
+                small = t;
+            }
+            small = new ArrayDeque<>(small);
+            for (final Datum member : large) {
+                final Iterator<D> it = small.iterator();
+                while (it.hasNext()) {
+                    if (Utilities.equalsIgnoreMetadata(member, it.next())) {
+                        it.remove();
+                        if (small.isEmpty()) {
+                            /*
+                             * Found all members of the smaller ensemble. Take the larger ensemble,
+                             * as it contains both ensembles and should have conservative accuracy.
+                             */
+                            return Optional.of(constructor.apply(selected));
+                        }
+                        break;      // For removing only the first match.
+                    }
+                }
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Returns whether the given datum is a member of the given ensemble.
+     *
+     * @param  datum     the datum to test, or {@code null}.
+     * @param  ensemble  the ensemble to test, or {@code null}.
+     * @return whether the ensemble contains the given datum.
+     */
+    private static boolean isMember(final DefaultDatumEnsemble<?> ensemble, final IdentifiedObject datum) {
+        if (ensemble != null) {
+            for (final Datum member : ensemble.getMembers()) {
+                if (Utilities.equalsIgnoreMetadata(datum, member)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns the datum or ensemble of a coordinate operation from <var>source</var> to <var>target</var>.
+     * If the two given coordinate reference systems are associated to the same datum, then this method returns
+     * the <var>target</var> datum. Otherwise, this method returns the largest ensemble which fully contains the
+     * datum or datum ensemble of the other <abbr>CRS</abbr>. If none of the <var>source</var> or <var>target</var>
+     * datum ensembles met that criterion, then this method returns an empty value.
+     * A non-empty value means that it is okay, for low accuracy requirements, to ignore the datum shift.
+     *
+     * <p>This is an alternative to the {@code ofOperation(…)} methods when the caller does not need to view
+     * the returned object as a datum.</p>
+     *
+     * @param  source  the source <abbr>CRS</abbr> of a coordinate operation, or {@code null}.
+     * @param  target  the target <abbr>CRS</abbr> of a coordinate operation, or {@code null}.
+     * @return datum or datum ensemble of the coordinate operation result if it is okay to ignore datum shift.
+     */
+    public static Optional<IdentifiedObject> getDatumOrEnsemble(final SingleCRS source, final SingleCRS target) {
+        if (source == null) return Optional.ofNullable(getDatumOrEnsemble(target));
+        if (target == null) return Optional.ofNullable(getDatumOrEnsemble(source));
+        return ofOperation(source, source.getDatum(),
+                           target, target.getDatum(),
+                           (ensemble) -> ensemble);
+    }
+
+    /**
+     * Returns the datum of the given <abbr>CRS</abbr> if presents, or the datum ensemble otherwise.
+     * This is an alternative to the {@code of(…)} methods when the caller does not need to view the
+     * returned object as a datum.
+     *
+     * @param  crs  the <abbr>CRS</abbr> from which to get the datum or ensemble, or {@code null}.
+     * @return the datum if present, or the datum ensemble otherwise, or {@code null}.
+     */
+    public static IdentifiedObject getDatumOrEnsemble(final SingleCRS crs) {
+        if (crs == null) return null;
+        final Datum datum = crs.getDatum();
+        if (datum != null) {
+            if (datum instanceof PseudoDatum<?>) {
+                return ((PseudoDatum) datum).ensemble;
+            }
+            return datum;
+        }
+        return getDatumEnsemble(crs);
+    }
+
+    /**
+     * If the given object is a datum ensemble or a wrapper for a datum ensemble, returns its accuracy.
+     * This method recognizes the {@link DefaultDatumEnsemble} and {@link PseudoDatum} types.
+     *
+     * @param  object  the object from which to get the ensemble accuracy, or {@code null}.
+     * @return the datum ensemble accuracy if the given object is a datum ensemble or a wrapper.
+     * @throws NullPointerException if the given object should provide an accuracy but didn't.
+     */
+    public static Optional<PositionalAccuracy> getEnsembleAccuracy(final IdentifiedObject object) {
+        final DefaultDatumEnsemble<?> ensemble;
+        if (object instanceof DefaultDatumEnsemble<?>) {
+            ensemble = (DefaultDatumEnsemble<?>) object;
+        } else if (object instanceof PseudoDatum<?>) {
+            ensemble = ((PseudoDatum<?>) object).ensemble;
+        } else {
+            return Optional.empty();
+        }
+        return Optional.of(ensemble.getEnsembleAccuracy());     // Intentional NullPointerException if this property is null.
+    }
+
+    /**
      * Returns the GeoAPI interface of the ensemble members.
      * It should also be the interface implemented by this class.
      *
@@ -242,31 +428,13 @@ public abstract class PseudoDatum<D extends Datum> implements Datum, LenientComp
     }
 
     /**
-     * Returns the anchor point common to all datum members, if any.
-     *
-     * @return value common to all ensemble members, or {@code null} if none.
-     */
-    @Override
-    public InternationalString getAnchorPoint() {
-        return getCommonNullableValue(Datum::getAnchorPoint);
-    }
-
-    /**
-     * Returns the realization epoch common to all datum members, if any.
-     *
-     * @return value common to all ensemble members, or {@code null} if none.
-     */
-    @Override
-    public Date getRealizationEpoch() {
-        return getCommonNullableValue(Datum::getRealizationEpoch);
-    }
-
-    /**
      * Returns the domain of validity common to all datum members, if any.
      *
      * @return value common to all ensemble members, or {@code null} if none.
+     * @hidden
      */
     @Override
+    @Deprecated
     public Extent getDomainOfValidity() {
         return getCommonNullableValue(Datum::getDomainOfValidity);
     }
@@ -275,10 +443,36 @@ public abstract class PseudoDatum<D extends Datum> implements Datum, LenientComp
      * Returns the scope common to all datum members, if any.
      *
      * @return value common to all ensemble members, or {@code null} if none.
+     * @hidden
      */
     @Override
+    @Deprecated
     public InternationalString getScope() {
         return getCommonNullableValue(Datum::getScope);
+    }
+
+    /**
+     * Returns the anchor point common to all datum members, if any.
+     *
+     * @return value common to all ensemble members, or {@code null} if none.
+     * @hidden
+     */
+    @Override
+    @Deprecated
+    public InternationalString getAnchorPoint() {
+        return getCommonNullableValue(Datum::getAnchorPoint);
+    }
+
+    /**
+     * Returns the realization epoch common to all datum members, if any.
+     *
+     * @return value common to all ensemble members, or {@code null} if none.
+     * @hidden
+     */
+    @Override
+    @Deprecated
+    public Date getRealizationEpoch() {
+        return getCommonNullableValue(Datum::getRealizationEpoch);
     }
 
     /**
@@ -311,7 +505,7 @@ check:  if (it.hasNext()) {
      *
      * @param  <V>     type of value.
      * @param  getter  method to invoke on each member for getting the value.
-     * @return a value common to all members, or {@code null} if none.
+     * @return a value common to all members, or empty if there is no common value.
      */
     final <V> Optional<V> getCommonOptionalValue(final Function<D, Optional<V>> getter) {
         final Iterator<D> it = ensemble.getMembers().iterator();
@@ -496,13 +690,12 @@ check:  if (it.hasNext()) {
         }
 
         /**
-         * Returns a datum type which is common to all members of the datum ensemble.
-         *
-         * @return the common datum type.
+         * @deprecated Replaced by {@link #getRealizationMethod()}.
          */
         @Override
+        @Deprecated
         public VerticalDatumType getVerticalDatumType() {
-            return getCommonMandatoryValue(VerticalDatum::getVerticalDatumType);
+            return getCommonNullableValue(VerticalDatum::getVerticalDatumType);
         }
     }
 
