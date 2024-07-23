@@ -14,25 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.storage.gimi.isobmff.iso14496_12;
+
+import java.io.IOException;
+import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.storage.gimi.isobmff.Box;
 
 /**
- * GIMI store.
  *
- * @author  Johann Sorel (Geomatys)
+ * Container : ExtendedTypeBox
+ *
+ * @author Johann Sorel (Geomatys)
  */
-module org.apache.sis.storage.gimi {
-    // Dependencies used in public API.
-    requires transitive org.apache.sis.referencing;
-    requires transitive org.apache.sis.storage;
+public final class CombinaisonType extends Box {
 
-    provides org.apache.sis.storage.DataStoreProvider
-            with org.apache.sis.storage.gimi.GimiProvider;
+    public static final String FCC = "tyco";
 
-    provides org.apache.sis.storage.gimi.isobmff.BoxRegistry
-            with org.apache.sis.storage.gimi.isobmff.gimi.GIMI,
-                 org.apache.sis.storage.gimi.isobmff.iso14496_10.ISO14496_10,
-                 org.apache.sis.storage.gimi.isobmff.iso14496_12.ISO14496_12,
-                 org.apache.sis.storage.gimi.isobmff.iso23001_17.ISO23001_17,
-                 org.apache.sis.storage.gimi.isobmff.iso23008_12.ISO23008_12;
+    /**
+     * List of compatible brands.
+     */
+    public int[] compatibleBrands;
+
+    @Override
+    public void readProperties(ChannelDataInput cdi) throws IOException {
+        int nbCmp = Math.toIntExact( ((boxOffset + size) - cdi.getStreamPosition()) / 4);
+        compatibleBrands = cdi.readInts(nbCmp);
+    }
 
 }

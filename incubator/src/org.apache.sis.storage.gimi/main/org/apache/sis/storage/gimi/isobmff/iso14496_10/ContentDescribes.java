@@ -14,25 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.storage.gimi.isobmff.iso14496_10;
+
+import java.io.IOException;
+import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.storage.gimi.isobmff.Box;
 
 /**
- * GIMI store.
  *
- * @author  Johann Sorel (Geomatys)
+ * @author Johann Sorel (Geomatys)
  */
-module org.apache.sis.storage.gimi {
-    // Dependencies used in public API.
-    requires transitive org.apache.sis.referencing;
-    requires transitive org.apache.sis.storage;
+public class ContentDescribes extends Box{
 
-    provides org.apache.sis.storage.DataStoreProvider
-            with org.apache.sis.storage.gimi.GimiProvider;
+    public static final String FCC = "cdsc";
 
-    provides org.apache.sis.storage.gimi.isobmff.BoxRegistry
-            with org.apache.sis.storage.gimi.isobmff.gimi.GIMI,
-                 org.apache.sis.storage.gimi.isobmff.iso14496_10.ISO14496_10,
-                 org.apache.sis.storage.gimi.isobmff.iso14496_12.ISO14496_12,
-                 org.apache.sis.storage.gimi.isobmff.iso23001_17.ISO23001_17,
-                 org.apache.sis.storage.gimi.isobmff.iso23008_12.ISO23008_12;
+    public int fromId;
+    public int[] toId;
+
+    @Override
+    protected void readProperties(ChannelDataInput cdi) throws IOException {
+        fromId = cdi.readUnsignedShort();
+        toId = new int[cdi.readUnsignedShort()];
+        for (int i = 0; i < toId.length ; i++) {
+            toId[i] = cdi.readUnsignedShort();
+        }
+    }
+
+
 
 }

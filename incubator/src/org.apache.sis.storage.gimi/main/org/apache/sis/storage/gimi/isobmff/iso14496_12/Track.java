@@ -14,25 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.storage.gimi.isobmff.iso14496_12;
+
+import org.apache.sis.storage.gimi.isobmff.Box;
 
 /**
- * GIMI store.
+ * Container: Movie
  *
- * @author  Johann Sorel (Geomatys)
+ * @author Johann Sorel (Geomatys)
  */
-module org.apache.sis.storage.gimi {
-    // Dependencies used in public API.
-    requires transitive org.apache.sis.referencing;
-    requires transitive org.apache.sis.storage;
+public final class Track extends Box {
 
-    provides org.apache.sis.storage.DataStoreProvider
-            with org.apache.sis.storage.gimi.GimiProvider;
+    public static final String FCC = "trak";
 
-    provides org.apache.sis.storage.gimi.isobmff.BoxRegistry
-            with org.apache.sis.storage.gimi.isobmff.gimi.GIMI,
-                 org.apache.sis.storage.gimi.isobmff.iso14496_10.ISO14496_10,
-                 org.apache.sis.storage.gimi.isobmff.iso14496_12.ISO14496_12,
-                 org.apache.sis.storage.gimi.isobmff.iso23001_17.ISO23001_17,
-                 org.apache.sis.storage.gimi.isobmff.iso23008_12.ISO23008_12;
+    @Override
+    public boolean isContainer() {
+        return true;
+    }
 
 }

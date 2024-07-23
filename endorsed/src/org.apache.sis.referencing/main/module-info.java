@@ -181,6 +181,7 @@ module org.apache.sis.referencing {
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.geotiff,
             org.apache.sis.storage.earthobservation,
+            org.apache.sis.storage.gimi,                    // In the "incubator" sub-project.
             org.apache.sis.portrayal,
             org.apache.sis.console,
             org.apache.sis.openoffice,

@@ -14,25 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.storage.gimi.isobmff.gimi;
+
+import java.io.IOException;
+import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemFullProperty;
 
 /**
- * GIMI store.
  *
- * @author  Johann Sorel (Geomatys)
+ * @author Johann Sorel (Geomatys)
  */
-module org.apache.sis.storage.gimi {
-    // Dependencies used in public API.
-    requires transitive org.apache.sis.referencing;
-    requires transitive org.apache.sis.storage;
+public final class ModelTransformationProperty extends ItemFullProperty {
 
-    provides org.apache.sis.storage.DataStoreProvider
-            with org.apache.sis.storage.gimi.GimiProvider;
+    public static final String UUID = "763cf838-b630-440b-84f8-be44bf9910af";
 
-    provides org.apache.sis.storage.gimi.isobmff.BoxRegistry
-            with org.apache.sis.storage.gimi.isobmff.gimi.GIMI,
-                 org.apache.sis.storage.gimi.isobmff.iso14496_10.ISO14496_10,
-                 org.apache.sis.storage.gimi.isobmff.iso14496_12.ISO14496_12,
-                 org.apache.sis.storage.gimi.isobmff.iso23001_17.ISO23001_17,
-                 org.apache.sis.storage.gimi.isobmff.iso23008_12.ISO23008_12;
+    public double[] transform;
+
+    @Override
+    protected void readProperties(ChannelDataInput cdi) throws IOException {
+        if ((flags & 0x01) == 1) {
+            //2D
+            transform = cdi.readDoubles(6);
+        } else {
+            //3D
+            transform = cdi.readDoubles(12);
+        }
+    }
+
 
 }
