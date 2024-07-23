@@ -175,6 +175,18 @@ publishing {
                 description = "Read and write files in the Shapefile format."
             }
         }
+        create<MavenPublication>("storage.gimi") {
+            var module = "org.apache.sis.storage.gimi"
+            groupId    = "org.apache.sis.storage"
+            artifactId = "sis-gimi"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS GIMI Coverage storage"
+                description = "Read files in ISOBMFF GIMI format."
+            }
+        }
         create<MavenPublication>("storage.coveragejson") {
             var module = "org.apache.sis.storage.coveragejson"
             groupId    = "org.apache.sis.storage"
