@@ -412,7 +412,7 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
 
     /**
      * Returns the parameter at the given index. If this {@code BursaWolfParameters} is time-dependent,
-     * then the returned value shall be corrected the time elapsed since the reference time.
+     * then the returned value shall be corrected for the time elapsed since the reference time.
      *
      * The {@code factor} argument shall be the value computed by {@link #period(Temporal)},
      * multiplied by 1000 for all {@code index} values except 6.
@@ -498,17 +498,17 @@ public class BursaWolfParameters extends FormattableObject implements Cloneable,
         DoubleDouble RS = DoubleDouble.SECONDS_TO_RADIANS;
         DoubleDouble S = param(6, period).divide(PPM).add(1);       // S = 1 + dS / PPM;
         RS = RS.multiply(S);                                        // RS = toRadians(1″) * S;
-        final DoubleDouble rX = param(3, mp).multiply(RS);
-        final DoubleDouble rY = param(4, mp).multiply(RS);
-        final DoubleDouble rZ = param(5, mp).multiply(RS);
-        final DoubleDouble mX = rX.negate();
-        final DoubleDouble mY = rY.negate();
-        final DoubleDouble mZ = rZ.negate();
+        final DoubleDouble pX = param(3, mp).multiply(RS);
+        final DoubleDouble pY = param(4, mp).multiply(RS);
+        final DoubleDouble pZ = param(5, mp).multiply(RS);
+        final DoubleDouble mX = pX.negate();
+        final DoubleDouble mY = pY.negate();
+        final DoubleDouble mZ = pZ.negate();
         final Integer       O = 0;                                  // Fetch Integer instance only once.
         return Matrices.create(4, 4, new Number[] {
-                 S,  mZ,  rY,  param(0, mp),
-                rZ,   S,  mX,  param(1, mp),
-                mY,  rX,   S,  param(2, mp),
+                 S,  mZ,  pY,  param(0, mp),
+                pZ,   S,  mX,  param(1, mp),
+                mY,  pX,   S,  param(2, mp),
                  O,   O,   O,  1});
     }
 
