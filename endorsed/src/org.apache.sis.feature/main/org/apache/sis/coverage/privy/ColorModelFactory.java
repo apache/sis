@@ -258,7 +258,6 @@ public final class ColorModelFactory {
      *
      * @param  other the other object to compare for equality.
      * @return whether the two objects are equal.
-     * @hidden
      */
     @Override
     public boolean equals(final Object other) {
@@ -283,7 +282,6 @@ public final class ColorModelFactory {
      * This method is public as an implementation side-effect.
      *
      * @return a hash code for using this factory as a key.
-     * @hidden
      */
     @Override
     public int hashCode() {

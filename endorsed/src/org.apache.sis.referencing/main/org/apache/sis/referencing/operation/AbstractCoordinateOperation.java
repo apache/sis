@@ -922,6 +922,8 @@ check:      for (int isTarget=0; ; isTarget++) {        // 0 == source check; 1 
      * See {@link AbstractIdentifiedObject#computeHashCode()} for more information.
      *
      * @return the hash code value. This value may change in any future Apache SIS version.
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     protected long computeHashCode() {

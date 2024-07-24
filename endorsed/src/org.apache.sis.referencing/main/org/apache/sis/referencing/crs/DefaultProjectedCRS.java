@@ -324,9 +324,7 @@ public class DefaultProjectedCRS extends AbstractDerivedCRS implements Projected
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @return {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     protected long computeHashCode() {

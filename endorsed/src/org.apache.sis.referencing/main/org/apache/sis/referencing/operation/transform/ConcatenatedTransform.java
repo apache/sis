@@ -960,7 +960,7 @@ class ConcatenatedTransform extends AbstractMathTransform implements Serializabl
     }
 
     /**
-     * {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     protected int computeHashCode() {

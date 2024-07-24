@@ -203,6 +203,8 @@ abstract class AbstractDerivedCRS extends AbstractCRS implements DerivedCRS {
      *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
      *                 properties relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
@@ -237,9 +239,7 @@ abstract class AbstractDerivedCRS extends AbstractCRS implements DerivedCRS {
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @return {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     protected long computeHashCode() {

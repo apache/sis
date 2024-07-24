@@ -488,6 +488,7 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * for more information.
      *
      * @return the hash code value. This value may change in any future Apache SIS version.
+     *
      * @hidden because nothing new to said.
      */
     @Override

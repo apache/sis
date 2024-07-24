@@ -381,7 +381,7 @@ final class CopyTransform extends AbstractLinearTransform {
     }
 
     /**
-     * {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     protected int computeHashCode() {

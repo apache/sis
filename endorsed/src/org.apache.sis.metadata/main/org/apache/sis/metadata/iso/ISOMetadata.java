@@ -220,7 +220,7 @@ public class ISOMetadata extends ModifiableMetadata implements IdentifiedObject,
     // --------------------------------------------------------------------------------------
 
     /**
-     * @hidden
+     * @hidden because nothing new to said.
      */
     @Override
     public boolean transitionTo(final State target) {

@@ -247,7 +247,7 @@ public class DirectPosition1D extends AbstractDirectPosition implements Serializ
     }
 
     /**
-     * {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     public int hashCode() {

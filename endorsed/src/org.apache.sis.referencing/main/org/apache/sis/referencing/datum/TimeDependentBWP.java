@@ -251,9 +251,7 @@ public class TimeDependentBWP extends BursaWolfParameters {
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @return {@code true} if the parameters describe no operation.
+     * @hidden because nothing new to said.
      */
     @Override
     public boolean isIdentity() {
@@ -261,9 +259,7 @@ public class TimeDependentBWP extends BursaWolfParameters {
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @return {@code true} if the parameters describe a translation only.
+     * @hidden because nothing new to said.
      */
     @Override
     public boolean isTranslation() {
@@ -285,9 +281,7 @@ public class TimeDependentBWP extends BursaWolfParameters {
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @return {@code true} if the given object is equal to this {@code TimeDependentBWP}.
+     * @hidden because nothing new to said.
      */
     @Override
     public boolean equals(final Object object) {
@@ -295,9 +289,7 @@ public class TimeDependentBWP extends BursaWolfParameters {
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @return the hash code value. This value does not need to be the same in past or future versions of this class.
+     * @hidden because nothing new to said.
      */
     @Override
     public int hashCode() {

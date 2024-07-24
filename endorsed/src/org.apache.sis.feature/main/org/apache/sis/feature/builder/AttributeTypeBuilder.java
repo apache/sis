@@ -712,7 +712,7 @@ public final class AttributeTypeBuilder<V> extends PropertyTypeBuilder {
     }
 
     /**
-     * {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     public void remove() {

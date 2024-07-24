@@ -513,9 +513,7 @@ public class DefaultDerivedCRS extends AbstractDerivedCRS implements DerivedCRS 
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @return {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     protected long computeHashCode() {

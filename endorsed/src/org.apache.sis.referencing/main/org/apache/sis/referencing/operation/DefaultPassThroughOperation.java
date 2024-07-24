@@ -224,6 +224,8 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
      * properties are compared including the {@linkplain #getDomains() domains} and the accuracy.
      *
      * @return {@inheritDoc}
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
@@ -245,9 +247,7 @@ public class DefaultPassThroughOperation extends AbstractCoordinateOperation imp
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @return {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     protected long computeHashCode() {

@@ -289,9 +289,7 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @return {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     protected int computeHashCode() {
@@ -301,7 +299,7 @@ public abstract class DatumShiftTransform extends AbstractMathTransform implemen
     /**
      * Compares the specified object with this math transform for equality.
      *
-     * @return {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
