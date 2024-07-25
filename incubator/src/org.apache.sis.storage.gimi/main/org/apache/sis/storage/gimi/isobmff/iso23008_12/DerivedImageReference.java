@@ -1,6 +1,6 @@
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
- * contributor license agreements.  See the NOTICE file distributed with
+ * contributor license agreements.  See the NOTICE file distributed withz
  * this work for additional information regarding copyright ownership.
  * The ASF licenses this file to You under the Apache License, Version 2.0
  * (the "License"); you may not use this file except in compliance with
@@ -14,24 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.gimi.isobmff.iso14496_12;
+package org.apache.sis.storage.gimi.isobmff.iso23008_12;
 
-import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.storage.gimi.isobmff.iso14496_12.SingleItemTypeReference;
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public class SingleItemTypeReferenceLarge extends SingleItemTypeReference {
+public final class DerivedImageReference extends SingleItemTypeReference {
 
-    @Override
-    public void readProperties(ChannelDataInput cdi) throws IOException {
-        fromItemId = cdi.readInt();
-        toItemId = new int[cdi.readUnsignedShort()];
-        for (int i = 0; i < toItemId.length; i++) {
-            toItemId[i] = cdi.readInt();
-        }
-    }
-
+    public static final String FCC = "dimg";
 }

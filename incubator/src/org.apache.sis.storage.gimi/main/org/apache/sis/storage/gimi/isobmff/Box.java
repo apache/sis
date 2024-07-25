@@ -62,6 +62,8 @@ public class Box {
      */
     private List<Box> children;
 
+    private boolean loaded;
+
     /**
      * Read box payload, may be values or children boxes.
      *
@@ -69,6 +71,8 @@ public class Box {
      * @throws java.io.IOException
      */
     public final void readPayload(ChannelDataInput cdi) throws IOException {
+        if (loaded) return;
+        loaded = true;
         if (isContainer()) {
             getChildren(cdi);
         } else {
@@ -234,10 +238,16 @@ public class Box {
     }
 
     public static String beanToString(Object obj) {
-        final Class<? extends Object> clazz = obj.getClass();
+        Class<? extends Object> clazz = obj.getClass();
         if (!(clazz == Box.class || clazz == FullBox.class)) {
+
+            final List<Field> fields = new ArrayList<>();
+            while (!(clazz == Box.class || clazz == FullBox.class) && clazz != null) {
+                fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
+                clazz = clazz.getSuperclass();
+            }
+
             final StringBuilder sb = new StringBuilder();
-            final Field[] fields = clazz.getDeclaredFields();
             for (Field field : fields) {
                 if (Modifier.isStatic(field.getModifiers())) continue;
                 if (!Modifier.isPublic(field.getModifiers())) continue;
@@ -260,11 +270,12 @@ public class Box {
                             sb.append(Arrays.toString((String[])value));
                         } else {
                             if (length > 0) {
-                                for (int i = 0; i < length && i < 20; i++) {
+                                int maxCount = 2000000000;
+                                for (int i = 0; i < length && i < maxCount; i++) {
                                     String str = String.valueOf(Array.get(value, i));
                                     sb.append("\n [").append(i).append("]:").append(str.replaceAll("\n", "\n     "));
                                 }
-                                if (length >= 20) sb.append("\n [...").append(length).append("]: ... more values...");
+                                if (length >= maxCount) sb.append("\n [...").append(length).append("]: ... more values...");
                             }
                         }
 

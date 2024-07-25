@@ -24,7 +24,7 @@ import org.apache.sis.storage.gimi.isobmff.Box;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class SingleItemTypeReference extends Box {
+public class SingleItemTypeReference extends Box {
 
     public int fromItemId;
     public int[] toItemId;

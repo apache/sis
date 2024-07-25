@@ -28,7 +28,7 @@ public class GeneralType extends Box {
     /**
      * Brand identifier
      */
-    public int majorBrand;
+    public String majorBrand;
     /**
      * Minor version of the major brand.
      */
@@ -36,14 +36,17 @@ public class GeneralType extends Box {
     /**
      * List of compatible brands.
      */
-    public int[] compatibleBrands;
+    public String[] compatibleBrands;
 
     @Override
     public void readProperties(ChannelDataInput cdi) throws IOException {
-        majorBrand = cdi.readInt();
+        majorBrand = intToFourCC(cdi.readInt());
         minorVersion = cdi.readInt();
         int nbCmp = Math.toIntExact( ((boxOffset + size) - cdi.getStreamPosition()) / 4);
-        compatibleBrands = cdi.readInts(nbCmp);
+        compatibleBrands = new String[nbCmp];
+        for (int i = 0; i < nbCmp; i++) {
+            compatibleBrands[i] = intToFourCC(cdi.readInt());
+        }
     }
 
 }

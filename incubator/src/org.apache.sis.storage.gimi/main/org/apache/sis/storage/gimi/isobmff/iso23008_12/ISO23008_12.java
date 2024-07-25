@@ -28,6 +28,7 @@ import org.apache.sis.storage.gimi.isobmff.BoxRegistry;
 public final class ISO23008_12 implements BoxRegistry {
 
     private static final Set<String> BOXES = Set.of(
+            DerivedImageReference.FCC,
             ImageSpatialExtents.FCC,
             PixelInformationProperty.FCC,
             UserDescriptionProperty.FCC
@@ -52,7 +53,8 @@ public final class ISO23008_12 implements BoxRegistry {
     @Override
     public Box create(String fourCC) throws IllegalNameException {
         //TODO replace by String switch when SIS minimum java is updated
-        if (ImageSpatialExtents.FCC.equals(fourCC)) return new ImageSpatialExtents();
+        if (DerivedImageReference.FCC.equals(fourCC)) return new DerivedImageReference();
+        else if (ImageSpatialExtents.FCC.equals(fourCC)) return new ImageSpatialExtents();
         else if (PixelInformationProperty.FCC.equals(fourCC)) return new PixelInformationProperty();
         else if (UserDescriptionProperty.FCC.equals(fourCC)) return new UserDescriptionProperty();
         //TODO other box types

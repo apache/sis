@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.IntStream;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridCoverageBuilder;
@@ -40,6 +41,7 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.storage.gimi.isobmff.Box;
 import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 import org.apache.sis.storage.gimi.isobmff.gimi.ModelTiePointProperty;
@@ -47,13 +49,20 @@ import org.apache.sis.storage.gimi.isobmff.gimi.ModelTransformationProperty;
 import org.apache.sis.storage.gimi.isobmff.gimi.WellKnownText2Property;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemInfo;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemInfoEntry;
+import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemLocation;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemProperties;
+import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemPropertyAssociation;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemPropertyContainer;
+import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemReference;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.MediaData;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.Meta;
+import org.apache.sis.storage.gimi.isobmff.iso14496_12.PrimaryItem;
+import org.apache.sis.storage.gimi.isobmff.iso14496_12.SingleItemTypeReference;
 import org.apache.sis.storage.gimi.isobmff.iso23001_17.ComponentDefinition;
 import org.apache.sis.storage.gimi.isobmff.iso23001_17.UncompressedFrameConfig;
 import org.apache.sis.storage.gimi.isobmff.iso23008_12.ImageSpatialExtents;
+import org.apache.sis.storage.tiling.TileMatrixSet;
+import org.apache.sis.storage.tiling.TiledResource;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
@@ -102,7 +111,7 @@ public final class GimiStore extends DataStore implements Aggregate {
         }
     }
 
-    private synchronized ISOBMFFReader getReader() throws IllegalArgumentException, DataStoreException {
+    private synchronized ISOBMFFReader getReader() throws DataStoreException {
         if (reader == null) {
             final StorageConnector cnx = new StorageConnector(gimiPath);
             final ChannelDataInput cdi = cnx.getStorageAs(ChannelDataInput.class);
@@ -131,9 +140,13 @@ public final class GimiStore extends DataStore implements Aggregate {
             ItemInfo iinf = (ItemInfo) meta.getChild(ItemInfo.FCC, null, reader.channel);
             iinf.readPayload(reader.channel);
             for (ItemInfoEntry iie : iinf.entries) {
-                if ("unci".equals(iie.itemType)) {
+                final Item item = new Item(iie);
+                if (UncompressedImage.TYPE.equals(iie.itemType)) {
                     //uncompressed image
-                    components.add(new Picture(iie));
+                    components.add(new UncompressedImage(item));
+                } else if (Grid.TYPE.equals(iie.itemType)) {
+                    //tiled image
+                    components.add(new Grid(item));
                 } else {
                     //TODO
                     //ignore all others for now
@@ -147,42 +160,39 @@ public final class GimiStore extends DataStore implements Aggregate {
         return components;
     }
 
-    private final class Picture extends AbstractGridCoverageResource {
+    /**
+     * A single uncompressed image.
+     */
+    private final class UncompressedImage extends AbstractGridCoverageResource implements StoreResource {
 
-        private final ComponentDefinition compDef;
-        private final ImageSpatialExtents imageExt;
-        private final UncompressedFrameConfig frameConf;
-        private final ModelTransformationProperty modelTrs;
-        private final ModelTiePointProperty modelTp;
-        private final WellKnownText2Property modelWkt;
-        private final MediaData mediaData;
+        public static final String TYPE = "unci";
 
-        public Picture(ItemInfoEntry entry) throws DataStoreException {
+        private final Item item;
+        private ComponentDefinition compDef;
+        private ImageSpatialExtents imageExt;
+        private UncompressedFrameConfig frameConf;
+        private ModelTransformationProperty modelTrs;
+        private ModelTiePointProperty modelTp;
+        private WellKnownText2Property modelWkt;
+        private MediaData mediaData;
+
+        public UncompressedImage(Item item) throws DataStoreException {
             super(GimiStore.this);
-            final ISOBMFFReader reader = getReader();
-            try {
-                Box meta = root.getChild(Meta.FCC, null, reader.channel);
-                Box itemProp = meta.getChild(ItemProperties.FCC, null, reader.channel);
-                itemProp.readPayload(reader.channel);
-                Box itemPropCont = itemProp.getChild(ItemPropertyContainer.FCC, null, reader.channel);
-                itemPropCont.readPayload(reader.channel);
-                compDef = (ComponentDefinition) itemPropCont.getChild(ComponentDefinition.FCC, null, reader.channel);
-                compDef.readPayload(reader.channel);
-                imageExt = (ImageSpatialExtents) itemPropCont.getChild(ImageSpatialExtents.FCC, null, reader.channel);
-                imageExt.readPayload(reader.channel);
-                frameConf = (UncompressedFrameConfig) itemPropCont.getChild(UncompressedFrameConfig.FCC, null, reader.channel);
-                frameConf.readPayload(reader.channel);
-                modelTrs = (ModelTransformationProperty) itemPropCont.getChild("uuid", ModelTransformationProperty.UUID, reader.channel);
-                modelTrs.readPayload(reader.channel);
-                modelTp = (ModelTiePointProperty) itemPropCont.getChild("uuid", ModelTiePointProperty.UUID, reader.channel);
-                modelTp.readPayload(reader.channel);
-                modelWkt = (WellKnownText2Property) itemPropCont.getChild("uuid", WellKnownText2Property.UUID, reader.channel);
-                modelWkt.readPayload(reader.channel);
-                mediaData = (MediaData) root.getChild(MediaData.FCC, null, reader.channel);
-                mediaData.readPayload(reader.channel);
-            } catch (IOException ex) {
-                throw new DataStoreException(ex);
+            this.item = item;
+
+            for (Box box : item.properties) {
+                if (box instanceof ComponentDefinition) compDef = (ComponentDefinition) box;
+                else if (box instanceof ImageSpatialExtents) imageExt = (ImageSpatialExtents) box;
+                else if (box instanceof UncompressedFrameConfig) frameConf = (UncompressedFrameConfig) box;
+                else if (box instanceof ModelTransformationProperty) modelTrs = (ModelTransformationProperty) box;
+                else if (box instanceof ModelTiePointProperty) modelTp = (ModelTiePointProperty) box;
+                else if (box instanceof WellKnownText2Property) modelWkt = (WellKnownText2Property) box;
             }
+        }
+
+        @Override
+        public DataStore getOriginator() {
+            return GimiStore.this;
         }
 
         @Override
@@ -220,36 +230,174 @@ public final class GimiStore extends DataStore implements Aggregate {
         @Override
         public GridCoverage read(GridGeometry gg, int... ints) throws DataStoreException {
 
-            try {
-                final ISOBMFFReader reader = getReader();
-                mediaData.readPayload(reader.channel);
-                //DataBufferByte db = new DataBufferByte(mediaData.data, mediaData.data.length);
+            final byte[] data = item.getData();
 
-                final BufferedImage img = new BufferedImage(2048, 1024, BufferedImage.TYPE_3BYTE_BGR);
-                final WritableRaster raster = img.getRaster();
+            final BufferedImage img = new BufferedImage(2048, 1024, BufferedImage.TYPE_3BYTE_BGR);
+            final WritableRaster raster = img.getRaster();
 
-                for (int y =  0; y < 1024; y++) {
-                    for (int x = 0; x < 2048; x++) {
-                        int offset = y*2048 + x;
-                        raster.setSample(x, y, 0, mediaData.data[offset*3] & 0xFF);
-                        raster.setSample(x, y, 1, mediaData.data[offset*3+1] & 0xFF);
-                        raster.setSample(x, y, 2, mediaData.data[offset*3+2] & 0xFF);
-                    }
+            for (int y =  0; y < 1024; y++) {
+                for (int x = 0; x < 2048; x++) {
+                    int offset = y*2048 + x;
+                    raster.setSample(x, y, 0, mediaData.data[offset*3] & 0xFF);
+                    raster.setSample(x, y, 1, mediaData.data[offset*3+1] & 0xFF);
+                    raster.setSample(x, y, 2, mediaData.data[offset*3+2] & 0xFF);
                 }
-
-                final GridGeometry gridGeometry = getGridGeometry();
-
-                GridCoverageBuilder gcb = new GridCoverageBuilder();
-                gcb.setDomain(gridGeometry);
-                //gcb.setRanges(getSampleDimensions());
-                //gcb.setValues(db, new Dimension((int)gridGeometry.getExtent().getSize(0), (int)gridGeometry.getExtent().getSize(1)));
-                gcb.setValues(img);
-                return gcb.build();
-            } catch (IOException ex) {
-                throw new DataStoreException(ex);
             }
+
+            final GridGeometry gridGeometry = getGridGeometry();
+
+            GridCoverageBuilder gcb = new GridCoverageBuilder();
+            gcb.setDomain(gridGeometry);
+            //gcb.setRanges(getSampleDimensions());
+            //gcb.setValues(db, new Dimension((int)gridGeometry.getExtent().getSize(0), (int)gridGeometry.getExtent().getSize(1)));
+            gcb.setValues(img);
+            return gcb.build();
         }
 
     }
 
+    private final class Grid extends AbstractGridCoverageResource implements TiledResource, StoreResource {
+
+        public static final String TYPE = "grid";
+
+        private final Item item;
+
+        public Grid(Item item) throws DataStoreException {
+            super(GimiStore.this);
+            this.item = item;
+        }
+
+        @Override
+        public GridGeometry getGridGeometry() throws DataStoreException {
+            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        }
+
+        @Override
+        public List<SampleDimension> getSampleDimensions() throws DataStoreException {
+            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        }
+
+        @Override
+        public GridCoverage read(GridGeometry domain, int... ranges) throws DataStoreException {
+            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        }
+
+        @Override
+        public Collection<? extends TileMatrixSet> getTileMatrixSets() throws DataStoreException {
+            throw new UnsupportedOperationException("Not supported yet."); // Generated from nbfs://nbhost/SystemFileSystem/Templates/Classes/Code/GeneratedMethodBody
+        }
+
+        @Override
+        public DataStore getOriginator() {
+            return GimiStore.this;
+        }
+
+    }
+
+    /**
+     * Regroup properties of a single item in the file.
+     */
+    private final class Item {
+
+        public final ItemInfoEntry entry;
+        public final boolean isPrimary;
+        public final List<Box> properties = new ArrayList<>();
+        public final List<SingleItemTypeReference> references = new ArrayList<>();
+        public final ItemLocation.Item location;
+
+        public Item(ItemInfoEntry entry) throws IllegalArgumentException, DataStoreException, IOException {
+            this.entry = entry;
+
+            final ISOBMFFReader reader = getReader();
+            final Box meta = root.getChild(Meta.FCC, null, reader.channel);
+
+            //is item primary
+            final PrimaryItem primaryItem = (PrimaryItem) meta.getChild(PrimaryItem.FCC, null, reader.channel);
+            if (primaryItem != null) {
+                primaryItem.readPayload(reader.channel);
+                isPrimary = primaryItem.itemId == entry.itemId;
+            } else {
+                isPrimary = true;
+            }
+
+            //extract properties
+            final Box itemProperties = meta.getChild(ItemProperties.FCC, null, reader.channel);
+            if (itemProperties != null) {
+                itemProperties.readPayload(reader.channel);
+                final ItemPropertyContainer itemPropertiesContainer = (ItemPropertyContainer) itemProperties.getChild(ItemPropertyContainer.FCC, null, reader.channel);
+                itemPropertiesContainer.readPayload(reader.channel);
+                final List<Box> allProperties = itemPropertiesContainer.getChildren(reader.channel);
+                final ItemPropertyAssociation itemPropertiesAssociations = (ItemPropertyAssociation) itemProperties.getChild(ItemPropertyAssociation.FCC, null, reader.channel);
+                itemPropertiesAssociations.readPayload(reader.channel);
+
+                for (ItemPropertyAssociation.Entry en : itemPropertiesAssociations.entries) {
+                    if (en.itemId == entry.itemId) {
+                        for(int i : en.propertyIndex) {
+                            properties.add(allProperties.get(i-1)); //starts at 1
+                        }
+                        break;
+                    }
+                }
+            }
+
+            //extract outter references
+            final ItemReference itemReferences = (ItemReference) meta.getChild(ItemReference.FCC, null, reader.channel);
+            if (itemReferences != null) {
+
+            }
+
+
+            //extract location
+            ItemLocation.Item loc = null;
+            final ItemLocation itemLocation = (ItemLocation) meta.getChild(ItemLocation.FCC, null, reader.channel);
+            if (itemLocation != null) {
+                for (ItemLocation.Item en : itemLocation.items) {
+                    if (en.itemId == entry.itemId) {
+                        loc = en;
+                        break;
+                    }
+                }
+            }
+            this.location = loc;
+        }
+
+        public byte[] getData() throws DataStoreException {
+            try {
+                final ISOBMFFReader reader = getReader();
+
+                if (location == null) {
+                    //read data from the default mediadata box
+                    MediaData mediaData = (MediaData) root.getChild(MediaData.FCC, null, getReader().channel);
+                    mediaData.readPayload(getReader().channel);
+                    return mediaData.data;
+                } else if (location.constructionMethod == 0) {
+                    //absolute location
+                    if (location.dataReferenceIndex == 0) {
+                        //compute total size
+                        final int length = IntStream.of(location.extentLength).sum();
+                        //read datas
+                        final byte[] data = new byte[length];
+                        for (int i = 0, offset = 0; i < location.extentLength.length; i++) {
+                            reader.channel.seek(location.baseOffset + location.extentOffset[i]);
+                            reader.channel.readFully(data, offset, location.extentLength[i]);
+                        }
+                        return data;
+                    } else {
+                        throw new IOException("Not supported yet");
+                    }
+
+                } else if (location.constructionMethod == 1) {
+                    throw new IOException("Not supported yet");
+                } else if (location.constructionMethod == 2) {
+                    throw new IOException("Not supported yet");
+                } else {
+                    throw new DataStoreException("Unexpected construction method " + location.constructionMethod);
+                }
+
+            } catch (IOException ex) {
+                throw new DataStoreException("Failed reading data", ex);
+            }
+        }
+
+    }
 }

@@ -43,6 +43,7 @@ public final class ISO14496_12 implements BoxRegistry {
             TrackHeader.FCC,
             Meta.FCC,
             HandlerReference.FCC,
+            GroupList.FCC,
             PrimaryItem.FCC,
             ItemInfo.FCC,
             ItemInfoEntry.FCC,
@@ -90,6 +91,7 @@ public final class ISO14496_12 implements BoxRegistry {
         else if (TrackHeader.FCC.equals(fourCC)) return new TrackHeader();
         else if (Meta.FCC.equals(fourCC)) return new Meta();
         else if (HandlerReference.FCC.equals(fourCC)) return new HandlerReference();
+        else if (GroupList.FCC.equals(fourCC)) return new GroupList();
         else if (PrimaryItem.FCC.equals(fourCC)) return new PrimaryItem();
         else if (ItemInfo.FCC.equals(fourCC)) return new ItemInfo();
         else if (ItemInfoEntry.FCC.equals(fourCC)) return new ItemInfoEntry();

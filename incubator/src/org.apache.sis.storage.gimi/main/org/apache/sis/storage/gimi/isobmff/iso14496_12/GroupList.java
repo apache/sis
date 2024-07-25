@@ -16,33 +16,19 @@
  */
 package org.apache.sis.storage.gimi.isobmff.iso14496_12;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.gimi.isobmff.Box;
-import org.apache.sis.storage.gimi.isobmff.FullBox;
-import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public class ItemReference extends FullBox {
+public class GroupList extends Box {
 
-    public static final String FCC = "iref";
-
-    public List<Box> references;
+    public static final String FCC = "grpl";
 
     @Override
-    public void readProperties(ChannelDataInput cdi) throws IOException {
-        references = new ArrayList<>();
-
-        while (cdi.getStreamPosition() < boxOffset+size) {
-            final Box box = ISOBMFFReader.readBox(cdi);
-            box.readPayload(cdi);
-            cdi.seek(box.boxOffset + box.size);
-            references.add(box);
-        }
+    public boolean isContainer() {
+        return true;
     }
+
 }

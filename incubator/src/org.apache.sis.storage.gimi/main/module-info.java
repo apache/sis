@@ -25,6 +25,8 @@ module org.apache.sis.storage.gimi {
     requires transitive org.apache.sis.referencing;
     requires transitive org.apache.sis.storage;
 
+    exports org.apache.sis.storage.gimi.isobmff;
+
     provides org.apache.sis.storage.DataStoreProvider
             with org.apache.sis.storage.gimi.GimiProvider;
 

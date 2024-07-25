@@ -37,13 +37,70 @@ public class ItemLocation extends FullBox {
     public Item[] items;
 
     public static class Item {
-        public int itemID;
+        public int itemId;
+        /**
+         * How data should be accessed.
+         * <br>
+         * 0 : file_offset: by absolute byte offsets into the file or the payload
+         * of IdentifiedMediaDataBox referenced by data_reference_index.
+         * <br>
+         * 1 : idat_offset: by byte offsets into the ItemDataBox of the current MetaBox.
+         * <br>
+         * 2 : item_offset: by byte offset into the items indicated by item_reference_index.
+         */
         public int constructionMethod;
+        /**
+         * Values : <br>
+         * 0 : this file
+         * <br>
+         * 1 : the item at given index minus one.
+         * <br>
+         * Method 0 :
+         * <br>
+         * Method 1 : not used
+         * <br>
+         * Method 2 :
+         */
         public int dataReferenceIndex;
+        /**
+         * Method 0 : absolute file offset
+         * <br>
+         * Method 1 : byte offset in the ItemDataBox
+         * <br>
+         * Method 2 : byte offset in the items
+         */
         public long baseOffset;
+        /**
+         * Method 0 :
+         * <br>
+         * Method 1 :
+         * <br>
+         * Method 2 :
+         */
         public int extentCount;
+        /**
+         * Method 0 : not used
+         * <br>
+         * Method 1 : not used
+         * <br>
+         * Method 2 : item index to use
+         */
         public int[] itemReferenceIndex;
+        /**
+         * Method 0 :
+         * <br>
+         * Method 1 :
+         * <br>
+         * Method 2 :
+         */
         public int[] extentOffset;
+        /**
+         * Method 0 :
+         * <br>
+         * Method 1 :
+         * <br>
+         * Method 2 :
+         */
         public int[] extentLength;
 
         @Override
@@ -71,9 +128,9 @@ public class ItemLocation extends FullBox {
         for (int i = 0; i < itemCount; i++) {
             items[i] = new Item();
             if (version < 2) {
-                items[i].itemID = cdi.readUnsignedShort();
+                items[i].itemId = cdi.readUnsignedShort();
             } else if (version == 2) {
-                items[i].itemID = cdi.readInt();
+                items[i].itemId = cdi.readInt();
             }
             if (version == 1 || version == 2) {
                 cdi.readBits(12);
