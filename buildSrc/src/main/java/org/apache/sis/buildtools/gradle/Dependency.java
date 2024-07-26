@@ -67,6 +67,8 @@ public final class Dependency {
         Map.entry("profile.japan",            "profiles:sis-japan-profile"),
         Map.entry("console",                  "application:sis-console"),
         Map.entry("openoffice",               "application:sis-openoffice"),
+        Map.entry("epsg",                     "non-free:sis-epsg"),                 // Optional.
+        Map.entry("database",                 "non-free:sis-embedded-data"),        // Optional.
         Map.entry("gui",                      "application:sis-javafx"),            // Optional.
         Map.entry("cql",                      "core:sis-cql"),                      // Incubator.
         Map.entry("storage.shapefile",        "core:sis-shapefile"),

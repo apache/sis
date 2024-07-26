@@ -39,7 +39,7 @@ public final class DataScriptFormatterTest extends TestCase {
      */
     @Test
     public void testRemoveLF() {
-        final StringBuilder buffer = new StringBuilder(" \nOne,\nTwo, \n Three Four\nFive \nSix \n");
+        final var buffer = new StringBuilder(" \nOne,\nTwo, \n Three Four\nFive \nSix \n");
         DataScriptFormatter.removeLF(buffer);
         assertEquals("One,Two,Three Four Five Six", buffer.toString());
     }

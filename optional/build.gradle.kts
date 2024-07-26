@@ -68,8 +68,8 @@ dependencies {
     runtimeOnly   (files("${mainDepPath}/org.apache.sis.storage.geotiff"))
     runtimeOnly   (files("${mainDepPath}/org.apache.sis.storage.earthobservation"))
     api           (files("${mainDepPath}/org.apache.sis.portrayal"))
-    runtimeOnly   (drivers.derby.core)
-    runtimeOnly   (drivers.derby.tools)
+    api           (drivers.derby.core)
+    api           (drivers.derby.tools)
 
     // Test dependencies
     testImplementation(tests.junit5)
@@ -92,6 +92,7 @@ tasks.compileTestJava {
     srcDir.list().forEach {
         addRead(options.compilerArgs, it, "org.apache.sis.test.optional,org.junit.jupiter.api")
     }
+    addRead(options.compilerArgs, "org.apache.sis.referencing.database", "org.apache.sis.referencing.epsg");
 }
 
 /*
@@ -127,8 +128,15 @@ fun patchModuleWithTests(args : MutableList<String>, module : String) {
  */
 fun patchForTests(args : MutableList<String>) {
     patchModuleWithTests(args, "org.apache.sis.util")
+    patchModuleWithTests(args, "org.apache.sis.metadata")
     patchModuleWithTests(args, "org.apache.sis.feature")
-    addExport(args, "org.apache.sis.util", "org.apache.sis.test", "org.apache.sis.gui")
+    // ――――――――――――― Module name ――――――――――――――――――――――― Package to export ―――――――――――――――
+    addExport(args, "org.apache.sis.util",              "org.apache.sis.test",
+                    "org.apache.sis.gui," +
+                    "org.apache.sis.referencing.epsg," +
+                    "org.apache.sis.referencing.database")
+    addExport(args, "org.apache.sis.metadata",          "org.apache.sis.metadata.sql.privy",
+                    "org.apache.sis.referencing.epsg")
 }
 
 /*
@@ -166,6 +174,8 @@ tasks.test {
     addRead  (args, "org.apache.sis.util",                                "ALL-UNNAMED")
     addExport(args, "org.apache.sis.util", "org.apache.sis.test",         "ALL-UNNAMED")
     addExport(args, "org.apache.sis.gui",  "org.apache.sis.gui.internal", "ALL-UNNAMED")
+    args.add("--add-opens")
+    args.add("org.apache.sis.metadata/org.apache.sis.metadata.sql=org.apache.sis.referencing.database")
     setAllJvmArgs(args)
     testLogging {
         events("FAILED", "STANDARD_OUT", "STANDARD_ERROR")
@@ -192,6 +202,65 @@ tasks.jar {
  */
 publishing {
     publications {
+        create<MavenPublication>("epsg") {
+            var module = "org.apache.sis.referencing.epsg"
+            groupId    = "org.apache.sis.non-free"
+            artifactId = "sis-epsg"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "EPSG dataset for Apache SIS"
+                description = "The EPSG geodetic dataset provides definitions for thousands of Coordinate Reference Systems (CRS), " +
+                              "together with parameter values for thousands of Coordinate Operations between various pairs of CRS. " +
+                              "This module contains the SQL scripts for creating a local copy of EPSG geodetic dataset. " +
+                              "EPSG is maintained by the IOGP Surveying &amp; Positioning Committee and reproduced in this module " +
+                              "with same content. See https://epsg.org/ for more information."
+                licenses {
+                    license {
+                        // Not included in source code, user must download explicitly.
+                        // name = "EPSG terms of use"
+                        url = "https://epsg.org/terms-of-use.html"
+                        distribution = "manual"
+                    }
+                    license {
+                        // name = "Apache License, Version 2.0"
+                        url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+                        distribution = "repo"
+                    }
+                }
+            }
+        }
+        create<MavenPublication>("database") {
+            var module = "org.apache.sis.referencing.database"
+            groupId    = "org.apache.sis.non-free"
+            artifactId = "sis-embedded-data"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Data in embedded environment"
+                description = "Provides non-free data, including the EPSG geodetic dataset, in a single read-only JAR file. " +
+                              "This module contains a copy of EPSG geodetic dataset in an embedded Apache Derby database. " +
+                              "Having this artifact on the module path avoid the need to set the 'SIS_DATA' environment variable " +
+                              "for using the Coordinate Reference Systems (CRS) and Coordinate Operations defined by EPSG. " +
+                              "EPSG is maintained by the IOGP Surveying &amp; Positioning Committee and reproduced in this module " +
+                              "with same content. See https://epsg.org/ for more information."
+                licenses {
+                    license {
+                        // Not included in source code, user must download explicitly.
+                        // name = "EPSG terms of use"
+                        url = "https://epsg.org/terms-of-use.html"
+                        distribution = "manual"
+                    }
+                    license {
+                        // name = "Apache License, Version 2.0"
+                        url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+                        distribution = "repo"
+                    }
+                }
+            }
+        }
         create<MavenPublication>("gui") {
             var module = "org.apache.sis.gui"
             groupId    = "org.apache.sis.application"
@@ -200,7 +269,7 @@ publishing {
             artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
             artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
             pom {
-                name        = "Apache SIS application for JavaFX (optional)"
+                name        = "Apache SIS application for JavaFX"
                 description = "Client application for JavaFX. " +
                               "This module requires the JavaFX environment to be pre-installed. " +
                               "See https://openjfx.io/openjfx-docs/#install-javafx for details."
