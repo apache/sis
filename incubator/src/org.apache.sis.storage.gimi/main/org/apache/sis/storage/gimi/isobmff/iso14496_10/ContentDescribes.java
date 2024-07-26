@@ -16,30 +16,15 @@
  */
 package org.apache.sis.storage.gimi.isobmff.iso14496_10;
 
-import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
-import org.apache.sis.storage.gimi.isobmff.Box;
+import org.apache.sis.storage.gimi.isobmff.iso14496_12.SingleItemTypeReference;
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public class ContentDescribes extends Box{
+public class ContentDescribes extends SingleItemTypeReference{
 
     public static final String FCC = "cdsc";
-
-    public int fromId;
-    public int[] toId;
-
-    @Override
-    protected void readProperties(ChannelDataInput cdi) throws IOException {
-        fromId = cdi.readUnsignedShort();
-        toId = new int[cdi.readUnsignedShort()];
-        for (int i = 0; i < toId.length ; i++) {
-            toId[i] = cdi.readUnsignedShort();
-        }
-    }
-
 
 
 }

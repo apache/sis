@@ -149,4 +149,14 @@ public final class ISOBMFFReader {
         cdi.readByte(); //skip string 0/null terminal marker
         return str;
     }
+
+    /**
+     * Load box payload and all children payload recursively.
+     */
+    public static void load(Box box, ChannelDataInput cdi) throws IOException {
+        box.readPayload(cdi);
+        for (Box b : box.getChildren(cdi)) {
+            load(b, cdi);
+        }
+    }
 }

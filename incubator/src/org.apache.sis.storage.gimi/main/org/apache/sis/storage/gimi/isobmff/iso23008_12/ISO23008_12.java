@@ -29,6 +29,7 @@ public final class ISO23008_12 implements BoxRegistry {
 
     private static final Set<String> BOXES = Set.of(
             DerivedImageReference.FCC,
+            ImagePyramidEntityGroup.FCC,
             ImageSpatialExtents.FCC,
             PixelInformationProperty.FCC,
             UserDescriptionProperty.FCC
@@ -54,6 +55,7 @@ public final class ISO23008_12 implements BoxRegistry {
     public Box create(String fourCC) throws IllegalNameException {
         //TODO replace by String switch when SIS minimum java is updated
         if (DerivedImageReference.FCC.equals(fourCC)) return new DerivedImageReference();
+        else if (ImagePyramidEntityGroup.FCC.equals(fourCC)) return new ImagePyramidEntityGroup();
         else if (ImageSpatialExtents.FCC.equals(fourCC)) return new ImageSpatialExtents();
         else if (PixelInformationProperty.FCC.equals(fourCC)) return new PixelInformationProperty();
         else if (UserDescriptionProperty.FCC.equals(fourCC)) return new UserDescriptionProperty();

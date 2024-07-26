@@ -117,6 +117,7 @@ public class Box {
                         final Box box = ISOBMFFReader.readBox(cdi);
                         cdi.seek(box.boxOffset + box.size);
                         children.add(box);
+                        if (box.size == 0) break; //last box
                     }
                 } catch (EOFException ex) {
                     //expected
@@ -126,6 +127,7 @@ public class Box {
                     final Box box = ISOBMFFReader.readBox(cdi);
                     cdi.seek(box.boxOffset + box.size);
                     children.add(box);
+                    if (box.size == 0) break; //last box
                 }
             }
 
@@ -243,7 +245,7 @@ public class Box {
 
             final List<Field> fields = new ArrayList<>();
             while (!(clazz == Box.class || clazz == FullBox.class) && clazz != null) {
-                fields.addAll(Arrays.asList(clazz.getDeclaredFields()));
+                fields.addAll(0, Arrays.asList(clazz.getDeclaredFields()));
                 clazz = clazz.getSuperclass();
             }
 
