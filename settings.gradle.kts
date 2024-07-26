@@ -61,19 +61,19 @@ dependencyResolutionManagement {
         create("libs") {
             library("geoapi",        "org.opengis",            "geoapi-pending")      .version {strictly(geoapiVersion)}
             library("units",         "javax.measure",          "unit-api")            .version {strictly("[2.1, 3.0[");  prefer("2.1.3")}
-            library("jaxb.api",      "jakarta.xml.bind",       "jakarta.xml.bind-api").version {strictly("[4.0, 5.0[");  prefer("4.0.1")}
-            library("jaxb.impl",     "org.glassfish.jaxb",     "jaxb-runtime")        .version {strictly("[4.0, 5.0[");  prefer("4.0.4")}
+            library("jaxb.api",      "jakarta.xml.bind",       "jakarta.xml.bind-api").version {strictly("[4.0, 5.0[");  prefer("4.0.2")}
+            library("jaxb.impl",     "org.glassfish.jaxb",     "jaxb-runtime")        .version {strictly("[4.0, 5.0[");  prefer("4.0.5")}
             library("yasson",        "org.eclipse",            "yasson")              .version {strictly("[3.0, 4.0[");  prefer("3.0.3")}
             library("jts.core",      "org.locationtech.jts",   "jts-core")            .version {strictly("[1.15, 2.0["); prefer("1.19.0")}
             library("esri.geometry", "com.esri.geometry",      "esri-geometry-api")   .version {strictly("[2.0, 3.0[");  prefer("2.2.4")}
-            library("libreoffice",   "org.libreoffice",        "libreoffice")         .version {strictly("[7.0, 8.0[");  prefer("7.6.1")}
+            library("libreoffice",   "org.libreoffice",        "libreoffice")         .version {strictly("[7.0, 8.0[");  prefer("7.6.7")}
             library("ucar",          "edu.ucar",               "cdm-core")            .version {strictly("[5.0, 6.0[");  prefer("5.5.3")}
-            library("aws.s3",        "software.amazon.awssdk", "s3")                  .version {strictly("[2.0, 3.0[");  prefer("2.20.155")}
+            library("aws.s3",        "software.amazon.awssdk", "s3")                  .version {strictly("[2.0, 3.0[");  prefer("2.26.24")}
         }
         create("tests") {
             library("geoapi",        "org.opengis",            "geoapi-conformance")     .version {strictly(geoapiVersion)}
-            library("junit5",        "org.junit.jupiter",      "junit-jupiter-api")      .version {strictly("5.10.2")}
-            library("jupiter",       "org.junit.jupiter",      "junit-jupiter-engine")   .version {strictly("5.10.2")}
+            library("junit5",        "org.junit.jupiter",      "junit-jupiter-api")      .version {strictly("5.10.3")}
+            library("jupiter",       "org.junit.jupiter",      "junit-jupiter-engine")   .version {strictly("5.10.3")}
             library("jama",          "gov.nist.math",          "jama")                   .version {strictly("1.0.3")}
             library("geographiclib", "net.sf.geographiclib",   "GeographicLib-Java")     .version {strictly("2.0")}
             library("slf4j",         "org.slf4j",              "slf4j-jdk14").version {
@@ -85,11 +85,13 @@ dependencyResolutionManagement {
                 strictly("[10.0, 11.0[")
                 prefer("10.15.2.0")         // 10.15 is the last series compatible with JDK 11.
             }
+            // Derby vulnerabiliy: https://nvd.nist.gov/vuln/detail/CVE-2022-46337
+            // Fix would require an upgrade to Java 21.
             library("derby.core",    "org.apache.derby",       "derby")      .versionRef("derby")
             library("derby.tools",   "org.apache.derby",       "derbytools") .versionRef("derby")
-            library("postgres",      "org.postgresql",         "postgresql") .version {prefer("42.6.0")}
-            library("hsql",          "org.hsqldb",             "hsqldb")     .version {strictly("[2.0, 3.0["); prefer("2.7.2")}
-            library("h2",            "com.h2database",         "h2")         .version {strictly("[2.0, 3.0["); prefer("2.2.224")}
+            library("postgres",      "org.postgresql",         "postgresql") .version {prefer("42.7.3")}
+            library("hsql",          "org.hsqldb",             "hsqldb")     .version {strictly("[2.0, 3.0["); prefer("2.7.3")}
+            library("h2",            "com.h2database",         "h2")         .version {strictly("[2.0, 3.0["); prefer("2.3.230")}
         }
     }
 }

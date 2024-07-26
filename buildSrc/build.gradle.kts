@@ -35,8 +35,8 @@ repositories {
 }
 dependencies {
     implementation (group = "org.apache.commons", name = "commons-compress",     version = "1.23.0")
-    testCompileOnly(group = "org.junit.jupiter",  name = "junit-jupiter-api",    version = "5.10.2")
-    testRuntimeOnly(group = "org.junit.jupiter",  name = "junit-jupiter-engine", version = "5.10.2")
+    testCompileOnly(group = "org.junit.jupiter",  name = "junit-jupiter-api",    version = "5.10.3")
+    testRuntimeOnly(group = "org.junit.jupiter",  name = "junit-jupiter-engine", version = "5.10.3")
 }
 
 /*
