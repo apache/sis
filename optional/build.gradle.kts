@@ -166,6 +166,21 @@ fun downloadFontGIS() {
 }
 
 /*
+ * Adds symbolic links to EPSG license if those optional data are present.
+ */
+fun addLicenseEPSG() {
+    var targetFile = File(file("build"), "classes/java/main/org.apache.sis.referencing.epsg/META-INF/LICENSE")
+    if (!targetFile.exists()) {
+        val sourceFile = File(file("src"), "org.apache.sis.referencing.epsg/main/org/apache/sis/referencing/factory/sql/epsg/LICENSE.txt")
+        if (sourceFile.exists()) {
+            Files.createLink(targetFile.toPath(), sourceFile.toPath())
+            targetFile = File(file("build"), "classes/java/main/org.apache.sis.referencing.database/META-INF/LICENSE")
+            Files.createLink(targetFile.toPath(), sourceFile.toPath())
+        }
+    }
+}
+
+/*
  * Discover and execute JUnit-based tests.
  */
 tasks.test {
@@ -191,6 +206,7 @@ tasks.test {
  * Other attributes are hard-coded in `../buildSrc`.
  */
 tasks.jar {
+    addLicenseEPSG();
     downloadFontGIS();
     manifest {
         attributes["Main-Class"] = "org.apache.sis.gui.DataViewer"
