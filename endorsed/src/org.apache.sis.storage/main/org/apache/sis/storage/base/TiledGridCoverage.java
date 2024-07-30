@@ -586,6 +586,17 @@ public abstract class TiledGridCoverage extends GridCoverage {
         }
 
         /**
+         * Returns the current iterator tile position in the original coverage resource.
+         *
+         * @return current iterator tile position in original coverage resource.
+         */
+        public final long[] getPositionInSource() {
+            final long[] coordinate = new long[tmcOfFirstTile.length];
+            for (int i = 0; i < coordinate.length; i++) coordinate[i] = (long)tmcOfFirstTile[i] + tmcInSubset[i];
+            return coordinate;
+        }
+
+        /**
          * Returns the current iterator position as an index in the array of tiles to be returned
          * by {@link #readTiles(AOI)}. The initial position is zero.
          * The position is incremented by 1 in each call to {@link #next()}.
