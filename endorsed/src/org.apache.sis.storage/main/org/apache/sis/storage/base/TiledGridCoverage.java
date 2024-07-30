@@ -224,8 +224,9 @@ public abstract class TiledGridCoverage extends GridCoverage {
         tmcOfFirstTile      = new long[dimension];
         tileStrides         = new int [dimension];
         final int[] subSize = new int [dimension];
-        int  tileStride       = 1;
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         long indexOfFirstTile = 0;
+        int  tileStride       = 1;
         for (int i=0; i<dimension; i++) {
             final int ts      = tileSize[i];
             tmcOfFirstTile[i] = floorDiv(readExtent.getLow(i), ts);
@@ -241,6 +242,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * This value is not stored but its computation is still useful because
          * we want `ArithmeticException` to be thrown if the value is too high.
          */
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         SampleModel model = subset.modelForBandSubset;
         if (model.getWidth() != subSize[X_DIMENSION] || model.getHeight() != subSize[Y_DIMENSION]) {
             model = model.createCompatibleSampleModel(subSize[X_DIMENSION], subSize[Y_DIMENSION]);
@@ -527,6 +529,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
              * converts the `tileLower` coordinates to index in the `tileOffsets` and `tileByteCounts` vectors.
              */
             indexInTileVector = indexOfFirstTile;
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             int tileCountInQuery = 1;
             for (int i=0; i<dimension; i++) {
                 final int lower   = tileLower[i];
@@ -592,7 +595,9 @@ public abstract class TiledGridCoverage extends GridCoverage {
          */
         public final long[] getPositionInSource() {
             final long[] coordinate = new long[tmcOfFirstTile.length];
-            for (int i = 0; i < coordinate.length; i++) coordinate[i] = (long)tmcOfFirstTile[i] + tmcInSubset[i];
+            for (int i = 0; i < coordinate.length; i++) {
+                coordinate[i] = Math.addExact(tmcOfFirstTile[i], tmcInSubset[i]);
+            }
             return coordinate;
         }
 
