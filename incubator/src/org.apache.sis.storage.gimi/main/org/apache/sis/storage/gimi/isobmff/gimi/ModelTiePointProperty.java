@@ -17,8 +17,8 @@
 package org.apache.sis.storage.gimi.isobmff.gimi;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.gimi.isobmff.Box;
+import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemFullProperty;
 
 /**
@@ -43,18 +43,18 @@ public final class ModelTiePointProperty extends ItemFullProperty {
     public TiePoint[] tiepoints;
 
     @Override
-    protected void readProperties(ChannelDataInput cdi) throws IOException {
-        tiepoints = new TiePoint[cdi.readUnsignedShort()];
+    protected void readProperties(ISOBMFFReader reader) throws IOException {
+        tiepoints = new TiePoint[reader.channel.readUnsignedShort()];
         for (int i = 0; i < tiepoints.length; i++) {
             tiepoints[i] = new TiePoint();
             if ((flags & 0x01) == 1) {
                 //2D
-                tiepoints[i].ijk = cdi.readInts(2);
-                tiepoints[i].xyz = cdi.readDoubles(2);
+                tiepoints[i].ijk = reader.channel.readInts(2);
+                tiepoints[i].xyz = reader.channel.readDoubles(2);
             } else {
                 //3D
-                tiepoints[i].ijk = cdi.readInts(3);
-                tiepoints[i].xyz = cdi.readDoubles(3);
+                tiepoints[i].ijk = reader.channel.readInts(3);
+                tiepoints[i].xyz = reader.channel.readDoubles(3);
             }
         }
     }

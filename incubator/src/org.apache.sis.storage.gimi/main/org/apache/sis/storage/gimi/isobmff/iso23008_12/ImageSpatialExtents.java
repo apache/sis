@@ -17,7 +17,7 @@
 package org.apache.sis.storage.gimi.isobmff.iso23008_12;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemFullProperty;
 
 /**
@@ -31,10 +31,18 @@ public final class ImageSpatialExtents extends ItemFullProperty {
     public int imageWidth;
     public int imageHeight;
 
+    public ImageSpatialExtents() {
+    }
+
+    public ImageSpatialExtents(int imageWidth, int imageHeight) {
+        this.imageWidth = imageWidth;
+        this.imageHeight = imageHeight;
+    }
+
     @Override
-    protected void readProperties(ChannelDataInput cdi) throws IOException {
-        imageWidth = cdi.readInt();
-        imageHeight = cdi.readInt();
+    protected void readProperties(ISOBMFFReader reader) throws IOException {
+        imageWidth = reader.channel.readInt();
+        imageHeight = reader.channel.readInt();
     }
 
 }

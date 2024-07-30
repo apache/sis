@@ -17,8 +17,6 @@
 package org.apache.sis.storage.gimi.isobmff.iso14496_12;
 
 import java.io.IOException;
-import java.util.Arrays;
-import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.gimi.isobmff.Box;
 
 /**
@@ -30,21 +28,12 @@ public final class MediaData extends Box {
 
     public static final String FCC = "mdat";
 
-    public byte[] data;
-
-    @Override
-    public void readProperties(ChannelDataInput cdi) throws IOException {
-        final long nb = (boxOffset + size) - payloadOffset;
-        data = cdi.readBytes(Math.toIntExact(nb));
-    }
-
-    @Override
-    protected String propertiesToString() {
-        if (this.data != null) {
-            byte[] data = this.data.length < 20 ? this.data : Arrays.copyOf(this.data, 20);
-            return "rawData : " + Arrays.toString(data) +" ... \nasString : " + new String(data) ;
+    public byte[] getData() throws IOException {
+        synchronized (reader) {
+            reader.channel.seek(payloadOffset);
+            final long nb = (boxOffset + size) - payloadOffset;
+            return reader.channel.readBytes(Math.toIntExact(nb));
         }
-        return "";
     }
 
 }

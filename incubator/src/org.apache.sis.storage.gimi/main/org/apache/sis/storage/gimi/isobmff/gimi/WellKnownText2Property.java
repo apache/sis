@@ -17,7 +17,6 @@
 package org.apache.sis.storage.gimi.isobmff.gimi;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemFullProperty;
 
@@ -32,8 +31,8 @@ public final class WellKnownText2Property extends ItemFullProperty {
     public String wkt2;
 
     @Override
-    protected void readProperties(ChannelDataInput cdi) throws IOException {
-        wkt2 = ISOBMFFReader.readUtf8String(cdi);
+    protected void readProperties(ISOBMFFReader reader) throws IOException {
+        wkt2 = reader.readUtf8String();
     }
 
 }

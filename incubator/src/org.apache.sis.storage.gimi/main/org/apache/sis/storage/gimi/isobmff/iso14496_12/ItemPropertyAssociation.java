@@ -17,9 +17,9 @@
 package org.apache.sis.storage.gimi.isobmff.iso14496_12;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.gimi.isobmff.Box;
 import org.apache.sis.storage.gimi.isobmff.FullBox;
+import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 
 /**
  *
@@ -43,23 +43,23 @@ public class ItemPropertyAssociation extends FullBox {
     public Entry[] entries;
 
     @Override
-    public void readProperties(ChannelDataInput cdi) throws IOException {
-        entries = new Entry[cdi.readInt()];
+    public void readProperties(ISOBMFFReader reader) throws IOException {
+        entries = new Entry[reader.channel.readInt()];
         for (int i = 0; i < entries.length; i++) {
             entries[i] = new Entry();
             if (version < 1) {
-                entries[i].itemId = cdi.readUnsignedShort();
+                entries[i].itemId = reader.channel.readUnsignedShort();
             } else {
-                entries[i].itemId = cdi.readInt();
+                entries[i].itemId = reader.channel.readInt();
             }
-            entries[i].essential = new boolean[cdi.readUnsignedByte()];
+            entries[i].essential = new boolean[reader.channel.readUnsignedByte()];
             entries[i].propertyIndex = new int[entries[i].essential.length];
             for (int k = 0; k < entries[i].essential.length; k++) {
-                entries[i].essential[k] = cdi.readBit() == 1;
+                entries[i].essential[k] = reader.channel.readBit() == 1;
                 if ((flags & 1) != 0) {
-                    entries[i].propertyIndex[k] = (int) cdi.readBits(15);
+                    entries[i].propertyIndex[k] = (int) reader.channel.readBits(15);
                 } else {
-                    entries[i].propertyIndex[k] = (int) cdi.readBits(7);
+                    entries[i].propertyIndex[k] = (int) reader.channel.readBits(7);
                 }
             }
         }

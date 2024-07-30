@@ -17,7 +17,7 @@
 package org.apache.sis.storage.gimi.isobmff.iso23008_12;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemFullProperty;
 
 /**
@@ -31,10 +31,10 @@ public final class PixelInformationProperty extends ItemFullProperty{
     public int[] bitsPerChannel;
 
     @Override
-    protected void readProperties(ChannelDataInput cdi) throws IOException {
-        bitsPerChannel = new int[cdi.readUnsignedByte()];
+    protected void readProperties(ISOBMFFReader reader) throws IOException {
+        bitsPerChannel = new int[reader.channel.readUnsignedByte()];
         for (int i = 0; i < bitsPerChannel.length; i++) {
-            bitsPerChannel[i] = cdi.readUnsignedByte();
+            bitsPerChannel[i] = reader.channel.readUnsignedByte();
         }
     }
 

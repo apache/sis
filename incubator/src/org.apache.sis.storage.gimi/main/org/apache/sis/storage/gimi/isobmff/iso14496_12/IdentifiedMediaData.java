@@ -17,8 +17,8 @@
 package org.apache.sis.storage.gimi.isobmff.iso14496_12;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.gimi.isobmff.Box;
+import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 
 /**
  * Container: File
@@ -33,11 +33,17 @@ public final class IdentifiedMediaData extends Box {
     public byte[] data;
 
     @Override
-    public void readProperties(ChannelDataInput cdi) throws IOException {
-        identifier = cdi.readInt();
-        final long nb = (boxOffset + size) - payloadOffset - 4;
-        data = cdi.readBytes(Math.toIntExact(nb));
+    public void readProperties(ISOBMFFReader reader) throws IOException {
+        identifier = reader.channel.readInt();
+        reader.channel.seek(boxOffset + size);
     }
 
+    public byte[] getData() throws IOException {
+        synchronized (reader) {
+            reader.channel.seek(payloadOffset + 4);
+            final long nb = (boxOffset + size) - payloadOffset - 4;
+            return reader.channel.readBytes(Math.toIntExact(nb));
+        }
+    }
 
 }

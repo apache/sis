@@ -101,14 +101,14 @@ public final class ISOBMFFReader {
      * @return empty box
      */
     public Box readBox() throws IOException {
-        return readBox(channel);
+        return readBox(null);
     }
 
     /**
      * Read next box header but not it's content.
      * @return empty box
      */
-    public static Box readBox(ChannelDataInput channel) throws IOException {
+    public Box readBox(Box readInto) throws IOException {
         channel.buffer.order(ByteOrder.BIG_ENDIAN);
         long offset = channel.getStreamPosition();
 
@@ -119,7 +119,7 @@ public final class ISOBMFFReader {
         if (size == 1l) size = channel.readLong();
         if ("uuid".equals(type)) uuid = new UUID(channel.readLong(), channel.readLong());
 
-        final Box box = newBox(type, String.valueOf(uuid));
+        final Box box = readInto == null ? newBox(type, String.valueOf(uuid)) : readInto;
         box.boxOffset = offset;
         box.type = type;
         box.size = size;
@@ -134,29 +134,24 @@ public final class ISOBMFFReader {
                         channel.readUnsignedByte();
         }
         box.payloadOffset = channel.getStreamPosition();
+        box.setLoader(this);
+        if (!box.isContainer()) {
+            box.readPayload();
+        }
 
         return box;
     }
 
-    public static String readUtf8String(ChannelDataInput cdi) throws IOException {
-        long start = cdi.getStreamPosition();
+    public String readUtf8String() throws IOException {
+        long start = channel.getStreamPosition();
         int size = 0;
-        while (cdi.readByte() != 0) {
+        while (channel.readByte() != 0) {
             size++;
         }
-        cdi.seek(start);
-        String str = cdi.readString(size, StandardCharsets.UTF_8);
-        cdi.readByte(); //skip string 0/null terminal marker
+        channel.seek(start);
+        String str = channel.readString(size, StandardCharsets.UTF_8);
+        channel.readByte(); //skip string 0/null terminal marker
         return str;
     }
 
-    /**
-     * Load box payload and all children payload recursively.
-     */
-    public static void load(Box box, ChannelDataInput cdi) throws IOException {
-        box.readPayload(cdi);
-        for (Box b : box.getChildren(cdi)) {
-            load(b, cdi);
-        }
-    }
 }

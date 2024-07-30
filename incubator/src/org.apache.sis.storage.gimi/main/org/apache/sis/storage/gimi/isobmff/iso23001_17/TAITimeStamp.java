@@ -17,7 +17,7 @@
 package org.apache.sis.storage.gimi.isobmff.iso23001_17;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemFullProperty;
 
 /**
@@ -34,12 +34,12 @@ public class TAITimeStamp extends ItemFullProperty {
     public boolean timestampIsModified;
 
     @Override
-    protected void readProperties(ChannelDataInput cdi) throws IOException {
-        TAITimestamp = cdi.readLong();
-        synchronizationState = cdi.readBit() == 1;
-        timestampGenerationFailure = cdi.readBit() == 1;
-        timestampIsModified = cdi.readBit() == 1;
-        cdi.skipRemainingBits();
+    protected void readProperties(ISOBMFFReader reader) throws IOException {
+        TAITimestamp = reader.channel.readLong();
+        synchronizationState = reader.channel.readBit() == 1;
+        timestampGenerationFailure = reader.channel.readBit() == 1;
+        timestampIsModified = reader.channel.readBit() == 1;
+        reader.channel.skipRemainingBits();
     }
 
 }

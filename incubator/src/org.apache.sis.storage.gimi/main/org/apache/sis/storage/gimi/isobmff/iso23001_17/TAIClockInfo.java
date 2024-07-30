@@ -17,8 +17,8 @@
 package org.apache.sis.storage.gimi.isobmff.iso23001_17;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.gimi.isobmff.FullBox;
+import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 
 /**
  * From ISO/IEC 23001-17:2024 amendment 1
@@ -36,14 +36,13 @@ public final class TAIClockInfo extends FullBox {
     public int clockType;
 
     @Override
-    protected void readProperties(ChannelDataInput cdi) throws IOException {
-        timeUncertainty = cdi.readLong();
-        clockResolution = cdi.readInt();
-        clockDriftRate = cdi.readInt();
-        unknown = cdi.readInt();
-        clockType = (int) cdi.readBits(2);
-        cdi.skipRemainingBits();
+    protected void readProperties(ISOBMFFReader reader) throws IOException {
+        timeUncertainty = reader.channel.readLong();
+        clockResolution = reader.channel.readInt();
+        clockDriftRate = reader.channel.readInt();
+        unknown = reader.channel.readInt();
+        clockType = (int) reader.channel.readBits(2);
+        reader.channel.skipRemainingBits();
     }
-
 
 }

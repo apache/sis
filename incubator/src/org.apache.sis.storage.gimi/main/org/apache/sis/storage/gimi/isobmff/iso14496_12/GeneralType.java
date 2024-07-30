@@ -17,8 +17,8 @@
 package org.apache.sis.storage.gimi.isobmff.iso14496_12;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.gimi.isobmff.Box;
+import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 
 /**
  *
@@ -39,13 +39,13 @@ public class GeneralType extends Box {
     public String[] compatibleBrands;
 
     @Override
-    public void readProperties(ChannelDataInput cdi) throws IOException {
-        majorBrand = intToFourCC(cdi.readInt());
-        minorVersion = cdi.readInt();
-        int nbCmp = Math.toIntExact( ((boxOffset + size) - cdi.getStreamPosition()) / 4);
+    public void readProperties(ISOBMFFReader reader) throws IOException {
+        majorBrand = intToFourCC(reader.channel.readInt());
+        minorVersion = reader.channel.readInt();
+        int nbCmp = Math.toIntExact(((boxOffset + size) - reader.channel.getStreamPosition()) / 4);
         compatibleBrands = new String[nbCmp];
         for (int i = 0; i < nbCmp; i++) {
-            compatibleBrands[i] = intToFourCC(cdi.readInt());
+            compatibleBrands[i] = intToFourCC(reader.channel.readInt());
         }
     }
 

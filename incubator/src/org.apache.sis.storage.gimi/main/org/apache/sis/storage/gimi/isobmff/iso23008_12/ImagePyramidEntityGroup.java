@@ -17,8 +17,8 @@
 package org.apache.sis.storage.gimi.isobmff.iso23008_12;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.gimi.isobmff.Box;
+import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.EntityToGroup;
 
 /**
@@ -45,17 +45,17 @@ public final class ImagePyramidEntityGroup extends EntityToGroup{
     public Matrix[] matrices;
 
     @Override
-    protected void readProperties(ChannelDataInput cdi) throws IOException {
-        super.readProperties(cdi);
-        tileSizeX = cdi.readUnsignedShort();
-        tileSizeY = cdi.readUnsignedShort();
+    protected void readProperties(ISOBMFFReader reader) throws IOException {
+        super.readProperties(reader);
+        tileSizeX = reader.channel.readUnsignedShort();
+        tileSizeY = reader.channel.readUnsignedShort();
 
         matrices = new Matrix[entitiesId.length];
         for (int i = 0; i < matrices.length; i++) {
             matrices[i] = new Matrix();
-            matrices[i].layerBinning = cdi.readUnsignedShort();
-            matrices[i].tilesInLayerRowMinus1 = cdi.readUnsignedShort();
-            matrices[i].tilesInLayerColumnMinus1 = cdi.readUnsignedShort();
+            matrices[i].layerBinning = reader.channel.readUnsignedShort();
+            matrices[i].tilesInLayerRowMinus1 = reader.channel.readUnsignedShort();
+            matrices[i].tilesInLayerColumnMinus1 = reader.channel.readUnsignedShort();
         }
     }
 

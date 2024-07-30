@@ -14,26 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.gimi.isobmff.iso14496_12;
+package org.apache.sis.storage.gimi;
 
-import java.io.IOException;
-import org.apache.sis.storage.gimi.isobmff.FullBox;
-import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
+import org.apache.sis.storage.AbstractResource;
+import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.base.StoreResource;
 
 /**
+ * Unknown item type.
  *
  * @author Johann Sorel (Geomatys)
  */
-public class EntityToGroup extends FullBox {
+final class ResourceUnknown extends AbstractResource implements StoreResource {
 
-    public int groupId;
-    public int[] entitiesId;
+    private final GimiStore store;
+    private final Item item;
 
-    @Override
-    protected void readProperties(ISOBMFFReader reader) throws IOException {
-        groupId = reader.channel.readInt();
-        entitiesId = reader.channel.readInts(reader.channel.readInt());
+    public ResourceUnknown(GimiStore store, Item item) throws DataStoreException {
+        super(store);
+        this.store = store;
+        this.item = item;
     }
 
+    @Override
+    public DataStore getOriginator() {
+        return store;
+    }
 
 }

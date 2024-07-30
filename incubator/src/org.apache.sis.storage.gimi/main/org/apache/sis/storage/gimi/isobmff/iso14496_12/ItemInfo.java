@@ -17,7 +17,6 @@
 package org.apache.sis.storage.gimi.isobmff.iso14496_12;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.gimi.isobmff.FullBox;
 import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 
@@ -33,13 +32,12 @@ public final class ItemInfo extends FullBox {
     public ItemInfoEntry[] entries;
 
     @Override
-    public void readProperties(ChannelDataInput cdi) throws IOException {
-        final int entryCount = version == 0 ? cdi.readUnsignedShort() : cdi.readInt();
+    public void readProperties(ISOBMFFReader reader) throws IOException {
+        final int entryCount = version == 0 ? reader.channel.readUnsignedShort() : reader.channel.readInt();
 
         entries = new ItemInfoEntry[entryCount];
         for (int i = 0; i < entryCount; i++) {
-            entries[i] = (ItemInfoEntry) ISOBMFFReader.readBox(cdi);
-            entries[i].readPayload(cdi);
+            entries[i] = (ItemInfoEntry) reader.readBox();
         }
     }
 

@@ -19,6 +19,7 @@ package org.apache.sis.storage.gimi.isobmff.iso14496_12;
 import java.io.IOException;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.gimi.isobmff.Box;
+import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 
 /**
  *
@@ -29,8 +30,8 @@ public class FDItemInfoExtension extends Box {
     public static final String FCC = "fdel";
 
     @Override
-    public void readProperties(ChannelDataInput cdi) throws IOException {
-        super.readProperties(cdi);
+    public void readProperties(ISOBMFFReader reader) throws IOException {
+        super.readProperties(reader);
         //TODO
     }
 

@@ -23,11 +23,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
-import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.storage.gimi.internal.StringUtilities;
 
 /**
  *
@@ -62,24 +62,38 @@ public class Box {
      */
     private List<Box> children;
 
+    /**
+     * Keep reader reference for reading when needed
+     * Use it in a sync block.
+     */
+    protected ISOBMFFReader reader;
     private boolean loaded;
+
+    /**
+     *
+     * @param reader to read from, channel position is undefined after this operation
+     */
+    public void setLoader(ISOBMFFReader reader) {
+        this.reader = reader;
+    }
 
     /**
      * Read box payload, may be values or children boxes.
      *
-     * @param cdi to read from, channel position is undefined after this operation
      * @throws java.io.IOException
      */
-    public final void readPayload(ChannelDataInput cdi) throws IOException {
+    public synchronized final void readPayload() throws IOException {
         if (loaded) return;
         loaded = true;
-        if (isContainer()) {
-            getChildren(cdi);
-        } else {
-            cdi.seek(payloadOffset);
-            readProperties(cdi);
-            if (cdi.getStreamPosition() != boxOffset + size) {
-                throw new IOException("Incorrect offset after reading " + this.getClass().getSimpleName() + " properties, box end has not been reached, position : " + cdi.getStreamPosition() + " expected : " + (boxOffset + size));
+        synchronized (reader) {
+            if (isContainer()) {
+                readChildren(reader);
+            } else {
+                reader.channel.seek(payloadOffset);
+                readProperties(reader);
+                if (reader.channel.getStreamPosition() != boxOffset + size) {
+                    throw new IOException("Incorrect offset after reading " + this.getClass().getSimpleName() + " properties, box end has not been reached, position : " + reader.channel.getStreamPosition() + " expected : " + (boxOffset + size));
+                }
             }
         }
     }
@@ -90,9 +104,38 @@ public class Box {
      * @param cdi to read from, channel position is undefined after this operation
      * @throws java.io.IOException
      */
-    protected void readProperties(ChannelDataInput cdi) throws IOException {
+    protected void readProperties(ISOBMFFReader reader) throws IOException {
         //skip to box end
-        cdi.seek(boxOffset + size);
+        reader.channel.seek(boxOffset + size);
+    }
+
+    private void readChildren(ISOBMFFReader reader) throws IOException {
+        if (!isContainer()) throw new IOException("Box is not a container.");
+        if (children != null) return;
+
+        reader.channel.seek(payloadOffset);
+        final List<Box> children = new ArrayList<>();
+        if (size == 0) {
+            //go to file end
+            try {
+                while (true) {
+                    final Box box = reader.readBox();
+                    reader.channel.seek(box.boxOffset + box.size);
+                    children.add(box);
+                    if (box.size == 0) break; //last box
+                }
+            } catch (EOFException ex) {
+                //expected
+            }
+        } else {
+            while (reader.channel.getStreamPosition() < boxOffset+size) {
+                final Box box = reader.readBox();
+                reader.channel.seek(box.boxOffset + box.size);
+                children.add(box);
+                if (box.size == 0) break; //last box
+            }
+        }
+        this.children = Collections.unmodifiableList(children);
     }
 
     public boolean isContainer() {
@@ -105,41 +148,13 @@ public class Box {
      * @return list of children boxes
      * @throws IOException
      */
-    public synchronized final List<Box> getChildren(ChannelDataInput cdi) throws IOException {
-        if (children != null) return children;
-        if (isContainer()) {
-            cdi.seek(payloadOffset);
-            final List<Box> children = new ArrayList<>();
-            if (size == 0) {
-                //go to file end
-                try {
-                    while (true) {
-                        final Box box = ISOBMFFReader.readBox(cdi);
-                        cdi.seek(box.boxOffset + box.size);
-                        children.add(box);
-                        if (box.size == 0) break; //last box
-                    }
-                } catch (EOFException ex) {
-                    //expected
-                }
-            } else {
-                while (cdi.getStreamPosition() < boxOffset+size) {
-                    final Box box = ISOBMFFReader.readBox(cdi);
-                    cdi.seek(box.boxOffset + box.size);
-                    children.add(box);
-                    if (box.size == 0) break; //last box
-                }
-            }
-
-            this.children = Collections.unmodifiableList(children);
-        } else {
-            children = Collections.EMPTY_LIST;
-        }
+    public final List<Box> getChildren() throws IOException {
+        readPayload();
         return children;
     }
 
-    public Box getChild(String fourCC, String uuid, ChannelDataInput cdi) throws IOException {
-        List<Box> children = getChildren(cdi);
+    public Box getChild(String fourCC, String uuid) throws IOException {
+        List<Box> children = getChildren();
         for (Box b : children) {
             if (b.type.equals(fourCC)) {
                 if (uuid != null && !uuid.equals(b.uuid.toString())) {
@@ -170,12 +185,11 @@ public class Box {
         if (!p.isBlank()) sb.append("\n  ").append(p.replaceAll("\n", "\n  "));
         if (isContainer()) {
             sb.append(" CONTAINER");
-
-            final List<Box> children = this.children;
-            if (children != null) {
-                return toStringTree(sb.toString(), children);
-            } else {
-                sb.append(" - not loaded");
+            try {
+                final List<Box> children = getChildren();
+                return StringUtilities.toStringTree(sb.toString(), children);
+            } catch (IOException ex) {
+                sb.append(" - ERROR loading boxes");
             }
         }
         return sb.toString();
@@ -186,41 +200,6 @@ public class Box {
      */
     protected String propertiesToString() {
         return beanToString(this);
-    }
-
-    /**
-     * Returns a graphical representation of the specified objects. This representation can be
-     * printed to the {@linkplain System#out standard output stream} (for example) if it uses
-     * a monospaced font and supports unicode.
-     *
-     * @param  root  The root name of the tree to format.
-     * @param  objects The objects to format as root children.
-     * @return A string representation of the tree.
-     */
-    public static String toStringTree(String root, final Iterable<?> objects) {
-        final StringBuilder sb = new StringBuilder();
-        if (root != null) {
-            sb.append(root);
-        }
-        if (objects != null) {
-            final Iterator<?> ite = objects.iterator();
-            while (ite.hasNext()) {
-                sb.append('\n');
-                final Object next = ite.next();
-                final boolean last = !ite.hasNext();
-                sb.append(last ? "\u2514\u2500 " : "\u251C\u2500 ");
-
-                final String[] parts = String.valueOf(next).split("\n");
-                sb.append(parts[0]);
-                for (int k=1;k<parts.length;k++) {
-                    sb.append('\n');
-                    sb.append(last ? ' ' : '\u2502');
-                    sb.append("  ");
-                    sb.append(parts[k]);
-                }
-            }
-        }
-        return sb.toString();
     }
 
     public static int fourCCtoInt(String fourcc) {
@@ -257,6 +236,10 @@ public class Box {
                 sb.append(field.getName()).append(" : ");
                 try {
                     Object value = field.get(obj);
+                    if (value instanceof Collection) {
+                        value = ((Collection) value).toArray();
+                    }
+
                     if (value != null && value.getClass().isArray()) {
                         final Class<?> componentType = value.getClass().getComponentType();
                         int length = Array.getLength(value);

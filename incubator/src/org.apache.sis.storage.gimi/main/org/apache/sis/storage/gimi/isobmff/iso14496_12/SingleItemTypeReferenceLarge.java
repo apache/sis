@@ -17,7 +17,7 @@
 package org.apache.sis.storage.gimi.isobmff.iso14496_12;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 
 /**
  *
@@ -26,11 +26,11 @@ import org.apache.sis.io.stream.ChannelDataInput;
 public class SingleItemTypeReferenceLarge extends SingleItemTypeReference {
 
     @Override
-    public void readProperties(ChannelDataInput cdi) throws IOException {
-        fromItemId = cdi.readInt();
-        toItemId = new int[cdi.readUnsignedShort()];
+    public void readProperties(ISOBMFFReader reader) throws IOException {
+        fromItemId = reader.channel.readInt();
+        toItemId = new int[reader.channel.readUnsignedShort()];
         for (int i = 0; i < toItemId.length; i++) {
-            toItemId[i] = cdi.readInt();
+            toItemId[i] = reader.channel.readInt();
         }
     }
 

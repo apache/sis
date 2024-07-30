@@ -17,8 +17,8 @@
 package org.apache.sis.storage.gimi.isobmff.iso14496_12;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.gimi.isobmff.Box;
+import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 
 /**
  *
@@ -35,14 +35,14 @@ public final class ColourInformation extends Box{
     public boolean fullRangeFlag;
 
     @Override
-    protected void readProperties(ChannelDataInput cdi) throws IOException {
-        colourType = Box.intToFourCC(cdi.readInt());
+    protected void readProperties(ISOBMFFReader reader) throws IOException {
+        colourType = Box.intToFourCC(reader.channel.readInt());
         if ("nclx".equals(colourType)) {
-            colourPrimaries = cdi.readUnsignedShort();
-            transferCharacteristics = cdi.readUnsignedShort();
-            matrixCoefficients = cdi.readUnsignedShort();
-            fullRangeFlag = cdi.readBit() == 1;
-            cdi.skipRemainingBits();
+            colourPrimaries = reader.channel.readUnsignedShort();
+            transferCharacteristics = reader.channel.readUnsignedShort();
+            matrixCoefficients = reader.channel.readUnsignedShort();
+            fullRangeFlag = reader.channel.readBit() == 1;
+            reader.channel.skipRemainingBits();
         } else if ("rICC".equals(colourType)) {
             throw new IOException();
         } else if ("prof".equals(colourType)) {

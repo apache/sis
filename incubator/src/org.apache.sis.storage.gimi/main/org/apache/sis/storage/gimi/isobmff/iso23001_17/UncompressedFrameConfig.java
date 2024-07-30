@@ -17,9 +17,9 @@
 package org.apache.sis.storage.gimi.isobmff.iso23001_17;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.gimi.isobmff.Box;
 import org.apache.sis.storage.gimi.isobmff.FullBox;
+import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 
 /**
  *
@@ -57,33 +57,33 @@ public final class UncompressedFrameConfig extends FullBox {
     public int numTileRowsMinusOne;
 
     @Override
-    public void readProperties(ChannelDataInput cdi) throws IOException {
-        profile = intToFourCC(cdi.readInt());
+    public void readProperties(ISOBMFFReader reader) throws IOException {
+        profile = intToFourCC(reader.channel.readInt());
         if (version == 1) {
             throw new IOException("TODO");
         } else if (version == 0) {
-            components = new Component[cdi.readInt()];
+            components = new Component[reader.channel.readInt()];
             for (int i = 0; i < components.length; i++) {
                 components[i] = new Component();
-                components[i].componentIndex = cdi.readUnsignedShort();
-                components[i].componentBitDepthMinusOne = cdi.readUnsignedByte();
-                components[i].componentFormat = cdi.readUnsignedByte();
-                components[i].componentAlignSize = cdi.readUnsignedByte();
+                components[i].componentIndex = reader.channel.readUnsignedShort();
+                components[i].componentBitDepthMinusOne = reader.channel.readUnsignedByte();
+                components[i].componentFormat = reader.channel.readUnsignedByte();
+                components[i].componentAlignSize = reader.channel.readUnsignedByte();
             }
-            samplingType = cdi.readUnsignedByte();
-            interleaveType = cdi.readUnsignedByte();
-            blockSize = cdi.readUnsignedByte();
-            componentsLittleEndian = cdi.readBit() == 1;
-            blockPadLsb = cdi.readBit() == 1;
-            blockLittleEndian = cdi.readBit() == 1;
-            blockReserved = cdi.readBit() == 1;
-            padUnknown = cdi.readBit() == 1;
-            cdi.readBits(3);
-            pixelSize = cdi.readInt();
-            rowAlignSize = cdi.readInt();
-            tileAlignSize = cdi.readInt();
-            numTileColsMinusOne = cdi.readInt();
-            numTileRowsMinusOne = cdi.readInt();
+            samplingType = reader.channel.readUnsignedByte();
+            interleaveType = reader.channel.readUnsignedByte();
+            blockSize = reader.channel.readUnsignedByte();
+            componentsLittleEndian = reader.channel.readBit() == 1;
+            blockPadLsb = reader.channel.readBit() == 1;
+            blockLittleEndian = reader.channel.readBit() == 1;
+            blockReserved = reader.channel.readBit() == 1;
+            padUnknown = reader.channel.readBit() == 1;
+            reader.channel.readBits(3);
+            pixelSize = reader.channel.readInt();
+            rowAlignSize = reader.channel.readInt();
+            tileAlignSize = reader.channel.readInt();
+            numTileColsMinusOne = reader.channel.readInt();
+            numTileRowsMinusOne = reader.channel.readInt();
         } else {
             throw new IOException("Unsupported version " + version);
         }

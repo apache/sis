@@ -17,9 +17,9 @@
 package org.apache.sis.storage.gimi.isobmff.iso14496_12;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.gimi.isobmff.Box;
 import org.apache.sis.storage.gimi.isobmff.FullBox;
+import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 
 /**
  *
@@ -110,44 +110,44 @@ public class ItemLocation extends FullBox {
     }
 
     @Override
-    public void readProperties(ChannelDataInput cdi) throws IOException {
-        offsetSize = (int) cdi.readBits(4);
-        lengthSize = (int) cdi.readBits(4);
-        baseOffsetSize = (int) cdi.readBits(4);
+    public void readProperties(ISOBMFFReader reader) throws IOException {
+        offsetSize = (int) reader.channel.readBits(4);
+        lengthSize = (int) reader.channel.readBits(4);
+        baseOffsetSize = (int) reader.channel.readBits(4);
         if (version == 1 || version == 2) {
-            indexSize = (int) cdi.readBits(4);
+            indexSize = (int) reader.channel.readBits(4);
         } else {
-            cdi.readBits(4);
+            reader.channel.readBits(4);
         }
         if (version < 2) {
-            itemCount = cdi.readUnsignedShort();
+            itemCount = reader.channel.readUnsignedShort();
         } else if (version == 2) {
-            itemCount = cdi.readInt();
+            itemCount = reader.channel.readInt();
         }
         items = new Item[itemCount];
         for (int i = 0; i < itemCount; i++) {
             items[i] = new Item();
             if (version < 2) {
-                items[i].itemId = cdi.readUnsignedShort();
+                items[i].itemId = reader.channel.readUnsignedShort();
             } else if (version == 2) {
-                items[i].itemId = cdi.readInt();
+                items[i].itemId = reader.channel.readInt();
             }
             if (version == 1 || version == 2) {
-                cdi.readBits(12);
-                items[i].constructionMethod = (int) cdi.readBits(4);
+                reader.channel.readBits(12);
+                items[i].constructionMethod = (int) reader.channel.readBits(4);
             }
-            items[i].dataReferenceIndex = cdi.readUnsignedShort();
-            items[i].baseOffset = cdi.readBits(baseOffsetSize*8);
-            items[i].extentCount = cdi.readUnsignedShort();
+            items[i].dataReferenceIndex = reader.channel.readUnsignedShort();
+            items[i].baseOffset = reader.channel.readBits(baseOffsetSize*8);
+            items[i].extentCount = reader.channel.readUnsignedShort();
             items[i].itemReferenceIndex = new int[items[i].extentCount];
             items[i].extentOffset = new int[items[i].extentCount];
             items[i].extentLength = new int[items[i].extentCount];
             for (int k = 0; k < items[i].extentCount; k++) {
                 if ((version == 1 || version == 2) && indexSize >0) {
-                    items[i].itemReferenceIndex[k] = (int) cdi.readBits(indexSize*8);
+                    items[i].itemReferenceIndex[k] = (int) reader.channel.readBits(indexSize*8);
                 }
-                items[i].extentOffset[k] = (int) cdi.readBits(offsetSize*8);
-                items[i].extentLength[k] = (int) cdi.readBits(lengthSize*8);
+                items[i].extentOffset[k] = (int) reader.channel.readBits(offsetSize*8);
+                items[i].extentLength[k] = (int) reader.channel.readBits(lengthSize*8);
             }
         }
     }

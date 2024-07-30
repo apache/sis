@@ -17,7 +17,7 @@
 package org.apache.sis.storage.gimi.isobmff.gimi;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemFullProperty;
 
 /**
@@ -31,13 +31,13 @@ public final class ModelTransformationProperty extends ItemFullProperty {
     public double[] transform;
 
     @Override
-    protected void readProperties(ChannelDataInput cdi) throws IOException {
+    protected void readProperties(ISOBMFFReader reader) throws IOException {
         if ((flags & 0x01) == 1) {
             //2D
-            transform = cdi.readDoubles(6);
+            transform = reader.channel.readDoubles(6);
         } else {
             //3D
-            transform = cdi.readDoubles(12);
+            transform = reader.channel.readDoubles(12);
         }
     }
 

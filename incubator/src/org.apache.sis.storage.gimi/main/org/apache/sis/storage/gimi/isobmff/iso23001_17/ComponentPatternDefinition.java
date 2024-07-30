@@ -17,8 +17,8 @@
 package org.apache.sis.storage.gimi.isobmff.iso23001_17;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.gimi.isobmff.FullBox;
+import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 
 /**
  *
@@ -32,16 +32,16 @@ public final class ComponentPatternDefinition extends FullBox{
     public double[][] patternComponentGain;
 
     @Override
-    public void readProperties(ChannelDataInput cdi) throws IOException {
+    public void readProperties(ISOBMFFReader reader) throws IOException {
 
-        final int width = cdi.readUnsignedShort();
-        final int height = cdi.readUnsignedShort();
+        final int width = reader.channel.readUnsignedShort();
+        final int height = reader.channel.readUnsignedShort();
         patternComponentIndex = new int[height][width];
         patternComponentGain = new double[height][width];
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                patternComponentIndex[y][x] = cdi.readInt();
-                patternComponentGain[y][x] = cdi.readDouble();
+                patternComponentIndex[y][x] = reader.channel.readInt();
+                patternComponentGain[y][x] = reader.channel.readDouble();
             }
         }
     }

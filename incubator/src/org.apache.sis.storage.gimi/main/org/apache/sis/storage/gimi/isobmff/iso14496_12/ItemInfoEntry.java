@@ -17,7 +17,6 @@
 package org.apache.sis.storage.gimi.isobmff.iso14496_12;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.gimi.isobmff.Box;
 import org.apache.sis.storage.gimi.isobmff.FullBox;
 import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
@@ -41,35 +40,35 @@ public class ItemInfoEntry extends FullBox {
     public String itemUriType;
 
     @Override
-    public void readProperties(ChannelDataInput cdi) throws IOException {
+    public void readProperties(ISOBMFFReader reader) throws IOException {
         if (version == 0 || version == 1) {
-            itemId = cdi.readUnsignedShort();
-            itemProtectionIndex = cdi.readUnsignedShort();
-            itemName = ISOBMFFReader.readUtf8String(cdi);
-            contentType = ISOBMFFReader.readUtf8String(cdi);
-            contentEncoding = ISOBMFFReader.readUtf8String(cdi);
+            itemId = reader.channel.readUnsignedShort();
+            itemProtectionIndex = reader.channel.readUnsignedShort();
+            itemName = reader.readUtf8String();
+            contentType = reader.readUtf8String();
+            contentEncoding = reader.readUtf8String();
         }
         if (version == 1) {
-            extensionType = cdi.readInt();
-            extension = ISOBMFFReader.readBox(cdi);
+            extensionType = reader.channel.readInt();
+            extension = reader.readBox();
         }
         if (version >= 2) {
             if (version == 2) {
-                itemId = cdi.readUnsignedShort();
+                itemId = reader.channel.readUnsignedShort();
             } else if (version == 3) {
-                itemId = cdi.readInt();
+                itemId = reader.channel.readInt();
             }
-            itemProtectionIndex = cdi.readUnsignedShort();
-            itemType = intToFourCC(cdi.readInt());
-            itemName = ISOBMFFReader.readUtf8String(cdi);
+            itemProtectionIndex = reader.channel.readUnsignedShort();
+            itemType = intToFourCC(reader.channel.readInt());
+            itemName = reader.readUtf8String();
             if ("mime".equals(itemType)) {
-                contentType = ISOBMFFReader.readUtf8String(cdi);
-                contentEncoding = ISOBMFFReader.readUtf8String(cdi);
+                contentType = reader.readUtf8String();
+                contentEncoding = reader.readUtf8String();
             } else if ("uri ".equals(itemType)) {
-                itemUriType = ISOBMFFReader.readUtf8String(cdi);
+                itemUriType = reader.readUtf8String();
             }
         }
-        cdi.seek(boxOffset + size);
+        reader.channel.seek(boxOffset + size);
     }
 
 }

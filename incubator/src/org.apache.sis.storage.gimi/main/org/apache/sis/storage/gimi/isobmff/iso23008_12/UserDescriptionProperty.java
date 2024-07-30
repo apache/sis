@@ -17,7 +17,6 @@
 package org.apache.sis.storage.gimi.isobmff.iso23008_12;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemFullProperty;
 
@@ -35,13 +34,11 @@ public class UserDescriptionProperty extends ItemFullProperty {
     public String tags;
 
     @Override
-    protected void readProperties(ChannelDataInput cdi) throws IOException {
-        lang = ISOBMFFReader.readUtf8String(cdi);
-        name = ISOBMFFReader.readUtf8String(cdi);
-        description = ISOBMFFReader.readUtf8String(cdi);
-        tags = ISOBMFFReader.readUtf8String(cdi);
+    protected void readProperties(ISOBMFFReader reader) throws IOException {
+        lang = reader.readUtf8String();
+        name = reader.readUtf8String();
+        description = reader.readUtf8String();
+        tags = reader.readUtf8String();
     }
-
-
 
 }

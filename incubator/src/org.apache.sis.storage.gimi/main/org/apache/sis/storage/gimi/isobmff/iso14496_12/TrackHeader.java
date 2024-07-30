@@ -19,6 +19,7 @@ package org.apache.sis.storage.gimi.isobmff.iso14496_12;
 import java.io.IOException;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.gimi.isobmff.FullBox;
+import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 
 /**
  * Container: TrackBox
@@ -30,8 +31,8 @@ public final class TrackHeader extends FullBox {
     public static final String FCC = "tkhd";
 
     @Override
-    public void readProperties(ChannelDataInput cdi) throws IOException {
-        super.readProperties(cdi);
+    public void readProperties(ISOBMFFReader reader) throws IOException {
+        super.readProperties(reader);
         //TODO
     }
 

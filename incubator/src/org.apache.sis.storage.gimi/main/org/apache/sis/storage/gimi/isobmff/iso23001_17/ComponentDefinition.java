@@ -17,7 +17,6 @@
 package org.apache.sis.storage.gimi.isobmff.iso23001_17;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.gimi.isobmff.Box;
 import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 
@@ -52,15 +51,15 @@ public final class ComponentDefinition extends Box{
     public String[] componentTypeURI;
 
     @Override
-    public void readProperties(ChannelDataInput cdi) throws IOException {
-        final int componentCount = cdi.readInt();
+    public void readProperties(ISOBMFFReader reader) throws IOException {
+        final int componentCount = reader.channel.readInt();
         componentType = new int[componentCount];
         componentTypeURI = new String[componentCount];
 
         for (int i = 0; i < componentCount; i++) {
-            componentType[i] = cdi.readUnsignedShort();
+            componentType[i] = reader.channel.readUnsignedShort();
             if (componentType[i] >= 0x8000) {
-                componentTypeURI[i] = ISOBMFFReader.readUtf8String(cdi);
+                componentTypeURI[i] = reader.readUtf8String();
             }
         }
     }

@@ -14,26 +14,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.sis.storage.gimi.isobmff.iso14496_12;
+package org.apache.sis.storage.gimi;
 
+import java.io.EOFException;
 import java.io.IOException;
-import org.apache.sis.storage.gimi.isobmff.FullBox;
+import java.nio.file.Path;
+import org.apache.sis.io.stream.ChannelDataInput;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.gimi.isobmff.Box;
 import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 
 /**
  *
  * @author Johann Sorel (Geomatys)
  */
-public class EntityToGroup extends FullBox {
+public class GimiUtils {
 
-    public int groupId;
-    public int[] entitiesId;
+    public static void printAll(Path path) throws IllegalArgumentException, DataStoreException, IOException {
 
-    @Override
-    protected void readProperties(ISOBMFFReader reader) throws IOException {
-        groupId = reader.channel.readInt();
-        entitiesId = reader.channel.readInts(reader.channel.readInt());
+        final StorageConnector cnx = new StorageConnector(path);
+        final ChannelDataInput cdi = cnx.getStorageAs(ChannelDataInput.class);
+        final ISOBMFFReader reader = new ISOBMFFReader(cdi);
+
+        try {
+            while(true) {
+                final Box box = reader.readBox();
+                System.out.println(box);
+                cdi.seek(box.boxOffset + box.size);
+
+            }
+        } catch (EOFException ex) {
+            //do nothing
+        }
     }
-
 
 }

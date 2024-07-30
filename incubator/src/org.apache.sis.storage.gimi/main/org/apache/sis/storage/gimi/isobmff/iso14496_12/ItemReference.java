@@ -19,7 +19,6 @@ package org.apache.sis.storage.gimi.isobmff.iso14496_12;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.gimi.isobmff.Box;
 import org.apache.sis.storage.gimi.isobmff.FullBox;
 import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
@@ -35,16 +34,15 @@ public class ItemReference extends FullBox {
     public List<SingleItemTypeReference> references;
 
     @Override
-    public void readProperties(ChannelDataInput cdi) throws IOException {
+    public void readProperties(ISOBMFFReader reader) throws IOException {
         references = new ArrayList<>();
 
-        while (cdi.getStreamPosition() < boxOffset+size) {
-            final Box box = ISOBMFFReader.readBox(cdi);
+        while (reader.channel.getStreamPosition() < boxOffset+size) {
+            final Box box = reader.readBox(version == 0 ? new SingleItemTypeReference() : new SingleItemTypeReferenceLarge());
             if (!(box instanceof SingleItemTypeReference)) {
-                throw new IOException("Expected only SingleItemTypeReference boxes in ItemReference but encounter a " + box.getClass().getSimpleName());
+                throw new IOException("Expected only SingleItemTypeReference boxes in ItemReference but encounter a " + box);
             }
-            box.readPayload(cdi);
-            cdi.seek(box.boxOffset + box.size);
+            reader.channel.seek(box.boxOffset + box.size);
             references.add((SingleItemTypeReference) box);
         }
     }

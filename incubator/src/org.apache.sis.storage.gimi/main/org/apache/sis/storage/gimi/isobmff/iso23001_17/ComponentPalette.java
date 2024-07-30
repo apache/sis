@@ -17,8 +17,8 @@
 package org.apache.sis.storage.gimi.isobmff.iso23001_17;
 
 import java.io.IOException;
-import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.storage.gimi.isobmff.FullBox;
+import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 
 /**
  *
@@ -37,19 +37,19 @@ public class ComponentPalette extends FullBox{
     public int[][] values;
 
     @Override
-    public void readProperties(ChannelDataInput cdi) throws IOException {
-        components = new Component[cdi.readUnsignedShort()];
+    public void readProperties(ISOBMFFReader reader) throws IOException {
+        components = new Component[reader.channel.readUnsignedShort()];
         for (int i = 0; i < components.length; i++) {
             components[i] = new Component();
-            components[i].componentIndex = cdi.readInt();
-            components[i].componentBitDepthMinusOne = cdi.readUnsignedByte();
-            components[i].componentFormat = cdi.readUnsignedByte();
+            components[i].componentIndex = reader.channel.readInt();
+            components[i].componentBitDepthMinusOne = reader.channel.readUnsignedByte();
+            components[i].componentFormat = reader.channel.readUnsignedByte();
         }
-        values = new int[cdi.readInt()][components.length];
+        values = new int[reader.channel.readInt()][components.length];
         for (int k = 0; k < values.length; k++) {
             for (int i = 0; i < components.length; i++) {
-                values[k][i] = (int) cdi.readBits(components[i].componentBitDepthMinusOne+1);
-                cdi.skipRemainingBits();
+                values[k][i] = (int) reader.channel.readBits(components[i].componentBitDepthMinusOne+1);
+                reader.channel.skipRemainingBits();
             }
         }
     }
