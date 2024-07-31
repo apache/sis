@@ -29,10 +29,10 @@ import java.awt.image.WritableRaster;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import javax.swing.JFrame;
-import org.opengis.referencing.datum.PixelInCell;
 import org.apache.sis.image.PlanarImage;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
+import org.apache.sis.coverage.grid.PixelInCell;
 import org.apache.sis.coverage.grid.IncompleteGridGeometryException;
 import org.apache.sis.referencing.operation.matrix.AffineTransforms2D;
 

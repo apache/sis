@@ -32,9 +32,7 @@
   </parent>
 
 
-  <!-- ===========================================================
-           Module Description
-       =========================================================== -->
+  <!-- Module Description -->
   <groupId>org.apache.sis.core</groupId>
   <artifactId>sis-visual-test</artifactId>
   <name>Apache SIS visual test</name>
@@ -44,9 +42,7 @@
   </description>
 
 
-  <!-- ===========================================================
-           Developers and Contributors
-       =========================================================== -->
+  <!--Developers and Contributors -->
   <developers>
     <developer>
       <name>Martin Desruisseaux</name>
@@ -73,9 +69,7 @@
   </developers>
 
 
-  <!-- ===========================================================
-           Dependencies
-       =========================================================== -->
+  <!-- Dependencies -->
   <dependencies>
     <dependency>
       <groupId>org.apache.sis.core</groupId>
@@ -95,5 +89,23 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <!-- Compile properties files into resources UTF files. -->
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.sis.core</groupId>
+        <artifactId>sis-build-helper</artifactId>
+        <version>1.3</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile-resources</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>
