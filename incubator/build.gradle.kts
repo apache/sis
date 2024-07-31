@@ -187,6 +187,18 @@ publishing {
                 description = "Read files in ISOBMFF GIMI format."
             }
         }
+        create<MavenPublication>("storage.gsf") {
+            var module = "org.apache.sis.storage.gsf"
+            groupId    = "org.apache.sis.storage"
+            artifactId = "sis-gsf"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS LibGSF Panama binding"
+                description = "Read files in GSF format."
+            }
+        }
         create<MavenPublication>("storage.coveragejson") {
             var module = "org.apache.sis.storage.coveragejson"
             groupId    = "org.apache.sis.storage"
