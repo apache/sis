@@ -667,6 +667,7 @@ public class GridDerivation {
                 resolution = ArraysExt.resize(resolution, cornerToCRS.getTargetDimensions());
                 Matrix affine = cornerToCRS.derivative(new DirectPositionView.Double(getPointOfInterest()));
                 final double[] subsampling = Matrices.inverse(affine).multiply(resolution);
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final int[] modifiedDimensions = this.modifiedDimensions;                   // Will not change anymore.
                 boolean scaled = false;
                 for (int k=0; k < subsampling.length; k++) {
