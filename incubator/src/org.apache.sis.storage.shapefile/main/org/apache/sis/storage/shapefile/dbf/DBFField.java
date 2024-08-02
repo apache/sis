@@ -129,7 +129,7 @@ public final class DBFField {
      * @param fieldAddress unused for now, has a meaning in some specifications but not all
      * @param fieldLength total field length in bytes
      * @param fieldDecimals number of decimals for floating points
-     * @param charset String base field encoding
+     * @param charset String base field encoding, can be null, default is ISO_LATIN1
      */
     public DBFField(String fieldName, char fieldType, int fieldAddress, int fieldLength, int fieldDecimals, Charset charset) {
         this.fieldName = fieldName;
@@ -137,7 +137,7 @@ public final class DBFField {
         this.fieldAddress = fieldAddress;
         this.fieldLength = fieldLength;
         this.fieldDecimals = fieldDecimals;
-        this.charset = charset;
+        this.charset = charset == null ? StandardCharsets.ISO_8859_1 : charset;
 
         switch (Character.toUpperCase(fieldType)) {
             case TYPE_BINARY : valueClass = Long.class;      reader = this::readBinary; writer = this::writeBinary; break;
