@@ -92,7 +92,6 @@ tasks.compileTestJava {
     srcDir.list().forEach {
         addRead(options.compilerArgs, it, "org.apache.sis.test.optional,org.junit.jupiter.api")
     }
-    addRead(options.compilerArgs, "org.apache.sis.referencing.database", "org.apache.sis.referencing.epsg");
 }
 
 /*
@@ -130,6 +129,9 @@ fun patchForTests(args : MutableList<String>) {
     patchModuleWithTests(args, "org.apache.sis.util")
     patchModuleWithTests(args, "org.apache.sis.metadata")
     patchModuleWithTests(args, "org.apache.sis.feature")
+
+    addRead(args, "org.apache.sis.referencing.database", "org.apache.sis.referencing.epsg");
+
     // ――――――――――――― Module name ――――――――――――――――――――――― Package to export ―――――――――――――――
     addExport(args, "org.apache.sis.util",              "org.apache.sis.test",
                     "org.apache.sis.gui," +

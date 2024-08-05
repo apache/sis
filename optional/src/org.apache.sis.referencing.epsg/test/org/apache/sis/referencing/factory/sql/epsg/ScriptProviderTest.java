@@ -34,6 +34,12 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
  */
 public final strictfp class ScriptProviderTest {
     /**
+     * Creates a new test case.
+     */
+    public ScriptProviderTest() {
+    }
+
+    /**
      * Returns the {@link ScriptProvider} instance declared in the {@code META-INF/services/} directory.
      * The provider may coexist with providers defined in other modules, so we need to filter them.
      */
@@ -65,7 +71,8 @@ public final strictfp class ScriptProviderTest {
     }
 
     /**
-     * Tests fetching the resources.
+     * Tests fetching the resources. This test does not execute the scripts.
+     * It only verifies that if the sentinel file exists, then all resources exist and are non-empty.
      *
      * @throws IOException if an error occurred while reading a resource.
      */

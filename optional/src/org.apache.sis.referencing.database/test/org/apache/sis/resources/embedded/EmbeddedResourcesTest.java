@@ -49,13 +49,25 @@ public final strictfp class EmbeddedResourcesTest {
     private static boolean databaseCreated;
 
     /**
+     * Creates a new test case.
+     */
+    public EmbeddedResourcesTest() {
+    }
+
+    /**
+     * Skips the test if the EPSG scripts are not present.
+     * This method uses {@code LICENSE.txt} as a sentinel file.
+     */
+    private static void assumeDataPresent() {
+        assumeTrue(ScriptProvider.class.getResource("LICENSE.txt") != null,
+                "EPSG resources not found. See `README.md` for manual installation.");
+    }
+
+    /**
      * Returns the {@link EmbeddedResources} instance declared in the {@code META-INF/services/} directory.
      * The provider may coexist with providers defined in other modules, so we need to filter them.
      */
     private static synchronized InstallationResources getInstance() {
-        assumeTrue(ScriptProvider.class.getResource("LICENSE.txt") != null,
-                "EPSG resources not found. See `README.md` for manual installation.");
-
         if (!databaseCreated) try {
             new Generator().run();
             databaseCreated = true;
@@ -79,8 +91,9 @@ public final strictfp class EmbeddedResourcesTest {
      *
      * @throws IOException if an error occurred while reading a license.
      */
-//  @Test
+    @Test
     public void testLicences() throws IOException {
+        assumeDataPresent();
         final InstallationResources provider = getInstance();
         assertTrue(provider.getLicense("Embedded", null, "text/plain").contains("IOGP"));
         assertTrue(provider.getLicense("Embedded", null, "text/html" ).contains("IOGP"));
@@ -91,8 +104,9 @@ public final strictfp class EmbeddedResourcesTest {
      *
      * @throws Exception if an error occurred while fetching the data source, or connecting to the database.
      */
-//  @Test
+    @Test
     public void testConnection() throws Exception {
+        assumeDataPresent();
         final String dir = DataDirectory.getenv();
         assertTrue((dir == null) || dir.isEmpty(), "The SIS_DATA environment variable must be unset for enabling this test.");
         final DataSource ds = Initializer.getDataSource();
@@ -118,6 +132,7 @@ public final strictfp class EmbeddedResourcesTest {
      */
     @Test
     public void testCrsforCode() throws FactoryException {
+        assumeDataPresent();
         CoordinateReferenceSystem crs = CRS.forCode("EPSG:6676");
         String area = TestUtilities.getSingleton(crs.getDomains()).getDomainOfValidity().getDescription().toString();
         assertTrue(area.contains("Japan"), area);
