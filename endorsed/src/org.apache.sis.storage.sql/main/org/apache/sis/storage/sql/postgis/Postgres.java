@@ -37,6 +37,7 @@ import org.apache.sis.storage.sql.feature.Database;
 import org.apache.sis.storage.sql.feature.ValueGetter;
 import org.apache.sis.storage.sql.feature.Resources;
 import org.apache.sis.storage.sql.feature.SelectionClauseWriter;
+import org.apache.sis.storage.sql.feature.SpatialSchema;
 import org.apache.sis.metadata.sql.privy.Dialect;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.Version;
@@ -185,15 +186,23 @@ public final class Postgres<G> extends Database<G> {
     }
 
     /**
-     * Adds to the given set a list of tables to ignore when searching for feature tables.
+     * Returns the spatial schema conventions that may possibly be supported by this database.
+     * The only value expected by PostGIS databases is {@link SpatialSchema#SIMPLE_FEATURE}.
+     * This method also completes the given map with additional tables describing the schema.
+     * Those tables shall be ignored when searching for feature tables.
      *
-     * @param  ignoredTables  where to add names of tables to ignore.
+     * <p>The values in the map tells whether the table can be used as a sentinel value for
+     * determining that the {@link SpatialSchema} enumeration value can be accepted.</p>
+     *
+     * @param  tables  where to add names of tables that describe the spatial schema.
+     * @return the spatial schema convention supported by this database.
      */
     @Override
-    protected void addIgnoredTables(final Map<String,Boolean> ignoredTables) {
+    protected SpatialSchema[] getPossibleSpatialSchemas(final Map<String,Boolean> ignoredTables) {
         ignoredTables.put("geography_columns", Boolean.TRUE);     // Postgis 1+
         ignoredTables.put("raster_columns",    Boolean.TRUE);     // Postgis 2
         ignoredTables.put("raster_overviews",  Boolean.FALSE);
+        return new SpatialSchema[] {SpatialSchema.SIMPLE_FEATURE};
     }
 
     /**

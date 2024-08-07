@@ -85,7 +85,7 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
 
     /**
      * A cache of statements for fetching spatial information such as geometry columns or SRID.
-     * This is non-null only if the {@linkplain Database#isSpatial() database is spatial}.
+     * This is non-null only if the {@linkplain Database#getSpatialSchema() database is spatial}.
      * The same instance is shared by all dependencies of this {@code FeatureIterator}.
      */
     private final InfoStatements spatialInformation;
@@ -118,7 +118,8 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
             throws SQLException, InternalDataStoreException
     {
         adapter = table.adapter(connection);
-        spatialInformation = table.database.isSpatial() ? table.database.createInfoStatements(connection) : null;
+        spatialInformation = table.database.getSpatialSchema().isPresent()
+                ? table.database.createInfoStatements(connection) : null;
         String sql = adapter.sql;
         if (distinct || filter != null || sort != null || offset > 0 || count > 0) {
             final SQLBuilder builder = new SQLBuilder(table.database).append(sql);

@@ -132,7 +132,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
      */
     @Override
     protected void test(final TestDatabase database, final boolean noschema) throws Exception {
-        final var scripts = new ArrayList<>(2);
+        final var scripts = new ArrayList<Object>(2);
         if (noschema) {
             scripts.add("CREATE SCHEMA " + SCHEMA + ';');
             // Omit the "CREATE SCHEMA" statement if the schema already exists.

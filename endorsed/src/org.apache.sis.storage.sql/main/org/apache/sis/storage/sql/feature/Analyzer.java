@@ -134,7 +134,7 @@ final class Analyzer {
         this.metadata      = metadata;
         this.escape        = metadata.getSearchStringEscape();
         this.nameFactory   = DefaultNameFactory.provider();
-        spatialInformation = database.isSpatial() ? database.createInfoStatements(connection) : null;
+        spatialInformation = database.getSpatialSchema().isPresent() ? database.createInfoStatements(connection) : null;
     }
 
     /**

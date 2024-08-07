@@ -285,7 +285,7 @@ public class TestDatabase implements AutoCloseable {
         }
         return new TestDatabase(ds, Dialect.POSTGRESQL) {
             @Override public void close() throws SQLException {
-                final PGSimpleDataSource ds = (PGSimpleDataSource) source;
+                final var ds = (PGSimpleDataSource) source;
                 try (Connection c = ds.getConnection()) {
                     try (Statement s = c.createStatement()) {
                         /*

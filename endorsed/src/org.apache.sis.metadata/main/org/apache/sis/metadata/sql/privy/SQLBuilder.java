@@ -114,6 +114,19 @@ public class SQLBuilder extends Syntax {
     }
 
     /**
+     * Appends verbatim a sub-sequence of the given text.
+     *
+     * @param   text   the text to append verbatim.
+     * @param   start  starting index of the text append, inclusive.
+     * @param   end    end index of the text to append, exclusive.
+     * @return this builder, for method call chaining.
+     */
+    public final SQLBuilder append(final String text, final int start, final int end) {
+        buffer.append(text, start, end);
+        return this;
+    }
+
+    /**
      * Appends the given text verbatim.
      * The text should be SQL keywords like {@code "SELECT * FROM"}.
      *

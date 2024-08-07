@@ -75,19 +75,6 @@ import org.opengis.metadata.Identifier;
  */
 public class InfoStatements implements Localized, AutoCloseable {
     /**
-     * The table containing CRS definitions, as specified by ISO 19125 / OGC Simple feature access part 2.
-     * Note that the standard specifies table names in upper-case letters, which is also the default case
-     * specified by the SQL standard. However, some databases use lower cases instead. This table name can
-     * be used unquoted for letting the database engine converts the case.
-     */
-    static final String SPATIAL_REF_SYS = "SPATIAL_REF_SYS";
-
-    /**
-     * The table containing the list of geometry columns, as specified by ISO 19125 / OGC Simple feature access part 2.
-     */
-    static final String GEOMETRY_COLUMNS = "GEOMETRY_COLUMNS";
-
-    /**
      * Specifies how the geometry type is encoded in the {@code "GEOMETRY_TYPE"} column.
      * The OGC standard defines numeric values, but PostGIS uses textual values.
      *
@@ -202,38 +189,51 @@ public class InfoStatements implements Localized, AutoCloseable {
     }
 
     /**
-     * Appends a statement after {@code "WHERE"} such as {@code ""F_TABLE_NAME = ?"}.
+     * Appends the name of a geometry column or raster column.
      *
-     * @param  sql     the builder where to add the SQL statement.
-     * @param  prefix  the column name prefix: {@code 'F'} for features or {@code 'R'} for rasters.
-     * @param  column  the column name (e.g. {@code "TABLE_NAME"}.
+     * @param  sql     the builder where to add the column name.
+     * @param  raster  whether the statement is for raster table instead of geometry table.
+     * @param  column  the column name (i.e., {@code "F_TABLE_NAME"}.
      * @return the given SQL builder.
      */
-    private static SQLBuilder appendCondition(final SQLBuilder sql, final char prefix, final String column) {
-        return sql.append(prefix).append('_').append(column).append(" = ?");
+    private static SQLBuilder appendColumn(final SQLBuilder sql, final boolean raster, final String column) {
+        if (raster && column.startsWith("F_")) {
+            return sql.append('R').append(column, 1, column.length());
+        } else {
+            return sql.append(column);
+        }
     }
 
     /**
      * Prepares the statement for fetching information about all geometry or raster columns in a specified table.
      * This method is for {@link #completeIntrospection(TableReference, Map)} implementations.
      *
-     * @param  table        name of the geometry table. Standard value is {@code "GEOMETRY_COLUMNS"}.
-     * @param  prefix       column name prefix: {@code 'F'} for features or {@code 'R'} for rasters.
-     * @param  column       name of the geometry column without prefix. Standard value is {@code "GEOMETRY_COLUMN"}.
-     * @param  otherColumn  additional columns or {@code null} if none. Standard value is {@code "GEOMETRY_TYPE"}.
+     * @param  table               name of the geometry table. Standard value is {@code "GEOMETRY_COLUMNS"}.
+     * @param  raster              whether the statement is for raster table instead of geometry table.
+     * @param  geomColNameColumn   column of geometry column name, or {@code null} for the standard value.
+     * @param  geomTypeColumn      column of geometry type, or {@code null} for the standard value, or "" for none.
      * @return the prepared statement for querying the geometry table.
      * @throws SQLException if the statement cannot be created.
      */
-    protected final PreparedStatement prepareIntrospectionStatement(final String table,
-            final char prefix, final String column, final String otherColumn) throws SQLException
+    protected final PreparedStatement prepareIntrospectionStatement(final String table, final boolean raster,
+            String geomColNameColumn, String geomTypeColumn) throws SQLException
     {
-        final SQLBuilder sql = new SQLBuilder(database).append(SQLBuilder.SELECT)
-                .append(prefix).append('_').append(column).append(", SRID ");
-        if (otherColumn != null) sql.append(", ").append(otherColumn);
+        final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
+        final var sql = new SQLBuilder(database).append(SQLBuilder.SELECT);
+        if (geomColNameColumn == null) {
+            geomColNameColumn = schema.geomColNameColumn;
+        }
+        appendColumn(sql, raster, geomColNameColumn).append(", ").append(schema.crsIdentifierColumn).append(' ');
+        if (geomTypeColumn == null) {
+            geomTypeColumn = schema.geomTypeColumn;
+        }
+        if (geomTypeColumn != null && !geomTypeColumn.isEmpty()) {
+            sql.append(", ").append(geomTypeColumn);
+        }
         appendFrom(sql, table);
-        if (database.supportsCatalogs) appendCondition(sql, prefix, "TABLE_CATALOG").append(" AND ");
-        if (database.supportsSchemas)  appendCondition(sql, prefix, "TABLE_SCHEMA" ).append(" AND ");
-        appendCondition(sql, prefix, "TABLE_NAME");
+        if (database.supportsCatalogs) appendColumn(sql, raster, schema.geomCatalogColumn).append("=? AND ");
+        if (database.supportsSchemas)  appendColumn(sql, raster, schema.geomSchemaColumn) .append("=? AND ");
+        appendColumn(sql, raster, schema.geomTableColumn).append("=?");
         return connection.prepareStatement(sql.toString());
     }
 
@@ -250,7 +250,8 @@ public class InfoStatements implements Localized, AutoCloseable {
      */
     public void completeIntrospection(final TableReference source, final Map<String,Column> columns) throws Exception {
         if (geometryColumns == null) {
-            geometryColumns = prepareIntrospectionStatement(GEOMETRY_COLUMNS, 'F', "GEOMETRY_COLUMN", "GEOMETRY_TYPE");
+            final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
+            geometryColumns = prepareIntrospectionStatement(schema.geometryColumns, false, null, null);
         }
         configureSpatialColumns(geometryColumns, source, columns, GeometryTypeEncoding.NUMERIC);
     }
@@ -261,7 +262,7 @@ public class InfoStatements implements Localized, AutoCloseable {
      * May also be used for non-geometric columns such as rasters, in which case the
      * {@code typeValueKind} argument shall be {@code null}.
      *
-     * @param  columnQuery    a statement prepared by {@link #prepareIntrospectionStatement(String, char, String, String)}.
+     * @param  columnQuery    a statement prepared by {@link #prepareIntrospectionStatement(String, boolean, String, String)}.
      * @param  source         the table for which to get all geometry columns.
      * @param  columns        all columns for the specified table. Keys are column names.
      * @param  typeValueKind  {@code NUMERIC}, {@code TEXTUAL} or {@code null} if none.
@@ -302,12 +303,13 @@ public class InfoStatements implements Localized, AutoCloseable {
     /**
      * Gets a Coordinate Reference System for to given SRID.
      * If the given SRID is zero or negative, then this method returns {@code null}.
-     * Otherwise the CRS is decoded from the database {@value #SPATIAL_REF_SYS} table.
+     * Otherwise the CRS is decoded from the database {@code "SPATIAL_REF_SYS"} table
+     * or equivalent (depending on the {@link SpatialSchema}).
      *
      * @param  srid  the Spatial Reference Identifier (SRID) to resolve as a CRS object.
      * @return the CRS associated to the given SRID, or {@code null} if the SRID is zero.
      * @throws DataStoreContentException if the CRS cannot be fetched. Possible reasons are:
-     *         no entry found in the {@value #SPATIAL_REF_SYS} table, or more than one entry is found,
+     *         no entry found in the {@code "SPATIAL_REF_SYS"} table, or more than one entry is found,
      *         or a single entry exists but has no WKT definition and its authority code is unsupported by SIS.
      * @throws ParseException if the WKT cannot be parsed.
      * @throws SQLException if a SQL error occurred.
@@ -323,7 +325,7 @@ public class InfoStatements implements Localized, AutoCloseable {
 
     /**
      * Invoked when the requested CRS is not in the cache. This method gets the entry from the
-     * {@value #SPATIAL_REF_SYS} table then gets the CRS from its authority code if possible,
+     * {@link SpatialSchema#refSysTable} then gets the CRS from its authority code if possible,
      * or fallback on the WKT otherwise.
      *
      * @param  srid  the Spatial Reference Identifier (SRID) of the CRS to create from the database content.
@@ -332,10 +334,13 @@ public class InfoStatements implements Localized, AutoCloseable {
      */
     private CoordinateReferenceSystem parseCRS(final int srid) throws Exception {
         if (wktFromSrid == null) {
+            final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
             final SQLBuilder sql = new SQLBuilder(database);
-            sql.append("SELECT auth_name, auth_srid, srtext");
-            appendFrom(sql, SPATIAL_REF_SYS);
-            sql.append("srid=?");
+            sql.append(SQLBuilder.SELECT).append(schema.crsAuthorityNameColumn)
+                            .append(", ").append(schema.crsAuthorityCodeColumn)
+                            .append(", ").append(schema.crsDefinitionColumn);
+            appendFrom(sql, schema.crsTable);
+            sql.append(schema.crsIdentifierColumn).append("=?");
             wktFromSrid = connection.prepareStatement(sql.toString());
         }
         wktFromSrid.setInt(1, srid);
@@ -393,7 +398,8 @@ public class InfoStatements implements Localized, AutoCloseable {
                     if (crs == null) {
                         crs = v.recommendation;
                     } else if (!crs.equals(v.recommendation)) {
-                        throw invalidSRID(Resources.Keys.DuplicatedSRID_2, SPATIAL_REF_SYS, srid, authorityError);
+                        final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
+                        throw invalidSRID(Resources.Keys.DuplicatedSRID_2, schema.crsTable, srid, authorityError);
                     }
                     warning = v.warning(false);
                     if (warning == null && fromWKT != null) {
@@ -417,7 +423,8 @@ public class InfoStatements implements Localized, AutoCloseable {
             if (authorityError != null) {
                 throw authorityError;
             }
-            throw invalidSRID(Resources.Keys.UnknownSRID_2, SPATIAL_REF_SYS, srid, null);
+            final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
+            throw invalidSRID(Resources.Keys.UnknownSRID_2, schema.crsTable, srid, null);
         }
         if (warning != null) {
             warning.setLoggerName(Modules.SQL);
@@ -497,10 +504,13 @@ public class InfoStatements implements Localized, AutoCloseable {
                  * Get the WKT and verifies if the CRS is approximately equal.
                  */
                 if (sridFromCRS == null) {
+                    final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
                     final SQLBuilder sql = new SQLBuilder(database);
-                    sql.append("SELECT srtext, srid");
-                    appendFrom(sql, SPATIAL_REF_SYS);
-                    sql.append("auth_name=? AND auth_srid=?");
+                    sql.append(SQLBuilder.SELECT).append(schema.crsDefinitionColumn)
+                                    .append(", ").append(schema.crsIdentifierColumn);
+                    appendFrom(sql, schema.crsTable);
+                    sql.append(schema.crsAuthorityNameColumn).append("=? AND ")
+                       .append(schema.crsAuthorityCodeColumn).append("=?");
                     sridFromCRS = connection.prepareStatement(sql.toString());
                 }
                 sridFromCRS.setString(1, authority);

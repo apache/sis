@@ -25,6 +25,7 @@ import java.util.LinkedHashSet;
 import java.util.WeakHashMap;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.logging.LogRecord;
 import java.sql.Array;
@@ -79,9 +80,9 @@ import org.apache.sis.util.collection.Cache;
  * <h2>Specializations</h2>
  * Subclasses may be defined for some database engines. Methods that can be overridden are:
  * <ul>
+ *   <li>{@link #getPossibleSpatialSchemas(Map)}    for enumerating the spatial schema conventions that may be used.</li>
  *   <li>{@link #getMapping(Column)}                for adding column types to recognize.</li>
  *   <li>{@link #createInfoStatements(Connection)}  for more info about spatial information.</li>
- *   <li>{@link #addIgnoredTables(Map)}             for specifying more tables to ignore.</li>
  * </ul>
  *
  * <h2>Multi-threading</h2>
@@ -138,14 +139,17 @@ public class Database<G> extends Syntax  {
     private Table[] tables;
 
     /**
-     * Whether the database contains "GEOMETRY_COLUMNS" and/or "SPATIAL_REF_SYS" tables.
-     * May also be set to {@code true} if some database-specific tables are found such as
-     * {@code "geography_columns"} and {@code "raster_columns"} in PostGIS.
+     * Information about table names and column names used for the spatial schema, or {@code null}.
+     * This is non-null if the database contains "GEOMETRY_COLUMNS" and/or "SPATIAL_REF_SYS" tables,
+     * possibly with different name depending on the conventions of the spatial schema. May also be
+     * non-null if some database-specific tables are found such as {@code "geography_columns"} and
+     * {@code "raster_columns"} in PostGIS.
+     *
      * This field is initialized by {@link #analyze analyze(…)} and shall not be modified after that point.
      *
-     * @see #isSpatial()
+     * @see #getSpatialSchema()
      */
-    private boolean isSpatial;
+    private SpatialSchema spatialSchema;
 
     /**
      * {@code true} if this database contains at least one geometry column.
@@ -164,8 +168,8 @@ public class Database<G> extends Syntax  {
     private boolean hasRaster;
 
     /**
-     * Catalog and schema of the {@value InfoStatements#GEOMETRY_COLUMNS} and
-     * {@value InfoStatements#SPATIAL_REF_SYS} tables, or null or empty string if none.
+     * Catalog and schema of the {@code "GEOMETRY_COLUMNS"} and {@code "SPATIAL_REF_SYS"} tables,
+     * or null or empty string if none. The actual table names depend on {@link #spatialSchema}.
      */
     String catalogOfSpatialTables, schemaOfSpatialTables;
 
@@ -201,10 +205,10 @@ public class Database<G> extends Syntax  {
 
     /**
      * Cache of Coordinate Reference Systems created for a given SRID.
-     * SRID are primary keys in the {@value InfoStatements#SPATIAL_REF_SYS} table.
+     * SRID are primary keys in the {@code "SPATIAL_REF_SYS"} (or equivalent) table.
      * They are not EPSG codes, even if the numerical values are often the same.
      *
-     * <p>This mapping depend on the content of {@value InfoStatements#SPATIAL_REF_SYS} table.
+     * <p>This mapping depends on the content of {@code "SPATIAL_REF_SYS"} (or equivalent) table.
      * For that reason, a distinct cache exists for each database.</p>
      */
     final Cache<Integer, CoordinateReferenceSystem> cacheOfCRS;
@@ -342,17 +346,26 @@ public class Database<G> extends Syntax  {
          * the default case specified by the SQL standard. However, some databases use lower
          * cases instead.
          */
-        String tableCRS  = InfoStatements.SPATIAL_REF_SYS;
-        String tableGeom = InfoStatements.GEOMETRY_COLUMNS;
-        if (metadata.storesLowerCaseIdentifiers()) {
-            tableCRS  = tableCRS .toLowerCase(Locale.US).intern();
-            tableGeom = tableGeom.toLowerCase(Locale.US).intern();
+        final var ignoredTables = new HashMap<String,Boolean>(8);
+        for (SpatialSchema schema : getPossibleSpatialSchemas(ignoredTables)) {
+            String tableCRS  = schema.crsTable;;
+            String tableGeom = schema.geometryColumns;
+            if (metadata.storesLowerCaseIdentifiers()) {
+                tableCRS  = tableCRS .toLowerCase(Locale.US).intern();
+                tableGeom = tableGeom.toLowerCase(Locale.US).intern();
+            } else if (metadata.storesUpperCaseIdentifiers()) {
+                tableCRS  = tableCRS .toUpperCase(Locale.US).intern();
+                tableGeom = tableGeom.toUpperCase(Locale.US).intern();
+            }
+            ignoredTables.put(tableCRS,  Boolean.TRUE);
+            ignoredTables.put(tableGeom, Boolean.TRUE);
+            if (hasTable(metadata, tableTypes, ignoredTables)) {
+                spatialSchema = schema;
+                break;
+            }
+            ignoredTables.remove(tableCRS);
+            ignoredTables.remove(tableGeom);
         }
-        final Map<String,Boolean> ignoredTables = new HashMap<>(8);
-        ignoredTables.put(tableCRS,  Boolean.TRUE);
-        ignoredTables.put(tableGeom, Boolean.TRUE);
-        addIgnoredTables(ignoredTables);
-        isSpatial = hasTable(metadata, tableTypes, ignoredTables);
         /*
          * Collect the names of all tables specified by user, ignoring the tables
          * used for database internal working (for example by PostGIS).
@@ -434,14 +447,14 @@ public class Database<G> extends Syntax  {
      *
      * @param  metadata    value of {@code connection.getMetaData()}.
      * @param  tableTypes  value of {@link #getTableTypes(DatabaseMetaData)}.
-     * @param  tables      name of the table to search.
+     * @param  tables      name of the table to search. Will not be modified.
      * @return whether the given table has been found.
      */
     private boolean hasTable(final DatabaseMetaData metadata, final String[] tableTypes, final Map<String,Boolean> tables)
             throws SQLException
     {
         // `SimpleImmutableEntry` used as a way to store a (catalog,schema) pair of strings.
-        final FrequencySortedSet<SimpleImmutableEntry<String,String>> schemas = new FrequencySortedSet<>(true);
+        final var schemas = new FrequencySortedSet<SimpleImmutableEntry<String,String>>(true);
         int count = 0;
         for (final Map.Entry<String,Boolean> entry : tables.entrySet()) {
             if (entry.getValue()) {
@@ -527,13 +540,13 @@ public class Database<G> extends Syntax  {
     }
 
     /**
-     * Returns {@code true} if this database is a spatial database.
-     * Tables such as "SPATIAL_REF_SYS" are used as sentinel values.
+     * Returns an identification of the table and column naming conventions.
+     * This is absent if the database is not spatial.
      *
-     * @return whether this database is a spatial database.
+     * @return an identification of the table and column naming conventions.
      */
-    public final boolean isSpatial() {
-        return isSpatial;
+    public final Optional<SpatialSchema> getSpatialSchema() {
+        return Optional.ofNullable(spatialSchema);
     }
 
     /**
@@ -706,16 +719,28 @@ public class Database<G> extends Syntax  {
     }
 
     /**
-     * Adds to the given map a list of tables to ignore when searching for feature tables.
-     * The given map already contains the {@code "SPATIAL_REF_SYS"} and {@code "GEOMETRY_COLUMNS"}
-     * entries when this method is invoked. The default implementation adds nothing.
+     * Returns the spatial schema conventions that may possibly be supported by this database.
+     * The default implementation returns all {@link SpatialSchema} enumeration values.
+     * Subclasses may restrict to a smaller set of possibilities.
      *
-     * <p>Values tells whether the table can be used as a sentinel value for determining
-     * that this database {@linkplain #isSpatial is a spatial database}.</p>
+     * <p>In addition, this method can declare in the supplied map which tables are used for describing
+     * the spatial schema. The default implementation does nothing because the entries to add depend on
+     * the {@link SpatialSchema}. For example, if Simple Features conventions are used, then the tables
+     * are {@code "SPATIAL_REF_SYS"} and {@code "GEOMETRY_COLUMNS"}. Subclasses can add other entries
+     * if they know in advance that they support only one convention, or that all the conventions that
+     * they support use the same table names. The table added to the map will be ignored when searching
+     * for feature tables.</p>
      *
-     * @param  ignoredTables  where to add names of tables to ignore.
+     * <p>The values in the map tells whether the table can be used as a sentinel value for determining
+     * that the {@link SpatialSchema} enumeration value can be accepted.</p>
+     *
+     * @param  tables  where to add names of tables that describe the spatial schema.
+     * @return the spatial schema conventions that may be supported by this database.
+     *
+     * @see #getSpatialSchema()
      */
-    protected void addIgnoredTables(final Map<String,Boolean> ignoredTables) {
+    protected SpatialSchema[] getPossibleSpatialSchemas(Map<String,Boolean> tables) {
+        return SpatialSchema.values();
     }
 
     /**
