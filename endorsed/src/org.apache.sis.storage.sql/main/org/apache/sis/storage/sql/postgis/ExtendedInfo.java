@@ -24,6 +24,7 @@ import org.apache.sis.storage.sql.feature.Column;
 import org.apache.sis.storage.sql.feature.Database;
 import org.apache.sis.storage.sql.feature.TableReference;
 import org.apache.sis.storage.sql.feature.InfoStatements;
+import org.apache.sis.storage.sql.feature.GeometryTypeEncoding;
 
 
 /**

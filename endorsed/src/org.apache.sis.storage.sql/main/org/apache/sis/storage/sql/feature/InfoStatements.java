@@ -75,40 +75,6 @@ import org.opengis.metadata.Identifier;
  */
 public class InfoStatements implements Localized, AutoCloseable {
     /**
-     * Specifies how the geometry type is encoded in the {@code "GEOMETRY_TYPE"} column.
-     * The OGC standard defines numeric values, but PostGIS uses textual values.
-     *
-     * @see #configureSpatialColumns(PreparedStatement, TableReference, Map, GeometryTypeEncoding)
-     */
-    protected enum GeometryTypeEncoding {
-        /**
-         * {@code "GEOMETRY_TYPE"} column is expected to contain an integer value.
-         * This is the encoding used in OGC standard.
-         */
-        NUMERIC,
-
-        /**
-         * {@code "GEOMETRY_TYPE"} column is expected to contain a textual value.
-         * This is the encoding used by PostGIS, but using a different column name
-         * ({@code "TYPE"} instead of {@code "GEOMETRY_TYPE"}) for avoiding confusion.
-         */
-        TEXTUAL() {
-            @Override GeometryType parse(final ResultSet result, final int columnIndex) throws SQLException {
-                return GeometryType.forName(result.getString(columnIndex));
-            }
-        };
-
-        /**
-         * Decodes the geometry type encoded in the specified column of the given result set.
-         * If there is no type information, then this method returns {@code null}.
-         */
-        GeometryType parse(final ResultSet result, final int columnIndex) throws SQLException {
-            final int code = result.getInt(columnIndex);
-            return result.wasNull() ? null : GeometryType.forBinaryType(code);
-        }
-    }
-
-    /**
      * The database that created this set of cached statements. This object includes the
      * cache of CRS created from SRID codes and the listeners where to send warnings.
      * A {@code Database} object does <strong>not</strong> contain live JDBC {@link Connection}.
@@ -249,11 +215,11 @@ public class InfoStatements implements Localized, AutoCloseable {
      * @throws SQLException if a SQL error occurred.
      */
     public void completeIntrospection(final TableReference source, final Map<String,Column> columns) throws Exception {
+        final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
         if (geometryColumns == null) {
-            final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
             geometryColumns = prepareIntrospectionStatement(schema.geometryColumns, false, null, null);
         }
-        configureSpatialColumns(geometryColumns, source, columns, GeometryTypeEncoding.NUMERIC);
+        configureSpatialColumns(geometryColumns, source, columns, schema.typeEncoding);
     }
 
     /**

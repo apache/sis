@@ -39,7 +39,8 @@ public enum SpatialSchema {
      * {@code geometry_type_name} column.
      */
     GEOPACKAGE("gpkg_spatial_ref_sys", "srs_id", "organization", "organization_coordsys_id", "definition",
-               "gpkg_geometry_columns", "table_catalog", "table_schema", "table_name", "column_name", "geometry_type_name"),
+               "gpkg_geometry_columns", "table_catalog", "table_schema", "table_name", "column_name",
+               "geometry_type_name", GeometryTypeEncoding.TEXTUAL),
 
     /**
      * Table and column names as specified by ISO-13249 SQL/MM. This is the same thing as {@link #SIMPLE_FEATURE}
@@ -59,7 +60,7 @@ public enum SpatialSchema {
      * except for the case (Geopackage uses lower case).
      */
     SQL_MM("ST_SPATIAL_REFERENCE_SYSTEMS", "SRS_ID", "ORGANIZATION", "ORGANIZATION_COORDSYS_ID", "DEFINITION",
-           "ST_GEOMETRY_COLUMNS", "TABLE_CATALOG", "TABLE_SCHEMA", "TABLE_NAME", "COLUMN_NAME", null),
+           "ST_GEOMETRY_COLUMNS", "TABLE_CATALOG", "TABLE_SCHEMA", "TABLE_NAME", "COLUMN_NAME", null, null),
 
     /**
      * Table and column names as specified by ISO 19125 / OGC Simple feature access part 2.
@@ -76,7 +77,8 @@ public enum SpatialSchema {
      * }
      */
     SIMPLE_FEATURE("SPATIAL_REF_SYS", "SRID", "AUTH_NAME", "AUTH_SRID", "SRTEXT",
-                   "GEOMETRY_COLUMNS", "F_TABLE_CATALOG", "F_TABLE_SCHEMA", "F_TABLE_NAME", "F_GEOMETRY_COLUMN", "GEOMETRY_TYPE");
+                   "GEOMETRY_COLUMNS", "F_TABLE_CATALOG", "F_TABLE_SCHEMA", "F_TABLE_NAME", "F_GEOMETRY_COLUMN",
+                   "GEOMETRY_TYPE", GeometryTypeEncoding.NUMERIC);
 
     /**
      * Name of the table for Spatial Reference System definitions.
@@ -141,10 +143,13 @@ public enum SpatialSchema {
     /**
      * Name of the column where the type of each geometry column is stored, or {@code null} if none.
      * Example: {@code "GEOMETRY_TYPE"}.
-     *
-     * @see InfoStatements.GeometryTypeEncoding
      */
     final String geomTypeColumn;
+
+    /**
+     * Specifies how geometry types are encoded in the {@link #geomTypeColumn}.
+     */
+    final GeometryTypeEncoding typeEncoding;
 
     /**
      * Creates a new enumeration value.
@@ -160,11 +165,12 @@ public enum SpatialSchema {
      * @param geomTableColumn         name of the column where the table of each geometry column is stored.
      * @param geomColNameColumn       name of the column where the column of each geometry column is stored.
      * @param geomTypeColumn          name of the column where the type of each geometry column is stored, or null if none.
+     * @param typeEncoding            how geometry types are encoded in the {@link #geomTypeColumn}.
      */
     private SpatialSchema(String crsTable, String crsIdentifierColumn, String crsAuthorityNameColumn,
                           String crsAuthorityCodeColumn, String crsDefinitionColumn, String geometryColumns,
                           String geomCatalogColumn, String geomSchemaColumn, String geomTableColumn,
-                          String geomColNameColumn, String geomTypeColumn)
+                          String geomColNameColumn, String geomTypeColumn, GeometryTypeEncoding typeEncoding)
     {
         this.crsTable               = crsTable;
         this.crsIdentifierColumn    = crsIdentifierColumn;
@@ -177,5 +183,6 @@ public enum SpatialSchema {
         this.geomTableColumn        = geomTableColumn;
         this.geomColNameColumn      = geomColNameColumn;
         this.geomTypeColumn         = geomTypeColumn;
+        this.typeEncoding           = typeEncoding;
     }
 }
