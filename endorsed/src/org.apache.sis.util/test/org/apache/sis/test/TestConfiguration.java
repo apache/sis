@@ -28,7 +28,7 @@ public final class TestConfiguration extends Static {
     /**
      * Environment variable to use as a fallback if a system property is not set.
      * This is a comma-separated list of the following keywords, without spaces:
-     * {@code extensive}, {@code verbose}.
+     * {@code extensive}, {@code postgresql}, {@code widget}, {@code verbose}.
      *
      * @see TestCase#RUN_EXTENSIVE_TESTS
      * @see TestCase#VERBOSE
@@ -41,6 +41,10 @@ public final class TestConfiguration extends Static {
      * If this {@linkplain System#getProperties() system property} is set to {@code true},
      * then Apache SIS will run some tests which were normally skipped because they are slow.
      *
+     * <p>Alternatively, the extensive tests can also be enabled by setting the
+     * {@value #SIS_TEST_OPTIONS} environment variable to {@code "extensive"}.</p>
+     *
+     * @see #SIS_TEST_OPTIONS
      * @see TestCase#RUN_EXTENSIVE_TESTS
      */
     public static final String EXTENSIVE_TESTS_KEY = "org.apache.sis.test.extensive";
@@ -50,6 +54,10 @@ public final class TestConfiguration extends Static {
      * on the PostgreSQL database. If this {@linkplain System#getProperties() system property}
      * is set to {@code true}, then the {@code "SpatialMetadataTest"} database will be used.
      *
+     * <p>Alternatively, the tests on PostgreSQL can also be enabled by setting the
+     * {@value #SIS_TEST_OPTIONS} environment variable to {@code "postgresql"}.</p>
+     *
+     * @see #SIS_TEST_OPTIONS
      * @see TestCase#USE_POSTGRESQL
      * @see org.apache.sis.metadata.sql.TestDatabase
      */
@@ -60,6 +68,10 @@ public final class TestConfiguration extends Static {
      * If this {@linkplain System#getProperties() system property} is set to {@code true},
      * then the content sent to the {@link TestCase#out} field will be printed after each test.
      *
+     * <p>Alternatively, the verbose outputs can also be enabled by setting the
+     * {@value #SIS_TEST_OPTIONS} environment variable to {@code "verbose"}.</p>
+     *
+     * @see #SIS_TEST_OPTIONS
      * @see TestCase#VERBOSE
      */
     public static final String VERBOSE_OUTPUT_KEY = "org.apache.sis.test.verbose";
@@ -68,6 +80,10 @@ public final class TestConfiguration extends Static {
      * The {@systemProperty org.apache.sis.test.gui.show} system property
      * for enabling display of test images or widgets.
      *
+     * <p>Alternatively, the widgets display can also be enabled by setting the
+     * {@value #SIS_TEST_OPTIONS} environment variable to {@code "widget"}.</p>
+     *
+     * @see #SIS_TEST_OPTIONS
      * @see TestCase#SHOW_WIDGET
      */
     public static final String SHOW_WIDGET_KEY = "org.apache.sis.test.gui.show";

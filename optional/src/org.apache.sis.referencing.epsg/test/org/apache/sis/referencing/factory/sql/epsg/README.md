@@ -112,7 +112,8 @@ Then the whole Apache SIS project should be [tested extensively](https://sis.apa
 preferably with a PostgreSQL server ready to accept local connections to `SpatialMetadataTest` database:
 
 ```
-mvn install -Dorg.apache.sis.test.extensive=true
+EXPORT SIS_TEST_OPTIONS=extensive,postgresql
+gradle test
 ```
 
 Regenerate the HTML pages listing available CRS and coordinate operation methods.
