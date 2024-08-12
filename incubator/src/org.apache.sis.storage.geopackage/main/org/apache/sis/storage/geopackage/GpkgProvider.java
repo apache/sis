@@ -54,10 +54,6 @@ public final class GpkgProvider extends DataStoreProvider {
      * Provider identifier.
      */
     public static final String NAME = "gpkg";
-    /**
-     * Custom pragma to enforce use of an Hikari connection pool.
-     */
-    public static final String PRAGMA_HIKARICP = "HIKARICP";
 
     /**
      * URI to the dafift folder.

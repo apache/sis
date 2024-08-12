@@ -37,6 +37,5 @@
         <dependency org="gov.nist.math"          name="jama"                    rev="1.0.3"/>
         <dependency org="net.sf.geographiclib"   name="GeographicLib-Java"      rev="2.0"/>
         <dependency org="org.xerial"             name="sqlite-jdbc"             rev="3.45.1.0"/>
-        <dependency org="com.zaxxer"             name="HikariCP"                rev="5.1.0"/>
     </dependencies>
 </ivy-module>

@@ -16,8 +16,6 @@
  */
 package org.apache.sis.storage.geopackage;
 
-import com.zaxxer.hikari.HikariConfig;
-import com.zaxxer.hikari.HikariDataSource;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -51,7 +49,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.UUID;
 import java.util.concurrent.Executor;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -366,53 +363,13 @@ public class GpkgStore extends DataStore implements WritableAggregate, ResourceO
 
                     //TODO need to find a list of pragma not causing errors in readonly.
                     for (Entry<String,String> entry : pragmas.entrySet()) {
-                        if (GpkgProvider.PRAGMA_HIKARICP.equalsIgnoreCase(entry.getKey())) continue;
                         config.setPragma(Pragma.valueOf(entry.getKey()), entry.getValue());
                     }
                 } else {
 //                    config.setReadOnly(true);
                 }
-
-                final String useHikariValue = pragmas.remove(GpkgProvider.PRAGMA_HIKARICP);
-                final boolean useHikari = ("1".equalsIgnoreCase(useHikariValue) || "true".equalsIgnoreCase(useHikariValue));
-
-                final DataSource dataSource;
-                if (useHikari) {
-                    System.setProperty("org.slf4j.simpleLogger.defaultLogLevel", "debug");
-                    /*
-                    We use hikari instead of apache dbcp2 because of spring-boot excluding commons-logging
-                    Also because hikari is still in activity and from benchmarks has better performances.
-                    */
-                    HikariConfig hkcfg = new HikariConfig();
-                    hkcfg.setPoolName(UUID.randomUUID().toString());
-                    hkcfg.setDriverClassName("org.sqlite.JDBC");
-                    hkcfg.setJdbcUrl(url);
-                    hkcfg.setConnectionTestQuery("SELECT 1");
-                    hkcfg.setMaxLifetime(60000); // 60 Sec
-                    hkcfg.setIdleTimeout(45000); // 45 Sec
-                    //hkcfg.setConnectionTimeout(60000); // 1 min
-                    hkcfg.setMaximumPoolSize(50); // 50 Connections (including idle connections)
-                    hkcfg.setLeakDetectionThreshold(10000);
-//                    hkcfg.setReadOnly(isReadOnly);
-
-                    final Properties sqliteprops = config.toProperties();
-                    for (Entry<Object,Object> entry : sqliteprops.entrySet()) {
-                        hkcfg.addDataSourceProperty(String.valueOf(entry.getKey()), String.valueOf(entry.getValue()));
-                    }
-                    dataSource = new HikariDataSource(hkcfg);
-
-//                    //normaly SQlite do not support more then one connection
-//                    //or we may obtain errors such as : [SQLITE_BUSY] The database file is locked (database is locked)
-//                    //to workaround this limitation it is possible to add a busy timeout :
-//                    //https://stackoverflow.com/questions/8559623/sqlite-busy-the-database-file-is-locked-database-is-locked-in-wicket
-//                    //dataSource.setConnectionInitSqls(Arrays.asList(
-//                    //"PRAGMA busy_timeout=60000;"));
-                } else {
-                    final SQLiteConnectionPoolDataSource sds = new SQLiteConnectionPoolDataSource(config);
-                    sds.setUrl(url);
-                    dataSource = sds;
-                }
-
+                final var dataSource = new SQLiteConnectionPoolDataSource(config);
+                dataSource.setUrl(url);
                 if (newDb) {
                     try (Connection cnx = dataSource.getConnection()) {
                         cnx.setAutoCommit(false);
