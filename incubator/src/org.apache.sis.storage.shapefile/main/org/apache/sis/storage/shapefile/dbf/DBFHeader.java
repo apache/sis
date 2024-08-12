@@ -82,7 +82,8 @@ public final class DBFHeader {
         headerSize = 32 + FIELD_SIZE * fields.length + 1;
         recordSize = 1; //record state tag
         for (DBFField field : fields) {
-            recordSize += field.fieldLength;
+            //ensure we do not overflow because of very large incorrect field length.
+            recordSize = Math.addExact(recordSize, field.fieldLength);
         }
     }
 
