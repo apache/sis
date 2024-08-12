@@ -25,10 +25,16 @@ module org.apache.sis.storage.geopackage {
     requires transitive org.apache.sis.referencing;
     requires transitive org.apache.sis.storage;
     requires transitive org.apache.sis.storage.sql;
+    requires transitive org.apache.sis.feature;
     requires transitive com.zaxxer.hikari;
     requires org.xerial.sqlitejdbc;
 
     exports org.apache.sis.storage.geopackage;
+
+    uses org.apache.sis.storage.geopackage.GpkgContentHandler;
+
+    provides org.apache.sis.storage.geopackage.GpkgContentHandler
+            with org.apache.sis.storage.geopackage.featureset.GpkgFeatureSetHandler;
 
     provides org.apache.sis.storage.DataStoreProvider
             with org.apache.sis.storage.geopackage.GpkgProvider;
