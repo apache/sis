@@ -17,10 +17,13 @@
 package org.apache.sis.storage.geopackage;
 
 import java.net.URL;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.io.IOException;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -33,13 +36,18 @@ import org.opengis.feature.PropertyType;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryWrapper;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.FeatureSet;
+import org.apache.sis.storage.StorageConnector;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 
 /**
@@ -47,27 +55,30 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class StoreTest {
+@Execution(ExecutionMode.SAME_THREAD)
+public final class GpkgStoreTest {
     /**
      * Creates a new test case.
      */
-    public StoreTest() {
+    public GpkgStoreTest() {
     }
 
     /**
-     * Returns the URL to the {@code featureset.gpkg}.
+     * Returns the URL to the {@code FeatureSet.gpkg} file.
      * If that file does not exists, it is created from the SQL script.
      *
-     * @return URL or path to the test Geopackage file.
-     * @throws DataStoreException if a the Geopackage test file cannot be created.
+     * @return {@link URL} or {@link Path} to the test Geopackage file.
+     * @throws DataStoreException if the Geopackage test file cannot be created.
      */
     private static Object getTestFile() throws DataStoreException {
-        URL file = StoreTest.class.getResource("featureset.gpkg");
+        URL file = GpkgStoreTest.class.getResource("FeatureSet.gpkg");
         if (file == null) try {
-            final Path source = Path.of(StoreTest.class.getResource("featureset.sql").toURI());
-            final Path target = source.resolveSibling("featureset.gpkg").toAbsolutePath();
+            final Path source = Path.of(GpkgStoreTest.class.getResource("FeatureSet.sql").toURI());
+            final Path target = source.resolveSibling("FeatureSet.gpkg").toAbsolutePath();
             try (Connection c = DriverManager.getConnection("jdbc:sqlite:" + target)) {
                 try (Statement s = c.createStatement()) {
+                    s.executeUpdate("PRAGMA main.application_id = " + GpkgStoreProvider.APPLICATION_ID + ';'
+                                  + "PRAGMA main.user_version = " + GpkgStoreProvider.VERSION + ';');
                     s.executeUpdate(Files.readString(source));
                 }
             }
@@ -81,7 +92,7 @@ public final class StoreTest {
     /**
      * Tests reading a feature set from a Geopackage file.
      *
-     * @throws DataStoreException if a the Geopackage test file cannot be created or read.
+     * @throws DataStoreException if the Geopackage test file cannot be created or read.
      */
     @Test
     public void testFeatureSet() throws DataStoreException {
@@ -221,7 +232,7 @@ public final class StoreTest {
     /**
      * Asserts that the properties of the given feature set have the specified names.
      * The geometry is expected to be always in the property at index 4 for all features
-     * (this is the case for the {@code featureset.gpkg} test file).
+     * (this is the case for the {@code FeatureSet.gpkg} test file).
      *
      * @param  fs             the feature set from which to get the properties.
      * @param  geometryIndex  index of the geometry property.
@@ -272,5 +283,56 @@ public final class StoreTest {
         assertEquals(expectedCRS, IdentifiedObjects.getIdentifierOrName(geometry.getCoordinateReferenceSystem()));
         assertEquals(expectedWKT, geometry.formatWKT(1));
         assertEquals(1, feature.getPropertyValue("fid"));
+    }
+
+    /**
+     * Tests opening the file from a JDBC URL.
+     *
+     * @throws Exception if a <abbr>SQL</abbr>, I/O or other error occurred.
+     */
+    @Test
+    public void testOpeningFromJDBC_URL() throws Exception {
+        final Object file = getTestFile();
+        final Path path = (file instanceof Path) ? (Path) file : Path.of(((URL) file).toURI());
+        try (DataStore store = DataStores.open(new URI("jdbc:sqlite:" + path))) {
+            final var gpkg = assertInstanceOf(GpkgStore.class, store);
+            final var fs   = getResource(gpkg, "polygon");
+            final var fi   = fs.features(false).findAny().orElseThrow();
+            assertEquals(1, fi.getPropertyValue("fid"));
+        }
+    }
+
+    /**
+     * Tests creating an empty database, then opening it as a read-only file.
+     *
+     * @throws Exception if a <abbr>SQL</abbr>, I/O or other error occurred.
+     */
+    @Test
+    public void testOpeningReadOnlyDatabase() throws Exception {
+        final File file = File.createTempFile("sis-test", ".gpkg");
+        try {
+            // Create an empty database.
+            final var connector = new StorageConnector(file);
+            connector.setOption(OptionKey.OPEN_OPTIONS, new StandardOpenOption[] {
+                StandardOpenOption.CREATE_NEW,
+                StandardOpenOption.WRITE,
+                StandardOpenOption.READ
+            });
+            try (GpkgStore store = new GpkgStore(null, connector)) {
+                final var gpkg = assertInstanceOf(GpkgStore.class, store);
+                assertTrue(gpkg.components().isEmpty());
+            }
+            assertNotEquals(0, file.length());
+
+            // Make file read only, skip test if we cannot do that.
+            assumeTrue(file.setWritable(false));
+            try (DataStore store = DataStores.open(file)) {
+                final var gpkg = assertInstanceOf(GpkgStore.class, store);
+                assertTrue(gpkg.components().isEmpty());        // Should not raise any exception.
+            }
+        } finally {
+            assertTrue(file.setWritable(true));
+            assertTrue(file.delete());
+        }
     }
 }

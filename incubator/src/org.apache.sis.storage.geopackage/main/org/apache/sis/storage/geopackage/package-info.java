@@ -16,8 +16,18 @@
  */
 
 /**
- * GeoPackage store.
+ * A data store for reading and writing Geopackage files.
+ * While the OGC Geopackage specification mandate the use of SQLite as the database software,
+ * the Apache <abbr>SIS</abbr> implementation of this data store accepts any <abbr>JDBC</abbr>
+ * {@link javax.sql.DataSource} providing connections to a database having the same tables or
+ * views as defined by the Geopackage standard.
  *
  * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ *
+ * @see <a href="https://www.opengeospatial.org/standards/geopackage">OGC® GeoPackage Encoding Standard</a>
+ *
+ * @since 1.5
  */
 package org.apache.sis.storage.geopackage;

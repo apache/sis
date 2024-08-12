@@ -16,1126 +16,441 @@
  */
 package org.apache.sis.storage.geopackage;
 
-import java.io.IOException;
-import java.nio.file.Files;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.sql.Array;
-import java.sql.Blob;
-import java.sql.CallableStatement;
-import java.sql.Clob;
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.NClob;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLClientInfoException;
-import java.sql.SQLException;
-import java.sql.SQLWarning;
-import java.sql.SQLXML;
-import java.sql.Savepoint;
-import java.sql.ShardingKey;
-import java.sql.Statement;
-import java.sql.Struct;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Properties;
-import java.util.concurrent.Executor;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.logging.Level;
+import java.util.ServiceLoader;
+import java.sql.Connection;
 import javax.sql.DataSource;
-import org.apache.sis.metadata.sql.privy.ScriptRunner;
-import org.apache.sis.storage.base.ResourceOnFileSystem;
-import org.apache.sis.io.wkt.Convention;
-import org.apache.sis.io.wkt.WKTFormat;
-import org.apache.sis.io.stream.IOUtilities;
-import org.apache.sis.metadata.iso.DefaultMetadata;
-import org.apache.sis.parameter.Parameters;
-import org.apache.sis.referencing.CRS;
-import org.apache.sis.referencing.CommonCRS;
-import org.apache.sis.referencing.IdentifiedObjects;
-import org.apache.sis.referencing.crs.AbstractCRS;
-import org.apache.sis.referencing.cs.AxesConvention;
-import org.apache.sis.storage.DataSet;
-import org.apache.sis.storage.DataStore;
-import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreProvider;
-import org.apache.sis.storage.IllegalNameException;
-import org.apache.sis.storage.Resource;
-import org.apache.sis.storage.WritableAggregate;
-import org.apache.sis.storage.geopackage.privy.Query;
-import org.apache.sis.util.ArgumentChecks;
-import org.apache.sis.storage.tiling.TileMatrix;
-import org.apache.sis.util.iso.Names;
-import org.opengis.geometry.Envelope;
-import org.opengis.metadata.Identifier;
-import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.util.FactoryException;
-import org.opengis.util.GenericName;
-import org.sqlite.SQLiteConfig;
-import org.sqlite.SQLiteConfig.Pragma;
-import org.sqlite.javax.SQLiteConnectionPoolDataSource;
-import org.apache.sis.storage.geopackage.privy.Record;
+import org.apache.sis.storage.DataStoreProvider;
+import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.IllegalNameException;
+import org.apache.sis.storage.IncompatibleResourceException;
+import org.apache.sis.storage.Resource;
+import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.WritableAggregate;
+import org.apache.sis.storage.sql.DataAccess;
+import org.apache.sis.storage.sql.SQLStore;
+import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.storage.base.ResourceOnFileSystem;
+import org.apache.sis.metadata.sql.privy.ScriptRunner;
+import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.ArraysExt;
+import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.Workaround;
+
 
 /**
- * Geopackage data store.
- * <p>
- * List of pragma can be found at : <a href="https://www.sqlite.org/pragma.html">https://www.sqlite.org/pragma.html</a>
- * <p>
- * Note, after experimentation to improve database creation speed in a single access context
- * the following pragma give excellent results :
- * SYNCHRONOUS=off;JOURNAL_MODE=off;
- * Following one do not work with Hikari connexion poll.
- * LOCKING_MODE=exclusive;
- * Following one improves delete operation on slow hard drives
- * SECURE_DELETE=off;
+ * A data store backed by a Geopackage file. The Geopackage specification mandates the use of SQLite
+ * as the database engine, but this {@code GpkgStore} class actually accepts any {@link DataSource}
+ * connecting to a database having the same tables as the ones specified by the Geopackage standard.
+ * If the input is a {@link Path}, {@link java.io.File}, {@link java.net.URL} or {@link java.net.URI}
+ * instead of a {@code DataSource}, then a SQLite data source is automatically created for the file.
+ * If the file does not exist, it will be created if the {@linkplain StorageConnector#getOption options}
+ * contain a {@linkplain StandardOpenOption#CREATE create} or {@linkplain StandardOpenOption#CREATE_NEW
+ * create new} open option.
  *
- * @author Johann Sorel (Geomatys)
+ * <h2>PRAGMA statements</h2>
+ * SQLite can be configured with <a href="https://www.sqlite.org/pragma.html">PRAGMA statements</a>.
+ * Some PRAGMA statements to note are:
+ *
+ * <ul>
+ *   <li>{@code SYNCHRONOUS=off;JOURNAL_MODE=off;} for single database creation in a single access context.</li>
+ *   <li>{@code SECURE_DELETE=off;} for faster delete operation on slow hard drives.</li>
+ * </ul>
+ *
+ * Note that {@code LOCKING_MODE=exclusive;} may not work with connection polls.
+ *
+ * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ * @since   1.5
+ *
+ * @see <a href="https://www.geopackage.org/spec140/index.html">OGC® GeoPackage Encoding Standard version 1.4.0</a>
  */
-public class GpkgStore extends DataStore implements WritableAggregate, ResourceOnFileSystem {
+public class GpkgStore extends SQLStore implements WritableAggregate, ResourceOnFileSystem {
+    /**
+     * Type of data which for which {@code GpkgStore} will delegate the handling to the {@code SQLStore} parent.
+     * A data type is a values of the {@value Content#DATA_TYPE} column of the {@value Content#TABLE_NAME} table.
+     */
+    private static final String[] DELEGATED_DATA_TYPES = {"features", "attributes"};
 
     /**
-     * Sort mosaics by scales, biggest scales first (high level in the pyramids).
+     * Path to the SQLite file, or {@code null} if the store was opened with a {@link DataSource}.
+     * This is for information purpose only.
+     *
+     * @see #getComponentFiles()
      */
-    public static final Comparator<TileMatrix> MOSAIC_SCALE_COMPARATOR = new Comparator<TileMatrix>() {
-        @Override
-        public int compare(TileMatrix tm1, TileMatrix tm2) {
-            final double[] res1 = tm1.getTilingScheme().getResolution(true);
-            final double[] res2 = tm2.getTilingScheme().getResolution(true);
-            for (int i = 0; i < res1.length; i++) {
-                int cmp = Double.compare(res2[i], res1[i]);
-                if (cmp != 0) return cmp;
-            }
-            return 0;
-        }
-    };
-
-    private static final Query CONTENTS_EXIST = new Query("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='gpkg_contents'");
-    private static final Query CONTENTS_ALL = new Query("SELECT table_name, data_type, identifier, description, last_change, min_x, min_y, max_x, max_y, srs_id FROM gpkg_contents ORDER BY identifier");
-    private static final Query SPATIAL_REF_BY_SRID = new Query("SELECT * FROM gpkg_spatial_ref_sys WHERE srs_id = [INTEGER]?");
-    private static final Query SPATIAL_REF_BY_ORGANIZATION = new Query("SELECT * FROM gpkg_spatial_ref_sys WHERE lower(organization) = lower([VARCHAR]?) AND organization_coordsys_id = [INTEGER]?");
-    private static final Query SPATIAL_REF_NEXT_SRID = new Query("SELECT max(srs_id) FROM gpkg_spatial_ref_sys WHERE srs_id >= 32768");
-    private static final Query SPATIAL_REF_CREATE = new Query("INSERT INTO gpkg_spatial_ref_sys(srs_name, srs_id, organization, organization_coordsys_id, definition, description) VALUES ([VARCHAR]?, [INTEGER]?, [VARCHAR]?, [INTEGER]?, [VARCHAR]?, [VARCHAR]?)");
-    private static final Query SPATIAL_REF_CREATE_EXT = new Query("INSERT INTO gpkg_spatial_ref_sys(srs_name, srs_id, organization, organization_coordsys_id, definition, description, definition_12_063) VALUES ([VARCHAR]?, [INTEGER]?, [VARCHAR]?, [INTEGER]?, [VARCHAR]?, [VARCHAR]?, [VARCHAR]?)");
-
-    /**
-     * Synchronization object used for accessing datasource.
-     * we do not use 'synchronized' on the method since writing may use thread-pools.
-     */
-    private final Object SYNC_DATASOURCE = new Object();
-
     private final Path path;
-    private final GenericName name;
-    private DataSource dataSource;
-    private final Map<Integer,CoordinateReferenceSystem> CRS_CACHE = new HashMap<>();
-    private List<Resource> components = null;
 
     /**
-     * We need a read/write lock for sqlite.
-     * The connection pool is not a real pool.
-     * Sqlite has good support for concurrent read operations but has troubles
-     * when write operations are implied.
-     * So SQLite busy exception may pop up.
-     * To avoid such errors we handle the write locks ourselves.
-     */
-    private final ReadWriteLock ioLock = new ReentrantReadWriteLock();
-
-    /*
-     * Todo : move this configuration somewhere more suitable
-     */
-    private boolean coverageLzwCompression = true;
-    /*
-     * Todo : move this configuration somewhere more suitable
-     */
-    private String rgbFormatName = "png";
-
-    /**
-     * Pragma parameters to use at gpkg opening.
-     */
-    private final Map<String,String> pragmas = new HashMap<>();
-
-    /**
-     * Open a Geopackage database.
+     * The database URL. This is the value provided by {@link DatabaseMetadata#getURL()}
+     * and is fetched only if {@link #path} is null. This is for information purpose only.
      *
-     * @param path Path to geopackage file
-     * @throws DataStoreException if Geopackage tables initialisation failed
+     * @see #getOpenParameters()
      */
-    public GpkgStore(Path path) throws DataStoreException {
-        this(path, "");
-    }
+    private String location;
 
     /**
-     * Open a Geopackage database.
+     * Whether the database needs to be created. This is {@code true} only if the storage is a file and
+     * that file does not exist. This flag is set to {@code false} after the database has been created.
+     */
+    private boolean create;
+
+    /**
+     * The PRAGMA statements, or an empty map if none.
+     * This is for information purpose only.
      *
-     * @param path Path to geopackage file
-     * @param pragmas pragma parameters encoded in the form 'name=value;name=value'
-     * @throws DataStoreException if Geopackage tables initialisation failed
+     * @see #getOpenParameters()
      */
-    public GpkgStore(Path path, String pragmas) throws DataStoreException {
-        this(path, splitPragmas(pragmas));
-    }
+    private final Map<String,String> pragmas;
 
     /**
-     * Open a Geopackage database.
+     * Plugins for handling resources other than the ones handled automatically by {@code SQLStore}.
+     * The resources handled automatically are {@link org.apache.sis.storage.FeatureSet}.
+     */
+    private final ServiceLoader<ContentHandler> contentHandlers;
+
+    /**
+     * Components having a custom handler.
+     */
+    private final List<Content> userContents;
+
+    /**
+     * Opens a Geopackage file or database. The storage specified in the {@code connector} argument should
+     * be a {@link DataSource} for an existing database, or an object convertible to a {@link Path}.
+     * If the file does not exist, it will be created if the {@linkplain StorageConnector#getOption options}
+     * contain a {@linkplain StandardOpenOption#CREATE create} or {@linkplain StandardOpenOption#CREATE_NEW
+     * create new} open option.
      *
-     * @param params creation parameters
-     * @throws DataStoreException if Geopackage tables initialisation failed
+     * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
+     * @param  connector  information about the storage (JDBC data source, <i>etc</i>).
+     * @throws DataStoreException if Geopackage tables initialization failed
      */
-    public GpkgStore(ParameterValueGroup params) throws DataStoreException {
-        this(Paths.get(Parameters.castOrWrap(params).getMandatoryValue(GpkgProvider.PATH)),
-             Parameters.castOrWrap(params).getValue(GpkgProvider.PRAGMAS)
-        );
+    public GpkgStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
+        this(provider, new Initializer(connector));
     }
 
     /**
-     * Open a Geopackage database.
+     * Work around for RFE #4093999 in Sun's bug database
+     * ("Relax constraint on placement of this()/super() call in constructors").
+     */
+    @Workaround(library="JDK", version="1.7")
+    private GpkgStore(final DataStoreProvider provider, final Initializer init) throws DataStoreException {
+        super(provider, init.connector);
+        path    = init.path;
+        create  = init.create;
+        pragmas = init.pragmas;
+        contentHandlers = ServiceLoader.load(ContentHandler.class);
+        userContents = new ArrayList<>();
+    }
+
+    /**
+     * Returns the path to the main file and its auxiliary files, or an empty array if unknown.
      *
-     * @param path Path to geopackage file
-     * @param pragmas Map of pragma parameters to apply at database opening.
-     * @throws DataStoreException if Geopackage tables initialisation failed
+     * @return the Geopackage file and auxiliary files, or an empty array if unknown.
      */
-    public GpkgStore(Path path, Map<String,String> pragmas) throws DataStoreException {
-        this.path = path;
-        if (pragmas != null) {
-            this.pragmas.putAll(pragmas);
-        }
-        if (!Files.exists(path)) {
-            initializeGeopackage();
-        }
-        this.name = Names.createLocalName(null, null, IOUtilities.filename(path));
-    }
-
-    /**
-     * @return geopackage path
-     */
-    Path getPath() {
-        return path;
-    }
-
     @Override
-    public Optional<GenericName> getIdentifier() throws DataStoreException {
-        return Optional.ofNullable(name);
+    public Path[] getComponentFiles() {
+        if (path == null) {
+            return new Path[0];
+        }
+        final String filename = path.getFileName().toString();
+        return new Path[] {
+            path,
+            path.resolveSibling(filename.concat(Initializer.WAL_SUFFIX)),
+            path.resolveSibling(filename.concat(Initializer.SHM_SUFFIX))
+        };
     }
 
     /**
-     * Split pragma parameters encoded in the form 'name=value;name=value'
-     * @param str, may be null
-     * @return Map of pragmas, never null
+     * Returns the parameters used to open this Geopackage data store.
+     * The parameters are described by {@link GpkgStoreProvider#getOpenParameters()}.
+     *
+     * @return parameters used for opening this data store.
      */
-    private static Map<String,String> splitPragmas(String str) {
-        if (str == null) return Collections.emptyMap();
-        final Map<String,String> map = new HashMap<>();
-        for (String entry : str.split(";")) {
-            entry = entry.trim();
-            if (!entry.isEmpty()) {
-                final String[] split = entry.split("=");
-                if (split.length != 2) throw new IllegalArgumentException("Invalid pragma parameters, must be in the form : 'name=value;name=value'");
-                map.put(split[0], split[1]);
+    @Override
+    public synchronized Optional<ParameterValueGroup> getOpenParameters() {
+        if (provider == null) {
+            return Optional.empty();
+        }
+        final ParameterValueGroup pg = provider.getOpenParameters().createValue();
+        URI uri = null;
+        if (path != null) {
+            uri = path.toUri();
+        } else if (location != null) try {
+            uri = new URI(location);
+        } catch (URISyntaxException e) {
+            listeners.warning(e);
+        }
+        if (uri != null) {
+            pg.parameter(GpkgStoreProvider.LOCATION).setValue(uri);
+        }
+        if (!pragmas.isEmpty()) {
+            final var b = new StringBuilder();
+            for (Map.Entry<String,String> entry : pragmas.entrySet()) {
+                if (b.length() != 0) b.append(';');
+                b.append(entry.getKey()).append('=').append(entry.getValue());
             }
+            pg.parameter(GpkgStoreProvider.PRAGMAS).setValue(b.toString());
         }
-        return map;
-    }
-
-    @Override
-    public DataStoreProvider getProvider() {
-        return GpkgProvider.provider();
-    }
-
-    @Override
-    public Optional<ParameterValueGroup> getOpenParameters() {
-        final Parameters params = Parameters.castOrWrap(GpkgProvider.PARAMETERS_DESCRIPTOR.createValue());
-        params.getOrCreate(GpkgProvider.PATH).setValue(path.toUri());
-        return Optional.of(params);
-    }
-
-    @Override
-    public Metadata getMetadata() throws DataStoreException {
-        return new DefaultMetadata();
+        return Optional.of(pg);
     }
 
     /**
-     * Define if LZW compression should be used when writing tiff tiles.
+     * Returns whether the given content should be handled by the {@link SQLStore} parent class.
+     */
+    private static boolean isDelegatedToParentClass(final Content content) {
+        return ArraysExt.containsIgnoreCase(DELEGATED_DATA_TYPES, content.dataType());
+    }
+
+    /**
+     * If this store is creating a new Geopackage file, creates the tables.
+     * This method is invoked <em>before</em> {@link #readResourceDefinitions(DataAccess)}.</p>
      *
-     * @param coverageLzwCompression true to use LZW compression in tiff blobs.
+     * @param  cnx  a connection to the database.
+     * @throws DataStoreException if an error occurred during the initialization.
      */
-    public void setCoverageLzwCompression(boolean coverageLzwCompression) {
-        this.coverageLzwCompression = coverageLzwCompression;
-    }
-
-    /**
-     * @return true if LZW compression is active when writing tiles.
-     */
-    public boolean getCoverageLzwCompression() {
-        return coverageLzwCompression;
-    }
-
-    /**
-     * Define format name that should be used when writing rgb tiles.
-     *
-     * @param rgbFormatName
-     */
-    public void setCoverageRgbFormat(String rgbFormatName) {
-        ArgumentChecks.ensureNonNull("rgbFormatName", rgbFormatName);
-        this.rgbFormatName = rgbFormatName;
-    }
-
-    /**
-     *
-     * @return rgb tile image format name.
-     */
-    public String getCoverageRgbFormat() {
-        return rgbFormatName;
-    }
-
-    /**
-     * Get a connection to the database.
-     */
-    public Connection getConnection(boolean write) throws DataStoreException, SQLException {
-        try {
-            Connection cnx = getDataSource().getConnection();
+    @Override
+    protected void initialize(final Connection cnx) throws DataStoreException {
+        assert Thread.holdsLock(this) && userContents.isEmpty();
+        if (create) try {
             cnx.setAutoCommit(false);
-            return new ReadWriteConnection(cnx, write);
-        } catch (SQLException ex) {
-            throw new SQLException("Failed to create connection on database " + path.toUri(), ex);
-        }
-    }
-
-    public DataSource getDataSource() throws DataStoreException {
-        synchronized (SYNC_DATASOURCE) {
-            if (dataSource == null) {
-                final boolean newDb = !Files.exists(path);
-                final String fileName = path.getFileName().toString();
-
-                /*
-                Detect if database is immutable
-                Sqlite makes a difference between read-only and immutable.
-                In Read-only the driver may still create and use the -wal and -shm files.
-                In immutable he is not allowed to touch or create anything.
-                https://www.sqlite.org/c3ref/open.html
-
-                For some strange reason EVEN with writing permissions Sqlite may
-                fail to open a connection with obscur exception : [SQLITE_CANTOPEN] Unable to open the database file (unable to open database file)
-                BUT if we create the -wal and -shm empty files, it will work.
-                https://www.sqlite.org/wal.html#read_only_databases
-
-                Note : disabling WAL journal or forcing it to Memory does not solve it either.
-                 */
-                boolean immutable;
-                if (newDb) {
-                    immutable = false;
-                } else {
-                    final Path wal = path.getParent().resolve(fileName+"-wal");
-                    final Path shm = path.getParent().resolve(fileName+"-shm");
-                    if (Files.exists(wal) || Files.exists(shm)) {
-                        immutable = false;
-                    } else {
-                        try {
-                            //see if we can create the wal/shm files
-                            Files.write(wal, new byte[0], StandardOpenOption.CREATE);
-                            Files.write(shm, new byte[0], StandardOpenOption.CREATE);
-                            immutable = false;
-                        } catch (IOException ex) {
-                            immutable = true;
-                        }
-                    }
-                }
-
-                final boolean isReadOnly = immutable || (!newDb && !Files.isWritable(path));
-
-                final String url;
-                if (immutable) {
-                    url = "jdbc:sqlite:" + path.toAbsolutePath().toFile().toURI().toString().replace('\\', '/') + "?immutable=1";
-                } else {
-                    url = "jdbc:sqlite:" + path.toAbsolutePath().toFile().toString().replace('\\', '/');
-                }
-                final SQLiteConfig config = new SQLiteConfig();
-                //config.setSharedCache(true);
-                //config.setBusyTimeout(60000);
-                config.setBusyTimeout(Integer.MAX_VALUE);
-                config.setCacheSize(100000);
-                if (!isReadOnly) {
-                    // config.setTransactionMode(SQLiteConfig.TransactionMode.IMMEDIATE);
-                    config.setJournalMode(SQLiteConfig.JournalMode.WAL);
-
-                    //TODO need to find a list of pragma not causing errors in readonly.
-                    for (Entry<String,String> entry : pragmas.entrySet()) {
-                        config.setPragma(Pragma.valueOf(entry.getKey()), entry.getValue());
-                    }
-                } else {
-//                    config.setReadOnly(true);
-                }
-                final var dataSource = new SQLiteConnectionPoolDataSource(config);
-                dataSource.setUrl(url);
-                if (newDb) {
-                    try (Connection cnx = dataSource.getConnection()) {
-                        cnx.setAutoCommit(false);
-                        Query.execute("PRAGMA main.application_id = 0x47504B47;", cnx); //"GPKG" in ASCII
-                        Query.execute("PRAGMA main.user_version = 0x000027D8;", cnx); //hexadecimal value for 10200
-                        cnx.commit();
-                    } catch (SQLException ex) {
-                        throw new DataStoreException(ex.getMessage(), ex);
-                    }
-                }
-
-                this.dataSource = dataSource;
+            try (ScriptRunner runner = new ScriptRunner(cnx, 100)) {
+                runner.run("PRAGMA main.application_id = " + GpkgStoreProvider.APPLICATION_ID + ';'
+                         + "PRAGMA main.user_version = " + GpkgStoreProvider.VERSION + ';');
+                runner.run("Core.sql", GpkgStore.class.getResourceAsStream("Core.sql"));
             }
-            return dataSource;
+            cnx.commit();
+            cnx.setAutoCommit(true);
+            create = false;
+        } catch (Exception ex) {
+            throw cannotExecute("Cannot create the Geopackage tables.", ex);
         }
     }
 
-    SQLiteConfig getSQLiteConfig() throws DataStoreException {
-        getDataSource();
-
-        //use the sqllite data source to load configuration
-        final String url = "jdbc:sqlite:" + path.toAbsolutePath().toFile().toString().replace('\\', '/');
-        final SQLiteConfig config = new SQLiteConfig();
-        config.enforceForeignKeys(true);
-        SQLiteConnectionPoolDataSource ds = new SQLiteConnectionPoolDataSource(config);
-        ds.setUrl(url);
-        return ds.getConfig();
-    }
-
+    /**
+     * Returns the subset of the Geopackage content table which is handled by default.
+     * This method reads the {@value #TABLE_NAME} table, then filters its elements for
+     * retaining only the contents supported by the {@link SQLStore} parent class.
+     * Other contents are either delegated to a {@link ContentHandler} if one claims
+     * to support that content, or otherwise discarded with a warning.
+     *
+     * <p>{@code SQLStore} will invoke this method when first needed after construction or after
+     * calls to {@link #refresh()}. This method should not be invoked in other circumstances.</p>
+     *
+     * @param  dao  low-level access (such as <abbr>SQL</abbr> connection) to the database.
+     * @return tables or views to include in the store.
+     * @throws DataStoreException if an error occurred while fetching the resource definitions.
+     */
     @Override
-    public synchronized Collection<Resource> components() throws DataStoreException {
-        if (components == null) {
-            final List<Resource> components = new ArrayList<>();
-
-            try {
-                //check if the content table exist
-                //databse may be a sqlitedb but not a geopackage
-
-                final boolean contentsExist;
-                try (Connection cnx = getConnection(false);
-                     Statement stmt = cnx.createStatement();
-                     ResultSet rs = stmt.executeQuery(CONTENTS_EXIST.query())) {
-                    contentsExist = rs.getInt(1) != 0;
-                }
-
-                if (!contentsExist) {
-                    Gpkg.LOGGER.log(Level.INFO, "Given database do not have a gpkg_contents table, it is not a geopackage");
+    protected Content[] readResourceDefinitions(final DataAccess dao) throws DataStoreException {
+        assert Thread.holdsLock(this) && userContents.isEmpty();
+        final List<Content> contents = Content.readFromTable(dao, listeners);
+        for (final Iterator<Content> it = contents.iterator(); it.hasNext();) {
+            final Content content = it.next();
+            if (!isDelegatedToParentClass(content)) {
+                it.remove();
+                if (content.findHandler(contentHandlers)) {
+                    userContents.add(content);
                 } else {
-
-                    final List<Record.Content> contents = new ArrayList<>();
-                    try (Connection cnx = getConnection(false);
-                         Statement stmt = cnx.createStatement();
-                         ResultSet rs = stmt.executeQuery(CONTENTS_ALL.query())) {
-                        while (rs.next()) {
-                            final Record.Content row = new Record.Content();
-                            row.read(rs);
-                            contents.add(row);
-                        }
-                    }
-
-                    //load all content as resources
-                    contentLoop:
-                    for (Record.Content content : contents) {
-                        for (GpkgContentHandler handler : Gpkg.CONTENT_HANDLERS) {
-                            if (handler.canOpen(content)) {
-                                components.add(handler.open(this, content));
-                                continue contentLoop;
-                            }
-                        }
-                        //no handler found
-                        components.add(new GpkgUndefinedResource(this, content));
-                    }
-
+                    listeners.warning("Unsupported content: " + content);
                 }
-
-            } catch (SQLException ex) {
-                throw new DataStoreException(ex.getMessage(), ex);
             }
-
-            this.components = components;
         }
-
-        return Collections.unmodifiableList(components);
+        return contents.toArray(Content[]::new);
     }
 
+    /**
+     * Returns the resources in this Geopackage store. The collection of resources is
+     * constructed when first requested and cached for future invocations of this method.
+     * The cache can be cleared by a call to {@link #refresh()}.
+     * The components are returned in no particular order.
+     *
+     * @return children resources that are components of this Geopackage store.
+     * @throws DataStoreException if an error occurred while fetching the components.
+     */
+    @Override
+    public synchronized Collection<? extends Resource> components() throws DataStoreException {
+        final Collection<? extends Resource> components = super.components();
+        if (userContents.isEmpty()) {
+            return components;
+        }
+        final var copy = new ArrayList<Resource>(components);
+        try (DataAccess dao = newDataAccess(false)) {
+            for (final Content content : userContents) {
+                copy.add(content.resource(dao));
+            }
+        } catch (Exception e) {
+            throw cannotExecute(null, e);
+        }
+        return copy;
+    }
+
+    /**
+     * Searches for a resource identified by the given identifier.
+     *
+     * @param  identifier  identifier of the resource to fetch. Must be non-null.
+     * @return resource associated to the given identifier (never {@code null}).
+     * @throws IllegalNameException if no resource is found for the given identifier, or if more than one resource is found.
+     * @throws DataStoreException if another kind of error occurred while searching resources.
+     */
+    @Override
+    public synchronized Resource findResource(final String identifier) throws DataStoreException {
+        /*
+         * Find a match in the following priority order:
+         *
+         *    - Value of the "table_name" column, exact match.
+         *    - Value of the "identifier" column, exact match.
+         *    - Value of the "table_name" column, ignoring case.
+         *    - Value of the "identifier" column, ignoring case.
+         */
+        if (!userContents.isEmpty()) {
+            for (int i=0; i<4; i++) {
+                for (Content content : userContents) {
+                    final String cid = (i & 1) == 0 ? content.getName().tip().toString() : content.identifier().orElse(null);
+                    if ((i & 2) == 0 ? identifier.equals(cid) : identifier.equalsIgnoreCase(cid)) {
+                        return content.resource(this);
+                    }
+                }
+            }
+        }
+        return super.findResource(identifier);
+    }
+
+    /**
+     * Adds a new resource in this Geopackage. If the resource is a {@link org.apache.sis.storage.FeatureSet},
+     * then a new table will be created with the {@linkplain Resource#getIdentifier() resource identifier} as
+     * its name.
+     *
+     * @param  resource  the resource to write in the Geopackage.
+     * @return the <i>effectively added</i> resource.
+     * @throws DataStoreException if the given resource cannot be stored in this {@code Aggregate}.
+     *
+     * @todo The implementation of this method is not completed.
+     */
     @Override
     public synchronized Resource add(Resource resource) throws DataStoreException {
-        final Optional<GenericName> identifier = resource.getIdentifier();
-        if (!identifier.isPresent()) {
-            throw new DataStoreException("Resource has no identifier");
-        }
-        final String id = identifier.get().tip().toString();
-
-        //search if this resource already exist
-        try {
-            findResource(id);
-            throw new DataStoreException("A resource with name " + id +" already exist.");
-        } catch (IllegalNameException ex) {
-            //does not exist ok
-        }
-
-        if (!(resource instanceof DataSet)) {
-            throw new DataStoreException("Resource is not supported, it is not a DataSet");
-        }
-
-        final DataSet dataSet = (DataSet) resource;
-
-        //create content instance
-        final Record.Content content = new Record.Content();
-        content.identifier = id;
-        content.tableName = id;
-        content.description = "";
-        content.lastChange = Calendar.getInstance();
-        final Optional<Envelope> envelope = dataSet.getEnvelope();
-        if (envelope.isPresent()) {
-            final Envelope env = envelope.get();
-            try {
-                content.srsId = getOrCreateCRS(env.getCoordinateReferenceSystem());
-            } catch (SQLException ex) {
-                throw new DataStoreException("Unsupported CRS", ex);
+        ArgumentChecks.ensureNonNull("resource", resource);
+        final Resource result = new ContentWriter<Resource>(false) {
+            /** Invoked by {@code ContentWriter} for inserting the resource. */
+            @Override Content updateResource(final DataAccess dao) throws Exception {
+                Content content = null;
+                for (ContentHandler handler : contentHandlers) {
+                    content = handler.addIfSupported(dao, resource);
+                    if (content != null) break;
+                }
+                return content;
             }
-            content.minX = env.getMinimum(0);
-            content.minY = env.getMinimum(1);
-            content.maxX = env.getMaximum(0);
-            content.maxY = env.getMaximum(1);
-        }
 
-        Resource created = null;
-        for (GpkgContentHandler handler : Gpkg.CONTENT_HANDLERS) {
-            if (handler.canAdd(resource)) {
-                created = handler.add(this, content, resource);
-                components.add(created);
-                break;
+            /** Invoked on success for getting the effective resource. */
+            @Override Resource result(final Content content, final DataAccess dao) throws Exception{
+                userContents.add(content);
+                return content.resource(dao);
             }
+        }.execute(this);
+        if (result != null) {
+            return result;
         }
-
-        if (created == null) {
-            throw new DataStoreException("Unsupported resource type");
-        }
-
-        return created;
+        /*
+         * TODO: delegate to parent class. If the `FeatureSet` has a geometry column, then the `Content.dataType`
+         * shall be "features". Otherwise (a `FeatureSet` without geometry), the data type shall be "attributes".
+         * SQLStore needs to detect by itself if "geometry_column" is updated automatically (e.g. by PostGIS) or
+         * if we need to add a row outselves. Geometry type name shall be in upper case.
+         *
+         * Note: Geopackage requires that each feature table has exactly one geometry column,
+         * while SQLStore accepts any number of geometry columns (including zero).
+         */
+        throw new IncompatibleResourceException("Unsupported resource type");
     }
 
-    public synchronized void saveContentRecord(Record.Content content) throws DataStoreException {
-        ArgumentChecks.ensureNonNull("content", content);
-        ArgumentChecks.ensureNonEmpty("content.tableName", content.tableName);
-
-        //force loading curent resources
-        components();
-
-        try (Connection cnx = getConnection(true)) {
-            try {
-                content.create(cnx);
-                cnx.commit();
-            } catch (Exception e) {
-                cnx.rollback();
-                throw e;
-            }
-        } catch (SQLException ex) {
-            throw new DataStoreException(ex.getMessage(), ex);
-        }
-    }
-
-    public synchronized void clearCache() {
-        //clear cache
-        components = null;
-    }
-
+    /**
+     * Removes a resource from this Geopackage.
+     * The given resource should be one of the instances returned by {@link #components()}.
+     *
+     * @param  resource  child resource to remove from this {@code Aggregate}.
+     * @throws DataStoreException if the given resource could not be removed.
+     *
+     * @todo The implementation of this method is not completed.
+     */
     @Override
-    public void remove(Resource resource) throws DataStoreException {
-        if (!components.contains(resource)) {
-            throw new DataStoreException("Given resource is not from this store");
-        }
+    public synchronized void remove(final Resource resource) throws DataStoreException {
+        ArgumentChecks.ensureNonNull("resource", resource);
+        final Boolean result = new ContentWriter<Boolean>(false) {
+            /** The user content to update and to remove if a row is found. */
+            private final Iterator<Content> it = userContents.iterator();
 
-        if (resource instanceof GpkgUndefinedResource) {
-            throw new DataStoreException("Given resource type " + ((GpkgUndefinedResource)resource).row.dataType + " is not supported");
-        } else if (resource instanceof GpkgContentResource) {
-            final GpkgContentResource cdt = (GpkgContentResource) resource;
-            cdt.getHandler().delete(cdt);
-            this.components.remove(cdt);
-        } else {
+            /** Invoked by {@code ContentWriter} for removing the resource. */
+            @Override Content updateResource(final DataAccess dao) throws Exception {
+                while (it.hasNext()) {
+                    final Content content = it.next();
+                    final ContentHandler handler = content.handler(resource);
+                    if (handler != null && handler.remove(dao, content, resource)) {
+                        return content;
+                    }
+                }
+                return null;
+            }
+
+            /** Invoked on success for getting the final status. */
+            @Override Boolean result(final Content content, final DataAccess dao) throws Exception{
+                it.remove();
+                return Boolean.TRUE;
+            }
+        }.execute(this);
+        if (result == null) {
+            // TODO: delegate to parent class.
             throw new DataStoreException("Unexpected resource");
         }
     }
 
     /**
-     * Get CoordinateReferenceSystem for srid.
-     *
-     * Specification :
-     * [K11] The axis order in WKB is always (x,y{,z}{,m}) where
-     * x is easting or longitude,
-     * y is northing or latitude,
-     * z is optional elevation and
-     * m is optional measure.
-     *
-     * @param srid geopackage SRS id
-     * @return decoded CRS, never null
+     * Clears the cache so that next operations will reload the content table.
+     * This method can be invoked when the database content has been modified
+     * by a process other than the methods in this class.
      */
-    synchronized CoordinateReferenceSystem toCRS(Connection cnx, int srid) throws SQLException, DataStoreException {
-        CoordinateReferenceSystem crs = CRS_CACHE.get(srid);
-        if (crs != null) return crs;
-
-        if (srid == -1) {
-            //TODO Undefined cartesian SRS, use lon/lat for now
-            crs = CommonCRS.WGS84.normalizedGeographic();
-        } else if (srid == 0) {
-            //Undefined geographic SRS
-            try {
-                crs = CRS.forCode("EPSG:4030");
-            } catch (FactoryException ex) {
-                throw new DataStoreException(ex.getMessage(), ex);
-            }
-        } else {
-
-            ioLock.readLock().lock();
-            search:
-            try (PreparedStatement stmt = SPATIAL_REF_BY_SRID.createPreparedStatement(cnx, srid);
-                 ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    //check new WKT definition
-                    try {
-                        String def2 = rs.getString("definition_12_063");
-                        if (def2 != null && !def2.trim().isEmpty() && !def2.equalsIgnoreCase("undefined")) {
-                            try {
-                                crs = CRS.fromWKT(def2);
-                                break search;
-                            } catch (FactoryException ex) {
-                                Gpkg.LOGGER.log(Level.WARNING, "Failed to parse WKT definition : "+def2+"\n"+ex.getMessage(),ex);
-                            }
-                        }
-                    } catch (SQLException ex) {
-                        //fallback on definition field
-                    }
-
-                    //check old WKT definition
-                    String def1 = rs.getString("definition");
-                    if (def1 != null && !def1.trim().isEmpty() && !def1.equalsIgnoreCase("undefined")) {
-                        try {
-                            crs = CRS.fromWKT(def1);
-                            break search;
-                        } catch (FactoryException ex) {
-                            Gpkg.LOGGER.log(Level.WARNING, "Failed to parse WKT definition : "+def1+"\n"+ex.getMessage(),ex);
-                        }
-                    }
-
-                    //check authority code
-                    final String organization = rs.getString("organization");
-                    final int organizationCode = rs.getInt("organization_coordsys_id");
-                    try {
-                        crs = CRS.forCode(organization+":"+organizationCode);
-                        break search;
-                    } catch (FactoryException ex) {
-                        Gpkg.LOGGER.log(Level.WARNING, "Failed to parse authority identifier : "+organization+":"+organizationCode+"\n"+ex.getMessage(),ex);
-                    }
-                }
-            } finally {
-                ioLock.readLock().unlock();
-            }
-        }
-
-        if (crs != null) {
-            crs = AbstractCRS.castOrCopy(crs).forConvention(AxesConvention.RIGHT_HANDED);
-            CRS_CACHE.put(srid, crs);
-            return crs;
-        } else {
-            throw new DataStoreException("SRID "+srid+" not found in " + Gpkg.TABLE_SPATIAL_REF_SYS + " table.");
-        }
+    @Override
+    public synchronized void refresh() {
+        super.refresh();
+        userContents.forEach(Content::clear);
+        userContents.clear();
     }
 
     /**
-     * Find or insert a new CRS definition in database.
-     * Returns the create crs srid.
-     *
-     * @param crs
-     * @return CRS srid.
+     * Returns the listeners of this data store.
+     * This is an accessor for the {@link Content} constructor.
      */
-    public synchronized int getOrCreateCRS(CoordinateReferenceSystem crs) throws SQLException, DataStoreException {
-
-        //force longitude first.
-        final CoordinateReferenceSystem crs2 = ((AbstractCRS)crs).forConvention(AxesConvention.RIGHT_HANDED);
-        if (crs != crs2) {
-            throw new DataStoreException("Only longitude first CRS are supported in geopackage");
-        }
-
-        Integer srsId = null;
-        String srsName;
-        String organisation = "";
-        Integer organisationCode = 0;
-        String description = "";
-
-        srsName = crs.getName().getCode();
-        final Identifier identifier = IdentifiedObjects.getIdentifier(crs, null);
-
-        if (identifier != null) {
-            Collection<? extends Identifier> identifiers = identifier.getAuthority().getIdentifiers();
-            if (!identifiers.isEmpty()) {
-                organisation = identifiers.iterator().next().getCode();
-                organisationCode = Integer.valueOf(identifier.getCode());
-
-                //search if this CRS exist
-                srsId = getSRID(organisation, organisationCode);
-                if (srsId != null) return srsId;
-            }
-        }
-
-        //see if we can reuse organisation code
-        if ("epsg".equalsIgnoreCase(organisation)) {
-            try (Connection cnx = getConnection(false)) {
-                toCRS(cnx, organisationCode);
-            } catch (DataStoreException ex) {
-                //code isn't used
-                srsId = organisationCode;
-            }
-        }
-
-        if (srsId == null) {
-            //next available srsid in user reserved space from 32768 to 60000000
-            try (Connection cnx = getConnection(false);
-                 PreparedStatement stmt = SPATIAL_REF_NEXT_SRID.createPreparedStatement(cnx);
-                 ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
-                    srsId = rs.getInt(1);
-                    if (rs.wasNull()) {
-                        srsId = 32768;
-                    } else {
-                        srsId++;
-                    }
-                } else {
-                    srsId = 32768;
-                }
-            }
-        }
-
-        final WKTFormat wktFormat = new WKTFormat(null, null);
-        wktFormat.setConvention(Convention.WKT1);
-        final String wkt1 = wktFormat.format(crs);
-        wktFormat.setConvention(Convention.WKT2);
-        final String wkt2 = wktFormat.format(crs);
-
-        try (Connection cnx = getConnection(true)) {
-            try (PreparedStatement stmt = SPATIAL_REF_CREATE_EXT.createPreparedStatement(cnx, srsName, srsId, organisation, organisationCode, wkt1, description, wkt2)) {
-                stmt.executeUpdate();
-            } catch (SQLException ex) {
-                cnx.rollback();
-                try (PreparedStatement stmt = SPATIAL_REF_CREATE.createPreparedStatement(cnx, srsName, srsId, organisation, organisationCode, wkt1, description)) {
-                    stmt.executeUpdate();
-                } catch (SQLException ex2) {
-                    cnx.rollback();
-                    throw new DataStoreException("Failed to insert new CRS,"+ ex.getMessage(), ex);
-                }
-            }
-            cnx.commit();
-        }
-
-        return srsId;
-    }
-
-    private Integer getSRID(String organisation, Integer organisationCode) throws DataStoreException, SQLException {
-        try (Connection cnx = getConnection(false);
-             PreparedStatement stmt = SPATIAL_REF_BY_ORGANIZATION.createPreparedStatement(cnx, organisation, organisationCode);
-             ResultSet rs = stmt.executeQuery()) {
-            if (rs.next()) {
-                return rs.getInt("srs_id");
-            }
-        }
-        return null;
-    }
-
-    private void initializeGeopackage() throws DataStoreException {
-
-        try (Connection cnx = getConnection(true)) {
-            final String sqlCore = IOUtilities.toString(GpkgStore.class.getResourceAsStream("/org/apache/sis/storage/geopackage/Core.sql"));
-
-            // TODO move this to an extension
-            final String sqlWkt = IOUtilities.toString(GpkgStore.class.getResourceAsStream("/org/apache/sis/storage/geopackage/Extension WKT for Coordinate Reference Systems.sql"));
-
-            final ScriptRunner runner = new ScriptRunner(cnx, 100);
-            runner.run(sqlCore);
-            runner.run(sqlWkt);
-            runner.close();
-            cnx.commit();
-
-        } catch (IOException | SQLException ex) {
-            throw new DataStoreException(ex.getMessage(), ex);
-        }
-
-        //install extensions
-        for (GpkgContentHandler handler : Gpkg.CONTENT_HANDLERS) {
-            for (GpkgExtension ext : handler.getExtensions(this)) {
-                if (!ext.isInstalled()) {
-                    ext.install();
-                }
-            }
-        }
-    }
-
-    @Override
-    public void close() throws DataStoreException {
-        //SQLite data source has no dispose or close method
-        //each connection instance must be properly closed
-        if (dataSource instanceof AutoCloseable) {
-            try {
-                ((AutoCloseable) dataSource).close();
-            } catch (Exception ex) {
-                throw new DataStoreException(ex.getMessage(), ex);
-            }
-        }
-    }
-
-    @Override
-    public Path[] getComponentFiles() {
-        return new Path[]{path};
+    static StoreListeners listeners(final SQLStore store) {
+        return (store instanceof GpkgStore) ? ((GpkgStore) store).listeners : null;
     }
 
     /**
-     * Execute a vacuum operation on the database.
+     * Returns the exception to throw for the given cause.
+     * The cause is typically a {@link java.sql.SQLException}, but not necessarily.
+     * This method provides a central point where we may specialize the type of the
+     * returned exception depending on the type of the cause.
      *
-     * @throws DataStoreException
+     * @param  message  the message, or {@code null} for the message of the cause.
+     * @param  cause    the cause of the error. Cannot be null.
+     * @return the data store exception to throw. May be {@code cause} itself.
      */
-    public void vacuum() throws DataStoreException {
-        try (Connection cnx = getConnection(true);
-             Statement stmt = cnx.createStatement()) {
-            cnx.setAutoCommit(true);
-            stmt.executeUpdate("VACUUM");
-        } catch (SQLException ex) {
-            throw new DataStoreException(ex.getMessage(), ex);
-        }
-    }
-
-    private class ReadWriteConnection implements Connection {
-
-        private final Connection cnx;
-        private final boolean write;
-
-        public ReadWriteConnection(Connection cnx, boolean write) throws SQLException {
-            if (write) {
-                ioLock.writeLock().lock();
-            } else {
-                ioLock.readLock().lock();
+    static DataStoreException cannotExecute(String message, final Exception cause) {
+        final Exception unwrap = Exceptions.unwrap(cause);
+        if (unwrap instanceof DataStoreException) {
+            return (DataStoreException) unwrap;
+        } else {
+            if (message == null) {
+                message = cause.getMessage();
             }
-            this.cnx = cnx;
-            this.write = write;
-            //cnx.setReadOnly(!write); //no supported by sqlite
+            return new DataStoreException(message, unwrap);
         }
-
-        @Override
-        public Statement createStatement() throws SQLException {
-            return cnx.createStatement();
-        }
-
-        @Override
-        public PreparedStatement prepareStatement(String sql) throws SQLException {
-            return cnx.prepareStatement(sql);
-        }
-
-        @Override
-        public CallableStatement prepareCall(String sql) throws SQLException {
-            return cnx.prepareCall(sql);
-        }
-
-        @Override
-        public String nativeSQL(String sql) throws SQLException {
-            return cnx.nativeSQL(sql);
-        }
-
-        @Override
-        public void setAutoCommit(boolean autoCommit) throws SQLException {
-            cnx.setAutoCommit(autoCommit);
-        }
-
-        @Override
-        public boolean getAutoCommit() throws SQLException {
-            return cnx.getAutoCommit();
-        }
-
-        @Override
-        public void commit() throws SQLException {
-            if (!write) {
-                throw new SQLException("Connection has not been created with writing lock");
-            }
-            cnx.commit();
-        }
-
-        @Override
-        public void rollback() throws SQLException {
-            if (!write) {
-                throw new SQLException("Connection has not been created with writing lock");
-            }
-            cnx.rollback();
-        }
-
-        @Override
-        public void close() throws SQLException {
-            final boolean closed = cnx.isClosed();
-            cnx.close();
-            if (!closed) {
-                if (write) {
-                    ioLock.writeLock().unlock();
-                } else {
-                    ioLock.readLock().unlock();
-                }
-            }
-        }
-
-        @Override
-        public boolean isClosed() throws SQLException {
-            return cnx.isClosed();
-        }
-
-        @Override
-        public DatabaseMetaData getMetaData() throws SQLException {
-            return cnx.getMetaData();
-        }
-
-        @Override
-        public void setReadOnly(boolean readOnly) throws SQLException {
-            throw new SQLException("Should not be called");
-        }
-
-        @Override
-        public boolean isReadOnly() throws SQLException {
-            return cnx.isReadOnly();
-        }
-
-        @Override
-        public void setCatalog(String catalog) throws SQLException {
-            cnx.setCatalog(catalog);
-        }
-
-        @Override
-        public String getCatalog() throws SQLException {
-            return cnx.getCatalog();
-        }
-
-        @Override
-        public void setTransactionIsolation(int level) throws SQLException {
-            cnx.setTransactionIsolation(level);
-        }
-
-        @Override
-        public int getTransactionIsolation() throws SQLException {
-            return cnx.getTransactionIsolation();
-        }
-
-        @Override
-        public SQLWarning getWarnings() throws SQLException {
-            return cnx.getWarnings();
-        }
-
-        @Override
-        public void clearWarnings() throws SQLException {
-            cnx.clearWarnings();
-        }
-
-        @Override
-        public Statement createStatement(int resultSetType, int resultSetConcurrency) throws SQLException {
-            return cnx.createStatement(resultSetType, resultSetConcurrency);
-        }
-
-        @Override
-        public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
-            return cnx.prepareStatement(sql, resultSetType, resultSetConcurrency);
-        }
-
-        @Override
-        public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency) throws SQLException {
-            return cnx.prepareCall(sql, resultSetType, resultSetConcurrency);
-        }
-
-        @Override
-        public Map<String, Class<?>> getTypeMap() throws SQLException {
-            return cnx.getTypeMap();
-        }
-
-        @Override
-        public void setTypeMap(Map<String, Class<?>> map) throws SQLException {
-            cnx.setTypeMap(map);
-        }
-
-        @Override
-        public void setHoldability(int holdability) throws SQLException {
-            cnx.setHoldability(holdability);
-        }
-
-        @Override
-        public int getHoldability() throws SQLException {
-            return cnx.getHoldability();
-        }
-
-        @Override
-        public Savepoint setSavepoint() throws SQLException {
-            return cnx.setSavepoint();
-        }
-
-        @Override
-        public Savepoint setSavepoint(String name) throws SQLException {
-            return cnx.setSavepoint(name);
-        }
-
-        @Override
-        public void rollback(Savepoint savepoint) throws SQLException {
-            cnx.rollback(savepoint);
-        }
-
-        @Override
-        public void releaseSavepoint(Savepoint savepoint) throws SQLException {
-            cnx.releaseSavepoint(savepoint);
-        }
-
-        @Override
-        public Statement createStatement(int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-            return cnx.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability);
-        }
-
-        @Override
-        public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-            return cnx.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
-        }
-
-        @Override
-        public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency, int resultSetHoldability) throws SQLException {
-            return cnx.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
-        }
-
-        @Override
-        public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException {
-            return cnx.prepareStatement(sql, autoGeneratedKeys);
-        }
-
-        @Override
-        public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException {
-            return cnx.prepareStatement(sql, columnIndexes);
-        }
-
-        @Override
-        public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
-            return cnx.prepareStatement(sql, columnNames);
-        }
-
-        @Override
-        public Clob createClob() throws SQLException {
-            return cnx.createClob();
-        }
-
-        @Override
-        public Blob createBlob() throws SQLException {
-            return cnx.createBlob();
-        }
-
-        @Override
-        public NClob createNClob() throws SQLException {
-            return cnx.createNClob();
-        }
-
-        @Override
-        public SQLXML createSQLXML() throws SQLException {
-            return cnx.createSQLXML();
-        }
-
-        @Override
-        public boolean isValid(int timeout) throws SQLException {
-            return cnx.isValid(timeout);
-        }
-
-        @Override
-        public void setClientInfo(String name, String value) throws SQLClientInfoException {
-            cnx.setClientInfo(name, value);
-        }
-
-        @Override
-        public void setClientInfo(Properties properties) throws SQLClientInfoException {
-            cnx.setClientInfo(properties);
-        }
-
-        @Override
-        public String getClientInfo(String name) throws SQLException {
-            return cnx.getClientInfo(name);
-        }
-
-        @Override
-        public Properties getClientInfo() throws SQLException {
-            return cnx.getClientInfo();
-        }
-
-        @Override
-        public Array createArrayOf(String typeName, Object[] elements) throws SQLException {
-            return cnx.createArrayOf(typeName, elements);
-        }
-
-        @Override
-        public Struct createStruct(String typeName, Object[] attributes) throws SQLException {
-            return cnx.createStruct(typeName, attributes);
-        }
-
-        @Override
-        public void setSchema(String schema) throws SQLException {
-            cnx.setSchema(schema);
-        }
-
-        @Override
-        public String getSchema() throws SQLException {
-            return cnx.getSchema();
-        }
-
-        @Override
-        public void abort(Executor executor) throws SQLException {
-            cnx.abort(executor);
-        }
-
-        @Override
-        public void setNetworkTimeout(Executor executor, int milliseconds) throws SQLException {
-            cnx.setNetworkTimeout(executor, milliseconds);
-        }
-
-        @Override
-        public int getNetworkTimeout() throws SQLException {
-            return cnx.getNetworkTimeout();
-        }
-
-        @Override
-        public void beginRequest() throws SQLException {
-            cnx.beginRequest();
-        }
-
-        @Override
-        public void endRequest() throws SQLException {
-            cnx.endRequest();
-        }
-
-        @Override
-        public boolean setShardingKeyIfValid(ShardingKey shardingKey, ShardingKey superShardingKey, int timeout) throws SQLException {
-            return cnx.setShardingKeyIfValid(shardingKey, superShardingKey, timeout);
-        }
-
-        @Override
-        public boolean setShardingKeyIfValid(ShardingKey shardingKey, int timeout) throws SQLException {
-            return cnx.setShardingKeyIfValid(shardingKey, timeout);
-        }
-
-        @Override
-        public void setShardingKey(ShardingKey shardingKey, ShardingKey superShardingKey) throws SQLException {
-            cnx.setShardingKey(shardingKey, superShardingKey);
-        }
-
-        @Override
-        public void setShardingKey(ShardingKey shardingKey) throws SQLException {
-            cnx.setShardingKey(shardingKey);
-        }
-
-        @Override
-        public <T> T unwrap(Class<T> iface) throws SQLException {
-            return cnx.unwrap(iface);
-        }
-
-        @Override
-        public boolean isWrapperFor(Class<?> iface) throws SQLException {
-            return cnx.isWrapperFor(iface);
-        }
-
     }
 }

@@ -16,25 +16,42 @@
  */
 
 /**
- * GeoPackage store.
+ * A data store for reading and writing Geopackage files.
+ * This module is based on the {@link org.apache.sis.storage.sql} module,
+ * which is extended for supporting the {@code "gpkg_contents"} table.
  *
- * @author Johann Sorel (Geomatys)
+ * <h2>Generalization</h2>
+ * At reading time, this module is more flexible than required by the Geopackage standard:
+ *
+ * <ul>
+ *   <li>The database can be any <abbr>JDBC</abbr> compliant database, not necessarily SQLite.</li>
+ *   <li>Feature and attribute tables can have any number of geometry columns, including zero.
+ *       By contrast, the Geopackage standard restricts feature tables to one geometry column,
+ *       and attribute tables to zero geometry column.</li>
+ *   <li><dfn>Complex features</dfn> (i.e., features having associations to other features) are supported.
+ *       The associations are discovered automatically by following the foreigner keys.</li>
+ *   <li>Primary keys are optional, can be composite (made of many columns) and are not restricted to integer type.</li>
+ * </ul>
+ *
+ * @author  Johann Sorel (Geomatys)
+ * @author  Martin Desruisseaux (Geomatys)
+ * @version 1.5
+ *
+ * @see <a href="https://www.opengeospatial.org/standards/geopackage">OGC® GeoPackage Encoding Standard</a>
+ *
+ * @since 1.5
  */
 module org.apache.sis.storage.geopackage {
-    // Dependencies used in public API.
     requires transitive org.apache.sis.referencing;
+    requires transitive org.apache.sis.feature;
     requires transitive org.apache.sis.storage;
     requires transitive org.apache.sis.storage.sql;
-    requires transitive org.apache.sis.feature;
     requires org.xerial.sqlitejdbc;
 
     exports org.apache.sis.storage.geopackage;
 
-    uses org.apache.sis.storage.geopackage.GpkgContentHandler;
-
-    provides org.apache.sis.storage.geopackage.GpkgContentHandler
-            with org.apache.sis.storage.geopackage.featureset.GpkgFeatureSetHandler;
+    uses org.apache.sis.storage.geopackage.ContentHandler;
 
     provides org.apache.sis.storage.DataStoreProvider
-            with org.apache.sis.storage.geopackage.GpkgProvider;
+            with org.apache.sis.storage.geopackage.GpkgStoreProvider;
 }
