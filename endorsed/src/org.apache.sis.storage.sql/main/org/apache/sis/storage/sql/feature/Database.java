@@ -584,7 +584,7 @@ public class Database<G> extends Syntax  {
      */
     @SuppressWarnings("fallthrough")
     protected ValueGetter<?> getMapping(final Column columnDefinition) {
-        if ("geometry".equalsIgnoreCase(columnDefinition.typeName)) {
+        if (GeometryType.isKnown(columnDefinition.typeName)) {
             return forGeometry(columnDefinition);
         }
         switch (columnDefinition.type) {

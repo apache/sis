@@ -35,10 +35,11 @@ package org.apache.sis.storage.sql.feature;
 public enum SpatialSchema {
     /**
      * Table and column names as specified by Geopackage. This is the same thing as {@link #SQL_MM}
-     * except for table names and for the case (Geopackage uses lower case).
+     * except for table names, for the case (Geopackage uses lower case) and for the addition of a
+     * {@code geometry_type_name} column.
      */
     GEOPACKAGE("gpkg_spatial_ref_sys", "srs_id", "organization", "organization_coordsys_id", "definition",
-               "gpkg_geometry_columns", "table_catalog", "table_schema", "table_name", "column_name", null),
+               "gpkg_geometry_columns", "table_catalog", "table_schema", "table_name", "column_name", "geometry_type_name"),
 
     /**
      * Table and column names as specified by ISO-13249 SQL/MM. This is the same thing as {@link #SIMPLE_FEATURE}

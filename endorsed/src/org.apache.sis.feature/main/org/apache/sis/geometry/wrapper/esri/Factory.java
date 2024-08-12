@@ -251,7 +251,7 @@ public final class Factory extends Geometries<Geometry> {
             }
             if (geometry == null) {
                 final MultiPath path = isPolygon ? new Polygon() : new Polyline();
-                if (type.isCollection()) {
+                if (type.isCollection) {
                     for (final Object component : data) {
                         path.add((MultiPath) component, false);
                     }
