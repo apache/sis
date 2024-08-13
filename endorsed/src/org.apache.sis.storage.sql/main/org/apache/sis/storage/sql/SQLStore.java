@@ -141,10 +141,15 @@ public class SQLStore extends DataStore implements Aggregate {
         source      = connector.getStorageAs(DataSource.class);
         geomLibrary = connector.getOption(OptionKey.GEOMETRY_LIBRARY);
         customizer  = connector.getOption(SchemaModifier.OPTION);
+
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final GenericName[] tableNames = new GenericName[resources.length];
-        final ResourceDefinition[] queries = new ResourceDefinition[resources.length];
         int tableCount = 0;
+
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final ResourceDefinition[] queries = new ResourceDefinition[resources.length];
         int queryCount = 0;
+
         for (int i=0; i<resources.length; i++) {
             final ResourceDefinition resource = resources[i];
             ArgumentChecks.ensureNonNullElement("resources", i, resource);
@@ -246,6 +251,7 @@ public class SQLStore extends DataStore implements Aggregate {
             final MetadataBuilder builder = new MetadataBuilder();
             builder.addSpatialRepresentation(SpatialRepresentationType.TEXT_TABLE);
             try (Connection c = source.getConnection()) {
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final Database<?> model = model(c);
                 if (model.hasGeometry()) {
                     builder.addSpatialRepresentation(SpatialRepresentationType.VECTOR);

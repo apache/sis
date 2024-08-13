@@ -290,6 +290,37 @@ public class InfoStatements implements Localized, AutoCloseable {
     }
 
     /**
+     * Creates a prepared statement for getting an authority code from SRID, or the converse.
+     * In both cases, the definition in all supported CRS encoding is provided in the last columns.
+     *
+     * @param  byAuthorityCode  {@code false} for (authority, code) from SRID, or {@code true} for the converse.
+     * @return the prepared statement.
+     * @throws SQLException if an error occurred while creating the prepared statement.
+     */
+    private PreparedStatement prepareSearchCRS(final boolean byAuthorityCode) throws SQLException {
+        final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
+        final SQLBuilder sql = new SQLBuilder(database);
+        sql.append(SQLBuilder.SELECT);
+        if (byAuthorityCode) {
+            sql.append(schema.crsIdentifierColumn);
+        } else {
+            sql.append(schema.crsAuthorityNameColumn).append(", ")
+               .append(schema.crsAuthorityCodeColumn);
+        }
+        for (CRSEncoding encoding : database.crsEncodings) {
+            sql.append(", ").append(schema.crsDefinitionColumn.get(encoding));
+        }
+        appendFrom(sql, schema.crsTable);
+        if (byAuthorityCode) {
+            sql.append(schema.crsAuthorityNameColumn).append("=? AND ")
+               .append(schema.crsAuthorityCodeColumn).append("=?");
+        } else {
+            sql.append(schema.crsIdentifierColumn).append("=?");
+        }
+        return connection.prepareStatement(sql.toString());
+    }
+
+    /**
      * Invoked when the requested CRS is not in the cache. This method gets the entry from the
      * {@link SpatialSchema#refSysTable} then gets the CRS from its authority code if possible,
      * or fallback on the WKT otherwise.
@@ -300,14 +331,7 @@ public class InfoStatements implements Localized, AutoCloseable {
      */
     private CoordinateReferenceSystem parseCRS(final int srid) throws Exception {
         if (wktFromSrid == null) {
-            final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
-            final SQLBuilder sql = new SQLBuilder(database);
-            sql.append(SQLBuilder.SELECT).append(schema.crsAuthorityNameColumn)
-                            .append(", ").append(schema.crsAuthorityCodeColumn)
-                            .append(", ").append(schema.crsDefinitionColumn);
-            appendFrom(sql, schema.crsTable);
-            sql.append(schema.crsIdentifierColumn).append("=?");
-            wktFromSrid = connection.prepareStatement(sql.toString());
+            wktFromSrid = prepareSearchCRS(false);
         }
         wktFromSrid.setInt(1, srid);
         CoordinateReferenceSystem crs = null;
@@ -332,34 +356,30 @@ public class InfoStatements implements Localized, AutoCloseable {
                 }
                 /*
                  * Parse the WKT unconditionally, even if we already got the CRS from authority code.
-                 * It the latter case, the CRS from WKT will be used only for a consistency check and
+                 * In the latter case, the CRS from WKT will be used only for a consistency check and
                  * the main CRS will be the one from authority.
                  */
-                CoordinateReferenceSystem fromWKT = null;
-                final String wkt = result.getString(3);
-                if (wkt != null && !wkt.isEmpty()) {
-                    final Object parsed;
-                    try {
-                        parsed = wktReader().parseObject(wkt);
-                    } catch (ParseException e) {
-                        if (authorityError != null) {
-                            e.addSuppressed(authorityError);
-                        }
-                        throw e;
-                    }
-                    if (parsed instanceof CoordinateReferenceSystem) {
-                        fromWKT = (CoordinateReferenceSystem) parsed;
+                final CoordinateReferenceSystem fromDefinition;
+                try {
+                    final Object parsed = parseDefinition(result, 3);
+                    if (parsed == null || parsed instanceof CoordinateReferenceSystem) {
+                        fromDefinition = (CoordinateReferenceSystem) parsed;
                     } else {
                         throw invalidSRID(Resources.Keys.UnexpectedTypeForSRID_2,
                                 ReferencingUtilities.getInterface(parsed), srid, authorityError);
                     }
+                } catch (ParseException e) {
+                    if (authorityError != null) {
+                        e.addSuppressed(authorityError);
+                    }
+                    throw e;
                 }
                 /*
                  * If one of the CRS is null, take the non-null one. If both CRSs are defined (which is the usual case),
                  * verify that they are consistent. Inconsistency will be logged as warning if the rest of the operation
                  * succeed.
                  */
-                final DefinitionVerifier v = DefinitionVerifier.compare(fromWKT, fromAuthority, getLocale());
+                final DefinitionVerifier v = DefinitionVerifier.compare(fromDefinition, fromAuthority, getLocale());
                 if (v.recommendation != null) {
                     if (crs == null) {
                         crs = v.recommendation;
@@ -368,7 +388,7 @@ public class InfoStatements implements Localized, AutoCloseable {
                         throw invalidSRID(Resources.Keys.DuplicatedSRID_2, schema.crsTable, srid, authorityError);
                     }
                     warning = v.warning(false);
-                    if (warning == null && fromWKT != null) {
+                    if (warning == null && fromDefinition != null) {
                         /*
                          * Following warnings may have occurred during WKT parsing and are considered minor.
                          * They will be reported only if there are no more important warnings to report.
@@ -470,24 +490,16 @@ public class InfoStatements implements Localized, AutoCloseable {
                  * Get the WKT and verifies if the CRS is approximately equal.
                  */
                 if (sridFromCRS == null) {
-                    final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
-                    final SQLBuilder sql = new SQLBuilder(database);
-                    sql.append(SQLBuilder.SELECT).append(schema.crsDefinitionColumn)
-                                    .append(", ").append(schema.crsIdentifierColumn);
-                    appendFrom(sql, schema.crsTable);
-                    sql.append(schema.crsAuthorityNameColumn).append("=? AND ")
-                       .append(schema.crsAuthorityCodeColumn).append("=?");
-                    sridFromCRS = connection.prepareStatement(sql.toString());
+                    sridFromCRS = prepareSearchCRS(true);
                 }
                 sridFromCRS.setString(1, authority);
                 sridFromCRS.setInt(2, codeValue);
                 try (ResultSet result = sridFromCRS.executeQuery()) {
                     while (result.next()) {
-                        final String wkt = result.getString(1);
-                        if (wkt != null && !wkt.isEmpty()) try {
-                            final Object parsed = wktReader().parseObject(wkt);
+                        try {
+                            final Object parsed = parseDefinition(result, 2);
                             if (Utilities.equalsApproximately(parsed, crs)) {
-                                final int srid = result.getInt(2);
+                                final int srid = result.getInt(1);
                                 synchronized (database.cacheOfSRID) {
                                     database.cacheOfSRID.put(crs, srid);
                                 }
@@ -518,15 +530,31 @@ public class InfoStatements implements Localized, AutoCloseable {
     }
 
     /**
-     * Returns the object to use for parsing Well Known Text (CRS).
-     * The parser is created when first needed.
+     * Parses the CRS defined in the first non-blank column starting at the given index.
+     * The expected encoding are given by {@link Database#crsEncodings} in that order.
+     *
+     * @param  result  the row containing the CRS definition to parse.
+     * @param  column  column of the preferred CRS definition. Next columns may be used if needed.
+     * @return the result of parsing the CRS definition, or {@code nnull} if none.
      */
-    private WKTFormat wktReader() {
-        if (wktReader == null) {
-            wktReader = new WKTFormat();
-            wktReader.setConvention(Convention.WKT1_COMMON_UNITS);
+    private Object parseDefinition(final ResultSet result, int column) throws SQLException, ParseException {
+        for (CRSEncoding encoding : database.crsEncodings) {
+            final String wkt = result.getString(column++);
+            if (wkt == null || wkt.isBlank()) {
+                continue;
+            }
+            switch (encoding) {
+                default: {
+                    if (wktReader == null) {
+                        wktReader = new WKTFormat();
+                        wktReader.setConvention(Convention.WKT1_COMMON_UNITS);
+                    }
+                    return wktReader.parseObject(wkt);
+                }
+                // JSON encoding may be added in a future version.
+            }
         }
-        return wktReader;
+        return null;
     }
 
     /**

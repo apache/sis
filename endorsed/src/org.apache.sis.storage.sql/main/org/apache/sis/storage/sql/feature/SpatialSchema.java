@@ -16,6 +16,8 @@
  */
 package org.apache.sis.storage.sql.feature;
 
+import java.util.Map;
+
 
 /**
  * Information about table names and column names used for the spatial schema.
@@ -38,9 +40,12 @@ public enum SpatialSchema {
      * except for table names, for the case (Geopackage uses lower case) and for the addition of a
      * {@code geometry_type_name} column.
      */
-    GEOPACKAGE("gpkg_spatial_ref_sys", "srs_id", "organization", "organization_coordsys_id", "definition",
-               "gpkg_geometry_columns", "table_catalog", "table_schema", "table_name", "column_name",
-               "geometry_type_name", GeometryTypeEncoding.TEXTUAL),
+    GEOPACKAGE("gpkg_spatial_ref_sys", "srs_id", "organization", "organization_coordsys_id",
+               Map.of(CRSEncoding.WKT1, "definition",
+                      CRSEncoding.WKT2, "definition_12_063"),
+
+               "gpkg_geometry_columns", "table_catalog", "table_schema", "table_name",
+               "column_name", "geometry_type_name", GeometryTypeEncoding.TEXTUAL),
 
     /**
      * Table and column names as specified by ISO-13249 SQL/MM. This is the same thing as {@link #SIMPLE_FEATURE}
@@ -59,7 +64,8 @@ public enum SpatialSchema {
      * In Geopackage, this table is named {@code "gpkg_spatial_ref_sys"} but otherwise has identical content
      * except for the case (Geopackage uses lower case).
      */
-    SQL_MM("ST_SPATIAL_REFERENCE_SYSTEMS", "SRS_ID", "ORGANIZATION", "ORGANIZATION_COORDSYS_ID", "DEFINITION",
+    SQL_MM("ST_SPATIAL_REFERENCE_SYSTEMS", "SRS_ID", "ORGANIZATION", "ORGANIZATION_COORDSYS_ID",
+           Map.of(CRSEncoding.WKT1, "DEFINITION"),
            "ST_GEOMETRY_COLUMNS", "TABLE_CATALOG", "TABLE_SCHEMA", "TABLE_NAME", "COLUMN_NAME", null, null),
 
     /**
@@ -76,7 +82,7 @@ public enum SpatialSchema {
      *   SRTEXT CHARACTER VARYING(2048))
      * }
      */
-    SIMPLE_FEATURE("SPATIAL_REF_SYS", "SRID", "AUTH_NAME", "AUTH_SRID", "SRTEXT",
+    SIMPLE_FEATURE("SPATIAL_REF_SYS", "SRID", "AUTH_NAME", "AUTH_SRID", Map.of(CRSEncoding.WKT1, "SRTEXT"),
                    "GEOMETRY_COLUMNS", "F_TABLE_CATALOG", "F_TABLE_SCHEMA", "F_TABLE_NAME", "F_GEOMETRY_COLUMN",
                    "GEOMETRY_TYPE", GeometryTypeEncoding.NUMERIC);
 
@@ -108,8 +114,9 @@ public enum SpatialSchema {
     /**
      * Name of the column for CRS definitions in Well-Known Text (<abbr>WKT</abbr>) format.
      * Example: {@code "SRTEXT"}, {@code "DEFINITION"}.
+     * Entries are in no particular order.
      */
-    final String crsDefinitionColumn;
+    final Map<CRSEncoding, String> crsDefinitionColumn;
 
     /**
      * Name of the table enumerating the geometry columns.
@@ -168,9 +175,10 @@ public enum SpatialSchema {
      * @param typeEncoding            how geometry types are encoded in the {@link #geomTypeColumn}.
      */
     private SpatialSchema(String crsTable, String crsIdentifierColumn, String crsAuthorityNameColumn,
-                          String crsAuthorityCodeColumn, String crsDefinitionColumn, String geometryColumns,
-                          String geomCatalogColumn, String geomSchemaColumn, String geomTableColumn,
-                          String geomColNameColumn, String geomTypeColumn, GeometryTypeEncoding typeEncoding)
+                          String crsAuthorityCodeColumn, Map<CRSEncoding,String> crsDefinitionColumn,
+                          String geometryColumns, String geomCatalogColumn, String geomSchemaColumn,
+                          String geomTableColumn, String geomColNameColumn, String geomTypeColumn,
+                          GeometryTypeEncoding typeEncoding)
     {
         this.crsTable               = crsTable;
         this.crsIdentifierColumn    = crsIdentifierColumn;

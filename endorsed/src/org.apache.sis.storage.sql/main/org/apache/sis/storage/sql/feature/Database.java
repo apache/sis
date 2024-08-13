@@ -19,6 +19,7 @@ package org.apache.sis.storage.sql.feature;
 import java.util.Set;
 import java.util.Map;
 import java.util.List;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -44,6 +45,7 @@ import org.apache.sis.metadata.sql.privy.Syntax;
 import org.apache.sis.metadata.sql.privy.Dialect;
 import org.apache.sis.metadata.sql.privy.Reflection;
 import org.apache.sis.metadata.sql.privy.SQLBuilder;
+import org.apache.sis.metadata.sql.privy.SQLUtilities;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.FeatureNaming;
 import org.apache.sis.storage.DataStoreException;
@@ -52,8 +54,6 @@ import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.system.Modules;
-import org.apache.sis.util.Debug;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.storage.sql.ResourceDefinition;
 import org.apache.sis.storage.sql.postgis.Postgres;
@@ -61,6 +61,8 @@ import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.collection.FrequencySortedSet;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.Cache;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -150,6 +152,12 @@ public class Database<G> extends Syntax  {
      * @see #getSpatialSchema()
      */
     private SpatialSchema spatialSchema;
+
+    /**
+     * The encoding of Coordinate Reference Systems in the spatial database, in preference order.
+     * This field is initialized by {@link #analyze analyze(…)} and shall not be modified after that point.
+     */
+    final EnumSet<CRSEncoding> crsEncodings;
 
     /**
      * {@code true} if this database contains at least one geometry column.
@@ -273,6 +281,7 @@ public class Database<G> extends Syntax  {
         supportsCatalogs   = metadata.supportsCatalogsInDataManipulation();
         supportsSchemas    = metadata.supportsSchemasInDataManipulation();
         supportsJavaTime   = dialect.supportsJavaTime;
+        crsEncodings       = EnumSet.noneOf(CRSEncoding.class);
     }
 
     /**
@@ -346,32 +355,55 @@ public class Database<G> extends Syntax  {
          * the default case specified by the SQL standard. However, some databases use lower
          * cases instead.
          */
+        String crsTable = null;
         final var ignoredTables = new HashMap<String,Boolean>(8);
         for (SpatialSchema schema : getPossibleSpatialSchemas(ignoredTables)) {
-            String tableCRS  = schema.crsTable;;
-            String tableGeom = schema.geometryColumns;
+            String geomTable;
+            crsTable  = schema.crsTable;
+            geomTable = schema.geometryColumns;
             if (metadata.storesLowerCaseIdentifiers()) {
-                tableCRS  = tableCRS .toLowerCase(Locale.US).intern();
-                tableGeom = tableGeom.toLowerCase(Locale.US).intern();
+                crsTable  = crsTable .toLowerCase(Locale.US).intern();
+                geomTable = geomTable.toLowerCase(Locale.US).intern();
             } else if (metadata.storesUpperCaseIdentifiers()) {
-                tableCRS  = tableCRS .toUpperCase(Locale.US).intern();
-                tableGeom = tableGeom.toUpperCase(Locale.US).intern();
+                crsTable  = crsTable .toUpperCase(Locale.US).intern();
+                geomTable = geomTable.toUpperCase(Locale.US).intern();
             }
-            ignoredTables.put(tableCRS,  Boolean.TRUE);
-            ignoredTables.put(tableGeom, Boolean.TRUE);
+            ignoredTables.put(crsTable,  Boolean.TRUE);
+            ignoredTables.put(geomTable, Boolean.TRUE);
             if (hasTable(metadata, tableTypes, ignoredTables)) {
                 spatialSchema = schema;
                 break;
             }
-            ignoredTables.remove(tableCRS);
-            ignoredTables.remove(tableGeom);
+            ignoredTables.remove(crsTable);
+            ignoredTables.remove(geomTable);
+        }
+        /*
+         * Get the columns for CRS definitions. At least one column should exist for CRS encoded in WKT1 format.
+         * Some schemas have additional columns for optional encodings, for example a separated column for WKT2.
+         * The preference order will be defined by the `CRSEncoding` enumeration order.
+         */
+        final Analyzer analyzer = new Analyzer(this, connection, metadata, customizer);
+        if (spatialSchema != null) {
+            final String schema = SQLUtilities.escape(schemaOfSpatialTables, analyzer.escape);
+            final String table  = SQLUtilities.escape(crsTable, analyzer.escape);
+            for (Map.Entry<CRSEncoding, String> entry : spatialSchema.crsDefinitionColumn.entrySet()) {
+                String column = entry.getValue();
+                if (metadata.storesLowerCaseIdentifiers()) {
+                    column = column.toLowerCase(Locale.US);
+                }
+                column = SQLUtilities.escape(column, analyzer.escape);
+                try (ResultSet reflect = metadata.getColumns(catalogOfSpatialTables, schema, table, column)) {
+                    if (reflect.next()) {
+                        crsEncodings.add(entry.getKey());
+                    }
+                }
+            }
         }
         /*
          * Collect the names of all tables specified by user, ignoring the tables
          * used for database internal working (for example by PostGIS).
          */
-        final Analyzer analyzer = new Analyzer(this, connection, metadata, customizer);
-        final Set<TableReference> declared = new LinkedHashSet<>();
+        final var declared = new LinkedHashSet<TableReference>();
         for (final GenericName tableName : tableNames) {
             final String[] names = TableReference.splitName(tableName);
             try (ResultSet reflect = metadata.getTables(names[2], names[1], names[0], tableTypes)) {
