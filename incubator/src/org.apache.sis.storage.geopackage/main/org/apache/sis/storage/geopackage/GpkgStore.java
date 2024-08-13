@@ -122,6 +122,14 @@ public class GpkgStore extends DataStore implements WritableAggregate, ResourceO
         }
     };
 
+    private static final Query CONTENTS_EXIST = new Query("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='gpkg_contents'");
+    private static final Query CONTENTS_ALL = new Query("SELECT table_name, data_type, identifier, description, last_change, min_x, min_y, max_x, max_y, srs_id FROM gpkg_contents ORDER BY identifier");
+    private static final Query SPATIAL_REF_BY_SRID = new Query("SELECT * FROM gpkg_spatial_ref_sys WHERE srs_id = [INTEGER]?");
+    private static final Query SPATIAL_REF_BY_ORGANIZATION = new Query("SELECT * FROM gpkg_spatial_ref_sys WHERE lower(organization) = lower([VARCHAR]?) AND organization_coordsys_id = [INTEGER]?");
+    private static final Query SPATIAL_REF_NEXT_SRID = new Query("SELECT max(srs_id) FROM gpkg_spatial_ref_sys WHERE srs_id >= 32768");
+    private static final Query SPATIAL_REF_CREATE = new Query("INSERT INTO gpkg_spatial_ref_sys(srs_name, srs_id, organization, organization_coordsys_id, definition, description) VALUES ([VARCHAR]?, [INTEGER]?, [VARCHAR]?, [INTEGER]?, [VARCHAR]?, [VARCHAR]?)");
+    private static final Query SPATIAL_REF_CREATE_EXT = new Query("INSERT INTO gpkg_spatial_ref_sys(srs_name, srs_id, organization, organization_coordsys_id, definition, description, definition_12_063) VALUES ([VARCHAR]?, [INTEGER]?, [VARCHAR]?, [INTEGER]?, [VARCHAR]?, [VARCHAR]?, [VARCHAR]?)");
+
     /**
      * Synchronization object used for accessing datasource.
      * we do not use 'synchronized' on the method since writing may use thread-pools.
@@ -411,7 +419,7 @@ public class GpkgStore extends DataStore implements WritableAggregate, ResourceO
                 final boolean contentsExist;
                 try (Connection cnx = getConnection(false);
                      Statement stmt = cnx.createStatement();
-                     ResultSet rs = stmt.executeQuery(Query.CONTENTS_EXIST.query())) {
+                     ResultSet rs = stmt.executeQuery(CONTENTS_EXIST.query())) {
                     contentsExist = rs.getInt(1) != 0;
                 }
 
@@ -422,7 +430,7 @@ public class GpkgStore extends DataStore implements WritableAggregate, ResourceO
                     final List<Record.Content> contents = new ArrayList<>();
                     try (Connection cnx = getConnection(false);
                          Statement stmt = cnx.createStatement();
-                         ResultSet rs = stmt.executeQuery(Query.CONTENTS_ALL.query())) {
+                         ResultSet rs = stmt.executeQuery(CONTENTS_ALL.query())) {
                         while (rs.next()) {
                             final Record.Content row = new Record.Content();
                             row.read(rs);
@@ -586,7 +594,7 @@ public class GpkgStore extends DataStore implements WritableAggregate, ResourceO
 
             ioLock.readLock().lock();
             search:
-            try (PreparedStatement stmt = Query.SPATIAL_REF_BY_SRID.createPreparedStatement(cnx, srid);
+            try (PreparedStatement stmt = SPATIAL_REF_BY_SRID.createPreparedStatement(cnx, srid);
                  ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     //check new WKT definition
@@ -688,7 +696,7 @@ public class GpkgStore extends DataStore implements WritableAggregate, ResourceO
         if (srsId == null) {
             //next available srsid in user reserved space from 32768 to 60000000
             try (Connection cnx = getConnection(false);
-                 PreparedStatement stmt = Query.SPATIAL_REF_NEXT_SRID.createPreparedStatement(cnx);
+                 PreparedStatement stmt = SPATIAL_REF_NEXT_SRID.createPreparedStatement(cnx);
                  ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
                     srsId = rs.getInt(1);
@@ -710,11 +718,11 @@ public class GpkgStore extends DataStore implements WritableAggregate, ResourceO
         final String wkt2 = wktFormat.format(crs);
 
         try (Connection cnx = getConnection(true)) {
-            try (PreparedStatement stmt = Query.SPATIAL_REF_CREATE_EXT.createPreparedStatement(cnx, srsName, srsId, organisation, organisationCode, wkt1, description, wkt2)) {
+            try (PreparedStatement stmt = SPATIAL_REF_CREATE_EXT.createPreparedStatement(cnx, srsName, srsId, organisation, organisationCode, wkt1, description, wkt2)) {
                 stmt.executeUpdate();
             } catch (SQLException ex) {
                 cnx.rollback();
-                try (PreparedStatement stmt = Query.SPATIAL_REF_CREATE.createPreparedStatement(cnx, srsName, srsId, organisation, organisationCode, wkt1, description)) {
+                try (PreparedStatement stmt = SPATIAL_REF_CREATE.createPreparedStatement(cnx, srsName, srsId, organisation, organisationCode, wkt1, description)) {
                     stmt.executeUpdate();
                 } catch (SQLException ex2) {
                     cnx.rollback();
@@ -729,7 +737,7 @@ public class GpkgStore extends DataStore implements WritableAggregate, ResourceO
 
     private Integer getSRID(String organisation, Integer organisationCode) throws DataStoreException, SQLException {
         try (Connection cnx = getConnection(false);
-             PreparedStatement stmt = Query.SPATIAL_REF_BY_ORGANIZATION.createPreparedStatement(cnx, organisation, organisationCode);
+             PreparedStatement stmt = SPATIAL_REF_BY_ORGANIZATION.createPreparedStatement(cnx, organisation, organisationCode);
              ResultSet rs = stmt.executeQuery()) {
             if (rs.next()) {
                 return rs.getInt("srs_id");

@@ -49,6 +49,9 @@ public final class Record {
      */
     public static final class Content {
 
+        private static final Query CONTENTS_CREATE = new Query("INSERT INTO gpkg_contents(table_name, data_type, identifier, description, last_change, min_x, min_y, max_x, max_y, srs_id) VALUES ([VARCHAR]?, [VARCHAR]?, [VARCHAR]?, [VARCHAR]?, [TIMESTAMP]?, [DOUBLE]?, [DOUBLE]?, [DOUBLE]?, [DOUBLE]?, [INTEGER]?)");
+        private static final Query CONTENTS_UPDATE = new Query("UPDATE gpkg_contents SET table_name = [VARCHAR]?, data_type = [VARCHAR]?, identifier = [VARCHAR]?, description = [VARCHAR]?, last_change = [TIMESTAMP]?, min_x = [DOUBLE]?, min_y = [DOUBLE]?, max_x = [DOUBLE]?, max_y = [DOUBLE]?, srs_id = [INTEGER]? WHERE table_name = [VARCHAR]?");
+
         public String tableName;
         public String dataType;
         public String identifier;
@@ -123,7 +126,7 @@ public final class Record {
                 lastChange = format.format(this.lastChange.getTime());
             }
 
-            try (PreparedStatement stmt = Query.CONTENTS_CREATE.createPreparedStatement(cnx,
+            try (PreparedStatement stmt = CONTENTS_CREATE.createPreparedStatement(cnx,
                     tableName,
                     dataType,
                     identifier,
@@ -139,7 +142,7 @@ public final class Record {
         }
 
         public void update(Connection cnx) throws SQLException {
-            try (PreparedStatement stmt = Query.CONTENTS_UPDATE.createPreparedStatement(cnx,
+            try (PreparedStatement stmt = CONTENTS_UPDATE.createPreparedStatement(cnx,
                     tableName,
                     dataType,
                     identifier,
@@ -170,6 +173,9 @@ public final class Record {
      * );
      */
     public static final class TileMatrixSet {
+
+        private static final Query TILE_MATRIX_SET_CREATE = new Query("INSERT INTO gpkg_tile_matrix_set(table_name, srs_id, min_x, min_y, max_x, max_y) VALUES ([VARCHAR]?, [INTEGER]?, [DOUBLE]?, [DOUBLE]?, [DOUBLE]?, [DOUBLE]?)");
+
         public String tableName;
         public int srsId;
         public double minX;
@@ -187,7 +193,7 @@ public final class Record {
         }
 
         public void create(Connection cnx) throws SQLException {
-            try (PreparedStatement stmt = Query.TILE_MATRIX_SET_CREATE.createPreparedStatement(
+            try (PreparedStatement stmt = TILE_MATRIX_SET_CREATE.createPreparedStatement(
                     cnx,
                     tableName,
                     srsId,
@@ -215,6 +221,9 @@ public final class Record {
      * );
      */
     public static final class TileMatrix {
+
+        private static final Query TILE_MATRIX_CREATE = new Query("INSERT INTO gpkg_tile_matrix(table_name, zoom_level, matrix_width, matrix_height, tile_width, tile_height, pixel_x_size, pixel_y_size) VALUES ([VARCHAR]?, [INTEGER]?, [INTEGER]?, [INTEGER]?, [INTEGER]?, [INTEGER]?, [DOUBLE]?, [DOUBLE]?)");
+
         public String tableName;
         public int zoomLevel;
         public int matrixWidth;
@@ -236,7 +245,7 @@ public final class Record {
         }
 
         public void create(Connection cnx) throws SQLException {
-            try (PreparedStatement stmt = Query.TILE_MATRIX_CREATE.createPreparedStatement(
+            try (PreparedStatement stmt = TILE_MATRIX_CREATE.createPreparedStatement(
                     cnx,
                     tableName,
                     zoomLevel,
@@ -262,6 +271,9 @@ public final class Record {
      * )
      */
     public static final class Tile {
+
+        private static final Query TILE_CREATE = new Query("INSERT OR REPLACE INTO [VARCHAR]? (zoom_level, tile_column, tile_row, tile_data) VALUES ([INTEGER]?, [INTEGER]?, [INTEGER]?, [BLOB]? )");
+
         public int id;
         public int zoomLevel;
         public int tileColumn;
@@ -277,7 +289,7 @@ public final class Record {
         }
 
         public void create(Connection cnx) throws SQLException {
-            try (PreparedStatement stmt = Query.TILE_CREATE.createPreparedStatement(
+            try (PreparedStatement stmt = TILE_CREATE.createPreparedStatement(
                     cnx,
                     zoomLevel,
                     tileColumn,
@@ -303,6 +315,9 @@ public final class Record {
      * );
      */
     public static final class GeometryColumn {
+
+        private static final Query GEOMETRY_COLUMN_CREATE = new Query("INSERT INTO gpkg_geometry_columns(table_name, column_name, geometry_type_name, srs_id, z, m) VALUES ([VARCHAR]?, [VARCHAR]?, [VARCHAR]?, [INTEGER]?, [TINYINT]? [TINYINT]?)");
+
         public String tableName;
         public String columnName;
         public String geometryType;
@@ -320,7 +335,7 @@ public final class Record {
         }
 
         public void write(Connection cnx) throws SQLException {
-            try (PreparedStatement stmt = Query.GEOMETRY_COLUMN_CREATE.createPreparedStatement(
+            try (PreparedStatement stmt = GEOMETRY_COLUMN_CREATE.createPreparedStatement(
                     cnx,
                     tableName,
                     columnName,
@@ -345,6 +360,10 @@ public final class Record {
      * );
      */
     public static final class SpatialRefSys {
+
+        private static final Query SPATIAL_REF_CREATE = new Query("INSERT INTO gpkg_spatial_ref_sys(srs_name, srs_id, organization, organization_coordsys_id, definition, description) VALUES ([VARCHAR]?, [INTEGER]?, [VARCHAR]?, [INTEGER]?, [VARCHAR]?, [VARCHAR]?)");
+        private static final Query SPATIAL_REF_CREATE_EXT = new Query("INSERT INTO gpkg_spatial_ref_sys(srs_name, srs_id, organization, organization_coordsys_id, definition, description, definition_12_063) VALUES ([VARCHAR]?, [INTEGER]?, [VARCHAR]?, [INTEGER]?, [VARCHAR]?, [VARCHAR]?, [VARCHAR]?)");
+
         public String srsName;
         public int srsId;
         public String organization;
@@ -368,7 +387,7 @@ public final class Record {
         }
 
         public void create(Connection cnx) throws SQLException {
-            try (PreparedStatement stmt = Query.SPATIAL_REF_CREATE.createPreparedStatement(
+            try (PreparedStatement stmt = SPATIAL_REF_CREATE.createPreparedStatement(
                     cnx,
                     srsName,
                     srsId,
@@ -380,7 +399,7 @@ public final class Record {
         }
 
         public void createExt(Connection cnx) throws SQLException {
-            try (PreparedStatement stmt = Query.SPATIAL_REF_CREATE.createPreparedStatement(
+            try (PreparedStatement stmt = SPATIAL_REF_CREATE_EXT.createPreparedStatement(
                     cnx,
                     srsName,
                     srsId,
@@ -404,6 +423,9 @@ public final class Record {
      * );
      */
     public static final class Extension {
+
+        private static final Query EXTENSION_CREATE = new Query("INSERT INTO gpkg_extensions(table_name, column_name, extension_name, definition, scope) VALUES ([VARCHAR]?, [VARCHAR]?, [VARCHAR]?, [VARCHAR]?, [VARCHAR]?)");
+
         public String tableName;
         public String columnName;
         public String extensionName;
@@ -419,7 +441,7 @@ public final class Record {
         }
 
         public void create(Connection cnx) throws SQLException {
-            try (PreparedStatement stmt = Query.EXTENSION_CREATE.createPreparedStatement(
+            try (PreparedStatement stmt = EXTENSION_CREATE.createPreparedStatement(
                     cnx,
                     tableName,
                     columnName,

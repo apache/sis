@@ -24,59 +24,14 @@ import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ResourceBundle;
 import org.apache.sis.util.ArraysExt;
 
 /**
- * Contain all queries, backed by a property file.
+ * SQL Query object.
  *
  * @author Johann Sorel (Geomatys)
  */
 public final class Query {
-
-    static final ResourceBundle BUNDLE = ResourceBundle.getBundle("org/apache/sis/storage/geopackage/queries");
-
-    public static final Query DROP_TABLE = new Query(BUNDLE.getString("DROP_TABLE"));
-
-    public static final Query CONTENTS_EXIST = new Query(BUNDLE.getString("CONTENTS_EXIST"));
-    public static final Query CONTENTS_ALL = new Query(BUNDLE.getString("CONTENTS_ALL"));
-    public static final Query CONTENTS_BY_TABLE_NAME = new Query(BUNDLE.getString("CONTENTS_BY_TABLE_NAME"));
-    public static final Query CONTENTS_CREATE = new Query(BUNDLE.getString("CONTENTS_CREATE"));
-    public static final Query CONTENTS_UPDATE = new Query(BUNDLE.getString("CONTENTS_UPDATE"));
-    public static final Query CONTENTS_DELETE = new Query(BUNDLE.getString("CONTENTS_DELETE"));
-
-    public static final Query SPATIAL_REF_BY_SRID = new Query(BUNDLE.getString("SPATIAL_REF_BY_SRID"));
-    public static final Query SPATIAL_REF_BY_ORGANIZATION = new Query(BUNDLE.getString("SPATIAL_REF_BY_ORGANIZATION"));
-    public static final Query SPATIAL_REF_NEXT_SRID = new Query(BUNDLE.getString("SPATIAL_REF_NEXT_SRID"));
-    public static final Query SPATIAL_REF_CREATE = new Query(BUNDLE.getString("SPATIAL_REF_CREATE"));
-    public static final Query SPATIAL_REF_CREATE_EXT = new Query(BUNDLE.getString("SPATIAL_REF_CREATE_EXT"));
-    public static final Query SPATIAL_REF_DELETE = new Query(BUNDLE.getString("SPATIAL_REF_DELETE"));
-
-    public static final Query GEOMETRY_COLUMN_CREATE = new Query(BUNDLE.getString("GEOMETRY_COLUMN_CREATE"));
-
-    public static final Query EXTENSION_BY_TABLE_AND_COLUMN = new Query(BUNDLE.getString("EXTENSION_BY_TABLE_AND_COLUMN"));
-    public static final Query EXTENSION_CREATE = new Query(BUNDLE.getString("EXTENSION_CREATE"));
-    public static final Query EXTENSION_DELETE_BY_TABLE = new Query(BUNDLE.getString("EXTENSION_DELETE_BY_TABLE"));
-
-    public static final Query TILE_MATRIX_SET_BY_TABLE = new Query(BUNDLE.getString("TILE_MATRIX_SET_BY_TABLE"));
-    public static final Query TILE_MATRIX_SET_CREATE = new Query(BUNDLE.getString("TILE_MATRIX_SET_CREATE"));
-    public static final Query TILE_MATRIX_SET_DELETE = new Query(BUNDLE.getString("TILE_MATRIX_SET_DELETE"));
-
-    public static final Query TILE_MATRIX_BY_TABLE = new Query(BUNDLE.getString("TILE_MATRIX_BY_TABLE"));
-    public static final Query TILE_MATRIX_CREATE = new Query(BUNDLE.getString("TILE_MATRIX_CREATE"));
-    public static final Query TILE_MATRIX_DELETE = new Query(BUNDLE.getString("TILE_MATRIX_DELETE"));
-    public static final Query TILE_MATRIX_UPDATE_ZOOMLEVEL = new Query(BUNDLE.getString("TILE_MATRIX_UPDATE_ZOOMLEVEL"));
-
-    public static final Query TILE_TABLE_CREATE = new Query(BUNDLE.getString("TILE_TABLE_CREATE"));
-    public static final Query TILE_CREATE = new Query(BUNDLE.getString("TILE_CREATE"));
-    public static final Query TILE_ANY = new Query(BUNDLE.getString("TILE_ANY"));
-    public static final Query TILE_GET = new Query(BUNDLE.getString("TILE_GET"));
-    public static final Query TILE_EXIST = new Query(BUNDLE.getString("TILE_EXIST"));
-    public static final Query TILE_DELETE = new Query(BUNDLE.getString("TILE_DELETE"));
-    public static final Query TILE_IN_RANGE= new Query(BUNDLE.getString("TILE_IN_RANGE"));
-    public static final Query TILE_IN_RANGE_SHORT = new Query(BUNDLE.getString("TILE_IN_RANGE_SHORT"));
-    public static final Query TILE_DELETE_BY_MATRIX = new Query(BUNDLE.getString("TILE_DELETE_BY_MATRIX"));
-    public static final Query TILE_DELETE_BY_RANGE = new Query(BUNDLE.getString("TILE_DELETE_BY_RANGE"));
 
     private final String query;
     private final Integer[] parameters;
