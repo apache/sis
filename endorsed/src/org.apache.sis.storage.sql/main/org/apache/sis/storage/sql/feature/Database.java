@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.logging.LogRecord;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.sql.Array;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -203,6 +205,17 @@ public class Database<G> extends Syntax  {
     private SelectionClauseWriter filterToSQL;
 
     /**
+     * The lock for read or write operations in the SQL database, or {@code null} if none.
+     * The read or write lock should be obtained before to get a connection for executing
+     * a statement, and released after closing the connection. Locking is assumed unneeded
+     * for obtaining database metadata.
+     *
+     * <p>This field should be null if the database manages concurrent transactions by itself.
+     * It is non-null only as a workaround for databases that do not support concurrency.</p>
+     */
+    protected final ReadWriteLock transactionLocks;
+
+    /**
      * Where to send warnings.
      *
      * @see #log(LogRecord)
@@ -280,6 +293,7 @@ public class Database<G> extends Syntax  {
         supportsSchemas    = metadata.supportsSchemasInDataManipulation();
         supportsJavaTime   = dialect.supportsJavaTime();
         crsEncodings       = EnumSet.noneOf(CRSEncoding.class);
+        transactionLocks   = dialect.supportsConcurrency() ? null : new ReentrantReadWriteLock();
     }
 
     /**

@@ -327,6 +327,7 @@ final class FeatureStream extends DeferredStream<Feature> {
         if (selection != null && !selection.isEmpty()) {
             sql.append(" WHERE ").append(selection.toString());
         }
+        lock(table.database.transactionLocks);
         try (Connection connection = getConnection()) {
             makeReadOnly(connection);
             try (Statement st = connection.createStatement();
@@ -339,6 +340,8 @@ final class FeatureStream extends DeferredStream<Feature> {
             }
         } catch (SQLException e) {
             throw new BackingStoreException(e);
+        } finally {
+            unlock();
         }
         return Math.max(super.count() - offset, 0);
     }
@@ -395,6 +398,7 @@ final class FeatureStream extends DeferredStream<Feature> {
         final String filter = (selection != null && !selection.isEmpty()) ? selection.toString() : null;
         selection = null;             // Let the garbage collector do its work.
 
+        lock(table.database.transactionLocks);
         final Connection connection = getConnection();
         setCloseHandler(connection);  // Executed only if `FeatureIterator` creation fails, discarded later otherwise.
         makeReadOnly(connection);
