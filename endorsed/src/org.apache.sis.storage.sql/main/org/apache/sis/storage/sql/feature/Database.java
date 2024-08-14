@@ -27,7 +27,6 @@ import java.util.WeakHashMap;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.logging.LogRecord;
 import java.sql.Array;
 import java.sql.Connection;
@@ -58,7 +57,6 @@ import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.storage.sql.ResourceDefinition;
 import org.apache.sis.storage.sql.postgis.Postgres;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.util.collection.FrequencySortedSet;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
@@ -357,10 +355,10 @@ public class Database<G> extends Syntax  {
          */
         String crsTable = null;
         final var ignoredTables = new HashMap<String,Boolean>(8);
-        for (SpatialSchema schema : getPossibleSpatialSchemas(ignoredTables)) {
+        for (SpatialSchema convention : getPossibleSpatialSchemas(ignoredTables)) {
             String geomTable;
-            crsTable  = schema.crsTable;
-            geomTable = schema.geometryColumns;
+            crsTable  = convention.crsTable;
+            geomTable = convention.geometryColumns;
             if (metadata.storesLowerCaseIdentifiers()) {
                 crsTable  = crsTable .toLowerCase(Locale.US).intern();
                 geomTable = geomTable.toLowerCase(Locale.US).intern();
@@ -370,8 +368,33 @@ public class Database<G> extends Syntax  {
             }
             ignoredTables.put(crsTable,  Boolean.TRUE);
             ignoredTables.put(geomTable, Boolean.TRUE);
-            if (hasTable(metadata, tableTypes, ignoredTables)) {
-                spatialSchema = schema;
+            /*
+             * Check if the database contains at least one "ignored" tables associated to `Boolean.TRUE`.
+             * If many tables are found, ensure that the catalog and schema names are the same. If this
+             * is not the case, no (catalog,schema) will be used and the search for spatial tables will
+             * rely on the database "search path".
+             */
+            boolean found = false;
+            boolean consistent = true;
+            String catalog = null, schema = null;
+            for (final Map.Entry<String,Boolean> entry : ignoredTables.entrySet()) {
+                if (entry.getValue()) {
+                    String table = SQLUtilities.escape(entry.getKey(), metadata.getSearchStringEscape());
+                    try (ResultSet reflect = metadata.getTables(null, null, table, tableTypes)) {
+                        while (reflect.next()) {
+                            consistent &= consistent(catalog, catalog = reflect.getString(Reflection.TABLE_CAT));
+                            consistent &= consistent(schema,  schema  = reflect.getString(Reflection.TABLE_SCHEM));
+                            found = true;
+                        }
+                    }
+                }
+            }
+            if (found) {
+                spatialSchema = convention;
+                if (consistent) {
+                    catalogOfSpatialTables = catalog;
+                    schemaOfSpatialTables  = schema;
+                }
                 break;
             }
             ignoredTables.remove(crsTable);
@@ -470,48 +493,11 @@ public class Database<G> extends Syntax  {
     }
 
     /**
-     * Returns {@code true} if the database contains at least one specified tables associated to {@code Boolean.TRUE}.
-     * This method updates {@link #schemaOfSpatialTables} and {@link #catalogOfSpatialTables} for the tables found.
-     * If many occurrences of the same table are found, this method searches for a common pair
-     * of catalog and schema names. All tables should be in the same (catalog, schema) pair.
-     * If this is not the case, no (catalog,schema) will be used and the search for the tables
-     * will rely on the database "search path".
-     *
-     * @param  metadata    value of {@code connection.getMetaData()}.
-     * @param  tableTypes  value of {@link #getTableTypes(DatabaseMetaData)}.
-     * @param  tables      name of the table to search. Will not be modified.
-     * @return whether the given table has been found.
+     * Helper method for checking if catalog or schema names are consistent.
+     * If an previous (old) name existed, the new name should be the same.
      */
-    private boolean hasTable(final DatabaseMetaData metadata, final String[] tableTypes, final Map<String,Boolean> tables)
-            throws SQLException
-    {
-        // `SimpleImmutableEntry` used as a way to store a (catalog,schema) pair of strings.
-        final var schemas = new FrequencySortedSet<SimpleImmutableEntry<String,String>>(true);
-        int count = 0;
-        for (final Map.Entry<String,Boolean> entry : tables.entrySet()) {
-            if (entry.getValue()) {
-                String name = entry.getKey();
-                boolean found = false;
-                try (ResultSet reflect = metadata.getTables(null, null, name, tableTypes)) {
-                    while (reflect.next()) {
-                        found = true;
-                        schemas.add(new SimpleImmutableEntry<>(
-                                reflect.getString(Reflection.TABLE_CAT),
-                                reflect.getString(Reflection.TABLE_SCHEM)));
-                    }
-                }
-                if (found) count++;
-            }
-        }
-        if (count == 0) {
-            return false;
-        }
-        final SimpleImmutableEntry<String,String> f = schemas.first();      // Most frequent pair.
-        if (schemas.frequency(f) == count) {
-            catalogOfSpatialTables = f.getKey();
-            schemaOfSpatialTables  = f.getValue();
-        }
-        return true;
+    private static boolean consistent(final String oldName, final String newName) {
+        return (oldName == null) || oldName.equals(newName);
     }
 
     /**
