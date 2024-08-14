@@ -278,7 +278,7 @@ public class Database<G> extends Syntax  {
         this.tablesByNames = new FeatureNaming<>();
         supportsCatalogs   = metadata.supportsCatalogsInDataManipulation();
         supportsSchemas    = metadata.supportsSchemasInDataManipulation();
-        supportsJavaTime   = dialect.supportsJavaTime;
+        supportsJavaTime   = dialect.supportsJavaTime();
         crsEncodings       = EnumSet.noneOf(CRSEncoding.class);
     }
 

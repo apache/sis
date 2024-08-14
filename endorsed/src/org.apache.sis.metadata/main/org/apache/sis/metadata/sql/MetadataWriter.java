@@ -302,7 +302,7 @@ public class MetadataWriter extends MetadataSource {
                  * (if such parent exists). In most case, the answer is "no" and `addTo` is equal to `table`.
                  */
                 String addTo = table;
-                if (helper.dialect.supportsTableInheritance) {
+                if (helper.dialect.supportsTableInheritance()) {
                     @SuppressWarnings("null")     // `colTables` is initialized in same time as `colTypes`.
                     final Class<?> declaring = colTables.get(column);
                     if (!interfaceType.isAssignableFrom(declaring)) {
@@ -417,7 +417,7 @@ public class MetadataWriter extends MetadataSource {
                     if (dependency == null) {
                         dependency = add(stmt, value, done, identifier);
                         assert done.get(value) == dependency;                       // Really identity comparison.
-                        if (!helper.dialect.supportsIndexInheritance) {
+                        if (!helper.dialect.supportsIndexInheritance()) {
                             /*
                              * In a classical object-oriented model, the foreigner key constraints declared in the
                              * parent table would take in account the records in the child table and we would have
@@ -503,7 +503,7 @@ public class MetadataWriter extends MetadataSource {
                  * However, this is not yet supported as of PostgreSQL 9.6. If inheritance is not supported,
                  * then we have to repeat the constraint creation in child tables.
                  */
-                if (!helper.dialect.supportsIndexInheritance && !table.equals(fkey.tableName)) {
+                if (!helper.dialect.supportsIndexInheritance() && !table.equals(fkey.tableName)) {
                     stmt.executeUpdate(helper.createForeignKey(schema(), table, column, target, primaryKey, !isCodeList));
                 }
             }
@@ -593,12 +593,12 @@ public class MetadataWriter extends MetadataSource {
                 if (standard.isMetadata(candidate)) {
                     isChildTable = Boolean.TRUE;
                     final SQLBuilder helper = helper();
-                    if (helper.dialect.supportsTableInheritance) {
+                    if (helper.dialect.supportsTableInheritance()) {
                         final String parent = getTableName(candidate);
                         createTable(stmt, candidate, parent, getExistingColumns(parent));
                         if (inherits == null) {
                             helper.clear().append("CREATE TABLE ").appendIdentifier(schema(), table);
-                            if (!helper.dialect.supportsIndexInheritance) {
+                            if (!helper.dialect.supportsIndexInheritance()) {
                                 /*
                                  * In a classical object-oriented model, the new child table would inherit the index from
                                  * its parent table. However, this is not yet the case as of PostgreSQL 9.6. If the index is

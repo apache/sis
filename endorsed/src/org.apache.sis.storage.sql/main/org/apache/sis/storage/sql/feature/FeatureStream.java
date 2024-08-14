@@ -366,7 +366,7 @@ final class FeatureStream extends DeferredStream<Feature> {
      * @param  connection  the connection to configure.
      */
     private void makeReadOnly(final Connection connection) throws SQLException {
-        if (table.database.dialect.supportsReadOnlyUpdate) {
+        if (table.database.dialect.supportsReadOnlyUpdate()) {
             connection.setReadOnly(true);
         }
         /*

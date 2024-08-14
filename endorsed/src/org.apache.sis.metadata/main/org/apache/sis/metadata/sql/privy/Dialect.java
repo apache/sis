@@ -34,7 +34,10 @@ public enum Dialect {
      *
      * @see DatabaseMetaData#supportsANSI92EntryLevelSQL()
      */
-    ANSI(null, false, true, true, true),
+    ANSI(null, Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
+             | Supports.JAVA_TIME
+             | Supports.READ_ONLY_UPDATE
+             | Supports.CONCURRENCY),
 
     /**
      * The database uses Derby syntax. This is ANSI, with some constraints that PostgreSQL does not have
@@ -43,31 +46,43 @@ public enum Dialect {
      *
      * <a href="https://issues.apache.org/jira/browse/DERBY-6445">DERBY-6445</a>
      */
-    DERBY("derby", false, true, false, true),
+    DERBY("derby", Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
+                 | Supports.READ_ONLY_UPDATE
+                 | Supports.CONCURRENCY),
 
     /**
      * The database uses HSQL syntax. This is ANSI, but does not allow {@code INSERT} statements inserting many lines.
      * It also have a {@code SHUTDOWN} command which is specific to HSQLDB.
      */
-    HSQL("hsqldb", false, true, true, true),
+    HSQL("hsqldb", Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
+                 | Supports.JAVA_TIME
+                 | Supports.READ_ONLY_UPDATE
+                 | Supports.CONCURRENCY),
 
     /**
      * The database uses PostgreSQL syntax. This is ANSI, but provided an a separated
      * enumeration value because it allows a few additional commands like {@code VACUUM}.
      */
-    POSTGRESQL("postgresql", true, true, true, true),
+    POSTGRESQL("postgresql", Supports.TABLE_INHERITANCE
+                           | Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
+                           | Supports.JAVA_TIME
+                           | Supports.READ_ONLY_UPDATE
+                           | Supports.CONCURRENCY),
 
     /**
      * The database uses Oracle syntax. This is ANSI, but without {@code "AS"} keyword.
      */
-    ORACLE("oracle", false, true, true, true),
+    ORACLE("oracle", Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT
+                   | Supports.JAVA_TIME
+                   | Supports.READ_ONLY_UPDATE
+                   | Supports.CONCURRENCY),
 
     /**
      * The database uses SQLite syntax. This is ANSI, but with several limitations.
      *
      * @see <a href="https://www.sqlite.org/omitted.html">SQL Features That SQLite Does Not Implement</a>
      */
-    SQLITE("sqlite", false, false, false, false);
+    SQLITE("sqlite", 0);
 
     /**
      * The protocol in JDBC URL, or {@code null} if unknown.
@@ -76,9 +91,24 @@ public enum Dialect {
     private final String protocol;
 
     /**
+     * Bit mask of supported features.
+     */
+    private final int flags;
+
+    /**
+     * Creates a new enumeration value for a SQL dialect for the given protocol.
+     */
+    private Dialect(final String  protocol, final int flags) {
+        this.protocol = protocol;
+        this.flags = flags;
+    }
+
+    /**
      * Whether this dialect support table inheritance.
      */
-    public final boolean supportsTableInheritance;
+    public final boolean supportsTableInheritance() {
+        return (flags & Supports.TABLE_INHERITANCE) != 0;
+    }
 
     /**
      * {@code true} if child tables inherit the index of their parent tables.
@@ -86,7 +116,9 @@ public enum Dialect {
      *
      * @see <a href="https://issues.apache.org/jira/browse/SIS-358">SIS-358</a>
      */
-    public final boolean supportsIndexInheritance = false;
+    public final boolean supportsIndexInheritance() {
+        return (flags & Supports.INDEX_INHERITANCE) != 0;
+    }
 
     /**
      * Whether this dialect support adding table constraints after creation.
@@ -94,7 +126,9 @@ public enum Dialect {
      *
      * @see DatabaseMetaData#supportsAlterTableWithAddColumn()
      */
-    public final boolean supportsAlterTableWithAddConstraint;
+    public final boolean supportsAlterTableWithAddConstraint() {
+        return (flags & Supports.ALTER_TABLE_WITH_ADD_CONSTRAINT) != 0;
+    }
 
     /**
      * Whether the JDBC driver supports conversions from objects to {@code java.time} API.
@@ -104,28 +138,24 @@ public enum Dialect {
      *
      * @see <a href="https://jcp.org/aboutJava/communityprocess/maintenance/jsr221/JDBC4.2MR-January2014.pdf">JDBC Maintenance Release 4.2</a>
      */
-    public final boolean supportsJavaTime;
+    public final boolean supportsJavaTime() {
+        return (flags & Supports.JAVA_TIME) != 0;
+    }
 
     /**
-     * Whether the JDBC driver supports configuring readOnly mode on connection instances.
+     * Whether the JDBC driver supports configuring read-only mode on connection instances.
      * This feature is not supported in SQLite.
      */
-    public final boolean supportsReadOnlyUpdate;
+    public final boolean supportsReadOnlyUpdate() {
+        return (flags & Supports.READ_ONLY_UPDATE) != 0;
+    }
 
     /**
-     * Creates a new enumeration value for a SQL dialect for the given protocol.
+     * Whether the JDBC driver supports concurrent transactions.
+     * This feature is not well supported in SQLite.
      */
-    private Dialect(final String  protocol,
-                    final boolean supportsTableInheritance,
-                    final boolean supportsAlterTableWithAddConstraint,
-                    final boolean supportsJavaTime,
-                    final boolean supportsReadOnlyUpdate)
-    {
-        this.protocol = protocol;
-        this.supportsTableInheritance = supportsTableInheritance;
-        this.supportsAlterTableWithAddConstraint = supportsAlterTableWithAddConstraint;
-        this.supportsJavaTime = supportsJavaTime;
-        this.supportsReadOnlyUpdate = supportsReadOnlyUpdate;
+    public final boolean supportsConcurrency() {
+        return (flags & Supports.CONCURRENCY) != 0;
     }
 
     /**
