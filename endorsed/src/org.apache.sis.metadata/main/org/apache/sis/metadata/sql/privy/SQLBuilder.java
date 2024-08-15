@@ -307,6 +307,19 @@ public class SQLBuilder extends Syntax {
     }
 
     /**
+     * Removes the {@code WHERE} clause and everything after it.
+     *
+     * @return this builder, for method call chaining.
+     */
+    public final SQLBuilder removeWhereClause() {
+        final int index = buffer.indexOf(" WHERE ");
+        if (index >= 0) {
+            buffer.setLength(index);
+        }
+        return this;
+    }
+
+    /**
      * Returns a SQL statement for adding a column in a table.
      * The returned statement is of the form:
      *

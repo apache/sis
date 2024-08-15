@@ -139,13 +139,13 @@ public class TestDatabase implements AutoCloseable {
         if (TEST_DATABASE != null) {
             return new TestDatabase(TEST_DATABASE, Dialect.ANSI);
         }
-        final EmbeddedDataSource ds = new EmbeddedDataSource();
+        final var ds = new EmbeddedDataSource();
         ds.setDatabaseName("memory:" + name);
         ds.setDataSourceName("Apache SIS test database");
         ds.setCreateDatabase("create");
         return new TestDatabase(ds, Dialect.DERBY) {
             @Override public void close() throws SQLException {
-                final EmbeddedDataSource ds = (EmbeddedDataSource) source;
+                final var ds = (EmbeddedDataSource) source;
                 ds.setCreateDatabase("no");
                 ds.setConnectionAttributes("drop=true");
                 try {
@@ -183,7 +183,7 @@ public class TestDatabase implements AutoCloseable {
             pool.setURL(url);
             ds = pool;
         } else {
-            final org.hsqldb.jdbc.JDBCDataSource simple = new org.hsqldb.jdbc.JDBCDataSource();
+            final var simple = new org.hsqldb.jdbc.JDBCDataSource();
             simple.setURL(url);
             ds = simple;
             pool = null;
@@ -216,7 +216,7 @@ public class TestDatabase implements AutoCloseable {
          * The DB_CLOSE_DELAY=-1 parameter keeps the database alive until SHUTDOWN is invoked.
          */
         final String url = "jdbc:h2:mem:" + name + ";DB_CLOSE_DELAY=-1";
-        final org.h2.jdbcx.JdbcDataSource ds = new org.h2.jdbcx.JdbcDataSource();
+        final var ds = new org.h2.jdbcx.JdbcDataSource();
         ds.setURL(url);
         return new TestDatabase(ds, Dialect.ANSI) {
             @Override public void close() throws SQLException {

@@ -120,7 +120,7 @@ final class ExtentEstimator {
     private void query(final Statement statement) throws SQLException {
         for (final Column column : columns) {
             if (column.getGeometryType().isPresent()) {
-                database.appendFunctionCall(builder.append(SQLBuilder.SELECT), "ST_EstimatedExtent");
+                database.appendSpatialSchema(builder.append(SQLBuilder.SELECT), "ST_EstimatedExtent");
                 builder.append('(');
                 if (table.schema != null) {
                     builder.appendValue(table.schema).append(", ");

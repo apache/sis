@@ -19,7 +19,9 @@ package org.apache.sis.storage.sql.feature;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.logging.Level;
@@ -29,6 +31,7 @@ import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.sql.SQLException;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
@@ -75,6 +78,18 @@ import org.opengis.metadata.Identifier;
  */
 public class InfoStatements implements Localized, AutoCloseable {
     /**
+     * Upper limit of the range of low SRID codes that we may use for custom CRS.
+     * This is used only if the EPSG code cannot be used.
+     */
+    private static final int LOW_SRID_RANGE = 1000;
+
+    /**
+     * Upper limit of the high range of SRID codes that we can use for custom CRS.
+     * This is used only if the EPSG code cannot be used.
+     */
+    private static final int HIGH_SRID_RANGE = 40000;
+
+    /**
      * The database that created this set of cached statements. This object includes the
      * cache of CRS created from SRID codes and the listeners where to send warnings.
      * A {@code Database} object does <strong>not</strong> contain live JDBC {@link Connection}.
@@ -105,9 +120,11 @@ public class InfoStatements implements Localized, AutoCloseable {
     private PreparedStatement sridFromCRS;
 
     /**
-     * The object to use for parsing Well-Known Text (WKT), created when first needed.
+     * The object to use for parsing or formatting Well-Known Text (WKT), created when first needed.
+     *
+     * @see #wktFormat()
      */
-    private WKTFormat wktReader;
+    private WKTFormat wktFormat;
 
     /**
      * Creates an initially empty {@code CachedStatements} which will use
@@ -146,11 +163,7 @@ public class InfoStatements implements Localized, AutoCloseable {
      * The table name will be prefixed by catalog and schema name if applicable.
      */
     private void appendFrom(final SQLBuilder sql, final String table) {
-        /*
-         * Despite its name, `appendFunctionCall(…)` can also be used for formatting
-         * table names provided that we want unquoted names (which is the case here).
-         */
-        database.appendFunctionCall(sql.append(" FROM "), table);
+        database.appendSpatialSchema(sql.append(" FROM "), table);
         sql.append(" WHERE ");
     }
 
@@ -299,8 +312,7 @@ public class InfoStatements implements Localized, AutoCloseable {
      */
     private PreparedStatement prepareSearchCRS(final boolean byAuthorityCode) throws SQLException {
         final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
-        final SQLBuilder sql = new SQLBuilder(database);
-        sql.append(SQLBuilder.SELECT);
+        final SQLBuilder sql = new SQLBuilder(database).append(SQLBuilder.SELECT);
         if (byAuthorityCode) {
             sql.append(schema.crsIdentifierColumn);
         } else {
@@ -393,7 +405,7 @@ public class InfoStatements implements Localized, AutoCloseable {
                          * Following warnings may have occurred during WKT parsing and are considered minor.
                          * They will be reported only if there are no more important warnings to report.
                          */
-                        final Warnings w = wktReader.getWarnings();
+                        final Warnings w = wktFormat.getWarnings();
                         if (w != null) {
                             warning = new LogRecord(Level.WARNING, w.toString(getLocale()));
                         }
@@ -412,13 +424,23 @@ public class InfoStatements implements Localized, AutoCloseable {
             final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
             throw invalidSRID(Resources.Keys.UnknownSRID_2, schema.crsTable, srid, null);
         }
+        log("fetchCRS", warning);
+        return crs;
+    }
+
+    /**
+     * Logs the given warning if it is non-null.
+     *
+     * @param  method   name of the method logging a warning.
+     * @param  warning  the warning to log, or {@code null} if none.
+     */
+    private void log(final String method, final LogRecord warning) {
         if (warning != null) {
             warning.setLoggerName(Modules.SQL);
             warning.setSourceClassName(getClass().getName());
-            warning.setSourceMethodName("fetchCRS");
+            warning.setSourceMethodName(method);
             database.listeners.warning(warning);
         }
-        return crs;
     }
 
     /**
@@ -435,8 +457,7 @@ public class InfoStatements implements Localized, AutoCloseable {
     private DataStoreContentException invalidSRID(final short message, final Object complement, final int srid,
             final NoSuchAuthorityCodeException suppressed)
     {
-        final DataStoreContentException e = new DataStoreContentException(
-                Resources.forLocale(getLocale()).getString(message, complement, srid));
+        final var e = new DataStoreContentException(Resources.forLocale(getLocale()).getString(message, complement, srid));
         if (suppressed != null) {
             e.addSuppressed(suppressed);
         }
@@ -445,8 +466,11 @@ public class InfoStatements implements Localized, AutoCloseable {
 
     /**
      * Finds a SRID code from the spatial reference systems table for the given CRS.
+     * If the database does not support concurrent transactions, then the caller is
+     * responsible for holding a lock. It may be a read lock or write lock depending
+     * on the {@link Database#allowAddCRS} value.
      *
-     * @param  crs  the CRS for which to find a SRID, or {@code null}.
+     * @param  crs     the CRS for which to find a SRID, or {@code null}.
      * @return SRID for the given CRS, or 0 if the given CRS was null.
      * @throws Exception if an SQL error, parsing error or other error occurred.
      */
@@ -460,21 +484,26 @@ public class InfoStatements implements Localized, AutoCloseable {
                 return srid;
             }
         }
-        final Set<SimpleImmutableEntry<String,String>> done = new HashSet<>();
-        Iterator<IdentifiedObject> alternatives = null;
-        IdentifiedObject candidate = crs;
+        /*
+         * Search in the database. In the `done` map, keys are "authority:code" pairs that we
+         * already tried and values tell whether we can use that pair if we need to add new CRS.
+         */
         Exception error = null;
-        for (;;) {
+        boolean tryWithGivenCRS = true;
+        final var sridFounInUse = new HashSet<Integer>();
+        final var done = new LinkedHashMap<SimpleImmutableEntry<String,Object>, Boolean>();
+        for (Iterator<IdentifiedObject> it = Set.<IdentifiedObject>of(crs).iterator(); it.hasNext();) {
+            final IdentifiedObject candidate = it.next();
             /*
              * First, iterate over the identifiers declared in the CRS object.
              * If we cannot find an identifier that we can map to a SRID, then this loop may be
-             * executed more times with CRS from EPSG database that are equal, ignore axis order.
+             * executed more times with CRS from EPSG database that are equal, ignoring axis order.
              */
             for (final Identifier id : candidate.getIdentifiers()) {
                 final String authority = id.getCodeSpace();
                 if (authority == null) continue;
                 final String code = id.getCode();
-                if (!done.add(new SimpleImmutableEntry<>(authority, code))) {
+                if (done.putIfAbsent(new SimpleImmutableEntry<>(authority, code), Boolean.FALSE) != null) {
                     continue;                           // Skip "authority:code" that we already tried.
                 }
                 final int codeValue;
@@ -484,6 +513,10 @@ public class InfoStatements implements Localized, AutoCloseable {
                     if (error == null) error = e;
                     else error.addSuppressed(e);
                     continue;                           // Ignore codes that are not integers.
+                }
+                final var key = new SimpleImmutableEntry<String,Object>(authority, codeValue);
+                if (done.putIfAbsent(key, codeValue > 0) != null) {
+                    continue;
                 }
                 /*
                  * Found an "authority:code" pair that we did not tested before.
@@ -496,10 +529,10 @@ public class InfoStatements implements Localized, AutoCloseable {
                 sridFromCRS.setInt(2, codeValue);
                 try (ResultSet result = sridFromCRS.executeQuery()) {
                     while (result.next()) {
-                        try {
+                        final int srid = result.getInt(1);
+                        if (sridFounInUse.add(srid)) try {
                             final Object parsed = parseDefinition(result, 2);
                             if (Utilities.equalsApproximately(parsed, crs)) {
-                                final int srid = result.getInt(1);
                                 synchronized (database.cacheOfSRID) {
                                     database.cacheOfSRID.put(crs, srid);
                                 }
@@ -509,6 +542,7 @@ public class InfoStatements implements Localized, AutoCloseable {
                             if (error == null) error = e;
                             else error.addSuppressed(e);
                         }
+                        done.put(key, Boolean.FALSE);       // Declare this "authority:code" pair as not available.
                     }
                 }
             }
@@ -517,16 +551,247 @@ public class InfoStatements implements Localized, AutoCloseable {
              * It may be because the CRS has no identifier at all. Search for
              * possible identifiers in the EPSG database, then try them.
              */
-            if (alternatives == null) {
+            if (tryWithGivenCRS) {
+                tryWithGivenCRS = false;
                 final IdentifiedObjectFinder finder = IdentifiedObjects.newFinder(Constants.EPSG);
                 finder.setIgnoringAxes(true);
-                alternatives = finder.find(crs).iterator();
+                it = finder.find(crs).iterator();
             }
-            if (!alternatives.hasNext()) break;
-            candidate = alternatives.next();
         }
-        throw new DataStoreReferencingException(Resources.format(
-                Resources.Keys.CanNotFindSRID_1, IdentifiedObjects.getDisplayName(crs, null)), error);
+        /*
+         * At this point, we found no CRS definition in the current `SPATIAL_REF_SYS` table.
+         * If the caller allowed the creation of new rows in that table, creates it now.
+         * It is caller's responsibility to hold a write lock if needed.
+         */
+        if (database.allowAddCRS) {
+            String fallback = null;
+            int fallbackCode = 0;
+            for (final Map.Entry<SimpleImmutableEntry<String,Object>, Boolean> entry : done.entrySet()) {
+                if (entry.getValue()) {
+                    final SimpleImmutableEntry<String,Object> identifier = entry.getKey();
+                    final int code = (Integer) identifier.getValue();  // Safe cast when `entry.getValue()` is true.
+                    final String authority = identifier.getKey();
+                    if (Constants.EPSG.equalsIgnoreCase(authority)) {
+                        return addCRS(authority, code, crs, sridFounInUse);
+                    }
+                    if (fallback == null) {
+                        fallback = authority;
+                        fallbackCode = code;
+                    }
+                }
+            }
+            if (fallback != null) {
+                return addCRS(fallback, fallbackCode, crs, sridFounInUse);
+            }
+            // In the current version, we don't encode a CRS without an "authority:code" pair.
+        }
+        final Locale locale = getLocale();
+        throw new DataStoreReferencingException(Resources.forLocale(locale).getString(
+                Resources.Keys.CanNotFindSRID_1, IdentifiedObjects.getDisplayName(crs, locale)), error);
+    }
+
+    /**
+     * Adds a new entry in the {@code SPATIAL_REF_SYS} table for the given <abbr>CRS</abbr>.
+     * The {@code authority} and {@code code} arguments are the values to store in the {@code "AUTH_NAME"} and
+     * {@code "AUTH_SRID"} columns respectively. A common usage is to prefer EPSG codes, but this is not mandatory.
+     *
+     * @param  authority      authority providing the CRS definition.
+     * @param  code           authority code.
+     * @param  crs            the coordinate reference system to encode.
+     * @param  sridFounInUse  SRIDs which have been found in use, for avoiding SRID that would be certain to fail.
+     *                        This is only a hint. A SRID not in this set is not a guarantee that it is available.
+     * @return SRID of the CRS added by this method.
+     * @throws DataStoreReferencingException if the given CRS cannot be encoded in at least one supported format.
+     * @throws SQLException if an error occurred while executing the SQL statement.
+     */
+    private int addCRS(final String authority, final int code, final CoordinateReferenceSystem crs,
+            final Set<Integer> sridFounInUse) throws Exception
+    {
+        final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
+        final var sql = new SQLBuilder(database).append(SQLBuilder.INSERT);
+        database.appendSpatialSchema(sql, schema.crsTable);
+        sql.append(" (").append(schema.crsIdentifierColumn)
+           .append(", ").append(schema.crsAuthorityNameColumn)
+           .append(", ").append(schema.crsAuthorityCodeColumn);
+        /*
+         * Append a variable number of columns for the CRS definitions in various formats.
+         * We add columns only for the formats that we can use. At least one of them must
+         * be filled, otherwise we cannot add the row.
+         */
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
+        final var wktFormat    = wktFormat();
+        final var crsEncodings = database.crsEncodings;
+        final var warnings     = new Warnings[crsEncodings.size()];
+        final var definitions  = new String[warnings.length + 2];       // +2 columns for name and description.
+        int numDefinitions = 0, numWarnings = 0;
+        for (final CRSEncoding encoding : crsEncodings) {
+            final String def;
+            switch (encoding) {
+                default: continue;          // Skip unknown formats (none at this time).
+                case WKT1: def = wktFormat.format(crs); break;
+                case WKT2: {
+                    try {
+                        wktFormat.setConvention(Convention.WKT2);
+                        def = wktFormat.format(crs);
+                    } finally {
+                        wktFormat.setConvention(Convention.WKT1_COMMON_UNITS);
+                    }
+                    break;
+                }
+            }
+            Warnings warning = wktFormat.getWarnings();
+            if (warning != null) {
+                warnings[numWarnings++] = warning;
+            } else {
+                definitions[numDefinitions++] = def;
+                sql.append(", ").append(schema.crsDefinitionColumn.get(encoding));
+            }
+        }
+        /*
+         * If we have not been able to format the CRS in any encoding, throw an exception with the first warning.
+         * We take the first one because the `CRSEncodng` enumeration is ordered with most complete formats first,
+         * so if we fail with the first encoding the next ones should be worst.
+         */
+        if (numDefinitions == 0) {
+            throw new DataStoreReferencingException(warnings[0].toString(getLocale()));
+        }
+        for (int i=0; i<numWarnings; i++) {
+            log("addCRS", new LogRecord(Level.WARNING, warnings[i].toString(getLocale())));
+        }
+        /*
+         * Optional columns for CRS name and description.
+         * The following loop is executed exactly twice.
+         */
+        boolean description = false;
+        do {
+            final String column = description ? schema.crsDescriptionColumn : schema.crsNameColumn;
+            if (column != null) {
+                String name = description ? IdentifiedObjects.getDisplayName(crs, getLocale())
+                                          : IdentifiedObjects.getName(crs, null);
+                if (name != null) {
+                    definitions[numDefinitions++] = name;
+                    sql.append(", ").append(column);
+                }
+            }
+        } while ((description = !description) == true);
+        /*
+         * Complete the SQL statement with the parameters that we will need to provide.
+         * In addition to the definition, there is 3 columns for (SRID, AUTHORITY, CODE)
+         * columns, and one more column if we also store the CRS name.
+         */
+        String separator = ") VALUES (";
+        for (int i = numDefinitions + 3; --i >= 0;) {
+            sql.append(separator).append('?');
+            separator = ", ";
+        }
+        int srid = code;
+        try (PreparedStatement stmt = connection.prepareStatement(sql.append(')').toString())) {
+            stmt.setString(2, authority);
+            stmt.setInt(3, code);
+            for (int i=0; i<numDefinitions; i++) {
+                stmt.setString(4+i, definitions[i]);
+            }
+            /*
+             * Execute the statement first by trying to use a SRID of the same value as the authority code.
+             * We do that because a common common practice is to use EPSG code as SRID values. If the SRID
+             * is not available (i.e., if we get an integrity violation), we will try another SRID value.
+             */
+            final var failures = new ArrayList<Exception>();
+            if (!sridFounInUse.contains(srid)) try {
+                stmt.setInt(1, srid);
+                stmt.executeUpdate();
+                return srid;
+            } catch (SQLException e) {
+                filterConstraintViolation(e);
+                /*
+                 * SQL state category 23: integrity constraint violation. Maybe the new CRS has been added concurrently.
+                 * Or maybe the CRS for that SRID would have been suitable but `findSRID(…)` didn't saw it, for example
+                 * because the authority name has different spelling or different lower/upper case.
+                 */
+                try {
+                    final CoordinateReferenceSystem candidate = fetchCRS(srid);
+                    if (Utilities.equalsIgnoreMetadata(crs, candidate)) {
+                        return srid;
+                    }
+                } catch (Exception f) {
+                    failures.add(f);
+                }
+                failures.add(e);
+            }
+            /*
+             * Search for an available SRID, then try again. The loop should be executed only once,
+             * unless the database content changed concurrently. In the latter case we retry until
+             * we got a free SRID.
+             */
+            try {
+                srid = 0;
+                while (srid < (srid = findFreeSRID(schema, sql.clear().append(SQLBuilder.SELECT)))) {
+                    try {
+                        stmt.setInt(1, srid);
+                        stmt.executeUpdate();
+                        return srid;
+                    } catch (SQLException e) {
+                        filterConstraintViolation(e);
+                        failures.add(e);
+                    }
+                }
+            } catch (Exception e) {
+                failures.add(e);
+            }
+            /*
+             * If an unexpected error occurred, rethrow the last error and add all previous errors
+             * as suppressed exceptions, in reverse order. We chose the last exception because, in
+             * case of integrity violation, it is the record which was supposed to be okay.
+             */
+            int i = failures.size();
+            final Exception e = failures.get(--i);
+            while (--i >= 0) e.addSuppressed(failures.get(i));
+            throw e;
+        }
+    }
+
+    /**
+     * Rethrows the given exception if the SQL state is not category 23: integrity constraint violation.
+     * If the exception is a integrity constraint violation, do nothing.
+     *
+     * @param  e  the exception to filter.
+     * @throws SQLException if the given exception is not of category 23.
+     */
+    private static void filterConstraintViolation(final SQLException e) throws SQLException {
+        final String state = e.getSQLState();
+        if (state == null || !state.equals("23505")) throw e;
+    }
+
+    /**
+     * Searches a free SRID for a new CRS definition.
+     *
+     * @param  schema  value of {@link Database#getSpatialSchema()}.
+     * @param  sql     a preexisting builder initialized with the {@code "SELECT "} string.
+     * @return an available SRID guaranteed to be greater than zero.
+     * @throws SQLException if an error occurred while searching for a free SRID.
+     */
+    private int findFreeSRID(final SpatialSchema schema, final SQLBuilder sql) throws SQLException {
+        appendFrom(sql.append("MAX(").append(schema.crsIdentifierColumn).append(')'), schema.crsTable);
+        sql.append(schema.crsIdentifierColumn).append('<').append(LOW_SRID_RANGE);
+        try (Statement stmt = connection.createStatement()) {
+            for (boolean high = false;;) {                              // Loop will be executed 1 or 2 times.
+                try (ResultSet result = stmt.executeQuery(sql.toString())) {
+                    if (result.next()) {
+                        final int srid = result.getInt(1) + 1;          // Next value after the highest one.
+                        if (high) {
+                            return Math.max(srid, HIGH_SRID_RANGE);
+                        } else if (srid < LOW_SRID_RANGE) {
+                            return Math.max(srid, 1);
+                        }
+                    }
+                }
+                if (high) {
+                    return 1;
+                }
+                high = true;
+                sql.removeWhereClause();
+            }
+        }
     }
 
     /**
@@ -539,22 +804,30 @@ public class InfoStatements implements Localized, AutoCloseable {
      */
     private Object parseDefinition(final ResultSet result, int column) throws SQLException, ParseException {
         for (CRSEncoding encoding : database.crsEncodings) {
-            final String wkt = result.getString(column++);
-            if (wkt == null || wkt.isBlank()) {
+            final String def = result.getString(column++);
+            // Note: Geopackage stores "undefined" instead of no value.
+            if (def == null || def.isBlank() || def.equalsIgnoreCase("undefined")) {
                 continue;
             }
             switch (encoding) {
-                default: {
-                    if (wktReader == null) {
-                        wktReader = new WKTFormat();
-                        wktReader.setConvention(Convention.WKT1_COMMON_UNITS);
-                    }
-                    return wktReader.parseObject(wkt);
-                }
+                default: return wktFormat().parseObject(def);
                 // JSON encoding may be added in a future version.
             }
         }
         return null;
+    }
+
+    /**
+     * Returns the object to use for parsing or formatting Well-Known Text of <abbr>CRS</abbr>.
+     * The parser/formatter is created when first needed.
+     */
+    private WKTFormat wktFormat() {
+        if (wktFormat == null) {
+            wktFormat = new WKTFormat();
+            wktFormat.setIndentation(WKTFormat.SINGLE_LINE);
+            wktFormat.setConvention(Convention.WKT1_COMMON_UNITS);
+        }
+        return wktFormat;
     }
 
     /**

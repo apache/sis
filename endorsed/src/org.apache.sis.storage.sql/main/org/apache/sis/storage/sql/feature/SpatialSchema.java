@@ -40,10 +40,10 @@ public enum SpatialSchema {
      * except for table names, for the case (Geopackage uses lower case) and for the addition of a
      * {@code geometry_type_name} column.
      */
-    GEOPACKAGE("gpkg_spatial_ref_sys", "srs_id", "organization", "organization_coordsys_id",
+    GEOPACKAGE("gpkg_spatial_ref_sys", "srs_name", "srs_id", "organization", "organization_coordsys_id",
                Map.of(CRSEncoding.WKT1, "definition",
                       CRSEncoding.WKT2, "definition_12_063"),
-
+               "description",
                "gpkg_geometry_columns", "table_catalog", "table_schema", "table_name",
                "column_name", "geometry_type_name", GeometryTypeEncoding.TEXTUAL),
 
@@ -64,8 +64,8 @@ public enum SpatialSchema {
      * In Geopackage, this table is named {@code "gpkg_spatial_ref_sys"} but otherwise has identical content
      * except for the case (Geopackage uses lower case).
      */
-    SQL_MM("ST_SPATIAL_REFERENCE_SYSTEMS", "SRS_ID", "ORGANIZATION", "ORGANIZATION_COORDSYS_ID",
-           Map.of(CRSEncoding.WKT1, "DEFINITION"),
+    SQL_MM("ST_SPATIAL_REFERENCE_SYSTEMS", "SRS_NAME", "SRS_ID", "ORGANIZATION", "ORGANIZATION_COORDSYS_ID",
+           Map.of(CRSEncoding.WKT1, "DEFINITION"), "DESCRIPTION",
            "ST_GEOMETRY_COLUMNS", "TABLE_CATALOG", "TABLE_SCHEMA", "TABLE_NAME", "COLUMN_NAME", null, null),
 
     /**
@@ -82,7 +82,7 @@ public enum SpatialSchema {
      *   SRTEXT CHARACTER VARYING(2048))
      * }
      */
-    SIMPLE_FEATURE("SPATIAL_REF_SYS", "SRID", "AUTH_NAME", "AUTH_SRID", Map.of(CRSEncoding.WKT1, "SRTEXT"),
+    SIMPLE_FEATURE("SPATIAL_REF_SYS", null, "SRID", "AUTH_NAME", "AUTH_SRID", Map.of(CRSEncoding.WKT1, "SRTEXT"), null,
                    "GEOMETRY_COLUMNS", "F_TABLE_CATALOG", "F_TABLE_SCHEMA", "F_TABLE_NAME", "F_GEOMETRY_COLUMN",
                    "GEOMETRY_TYPE", GeometryTypeEncoding.NUMERIC);
 
@@ -91,6 +91,12 @@ public enum SpatialSchema {
      * Example: {@code "SPATIAL_REF_SYS"}, {@code "ST_SPATIAL_REFERENCE_SYSTEMS"}.
      */
     final String crsTable;
+
+    /**
+     * Name of the column for CRS name, or {@code null} if none.
+     * Example: {@code "SRS_NAME"}.
+     */
+    final String crsNameColumn;
 
     /**
      * Name of the column for CRS identifiers.
@@ -117,6 +123,11 @@ public enum SpatialSchema {
      * Entries are in no particular order.
      */
     final Map<CRSEncoding, String> crsDefinitionColumn;
+
+    /**
+     * Name of the column for the CRS description, or {@code null} if none.
+     */
+    final String crsDescriptionColumn;
 
     /**
      * Name of the table enumerating the geometry columns.
@@ -162,10 +173,12 @@ public enum SpatialSchema {
      * Creates a new enumeration value.
      *
      * @param crsTable                name of the table for Spatial Reference System definitions.
+     * @param crsNameColumn           name of the column for CRS names, or {@code null} if none.
      * @param crsIdentifierColumn     name of the column for CRS identifiers.
      * @param crsAuthorityNameColumn  name of the column for CRS authority names.
      * @param crsAuthorityCodeColumn  name of the column for CRS authority codes.
      * @param crsDefinitionColumn     name of the column for CRS definitions in <abbr>WKT</abbr> format.
+     * @param crsDescriptionColumn    name of the column for the CRS description, or {@code null} if none.
      * @param geometryColumns         name of the table enumerating the geometry columns.
      * @param geomCatalogColumn       name of the column where the catalog of each geometry column is stored.
      * @param geomSchemaColumn        name of the column where the schema of each geometry column is stored.
@@ -174,17 +187,20 @@ public enum SpatialSchema {
      * @param geomTypeColumn          name of the column where the type of each geometry column is stored, or null if none.
      * @param typeEncoding            how geometry types are encoded in the {@link #geomTypeColumn}.
      */
-    private SpatialSchema(String crsTable, String crsIdentifierColumn, String crsAuthorityNameColumn,
-                          String crsAuthorityCodeColumn, Map<CRSEncoding,String> crsDefinitionColumn,
+    private SpatialSchema(String crsTable, String crsNameColumn, String crsIdentifierColumn,
+                          String crsAuthorityNameColumn, String crsAuthorityCodeColumn,
+                          Map<CRSEncoding,String> crsDefinitionColumn, String crsDescriptionColumn,
                           String geometryColumns, String geomCatalogColumn, String geomSchemaColumn,
                           String geomTableColumn, String geomColNameColumn, String geomTypeColumn,
                           GeometryTypeEncoding typeEncoding)
     {
         this.crsTable               = crsTable;
+        this.crsNameColumn          = crsNameColumn;
         this.crsIdentifierColumn    = crsIdentifierColumn;
         this.crsAuthorityNameColumn = crsAuthorityNameColumn;
         this.crsAuthorityCodeColumn = crsAuthorityCodeColumn;
         this.crsDefinitionColumn    = crsDefinitionColumn;
+        this.crsDescriptionColumn   = crsDescriptionColumn;
         this.geometryColumns        = geometryColumns;
         this.geomCatalogColumn      = geomCatalogColumn;
         this.geomSchemaColumn       = geomSchemaColumn;

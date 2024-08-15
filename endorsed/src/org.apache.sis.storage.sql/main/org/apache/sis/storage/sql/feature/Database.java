@@ -135,8 +135,7 @@ public class Database<G> extends Syntax  {
     /**
      * All tables known to this {@code Database} in declaration order.
      * This array contains only the tables specified at initialization time, not the dependencies.
-     * This field is initialized by {@link #analyze(SQLStore, Connection, ResourceDefinition...)}
-     * and shall not be modified after that point.
+     * This field is initialized by {@link #analyze analyze(…)} and shall not be modified after that point.
      */
     private Table[] tables;
 
@@ -158,6 +157,12 @@ public class Database<G> extends Syntax  {
      * This field is initialized by {@link #analyze analyze(…)} and shall not be modified after that point.
      */
     final EnumSet<CRSEncoding> crsEncodings;
+
+    /**
+     * Whether to allow the addition of new <abbr>CRS</abbr> definitions in the {@code SPATIAL_REF_SYS} table.
+     * The default value is {@code false}, which is preferable for read-only databases.
+     */
+    public volatile boolean allowAddCRS;
 
     /**
      * {@code true} if this database contains at least one geometry column.
@@ -552,14 +557,14 @@ public class Database<G> extends Syntax  {
     }
 
     /**
-     * Appends a call to a function defined in the spatial schema.
-     * The function name will be prefixed by catalog and schema name if applicable.
-     * The function will not be quoted.
+     * Appends a call to a function or table defined in the spatial schema.
+     * The name will be prefixed by catalog and schema name if applicable.
+     * The name will not be quoted.
      *
-     * @param  sql       the SQL builder where to add the spatial function name.
-     * @param  function  the function to append.
+     * @param  sql   the SQL builder where to add the spatial function or table name.
+     * @param  name  the function or table to append.
      */
-    public final void appendFunctionCall(final SQLBuilder sql, final String function) {
+    public final void appendSpatialSchema(final SQLBuilder sql, final String name) {
         final String schema = schemaOfSpatialTables;
         if (schema != null && !schema.isEmpty()) {
             final String catalog = catalogOfSpatialTables;
@@ -568,7 +573,7 @@ public class Database<G> extends Syntax  {
             }
             sql.appendIdentifier(schema).append('.');
         }
-        sql.append(function);
+        sql.append(name);
     }
 
     /**
