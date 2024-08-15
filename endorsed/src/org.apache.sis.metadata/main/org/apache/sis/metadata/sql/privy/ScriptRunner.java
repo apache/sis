@@ -742,7 +742,7 @@ parseLine:  while (pos < length) {
          * The scripts usually do not contain any SELECT statement. One exception is the creation
          * of geometry columns in a PostGIS database, which use "SELECT AddGeometryColumn(…)".
          */
-        if (subSQL.startsWith("SELECT ")) {
+        if (subSQL.startsWith(SQLBuilder.SELECT)) {
             statement.executeQuery(subSQL).close();
         } else {
             if (maxRowsPerInsert != Integer.MAX_VALUE && subSQL.startsWith("INSERT INTO")) {

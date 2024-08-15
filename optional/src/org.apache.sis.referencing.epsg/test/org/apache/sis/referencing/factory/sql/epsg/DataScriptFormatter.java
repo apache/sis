@@ -34,6 +34,7 @@ import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Workaround;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.privy.URLs;
+import org.apache.sis.metadata.sql.privy.SQLBuilder;
 import org.apache.sis.metadata.sql.privy.ScriptRunner;
 
 // Test dependencies
@@ -228,7 +229,7 @@ public final class DataScriptFormatter extends ScriptRunner {
         }
         if (CharSequences.regionMatches(sql, ++lower, oldValue)) {
             final int s = CharSequences.skipLeadingWhitespaces(sql, 0, lower);
-            if (CharSequences.regionMatches(sql, s, "INSERT INTO " + table + " VALUES")) {
+            if (CharSequences.regionMatches(sql, s, SQLBuilder.INSERT + table + " VALUES")) {
                 if (--upper - lower != oldValue.length()) {
                     throw new AssertionError("Unexpected length");
                 }

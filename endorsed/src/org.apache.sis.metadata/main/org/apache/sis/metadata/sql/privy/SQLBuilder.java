@@ -37,6 +37,13 @@ public class SQLBuilder extends Syntax {
     public static final String SELECT = "SELECT ";
 
     /**
+     * The {@value} keyword (with a trailing space).
+     * Defined as a convenience for identifying locations in the Java code
+     * where we start to write a SQL statement using a builder.
+     */
+    public static final String INSERT = "INSERT INTO ";
+
+    /**
      * The buffer where the SQL query is created.
      */
     protected final StringBuilder buffer = new StringBuilder(200);

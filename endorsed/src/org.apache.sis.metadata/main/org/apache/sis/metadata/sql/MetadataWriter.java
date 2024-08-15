@@ -511,7 +511,7 @@ public class MetadataWriter extends MetadataSource {
         /*
          * Create the SQL statement which will insert the data.
          */
-        helper.clear().append("INSERT INTO ").appendIdentifier(schema(), table).append(" (").appendIdentifier(ID_COLUMN);
+        helper.clear().append(SQLBuilder.INSERT).appendIdentifier(schema(), table).append(" (").appendIdentifier(ID_COLUMN);
         for (final String column : asSingletons.keySet()) {
             helper.append(", ").appendIdentifier(column);
         }
@@ -665,7 +665,7 @@ public class MetadataWriter extends MetadataSource {
             exists = rs.next();
         }
         if (!exists) {
-            final String sql = helper().clear().append("INSERT INTO ").appendIdentifier(schema(), table)
+            final String sql = helper().clear().append(SQLBuilder.INSERT).appendIdentifier(schema(), table)
                     .append(" (").appendIdentifier(CODE_COLUMN).append(") VALUES (").appendValue(identifier)
                     .append(')').toString();
             if (stmt.executeUpdate(sql) != 1) {
