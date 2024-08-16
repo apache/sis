@@ -41,8 +41,10 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.privy.DefinitionVerifier;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
+import org.apache.sis.metadata.sql.privy.SQLUtilities;
 import org.apache.sis.metadata.sql.privy.SQLBuilder;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.system.Modules;
@@ -52,7 +54,6 @@ import org.apache.sis.util.privy.Constants;
 import org.apache.sis.io.wkt.Convention;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Warnings;
-import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.metadata.Identifier;
@@ -312,22 +313,24 @@ public class InfoStatements implements Localized, AutoCloseable {
      */
     private PreparedStatement prepareSearchCRS(final boolean byAuthorityCode) throws SQLException {
         final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
-        final SQLBuilder sql = new SQLBuilder(database).append(SQLBuilder.SELECT);
+        final String search, get;
         if (byAuthorityCode) {
-            sql.append(schema.crsIdentifierColumn);
+            search = schema.crsAuthorityCodeColumn;
+            get    = schema.crsIdentifierColumn;
         } else {
-            sql.append(schema.crsAuthorityNameColumn).append(", ")
-               .append(schema.crsAuthorityCodeColumn);
+            search = schema.crsIdentifierColumn;
+            get    = schema.crsAuthorityCodeColumn;
         }
+        final var sql = new SQLBuilder(database).append(SQLBuilder.SELECT)
+                .append(schema.crsAuthorityNameColumn).append(", ").append(get);
+
         for (CRSEncoding encoding : database.crsEncodings) {
             sql.append(", ").append(schema.crsDefinitionColumn.get(encoding));
         }
         appendFrom(sql, schema.crsTable);
+        sql.append(search).append("=?");
         if (byAuthorityCode) {
-            sql.append(schema.crsAuthorityNameColumn).append("=? AND ")
-               .append(schema.crsAuthorityCodeColumn).append("=?");
-        } else {
-            sql.append(schema.crsIdentifierColumn).append("=?");
+            sql.append(" AND LOWER(").append(schema.crsAuthorityNameColumn).append(") LIKE ?");
         }
         return connection.prepareStatement(sql.toString());
     }
@@ -468,7 +471,7 @@ public class InfoStatements implements Localized, AutoCloseable {
      * Finds a SRID code from the spatial reference systems table for the given CRS.
      * If the database does not support concurrent transactions, then the caller is
      * responsible for holding a lock. It may be a read lock or write lock depending
-     * on the {@link Database#allowAddCRS} value.
+     * on the {@link Connection#isReadOnly()} value.
      *
      * @param  crs     the CRS for which to find a SRID, or {@code null}.
      * @return SRID for the given CRS, or 0 if the given CRS was null.
@@ -525,24 +528,26 @@ public class InfoStatements implements Localized, AutoCloseable {
                 if (sridFromCRS == null) {
                     sridFromCRS = prepareSearchCRS(true);
                 }
-                sridFromCRS.setString(1, authority);
-                sridFromCRS.setInt(2, codeValue);
+                sridFromCRS.setInt(1, codeValue);
+                sridFromCRS.setString(2, SQLUtilities.toLikePattern(authority, true));
                 try (ResultSet result = sridFromCRS.executeQuery()) {
                     while (result.next()) {
-                        final int srid = result.getInt(1);
-                        if (sridFounInUse.add(srid)) try {
-                            final Object parsed = parseDefinition(result, 2);
-                            if (Utilities.equalsApproximately(parsed, crs)) {
-                                synchronized (database.cacheOfSRID) {
-                                    database.cacheOfSRID.put(crs, srid);
+                        if (SQLUtilities.filterFalsePositive(authority, result.getString(1))) {
+                            final int srid = result.getInt(2);
+                            if (sridFounInUse.add(srid)) try {
+                                final Object parsed = parseDefinition(result, 3);
+                                if (Utilities.equalsApproximately(parsed, crs)) {
+                                    synchronized (database.cacheOfSRID) {
+                                        database.cacheOfSRID.put(crs, srid);
+                                    }
+                                    return srid;
                                 }
-                                return srid;
+                            } catch (ParseException e) {
+                                if (error == null) error = e;
+                                else error.addSuppressed(e);
                             }
-                        } catch (ParseException e) {
-                            if (error == null) error = e;
-                            else error.addSuppressed(e);
+                            done.put(key, Boolean.FALSE);       // Declare this "authority:code" pair as not available.
                         }
-                        done.put(key, Boolean.FALSE);       // Declare this "authority:code" pair as not available.
                     }
                 }
             }
@@ -563,7 +568,7 @@ public class InfoStatements implements Localized, AutoCloseable {
          * If the caller allowed the creation of new rows in that table, creates it now.
          * It is caller's responsibility to hold a write lock if needed.
          */
-        if (database.allowAddCRS) {
+        if (!connection.isReadOnly()) {
             String fallback = null;
             int fallbackCode = 0;
             for (final Map.Entry<SimpleImmutableEntry<String,Object>, Boolean> entry : done.entrySet()) {

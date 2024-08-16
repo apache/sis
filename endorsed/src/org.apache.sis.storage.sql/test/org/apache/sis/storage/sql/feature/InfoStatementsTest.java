@@ -114,15 +114,16 @@ public final class InfoStatementsTest extends TestCase {
      */
     @Test
     public void testFindSRID() throws Exception {
-        try (InfoStatements info = new InfoStatements(database, connection)) {
-            database.allowAddCRS = false;
+        final Connection c = connection;
+        try (InfoStatements info = new InfoStatements(database, c)) {
+            c.setReadOnly(true);
             final CoordinateReferenceSystem crs = HardCodedCRS.WGS84;
             var e = assertThrows(DataStoreReferencingException.class, () -> info.findSRID(crs));
             assertMessageContains(e, crs.getName().getCode());
 
             // Now do the actual insertion.
-            database.allowAddCRS = true;  assertEquals(4326, info.findSRID(crs));
-            database.allowAddCRS = false; assertEquals(4326, info.findSRID(crs));
+            c.setReadOnly(false); assertEquals(4326, info.findSRID(crs));
+            c.setReadOnly(true);  assertEquals(4326, info.findSRID(crs));
 
             // CRS with the same code (intentional clash with EPSG:4326).
             final CoordinateReferenceSystem clash = new DefaultGeographicCRS(
@@ -130,8 +131,8 @@ public final class InfoStatementsTest extends TestCase {
                            CoordinateReferenceSystem.IDENTIFIERS_KEY, new ImmutableIdentifier(null, "FOO", "4326")),
                     HardCodedDatum.SPHERE, null, HardCodedCS.GEODETIC_2D);
 
-            database.allowAddCRS = true;  assertEquals(1, info.findSRID(clash));
-            database.allowAddCRS = false; assertEquals(1, info.findSRID(clash));
+            c.setReadOnly(false); assertEquals(1, info.findSRID(clash));
+            c.setReadOnly(true);  assertEquals(1, info.findSRID(clash));
         }
     }
 

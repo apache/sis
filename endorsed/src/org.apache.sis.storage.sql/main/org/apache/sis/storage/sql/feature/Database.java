@@ -159,12 +159,6 @@ public class Database<G> extends Syntax  {
     final EnumSet<CRSEncoding> crsEncodings;
 
     /**
-     * Whether to allow the addition of new <abbr>CRS</abbr> definitions in the {@code SPATIAL_REF_SYS} table.
-     * The default value is {@code false}, which is preferable for read-only databases.
-     */
-    public volatile boolean allowAddCRS;
-
-    /**
      * {@code true} if this database contains at least one geometry column.
      * This field is initialized by {@link #analyze analyze(…)} and shall not be modified after that point.
      *

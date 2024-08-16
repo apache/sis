@@ -125,24 +125,38 @@ public final class SQLUtilities extends Static {
     }
 
     /**
-     * Returns a SQL LIKE pattern for the given identifier. The identifier is optionally returned in all lower cases
+     * Returns a string like the given string but with accented letters replaced by ASCII letters
+     * and all characters that are not letter or digit replaced by the wildcard % character.
+     *
+     * @param  text     the text to get as a SQL LIKE pattern.
+     * @param  toLower  whether to convert characters to lower case.
+     * @return the "LIKE" pattern for the given text.
+     */
+    public static String toLikePattern(final String text, final boolean toLower) {
+        final var buffer = new StringBuilder(text.length());
+        toLikePattern(text, 0, text.length(), false, toLower, buffer);
+        return buffer.toString();
+    }
+
+    /**
+     * Returns a SQL LIKE pattern for the given text. The text is optionally returned in all lower cases
      * for allowing case-insensitive searches. Punctuations are replaced by any sequence of characters ({@code '%'})
      * and non-ASCII letters or digits are replaced by any single character ({@code '_'}). This method avoid to put
      * a {@code '%'} symbol as the first character since it prevents some databases to use their index.
      *
-     * @param  identifier   the identifier to get as a SQL LIKE pattern.
+     * @param  text         the text to get as a SQL LIKE pattern.
      * @param  i            index of the first character to use in the given {@code identifier}.
      * @param  end          index after the last character to use in the given {@code identifier}.
      * @param  allowSuffix  whether to append a final {@code '%'} wildcard at the end of the pattern.
      * @param  toLower      whether to convert characters to lower case.
      * @param  buffer       buffer where to append the SQL LIKE pattern.
      */
-    public static void toLikePattern(final String identifier, int i, final int end,
+    public static void toLikePattern(final String text, int i, final int end,
             final boolean allowSuffix, final boolean toLower, final StringBuilder buffer)
     {
         final int bs = buffer.length();
         while (i < end) {
-            final int c = identifier.codePointAt(i);
+            final int c = text.codePointAt(i);
             if (Character.isLetterOrDigit(c)) {
                 if (c < 128) {                      // Use only ASCII characters in the search.
                     buffer.appendCodePoint(toLower ? Character.toLowerCase(c) : c);

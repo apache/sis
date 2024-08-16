@@ -122,6 +122,7 @@ public final class PostgresTest extends TestCase {
                 try (Connection connection = database.source.getConnection();
                      ExtendedInfo info = new ExtendedInfo(pg, connection))
                 {
+                    connection.setReadOnly(true);   // For avoiding accidental changes to "SPATIAL_REF_SYS" table.
                     testInfoStatements(info);
                     testGeometryGetter(info, connection);
                     testRasterReader(TestRaster.USHORT, info, connection);
