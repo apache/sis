@@ -95,7 +95,7 @@ public final class InfoStatementsTest extends TestCase {
         connection = test.source.getConnection();
         database = new Database<>(test.source, connection.getMetaData(), Dialect.DERBY,
                                   Geometries.factory(GeometryLibrary.JAVA2D),
-                                  new StoreListeners(null, new DataStoreMock("Unused")));
+                                  new StoreListeners(null, new DataStoreMock("Unused")), null);
         /*
          * The `spatialSchema` is private, so we need to use reflection for setting its value.
          * Normally that field would be set by `Database.analyze(…)`, bur we want to avoid that

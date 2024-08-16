@@ -18,6 +18,8 @@ package org.apache.sis.storage.sql.postgis;
 
 import java.util.Map;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.sql.Types;
 import java.sql.JDBCType;
 import java.sql.Connection;
@@ -26,7 +28,6 @@ import java.sql.ResultSet;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import javax.sql.DataSource;
-import java.util.logging.Level;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.storage.sql.feature.BinaryEncoding;
@@ -72,13 +73,15 @@ public final class Postgres<G> extends Database<G> {
      * @param  dialect      additional information not provided by {@code metadata}.
      * @param  geomLibrary  the factory to use for creating geometric objects.
      * @param  listeners    where to send warnings.
+     * @param  locks        the read/write locks, or {@code null} if none.
      * @throws SQLException if an error occurred while reading database metadata.
      */
     public Postgres(final DataSource source, final Connection connection, final DatabaseMetaData metadata,
-                    final Dialect dialect, final Geometries<G> geomLibrary, final StoreListeners listeners)
+                    final Dialect dialect, final Geometries<G> geomLibrary, final StoreListeners listeners,
+                    final ReadWriteLock locks)
             throws SQLException
     {
-        super(source, metadata, dialect, geomLibrary, listeners);
+        super(source, metadata, dialect, geomLibrary, listeners, locks);
         Version version = null;
         try (Statement st = connection.createStatement();
              ResultSet result = st.executeQuery("SELECT public.PostGIS_version();"))
@@ -181,7 +184,7 @@ public final class Postgres<G> extends Database<G> {
      * @return a cache of prepared statements about spatial information.
      */
     @Override
-    protected InfoStatements createInfoStatements(final Connection connection) {
+    public InfoStatements createInfoStatements(final Connection connection) {
         return new ExtendedInfo(this, connection);
     }
 

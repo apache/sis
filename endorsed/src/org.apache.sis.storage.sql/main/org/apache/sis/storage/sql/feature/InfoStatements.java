@@ -20,19 +20,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.concurrent.Callable;
 import java.text.ParseException;
-import java.sql.Array;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.sql.SQLException;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.IdentifiedObject;
 import org.opengis.referencing.NoSuchAuthorityCodeException;
 import org.opengis.referencing.crs.CRSAuthorityFactory;
@@ -41,12 +41,15 @@ import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.referencing.CRS;
 import org.apache.sis.referencing.IdentifiedObjects;
+import org.apache.sis.referencing.crs.AbstractCRS;
+import org.apache.sis.referencing.cs.AxesConvention;
 import org.apache.sis.referencing.factory.IdentifiedObjectFinder;
 import org.apache.sis.referencing.privy.DefinitionVerifier;
 import org.apache.sis.referencing.privy.ReferencingUtilities;
 import org.apache.sis.metadata.sql.privy.SQLUtilities;
 import org.apache.sis.metadata.sql.privy.SQLBuilder;
 import org.apache.sis.geometry.wrapper.GeometryType;
+import org.apache.sis.system.CommonExecutor;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.Localized;
 import org.apache.sis.util.Utilities;
@@ -95,7 +98,7 @@ public class InfoStatements implements Localized, AutoCloseable {
      * cache of CRS created from SRID codes and the listeners where to send warnings.
      * A {@code Database} object does <strong>not</strong> contain live JDBC {@link Connection}.
      */
-    private final Database<?> database;
+    protected final Database<?> database;
 
     /**
      * Connection to use for creating the prepared statements.
@@ -148,23 +151,11 @@ public class InfoStatements implements Localized, AutoCloseable {
     }
 
     /**
-     * Returns a function for getting values of components in the given array.
-     * If no match is found, then this method returns {@code null}.
-     *
-     * @param  array  the array from which to get the mapping of component values.
-     * @return converter to the corresponding java type, or {@code null} if this class cannot find a mapping.
-     * @throws SQLException if the mapping cannot be obtained.
-     */
-    public final ValueGetter<?> getComponentMapping(final Array array) throws SQLException {
-        return database.getMapping(new Column(array.getBaseType(), array.getBaseTypeName()));
-    }
-
-    /**
      * Appends a {@code " FROM <table> WHERE "} text to the given builder.
      * The table name will be prefixed by catalog and schema name if applicable.
      */
     private void appendFrom(final SQLBuilder sql, final String table) {
-        database.appendSpatialSchema(sql.append(" FROM "), table);
+        database.formatTableName(sql.append(" FROM "), table);
         sql.append(" WHERE ");
     }
 
@@ -293,6 +284,8 @@ public class InfoStatements implements Localized, AutoCloseable {
      *         or a single entry exists but has no WKT definition and its authority code is unsupported by SIS.
      * @throws ParseException if the WKT cannot be parsed.
      * @throws SQLException if a SQL error occurred.
+     *
+     * @see org.apache.sis.storage.sql.SQLStore#findCRS(int)
      */
     public final CoordinateReferenceSystem fetchCRS(final int srid) throws Exception {
         /*
@@ -339,6 +332,9 @@ public class InfoStatements implements Localized, AutoCloseable {
      * Invoked when the requested CRS is not in the cache. This method gets the entry from the
      * {@link SpatialSchema#refSysTable} then gets the CRS from its authority code if possible,
      * or fallback on the WKT otherwise.
+     *
+     * <p>This method does not cache the returned <abbr>CRS</abbr>.
+     * The caching is done by {@code Cache.getOrCreate(…)}.</p>
      *
      * @param  srid  the Spatial Reference Identifier (SRID) of the CRS to create from the database content.
      * @return the CRS created from database content.
@@ -476,17 +472,148 @@ public class InfoStatements implements Localized, AutoCloseable {
      * @param  crs     the CRS for which to find a SRID, or {@code null}.
      * @return SRID for the given CRS, or 0 if the given CRS was null.
      * @throws Exception if an SQL error, parsing error or other error occurred.
+     *
+     * @see org.apache.sis.storage.sql.SQLStore#findSRID(CoordinateReferenceSystem)
      */
     public final int findSRID(final CoordinateReferenceSystem crs) throws Exception {
         if (crs == null) {
             return 0;
         }
+        final SRID result;
+        final Integer srid;
         synchronized (database.cacheOfSRID) {
-            final Integer srid = database.cacheOfSRID.get(crs);
-            if (srid != null) {
-                return srid;
+            final Integer cached = database.cacheOfSRID.get(crs);
+            if (cached != null) {
+                return cached;
+            }
+            result = findOrAddCRS(crs);
+            database.cacheOfSRID.put(crs, srid = result.srid);
+        }
+        CommonExecutor.instance().submit((Runnable) result);
+        return result.srid;
+    }
+
+    /**
+     * The result of a search for the <abbr>SRID</abbr> from a <abbr>CRS</abbr>.
+     * This result is stored in the {@link #srid} field, but is accompanied by information allowing to
+     * opportunistically cache the result in the map for the opposite search (fetching <abbr>CRS</abbr>
+     * from a <abbr>SRID</abbr>). A difficulty is that the opposite operation would query the geodetic
+     * registry for more metadata. So in order to have more consistent values in the cache, we need to
+     * do the same query in {@link #call()} as what would have been done with {@code fetchCRS(srid)}.
+     */
+    private final class SRID implements Callable<CoordinateReferenceSystem>, Runnable {
+        /**
+         * The <abbr>CRS</abbr> for which to provide an "authority:code pair".
+         */
+        final CoordinateReferenceSystem crs;
+
+        /**
+         * The authority managing the code value.
+         * This is part of the key in hash map.
+         */
+        final String authority;
+
+        /**
+         * Code managed by the authority.
+         * This is part of the key in hash map.
+         */
+        final int code;
+
+        /**
+         * Primary key used in the {@code SPATIAL_REF_SYS} table.
+         * This is initially zero, then set to a value after the <abbr>SRID</abbr> has been computed.
+         */
+        int srid;
+
+        /**
+         * Creates a new "authority:code" pair for holding the <abbr>SRID</abbr> result.
+         */
+        SRID(final CoordinateReferenceSystem crs, final String authority, final int code) {
+            this.crs       = crs;
+            this.authority = authority;
+            this.code      = code;
+        }
+
+        /**
+         * Invoked in a background thread for opportunistically caching the <abbr>SRID</abbr> → <abbr>CRS</abbr>
+         * mapping. This is done in a background thread because this is not the information asked by the user,
+         * by the information for the reverse operation.
+         */
+        @Override
+        public void run() {
+            try {
+                database.cacheOfCRS.getOrCreate(srid, this);
+            } catch (Exception e) {
+                log("findSRID", new LogRecord(Level.FINER, e.toString()));
             }
         }
+
+        /**
+         * Simulates a call to {@code fetchCRS(srid)} for cache consistency.
+         */
+        @Override
+        public CoordinateReferenceSystem call() throws FactoryException {
+            final CoordinateReferenceSystem fromAuthority;
+            try {
+                final CRSAuthorityFactory factory = CRS.getAuthorityFactory(authority);
+                fromAuthority = factory.createCoordinateReferenceSystem(Integer.toString(code));
+            } catch (NoSuchAuthorityCodeException e) {
+                return crs;
+            }
+            for (int i=0; ; i++) {
+                final CoordinateReferenceSystem candidate;
+                switch (i) {
+                    case 0: candidate = fromAuthority; break;
+                    case 1: candidate = AbstractCRS.castOrCopy(fromAuthority).forConvention(AxesConvention.RIGHT_HANDED); break;
+                    case 2: candidate = AbstractCRS.castOrCopy(fromAuthority).forConvention(AxesConvention.DISPLAY_ORIENTED); break;
+                    default: return crs;
+                }
+                if (Utilities.equalsApproximately(crs, candidate)) {
+                    return candidate;
+                }
+            }
+        }
+
+        /**
+         * Compares the "authority:code" tuples, intentionally omitting other properties.
+         * Only the "authority:code" pair is compared. Needed for use in hash map,
+         * in order to avoid processing the same "authority:code" pair many times.
+         */
+        @Override
+        public boolean equals(final Object obj) {
+            if (obj instanceof SRID) {
+                final var other = (SRID) obj;
+                return other.code == code && authority.equals(other.authority);
+            }
+            return false;
+        }
+
+        /**
+         * Returns a hash code compatible with {@link #equals'Object)} contract.
+         */
+        @Override
+        public int hashCode() {
+            return authority.hashCode() + code;
+        }
+
+        /**
+         * Returns a string representation for debugging purposes.
+         */
+        @Override
+        public String toString() {
+            return authority + ':' + code + " → " + srid;
+        }
+    }
+
+    /**
+     * Invoked when a <abbr>CRS</abbr> is not in the cache.
+     * This method does not cache the result. Caching should be done by the caller.
+     *
+     * @param  crs  the <abbr>CRS</abbr> to search.
+     * @return <abbr>SRID</abbr> associated to the given <abbr>CRS</abbr>.
+     * @throws Exception if an SQL error, parsing error or other error occurred.
+     */
+    private SRID findOrAddCRS(final CoordinateReferenceSystem crs) throws Exception {
         /*
          * Search in the database. In the `done` map, keys are "authority:code" pairs that we
          * already tried and values tell whether we can use that pair if we need to add new CRS.
@@ -494,7 +621,7 @@ public class InfoStatements implements Localized, AutoCloseable {
         Exception error = null;
         boolean tryWithGivenCRS = true;
         final var sridFounInUse = new HashSet<Integer>();
-        final var done = new LinkedHashMap<SimpleImmutableEntry<String,Object>, Boolean>();
+        final var done = new LinkedHashMap<SRID, Boolean>();    // Value tells whether the SRID may be valid.
         for (Iterator<IdentifiedObject> it = Set.<IdentifiedObject>of(crs).iterator(); it.hasNext();) {
             final IdentifiedObject candidate = it.next();
             /*
@@ -505,21 +632,19 @@ public class InfoStatements implements Localized, AutoCloseable {
             for (final Identifier id : candidate.getIdentifiers()) {
                 final String authority = id.getCodeSpace();
                 if (authority == null) continue;
-                final String code = id.getCode();
-                if (done.putIfAbsent(new SimpleImmutableEntry<>(authority, code), Boolean.FALSE) != null) {
-                    continue;                           // Skip "authority:code" that we already tried.
-                }
-                final int codeValue;
+                final int code;
                 try {
-                    codeValue = Integer.parseInt(code);
+                    code = Integer.parseInt(id.getCode());
                 } catch (NumberFormatException e) {
-                    if (error == null) error = e;
-                    else error.addSuppressed(e);
+                    if (tryWithGivenCRS) {
+                        if (error == null) error = e;
+                        else error.addSuppressed(e);
+                    }
                     continue;                           // Ignore codes that are not integers.
                 }
-                final var key = new SimpleImmutableEntry<String,Object>(authority, codeValue);
-                if (done.putIfAbsent(key, codeValue > 0) != null) {
-                    continue;
+                final SRID search = new SRID(crs, authority, code);
+                if (done.putIfAbsent(search, code > 0) != null) {
+                    continue;                           // Skip "authority:code" that we already tried.
                 }
                 /*
                  * Found an "authority:code" pair that we did not tested before.
@@ -528,7 +653,7 @@ public class InfoStatements implements Localized, AutoCloseable {
                 if (sridFromCRS == null) {
                     sridFromCRS = prepareSearchCRS(true);
                 }
-                sridFromCRS.setInt(1, codeValue);
+                sridFromCRS.setInt(1, code);
                 sridFromCRS.setString(2, SQLUtilities.toLikePattern(authority, true));
                 try (ResultSet result = sridFromCRS.executeQuery()) {
                     while (result.next()) {
@@ -537,16 +662,14 @@ public class InfoStatements implements Localized, AutoCloseable {
                             if (sridFounInUse.add(srid)) try {
                                 final Object parsed = parseDefinition(result, 3);
                                 if (Utilities.equalsApproximately(parsed, crs)) {
-                                    synchronized (database.cacheOfSRID) {
-                                        database.cacheOfSRID.put(crs, srid);
-                                    }
-                                    return srid;
+                                    search.srid = srid;
+                                    return search;
                                 }
                             } catch (ParseException e) {
                                 if (error == null) error = e;
                                 else error.addSuppressed(e);
                             }
-                            done.put(key, Boolean.FALSE);       // Declare this "authority:code" pair as not available.
+                            done.put(search, Boolean.FALSE);    // Declare this "authority:code" pair as not available.
                         }
                     }
                 }
@@ -569,24 +692,22 @@ public class InfoStatements implements Localized, AutoCloseable {
          * It is caller's responsibility to hold a write lock if needed.
          */
         if (!connection.isReadOnly()) {
-            String fallback = null;
-            int fallbackCode = 0;
-            for (final Map.Entry<SimpleImmutableEntry<String,Object>, Boolean> entry : done.entrySet()) {
+            SRID fallback = null;
+            for (final Map.Entry<SRID, Boolean> entry : done.entrySet()) {
                 if (entry.getValue()) {
-                    final SimpleImmutableEntry<String,Object> identifier = entry.getKey();
-                    final int code = (Integer) identifier.getValue();  // Safe cast when `entry.getValue()` is true.
-                    final String authority = identifier.getKey();
-                    if (Constants.EPSG.equalsIgnoreCase(authority)) {
-                        return addCRS(authority, code, crs, sridFounInUse);
+                    final SRID search = entry.getKey();
+                    if (Constants.EPSG.equalsIgnoreCase(search.authority)) {
+                        search.srid = addCRS(search, sridFounInUse);
+                        return search;
                     }
                     if (fallback == null) {
-                        fallback = authority;
-                        fallbackCode = code;
+                        fallback = search;
                     }
                 }
             }
             if (fallback != null) {
-                return addCRS(fallback, fallbackCode, crs, sridFounInUse);
+                fallback.srid = addCRS(fallback, sridFounInUse);
+                return fallback;
             }
             // In the current version, we don't encode a CRS without an "authority:code" pair.
         }
@@ -599,22 +720,19 @@ public class InfoStatements implements Localized, AutoCloseable {
      * Adds a new entry in the {@code SPATIAL_REF_SYS} table for the given <abbr>CRS</abbr>.
      * The {@code authority} and {@code code} arguments are the values to store in the {@code "AUTH_NAME"} and
      * {@code "AUTH_SRID"} columns respectively. A common usage is to prefer EPSG codes, but this is not mandatory.
+     * This method does not cache the added <abbr>CRS</abbr>. Caching should be done by the caller.
      *
-     * @param  authority      authority providing the CRS definition.
-     * @param  code           authority code.
-     * @param  crs            the coordinate reference system to encode.
+     * @param  search         the <abbr>CRS</abbr> to search together with its "authority:code" pair.
      * @param  sridFounInUse  SRIDs which have been found in use, for avoiding SRID that would be certain to fail.
      *                        This is only a hint. A SRID not in this set is not a guarantee that it is available.
      * @return SRID of the CRS added by this method.
      * @throws DataStoreReferencingException if the given CRS cannot be encoded in at least one supported format.
      * @throws SQLException if an error occurred while executing the SQL statement.
      */
-    private int addCRS(final String authority, final int code, final CoordinateReferenceSystem crs,
-            final Set<Integer> sridFounInUse) throws Exception
-    {
+    private int addCRS(final SRID search, final Set<Integer> sridFounInUse) throws Exception {
         final SpatialSchema schema = database.getSpatialSchema().orElseThrow();
         final var sql = new SQLBuilder(database).append(SQLBuilder.INSERT);
-        database.appendSpatialSchema(sql, schema.crsTable);
+        database.formatTableName(sql, schema.crsTable);
         sql.append(" (").append(schema.crsIdentifierColumn)
            .append(", ").append(schema.crsAuthorityNameColumn)
            .append(", ").append(schema.crsAuthorityCodeColumn);
@@ -633,11 +751,11 @@ public class InfoStatements implements Localized, AutoCloseable {
             final String def;
             switch (encoding) {
                 default: continue;          // Skip unknown formats (none at this time).
-                case WKT1: def = wktFormat.format(crs); break;
+                case WKT1: def = wktFormat.format(search.crs); break;
                 case WKT2: {
                     try {
                         wktFormat.setConvention(Convention.WKT2);
-                        def = wktFormat.format(crs);
+                        def = wktFormat.format(search.crs);
                     } finally {
                         wktFormat.setConvention(Convention.WKT1_COMMON_UNITS);
                     }
@@ -671,8 +789,8 @@ public class InfoStatements implements Localized, AutoCloseable {
         do {
             final String column = description ? schema.crsDescriptionColumn : schema.crsNameColumn;
             if (column != null) {
-                String name = description ? IdentifiedObjects.getDisplayName(crs, getLocale())
-                                          : IdentifiedObjects.getName(crs, null);
+                String name = description ? IdentifiedObjects.getDisplayName(search.crs, getLocale())
+                                          : IdentifiedObjects.getName(search.crs, null);
                 if (name != null) {
                     definitions[numDefinitions++] = name;
                     sql.append(", ").append(column);
@@ -689,10 +807,10 @@ public class InfoStatements implements Localized, AutoCloseable {
             sql.append(separator).append('?');
             separator = ", ";
         }
-        int srid = code;
+        int srid = search.code;
         try (PreparedStatement stmt = connection.prepareStatement(sql.append(')').toString())) {
-            stmt.setString(2, authority);
-            stmt.setInt(3, code);
+            stmt.setString(2, search.authority);
+            stmt.setInt(3, search.code);
             for (int i=0; i<numDefinitions; i++) {
                 stmt.setString(4+i, definitions[i]);
             }
@@ -715,7 +833,7 @@ public class InfoStatements implements Localized, AutoCloseable {
                  */
                 try {
                     final CoordinateReferenceSystem candidate = fetchCRS(srid);
-                    if (Utilities.equalsIgnoreMetadata(crs, candidate)) {
+                    if (Utilities.equalsIgnoreMetadata(search.crs, candidate)) {
                         return srid;
                     }
                 } catch (Exception f) {

@@ -487,7 +487,11 @@ public class ValueGetter<T> {
         }
         Object result = array.getArray();
         if (cmget == null && stmts != null) {
-            cmget = stmts.getComponentMapping(array);
+            /*
+             * Get a function for getting values of components in the array.
+             * If no match is found, then `cmget` stay null.
+             */
+            cmget = stmts.database.getMapping(new Column(array.getBaseType(), array.getBaseTypeName()));
         }
         Class<?> componentType = Numbers.primitiveToWrapper(result.getClass().getComponentType());
         if (cmget != null && !cmget.valueType.isAssignableFrom(componentType)) {

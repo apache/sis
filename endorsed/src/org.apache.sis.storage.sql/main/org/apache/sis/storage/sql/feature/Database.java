@@ -29,7 +29,6 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.logging.LogRecord;
 import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.sql.Array;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -41,6 +40,7 @@ import javax.sql.DataSource;
 import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.metadata.sql.privy.Syntax;
 import org.apache.sis.metadata.sql.privy.Dialect;
@@ -161,16 +161,12 @@ public class Database<G> extends Syntax  {
     /**
      * {@code true} if this database contains at least one geometry column.
      * This field is initialized by {@link #analyze analyze(…)} and shall not be modified after that point.
-     *
-     * @see #hasGeometry()
      */
     private boolean hasGeometry;
 
     /**
      * {@code true} if this database contains at least one raster column.
      * This field is initialized by {@link #analyze analyze(…)} and shall not be modified after that point.
-     *
-     * @see #hasRaster()
      */
     private boolean hasRaster;
 
@@ -246,10 +242,11 @@ public class Database<G> extends Syntax  {
      * @param  dialect      additional information not provided by {@code metadata}.
      * @param  geomLibrary  the factory to use for creating geometric objects.
      * @param  listeners    where to send warnings.
+     * @param  locks        the read/write locks, or {@code null} if none.
      * @throws SQLException if an error occurred while reading database metadata.
      */
     protected Database(final DataSource source, final DatabaseMetaData metadata, final Dialect dialect,
-                       final Geometries<G> geomLibrary, final StoreListeners listeners)
+                       final Geometries<G> geomLibrary, final StoreListeners listeners, final ReadWriteLock locks)
             throws SQLException
     {
         super(metadata, true);
@@ -292,7 +289,7 @@ public class Database<G> extends Syntax  {
         supportsSchemas    = metadata.supportsSchemasInDataManipulation();
         supportsJavaTime   = dialect.supportsJavaTime();
         crsEncodings       = EnumSet.noneOf(CRSEncoding.class);
-        transactionLocks   = dialect.supportsConcurrency() ? null : new ReentrantReadWriteLock();
+        transactionLocks   = dialect.supportsConcurrency() ? null : locks;
     }
 
     /**
@@ -306,13 +303,14 @@ public class Database<G> extends Syntax  {
      * @param  queries      additional resources associated to SQL queries. Specified by users at construction time.
      * @param  customizer   user-specified modification to the features, or {@code null} if none.
      * @param  listeners    where to send warnings.
+     * @param  locks        the read/write locks, or {@code null} if none.
      * @return handler for the spatial database.
      * @throws SQLException if a database error occurred while reading metadata.
      * @throws DataStoreException if a logical error occurred while analyzing the database structure.
      */
     public static Database<?> create(final SQLStore store, final DataSource source, final Connection connection,
             final GeometryLibrary geomLibrary, final GenericName[] tableNames, final ResourceDefinition[] queries,
-            final SchemaModifier customizer, final StoreListeners listeners)
+            final SchemaModifier customizer, final StoreListeners listeners, final ReadWriteLock locks)
             throws Exception
     {
         final DatabaseMetaData metadata = connection.getMetaData();
@@ -320,11 +318,8 @@ public class Database<G> extends Syntax  {
         final Dialect dialect = Dialect.guess(metadata);
         final Database<?> db;
         switch (dialect) {
-            case POSTGRESQL: db = new Postgres<>(source, connection, metadata, dialect, g, listeners); break;
-            default: {
-                db = new Database<>(source, metadata, dialect, g, listeners);
-                break;
-            }
+            case POSTGRESQL: db = new Postgres<>(source, connection, metadata, dialect, g, listeners, locks); break;
+            default:         db = new Database<>(source,             metadata, dialect, g, listeners, locks); break;
         }
         db.analyze(store, connection, tableNames, queries, customizer);
         return db;
@@ -521,7 +516,13 @@ public class Database<G> extends Syntax  {
      * @param  builder   where to add information about the tables.
      * @throws SQLException if an error occurred while fetching table information.
      */
-    public final void listTables(final DatabaseMetaData metadata, final MetadataBuilder builder) throws SQLException {
+    public final void metadata(final DatabaseMetaData metadata, final MetadataBuilder builder) throws SQLException {
+        if (hasGeometry) {
+            builder.addSpatialRepresentation(SpatialRepresentationType.VECTOR);
+        }
+        if (hasRaster) {
+            builder.addSpatialRepresentation(SpatialRepresentationType.GRID);
+        }
         for (final Table table : tables) {
             builder.addFeatureType(table.featureType, table.countRows(metadata, false, false));
         }
@@ -551,14 +552,14 @@ public class Database<G> extends Syntax  {
     }
 
     /**
-     * Appends a call to a function or table defined in the spatial schema.
+     * Appends a table or a call to a function defined in the spatial schema.
      * The name will be prefixed by catalog and schema name if applicable.
      * The name will not be quoted.
      *
-     * @param  sql   the SQL builder where to add the spatial function or table name.
-     * @param  name  the function or table to append.
+     * @param  sql   the SQL builder where to add the spatial table or function.
+     * @param  name  name of the table or function to append.
      */
-    public final void appendSpatialSchema(final SQLBuilder sql, final String name) {
+    public final void formatTableName(final SQLBuilder sql, final String name) {
         final String schema = schemaOfSpatialTables;
         if (schema != null && !schema.isEmpty()) {
             final String catalog = catalogOfSpatialTables;
@@ -581,23 +582,46 @@ public class Database<G> extends Syntax  {
     }
 
     /**
-     * Returns {@code true} if this database contains at least one geometry column.
-     * This information can be used for metadata purpose.
+     * If a <abbr>CRS</abbr> is available in the cache for the given SRID, returns that <abbr>CRS</abbr>.
+     * Otherwise returns {@code null}. This method does not query the database.
      *
-     * @return whether at least one geometry column has been found.
+     * @param  srid  identifier of the <abbr>CRS</abbr> to get.
+     * @return the requested <abbr>CRS</abbr>, or {@code null} if not in the cache.
      */
-    public final boolean hasGeometry() {
-        return hasGeometry;
+    public final CoordinateReferenceSystem getCachedCRS(final int srid) {
+        return cacheOfCRS.get(srid);
     }
 
     /**
-     * Returns {@code true} if this database contains at least one raster column.
-     * This information can be used for metadata purpose.
+     * If a <abbr>SRID</abbr> is available in the cache for the given <abbr>CRS</abbr>, returns that SRID.
+     * Otherwise returns {@code null}. This method does not query the database.
      *
-     * @return whether at least one raster column has been found.
+     * @param  crs  the <abbr>CRS</abbr> for which to get the <abbr>SRID</abbr>.
+     * @return the <abbr>SRID</abbr> for the given <abbr>CRS</abbr>, or {@code null} if not in the cache.
      */
-    public final boolean hasRaster() {
-        return hasRaster;
+    public final int getCachedSRID(final CoordinateReferenceSystem crs) {
+        synchronized (cacheOfSRID) {
+            return cacheOfSRID.get(crs);
+        }
+    }
+
+    /**
+     * Returns a function for getting values from a geometry or geography column.
+     * This is a helper method for {@link #getMapping(Column)} implementations.
+     *
+     * @param  columnDefinition  information about the column to extract values from and expose through Java API.
+     * @return converter to the corresponding java type, or {@code null} if this class cannot find a mapping,
+     */
+    protected final ValueGetter<?> forGeometry(final Column columnDefinition) {
+        /*
+         * The geometry type should not be empty. But it may still happen if the "GEOMETRY_COLUMNS"
+         * table does not contain a line for the specified column. It is a server issue, but seems
+         * to happen sometimes.
+         */
+        final GeometryType type = columnDefinition.getGeometryType().orElse(GeometryType.GEOMETRY);
+        final Class<? extends G> geometryClass = geomLibrary.getGeometryClass(type).asSubclass(geomLibrary.rootClass);
+        return new GeometryGetter<>(geomLibrary, geometryClass, columnDefinition.getDefaultCRS().orElse(null),
+                                    getBinaryEncoding(columnDefinition));
     }
 
     /**
@@ -664,6 +688,18 @@ public class Database<G> extends Syntax  {
     }
 
     /**
+     * Returns a mapping for {@link Types#JAVA_OBJECT} or unrecognized types. Some JDBC drivers wrap
+     * objects in implementation-specific classes, for example {@link org.postgresql.util.PGobject}.
+     * This method should be overwritten in database-specific subclasses for returning a value getter
+     * capable to unwrap the value.
+     *
+     * @return the default mapping for unknown or unrecognized types.
+     */
+    protected ValueGetter<Object> getDefaultMapping() {
+        return ValueGetter.AsObject.INSTANCE;
+    }
+
+    /**
      * Returns the type of components in SQL arrays stored in a column.
      * This method is invoked when {@link Column#type} = {@link Types#ARRAY}.
      * The default implementation returns {@link Types#OTHER} because JDBC
@@ -678,18 +714,6 @@ public class Database<G> extends Syntax  {
      */
     protected int getArrayComponentType(final Column columnDefinition) {
         return Types.OTHER;
-    }
-
-    /**
-     * Returns a mapping for {@link Types#JAVA_OBJECT} or unrecognized types. Some JDBC drivers wrap
-     * objects in implementation-specific classes, for example {@link org.postgresql.util.PGobject}.
-     * This method should be overwritten in database-specific subclasses for returning a value getter
-     * capable to unwrap the value.
-     *
-     * @return the default mapping for unknown or unrecognized types.
-     */
-    protected ValueGetter<Object> getDefaultMapping() {
-        return ValueGetter.AsObject.INSTANCE;
     }
 
     /**
@@ -717,36 +741,6 @@ public class Database<G> extends Syntax  {
      */
     protected Envelope getEstimatedExtent(TableReference table, Column[] columns, boolean recall) throws SQLException {
         return null;
-    }
-
-    /**
-     * Returns a function for getting values from a geometry or geography column.
-     * This is a helper method for {@link #getMapping(Column)} implementations.
-     *
-     * @param  columnDefinition  information about the column to extract values from and expose through Java API.
-     * @return converter to the corresponding java type, or {@code null} if this class cannot find a mapping,
-     */
-    protected final ValueGetter<?> forGeometry(final Column columnDefinition) {
-        /*
-         * The geometry type should not be empty. But it may still happen if the "GEOMETRY_COLUMNS"
-         * table does not contain a line for the specified column. It is a server issue, but seems
-         * to happen sometimes.
-         */
-        final GeometryType type = columnDefinition.getGeometryType().orElse(GeometryType.GEOMETRY);
-        final Class<? extends G> geometryClass = geomLibrary.getGeometryClass(type).asSubclass(geomLibrary.rootClass);
-        return new GeometryGetter<>(geomLibrary, geometryClass, columnDefinition.getDefaultCRS().orElse(null),
-                                    getBinaryEncoding(columnDefinition));
-    }
-
-    /**
-     * Prepares a cache of statements about spatial information using the given connection.
-     * Statements will be created only when first needed.
-     *
-     * @param  connection  the connection to use for creating statements.
-     * @return a cache of prepared statements about spatial information.
-     */
-    protected InfoStatements createInfoStatements(final Connection connection) {
-        return new InfoStatements(this, connection);
     }
 
     /**
@@ -800,6 +794,17 @@ public class Database<G> extends Syntax  {
             filterToSQL = getFilterToSQL().removeUnsupportedFunctions(this);
         }
         return filterToSQL;
+    }
+
+    /**
+     * Prepares a cache of statements about spatial information using the given connection.
+     * Each statement in the returned object will be created only when first needed.
+     *
+     * @param  connection  the connection to use for creating statements.
+     * @return a cache of prepared statements about spatial information.
+     */
+    public InfoStatements createInfoStatements(final Connection connection) {
+        return new InfoStatements(this, connection);
     }
 
     /**

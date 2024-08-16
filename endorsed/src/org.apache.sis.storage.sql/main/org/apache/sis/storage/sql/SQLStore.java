@@ -20,17 +20,23 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.Collection;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.lang.reflect.Method;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.NoSuchDataException;
 import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.event.StoreEvent;
@@ -38,6 +44,7 @@ import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.storage.sql.feature.Database;
 import org.apache.sis.storage.sql.feature.Resources;
+import org.apache.sis.storage.sql.feature.InfoStatements;
 import org.apache.sis.storage.sql.feature.SchemaModifier;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.util.ArgumentChecks;
@@ -56,7 +63,7 @@ import org.apache.sis.setup.OptionKey;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.5
  * @since   1.0
  */
 public class SQLStore extends DataStore implements Aggregate {
@@ -73,6 +80,8 @@ public class SQLStore extends DataStore implements Aggregate {
 
     /**
      * The data source to use for obtaining connections to the database.
+     *
+     * @see #getDataSource()
      */
     private final DataSource source;
 
@@ -84,8 +93,11 @@ public class SQLStore extends DataStore implements Aggregate {
     /**
      * The result of inspecting database schema for deriving {@link org.opengis.feature.FeatureType}s.
      * Created when first needed. May be discarded and recreated if the store needs a refresh.
+     *
+     * @see #model()
+     * @see #model(Connection)
      */
-    private Database<?> model;
+    private volatile Database<?> model;
 
     /**
      * Fully qualified names (including catalog and schema) of the tables to include in this store.
@@ -119,6 +131,23 @@ public class SQLStore extends DataStore implements Aggregate {
      * This is {@code null} if there is none.
      */
     private final SchemaModifier customizer;
+
+    /**
+     * The lock for read or write operations in the SQL database, or {@code null} if none.
+     * The read or write lock should be obtained before to get a connection for executing
+     * a statement, and released after closing the connection. Locking is assumed unneeded
+     * for obtaining database metadata.
+     *
+     * <p>This field should be null if the database manages concurrent transactions by itself.
+     * It is non-null only as a workaround for databases that do not support concurrency.</p>
+     *
+     * <p>This lock is not used for cache integrity. The {@code SQLStore} caches are protected
+     * by classical synchronized statements.</p>
+     *
+     * @see #lock(boolean)
+     * @see Database#transactionLocks
+     */
+    private final ReadWriteLock transactionLocks;
 
     /**
      * Creates a new {@code SQLStore} for the given data source and tables, views or queries.
@@ -166,9 +195,18 @@ public class SQLStore extends DataStore implements Aggregate {
         }
         this.tableNames = ArraysExt.resize(tableNames, tableCount);
         this.queries    = ArraysExt.resize(queries,    queryCount);
-        if (getClass() == SQLStore.class) {
-            listeners.useReadOnlyEvents();
-        }
+        transactionLocks = new ReentrantReadWriteLock();    // TODO: make optional.
+    }
+
+    /**
+     * The data source to use for obtaining connections to the database.
+     * This is the data source specified at construction time.
+     *
+     * @return the data source to use for obtaining connections to the database.
+     * @since 1.5
+     */
+    public final DataSource getDataSource() {
+        return source;
     }
 
     /**
@@ -210,18 +248,22 @@ public class SQLStore extends DataStore implements Aggregate {
 
     /**
      * Returns the database model, analyzing the database schema when first needed.
+     * This method is thread-safe.
      */
-    private synchronized Database<?> model() throws DataStoreException {
-        if (model == null) {
-            try (Connection c = source.getConnection()) {
-                model = Database.create(this, source, c, geomLibrary, tableNames, queries, customizer, listeners);
-            } catch (DataStoreException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new DataStoreException(Exceptions.unwrap(e));
+    private Database<?> model() throws DataStoreException {
+        Database<?> current = model;
+        if (current == null) {
+            synchronized (this) {
+                try (Connection c = source.getConnection()) {
+                    current = model(c);
+                } catch (DataStoreException e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw new DataStoreException(Exceptions.unwrap(e));
+                }
             }
         }
-        return model;
+        return current;
     }
 
     /**
@@ -232,10 +274,13 @@ public class SQLStore extends DataStore implements Aggregate {
      * @param c  connection to the database.
      */
     private Database<?> model(final Connection c) throws Exception {
-        if (model == null) {
-            model = Database.create(this, source, c, geomLibrary, tableNames, queries, customizer, listeners);
+        assert Thread.holdsLock(this);
+        Database<?> current = model;
+        if (current == null) {
+            current = Database.create(this, source, c, geomLibrary, tableNames, queries, customizer, listeners, transactionLocks);
+            model = current;
         }
-        return model;
+        return current;
     }
 
     /**
@@ -248,18 +293,12 @@ public class SQLStore extends DataStore implements Aggregate {
     @Override
     public synchronized Metadata getMetadata() throws DataStoreException {
         if (metadata == null) {
-            final MetadataBuilder builder = new MetadataBuilder();
+            final var builder = new MetadataBuilder();
             builder.addSpatialRepresentation(SpatialRepresentationType.TEXT_TABLE);
             try (Connection c = source.getConnection()) {
                 @SuppressWarnings("LocalVariableHidesMemberVariable")
                 final Database<?> model = model(c);
-                if (model.hasGeometry()) {
-                    builder.addSpatialRepresentation(SpatialRepresentationType.VECTOR);
-                }
-                if (model.hasRaster()) {
-                    builder.addSpatialRepresentation(SpatialRepresentationType.GRID);
-                }
-                model.listTables(c.getMetaData(), builder);
+                model.metadata(c.getMetaData(), builder);
             } catch (DataStoreException e) {
                 throw e;
             } catch (Exception e) {
@@ -318,6 +357,132 @@ public class SQLStore extends DataStore implements Aggregate {
     }
 
     /**
+     * Returns the coordinate reference system associated to the given identifier. The spatial reference
+     * system identifiers (<abbr>SRID</abbr>) are the primary keys of the {@code "SPATIAL_REF_SYS"} table
+     * (the name of that table may vary depending on which spatial schema standard is used).
+     * Those identifiers are specific to each database and are not necessarily related to EPSG codes.
+     * They should be considered as opaque identifiers.
+     *
+     * <h4>Undefined <abbr>CRS</abbr></h4>
+     * Some standards such as Geopackage define 0 as "undefined geographic <abbr>CRS</abbr>" and -1 as
+     * "undefined Cartesian <abbr>CRS</abbr>". This method returns {@code null} for all undefined <abbr>CRS</abbr>,
+     * regardless their type. No default value is returned because this class cannot guess the datum and units of
+     * measurement of an undefined <abbr>CRS</abbr>. All <abbr>SRID</abbr> equal or less than zero are considered
+     * undefined.
+     *
+     * <h4>Axis order</h4>
+     * Some standards such as Geopackage mandate (east, north) axis order. {@code SQLStore} uses the axis order
+     * as defined in the <abbr>WKT</abbr> descriptions of the {@code "SPATIAL_REF_SYS"} table. No reordering is
+     * applied. It is data producer's responsibility to provide definitions with the expected axis order.
+     *
+     * @param  srid  a primary key value of the {@code "SPATIAL_REF_SYS"} table.
+     * @return the <abbr>CRS</abbr> associated to the given <abbr>SRID</abbr>, or {@code null} if the given
+     *         <abbr>SRID</abbr> is a code explicitly associated to an undefined <abbr>CRS</abbr>.
+     * @throws NoSuchDataException if no <abbr>CRS</abbr> is associated to the given <abbr>SRID</abbr>.
+     * @throws DataStoreException if the query failed for another reason.
+     *
+     * @since 1.5
+     */
+    public CoordinateReferenceSystem findCRS(final int srid) throws DataStoreException {
+        if (srid <= 0) {
+            return null;
+        }
+        Database<?> database = model;
+        CoordinateReferenceSystem crs;
+        if (database == null || (crs = database.getCachedCRS(srid)) == null) {
+            final Lock lock = lock(false);
+            try {
+                try (Connection c = source.getConnection()) {
+                    if (database == null) {
+                        synchronized (this) {
+                            database = model(c);
+                        }
+                    }
+                    try (InfoStatements info = database.createInfoStatements(c)) {
+                        crs = info.fetchCRS(srid);
+                    }
+                } catch (DataStoreContentException e) {
+                    throw new NoSuchDataException(e.getMessage(), e.getCause());
+                } catch (DataStoreException e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw new DataStoreException(Exceptions.unwrap(e));
+                }
+            } finally {
+                if (lock != null) {
+                    lock.unlock();
+                }
+            }
+        }
+        return crs;
+    }
+
+    /**
+     * Returns the <abbr>SRID</abbr> associated to the given spatial reference system.
+     * This method is the converse of {@link #findCRS(int)}.
+     *
+     * @param  crs       the CRS for which to find a SRID, or {@code null}.
+     * @param  allowAdd  whether to allow the addition of a new row in the {@code "SPATIAL_REF_SYS"} table
+     *                   if the given <abbr>CRS</abbr> is not found.
+     * @return SRID for the given <abbr>CRS</abbr>, or 0 if the given <abbr>CRS</abbr> was null.
+     * @throws DataStoreException if an <abbr>SQL</abbr> error, parsing error or other error occurred.
+     *
+     * @since 1.5
+     */
+    public int findSRID(final CoordinateReferenceSystem crs, final boolean allowAdd) throws DataStoreException {
+        if (crs == null) {
+            return 0;
+        }
+        Database<?> database = model;
+        if (database != null) {
+            Integer srid = database.getCachedSRID(crs);
+            if (srid != null) return srid;
+        }
+        final int srid;
+        final Lock lock = lock(allowAdd);
+        try {
+            try (Connection c = source.getConnection()) {
+                if (database == null) {
+                    synchronized (this) {
+                        database = model(c);
+                    }
+                }
+                if (!allowAdd && database.dialect.supportsReadOnlyUpdate()) {
+                    c.setReadOnly(true);
+                }
+                try (InfoStatements info = database.createInfoStatements(c)) {
+                    srid = info.findSRID(crs);
+                }
+            } catch (DataStoreException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new DataStoreException(Exceptions.unwrap(e));
+            }
+        } finally {
+            if (lock != null) {
+                lock.unlock();
+            }
+        }
+        return srid;
+    }
+
+    /**
+     * Returns a read or write lock, or {@code null} if none.
+     * The call to {@link Lock#lock()} will be already performed.
+     *
+     * @param  write  {@code true} for the write lock, or {@code false} for the read lock.
+     * @return the requested lock, or {@code null} if none.
+     */
+    private Lock lock(final boolean write) {
+        if (transactionLocks == null) {
+            return null;
+        }
+        final Lock lock = write ? transactionLocks.writeLock() : transactionLocks.readLock();
+        lock.lock();
+        return lock;
+    }
+
+    /**
      * Registers a listener to notify when the specified kind of event occurs in this data store.
      * The current implementation of this data store can emit only {@link WarningEvent}s;
      * any listener specified for another kind of events will be ignored.
@@ -331,6 +496,18 @@ public class SQLStore extends DataStore implements Aggregate {
     }
 
     /**
+     * Clears the cache so that next operations will reload all needed information from the database.
+     * This method can be invoked when the database content has been modified by a process other than
+     * the methods in this class.
+     *
+     * @since 1.5
+     */
+    public synchronized void refresh() {
+        model    = null;
+        metadata = null;
+    }
+
+    /**
      * Closes this SQL store and releases any underlying resources.
      *
      * @throws DataStoreException if an error occurred while closing the SQL store.
@@ -339,6 +516,7 @@ public class SQLStore extends DataStore implements Aggregate {
     public synchronized void close() throws DataStoreException {
         listeners.close();      // Should never fail.
         // There is no JDBC connection to close here.
-        model = null;
+        model    = null;
+        metadata = null;
     }
 }
