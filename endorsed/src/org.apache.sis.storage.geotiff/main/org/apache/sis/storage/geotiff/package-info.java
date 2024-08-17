@@ -16,7 +16,8 @@
  */
 
 /**
- * Maps GeoTIFF tags to ISO metadata and read raster data as coverages.
+ * A data store that can read and write GeoTIFF files as grid coverages.
+ * This module also maps GeoTIFF tags to <abbr>ISO</abbr> 19115 metadata.
  *
  * <p>References:</p>
  * <ul>

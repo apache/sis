@@ -40,10 +40,6 @@ import org.apache.sis.parameter.ParameterBuilder;
  * The provider of {@link GeoTiffStore} instances. Given a {@link StorageConnector} input,
  * this class tries to instantiate a {@code GeoTiffStore}.
  *
- * <h2>Thread safety</h2>
- * The same {@code GeoTiffStoreProvider} instance can be safely used by many threads without synchronization on
- * the part of the caller. However, the {@link GeoTiffStore} instances created by this factory are not thread-safe.
- *
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
  *
@@ -154,7 +150,7 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
     }
 
     /**
-     * Returns a {@link GeoTiffStore} implementation associated with this provider.
+     * Creates a {@link GeoTiffStore} implementation associated with this provider.
      *
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @return a data store implementation associated with this provider for the given storage.
@@ -169,7 +165,7 @@ public class GeoTiffStoreProvider extends DataStoreProvider {
     }
 
     /**
-     * {@return the logger used by GeoTIFF stores}.
+     * Returns the logger used by GeoTIFF stores.
      */
     @Override
     public Logger getLogger() {

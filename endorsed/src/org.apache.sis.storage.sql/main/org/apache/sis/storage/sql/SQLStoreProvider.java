@@ -50,7 +50,7 @@ import static org.apache.sis.storage.sql.feature.Database.WILDCARD;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.0
  */
 @StoreMetadata(formatName    = SQLStoreProvider.NAME,

@@ -89,7 +89,7 @@ final class GpkgFeatureSet extends AbstractResource implements FeatureSet, GpkgC
         final ResourceDefinition table = ResourceDefinition.table(null, null, row.tableName);
 
         final SQLStore sqlStore = new SQLStore(new SQLStoreProvider(), connector, table);
-        sqlSet = sqlStore.components().iterator().next();
+        sqlSet = (FeatureSet) sqlStore.components().iterator().next();
         return sqlSet;
     }
 

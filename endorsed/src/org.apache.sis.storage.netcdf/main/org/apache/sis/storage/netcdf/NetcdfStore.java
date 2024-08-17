@@ -31,6 +31,7 @@ import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.UnsupportedStorageException;
 import org.apache.sis.storage.StorageConnector;
@@ -58,7 +59,7 @@ import org.apache.sis.util.collection.TreeTable;
  * Instances of this data store are created by {@link NetcdfStoreProvider#open(StorageConnector)}.
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.3
+ * @version 1.5
  *
  * @see NetcdfStoreProvider
  *
@@ -103,10 +104,10 @@ public class NetcdfStore extends DataStore implements Aggregate {
      * @param  connector  information about the storage (URL, stream, {@link ucar.nc2.NetcdfFile} instance, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the netCDF file.
      *
-     * @since 0.8
+     * @since 1.5
      */
     @SuppressWarnings("this-escape")        // The invoked method does not store `this` and is not overrideable.
-    public NetcdfStore(final NetcdfStoreProvider provider, final StorageConnector connector) throws DataStoreException {
+    public NetcdfStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
         location = connector.getStorageAs(URI.class);
         final Path path = connector.getStorageAs(Path.class);

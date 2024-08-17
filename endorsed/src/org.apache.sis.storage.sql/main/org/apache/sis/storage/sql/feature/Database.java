@@ -47,6 +47,7 @@ import org.apache.sis.metadata.sql.privy.Dialect;
 import org.apache.sis.metadata.sql.privy.Reflection;
 import org.apache.sis.metadata.sql.privy.SQLBuilder;
 import org.apache.sis.metadata.sql.privy.SQLUtilities;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.FeatureNaming;
 import org.apache.sis.storage.DataStoreException;
@@ -534,7 +535,7 @@ public class Database<G> extends Syntax  {
      *
      * @return all tables in an unmodifiable list.
      */
-    public final List<FeatureSet> tables() {
+    public final List<Resource> tables() {
         return UnmodifiableArrayList.wrap(tables);
     }
 

@@ -22,7 +22,6 @@ import java.util.Optional;
 import java.util.Collection;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.sql.DataSource;
 import java.sql.Connection;
 import java.lang.reflect.Method;
@@ -31,9 +30,11 @@ import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.NoSuchDataException;
@@ -47,6 +48,7 @@ import org.apache.sis.storage.sql.feature.Resources;
 import org.apache.sis.storage.sql.feature.InfoStatements;
 import org.apache.sis.storage.sql.feature.SchemaModifier;
 import org.apache.sis.storage.base.MetadataBuilder;
+import org.apache.sis.io.stream.InternalOptionKey;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
@@ -160,9 +162,9 @@ public class SQLStore extends DataStore implements Aggregate {
      * @param  resources  tables, views or queries to include in this store.
      * @throws DataStoreException if an error occurred while creating the data store for the given storage.
      *
-     * @since 1.1
+     * @since 1.5
      */
-    public SQLStore(final SQLStoreProvider provider, final StorageConnector connector, final ResourceDefinition... resources)
+    public SQLStore(final DataStoreProvider provider, final StorageConnector connector, final ResourceDefinition... resources)
             throws DataStoreException
     {
         super(provider, connector);
@@ -193,9 +195,9 @@ public class SQLStore extends DataStore implements Aggregate {
                 queries[queryCount++] = resource;
             }
         }
-        this.tableNames = ArraysExt.resize(tableNames, tableCount);
-        this.queries    = ArraysExt.resize(queries,    queryCount);
-        transactionLocks = new ReentrantReadWriteLock();    // TODO: make optional.
+        this.tableNames  = ArraysExt.resize(tableNames, tableCount);
+        this.queries     = ArraysExt.resize(queries,    queryCount);
+        transactionLocks = connector.getOption(InternalOptionKey.LOCKS);
     }
 
     /**
@@ -336,7 +338,7 @@ public class SQLStore extends DataStore implements Aggregate {
      * @throws DataStoreException if an error occurred while fetching the components.
      */
     @Override
-    public Collection<FeatureSet> components() throws DataStoreException {
+    public Collection<Resource> components() throws DataStoreException {
         return model().tables();
     }
 

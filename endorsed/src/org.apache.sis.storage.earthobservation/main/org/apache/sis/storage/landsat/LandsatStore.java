@@ -37,6 +37,7 @@ import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.storage.Aggregate;
 import org.apache.sis.storage.DataStore;
+import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.DataStoreReferencingException;
@@ -80,7 +81,7 @@ import org.apache.sis.setup.OptionKey;
  *
  * @author  Thi Phuong Hao Nguyen (VNSC)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.1
  */
 public class LandsatStore extends DataStore implements Aggregate {
@@ -124,9 +125,11 @@ public class LandsatStore extends DataStore implements Aggregate {
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, reader instance, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the Landsat file.
+     *
+     * @since 1.5
      */
     @SuppressWarnings("this-escape")    // The invoked method does not store `this` and is not overrideable.
-    public LandsatStore(final LandsatStoreProvider provider, final StorageConnector connector) throws DataStoreException {
+    public LandsatStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
         Path path = connector.getStorageAs(Path.class);
         location  = connector.getStorageAs(URI.class);
