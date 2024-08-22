@@ -80,18 +80,26 @@ public final class InfoStatementsTest extends TestCase {
     }
 
     /**
+     * Returns the SQL statement for creating the {@code SPATIAL_REF_SYS} table.
+     *
+     * @return the {@code CREATE TABLE SPATIAL_REF_SYS} statement.
+     */
+    public static String createSpatialRefSys() {
+        return "CREATE TABLE SPATIAL_REF_SYS ("
+                + "SRID INTEGER NOT NULL PRIMARY KEY, "
+                + "AUTH_NAME VARCHAR(100), "
+                + "AUTH_SRID INTEGER, "
+                + "SRTEXT VARCHAR(2000));";
+    }
+
+    /**
      * Creates some tables needed by the tests, then creates a {@link Database} instance needed for the tests.
      *
      * @throws Exception if an error occurred while creating the tables.
      */
     @BeforeAll
     public void initialize() throws Exception {
-        test.executeSQL(List.of("CREATE TABLE SPATIAL_REF_SYS (" +
-                "SRID INTEGER NOT NULL PRIMARY KEY, " +
-                "AUTH_NAME VARCHAR(100), " +
-                "AUTH_SRID INTEGER, " +
-                "SRTEXT VARCHAR(2000));"));
-
+        test.executeSQL(List.of(createSpatialRefSys()));
         connection = test.source.getConnection();
         database = new Database<>(test.source, connection.getMetaData(), Dialect.DERBY,
                                   Geometries.factory(GeometryLibrary.JAVA2D),

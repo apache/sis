@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.Collection;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -28,7 +27,6 @@ import java.lang.reflect.Method;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
@@ -36,8 +34,6 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.storage.DataStoreContentException;
-import org.apache.sis.storage.NoSuchDataException;
 import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.event.StoreEvent;
@@ -45,7 +41,6 @@ import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.storage.sql.feature.Database;
 import org.apache.sis.storage.sql.feature.Resources;
-import org.apache.sis.storage.sql.feature.InfoStatements;
 import org.apache.sis.storage.sql.feature.SchemaModifier;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.io.stream.InternalOptionKey;
@@ -146,10 +141,9 @@ public class SQLStore extends DataStore implements Aggregate {
      * <p>This lock is not used for cache integrity. The {@code SQLStore} caches are protected
      * by classical synchronized statements.</p>
      *
-     * @see #lock(boolean)
      * @see Database#transactionLocks
      */
-    private final ReadWriteLock transactionLocks;
+    final ReadWriteLock transactionLocks;
 
     /**
      * Creates a new {@code SQLStore} for the given data source and tables, views or queries.
@@ -249,6 +243,14 @@ public class SQLStore extends DataStore implements Aggregate {
     }
 
     /**
+     * Returns the database model if it already exists, or {@code null} otherwise.
+     * This method is thread-safe.
+     */
+    final Database<?> modelOrNull() {
+        return model;
+    }
+
+    /**
      * Returns the database model, analyzing the database schema when first needed.
      * This method is thread-safe.
      */
@@ -275,7 +277,7 @@ public class SQLStore extends DataStore implements Aggregate {
      *
      * @param c  connection to the database.
      */
-    private Database<?> model(final Connection c) throws Exception {
+    final Database<?> model(final Connection c) throws Exception {
         assert Thread.holdsLock(this);
         Database<?> current = model;
         if (current == null) {
@@ -359,129 +361,29 @@ public class SQLStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Returns the coordinate reference system associated to the given identifier. The spatial reference
-     * system identifiers (<abbr>SRID</abbr>) are the primary keys of the {@code "SPATIAL_REF_SYS"} table
-     * (the name of that table may vary depending on which spatial schema standard is used).
-     * Those identifiers are specific to each database and are not necessarily related to EPSG codes.
-     * They should be considered as opaque identifiers.
+     * Creates a new data access object. The returned object can give a <abbr>SQL</abbr> {@link Connection}
+     * to the database and provider methods for fetching or adding <abbr>CRS</abbr> definitions from/into
+     * the {@code SPATIAL_REF_SYS} table.
      *
-     * <h4>Undefined <abbr>CRS</abbr></h4>
-     * Some standards such as Geopackage define 0 as "undefined geographic <abbr>CRS</abbr>" and -1 as
-     * "undefined Cartesian <abbr>CRS</abbr>". This method returns {@code null} for all undefined <abbr>CRS</abbr>,
-     * regardless their type. No default value is returned because this class cannot guess the datum and units of
-     * measurement of an undefined <abbr>CRS</abbr>. All <abbr>SRID</abbr> equal or less than zero are considered
-     * undefined.
+     * <p>The returned object shall be used in a {@code try ... finally} block.
+     * This is needed not only for closing the connection, but also for releasing read or write lock.
+     * Example:</p>
      *
-     * <h4>Axis order</h4>
-     * Some standards such as Geopackage mandate (east, north) axis order. {@code SQLStore} uses the axis order
-     * as defined in the <abbr>WKT</abbr> descriptions of the {@code "SPATIAL_REF_SYS"} table. No reordering is
-     * applied. It is data producer's responsibility to provide definitions with the expected axis order.
+     * {@snippet lang="java" :
+     *   try (DataAccess dao = newDataAccess(false)) {
+     *       try (Statement stmt = dao.getConnection().createStatement()) {
+     *           // Perform some SQL queries here.
+     *       }
+     *   }
+     *   }
      *
-     * @param  srid  a primary key value of the {@code "SPATIAL_REF_SYS"} table.
-     * @return the <abbr>CRS</abbr> associated to the given <abbr>SRID</abbr>, or {@code null} if the given
-     *         <abbr>SRID</abbr> is a code explicitly associated to an undefined <abbr>CRS</abbr>.
-     * @throws NoSuchDataException if no <abbr>CRS</abbr> is associated to the given <abbr>SRID</abbr>.
-     * @throws DataStoreException if the query failed for another reason.
+     * @param  write  whether write operations may be requested.
+     * @return an object provider low-level access (e.g. through <abbr>SQL</abbr> queries) to the data.
      *
      * @since 1.5
      */
-    public CoordinateReferenceSystem findCRS(final int srid) throws DataStoreException {
-        if (srid <= 0) {
-            return null;
-        }
-        Database<?> database = model;
-        CoordinateReferenceSystem crs;
-        if (database == null || (crs = database.getCachedCRS(srid)) == null) {
-            final Lock lock = lock(false);
-            try {
-                try (Connection c = source.getConnection()) {
-                    if (database == null) {
-                        synchronized (this) {
-                            database = model(c);
-                        }
-                    }
-                    try (InfoStatements info = database.createInfoStatements(c)) {
-                        crs = info.fetchCRS(srid);
-                    }
-                } catch (DataStoreContentException e) {
-                    throw new NoSuchDataException(e.getMessage(), e.getCause());
-                } catch (DataStoreException e) {
-                    throw e;
-                } catch (Exception e) {
-                    throw new DataStoreException(Exceptions.unwrap(e));
-                }
-            } finally {
-                if (lock != null) {
-                    lock.unlock();
-                }
-            }
-        }
-        return crs;
-    }
-
-    /**
-     * Returns the <abbr>SRID</abbr> associated to the given spatial reference system.
-     * This method is the converse of {@link #findCRS(int)}.
-     *
-     * @param  crs       the CRS for which to find a SRID, or {@code null}.
-     * @param  allowAdd  whether to allow the addition of a new row in the {@code "SPATIAL_REF_SYS"} table
-     *                   if the given <abbr>CRS</abbr> is not found.
-     * @return SRID for the given <abbr>CRS</abbr>, or 0 if the given <abbr>CRS</abbr> was null.
-     * @throws DataStoreException if an <abbr>SQL</abbr> error, parsing error or other error occurred.
-     *
-     * @since 1.5
-     */
-    public int findSRID(final CoordinateReferenceSystem crs, final boolean allowAdd) throws DataStoreException {
-        if (crs == null) {
-            return 0;
-        }
-        Database<?> database = model;
-        if (database != null) {
-            Integer srid = database.getCachedSRID(crs);
-            if (srid != null) return srid;
-        }
-        final int srid;
-        final Lock lock = lock(allowAdd);
-        try {
-            try (Connection c = source.getConnection()) {
-                if (database == null) {
-                    synchronized (this) {
-                        database = model(c);
-                    }
-                }
-                if (!allowAdd && database.dialect.supportsReadOnlyUpdate()) {
-                    c.setReadOnly(true);
-                }
-                try (InfoStatements info = database.createInfoStatements(c)) {
-                    srid = info.findSRID(crs);
-                }
-            } catch (DataStoreException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new DataStoreException(Exceptions.unwrap(e));
-            }
-        } finally {
-            if (lock != null) {
-                lock.unlock();
-            }
-        }
-        return srid;
-    }
-
-    /**
-     * Returns a read or write lock, or {@code null} if none.
-     * The call to {@link Lock#lock()} will be already performed.
-     *
-     * @param  write  {@code true} for the write lock, or {@code false} for the read lock.
-     * @return the requested lock, or {@code null} if none.
-     */
-    private Lock lock(final boolean write) {
-        if (transactionLocks == null) {
-            return null;
-        }
-        final Lock lock = write ? transactionLocks.writeLock() : transactionLocks.readLock();
-        lock.lock();
-        return lock;
+    public DataAccess newDataAccess(final boolean write) {
+        return new DataAccess(this, write);
     }
 
     /**
