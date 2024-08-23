@@ -34,10 +34,19 @@ import org.apache.sis.util.resources.Errors;
 
 
 /**
- * Provides a <abbr>SQL</abbr> connection to the database, together with helper methods.
- * Each {@code DataAccess} object can hold a {@link Connection} (created when first needed),
- * and sometime a read or write lock. The locks are used only for some databases such as SQLite,
- * when concurrency issues are observed during database transactions.
+ * Low-level accesses to the database content.
+ * This class provides a <abbr>SQL</abbr> {@link Connection} to the database,
+ * sometime protected by read or write lock (it may depend on which database driver is used).
+ * The connection can be used for custom <abbr>SQL</abbr> queries or updates.
+ * This class also provides helper method for performing queries or updates in the {@code "SPATIAL_REF_SYS"} table
+ * (the table name may vary depending on the spatial schema used by the database).
+ *
+ * <h2>Usage</h2>
+ * {@code DataAccess} instances are created by calls to {@link SQLStore#newDataAccess(boolean)}.
+ * The Boolean argument tells whether the caller may perform write operations. That flag determines
+ * not only the {@linkplain Connection#setReadOnly(boolean) read-only state} of the connection,
+ * but also whether to acquire a {@linkplain ReadWriteLock#readLock() read lock}
+ * or a {@linkplain ReadWriteLock#writeLock() write lock} if locking is needed.
  *
  * <p>This object shall be used in a {@code try ... finally} block for ensuring that the connection
  * is closed and the lock (if any) released. Note that the <abbr>SQL</abbr> connection does not need
@@ -54,6 +63,7 @@ import org.apache.sis.util.resources.Errors;
  *   }
  *   }
  *
+ * <h2>Multi-threading</h2>
  * This class is not thread safe. Each instance should be used by a single thread.
  *
  * @author  Martin Desruisseaux (Geomatys)
@@ -64,19 +74,21 @@ public class DataAccess implements AutoCloseable {
     /**
      * The data store for which this object is providing data access.
      * The value of this field is specified at construction time.
+     *
+     * @see #getDataStore()
      */
     protected final SQLStore store;
 
     /**
      * The SQL connection, created when first needed.
      */
-    private Connection connection;
+    Connection connection;
 
     /**
      * Helper methods for fetching information such as coordinate reference systems.
      * Created when first needed.
      */
-    private InfoStatements statements;
+    InfoStatements spatialInformation;
 
     /**
      * A read or write lock to unlock when the data access will be closed, or {@code null} if none.
@@ -112,6 +124,15 @@ public class DataAccess implements AutoCloseable {
     }
 
     /**
+     * Returns the SQL store for which this object is providing low-level access.
+     *
+     * @return the SQL store that provided this data access object.
+     */
+    public SQLStore getDataStore() {
+        return store;
+    }
+
+    /**
      * Returns the error message for the exception to throw when the connection is closed.
      */
     private String closed() {
@@ -139,6 +160,19 @@ public class DataAccess implements AutoCloseable {
                 lock = c;       // Store only if the lock succeed.
             }
             connection = store.getDataSource().getConnection();
+            /*
+             * Setting the connection in read-only mode is needed for allowing `findSRID(CRS)`
+             * to detect that it should not try to add new row in the "SPATIAL_REF_SYS" table,
+             * and that is should throw an exception with a "CRS not found" message instead.
+             *
+             * TODO: should be unconditional if we could remove the need for `supportsReadOnlyUpdate()`.
+             * It can be done if we provide our own JDBC driver for SQLite using Panama instead of the
+             * driver from Xerial. It would avoid embedding C/C++ code for ~20 platforms.
+             */
+            final Database<?> model = store.modelOrNull();
+            if (model != null && model.dialect.supportsReadOnlyUpdate()) {
+                connection.setReadOnly(!write);
+            }
         }
         return connection;
     }
@@ -147,19 +181,19 @@ public class DataAccess implements AutoCloseable {
      * Returns the helper object for fetching information from {@code SPATIAL_REF_SYS} table.
      * The helper object is created the first time that this method is invoked.
      */
-    private InfoStatements statements() throws Exception {
-        if (statements == null) {
+    private InfoStatements spatialInformation() throws Exception {
+        if (spatialInformation == null) {
             final Connection c = getConnection();
             synchronized (store) {
                 final Database<?> model = store.model(c);
                 if (model.dialect.supportsReadOnlyUpdate()) {
-                    // TODO: should be in `getConnection() if we could remove the need for `supportsReadOnlyUpdate()`.
+                    // Workaround for the "TODO" in `getConnection()`. Should be removed after "TODO" is resolved.
                     c.setReadOnly(!write);
                 }
-                statements = model.createInfoStatements(c);
+                spatialInformation = model.createInfoStatements(c);
             }
         }
-        return statements;
+        return spatialInformation;
     }
 
     /**
@@ -197,7 +231,7 @@ public class DataAccess implements AutoCloseable {
         Database<?> database = store.modelOrNull();
         CoordinateReferenceSystem crs;
         if (database == null || (crs = database.getCachedCRS(srid)) == null) try {
-            crs = statements().fetchCRS(srid);
+            crs = spatialInformation().fetchCRS(srid);
         } catch (DataStoreContentException e) {
             throw new NoSuchDataException(e.getMessage(), e.getCause());
         } catch (DataStoreException e) {
@@ -212,8 +246,9 @@ public class DataAccess implements AutoCloseable {
      * Returns the <abbr>SRID</abbr> associated to the given spatial reference system.
      * This method is the converse of {@link #findCRS(int)}.
      *
-     * <p>If the {@code write} argument given at construction time was {@code true}, then this method is allowed
-     * to add a new row in the {@code "SPATIAL_REF_SYS"} table if the given <abbr>CRS</abbr> is not found.</p>
+     * <h4>Potential write operation</h4>
+     * If the {@code write} argument given at construction time was {@code true}, then this method is allowed
+     * to add a new row in the {@code "SPATIAL_REF_SYS"} table if the given <abbr>CRS</abbr> is not found.
      *
      * @param  crs  the CRS for which to find a SRID, or {@code null}.
      * @return SRID for the given <abbr>CRS</abbr>, or 0 if the given <abbr>CRS</abbr> was null.
@@ -233,7 +268,7 @@ public class DataAccess implements AutoCloseable {
         }
         final int srid;
         try {
-            srid = statements().findSRID(crs);
+            srid = spatialInformation().findSRID(crs);
         } catch (DataStoreException e) {
             throw e;
         } catch (Exception e) {
@@ -252,9 +287,9 @@ public class DataAccess implements AutoCloseable {
         isClosed = true;                // Set first in case an exception is thrown.
         try {
             try {
-                final InfoStatements c = statements;
+                final InfoStatements c = spatialInformation;
                 if (c != null) {
-                    statements = null;
+                    spatialInformation = null;
                     c.close();
                 }
             } finally {

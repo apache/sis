@@ -29,7 +29,7 @@ import org.apache.sis.storage.geopackage.GpkgContentResource;
 import org.apache.sis.storage.geopackage.GpkgStore;
 import org.apache.sis.storage.geopackage.privy.Record;
 import org.apache.sis.storage.sql.ResourceDefinition;
-import org.apache.sis.storage.sql.SQLStore;
+import org.apache.sis.storage.sql.SimpleFeatureStore;
 import org.apache.sis.storage.sql.SQLStoreProvider;
 import org.apache.sis.util.iso.Names;
 import org.opengis.feature.Feature;
@@ -88,8 +88,8 @@ final class GpkgFeatureSet extends AbstractResource implements FeatureSet, GpkgC
         final StorageConnector connector = new StorageConnector(store.getDataSource());
         final ResourceDefinition table = ResourceDefinition.table(null, null, row.tableName);
 
-        final SQLStore sqlStore = new SQLStore(new SQLStoreProvider(), connector, table);
-        sqlSet = (FeatureSet) sqlStore.components().iterator().next();
+        final var sqlStore = new SimpleFeatureStore(new SQLStoreProvider(), connector, table);
+        sqlSet = sqlStore.components().iterator().next();
         return sqlSet;
     }
 

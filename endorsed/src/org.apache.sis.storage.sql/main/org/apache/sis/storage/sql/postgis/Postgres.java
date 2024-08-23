@@ -68,7 +68,6 @@ public final class Postgres<G> extends Database<G> {
      * Creates a new session for a PostGIS database.
      *
      * @param  source       provider of (pooled) connections to the database.
-     * @param  connection   the connection to the database. Should be considered as read-only.
      * @param  metadata     metadata about the database for which a session is created.
      * @param  dialect      additional information not provided by {@code metadata}.
      * @param  geomLibrary  the factory to use for creating geometric objects.
@@ -76,14 +75,13 @@ public final class Postgres<G> extends Database<G> {
      * @param  locks        the read/write locks, or {@code null} if none.
      * @throws SQLException if an error occurred while reading database metadata.
      */
-    public Postgres(final DataSource source, final Connection connection, final DatabaseMetaData metadata,
-                    final Dialect dialect, final Geometries<G> geomLibrary, final StoreListeners listeners,
-                    final ReadWriteLock locks)
+    public Postgres(final DataSource source, final DatabaseMetaData metadata, final Dialect dialect,
+                    final Geometries<G> geomLibrary, final StoreListeners listeners, final ReadWriteLock locks)
             throws SQLException
     {
         super(source, metadata, dialect, geomLibrary, listeners, locks);
         Version version = null;
-        try (Statement st = connection.createStatement();
+        try (Statement st = metadata.getConnection().createStatement();
              ResultSet result = st.executeQuery("SELECT public.PostGIS_version();"))
         {
             while (result.next()) {

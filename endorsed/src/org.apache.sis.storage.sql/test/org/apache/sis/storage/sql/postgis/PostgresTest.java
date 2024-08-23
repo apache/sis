@@ -39,6 +39,7 @@ import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.storage.sql.SQLStoreProvider;
+import org.apache.sis.storage.sql.SimpleFeatureStore;
 import org.apache.sis.storage.sql.ResourceDefinition;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.io.stream.ChannelDataInput;
@@ -111,7 +112,7 @@ public final class PostgresTest extends TestCase {
             final StorageConnector connector = new StorageConnector(database.source);
             connector.setOption(OptionKey.GEOMETRY_LIBRARY, GeometryLibrary.JTS);
             final ResourceDefinition table = ResourceDefinition.table(null, SQLStoreTest.SCHEMA, "SpatialData");
-            try (SQLStore store = new SQLStore(new SQLStoreProvider(), connector, table)) {
+            try (SimpleFeatureStore store = new SimpleFeatureStore(new SQLStoreProvider(), connector, table)) {
                 /*
                  * Invoke the private `model()` method. We have to use reflection because the class
                  * is not in the same package and we do not want to expose the method in public API.

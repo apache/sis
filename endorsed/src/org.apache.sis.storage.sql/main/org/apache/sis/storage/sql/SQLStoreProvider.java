@@ -92,14 +92,14 @@ public class SQLStoreProvider extends DataStoreProvider {
 
     /**
      * Description of the parameter providing the list of tables or views to include as resources in the
-     * {@link SQLStore}. At least one of {@code TABLES_PARAM} or {@link #QUERIES_PARAM} must be provided.
+     * {@link SimpleFeatureStore}. At least one of {@code TABLES_PARAM} or {@link #QUERIES_PARAM} must be provided.
      *
      * @since 1.1
      */
     public static final ParameterDescriptor<GenericName[]> TABLES_PARAM;
 
     /**
-     * Description of the parameter providing the queries to include as resources in the {@link SQLStore}.
+     * Description of the parameter providing the queries to include as resources in the {@link SimpleFeatureStore}.
      * Map keys are the resource names as {@link GenericName} or {@link String} instances.
      * Values are SQL statements (as {@link String} instances) to execute when the associated resource is requested.
      * At least one of {@link #TABLES_PARAM} or {@code QUERIES_PARAM} must be provided.
@@ -212,7 +212,7 @@ public class SQLStoreProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
-        return new SQLStore(this, connector, ResourceDefinition.table(WILDCARD));
+        return new SimpleFeatureStore(this, connector, ResourceDefinition.table(WILDCARD));
     }
 
     /**
@@ -229,7 +229,7 @@ public class SQLStoreProvider extends DataStoreProvider {
             final StorageConnector connector = new StorageConnector(p.getValue(SOURCE_PARAM));
             final GenericName[] tableNames = p.getValue(TABLES_PARAM);
             final Map<?,?> queries = p.getValue(QUERIES_PARAM);
-            return new SQLStore(this, connector, ResourceDefinition.wrap(tableNames, queries));
+            return new SimpleFeatureStore(this, connector, ResourceDefinition.wrap(tableNames, queries));
         } catch (ParameterNotFoundException | UnconvertibleObjectException e) {
             throw new IllegalOpenParameterException(e.getMessage(), e);
         }

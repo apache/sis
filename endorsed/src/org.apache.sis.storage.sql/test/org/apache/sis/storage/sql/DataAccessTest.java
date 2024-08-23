@@ -60,7 +60,7 @@ public final class DataAccessTest extends TestCase {
      */
     private void test(final TestDatabase database) throws Exception {
         database.executeSQL(List.of(InfoStatementsTest.createSpatialRefSys()));
-        try (SQLStore store = new SQLStore(null, new StorageConnector(database.source), ResourceDefinition.table("%"));
+        try (SQLStore store = new SimpleFeatureStore(null, new StorageConnector(database.source), ResourceDefinition.table("%"));
              DataAccess dao = store.newDataAccess(true))
         {
             assertEquals(4326, dao.findSRID(HardCodedCRS.WGS84));

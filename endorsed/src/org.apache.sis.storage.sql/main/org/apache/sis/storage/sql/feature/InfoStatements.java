@@ -284,8 +284,6 @@ public class InfoStatements implements Localized, AutoCloseable {
      *         or a single entry exists but has no WKT definition and its authority code is unsupported by SIS.
      * @throws ParseException if the WKT cannot be parsed.
      * @throws SQLException if a SQL error occurred.
-     *
-     * @see org.apache.sis.storage.sql.SQLStore#findCRS(int)
      */
     public final CoordinateReferenceSystem fetchCRS(final int srid) throws Exception {
         /*
@@ -472,8 +470,6 @@ public class InfoStatements implements Localized, AutoCloseable {
      * @param  crs     the CRS for which to find a SRID, or {@code null}.
      * @return SRID for the given CRS, or 0 if the given CRS was null.
      * @throws Exception if an SQL error, parsing error or other error occurred.
-     *
-     * @see org.apache.sis.storage.sql.SQLStore#findSRID(CoordinateReferenceSystem)
      */
     public final int findSRID(final CoordinateReferenceSystem crs) throws Exception {
         if (crs == null) {

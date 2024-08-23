@@ -47,7 +47,6 @@ import org.apache.sis.metadata.sql.privy.Dialect;
 import org.apache.sis.metadata.sql.privy.Reflection;
 import org.apache.sis.metadata.sql.privy.SQLBuilder;
 import org.apache.sis.metadata.sql.privy.SQLUtilities;
-import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.FeatureNaming;
 import org.apache.sis.storage.DataStoreException;
@@ -295,34 +294,28 @@ public class Database<G> extends Syntax  {
 
     /**
      * Creates a new handler for a spatial database.
+     * Callers shall invoke {@link #analyze analyze(…)} after this method.
      *
-     * @param  store        the data store for which we are creating a model. Used only in case of error.
      * @param  source       provider of (pooled) connections to the database.
-     * @param  connection   connection to the database. Sometimes the caller already has a connection at hand.
+     * @param  metadata     value of {@code connection.getMetaData()} (provided because already known by caller).
      * @param  geomLibrary  the factory to use for creating geometric objects.
-     * @param  tableNames   qualified name of the tables. Specified by users at construction time.
-     * @param  queries      additional resources associated to SQL queries. Specified by users at construction time.
-     * @param  customizer   user-specified modification to the features, or {@code null} if none.
      * @param  listeners    where to send warnings.
      * @param  locks        the read/write locks, or {@code null} if none.
      * @return handler for the spatial database.
      * @throws SQLException if a database error occurred while reading metadata.
      * @throws DataStoreException if a logical error occurred while analyzing the database structure.
      */
-    public static Database<?> create(final SQLStore store, final DataSource source, final Connection connection,
-            final GeometryLibrary geomLibrary, final GenericName[] tableNames, final ResourceDefinition[] queries,
-            final SchemaModifier customizer, final StoreListeners listeners, final ReadWriteLock locks)
+    public static Database<?> create(final DataSource source, final DatabaseMetaData metadata,
+            final GeometryLibrary geomLibrary, final StoreListeners listeners, final ReadWriteLock locks)
             throws Exception
     {
-        final DatabaseMetaData metadata = connection.getMetaData();
         final Geometries<?> g = Geometries.factory(geomLibrary);
         final Dialect dialect = Dialect.guess(metadata);
         final Database<?> db;
         switch (dialect) {
-            case POSTGRESQL: db = new Postgres<>(source, connection, metadata, dialect, g, listeners, locks); break;
-            default:         db = new Database<>(source,             metadata, dialect, g, listeners, locks); break;
+            case POSTGRESQL: db = new Postgres<>(source, metadata, dialect, g, listeners, locks); break;
+            default:         db = new Database<>(source, metadata, dialect, g, listeners, locks); break;
         }
-        db.analyze(store, connection, tableNames, queries, customizer);
         return db;
     }
 
@@ -343,18 +336,19 @@ public class Database<G> extends Syntax  {
      *       The pattern can use {@code '_'} and {@code '%'} wildcards characters.</li>
      * </ul>
      *
-     * @param  store       the data store for which we are creating a model. Used only in case of error.
-     * @param  connection  connection to the database. Sometimes the caller already has a connection at hand.
-     * @param  tableNames  qualified name of the tables. Specified by users at construction time.
-     * @param  queries     additional resources associated to SQL queries. Specified by users at construction time.
-     * @param  customizer  user-specified modification to the features, or {@code null} if none.
+     * @param  store               the data store for which we are creating a model. Used only in case of error.
+     * @param  metadata            value of {@code connection.getMetaData()} (provided because already known by caller).
+     * @param  tableNames          qualified name of the tables. Specified by users at construction time.
+     * @param  queries             additional resources associated to SQL queries. Specified by users at construction time.
+     * @param  customizer          user-specified modification to the features, or {@code null} if none.
+     * @param  spatialInformation  statements for fetching SRID, geometry types, <i>etc.</i>
      * @throws SQLException if a database error occurred while reading metadata.
      * @throws DataStoreException if a logical error occurred while analyzing the database structure.
      */
-    private void analyze(final SQLStore store, final Connection connection, final GenericName[] tableNames,
-                         final ResourceDefinition[] queries, final SchemaModifier customizer) throws Exception
+    public final void analyze(final SQLStore store, final DatabaseMetaData metadata, final GenericName[] tableNames,
+                              final ResourceDefinition[] queries, final SchemaModifier customizer,
+                              final InfoStatements spatialInformation) throws Exception
     {
-        final DatabaseMetaData metadata = connection.getMetaData();
         final String[] tableTypes = getTableTypes(metadata);
         /*
          * The following tables are defined by ISO 19125 / OGC Simple feature access part 2.
@@ -414,7 +408,7 @@ public class Database<G> extends Syntax  {
          * Some schemas have additional columns for optional encodings, for example a separated column for WKT2.
          * The preference order will be defined by the `CRSEncoding` enumeration order.
          */
-        final Analyzer analyzer = new Analyzer(this, connection, metadata, customizer);
+        final Analyzer analyzer = new Analyzer(this, metadata, customizer, spatialInformation);
         if (spatialSchema != null) {
             final String schema = SQLUtilities.escape(schemaOfSpatialTables, analyzer.escape);
             final String table  = SQLUtilities.escape(crsTable, analyzer.escape);
@@ -535,7 +529,7 @@ public class Database<G> extends Syntax  {
      *
      * @return all tables in an unmodifiable list.
      */
-    public final List<Resource> tables() {
+    public final List<FeatureSet> tables() {
         return UnmodifiableArrayList.wrap(tables);
     }
 

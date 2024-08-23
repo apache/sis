@@ -16,13 +16,12 @@
  */
 package org.apache.sis.storage.sql;
 
-import java.util.Map;
-import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.util.Collection;
 import java.util.concurrent.locks.ReadWriteLock;
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.lang.reflect.Method;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
@@ -30,7 +29,6 @@ import org.opengis.parameter.ParameterValueGroup;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.Aggregate;
-import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.DataStoreException;
@@ -42,6 +40,7 @@ import org.apache.sis.storage.event.WarningEvent;
 import org.apache.sis.storage.sql.feature.Database;
 import org.apache.sis.storage.sql.feature.Resources;
 import org.apache.sis.storage.sql.feature.SchemaModifier;
+import org.apache.sis.storage.sql.feature.InfoStatements;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.io.stream.InternalOptionKey;
 import org.apache.sis.util.ArgumentChecks;
@@ -53,17 +52,23 @@ import org.apache.sis.setup.OptionKey;
 
 
 /**
- * A data store capable to read and create features from a spatial database.
+ * An abstract data store for reading or writing resources from/to a spatial database.
  * {@code SQLStore} requires a {@link DataSource} to be specified (indirectly) at construction time.
- * The {@code DataSource} should provide pooled connections, because {@code SQLStore} will frequently
- * opens and closes them.
+ * While not mandatory, a pooled data source is recommended because {@code SQLStore} will frequently
+ * opens and closes connections.
+ *
+ * <p>This class provides basic support for ISO 19125-2, also known as
+ * <a href="https://www.ogc.org/standards/sfs">OGC Simple feature access - Part 2: SQL option</a>:
+ * selected tables, views and queries can be viewed as {@link org.apache.sis.storage.FeatureSet} resources.
+ * This selection is specified by implementing the {@link #readResourceDefinitions(DataAccess)} method.
+ * The mapping from table structures to feature types is described in the package Javadoc.</p>
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  * @version 1.5
  * @since   1.0
  */
-public class SQLStore extends DataStore implements Aggregate {
+public abstract class SQLStore extends DataStore implements Aggregate {
     /**
      * Names of possible public getter methods for data source title, in preference order.
      */
@@ -77,10 +82,13 @@ public class SQLStore extends DataStore implements Aggregate {
 
     /**
      * The data source to use for obtaining connections to the database.
+     * This is the storage given (indirectly, through the {@link StorageConnector} argument) at construction time.
      *
      * @see #getDataSource()
+     *
+     * @since 1.5
      */
-    private final DataSource source;
+    protected final DataSource source;
 
     /**
      * The library to use for creating geometric objects, or {@code null} for system default.
@@ -93,6 +101,7 @@ public class SQLStore extends DataStore implements Aggregate {
      *
      * @see #model()
      * @see #model(Connection)
+     * @see #refresh()
      */
     private volatile Database<?> model;
 
@@ -109,14 +118,22 @@ public class SQLStore extends DataStore implements Aggregate {
      *       The pattern can use {@code '_'} and {@code '%'} wildcards characters.</li>
      * </ul>
      *
-     * Only the main tables need to be specified; dependencies will be followed automatically.
+     * Only the main tables need to be specified, dependencies will be followed automatically.
+     * If {@code null}, then the array will be created when first needed.
+     *
+     * @see #setModelSources(ResourceDefinition[])
+     * @see #tableNames()
      */
-    private final GenericName[] tableNames;
+    private GenericName[] tableNames;
 
     /**
      * Queries to expose as resources, or an empty array if none.
+     * If {@code null}, then the array will be created when first needed.
+     *
+     * @see #setModelSources(ResourceDefinition[])
+     * @see #queries()
      */
-    private final ResourceDefinition[] queries;
+    private ResourceDefinition[] queries;
 
     /**
      * The metadata, created when first requested.
@@ -146,33 +163,37 @@ public class SQLStore extends DataStore implements Aggregate {
     final ReadWriteLock transactionLocks;
 
     /**
-     * Creates a new {@code SQLStore} for the given data source and tables, views or queries.
-     * The given {@code connector} shall contain a {@link DataSource} instance.
-     * Tables or views to include in the store are specified by the {@code resources} argument.
-     * Only the main tables need to be specified; dependencies will be followed automatically.
+     * Creates a new {@code SQLStore} for the given data source. The given {@code connector} shall contain
+     * a {@link DataSource} instance. Tables or views to include in the store will be specified by the
+     * {@link #readResourceDefinitions(DataAccess)} method, which will be invoked when first needed.
      *
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (JDBC data source, <i>etc</i>).
-     * @param  resources  tables, views or queries to include in this store.
      * @throws DataStoreException if an error occurred while creating the data store for the given storage.
      *
      * @since 1.5
      */
-    public SQLStore(final DataStoreProvider provider, final StorageConnector connector, final ResourceDefinition... resources)
-            throws DataStoreException
-    {
+    protected SQLStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
-        ArgumentChecks.ensureNonEmpty("resources", resources);
-        source      = connector.getStorageAs(DataSource.class);
-        geomLibrary = connector.getOption(OptionKey.GEOMETRY_LIBRARY);
-        customizer  = connector.getOption(SchemaModifier.OPTION);
+        source           = connector.getStorageAs(DataSource.class);
+        geomLibrary      = connector.getOption(OptionKey.GEOMETRY_LIBRARY);
+        customizer       = connector.getOption(SchemaModifier.OPTION);
+        transactionLocks = connector.getOption(InternalOptionKey.LOCKS);
+    }
 
+    /**
+     * Declares the tables or queries to use as the sources of feature resources.
+     *
+     * @param  resources  tables, views or queries to include in this store.
+     * @throws DataStoreException if an error occurred while processing the given resources.
+     */
+    final void setModelSources(final ResourceDefinition[] resources) throws DataStoreException {
         @SuppressWarnings("LocalVariableHidesMemberVariable")
-        final GenericName[] tableNames = new GenericName[resources.length];
+        final var tableNames = new GenericName[resources.length];
         int tableCount = 0;
 
         @SuppressWarnings("LocalVariableHidesMemberVariable")
-        final ResourceDefinition[] queries = new ResourceDefinition[resources.length];
+        final var queries = new ResourceDefinition[resources.length];
         int queryCount = 0;
 
         for (int i=0; i<resources.length; i++) {
@@ -189,24 +210,22 @@ public class SQLStore extends DataStore implements Aggregate {
                 queries[queryCount++] = resource;
             }
         }
-        this.tableNames  = ArraysExt.resize(tableNames, tableCount);
-        this.queries     = ArraysExt.resize(queries,    queryCount);
-        transactionLocks = connector.getOption(InternalOptionKey.LOCKS);
+        this.tableNames = ArraysExt.resize(tableNames, tableCount);
+        this.queries    = ArraysExt.resize(queries,    queryCount);
     }
 
     /**
-     * The data source to use for obtaining connections to the database.
-     * This is the data source specified at construction time.
+     * Returns the data source to use for obtaining connections to the database.
      *
      * @return the data source to use for obtaining connections to the database.
      * @since 1.5
      */
-    public final DataSource getDataSource() {
+    public DataSource getDataSource() {
         return source;
     }
 
     /**
-     * Returns the parameters used to open this netCDF data store.
+     * Returns parameters that can be used for opening this SQL data store.
      * The parameters are described by {@link SQLStoreProvider#getOpenParameters()} and contains
      * at least a parameter named {@value SQLStoreProvider#LOCATION} with a {@link DataSource} value.
      *
@@ -219,27 +238,50 @@ public class SQLStore extends DataStore implements Aggregate {
         }
         final ParameterValueGroup pg = provider.getOpenParameters().createValue();
         pg.parameter(SQLStoreProvider.LOCATION).setValue(source);
-        if (tableNames != null) {
-            pg.parameter(SQLStoreProvider.TABLES).setValue(tableNames);
-        }
-        if (queries != null) {
-            final Map<GenericName,String> m = new LinkedHashMap<>();
-            for (final ResourceDefinition query : queries) {
-                m.put(query.getName(), query.query);
-            }
-            pg.parameter(SQLStoreProvider.QUERIES).setValue(m);
-        }
+        /*
+         * Do not include `tableNames` and `queries` because they are initially null
+         * and determined dynamically when first needed. Because potentially dynamic,
+         * their values cannot be in parameters.
+         */
         return Optional.of(pg);
     }
 
     /**
-     * SQL data store root resource has no identifier.
+     * Returns an identifier for the root resource of this SQL store, or an empty value if none.
+     * The default implementation returns an empty name because the root resource of a SQL store has no identifier.
      *
-     * @return empty.
+     * @return an identifier for the root resource of this SQL store.
      */
     @Override
     public Optional<GenericName> getIdentifier() throws DataStoreException {
         return Optional.empty();
+    }
+
+    /**
+     * Returns the fully qualified names of the tables to include in this store.
+     * The returned array shall be considered read-only.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final GenericName[] tableNames() {
+        return tableNames;
+    }
+
+    /**
+     * Returns the queries to expose as resources.
+     * The returned array shall be considered read-only.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final ResourceDefinition[] queries() {
+        return queries;
+    }
+
+    /**
+     * Clears the cached model. The model will be reloaded when first needed.
+     * This method shall be invoked in a block synchronized on {@code this}.
+     */
+    final void clearModel() {
+        model    = null;
+        metadata = null;
     }
 
     /**
@@ -254,7 +296,7 @@ public class SQLStore extends DataStore implements Aggregate {
      * Returns the database model, analyzing the database schema when first needed.
      * This method is thread-safe.
      */
-    private Database<?> model() throws DataStoreException {
+    final Database<?> model() throws DataStoreException {
         Database<?> current = model;
         if (current == null) {
             synchronized (this) {
@@ -281,7 +323,18 @@ public class SQLStore extends DataStore implements Aggregate {
         assert Thread.holdsLock(this);
         Database<?> current = model;
         if (current == null) {
-            current = Database.create(this, source, c, geomLibrary, tableNames, queries, customizer, listeners, transactionLocks);
+            final DatabaseMetaData md = c.getMetaData();
+            current = Database.create(source, md, geomLibrary, listeners, transactionLocks);
+            try (final InfoStatements spatialInformation = current.createInfoStatements(c)) {
+                if (tableNames == null) {
+                    final DataAccess dao = newDataAccess(false);
+                    dao.connection = c;
+                    dao.spatialInformation = spatialInformation;
+                    setModelSources(readResourceDefinitions(dao));
+                    // Do not close the DAO, because we still use the connection and the info statements.
+                }
+                current.analyze(this, md, tableNames, queries, customizer, spatialInformation);
+            }
             model = current;
         }
         return current;
@@ -333,22 +386,36 @@ public class SQLStore extends DataStore implements Aggregate {
     }
 
     /**
-     * Returns the tables (feature sets) in this SQL store.
-     * The list contains only the tables explicitly named at construction time.
+     * Returns the resources (feature set or coverages) in this SQL store.
+     * The collection of resources should be constructed only when first needed and cached
+     * for future invocations of this method. The cache can be cleared by {@link #refresh()}.
+     * This method should not load immediately the whole data of the {@code Resource} elements,
+     * as {@link Resource} sub-interfaces provide the <abbr>API</abbr> for deferred loading.
+     *
+     * <h4>Default implementation</h4>
+     * By default, the collection contains one {@link org.apache.sis.storage.FeatureSet} per table, view or
+     * query matching a {@link ResourceDefinition} returned by {@link #readResourceDefinitions(DataAccess)}.
      *
      * @return children resources that are components of this SQL store.
      * @throws DataStoreException if an error occurred while fetching the components.
      */
     @Override
-    public Collection<Resource> components() throws DataStoreException {
+    public Collection<? extends Resource> components() throws DataStoreException {
         return model().tables();
     }
 
     /**
      * Searches for a resource identified by the given identifier.
-     * The given identifier should match one of the table names.
-     * It may be one of the tables named at construction time, or one of the dependencies.
-     * The given name may be qualified with the schema name, or may be only the table name if there is no ambiguity.
+     * This method shall recognize at least the {@linkplain Resource#getIdentifier() identifiers} of the
+     * resources returned by {@link #components()}, but may also (optionally) recognize the identifiers
+     * of auxiliary resources such as component dependencies (e.g., tables referenced by foreigner keys).
+     *
+     * <h4>Default implementation</h4>
+     * By default, this method searches for a table, view or query with a name matching the given identifier.
+     * The scope of the search includes the tables, views or queries matching a {@link ResourceDefinition},
+     * together with other tables referenced by foreigner keys (the dependencies).
+     * The given identifier may be qualified with the schema name,
+     * or may be only the table name if there is no ambiguity.
      *
      * @param  identifier  identifier of the resource to fetch. Must be non-null.
      * @return resource associated to the given identifier (never {@code null}).
@@ -356,14 +423,35 @@ public class SQLStore extends DataStore implements Aggregate {
      * @throws DataStoreException if another kind of error occurred while searching resources.
      */
     @Override
-    public FeatureSet findResource(final String identifier) throws DataStoreException {
+    public Resource findResource(final String identifier) throws DataStoreException {
         return model().findTable(this, identifier);
     }
 
     /**
-     * Creates a new data access object. The returned object can give a <abbr>SQL</abbr> {@link Connection}
-     * to the database and provider methods for fetching or adding <abbr>CRS</abbr> definitions from/into
-     * the {@code SPATIAL_REF_SYS} table.
+     * A callback for providing the resource definitions of a database, typically from a content table.
+     * {@code SQLStore} will invoke this method when first needed after construction or after calls to
+     * {@link #refresh()}. Implementations can use the <abbr>SQL</abbr> connection and methods provided
+     * by the {@code dao} argument. This method does not need to cache the result.
+     *
+     * <div class="note"><b>Example:</b> in a database conform to the Geopackage standard,
+     * the resource definitions are provided by the {@code "gpkg_contents"} table.
+     * Therefore, the {@link org.apache.sis.storage.geopackage.GpkgStore} subclass
+     * will read the content of that table every times this method is invoked.</div>
+     *
+     * @param  dao  low-level access (such as <abbr>SQL</abbr> connection) to the database.
+     * @return tables or views to include in the store. Only the main tables need to be specified.
+     *         Dependencies (inferred from the foreigner keys) will be followed automatically.
+     * @throws DataStoreException if an error occurred while fetching the resource definitions.
+     *
+     * @since 1.5
+     */
+    protected abstract ResourceDefinition[] readResourceDefinitions(DataAccess dao) throws DataStoreException;
+
+    /**
+     * Creates a new low-level data access object. Each {@code DataAccess} instance can provide a single
+     * <abbr>SQL</abbr> {@link Connection} to the database (sometime protected by a read or write lock),
+     * together with methods for fetching or adding <abbr>CRS</abbr> definitions from/into the
+     * {@code SPATIAL_REF_SYS} table.
      *
      * <p>The returned object shall be used in a {@code try ... finally} block.
      * This is needed not only for closing the connection, but also for releasing read or write lock.
@@ -377,7 +465,7 @@ public class SQLStore extends DataStore implements Aggregate {
      *   }
      *   }
      *
-     * @param  write  whether write operations may be requested.
+     * @param  write  whether write operations may be performed.
      * @return an object provider low-level access (e.g. through <abbr>SQL</abbr> queries) to the data.
      *
      * @since 1.5
@@ -407,8 +495,9 @@ public class SQLStore extends DataStore implements Aggregate {
      * @since 1.5
      */
     public synchronized void refresh() {
-        model    = null;
-        metadata = null;
+        clearModel();
+        queries    = null;
+        tableNames = null;
     }
 
     /**
@@ -420,7 +509,6 @@ public class SQLStore extends DataStore implements Aggregate {
     public synchronized void close() throws DataStoreException {
         listeners.close();      // Should never fail.
         // There is no JDBC connection to close here.
-        model    = null;
-        metadata = null;
+        clearModel();
     }
 }

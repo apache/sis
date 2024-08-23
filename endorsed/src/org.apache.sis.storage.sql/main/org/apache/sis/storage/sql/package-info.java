@@ -17,8 +17,8 @@
 
 
 /**
- * Data store capable to read and create features from a JDBC connection to a database.
- * {@link org.apache.sis.storage.sql.SQLStore} takes a one or more tables at construction time.
+ * Data store capable to read and write features using a JDBC connection to a database.
+ * {@link org.apache.sis.storage.sql.SimpleFeatureStore} takes one or more tables at construction time.
  * Each enumerated table is represented by a {@link org.opengis.feature.FeatureType}.
  * Each row in those table represents a {@link org.opengis.feature.Feature} instance.
  * Each relation defined by a foreigner key is represented by an {@link org.opengis.feature.FeatureAssociationRole}
@@ -48,7 +48,6 @@
  * <ul>
  *   <li>Current implementation does not scan the {@code "GEOMETRY_COLUMNS"} (from Simple Feature Access)
  *       or {@code "gpkg_content"} (from GeoPackage) tables for a default list of feature tables.</li>
- *   <li>Current implementation does not yet map geometric objects (e.g. PostGIS types).</li>
  *   <li>If a parent feature contains association to other features, those other features are created
  *       at the same time as the parent feature (no lazy instantiation yet).</li>
  * </ul>
