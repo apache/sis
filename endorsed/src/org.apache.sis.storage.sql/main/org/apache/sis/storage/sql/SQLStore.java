@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.sql;
 
+import java.util.Locale;
 import java.util.Optional;
 import java.util.Collection;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -46,6 +47,7 @@ import org.apache.sis.io.stream.InternalOptionKey;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.setup.OptionKey;
@@ -54,8 +56,8 @@ import org.apache.sis.setup.OptionKey;
 /**
  * An abstract data store for reading or writing resources from/to a spatial database.
  * {@code SQLStore} requires a {@link DataSource} to be specified (indirectly) at construction time.
- * While not mandatory, a pooled data source is recommended because {@code SQLStore} will frequently
- * opens and closes connections.
+ * While not mandatory, a pooled data source is recommended because {@code SQLStore} may open and
+ * close connections many times.
  *
  * <p>This class provides basic support for ISO 19125-2, also known as
  * <a href="https://www.ogc.org/standards/sfs">OGC Simple feature access - Part 2: SQL option</a>:
@@ -70,14 +72,28 @@ import org.apache.sis.setup.OptionKey;
  */
 public abstract class SQLStore extends DataStore implements Aggregate {
     /**
-     * Names of possible public getter methods for data source title, in preference order.
+     * Names of possible public getter methods for fetching a metadata title from a {@link DataSource}.
+     * Elements are sorted in preference order. The return value shall be a {@link String}.
+     *
+     * @see #getMetadata()
      */
-    private static final String[] NAME_GETTERS = {
+    private static final String[] TITLE_GETTERS = {
             "getDescription",           // PostgreSQL, SQL Server
             "getDataSourceName",        // Derby
-            "getDatabaseName",          // Derby, PostgreSQL, SQL Server
-            "getUrl",                   // PostgreSQL
+            "getDatabaseName",          // Derby, PostgreSQL, SQL Server, SQLite
+            "getUrl",                   // PostgreSQL, SQLite
             "getURL"                    // SQL Server
+    };
+
+    /**
+     * Names of possible public getter methods for fetching an identifier from a {@link DataSource}.
+     * Elements are sorted in preference order. The return value shall be a {@link String}.
+     *
+     * @see #getIdentifier()
+     */
+    private static final String[] IDENTIFIER_GETTERS = {
+            "getDatabaseName",
+            "getDataSourceName"
     };
 
     /**
@@ -89,6 +105,13 @@ public abstract class SQLStore extends DataStore implements Aggregate {
      * @since 1.5
      */
     protected final DataSource source;
+
+    /**
+     * An identifier inferred from the data source, or {@code null} if none.
+     *
+     * @see #getIdentifier()
+     */
+    private final GenericName identifier;
 
     /**
      * The library to use for creating geometric objects, or {@code null} for system default.
@@ -141,6 +164,23 @@ public abstract class SQLStore extends DataStore implements Aggregate {
     private Metadata metadata;
 
     /**
+     * The locale to use for international texts to write in a database table.
+     * This is not necessarily the same locale as {@link #getLocale()}, because the
+     * latter is for warning and error messages to shown in user applications.
+     *
+     * <p><b>Example:</b> if a new <abbr>CRS</abbr> needs to be added in the {@code "SPATIAL_REF_SYS"} table
+     * and if that table contains a {@code "description"} column (as in the Geopackage format), then the text
+     * to write in that column will be localized with this locale.</p>
+     *
+     * <p>If the value is {@code null}, then a default locale is used.</p>
+     *
+     * @see OptionKey#LOCALE
+     *
+     * @since 1.5
+     */
+    protected final Locale contentLocale;
+
+    /**
      * The user-specified method for customizing the schema inferred by table analysis.
      * This is {@code null} if there is none.
      */
@@ -177,8 +217,11 @@ public abstract class SQLStore extends DataStore implements Aggregate {
         super(provider, connector);
         source           = connector.getStorageAs(DataSource.class);
         geomLibrary      = connector.getOption(OptionKey.GEOMETRY_LIBRARY);
+        contentLocale    = connector.getOption(OptionKey.LOCALE);
         customizer       = connector.getOption(SchemaModifier.OPTION);
         transactionLocks = connector.getOption(InternalOptionKey.LOCKS);
+        identifier       = getDataSourceProperty(IDENTIFIER_GETTERS)
+                            .map((id) -> Names.createLocalName(null, null, id)).orElse(null);
     }
 
     /**
@@ -248,13 +291,14 @@ public abstract class SQLStore extends DataStore implements Aggregate {
 
     /**
      * Returns an identifier for the root resource of this SQL store, or an empty value if none.
-     * The default implementation returns an empty name because the root resource of a SQL store has no identifier.
+     * The default implementation returns the database name if this property can be found in the
+     * {@link DataSource} implementation.
      *
      * @return an identifier for the root resource of this SQL store.
      */
     @Override
     public Optional<GenericName> getIdentifier() throws DataStoreException {
-        return Optional.empty();
+        return Optional.ofNullable(identifier);
     }
 
     /**
@@ -324,12 +368,11 @@ public abstract class SQLStore extends DataStore implements Aggregate {
         Database<?> current = model;
         if (current == null) {
             final DatabaseMetaData md = c.getMetaData();
-            current = Database.create(source, md, geomLibrary, listeners, transactionLocks);
+            current = Database.create(source, md, geomLibrary, contentLocale, listeners, transactionLocks);
             try (final InfoStatements spatialInformation = current.createInfoStatements(c)) {
                 if (tableNames == null) {
                     final DataAccess dao = newDataAccess(false);
-                    dao.connection = c;
-                    dao.spatialInformation = spatialInformation;
+                    dao.initialize(c, spatialInformation);
                     setModelSources(readResourceDefinitions(dao));
                     // Do not close the DAO, because we still use the connection and the info statements.
                 }
@@ -353,36 +396,42 @@ public abstract class SQLStore extends DataStore implements Aggregate {
             final var builder = new MetadataBuilder();
             builder.addSpatialRepresentation(SpatialRepresentationType.TEXT_TABLE);
             try (Connection c = source.getConnection()) {
-                @SuppressWarnings("LocalVariableHidesMemberVariable")
-                final Database<?> model = model(c);
-                model.metadata(c.getMetaData(), builder);
+                model(c).metadata(c.getMetaData(), builder);
             } catch (DataStoreException e) {
                 throw e;
             } catch (Exception e) {
                 throw new DataStoreException(Exceptions.unwrap(e));
             }
-            /*
-             * Try to find a title from the data source description.
-             */
-            for (final String c : NAME_GETTERS) {
-                try {
-                    final Method method = source.getClass().getMethod(c);
-                    if (method.getReturnType() == String.class) {
-                        final String name = Strings.trimOrNull((String) method.invoke(source));
-                        if (name != null) {
-                            builder.addTitle(name);
-                            break;
-                        }
-                    }
-                } catch (NoSuchMethodException | SecurityException e) {
-                    // Ignore - try the next method.
-                } catch (ReflectiveOperationException e) {
-                    throw new DataStoreException(Exceptions.unwrap(e));
-                }
-            }
+            getDataSourceProperty(TITLE_GETTERS).ifPresent(builder::addTitle);
+            builder.addIdentifier(identifier, MetadataBuilder.Scope.ALL);
             metadata = builder.buildAndFreeze();
         }
         return metadata;
+    }
+
+    /**
+     * Tries to get a property from the data source by invoking all given public getter methods
+     * until a method exists and returns a non-null value.
+     *
+     * @param  methodNames {@link #TITLE_GETTERS} or {@link #IDENTIFIER_GETTERS}.
+     * @return the first value found.
+     * @throws DataStoreException if an unexpected reflective operation occurred.
+     */
+    private Optional<String> getDataSourceProperty(final String[] methodNames) throws DataStoreException {
+        for (final String c : methodNames) try {
+            final Method method = source.getClass().getMethod(c);
+            if (method.getReturnType() == String.class) {
+                String name = Strings.trimOrNull((String) method.invoke(source));
+                if (name != null) {
+                    return Optional.of(name);
+                }
+            }
+        } catch (NoSuchMethodException | SecurityException e) {
+            // Ignore - try the next method.
+        } catch (ReflectiveOperationException e) {
+            throw new DataStoreException(Exceptions.unwrap(e));
+        }
+        return Optional.empty();
     }
 
     /**

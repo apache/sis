@@ -16,16 +16,20 @@
  */
 package org.apache.sis.storage.sql;
 
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLNonTransientConnectionException;
+import java.text.ParseException;
+import org.opengis.util.FactoryException;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.DataStoreContentException;
+import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.NoSuchDataException;
 import org.apache.sis.storage.sql.feature.Database;
 import org.apache.sis.storage.sql.feature.InfoStatements;
@@ -82,13 +86,13 @@ public class DataAccess implements AutoCloseable {
     /**
      * The SQL connection, created when first needed.
      */
-    Connection connection;
+    private Connection connection;
 
     /**
      * Helper methods for fetching information such as coordinate reference systems.
      * Created when first needed.
      */
-    InfoStatements spatialInformation;
+    private InfoStatements spatialInformation;
 
     /**
      * A read or write lock to unlock when the data access will be closed, or {@code null} if none.
@@ -121,6 +125,15 @@ public class DataAccess implements AutoCloseable {
     protected DataAccess(final SQLStore store, final boolean write) {
         this.store = Objects.requireNonNull(store);
         this.write = write;
+    }
+
+    /**
+     * Sets the connections and spatial statements to instances that already exist.
+     * This method is invoked during database model initialization only.
+     */
+    final void initialize(final Connection connection, final InfoStatements spatialInformation) {
+        this.connection = connection;
+        this.spatialInformation = spatialInformation;
     }
 
     /**
@@ -219,6 +232,7 @@ public class DataAccess implements AutoCloseable {
      * @return the <abbr>CRS</abbr> associated to the given <abbr>SRID</abbr>, or {@code null} if the given
      *         <abbr>SRID</abbr> is a code explicitly associated to an undefined <abbr>CRS</abbr>.
      * @throws NoSuchDataException if no <abbr>CRS</abbr> is associated to the given <abbr>SRID</abbr>.
+     * @throws DataStoreReferencingException if the <abbr>CRS</abbr> definition cannot be parsed.
      * @throws DataStoreException if the query failed for another reason.
      */
     public CoordinateReferenceSystem findCRS(final int srid) throws DataStoreException {
@@ -236,6 +250,8 @@ public class DataAccess implements AutoCloseable {
             throw new NoSuchDataException(e.getMessage(), e.getCause());
         } catch (DataStoreException e) {
             throw e;
+        } catch (FactoryException | ParseException e) {
+            throw new DataStoreReferencingException(Exceptions.unwrap(e));
         } catch (Exception e) {
             throw new DataStoreException(Exceptions.unwrap(e));
         }
@@ -275,6 +291,23 @@ public class DataAccess implements AutoCloseable {
             throw new DataStoreException(Exceptions.unwrap(e));
         }
         return srid;
+    }
+
+    /**
+     * Returns the locale for the usages identified by the given category.
+     * If the category is {@code DISPLAY}, then this method returns {@link SQLStore#getLocale()}.
+     * If the category is {@code FORMAT}, then this method returns {@link SQLStore#contentLocale}.
+     * Otherwise this method returns {@code null}.
+     *
+     * @param  category  the usage of the desired locale.
+     * @return locale for the given usage, or {@code null} for the default.
+     */
+    public Locale getLocale(final Locale.Category category) {
+        switch (category) {
+            case DISPLAY: return store.getLocale();
+            case FORMAT:  return store.contentLocale;
+            default:      return null;
+        }
     }
 
     /**

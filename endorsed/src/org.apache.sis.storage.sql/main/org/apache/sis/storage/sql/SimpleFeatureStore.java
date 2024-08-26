@@ -36,8 +36,8 @@ import org.apache.sis.util.ArgumentChecks;
  *
  * <ul>
  *   <li>A {@link DataSource} (specified indirectly) providing connections to the database. While not mandatory,
- *       a pooled data source is recommended because {@code SimpleFeatureStore} will frequently opens and closes
- *       connections.</li>
+ *       a pooled data source is recommended because {@code SimpleFeatureStore} may open and close connections
+ *       many times.</li>
  *   <li>A list of tables, views or queries to view as {@link FeatureSet}s. This list is provided by
  *       {@link ResourceDefinition} objects. Only the main tables need to be specified. Dependencies
  *       inferred by foreigner keys will be followed automatically.</li>

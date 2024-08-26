@@ -102,7 +102,7 @@ public final class InfoStatementsTest extends TestCase {
         test.executeSQL(List.of(createSpatialRefSys()));
         connection = test.source.getConnection();
         database = new Database<>(test.source, connection.getMetaData(), Dialect.DERBY,
-                                  Geometries.factory(GeometryLibrary.JAVA2D),
+                                  Geometries.factory(GeometryLibrary.JAVA2D), null,
                                   new StoreListeners(null, new DataStoreMock("Unused")), null);
         /*
          * The `spatialSchema` is private, so we need to use reflection for setting its value.

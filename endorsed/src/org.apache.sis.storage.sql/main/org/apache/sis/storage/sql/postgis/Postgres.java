@@ -67,19 +67,21 @@ public final class Postgres<G> extends Database<G> {
     /**
      * Creates a new session for a PostGIS database.
      *
-     * @param  source       provider of (pooled) connections to the database.
-     * @param  metadata     metadata about the database for which a session is created.
-     * @param  dialect      additional information not provided by {@code metadata}.
-     * @param  geomLibrary  the factory to use for creating geometric objects.
-     * @param  listeners    where to send warnings.
-     * @param  locks        the read/write locks, or {@code null} if none.
+     * @param  source         provider of (pooled) connections to the database.
+     * @param  metadata       metadata about the database for which a session is created.
+     * @param  dialect        additional information not provided by {@code metadata}.
+     * @param  geomLibrary    the factory to use for creating geometric objects.
+     * @param  contentLocale  the locale to use for international texts to write in the database, or {@code null} for default.
+     * @param  listeners      where to send warnings.
+     * @param  locks          the read/write locks, or {@code null} if none.
      * @throws SQLException if an error occurred while reading database metadata.
      */
     public Postgres(final DataSource source, final DatabaseMetaData metadata, final Dialect dialect,
-                    final Geometries<G> geomLibrary, final StoreListeners listeners, final ReadWriteLock locks)
+                    final Geometries<G> geomLibrary, final Locale contentLocale, final StoreListeners listeners,
+                    final ReadWriteLock locks)
             throws SQLException
     {
-        super(source, metadata, dialect, geomLibrary, listeners, locks);
+        super(source, metadata, dialect, geomLibrary, contentLocale, listeners, locks);
         Version version = null;
         try (Statement st = metadata.getConnection().createStatement();
              ResultSet result = st.executeQuery("SELECT public.PostGIS_version();"))

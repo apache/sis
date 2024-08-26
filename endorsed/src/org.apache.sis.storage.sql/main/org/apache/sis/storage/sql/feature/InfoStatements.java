@@ -144,6 +144,7 @@ public class InfoStatements implements Localized, AutoCloseable {
 
     /**
      * Returns the locale used for warnings and error messages.
+     * Not to be confused with the locale used for writing international texts in the database.
      */
     @Override
     public final Locale getLocale() {
@@ -785,7 +786,7 @@ public class InfoStatements implements Localized, AutoCloseable {
         do {
             final String column = description ? schema.crsDescriptionColumn : schema.crsNameColumn;
             if (column != null) {
-                String name = description ? IdentifiedObjects.getDisplayName(search.crs, getLocale())
+                String name = description ? IdentifiedObjects.getDisplayName(search.crs, database.contentLocale)
                                           : IdentifiedObjects.getName(search.crs, null);
                 if (name != null) {
                     definitions[numDefinitions++] = name;

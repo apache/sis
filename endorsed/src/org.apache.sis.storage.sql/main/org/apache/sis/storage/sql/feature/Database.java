@@ -211,6 +211,11 @@ public class Database<G> extends Syntax  {
     protected final ReadWriteLock transactionLocks;
 
     /**
+     * The locale to use for international texts to write in the database, or {@code null} for default.
+     */
+    protected final Locale contentLocale;
+
+    /**
      * Where to send warnings.
      *
      * @see #log(LogRecord)
@@ -237,16 +242,18 @@ public class Database<G> extends Syntax  {
     /**
      * Creates a new handler for a spatial database.
      *
-     * @param  source       provider of (pooled) connections to the database.
-     * @param  metadata     metadata about the database.
-     * @param  dialect      additional information not provided by {@code metadata}.
-     * @param  geomLibrary  the factory to use for creating geometric objects.
-     * @param  listeners    where to send warnings.
-     * @param  locks        the read/write locks, or {@code null} if none.
+     * @param  source         provider of (pooled) connections to the database.
+     * @param  metadata       metadata about the database.
+     * @param  dialect        additional information not provided by {@code metadata}.
+     * @param  geomLibrary    the factory to use for creating geometric objects.
+     * @param  contentLocale  the locale to use for international texts to write in the database, or {@code null} for default.
+     * @param  listeners      where to send warnings.
+     * @param  locks          the read/write locks, or {@code null} if none.
      * @throws SQLException if an error occurred while reading database metadata.
      */
     protected Database(final DataSource source, final DatabaseMetaData metadata, final Dialect dialect,
-                       final Geometries<G> geomLibrary, final StoreListeners listeners, final ReadWriteLock locks)
+                       final Geometries<G> geomLibrary, final Locale contentLocale, final StoreListeners listeners,
+                       final ReadWriteLock locks)
             throws SQLException
     {
         super(metadata, true);
@@ -281,6 +288,7 @@ public class Database<G> extends Syntax  {
         this.source        = source;
         this.isByteSigned  = !unsigned;
         this.geomLibrary   = geomLibrary;
+        this.contentLocale = contentLocale;
         this.listeners     = listeners;
         this.cacheOfCRS    = new Cache<>(7, 2, false);
         this.cacheOfSRID   = new WeakHashMap<>();
@@ -306,15 +314,15 @@ public class Database<G> extends Syntax  {
      * @throws DataStoreException if a logical error occurred while analyzing the database structure.
      */
     public static Database<?> create(final DataSource source, final DatabaseMetaData metadata,
-            final GeometryLibrary geomLibrary, final StoreListeners listeners, final ReadWriteLock locks)
-            throws Exception
+            final GeometryLibrary geomLibrary, final Locale contentLocale, final StoreListeners listeners,
+            final ReadWriteLock locks) throws Exception
     {
         final Geometries<?> g = Geometries.factory(geomLibrary);
         final Dialect dialect = Dialect.guess(metadata);
         final Database<?> db;
         switch (dialect) {
-            case POSTGRESQL: db = new Postgres<>(source, metadata, dialect, g, listeners, locks); break;
-            default:         db = new Database<>(source, metadata, dialect, g, listeners, locks); break;
+            case POSTGRESQL: db = new Postgres<>(source, metadata, dialect, g, contentLocale, listeners, locks); break;
+            default:         db = new Database<>(source, metadata, dialect, g, contentLocale, listeners, locks); break;
         }
         return db;
     }
