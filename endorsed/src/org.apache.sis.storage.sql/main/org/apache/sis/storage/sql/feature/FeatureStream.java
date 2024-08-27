@@ -31,12 +31,11 @@ import java.sql.Statement;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.metadata.sql.privy.SQLBuilder;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.stream.DeferredStream;
 import org.apache.sis.util.stream.PaginedStream;
 import org.apache.sis.filter.privy.SortByComparator;
-import org.apache.sis.util.privy.Strings;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.collection.BackingStoreException;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.Feature;
@@ -339,7 +338,7 @@ final class FeatureStream extends DeferredStream<Feature> {
                 }
             }
         } catch (SQLException e) {
-            throw new BackingStoreException(e);
+            throw cannotExecute(e);
         } finally {
             unlock();
         }

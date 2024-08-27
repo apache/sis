@@ -873,6 +873,8 @@ public class InfoStatements implements Localized, AutoCloseable {
     /**
      * Rethrows the given exception if the SQL state is not category 23: integrity constraint violation.
      * If the exception is a integrity constraint violation, do nothing.
+     * The current version checks more specifically for error code 23505:
+     * <q>duplicate key violates unique constraint</q>.
      *
      * @param  e  the exception to filter.
      * @throws SQLException if the given exception is not of category 23.

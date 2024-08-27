@@ -41,6 +41,7 @@ import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.UnconvertibleObjectException;
 import static org.apache.sis.storage.sql.feature.Database.WILDCARD;
 
@@ -194,9 +195,10 @@ public class SQLStoreProvider extends DataStoreProvider {
                 return ProbeResult.SUPPORTED;
             } catch (SQLException e) {
                 final String state = e.getSQLState();
-                if (!"08001".equals(state) || !"3D000".equals(state)) {
-                    throw new CanNotProbeException(this, connector, e);
+                if (!("08001".equals(state) || "3D000".equals(state))) {
+                    throw new CanNotProbeException(this, connector, Exceptions.unwrap(e));
                 }
+                // SQL-client unable to establish SQL-connection, or invalid catalog name.
             }
         }
         return ProbeResult.UNSUPPORTED_STORAGE;

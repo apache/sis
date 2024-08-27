@@ -88,10 +88,8 @@ public abstract class DeferredStream<T> extends StreamWrapper<T> {
             try {
                 if (h != null) try {
                     h.close();
-                } catch (RuntimeException e) {
-                    throw e;
                 } catch (Exception e) {
-                    throw new BackingStoreException(e);
+                    throw cannotExecute(e);
                 }
             } finally {
                 if (c != null) {
@@ -126,7 +124,7 @@ public abstract class DeferredStream<T> extends StreamWrapper<T> {
             if (cause instanceof BackingStoreException) {
                 ex = (BackingStoreException) cause;
             } else {
-                ex = new BackingStoreException(Exceptions.unwrap(cause));
+                ex = new BackingStoreException(cause.getMessage(), Exceptions.unwrap(cause));
             }
             /*
              * The close handler will be invoked later assuming that the user created the stream in a
@@ -197,5 +195,20 @@ public abstract class DeferredStream<T> extends StreamWrapper<T> {
      */
     protected final void unlock() {
         closeHandler.run();
+    }
+
+    /**
+     * Creates an unchecked exception for an operation that cannot be executed because of the specified cause.
+     *
+     * @param  cause  the cause about why the operation cannot be executed.
+     * @return the unchecked exception to throw. May be {@code cause} itself.
+     */
+    public static RuntimeException cannotExecute(final Exception cause) {
+        final Exception unwrap = Exceptions.unwrap(cause);
+        if (unwrap instanceof RuntimeException) {
+            return (RuntimeException) unwrap;
+        } else {
+            return new BackingStoreException(cause.toString(), unwrap);
+        }
     }
 }

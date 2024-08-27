@@ -27,7 +27,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.apache.sis.metadata.sql.privy.SQLBuilder;
 import org.apache.sis.storage.InternalDataStoreException;
-import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.WeakValueHashMap;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -218,10 +217,8 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
     public boolean tryAdvance(final Consumer<? super Feature> action) {
         try {
             return fetch(action, false);
-        } catch (RuntimeException e) {
-            throw e;
         } catch (Exception e) {
-            throw new BackingStoreException(e);
+            throw FeatureStream.cannotExecute(e);
         }
     }
 
@@ -232,10 +229,8 @@ final class FeatureIterator implements Spliterator<Feature>, AutoCloseable {
     public void forEachRemaining(final Consumer<? super Feature> action) {
         try {
             fetch(action, true);
-        } catch (RuntimeException e) {
-            throw e;
         } catch (Exception e) {
-            throw new BackingStoreException(e);
+            throw FeatureStream.cannotExecute(e);
         }
     }
 

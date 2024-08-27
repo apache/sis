@@ -115,7 +115,7 @@ public final class IdentifierGeneratorTest extends TestCase {
      * Tries to remove a few pre-selected record, then add them again.
      */
     private void removeAndAddRecords(final String prefix) throws SQLException {
-        assertEquals(5, stmt.executeUpdate("DELETE FROM \"" + TABLE + "\" WHERE " +
+        assertEquals(5, stmt.executeUpdate(SQLBuilder.DELETE + '"' + TABLE + "\" WHERE " +
                 "ID='" + prefix + IdentifierGenerator.SEPARATOR +   "4' OR " +
                 "ID='" + prefix + IdentifierGenerator.SEPARATOR +  "12' OR " +
                 "ID='" + prefix + IdentifierGenerator.SEPARATOR +  "32' OR " +

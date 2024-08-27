@@ -19,9 +19,11 @@ package org.apache.sis.storage.sql;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.Collection;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import javax.sql.DataSource;
 import java.sql.Connection;
+import java.sql.Statement;
 import java.sql.DatabaseMetaData;
 import java.lang.reflect.Method;
 import org.opengis.util.GenericName;
@@ -47,6 +49,7 @@ import org.apache.sis.io.stream.InternalOptionKey;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.Exceptions;
+import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.iso.Names;
 import org.apache.sis.util.privy.Strings;
 import org.apache.sis.setup.GeometryLibrary;
@@ -346,10 +349,8 @@ public abstract class SQLStore extends DataStore implements Aggregate {
             synchronized (this) {
                 try (Connection c = source.getConnection()) {
                     current = model(c);
-                } catch (DataStoreException e) {
-                    throw e;
                 } catch (Exception e) {
-                    throw new DataStoreException(Exceptions.unwrap(e));
+                    throw cannotExecute(e);
                 }
             }
         }
@@ -397,10 +398,8 @@ public abstract class SQLStore extends DataStore implements Aggregate {
             builder.addSpatialRepresentation(SpatialRepresentationType.TEXT_TABLE);
             try (Connection c = source.getConnection()) {
                 model(c).metadata(c.getMetaData(), builder);
-            } catch (DataStoreException e) {
-                throw e;
             } catch (Exception e) {
-                throw new DataStoreException(Exceptions.unwrap(e));
+                throw cannotExecute(e);
             }
             getDataSourceProperty(TITLE_GETTERS).ifPresent(builder::addTitle);
             builder.addIdentifier(identifier, MetadataBuilder.Scope.ALL);
@@ -429,7 +428,7 @@ public abstract class SQLStore extends DataStore implements Aggregate {
         } catch (NoSuchMethodException | SecurityException e) {
             // Ignore - try the next method.
         } catch (ReflectiveOperationException e) {
-            throw new DataStoreException(Exceptions.unwrap(e));
+            throw cannotExecute(e);
         }
         return Optional.empty();
     }
@@ -533,6 +532,59 @@ public abstract class SQLStore extends DataStore implements Aggregate {
         // If an argument is null, we let the parent class throws (indirectly) NullPointerException.
         if (listener == null || eventType == null || eventType.isAssignableFrom(WarningEvent.class)) {
             super.addListener(eventType, listener);
+        }
+    }
+
+    /**
+     * Returns the exception to throw for the given cause.
+     * The cause is typically a {@link java.sql.SQLException}, but not necessarily.
+     * This method provides a central point where we may specialize the type of the
+     * returned exception depending on the type of the cause.
+     *
+     * @param  cause  the cause of the error. Cannot be null.
+     * @return the data store exception to throw. May be {@code cause} itself.
+     */
+    static DataStoreException cannotExecute(final Exception cause) {
+        final Exception unwrap = Exceptions.unwrap(cause);
+        if (unwrap instanceof DataStoreException) {
+            return (DataStoreException) unwrap;
+        } else {
+            return new DataStoreException(cause.getMessage(), unwrap);
+        }
+    }
+
+    /**
+     * Executes the {@code "VACUUM"} statement on the database.
+     * This is a non-standard feature that exists on some databases such as PostgreSQL and SQLite.
+     * This method executes the statement only if the {@linkplain DatabaseMetaData#getSQLKeywords()
+     * <abbr>SQL</abbr> keywords declared in the database metadata} contains {@code "VACUUM"}, ignoring case.
+     *
+     * <p>This is a potentially costly operation which should be rarely executed.
+     * A typical use case if to compress a newly created Geopackage file (which are SQLite database).</p>
+     *
+     * @throws DataStoreException if an error occurred while executing the vacuum.
+     *
+     * @since 1.5
+     */
+    public void vacuum() throws DataStoreException {
+        try (Connection c = source.getConnection()) {
+            var keywords = (String[]) CharSequences.split(c.getMetaData().getSQLKeywords(), ',');
+            if (ArraysExt.containsIgnoreCase(keywords, "VACUUM")) {
+                Lock lock = null;
+                if (transactionLocks != null) {
+                    lock = transactionLocks.writeLock();
+                    lock.lock();
+                }
+                try (Statement stmt = c.createStatement()) {
+                    stmt.executeUpdate("VACUUM");
+                } finally {
+                    if (lock != null) {
+                        lock.unlock();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw cannotExecute(e);
         }
     }
 

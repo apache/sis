@@ -37,6 +37,7 @@ import static javax.imageio.plugins.tiff.GeoTIFFTagSet.*;
 import javax.measure.IncommensurableException;
 import org.opengis.util.FactoryException;
 import org.opengis.metadata.Metadata;
+import org.opengis.metadata.citation.CitationDate;
 import org.apache.sis.image.ImageProcessor;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.privy.ImageUtilities;
@@ -367,6 +368,10 @@ final class Writer extends IOBase implements Flushable {
         final double[][] statistics = image.statistics(numBands);
         final  short[][] shortStats = toShorts(statistics, sampleFormat);
         final MetadataFetcher<String> mf = new MetadataFetcher<>(store.dataLocale) {
+            @Override protected boolean accept(final CitationDate info) {
+                return super.accept(info) || creationDate != null;          // Limit to a singleton.
+            }
+
             @Override protected String convertDate(final Date date) {
                 return store.getDateFormat().format(date);
             }

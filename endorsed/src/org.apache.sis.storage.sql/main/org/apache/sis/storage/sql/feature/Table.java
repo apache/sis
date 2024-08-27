@@ -32,6 +32,7 @@ import org.apache.sis.metadata.sql.privy.Reflection;
 import org.apache.sis.metadata.sql.privy.SQLBuilder;
 import org.apache.sis.pending.jdk.JDK19;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.iso.DefaultNameSpace;
@@ -345,7 +346,7 @@ final class Table extends AbstractFeatureSet {
             isEnvelopeAnalyzed = true;
             return Optional.ofNullable(database.getEstimatedExtent(name, attributes, recall));
         } catch (SQLException e) {
-            throw new DataStoreException(e);
+            throw new DataStoreException(e.getMessage(), Exceptions.unwrap(e));
         } else {
             return Optional.empty();
         }

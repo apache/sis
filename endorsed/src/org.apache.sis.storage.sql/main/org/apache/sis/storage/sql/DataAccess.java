@@ -33,7 +33,6 @@ import org.apache.sis.storage.DataStoreReferencingException;
 import org.apache.sis.storage.NoSuchDataException;
 import org.apache.sis.storage.sql.feature.Database;
 import org.apache.sis.storage.sql.feature.InfoStatements;
-import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.resources.Errors;
 
 
@@ -248,12 +247,10 @@ public class DataAccess implements AutoCloseable {
             crs = spatialInformation().fetchCRS(srid);
         } catch (DataStoreContentException e) {
             throw new NoSuchDataException(e.getMessage(), e.getCause());
-        } catch (DataStoreException e) {
-            throw e;
         } catch (FactoryException | ParseException e) {
-            throw new DataStoreReferencingException(Exceptions.unwrap(e));
+            throw new DataStoreReferencingException(e.getMessage(), e);
         } catch (Exception e) {
-            throw new DataStoreException(Exceptions.unwrap(e));
+            throw SQLStore.cannotExecute(e);
         }
         return crs;
     }
@@ -285,10 +282,8 @@ public class DataAccess implements AutoCloseable {
         final int srid;
         try {
             srid = spatialInformation().findSRID(crs);
-        } catch (DataStoreException e) {
-            throw e;
         } catch (Exception e) {
-            throw new DataStoreException(Exceptions.unwrap(e));
+            throw SQLStore.cannotExecute(e);
         }
         return srid;
     }
