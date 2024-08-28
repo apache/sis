@@ -43,7 +43,9 @@ import org.apache.sis.util.ArgumentChecks;
  *       inferred by foreigner keys will be followed automatically.</li>
  * </ul>
  *
- * The mapping from table structures to feature types is described in the package Javadoc.
+ * Despite the {@code SimpleFeatureStore} class name, this class supports <dfn>complex features</dfn>,
+ * i.e. features having associations to other features.
+ * The associations are discovered automatically by following the foreigner keys.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)

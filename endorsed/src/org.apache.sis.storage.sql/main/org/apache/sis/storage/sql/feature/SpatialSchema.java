@@ -119,8 +119,8 @@ public enum SpatialSchema {
 
     /**
      * Name of the column for CRS definitions in Well-Known Text (<abbr>WKT</abbr>) format.
-     * Example: {@code "SRTEXT"}, {@code "DEFINITION"}.
-     * Entries are in no particular order.
+     * Example: {@code "SRTEXT"}, {@code "DEFINITION"}. Entries are in no particular order.
+     * The priority order is not defined by this map, but by the {@link CRSEncoding} enumeration.
      */
     final Map<CRSEncoding, String> crsDefinitionColumn;
 

@@ -218,7 +218,7 @@ public abstract class SQLStore extends DataStore implements Aggregate {
      */
     protected SQLStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         super(provider, connector);
-        source           = connector.getStorageAs(DataSource.class);
+        source           = connector.commit(DataSource.class, "SQL");
         geomLibrary      = connector.getOption(OptionKey.GEOMETRY_LIBRARY);
         contentLocale    = connector.getOption(OptionKey.LOCALE);
         customizer       = connector.getOption(SchemaModifier.OPTION);

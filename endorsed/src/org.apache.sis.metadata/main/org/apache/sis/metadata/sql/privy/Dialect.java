@@ -19,6 +19,7 @@ package org.apache.sis.metadata.sql.privy;
 import java.sql.SQLException;
 import java.sql.DatabaseMetaData;
 import org.apache.sis.util.CharSequences;
+import org.apache.sis.util.privy.Constants;
 
 
 /**
@@ -170,7 +171,7 @@ public enum Dialect {
         final String url = metadata.getURL();
         if (url != null) {
             int start = url.indexOf(':');
-            if (start >= 0 && "jdbc".equalsIgnoreCase((String) CharSequences.trimWhitespaces(url, 0, start))) {
+            if (start >= 0 && Constants.JDBC.equalsIgnoreCase((String) CharSequences.trimWhitespaces(url, 0, start))) {
                 final int end = url.indexOf(':', ++start);
                 if (end >= 0) {
                     final String protocol = (String) CharSequences.trimWhitespaces(url, start, end);

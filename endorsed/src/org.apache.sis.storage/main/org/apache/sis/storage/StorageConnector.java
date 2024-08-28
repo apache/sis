@@ -47,6 +47,7 @@ import javax.imageio.ImageIO;
 import javax.imageio.stream.ImageInputStream;
 import javax.imageio.stream.ImageOutputStream;
 import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 import javax.sql.DataSource;
 import org.apache.sis.util.Debug;
@@ -57,6 +58,7 @@ import org.apache.sis.util.UnconvertibleObjectException;
 import org.apache.sis.util.resources.Errors;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.util.privy.Strings;
+import org.apache.sis.util.privy.Constants;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.TableColumn;
 import org.apache.sis.util.collection.DefaultTreeTable;
@@ -231,6 +233,7 @@ public class StorageConnector implements Serializable {
         add(InputStream.class,       StorageConnector::createInputStream);
         add(OutputStream.class,      StorageConnector::createOutputStream);
         add(Reader.class,            StorageConnector::createReader);
+        add(DataSource.class,        StorageConnector::createDataSource);
         add(Connection.class,        StorageConnector::createConnection);
         add(ChannelDataInput.class,  StorageConnector::createChannelDataInput);   // Undocumented case (SIS internal)
         add(ChannelDataOutput.class, StorageConnector::createChannelDataOutput);  // Undocumented case (SIS internal)
@@ -756,7 +759,7 @@ public class StorageConnector implements Serializable {
      *       <li>If the {@linkplain #getStorage() storage} object is an instance of the {@link Path},
      *           {@link File}, {@link URL}, {@link URI} or {@link CharSequence} types,
      *           returns the string representation of their path.</li>
-     *       <li>Otherwise this method returns {@code null}.</li>
+     *       <li>Otherwise, this method returns {@code null}.</li>
      *     </ul>
      *   </li>
      *   <li>{@link Path}, {@link URI}, {@link URL}, {@link File}:
@@ -764,14 +767,14 @@ public class StorageConnector implements Serializable {
      *       <li>If the {@linkplain #getStorage() storage} object is an instance of the {@link Path},
      *           {@link File}, {@link URL}, {@link URI} or {@link CharSequence} types and
      *           that type can be converted to the requested type, returned the conversion result.</li>
-     *       <li>Otherwise this method returns {@code null}.</li>
+     *       <li>Otherwise, this method returns {@code null}.</li>
      *     </ul>
      *   </li>
      *   <li>{@link ByteBuffer}:
      *     <ul>
      *       <li>If the {@linkplain #getStorage() storage} object can be obtained as described in bullet 2 of the
      *           {@code DataInput} section below, then this method returns the associated byte buffer.</li>
-     *       <li>Otherwise this method returns {@code null}.</li>
+     *       <li>Otherwise, this method returns {@code null}.</li>
      *     </ul>
      *   </li>
      *   <li>{@link DataInput}:
@@ -779,16 +782,16 @@ public class StorageConnector implements Serializable {
      *       <li>If the {@linkplain #getStorage() storage} object is already an instance of {@code DataInput}
      *           (including the {@link ImageInputStream} and {@link ImageOutputStream} types),
      *           then it is returned unchanged.</li>
-     *       <li>Otherwise if the input is an instance of {@link ByteBuffer}, then an {@link ImageInputStream}
+     *       <li>Otherwise, if the input is an instance of {@link ByteBuffer}, then an {@link ImageInputStream}
      *           backed by a read-only view of that buffer is created when first needed and returned.
      *           The properties (position, mark, limit) of the original buffer are unmodified.</li>
-     *       <li>Otherwise if the input is an instance of {@link Path}, {@link File},
+     *       <li>Otherwise, if the input is an instance of {@link Path}, {@link File},
      *           {@link URI}, {@link URL}, {@link CharSequence}, {@link InputStream} or
      *           {@link ReadableByteChannel}, then an {@link ImageInputStream} backed by a
      *           {@link ByteBuffer} is created when first needed and returned.</li>
-     *       <li>Otherwise if {@link ImageIO#createImageInputStream(Object)} returns a non-null value,
+     *       <li>Otherwise, if {@link ImageIO#createImageInputStream(Object)} returns a non-null value,
      *           then this value is cached and returned.</li>
-     *       <li>Otherwise this method returns {@code null}.</li>
+     *       <li>Otherwise, this method returns {@code null}.</li>
      *     </ul>
      *   </li>
      *   <li>{@link ImageInputStream}:
@@ -801,9 +804,9 @@ public class StorageConnector implements Serializable {
      *     <ul>
      *       <li>If the {@linkplain #getStorage() storage} object is already an instance of {@link InputStream},
      *           then it is returned unchanged.</li>
-     *       <li>Otherwise if the above {@code ImageInputStream} can be created,
+     *       <li>Otherwise, if the above {@code ImageInputStream} can be created,
      *           returns a wrapper around that stream.</li>
-     *       <li>Otherwise this method returns {@code null}.</li>
+     *       <li>Otherwise, this method returns {@code null}.</li>
      *     </ul>
      *   </li>
      *   <li>{@link Reader}:
@@ -811,23 +814,23 @@ public class StorageConnector implements Serializable {
      *       <li>If the {@linkplain #getStorage() storage} object is already an instance of {@link Reader},
      *           then it is returned unchanged.</li>
      *
-     *       <li>Otherwise if the above {@code InputStream} can be created, returns an {@link InputStreamReader}
+     *       <li>Otherwise, if the above {@code InputStream} can be created, returns an {@link InputStreamReader}
      *           using the encoding specified by {@link OptionKey#ENCODING} if any, or using the system default
      *           encoding otherwise.</li>
-     *       <li>Otherwise this method returns {@code null}.</li>
+     *       <li>Otherwise, this method returns {@code null}.</li>
      *     </ul>
      *   </li>
      *   <li>{@link DataOutput}:
      *     <ul>
      *       <li>If the {@linkplain #getStorage() storage} object is already an instance of {@code DataOutput}
      *           (including the {@link ImageOutputStream} type), then it is returned unchanged.</li>
-     *       <li>Otherwise if the output is an instance of {@link Path}, {@link File},
+     *       <li>Otherwise, if the output is an instance of {@link Path}, {@link File},
      *           {@link URI}, {@link URL}, {@link CharSequence}, {@link OutputStream} or
      *           {@link WritableByteChannel}, then an {@link ImageInputStream} backed by a
      *           {@link ByteBuffer} is created when first needed and returned.</li>
-     *       <li>Otherwise if {@link ImageIO#createImageOutputStream(Object)} returns a non-null value,
+     *       <li>Otherwise, if {@link ImageIO#createImageOutputStream(Object)} returns a non-null value,
      *           then this value is cached and returned.</li>
-     *       <li>Otherwise this method returns {@code null}.</li>
+     *       <li>Otherwise, this method returns {@code null}.</li>
      *     </ul>
      *   </li>
      *   <li>{@link ImageOutputStream}:
@@ -842,20 +845,30 @@ public class StorageConnector implements Serializable {
      *       <li>Otherwise this method returns {@code null}.</li>
      *     </ul>
      *   </li>
+     *   <li>{@link DataSource}:
+     *     <ul>
+     *       <li>If the {@linkplain #getStorage() storage} object is already an instance of {@link DataSource},
+     *           then it is returned unchanged.</li>
+     *       <li>Otherwise, if the storage is convertible to an {@link URI} and the {@linkplain URI#getScheme()
+     *           URI scheme} is "jdbc" (ignoring case), then a data source delegating to {@link DriverManager}
+     *           is created when first needed and returned.</li>
+     *       <li>Otherwise, this method returns {@code null}.</li>
+     *     </ul>
+     *   </li>
      *   <li>{@link Connection}:
      *     <ul>
      *       <li>If the {@linkplain #getStorage() storage} object is already an instance of {@link Connection},
      *           then it is returned unchanged.</li>
-     *       <li>Otherwise if the storage is an instance of {@link DataSource}, then a connection is obtained
+     *       <li>Otherwise, if the storage is convertible to a {@link DataSource}, then a connection is obtained
      *           when first needed and returned.</li>
-     *       <li>Otherwise this method returns {@code null}.</li>
+     *       <li>Otherwise, this method returns {@code null}.</li>
      *     </ul>
      *   </li>
      *   <li>Any other types:
      *     <ul>
      *       <li>If the storage given at construction time is already an instance of the requested type,
      *           returns it <i>as-is</i>.</li>
-     *       <li>Otherwise this method throws {@link IllegalArgumentException}.</li>
+     *       <li>Otherwise, this method throws {@link IllegalArgumentException}.</li>
      *     </ul>
      *   </li>
      * </ul>
@@ -1406,16 +1419,35 @@ public class StorageConnector implements Serializable {
     }
 
     /**
+     * Creates a database source if possible.
+     *
+     * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
+     * {@code StorageConnector} instance.</p>
+     *
+     * @return input/output, or {@code null} if none.
+     */
+    private DataSource createDataSource() throws DataStoreException {
+        final URI uri = getStorageAs(URI.class);
+        if (uri != null && Constants.JDBC.equalsIgnoreCase(uri.getScheme())) {
+            final var source = new URLDataSource(uri);
+            addView(DataSource.class, source, null, (byte) 0);
+            return source;
+        }
+        return null;
+    }
+
+    /**
      * Creates a database connection if possible.
      *
      * <p>This method is one of the {@link #OPENERS} methods and should be invoked at most once per
      * {@code StorageConnector} instance.</p>
      *
-     * @return input, or {@code null} if none.
+     * @return input/output, or {@code null} if none.
      */
-    private Connection createConnection() throws SQLException {
-        if (storage instanceof DataSource) {
-            final Connection c = ((DataSource) storage).getConnection();
+    private Connection createConnection() throws SQLException, DataStoreException {
+        final DataSource source = getStorageAs(DataSource.class);
+        if (source != null) {
+            final Connection c = source.getConnection();
             addView(Connection.class, c, null, (byte) 0);
             return c;
         }

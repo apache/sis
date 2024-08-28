@@ -100,7 +100,7 @@ public final class Constants extends Static {
     /**
      * The {@value} protocol.
      */
-    public static final String HTTP = "http", HTTPS = "https";
+    public static final String HTTP = "http", HTTPS = "https", JDBC = "jdbc";
 
     /**
      * The {@value} code space.

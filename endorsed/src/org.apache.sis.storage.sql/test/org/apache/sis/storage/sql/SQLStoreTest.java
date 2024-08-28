@@ -123,6 +123,15 @@ public final class SQLStoreTest extends TestOnAllDatabases {
     }
 
     /**
+     * Returns the storage connector to use for connecting to the test database.
+     * A new instance shall be created for each test, because each instance can
+     * be used only once.
+     */
+    private static StorageConnector connector(final TestDatabase database) {
+        return new StorageConnector(database.source);
+    }
+
+    /**
      * Runs all tests on a single database software. A temporary schema is created at the beginning of this method
      * and deleted after all tests finished. The schema is created and populated by the {@code Features.sql} script.
      *
@@ -139,19 +148,19 @@ public final class SQLStoreTest extends TestOnAllDatabases {
         }
         scripts.add(resource("Features.sql"));
         database.executeSQL(scripts);
-        final StorageConnector connector = new StorageConnector(database.source);
         final ResourceDefinition table = ResourceDefinition.table(null, noschema ? null : SCHEMA, "Cities");
-        testTableQuery(connector, table);
+        testTableQuery(connector(database), table);
         /*
          * Verify using SQL statements instead of tables.
          */
-        verifyFetchCityTableAsQuery(connector);
-        verifyNestedSQLQuery(connector);
-        verifyLimitOffsetAndColumnSelectionFromQuery(connector);
-        verifyDistinctQuery(connector);
+        verifyFetchCityTableAsQuery(connector(database));
+        verifyNestedSQLQuery(connector(database));
+        verifyLimitOffsetAndColumnSelectionFromQuery(connector(database));
+        verifyDistinctQuery(connector(database));
         /*
          * Test on the table again, but with cyclic associations enabled.
          */
+        final StorageConnector connector = connector(database);
         connector.setOption(SchemaModifier.OPTION, new SchemaModifier() {
             @Override public boolean isCyclicAssociationAllowed(TableReference dependency) {
                 return true;

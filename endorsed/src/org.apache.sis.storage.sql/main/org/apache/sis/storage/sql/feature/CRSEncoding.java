@@ -19,6 +19,7 @@ package org.apache.sis.storage.sql.feature;
 
 /**
  * The encoding of Coordinate Reference Systems in a particular column, in preference order.
+ * The Geopackage specification said that WKT 2 has precedence over WKT 1.
  *
  * <p><b>Note:</b> the distinction between version 1 and 2 of <abbr>WKT</abbr> formats should not have been needed,
  * because a decent parser should be able to differentiate those two versions automatically based on the fact that

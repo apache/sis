@@ -459,6 +459,11 @@ public class Resources extends IndexedResourceBundle {
         public static final short UnknownFormatFor_1 = 14;
 
         /**
+         * Using {0} JDBC driver version {1}.{2}.
+         */
+        public static final short UseJdbcDriverVersion_3 = 82;
+
+        /**
          * Used only if this information is not encoded with the data.
          */
         public static final short UsedOnlyIfNotEncoded = 33;
