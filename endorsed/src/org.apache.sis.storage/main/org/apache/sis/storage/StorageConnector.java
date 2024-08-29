@@ -899,7 +899,7 @@ public class StorageConnector implements Serializable {
      * @see DataStoreProvider#probeContent(StorageConnector, Class, Prober)
      */
     public <S> S getStorageAs(final Class<S> type) throws IllegalArgumentException, DataStoreException {
-        if (views != null && views.isEmpty()) {
+        if (isClosed()) {
             throw new IllegalStateException(Resources.format(Resources.Keys.ClosedStorageConnector));
         }
         /*
@@ -1837,6 +1837,18 @@ public class StorageConnector implements Serializable {
     }
 
     /**
+     * Returns whether this storage connector has been closed. If this method returns {@code true},
+     * then any call to {@link #getStorageAs(Class)} will throw {@link IllegalStateException}.
+     *
+     * @return {@code true} if this storage connector is closed.
+     *
+     * @since 1.5
+     */
+    public final boolean isClosed() {
+        return views != null && views.isEmpty();
+    }
+
+    /**
      * Returns the cause of given exception if it exists, or the exception itself otherwise.
      * This method is invoked in the {@code catch} block of a {@code try} block invoking
      * {@link ImageIO#createImageInputStream(Object)} or
@@ -1866,6 +1878,9 @@ public class StorageConnector implements Serializable {
      */
     @Override
     public String toString() {
+        if (isClosed()) {
+            return Resources.format(Resources.Keys.ClosedStorageConnector);
+        }
         final TreeTable table = new DefaultTreeTable(TableColumn.NAME, TableColumn.VALUE);
         final TreeTable.Node root = table.getRoot();
         root.setValue(TableColumn.NAME,  Classes.getShortClassName(this));

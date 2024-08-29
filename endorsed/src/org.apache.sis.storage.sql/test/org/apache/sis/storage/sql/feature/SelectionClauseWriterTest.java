@@ -75,7 +75,7 @@ public final class SelectionClauseWriterTest extends TestCase implements SchemaM
         try (TestDatabase db = TestDatabase.create("SelectionClause")) {
             db.executeSQL(List.of("CREATE TABLE TEST (ALPHA INTEGER, BETA INTEGER, GAMMA INTEGER, PI FLOAT);"));
             final StorageConnector connector = new StorageConnector(db.source);
-            connector.setOption(SchemaModifier.OPTION, this);
+            connector.setOption(SchemaModifier.OPTION_KEY, this);
             try (DataStore store = new SQLStoreProvider().open(connector)) {
                 table = (Table) store.findResource("TEST");
                 testSimpleFilter();

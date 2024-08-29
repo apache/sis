@@ -161,7 +161,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
          * Test on the table again, but with cyclic associations enabled.
          */
         final StorageConnector connector = connector(database);
-        connector.setOption(SchemaModifier.OPTION, new SchemaModifier() {
+        connector.setOption(SchemaModifier.OPTION_KEY, new SchemaModifier() {
             @Override public boolean isCyclicAssociationAllowed(TableReference dependency) {
                 return true;
             }

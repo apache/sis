@@ -20,11 +20,8 @@ import java.util.Set;
 import java.util.Map;
 import java.util.List;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.WeakHashMap;
-import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.logging.LogRecord;
@@ -41,7 +38,6 @@ import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.opengis.metadata.spatial.SpatialRepresentationType;
-import org.apache.sis.setup.GeometryLibrary;
 import org.apache.sis.metadata.sql.privy.Syntax;
 import org.apache.sis.metadata.sql.privy.Dialect;
 import org.apache.sis.metadata.sql.privy.Reflection;
@@ -57,7 +53,6 @@ import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.system.Modules;
 import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.storage.sql.ResourceDefinition;
-import org.apache.sis.storage.sql.postgis.Postgres;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.Cache;
@@ -301,63 +296,15 @@ public class Database<G> extends Syntax  {
     }
 
     /**
-     * Creates a new handler for a spatial database.
-     * Callers shall invoke {@link #analyze analyze(…)} after this method.
+     * Detects automatically which spatial schema is in use. Detects also the catalog name and schema name.
+     * This method is invoked exactly once after construction and before the analysis of feature tables.
      *
-     * @param  source       provider of (pooled) connections to the database.
-     * @param  metadata     value of {@code connection.getMetaData()} (provided because already known by caller).
-     * @param  geomLibrary  the factory to use for creating geometric objects.
-     * @param  listeners    where to send warnings.
-     * @param  locks        the read/write locks, or {@code null} if none.
-     * @return handler for the spatial database.
-     * @throws SQLException if a database error occurred while reading metadata.
-     * @throws DataStoreException if a logical error occurred while analyzing the database structure.
+     * @param  metadata    metadata to use for verifying which tables are present.
+     * @param  tableTypes  the "TABLE" and "VIEW" keywords for table types, with unsupported keywords omitted.
+     * @return names of the standard tables defined by the spatial schema.
      */
-    public static Database<?> create(final DataSource source, final DatabaseMetaData metadata,
-            final GeometryLibrary geomLibrary, final Locale contentLocale, final StoreListeners listeners,
-            final ReadWriteLock locks) throws Exception
-    {
-        final Geometries<?> g = Geometries.factory(geomLibrary);
-        final Dialect dialect = Dialect.guess(metadata);
-        final Database<?> db;
-        switch (dialect) {
-            case POSTGRESQL: db = new Postgres<>(source, metadata, dialect, g, contentLocale, listeners, locks); break;
-            default:         db = new Database<>(source, metadata, dialect, g, contentLocale, listeners, locks); break;
-        }
-        return db;
-    }
-
-    /**
-     * Creates a model about the specified tables in the database.
-     * This method shall be invoked exactly once after {@code Database} construction.
-     * It requires a list of tables to include in the model, but this list should not
-     * include the dependencies; this method will follow foreigner keys automatically.
-     *
-     * <p>The table names shall be qualified names of 1, 2 or 3 components.
-     * The components are {@code <catalog>.<schema pattern>.<table pattern>} where:</p>
-     *
-     * <ul>
-     *   <li>{@code <catalog>}, if present, shall be the name of a catalog as it is stored in the database.</li>
-     *   <li>{@code <schema pattern>}, if present, shall be the pattern of a schema.
-     *       The pattern can use {@code '_'} and {@code '%'} wildcards characters.</li>
-     *   <li>{@code <table pattern>} (mandatory) shall be the pattern of a table.
-     *       The pattern can use {@code '_'} and {@code '%'} wildcards characters.</li>
-     * </ul>
-     *
-     * @param  store               the data store for which we are creating a model. Used only in case of error.
-     * @param  metadata            value of {@code connection.getMetaData()} (provided because already known by caller).
-     * @param  tableNames          qualified name of the tables. Specified by users at construction time.
-     * @param  queries             additional resources associated to SQL queries. Specified by users at construction time.
-     * @param  customizer          user-specified modification to the features, or {@code null} if none.
-     * @param  spatialInformation  statements for fetching SRID, geometry types, <i>etc.</i>
-     * @throws SQLException if a database error occurred while reading metadata.
-     * @throws DataStoreException if a logical error occurred while analyzing the database structure.
-     */
-    public final void analyze(final SQLStore store, final DatabaseMetaData metadata, final GenericName[] tableNames,
-                              final ResourceDefinition[] queries, final SchemaModifier customizer,
-                              final InfoStatements spatialInformation) throws Exception
-    {
-        final String[] tableTypes = getTableTypes(metadata);
+    final Set<String> detectSpatialSchema(final DatabaseMetaData metadata, final String[] tableTypes) throws SQLException {
+        final String escape = metadata.getSearchStringEscape();
         /*
          * The following tables are defined by ISO 19125 / OGC Simple feature access part 2.
          * Note that the standard specified those names in upper-case letters, which is also
@@ -390,7 +337,7 @@ public class Database<G> extends Syntax  {
             String catalog = null, schema = null;
             for (final Map.Entry<String,Boolean> entry : ignoredTables.entrySet()) {
                 if (entry.getValue()) {
-                    String table = SQLUtilities.escape(entry.getKey(), metadata.getSearchStringEscape());
+                    String table = SQLUtilities.escape(entry.getKey(), escape);
                     try (ResultSet reflect = metadata.getTables(null, null, table, tableTypes)) {
                         while (reflect.next()) {
                             consistent &= consistent(catalog, catalog = reflect.getString(Reflection.TABLE_CAT));
@@ -416,16 +363,15 @@ public class Database<G> extends Syntax  {
          * Some schemas have additional columns for optional encodings, for example a separated column for WKT2.
          * The preference order will be defined by the `CRSEncoding` enumeration order.
          */
-        final Analyzer analyzer = new Analyzer(this, metadata, customizer, spatialInformation);
         if (spatialSchema != null) {
-            final String schema = SQLUtilities.escape(schemaOfSpatialTables, analyzer.escape);
-            final String table  = SQLUtilities.escape(crsTable, analyzer.escape);
+            final String schema = SQLUtilities.escape(schemaOfSpatialTables, escape);
+            final String table  = SQLUtilities.escape(crsTable, escape);
             for (Map.Entry<CRSEncoding, String> entry : spatialSchema.crsDefinitionColumn.entrySet()) {
                 String column = entry.getValue();
                 if (metadata.storesLowerCaseIdentifiers()) {
                     column = column.toLowerCase(Locale.US);
                 }
-                column = SQLUtilities.escape(column, analyzer.escape);
+                column = SQLUtilities.escape(column, escape);
                 try (ResultSet reflect = metadata.getColumns(catalogOfSpatialTables, schema, table, column)) {
                     if (reflect.next()) {
                         crsEncodings.add(entry.getKey());
@@ -433,48 +379,48 @@ public class Database<G> extends Syntax  {
                 }
             }
         }
-        /*
-         * Collect the names of all tables specified by user, ignoring the tables
-         * used for database internal working (for example by PostGIS).
-         */
-        final var declared = new LinkedHashSet<TableReference>();
-        for (final GenericName tableName : tableNames) {
-            final String[] names = TableReference.splitName(tableName);
-            try (ResultSet reflect = metadata.getTables(names[2], names[1], names[0], tableTypes)) {
-                while (reflect.next()) {
-                    final String table = analyzer.getUniqueString(reflect, Reflection.TABLE_NAME);
-                    if (ignoredTables.containsKey(table)) {
-                        continue;
-                    }
-                    declared.add(new TableReference(
-                            analyzer.getUniqueString(reflect, Reflection.TABLE_CAT),
-                            analyzer.getUniqueString(reflect, Reflection.TABLE_SCHEM), table,
-                            analyzer.getUniqueString(reflect, Reflection.REMARKS)));
-                }
-            }
+        return ignoredTables.keySet();
+    }
+
+    /**
+     * Creates a model about the specified tables in the database.
+     * This method shall be invoked exactly once after {@code Database} construction.
+     * It requires a list of tables to include in the model, but this list should not
+     * include the dependencies; this method will follow foreigner keys automatically.
+     *
+     * <p>The table names shall be qualified names of 1, 2 or 3 components.
+     * The components are {@code <catalog>.<schema pattern>.<table pattern>} where:</p>
+     *
+     * <ul>
+     *   <li>{@code <catalog>}, if present, shall be the name of a catalog as it is stored in the database.</li>
+     *   <li>{@code <schema pattern>}, if present, shall be the pattern of a schema.
+     *       The pattern can use {@code '_'} and {@code '%'} wildcards characters.</li>
+     *   <li>{@code <table pattern>} (mandatory) shall be the pattern of a table.
+     *       The pattern can use {@code '_'} and {@code '%'} wildcards characters.</li>
+     * </ul>
+     *
+     * @param  store               the data store for which we are creating a model. Used only in case of error.
+     * @param  analyzer            the opaque temporary object used for analyzing the database schema.
+     * @param  tableNames          qualified name of the tables. Specified by users at construction time.
+     * @param  queries             additional resources associated to SQL queries. Specified by users at construction time.
+     * @param  customizer          user-specified modification to the features, or {@code null} if none.
+     * @param  spatialInformation  statements for fetching SRID, geometry types, <i>etc.</i>
+     * @throws SQLException if a database error occurred while reading metadata.
+     * @throws DataStoreException if a logical error occurred while analyzing the database structure.
+     */
+    public final void analyze(final SQLStore store, final Analyzer analyzer, final GenericName[] tableNames,
+                              final ResourceDefinition[] queries, final SchemaModifier customizer,
+                              final InfoStatements spatialInformation) throws Exception
+    {
+        if (spatialSchema != null) {
+            analyzer.spatialInformation = spatialInformation;
         }
-        /*
-         * At this point we got the list of tables requested by the user. Now create the Table objects for each
-         * specified name. During this iteration, we may discover new tables to analyze because of dependencies
-         * (foreigner keys).
-         */
-        final List<Table> tableList;
-        tableList = new ArrayList<>(tableNames.length);
-        for (final TableReference reference : declared) {
-            // Adds only the table explicitly required by the user.
-            tableList.add(analyzer.table(reference, reference.getName(analyzer), null));
-        }
-        /*
-         * Add queries if any.
-         */
-        for (final ResourceDefinition resource : queries) {
-            // Optional value should always be present in this context.
-            tableList.add(analyzer.query(resource.getName(), resource.getQuery().get()));
-        }
+        analyzer.customizer = customizer;
+        final List<Table> tableList = analyzer.findFeatureTables(tableNames, queries);
         /*
          * At this point we finished to create the tables explicitly requested by the user.
          * Register all tables only at this point, because other tables (dependencies) may
-         * have been analyzed as a side-effect of above loop.
+         * have been analyzed as a side-effect of above method call.
          */
         for (final Table table : analyzer.finish()) {
             tablesByNames.add(store, table.featureType.getName(), table);
@@ -482,25 +428,6 @@ public class Database<G> extends Syntax  {
             hasRaster   |= table.hasRaster;
         }
         tables = tableList.toArray(Table[]::new);
-    }
-
-    /**
-     * Returns the "TABLE" and "VIEW" keywords for table types, with unsupported keywords omitted.
-     */
-    private static String[] getTableTypes(final DatabaseMetaData metadata) throws SQLException {
-        final Set<String> types = new HashSet<>(4);
-        try (ResultSet reflect = metadata.getTableTypes()) {
-            while (reflect.next()) {
-               /*
-                 * Derby, HSQLDB and PostgreSQL uses the "TABLE" type, but H2 uses "BASE TABLE".
-                 */
-                final String type = reflect.getString(Reflection.TABLE_TYPE);
-                if ("TABLE".equalsIgnoreCase(type) || "VIEW".equalsIgnoreCase(type) || "BASE TABLE".equalsIgnoreCase(type)) {
-                    types.add(type);
-                }
-            }
-        }
-        return types.toArray(String[]::new);
     }
 
     /**
@@ -830,8 +757,10 @@ public class Database<G> extends Syntax  {
      */
     @Debug
     final void appendTo(final TreeTable.Node parent) {
-        for (final Table child : tables) {
-            child.appendTo(parent);
+        if (tables != null) {
+            for (final Table child : tables) {
+                child.appendTo(parent);
+            }
         }
     }
 

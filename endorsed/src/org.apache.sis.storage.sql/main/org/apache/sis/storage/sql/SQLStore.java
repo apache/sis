@@ -26,6 +26,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.sql.DatabaseMetaData;
 import java.lang.reflect.Method;
+import java.sql.SQLException;
 import org.opengis.util.GenericName;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
@@ -40,6 +41,7 @@ import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.event.StoreEvent;
 import org.apache.sis.storage.event.StoreListener;
 import org.apache.sis.storage.event.WarningEvent;
+import org.apache.sis.storage.sql.feature.Analyzer;
 import org.apache.sis.storage.sql.feature.Database;
 import org.apache.sis.storage.sql.feature.Resources;
 import org.apache.sis.storage.sql.feature.SchemaModifier;
@@ -221,7 +223,7 @@ public abstract class SQLStore extends DataStore implements Aggregate {
         source           = connector.commit(DataSource.class, "SQL");
         geomLibrary      = connector.getOption(OptionKey.GEOMETRY_LIBRARY);
         contentLocale    = connector.getOption(OptionKey.LOCALE);
-        customizer       = connector.getOption(SchemaModifier.OPTION);
+        customizer       = connector.getOption(SchemaModifier.OPTION_KEY);
         transactionLocks = connector.getOption(InternalOptionKey.LOCKS);
         identifier       = getDataSourceProperty(IDENTIFIER_GETTERS)
                             .map((id) -> Names.createLocalName(null, null, id)).orElse(null);
@@ -258,6 +260,24 @@ public abstract class SQLStore extends DataStore implements Aggregate {
         }
         this.tableNames = ArraysExt.resize(tableNames, tableCount);
         this.queries    = ArraysExt.resize(queries,    queryCount);
+    }
+
+    /**
+     * Invoked the first time that {@code SQLStore} opens a connection on the database, or after refresh.
+     * The default implementation does nothing. Subclasses can override this method if they need to create
+     * tables in an empty database, or for fetching more information.
+     *
+     * <p>If {@link #refresh()} has been invoked, then this initialization method will be invoked again
+     * the next time that a connection is needed. This method is invoked <em>before</em>
+     * {@link #readResourceDefinitions(DataAccess)}.</p>
+     *
+     * @param  connection  a connection to the database.
+     * @throws DataStoreException if an error occurred during the initialization.
+     * @throws SQLException if an error occurred during the execution of an <abbr>SQL</abbr> query.
+     *
+     * @since 1.5
+     */
+    protected void initialize(Connection connection) throws DataStoreException, SQLException {
     }
 
     /**
@@ -368,16 +388,18 @@ public abstract class SQLStore extends DataStore implements Aggregate {
         assert Thread.holdsLock(this);
         Database<?> current = model;
         if (current == null) {
+            initialize(c);
             final DatabaseMetaData md = c.getMetaData();
-            current = Database.create(source, md, geomLibrary, contentLocale, listeners, transactionLocks);
+            final var analyzer = new Analyzer(source, md, geomLibrary, contentLocale, listeners, transactionLocks);
+            current = analyzer.database;
             try (final InfoStatements spatialInformation = current.createInfoStatements(c)) {
                 if (tableNames == null) {
                     final DataAccess dao = newDataAccess(false);
-                    dao.initialize(c, spatialInformation);
+                    dao.setConnection(c, spatialInformation);
                     setModelSources(readResourceDefinitions(dao));
                     // Do not close the DAO, because we still use the connection and the info statements.
                 }
-                current.analyze(this, md, tableNames, queries, customizer, spatialInformation);
+                current.analyze(this, analyzer, tableNames, queries, customizer, spatialInformation);
             }
             model = current;
         }
@@ -490,6 +512,8 @@ public abstract class SQLStore extends DataStore implements Aggregate {
      * @return tables or views to include in the store. Only the main tables need to be specified.
      *         Dependencies (inferred from the foreigner keys) will be followed automatically.
      * @throws DataStoreException if an error occurred while fetching the resource definitions.
+     *
+     * @see #initialize(Connection)
      *
      * @since 1.5
      */

@@ -245,7 +245,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         this.hidden = hidden;
 
         @SuppressWarnings("LocalVariableHidesMemberVariable")
-        final SchemaModifier customizer = connector.getOption(SchemaModifier.OPTION);
+        final SchemaModifier customizer = connector.getOption(SchemaModifier.OPTION_KEY);
         this.customizer = (customizer != null) ? customizer : SchemaModifier.DEFAULT;
 
         @SuppressWarnings("LocalVariableHidesMemberVariable")

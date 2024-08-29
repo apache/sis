@@ -177,7 +177,7 @@ final class Table extends AbstractFeatureSet {
         importedKeys  = analyzer.getForeignerKeys(Relation.Direction.IMPORT);
         exportedKeys  = analyzer.getForeignerKeys(Relation.Direction.EXPORT);
         attributes    = analyzer.createAttributes();                 // Must be after `spec.getForeignerKeys(IMPORT)`.
-        primaryKey    = analyzer.createAssociations(exportedKeys);   // Must be after `spec.createAttributes(…)`.
+        primaryKey    = analyzer.createAssociations(exportedKeys);   // Must be after `spec.createAttributes()`.
         featureType   = analyzer.buildFeatureType();
         hasGeometry   = analyzer.hasGeometry;
         hasRaster     = analyzer.hasRaster;

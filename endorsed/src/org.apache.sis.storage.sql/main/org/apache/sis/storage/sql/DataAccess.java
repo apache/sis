@@ -130,7 +130,7 @@ public class DataAccess implements AutoCloseable {
      * Sets the connections and spatial statements to instances that already exist.
      * This method is invoked during database model initialization only.
      */
-    final void initialize(final Connection connection, final InfoStatements spatialInformation) {
+    final void setConnection(final Connection connection, final InfoStatements spatialInformation) {
         this.connection = connection;
         this.spatialInformation = spatialInformation;
     }
