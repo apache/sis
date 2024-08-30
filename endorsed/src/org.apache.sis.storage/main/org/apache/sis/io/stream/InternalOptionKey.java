@@ -16,8 +16,10 @@
  */
 package org.apache.sis.io.stream;
 
+import java.util.Map;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
+import java.util.concurrent.locks.ReadWriteLock;
 import org.apache.sis.setup.OptionKey;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreProvider;
@@ -52,6 +54,29 @@ public final class InternalOptionKey<T> extends OptionKey<T> {
     @SuppressWarnings("unchecked")
     public static final InternalOptionKey<UnaryOperator<ChannelFactory>> CHANNEL_FACTORY_WRAPPER =
             (InternalOptionKey) new InternalOptionKey<>("READ_CHANNEL_WRAPPER", UnaryOperator.class);
+
+    /**
+     * The lock to use in a data store when those locks are optional. For example, data stores on
+     * <abbr>SQL</abbr> databases should not need locks because <abbr>ACID</abbr>-compliant databases
+     * should support thread-safe transactions. However, some database products do not provide the
+     * expected thread-safety, in which case Apache <abbr>SIS</abbr> may need to do locking itself.
+     */
+    public static final InternalOptionKey<ReadWriteLock> LOCKS =
+            new InternalOptionKey<>("LOCKS", ReadWriteLock.class);
+
+    /**
+     * Additional information for the data store. This option is used for directives that are not defined
+     * by Apache SIS, but are rather defined by some underlying implementations to which Apache SIS will
+     * pass the PRAGMA statements verbatim.
+     * Examples:
+     *
+     * <ul>
+     *   <li><a href="https://www.sqlite.org/pragma.html">SQLite PRAGMA statements</a>.</li>
+     * </ul>
+     */
+    @SuppressWarnings("unchecked")
+    public static final InternalOptionKey<Map<String,String>> PRAGMAS =
+            (InternalOptionKey) new InternalOptionKey<>("PRAGMAS", Map.class);
 
     /**
      * Creates a new key of the given name.

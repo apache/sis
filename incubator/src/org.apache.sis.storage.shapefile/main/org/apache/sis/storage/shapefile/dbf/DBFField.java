@@ -129,7 +129,7 @@ public final class DBFField {
      * @param fieldAddress unused for now, has a meaning in some specifications but not all
      * @param fieldLength total field length in bytes
      * @param fieldDecimals number of decimals for floating points
-     * @param charset String base field encoding
+     * @param charset String base field encoding, can be null, default is ISO_LATIN1
      */
     public DBFField(String fieldName, char fieldType, int fieldAddress, int fieldLength, int fieldDecimals, Charset charset) {
         this.fieldName = fieldName;
@@ -137,7 +137,7 @@ public final class DBFField {
         this.fieldAddress = fieldAddress;
         this.fieldLength = fieldLength;
         this.fieldDecimals = fieldDecimals;
-        this.charset = charset;
+        this.charset = charset == null ? StandardCharsets.ISO_8859_1 : charset;
 
         switch (Character.toUpperCase(fieldType)) {
             case TYPE_BINARY : valueClass = Long.class;      reader = this::readBinary; writer = this::writeBinary; break;
@@ -342,7 +342,7 @@ public final class DBFField {
 
     private void writeChar(ChannelDataOutput channel, Object value) throws IOException {
         final String txt = (String) value;
-        final byte[] bytes = txt.getBytes(charset);
+        final byte[] bytes = txt == null ? new byte[0] : txt.getBytes(charset);
         if (bytes.length >= fieldLength) {
             channel.write(bytes, 0, fieldLength);
         } else {
@@ -373,10 +373,18 @@ public final class DBFField {
     }
 
     private void writeNumber(ChannelDataOutput channel, Object value) throws IOException {
-        final Number v = ((Number) value);
-        final String str = format.format(v.doubleValue());
-        final int length = str.length();
-        ensureLength(str);
+        if (value == null) value = Double.NaN;
+        double dv = ((Number) value).doubleValue();
+        String str = format.format(dv);
+        int length = str.length();
+        try {
+            ensureLength(str);
+        } catch (IOException ex) {
+            //number is too great, replace it with infinite
+            dv = dv < 0 ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;
+            str = format.format(dv);
+            length = str.length();
+        }
         channel.repeat(fieldLength - length, (byte)' ');
         channel.write(str.getBytes(StandardCharsets.US_ASCII));
     }

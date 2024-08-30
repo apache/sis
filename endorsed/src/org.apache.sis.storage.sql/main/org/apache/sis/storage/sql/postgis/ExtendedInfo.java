@@ -24,6 +24,7 @@ import org.apache.sis.storage.sql.feature.Column;
 import org.apache.sis.storage.sql.feature.Database;
 import org.apache.sis.storage.sql.feature.TableReference;
 import org.apache.sis.storage.sql.feature.InfoStatements;
+import org.apache.sis.storage.sql.feature.GeometryTypeEncoding;
 
 
 /**
@@ -66,13 +67,13 @@ final class ExtendedInfo extends InfoStatements {
     @Override
     public void completeIntrospection(final TableReference source, final Map<String,Column> columns) throws Exception {
         if (geometryColumns == null) {
-            geometryColumns = prepareIntrospectionStatement("geometry_columns", 'f', "geometry_column", "type");
+            geometryColumns = prepareIntrospectionStatement("geometry_columns", false, "f_geometry_column", "type");
         }
         if (geographyColumns == null) {
-            geographyColumns = prepareIntrospectionStatement("geography_columns", 'f', "geography_column", "type");
+            geographyColumns = prepareIntrospectionStatement("geography_columns", false, "f_geography_column", "type");
         }
         if (rasterColumns == null) {
-            rasterColumns = prepareIntrospectionStatement("raster_columns", 'r', "raster_column", null);
+            rasterColumns = prepareIntrospectionStatement("raster_columns", true, "r_raster_column", "");
         }
         configureSpatialColumns(geometryColumns,  source, columns, GeometryTypeEncoding.TEXTUAL);
         configureSpatialColumns(geographyColumns, source, columns, GeometryTypeEncoding.TEXTUAL);

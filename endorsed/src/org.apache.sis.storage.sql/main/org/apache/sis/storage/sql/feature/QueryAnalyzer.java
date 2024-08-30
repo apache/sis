@@ -132,7 +132,7 @@ final class QueryAnalyzer extends FeatureAnalyzer {
             }
             /*
              * Opportunistically search for primary keys. They are not needed by this method,
-             * but will be needed later by `createAttributes(…)` and other methods.
+             * but will be needed later by `createAttributes()` and other methods.
              * This is a "all or nothing" operations: if some primary key columns are missing
              * from the query, then we cannot have primary key at all for this query.
              */

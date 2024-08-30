@@ -75,9 +75,11 @@ abstract class CompressionChannel extends PixelChannel {
 
     /**
      * Creates a buffer to use with this compression channel.
-     * The default implementation creates a buffer on heap,
+     * The byte order shall be set by the caller.
+     *
+     * <p>The default implementation creates a buffer on heap,
      * which is suitable for decompression implemented in Java.
-     * Decompression implemented by native libraries may prefer direct buffer.
+     * Decompression implemented by native libraries may prefer direct buffer.</p>
      */
     @Override
     ByteBuffer createBuffer() {

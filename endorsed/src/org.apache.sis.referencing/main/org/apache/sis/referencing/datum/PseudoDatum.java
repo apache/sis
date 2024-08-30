@@ -433,7 +433,8 @@ public abstract class PseudoDatum<D extends Datum> implements Datum, LenientComp
      * Returns the primary name by which the datum ensemble is identified.
      *
      * @return {@code ensemble.getName()}.
-     * @hidden
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     public ReferenceIdentifier getName() {
@@ -444,7 +445,8 @@ public abstract class PseudoDatum<D extends Datum> implements Datum, LenientComp
      * Returns alternative names by which the datum ensemble is identified.
      *
      * @return {@code ensemble.getAlias()}.
-     * @hidden
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     public Collection<GenericName> getAlias() {
@@ -455,7 +457,8 @@ public abstract class PseudoDatum<D extends Datum> implements Datum, LenientComp
      * Returns an identifier which references elsewhere the datum ensemble information.
      *
      * @return {@code ensemble.getIdentifiers()}.
-     * @hidden
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     public Set<ReferenceIdentifier> getIdentifiers() {
@@ -466,7 +469,8 @@ public abstract class PseudoDatum<D extends Datum> implements Datum, LenientComp
      * Returns the usage of the datum ensemble.
      *
      * @return {@code ensemble.getDomains()}.
-     * @hidden
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     public Collection<ObjectDomain> getDomains() {
@@ -645,7 +649,8 @@ check:  if (it.hasNext()) {
      * Returns comments on or information about the datum ensemble.
      *
      * @return {@code ensemble.getRemarks()}.
-     * @hidden
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     public InternationalString getRemarks() {
@@ -656,7 +661,8 @@ check:  if (it.hasNext()) {
      * Formats a <i>Well-Known Text</i> (WKT) for the datum ensemble.
      *
      * @return {@code ensemble.toWKT()}.
-     * @hidden
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     public String toWKT() {
@@ -667,7 +673,8 @@ check:  if (it.hasNext()) {
      * Returns a string representation of the datum ensemble.
      *
      * @return {@code ensemble.toString()}.
-     * @hidden
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     public String toString() {

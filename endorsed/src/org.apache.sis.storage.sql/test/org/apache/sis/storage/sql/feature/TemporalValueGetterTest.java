@@ -66,7 +66,7 @@ public final class TemporalValueGetterTest extends TestOnAllDatabases {
      */
     @Override
     protected void test(final TestDatabase database, final boolean noschema) throws Exception {
-        supportsJavaTime = database.dialect.supportsJavaTime;
+        supportsJavaTime = database.dialect.supportsJavaTime();
         try (Connection connection = database.source.getConnection()) {
             if (!noschema) {
                 connection.setSchema(SCHEMA);

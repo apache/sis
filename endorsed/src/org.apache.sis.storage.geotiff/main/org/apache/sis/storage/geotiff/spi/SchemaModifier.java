@@ -296,7 +296,7 @@ public interface SchemaModifier {
      * @todo if we move this key in public API in the future, then it would be a
      *       value in existing {@link org.apache.sis.storage.DataOptionKey} class.
      */
-    OptionKey<SchemaModifier> OPTION = new InternalOptionKey<>("SCHEMA_MODIFIER", SchemaModifier.class);
+    OptionKey<SchemaModifier> OPTION_KEY = new InternalOptionKey<>("SCHEMA_MODIFIER", SchemaModifier.class);
 
     /**
      * The default instance which performs no modification.

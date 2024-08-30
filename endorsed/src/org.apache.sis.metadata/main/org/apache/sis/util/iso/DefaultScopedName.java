@@ -31,8 +31,7 @@ import org.apache.sis.util.privy.UnmodifiableArrayList;
 
 
 /**
- * A composite of a {@linkplain DefaultNameSpace name space} (as a {@linkplain DefaultLocalName local name})
- * and a {@linkplain AbstractName generic name} valid in that name space.
+ * A composite of a name space (as a local name) and a generic name valid in that name space.
  * See the {@linkplain ScopedName GeoAPI javadoc} for more information.
  *
  * <p>{@code DefaultScopedName} can be instantiated by any of the following methods:</p>
@@ -272,7 +271,7 @@ public class DefaultScopedName extends AbstractName implements ScopedName {
     }
 
     /**
-     * {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     public NameSpace scope() {

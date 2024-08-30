@@ -18,6 +18,7 @@ package org.apache.sis.referencing.datum;
 
 import java.util.Map;
 import java.util.Objects;
+import java.time.temporal.Temporal;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlRootElement;
@@ -37,6 +38,7 @@ import org.opengis.referencing.datum.VerticalDatumType;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import java.util.Optional;
+import org.opengis.referencing.datum.DynamicReferenceFrame;
 import org.opengis.referencing.datum.RealizationMethod;
 import org.opengis.metadata.Identifier;
 
@@ -256,6 +258,87 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
     }
 
     /**
+     * A vertical reference frame in which some of the defining parameters have time dependency.
+     * The parameter values are valid at the time given by the
+     * {@linkplain #getFrameReferenceEpoch() frame reference epoch}.
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 1.5
+     * @since   1.5
+     */
+    public static class Dynamic extends DefaultVerticalDatum implements DynamicReferenceFrame {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = -2047994195060747008L;
+
+        /**
+         * The epoch to which the definition of the dynamic reference frame is referenced.
+         */
+        @SuppressWarnings("serial")                     // Standard Java implementations are serializable.
+        private final Temporal frameReferenceEpoch;
+
+        /**
+         * Creates a dynamic reference frame from the given properties.
+         * See super-class constructor for more information.
+         *
+         * @param  properties     the properties to be given to the identified object.
+         * @param  epoch          the epoch to which the definition of the dynamic reference frame is referenced.
+         */
+        public Dynamic(Map<String,?> properties, RealizationMethod method, Temporal epoch) {
+            super(properties, method);
+            frameReferenceEpoch = Objects.requireNonNull(epoch);
+        }
+
+        /**
+         * Creates a new datum with the same values as the specified datum, which must be dynamic.
+         *
+         * @param  datum   the datum to copy.
+         * @param  method  the realization method (geoid, tidal, <i>etc.</i>), or {@code null} if unspecified.
+         * @throws ClassCastException if the given datum is not an instance of {@link DynamicReferenceFrame}.
+         *
+         * @see #castOrCopy(VerticalDatum)
+         */
+        protected Dynamic(final VerticalDatum datum) {
+            super(datum);
+            frameReferenceEpoch = Objects.requireNonNull(((DynamicReferenceFrame) datum).getFrameReferenceEpoch());
+        }
+
+        /**
+         * Returns the epoch to which the coordinates of stations defining the dynamic reference frame are referenced.
+         * The type of the returned object depends on the epoch accuracy and the calendar in use.
+         * It may be merely a {@link java.time.Year}.
+         *
+         * @return the epoch to which the definition of the dynamic reference frame is referenced.
+         */
+        @Override
+        public Temporal getFrameReferenceEpoch() {
+            return frameReferenceEpoch;
+        }
+
+        /**
+         * Compares the specified object with this datum for equality.
+         *
+         * @hidden because nothing new to said.
+         */
+        @Override
+        public boolean equals(final Object object, final ComparisonMode mode) {
+            return super.equals(object) && (mode != ComparisonMode.STRICT ||
+                    frameReferenceEpoch.equals(((Dynamic) object).frameReferenceEpoch));
+        }
+
+        /**
+         * Invoked by {@code hashCode()} for computing the hash code when first needed.
+         *
+         * @hidden because nothing new to said.
+         */
+        @Override
+        protected long computeHashCode() {
+            return super.computeHashCode() + 31 * frameReferenceEpoch.hashCode();
+        }
+    }
+
+    /**
      * Compares this vertical datum with the specified object for equality.
      *
      * @param  object  the object to compare to {@code this}.
@@ -263,6 +346,8 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
      *                 properties relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     @SuppressWarnings("deprecation")
@@ -300,6 +385,8 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
      * for more information.
      *
      * @return the hash code value. This value may change in any future Apache SIS version.
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     protected long computeHashCode() {

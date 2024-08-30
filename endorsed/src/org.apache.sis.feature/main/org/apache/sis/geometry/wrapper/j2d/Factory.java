@@ -288,7 +288,7 @@ public final class Factory extends Geometries<Shape> {
                 if (!isFloat) break;
             }
             final Path2D path = createPath(isFloat, 20);
-            if (type.isCollection()) {
+            if (type.isCollection) {
                 for (final Object component : data) {
                     path.append((Shape) component, false);
                 }

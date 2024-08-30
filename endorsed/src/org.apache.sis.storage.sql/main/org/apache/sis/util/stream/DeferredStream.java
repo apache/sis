@@ -19,6 +19,8 @@ package org.apache.sis.util.stream;
 import java.util.Spliterator;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
 import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.collection.BackingStoreException;
 
@@ -67,18 +69,32 @@ public abstract class DeferredStream<T> extends StreamWrapper<T> {
         AutoCloseable handler;
 
         /**
+         * If there is a read or write lock to unlock, that lock. Otherwise {@code null}.
+         * This is non-null only with databases that do not support concurrent transactions well.
+         *
+         * @see #lock(ReadWriteLock)
+         */
+        Lock lock;
+
+        /**
          * Invoked by the stream for disposing the resources.
          */
         @Override
         public void run() {
             final AutoCloseable h = handler;
+            final Lock c = lock;
             handler = null;
-            if (h != null) try {
-                h.close();
-            } catch (RuntimeException e) {
-                throw e;
-            } catch (Exception e) {
-                throw new BackingStoreException(e);
+            lock    = null;
+            try {
+                if (h != null) try {
+                    h.close();
+                } catch (Exception e) {
+                    throw cannotExecute(e);
+                }
+            } finally {
+                if (c != null) {
+                    c.unlock();
+                }
             }
         }
     }
@@ -108,7 +124,7 @@ public abstract class DeferredStream<T> extends StreamWrapper<T> {
             if (cause instanceof BackingStoreException) {
                 ex = (BackingStoreException) cause;
             } else {
-                ex = new BackingStoreException(Exceptions.unwrap(cause));
+                ex = new BackingStoreException(cause.getMessage(), Exceptions.unwrap(cause));
             }
             /*
              * The close handler will be invoked later assuming that the user created the stream in a
@@ -160,5 +176,39 @@ public abstract class DeferredStream<T> extends StreamWrapper<T> {
      */
     protected final void setCloseHandler(final AutoCloseable handler) {
         closeHandler.handler = handler;
+    }
+
+    /**
+     * Sets the read lock.
+     * Locks are used only with databases that do not support concurrent transactions well.
+     *
+     * @param  lock  the lock, or {@code null} if none.
+     */
+    protected final void lock(final ReadWriteLock lock) {
+        if (lock != null) {
+            (closeHandler.lock = lock.readLock()).lock();
+        }
+    }
+
+    /**
+     * Closes the connection (if any) and unlock.
+     */
+    protected final void unlock() {
+        closeHandler.run();
+    }
+
+    /**
+     * Creates an unchecked exception for an operation that cannot be executed because of the specified cause.
+     *
+     * @param  cause  the cause about why the operation cannot be executed.
+     * @return the unchecked exception to throw. May be {@code cause} itself.
+     */
+    public static RuntimeException cannotExecute(final Exception cause) {
+        final Exception unwrap = Exceptions.unwrap(cause);
+        if (unwrap instanceof RuntimeException) {
+            return (RuntimeException) unwrap;
+        } else {
+            return new BackingStoreException(cause.toString(), unwrap);
+        }
     }
 }

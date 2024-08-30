@@ -424,7 +424,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     }
 
     /**
-     * {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     protected int computeHashCode() {
@@ -436,7 +436,7 @@ class LinearTransform1D extends AbstractMathTransform1D implements LinearTransfo
     }
 
     /**
-     * {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {

@@ -579,6 +579,8 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
      *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
      *                 properties relevant to transformations.
      * @return {@code true} if both objects are equal.
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
@@ -599,9 +601,7 @@ public class DefaultCompoundCRS extends AbstractCRS implements CompoundCRS {
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @return {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     protected long computeHashCode() {

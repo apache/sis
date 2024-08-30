@@ -47,6 +47,7 @@ dependencies {
     api(files("../endorsed/build/classes/java/main/org.apache.sis.referencing"))
     api(files("../endorsed/build/classes/java/main/org.apache.sis.feature"))
     api(files("../endorsed/build/classes/java/main/org.apache.sis.storage"))
+    api(files("../endorsed/build/classes/java/main/org.apache.sis.storage.sql"))
     api(files("../endorsed/build/classes/java/main/org.apache.sis.portrayal"))
 
     // Test dependencies
@@ -57,6 +58,7 @@ dependencies {
      * in the global `settings.gradle.kts` because incubated modules are not released.
      */
     implementation(group = "org.antlr",       name = "antlr4-maven-plugin", version = "4.11.1")
+    implementation(group = "org.xerial",      name = "sqlite-jdbc",         version = "3.45.1.0")
     compileOnly   (group = "jakarta.servlet", name = "jakarta.servlet-api", version = "6.0.0")
     compileOnly   (group = "org.osgi",        name = "osgi.core",           version = "8.0.0")
     antlr         (group = "org.antlr",       name = "antlr4",              version = "4.11.1")
@@ -125,6 +127,9 @@ fun addExportForTests(args : MutableList<String>) {
     addExport(args, "org.apache.sis.feature",           "org.apache.sis.geometry.wrapper.jts",
                     "org.apache.sis.portrayal.map")
 
+    addExport(args, "org.apache.sis.feature",           "org.apache.sis.geometry.wrapper",
+                    "org.apache.sis.storage.geopackage")
+
     addExport(args, "org.apache.sis.storage",           "org.apache.sis.storage.base",
                     "org.apache.sis.portrayal.map")
 }
@@ -173,6 +178,42 @@ publishing {
             pom {
                 name        = "Apache SIS Shapefile storage"
                 description = "Read and write files in the Shapefile format."
+            }
+        }
+        create<MavenPublication>("storage.gimi") {
+            var module = "org.apache.sis.storage.gimi"
+            groupId    = "org.apache.sis.storage"
+            artifactId = "sis-gimi"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS GIMI Coverage storage"
+                description = "Read files in ISOBMFF GIMI format."
+            }
+        }
+        create<MavenPublication>("storage.geopackage") {
+            var module = "org.apache.sis.storage.geopackage"
+            groupId    = "org.apache.sis.storage"
+            artifactId = "sis-geopackage"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS GeoPackage storage"
+                description = "Read and write files in the GeoPackage format."
+            }
+        }
+        create<MavenPublication>("storage.gsf") {
+            var module = "org.apache.sis.storage.gsf"
+            groupId    = "org.apache.sis.storage"
+            artifactId = "sis-gsf"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS LibGSF Panama binding"
+                description = "Read files in GSF format."
             }
         }
         create<MavenPublication>("storage.coveragejson") {

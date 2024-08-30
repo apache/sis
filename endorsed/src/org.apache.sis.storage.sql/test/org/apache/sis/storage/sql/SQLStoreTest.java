@@ -123,6 +123,15 @@ public final class SQLStoreTest extends TestOnAllDatabases {
     }
 
     /**
+     * Returns the storage connector to use for connecting to the test database.
+     * A new instance shall be created for each test, because each instance can
+     * be used only once.
+     */
+    private static StorageConnector connector(final TestDatabase database) {
+        return new StorageConnector(database.source);
+    }
+
+    /**
      * Runs all tests on a single database software. A temporary schema is created at the beginning of this method
      * and deleted after all tests finished. The schema is created and populated by the {@code Features.sql} script.
      *
@@ -132,27 +141,27 @@ public final class SQLStoreTest extends TestOnAllDatabases {
      */
     @Override
     protected void test(final TestDatabase database, final boolean noschema) throws Exception {
-        final var scripts = new ArrayList<>(2);
+        final var scripts = new ArrayList<Object>(2);
         if (noschema) {
             scripts.add("CREATE SCHEMA " + SCHEMA + ';');
             // Omit the "CREATE SCHEMA" statement if the schema already exists.
         }
         scripts.add(resource("Features.sql"));
         database.executeSQL(scripts);
-        final StorageConnector connector = new StorageConnector(database.source);
         final ResourceDefinition table = ResourceDefinition.table(null, noschema ? null : SCHEMA, "Cities");
-        testTableQuery(connector, table);
+        testTableQuery(connector(database), table);
         /*
          * Verify using SQL statements instead of tables.
          */
-        verifyFetchCityTableAsQuery(connector);
-        verifyNestedSQLQuery(connector);
-        verifyLimitOffsetAndColumnSelectionFromQuery(connector);
-        verifyDistinctQuery(connector);
+        verifyFetchCityTableAsQuery(connector(database));
+        verifyNestedSQLQuery(connector(database));
+        verifyLimitOffsetAndColumnSelectionFromQuery(connector(database));
+        verifyDistinctQuery(connector(database));
         /*
          * Test on the table again, but with cyclic associations enabled.
          */
-        connector.setOption(SchemaModifier.OPTION, new SchemaModifier() {
+        final StorageConnector connector = connector(database);
+        connector.setOption(SchemaModifier.OPTION_KEY, new SchemaModifier() {
             @Override public boolean isCyclicAssociationAllowed(TableReference dependency) {
                 return true;
             }
@@ -165,7 +174,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
      * Creates a {@link SQLStore} instance with the specified table as a resource, then tests some queries.
      */
     private void testTableQuery(final StorageConnector connector, final ResourceDefinition table) throws Exception {
-        try (SQLStore store = new SQLStore(new SQLStoreProvider(), connector, table)) {
+        try (SimpleFeatureStore store = new SimpleFeatureStore(new SQLStoreProvider(), connector, table)) {
             verifyFeatureTypes(store);
             final Map<String,Integer> countryCount = new HashMap<>();
             try (Stream<Feature> features = store.findResource("Cities").features(false)) {
@@ -195,7 +204,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
      * @param  isCyclicAssociationAllowed  whether dependencies are allowed to have an association
      *         to their dependent feature, which create a cyclic dependency.
      */
-    private void verifyFeatureTypes(final SQLStore store) throws DataStoreException {
+    private void verifyFeatureTypes(final SimpleFeatureStore store) throws DataStoreException {
         verifyFeatureType(store.findResource("Cities").getType(),
                 new String[] {"sis:identifier", "pk:country", "country",   "native_name", "english_name", "population",  "parks"},
                 new Object[] {null,             String.class, "Countries", String.class,  String.class,   Integer.class, "Parks"});
@@ -328,7 +337,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
      * @param  dataset  the store on which to query the features.
      * @throws DataStoreException if an error occurred during query execution.
      */
-    private void verifySimpleQuerySorting(final SQLStore dataset) throws DataStoreException {
+    private void verifySimpleQuerySorting(final SimpleFeatureStore dataset) throws DataStoreException {
         /*
          * Property that we are going to request and expected result.
          * Note that "english_name" below is a property of the "Park" feature,
@@ -367,7 +376,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
      * @param  dataset  the store on which to query the features.
      * @throws DataStoreException if an error occurred during query execution.
      */
-    private void verifySimpleQueryWithLimit(final SQLStore dataset) throws DataStoreException {
+    private void verifySimpleQueryWithLimit(final SimpleFeatureStore dataset) throws DataStoreException {
         final FeatureSet   parks = dataset.findResource("Parks");
         final FeatureQuery query = new FeatureQuery();
         query.setLimit(2);
@@ -382,7 +391,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
      * @param  dataset  the store on which to query the features.
      * @throws DataStoreException if an error occurred during query execution.
      */
-    private void verifySimpleWhere(SQLStore dataset) throws Exception {
+    private void verifySimpleWhere(SimpleFeatureStore dataset) throws Exception {
         /*
          * Property that we are going to request and expected result.
          */
@@ -412,7 +421,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
      * @param  dataset  the store on which to query the features.
      * @throws DataStoreException if an error occurred during query execution.
      */
-    private void verifyWhereOnLink(SQLStore dataset) throws Exception {
+    private void verifyWhereOnLink(SimpleFeatureStore dataset) throws Exception {
         final String   desiredProperty = "native_name";
         final String[] expectedValues  = {"Canada"};
         final FeatureSet   countries   = dataset.findResource("Countries");
@@ -474,7 +483,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
      * Tests fetching the content of the Cities table, but using a user supplied SQL query.
      */
     private void verifyFetchCityTableAsQuery(final StorageConnector connector) throws Exception {
-        try (SQLStore store = new SQLStore(null, connector, ResourceDefinition.query("LargeCities",
+        try (SimpleFeatureStore store = new SimpleFeatureStore(null, connector, ResourceDefinition.query("LargeCities",
                 "SELECT * FROM " + SCHEMA + ".\"Cities\" WHERE \"population\" >= 1000000")))
         {
             final FeatureSet cities = store.findResource("LargeCities");
@@ -494,7 +503,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
      * Tests a user supplied query followed by another query built from filters.
      */
     private void verifyNestedSQLQuery(final StorageConnector connector) throws Exception {
-        try (SQLStore store = new SQLStore(null, connector, ResourceDefinition.query("MyParks",
+        try (SimpleFeatureStore store = new SimpleFeatureStore(null, connector, ResourceDefinition.query("MyParks",
                 "SELECT * FROM " + SCHEMA + ".\"Parks\"")))
         {
             final FeatureSet parks = store.findResource("MyParks");
@@ -529,7 +538,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
      * but stack on it (i.e. the feature set provide user defined result, and the stream navigate through it).
      */
     private void verifyLimitOffsetAndColumnSelectionFromQuery(final StorageConnector connector) throws Exception {
-        try (SQLStore store = new SQLStore(null, connector, ResourceDefinition.query("MyQuery",
+        try (SimpleFeatureStore store = new SimpleFeatureStore(null, connector, ResourceDefinition.query("MyQuery",
                 "SELECT \"english_name\" AS \"title\" " +
                 "FROM " + SCHEMA + ".\"Parks\"\n" +             // Test that multiline text is accepted.
                 "ORDER BY \"english_name\" ASC " +
@@ -572,7 +581,7 @@ public final class SQLStoreTest extends TestOnAllDatabases {
      */
     private void verifyDistinctQuery(final StorageConnector connector) throws Exception {
         final Object[] expected;
-        try (SQLStore store = new SQLStore(null, connector, ResourceDefinition.query("Countries",
+        try (SimpleFeatureStore store = new SimpleFeatureStore(null, connector, ResourceDefinition.query("Countries",
                 "SELECT \"country\" FROM " + SCHEMA + ".\"Parks\" ORDER BY \"country\"")))
         {
             final FeatureSet countries = store.findResource("Countries");

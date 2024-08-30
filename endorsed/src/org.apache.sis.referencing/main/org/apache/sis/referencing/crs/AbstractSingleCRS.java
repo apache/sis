@@ -235,7 +235,8 @@ class AbstractSingleCRS<D extends Datum> extends AbstractCRS implements SingleCR
      * @param  object  the object to compare to {@code this}.
      * @param  mode    whether to perform a strict or lenient comparison.
      * @return {@code true} if both objects are equal.
-     * @hidden
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
@@ -259,7 +260,8 @@ class AbstractSingleCRS<D extends Datum> extends AbstractCRS implements SingleCR
      * Invoked by {@code hashCode()} for computing the hash code when first needed.
      *
      * @return the hash code value. This value may change in any future Apache SIS version.
-     * @hidden
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     protected long computeHashCode() {

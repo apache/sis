@@ -373,8 +373,8 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
     /**
      * Compares this reference system with the specified object for equality.
      * If the {@code mode} argument value is {@link ComparisonMode#STRICT STRICT} or
-     * {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}, then all available properties are
-     * compared including the {@linkplain #getTheme() theme} and
+     * {@link ComparisonMode#BY_CONTRACT BY_CONTRACT}, then all available properties
+     * are compared including the {@linkplain #getTheme() theme} and
      * the {@linkplain #getOverallOwner() overall owner}.
      *
      * @param  object  the object to compare to {@code this}.
@@ -419,6 +419,8 @@ public abstract class ReferencingByIdentifiers extends AbstractReferenceSystem i
      * for more information.
      *
      * @return the hash code value. This value may change in any future Apache SIS version.
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     protected long computeHashCode() {

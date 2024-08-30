@@ -408,6 +408,8 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      * Compares the specified object with this parameter group for equality.
      *
      * @return {@inheritDoc}
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
@@ -431,6 +433,8 @@ public class DefaultParameterDescriptorGroup extends AbstractParameterDescriptor
      * Invoked by {@link #hashCode()} for computing the hash code when first needed.
      *
      * @return {@inheritDoc}
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     protected long computeHashCode() {

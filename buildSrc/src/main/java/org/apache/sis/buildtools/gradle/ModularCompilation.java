@@ -253,6 +253,6 @@ final class ModularCompilation extends Conventions {
         }
         String ext = resource.getName();
         ext = ext.substring(ext.lastIndexOf('.') + 1);
-        return !EXCLUDE_RESOURCES.contains(ext);
+        return !EXCLUDE_RESOURCES.contains(ext) || resource.getName().equals("LICENSE.html");
     }
 }

@@ -29,6 +29,7 @@
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
             <word>genericity</word>
+            <word>Geopackage</word>
         </spellchecker-wordlist>
     </configuration>
 </project>

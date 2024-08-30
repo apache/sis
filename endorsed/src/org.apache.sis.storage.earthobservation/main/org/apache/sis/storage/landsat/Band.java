@@ -121,7 +121,7 @@ final class Band extends GridResourceWrapper implements SchemaModifier {
             file = Path.of(filename);
         }
         final StorageConnector connector = new StorageConnector(file);
-        connector.setOption(SchemaModifier.OPTION, this);
+        connector.setOption(SchemaModifier.OPTION_KEY, this);
         return new GeoTiffStore(parent, parent.getProvider(), connector, true).components().get(0);
     }
 

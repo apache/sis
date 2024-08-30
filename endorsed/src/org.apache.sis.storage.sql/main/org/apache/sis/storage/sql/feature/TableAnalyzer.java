@@ -145,7 +145,6 @@ final class TableAnalyzer extends FeatureAnalyzer {
      * <p><b>Required by this method:</b> {@link #foreignerKeys}.</p>
      * <p><b>Computed by this method:</b> {@link #primaryKey}, {@link #primaryKeyClass}.</p>
      *
-     * @param  feature  the builder where to add attributes and associations.
      * @return the columns for attribute values (not including associations).
      */
     @Override

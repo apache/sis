@@ -523,6 +523,8 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
      * @param  object  the object to compare with this transform.
      * @param  mode    the strictness level of the comparison.
      * @return {@code true} if the given object is considered equals to this math transform.
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
@@ -541,6 +543,8 @@ public class PoleRotation extends AbstractMathTransform2D implements Serializabl
 
     /**
      * Computes a hash value for this transform. This method is invoked by {@link #hashCode()} when first needed.
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     protected int computeHashCode() {

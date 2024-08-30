@@ -37,6 +37,20 @@ public class SQLBuilder extends Syntax {
     public static final String SELECT = "SELECT ";
 
     /**
+     * The {@value} keyword (with a trailing space).
+     * Defined as a convenience for identifying locations in the Java code
+     * where we start to write a SQL statement using a builder.
+     */
+    public static final String INSERT = "INSERT INTO ";
+
+    /**
+     * The {@value} keyword (with a trailing space).
+     * Defined as a convenience for identifying locations in the Java code
+     * where we start to write a SQL statement using a builder.
+     */
+    public static final String DELETE = "DELETE FROM ";
+
+    /**
      * The buffer where the SQL query is created.
      */
     protected final StringBuilder buffer = new StringBuilder(200);
@@ -110,6 +124,19 @@ public class SQLBuilder extends Syntax {
      */
     public final SQLBuilder append(final char c) {
         buffer.append(c);
+        return this;
+    }
+
+    /**
+     * Appends verbatim a sub-sequence of the given text.
+     *
+     * @param   text   the text to append verbatim.
+     * @param   start  starting index of the text append, inclusive.
+     * @param   end    end index of the text to append, exclusive.
+     * @return this builder, for method call chaining.
+     */
+    public final SQLBuilder append(final String text, final int start, final int end) {
+        buffer.append(text, start, end);
         return this;
     }
 
@@ -283,6 +310,19 @@ public class SQLBuilder extends Syntax {
     public final SQLBuilder insertDistinctAfterSelect() {
         assert CharSequences.startsWith(buffer, SELECT, false) : buffer;
         buffer.insert(SELECT.length(), "DISTINCT ");
+        return this;
+    }
+
+    /**
+     * Removes the {@code WHERE} clause and everything after it.
+     *
+     * @return this builder, for method call chaining.
+     */
+    public final SQLBuilder removeWhereClause() {
+        final int index = buffer.indexOf(" WHERE ");
+        if (index >= 0) {
+            buffer.setLength(index);
+        }
         return this;
     }
 

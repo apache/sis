@@ -694,7 +694,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                  * We search first in the primary table. If no name is not found there, then we
                  * will search in the aliases table as a fallback.
                  */
-                final String pattern = toLikePattern(code);
+                final String pattern = SQLUtilities.toLikePattern(code, false);
                 Integer resolved = null;
                 boolean alias = false;
                 do {
@@ -1206,16 +1206,6 @@ codes:  for (int i=0; i<codes.length; i++) {
     }
 
     /**
-     * Returns a string like the given string but with accented letters replaced by ASCII letters
-     * and all characters that are not letter or digit replaced by the wildcard % character.
-     */
-    private static String toLikePattern(final String name) {
-        final StringBuilder buffer = new StringBuilder(name.length());
-        SQLUtilities.toLikePattern(name, 0, name.length(), false, false, buffer);
-        return buffer.toString();
-    }
-
-    /**
      * Returns an arbitrary object from a code. The default implementation delegates to more specific methods,
      * for example {@link #createCoordinateReferenceSystem(String)}, {@link #createDatum(String)}, <i>etc.</i>
      * until a successful one is found.
@@ -1267,7 +1257,7 @@ codes:  for (int i=0; i<codes.length; i++) {
                     if (isPrimaryKey) {
                         stmt.setInt(1, pk);
                     } else {
-                        stmt.setString(1, toLikePattern(code));
+                        stmt.setString(1, SQLUtilities.toLikePattern(code, false));
                     }
                     Integer present = null;
                     try (ResultSet result = stmt.executeQuery()) {

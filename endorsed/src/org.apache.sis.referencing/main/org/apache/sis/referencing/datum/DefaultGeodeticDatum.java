@@ -19,7 +19,6 @@ package org.apache.sis.referencing.datum;
 import java.util.Map;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.logging.Logger;
 import java.time.temporal.Temporal;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.XmlElement;
@@ -46,7 +45,6 @@ import org.apache.sis.referencing.internal.AnnotatedMatrix;
 import org.apache.sis.util.ComparisonMode;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.privy.CollectionsExt;
-import org.apache.sis.system.Loggers;
 import org.apache.sis.util.logging.Logging;
 import org.apache.sis.io.wkt.Formatter;
 import static org.apache.sis.util.Utilities.deepEquals;
@@ -55,6 +53,7 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
 import static org.apache.sis.referencing.privy.WKTUtilities.toFormattable;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
+import org.opengis.referencing.datum.DynamicReferenceFrame;
 import org.opengis.metadata.Identifier;
 
 
@@ -129,7 +128,7 @@ import org.opengis.metadata.Identifier;
  * constants.
  *
  * @author  Martin Desruisseaux (IRD, Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see DefaultEllipsoid
  * @see DefaultPrimeMeridian
@@ -144,13 +143,6 @@ import org.opengis.metadata.Identifier;
 })
 @XmlRootElement(name = "GeodeticDatum")
 public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum {
-    /**
-     * The logger for coordinate operations.
-     *
-     * @see #getPositionVectorTransformation(GeodeticDatum, Extent)
-     */
-    private static final Logger LOGGER = Logger.getLogger(Loggers.COORDINATE_OPERATION);
-
     /**
      * Serial number for inter-operability with different versions.
      */
@@ -306,8 +298,13 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *         given object itself), or {@code null} if the argument was null.
      */
     public static DefaultGeodeticDatum castOrCopy(final GeodeticDatum object) {
-        return (object == null) || (object instanceof DefaultGeodeticDatum)
-                ? (DefaultGeodeticDatum) object : new DefaultGeodeticDatum(object);
+        if (object == null || object instanceof DefaultGeodeticDatum) {
+            return (DefaultGeodeticDatum) object;
+        }
+        if (object instanceof DynamicReferenceFrame) {
+            return new Dynamic(object);
+        }
+        return new DefaultGeodeticDatum(object);
     }
 
     /**
@@ -435,7 +432,8 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                  * is defined in such a way that matrix should always be invertible. If it happen anyway,
                  * returning `null` is allowed by this method's contract.
                  */
-                Logging.unexpectedException(LOGGER, DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
+                Logging.unexpectedException(CoordinateOperations.LOGGER,
+                        DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
             }
             /*
              * No direct tranformation found. Search for a path through an intermediate datum.
@@ -468,7 +466,8 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
                                     Matrix m = MatrixSIS.castOrCopy(step2).inverse().multiply(step1);
                                     return AnnotatedMatrix.indirect(m, useAOI);
                                 } catch (NoninvertibleMatrixException e) {
-                                    Logging.unexpectedException(LOGGER, DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
+                                    Logging.unexpectedException(CoordinateOperations.LOGGER,
+                                            DefaultGeodeticDatum.class, "getPositionVectorTransformation", e);
                                 }
                             }
                         }
@@ -479,21 +478,6 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
             }
         }
         return null;
-    }
-
-    /**
-     * Invokes {@link BursaWolfParameters#getPositionVectorTransformation(Temporal)} for a date calculated from
-     * the temporal elements on the given extent. This method chooses an instant located midway between the
-     * start and end time.
-     */
-    private static Matrix createTransformation(final BursaWolfParameters bursaWolf, final Extent areaOfInterest) {
-        /*
-         * Implementation note: we know that we do not need to compute an instant if the parameters is
-         * not a subclass of BursaWolfParameters. This optimisation covers the vast majority of cases.
-         */
-        return bursaWolf.getPositionVectorTransformation(bursaWolf.getClass() != BursaWolfParameters.class ?
-                Extents.getInstant(areaOfInterest, null, 0.5).orElse(null) : null);
-                // 0.5 is for choosing the instant midway between start and end.
     }
 
     /**
@@ -509,6 +493,112 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
             }
         }
         return selector.best();
+    }
+
+    /**
+     * Returns the position vector transformation (geocentric domain) as an affine transform.
+     * If this datum is dynamic, the frame reference epoch is used.
+     * Otherwise, a time is computed from the temporal area of interest.
+     *
+     * @see DynamicReferenceFrame#getFrameReferenceEpoch()
+     * @see BursaWolfParameters#getPositionVectorTransformation(Temporal)
+     */
+    private Matrix createTransformation(final BursaWolfParameters bursaWolf, final Extent areaOfInterest) {
+        Temporal epoch = null;
+        /*
+         * Implementation note: we know that we do not need to compute an instant if the parameters is
+         * not a subclass of BursaWolfParameters. This optimisation covers the vast majority of cases.
+         */
+        if (bursaWolf.getClass() != BursaWolfParameters.class) {
+            epoch = getFrameReferenceEpoch();
+            if (epoch == null) {
+                epoch = Extents.getInstant(areaOfInterest, null, 0.5).orElse(null);
+                // 0.5 is for choosing the instant midway between start and end.
+            }
+        }
+        return bursaWolf.getPositionVectorTransformation(epoch);
+    }
+
+    /**
+     * A geodetic reference frame in which some of the defining parameters have time dependency.
+     * The parameter values are valid at the time given by the
+     * {@linkplain #getFrameReferenceEpoch() frame reference epoch}.
+     *
+     * @author  Martin Desruisseaux (Geomatys)
+     * @version 1.5
+     * @since   1.5
+     */
+    public static class Dynamic extends DefaultGeodeticDatum implements DynamicReferenceFrame {
+        /**
+         * For cross-version compatibility.
+         */
+        private static final long serialVersionUID = 6117199873814779662L;
+
+        /**
+         * The epoch to which the definition of the dynamic reference frame is referenced.
+         */
+        @SuppressWarnings("serial")                     // Standard Java implementations are serializable.
+        private final Temporal frameReferenceEpoch;
+
+        /**
+         * Creates a dynamic reference frame from the given properties.
+         * See super-class constructor for more information.
+         *
+         * @param  properties     the properties to be given to the identified object.
+         * @param  ellipsoid      the ellipsoid.
+         * @param  primeMeridian  the prime meridian.
+         * @param  epoch          the epoch to which the definition of the dynamic reference frame is referenced.
+         */
+        public Dynamic(Map<String,?> properties, Ellipsoid ellipsoid, PrimeMeridian primeMeridian, Temporal epoch) {
+            super(properties, ellipsoid, primeMeridian);
+            frameReferenceEpoch = Objects.requireNonNull(epoch);
+        }
+
+        /**
+         * Creates a new datum with the same values as the specified datum, which must be dynamic.
+         *
+         * @param  datum  the datum to copy.
+         * @throws ClassCastException if the given datum is not an instance of {@link DynamicReferenceFrame}.
+         *
+         * @see #castOrCopy(GeodeticDatum)
+         */
+        protected Dynamic(final GeodeticDatum datum) {
+            super(datum);
+            frameReferenceEpoch = Objects.requireNonNull(((DynamicReferenceFrame) datum).getFrameReferenceEpoch());
+        }
+
+        /**
+         * Returns the epoch to which the coordinates of stations defining the dynamic reference frame are referenced.
+         * The type of the returned object depends on the epoch accuracy and the calendar in use.
+         * It may be merely a {@link java.time.Year}.
+         *
+         * @return the epoch to which the definition of the dynamic reference frame is referenced.
+         */
+        @Override
+        public Temporal getFrameReferenceEpoch() {
+            return frameReferenceEpoch;
+        }
+
+        /**
+         * Compares the specified object with this datum for equality.
+         *
+         * @hidden because nothing new to said.
+         */
+        @Override
+        public boolean equals(final Object object, final ComparisonMode mode) {
+            return super.equals(object) && (mode != ComparisonMode.STRICT ||
+                    frameReferenceEpoch.equals(((Dynamic) object).frameReferenceEpoch));
+        }
+
+        /**
+         * Invoked by {@code hashCode()} for computing the hash code when first needed.
+         *
+         * @hidden because nothing new to said.
+         */
+        @Override
+        protected long computeHashCode() {
+            return super.computeHashCode() + 31 * frameReferenceEpoch.hashCode();
+        }
     }
 
     /**
@@ -569,6 +659,8 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
      *                 properties relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
@@ -580,13 +672,13 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
         }
         switch (mode) {
             case STRICT: {
-                final DefaultGeodeticDatum that = (DefaultGeodeticDatum) object;
+                final var that = (DefaultGeodeticDatum) object;
                 return Objects.equals(this.ellipsoid,     that.ellipsoid)     &&
                        Objects.equals(this.primeMeridian, that.primeMeridian) &&
                         Arrays.equals(this.bursaWolf,     that.bursaWolf);
             }
             default: {
-                final GeodeticDatum that = (GeodeticDatum) object;
+                final var that = (GeodeticDatum) object;
                 return deepEquals(getEllipsoid(),     that.getEllipsoid(),     mode) &&
                        deepEquals(getPrimeMeridian(), that.getPrimeMeridian(), mode);
                 /*
@@ -605,6 +697,8 @@ public class DefaultGeodeticDatum extends AbstractDatum implements GeodeticDatum
      * for more information.
      *
      * @return the hash code value. This value may change in any future Apache SIS version.
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     protected long computeHashCode() {

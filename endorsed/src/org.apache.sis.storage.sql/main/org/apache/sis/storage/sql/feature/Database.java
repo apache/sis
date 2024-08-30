@@ -19,14 +19,13 @@ package org.apache.sis.storage.sql.feature;
 import java.util.Set;
 import java.util.Map;
 import java.util.List;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.WeakHashMap;
-import java.util.ArrayList;
 import java.util.Locale;
-import java.util.AbstractMap.SimpleImmutableEntry;
+import java.util.Optional;
 import java.util.logging.LogRecord;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.sql.Array;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
@@ -38,11 +37,12 @@ import javax.sql.DataSource;
 import org.opengis.util.GenericName;
 import org.opengis.geometry.Envelope;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.apache.sis.setup.GeometryLibrary;
+import org.opengis.metadata.spatial.SpatialRepresentationType;
 import org.apache.sis.metadata.sql.privy.Syntax;
 import org.apache.sis.metadata.sql.privy.Dialect;
 import org.apache.sis.metadata.sql.privy.Reflection;
 import org.apache.sis.metadata.sql.privy.SQLBuilder;
+import org.apache.sis.metadata.sql.privy.SQLUtilities;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.FeatureNaming;
 import org.apache.sis.storage.DataStoreException;
@@ -51,15 +51,13 @@ import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.geometry.wrapper.GeometryType;
 import org.apache.sis.system.Modules;
-import org.apache.sis.util.Debug;
-import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.storage.sql.ResourceDefinition;
-import org.apache.sis.storage.sql.postgis.Postgres;
 import org.apache.sis.storage.event.StoreListeners;
-import org.apache.sis.util.collection.FrequencySortedSet;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.Cache;
+import org.apache.sis.util.privy.UnmodifiableArrayList;
+import org.apache.sis.util.Debug;
 
 
 /**
@@ -79,9 +77,9 @@ import org.apache.sis.util.collection.Cache;
  * <h2>Specializations</h2>
  * Subclasses may be defined for some database engines. Methods that can be overridden are:
  * <ul>
+ *   <li>{@link #getPossibleSpatialSchemas(Map)}    for enumerating the spatial schema conventions that may be used.</li>
  *   <li>{@link #getMapping(Column)}                for adding column types to recognize.</li>
  *   <li>{@link #createInfoStatements(Connection)}  for more info about spatial information.</li>
- *   <li>{@link #addIgnoredTables(Map)}             for specifying more tables to ignore.</li>
  * </ul>
  *
  * <h2>Multi-threading</h2>
@@ -132,40 +130,44 @@ public class Database<G> extends Syntax  {
     /**
      * All tables known to this {@code Database} in declaration order.
      * This array contains only the tables specified at initialization time, not the dependencies.
-     * This field is initialized by {@link #analyze(SQLStore, Connection, ResourceDefinition...)}
-     * and shall not be modified after that point.
+     * This field is initialized by {@link #analyze analyze(…)} and shall not be modified after that point.
      */
     private Table[] tables;
 
     /**
-     * Whether the database contains "GEOMETRY_COLUMNS" and/or "SPATIAL_REF_SYS" tables.
-     * May also be set to {@code true} if some database-specific tables are found such as
-     * {@code "geography_columns"} and {@code "raster_columns"} in PostGIS.
+     * Information about table names and column names used for the spatial schema, or {@code null}.
+     * This is non-null if the database contains "GEOMETRY_COLUMNS" and/or "SPATIAL_REF_SYS" tables,
+     * possibly with different name depending on the conventions of the spatial schema. May also be
+     * non-null if some database-specific tables are found such as {@code "geography_columns"} and
+     * {@code "raster_columns"} in PostGIS.
+     *
      * This field is initialized by {@link #analyze analyze(…)} and shall not be modified after that point.
      *
-     * @see #isSpatial()
+     * @see #getSpatialSchema()
      */
-    private boolean isSpatial;
+    private SpatialSchema spatialSchema;
+
+    /**
+     * The encoding of Coordinate Reference Systems in the spatial database, in preference order.
+     * This field is initialized by {@link #analyze analyze(…)} and shall not be modified after that point.
+     */
+    final EnumSet<CRSEncoding> crsEncodings;
 
     /**
      * {@code true} if this database contains at least one geometry column.
      * This field is initialized by {@link #analyze analyze(…)} and shall not be modified after that point.
-     *
-     * @see #hasGeometry()
      */
     private boolean hasGeometry;
 
     /**
      * {@code true} if this database contains at least one raster column.
      * This field is initialized by {@link #analyze analyze(…)} and shall not be modified after that point.
-     *
-     * @see #hasRaster()
      */
     private boolean hasRaster;
 
     /**
-     * Catalog and schema of the {@value InfoStatements#GEOMETRY_COLUMNS} and
-     * {@value InfoStatements#SPATIAL_REF_SYS} tables, or null or empty string if none.
+     * Catalog and schema of the {@code "GEOMETRY_COLUMNS"} and {@code "SPATIAL_REF_SYS"} tables,
+     * or null or empty string if none. The actual table names depend on {@link #spatialSchema}.
      */
     String catalogOfSpatialTables, schemaOfSpatialTables;
 
@@ -193,6 +195,22 @@ public class Database<G> extends Syntax  {
     private SelectionClauseWriter filterToSQL;
 
     /**
+     * The lock for read or write operations in the SQL database, or {@code null} if none.
+     * The read or write lock should be obtained before to get a connection for executing
+     * a statement, and released after closing the connection. Locking is assumed unneeded
+     * for obtaining database metadata.
+     *
+     * <p>This field should be null if the database manages concurrent transactions by itself.
+     * It is non-null only as a workaround for databases that do not support concurrency.</p>
+     */
+    protected final ReadWriteLock transactionLocks;
+
+    /**
+     * The locale to use for international texts to write in the database, or {@code null} for default.
+     */
+    protected final Locale contentLocale;
+
+    /**
      * Where to send warnings.
      *
      * @see #log(LogRecord)
@@ -201,10 +219,10 @@ public class Database<G> extends Syntax  {
 
     /**
      * Cache of Coordinate Reference Systems created for a given SRID.
-     * SRID are primary keys in the {@value InfoStatements#SPATIAL_REF_SYS} table.
+     * SRID are primary keys in the {@code "SPATIAL_REF_SYS"} (or equivalent) table.
      * They are not EPSG codes, even if the numerical values are often the same.
      *
-     * <p>This mapping depend on the content of {@value InfoStatements#SPATIAL_REF_SYS} table.
+     * <p>This mapping depends on the content of {@code "SPATIAL_REF_SYS"} (or equivalent) table.
      * For that reason, a distinct cache exists for each database.</p>
      */
     final Cache<Integer, CoordinateReferenceSystem> cacheOfCRS;
@@ -219,15 +237,18 @@ public class Database<G> extends Syntax  {
     /**
      * Creates a new handler for a spatial database.
      *
-     * @param  source       provider of (pooled) connections to the database.
-     * @param  metadata     metadata about the database.
-     * @param  dialect      additional information not provided by {@code metadata}.
-     * @param  geomLibrary  the factory to use for creating geometric objects.
-     * @param  listeners    where to send warnings.
+     * @param  source         provider of (pooled) connections to the database.
+     * @param  metadata       metadata about the database.
+     * @param  dialect        additional information not provided by {@code metadata}.
+     * @param  geomLibrary    the factory to use for creating geometric objects.
+     * @param  contentLocale  the locale to use for international texts to write in the database, or {@code null} for default.
+     * @param  listeners      where to send warnings.
+     * @param  locks          the read/write locks, or {@code null} if none.
      * @throws SQLException if an error occurred while reading database metadata.
      */
     protected Database(final DataSource source, final DatabaseMetaData metadata, final Dialect dialect,
-                       final Geometries<G> geomLibrary, final StoreListeners listeners)
+                       final Geometries<G> geomLibrary, final Locale contentLocale, final StoreListeners listeners,
+                       final ReadWriteLock locks)
             throws SQLException
     {
         super(metadata, true);
@@ -262,48 +283,103 @@ public class Database<G> extends Syntax  {
         this.source        = source;
         this.isByteSigned  = !unsigned;
         this.geomLibrary   = geomLibrary;
+        this.contentLocale = contentLocale;
         this.listeners     = listeners;
         this.cacheOfCRS    = new Cache<>(7, 2, false);
         this.cacheOfSRID   = new WeakHashMap<>();
         this.tablesByNames = new FeatureNaming<>();
         supportsCatalogs   = metadata.supportsCatalogsInDataManipulation();
         supportsSchemas    = metadata.supportsSchemasInDataManipulation();
-        supportsJavaTime   = dialect.supportsJavaTime;
+        supportsJavaTime   = dialect.supportsJavaTime();
+        crsEncodings       = EnumSet.noneOf(CRSEncoding.class);
+        transactionLocks   = dialect.supportsConcurrency() ? null : locks;
     }
 
     /**
-     * Creates a new handler for a spatial database.
+     * Detects automatically which spatial schema is in use. Detects also the catalog name and schema name.
+     * This method is invoked exactly once after construction and before the analysis of feature tables.
      *
-     * @param  store        the data store for which we are creating a model. Used only in case of error.
-     * @param  source       provider of (pooled) connections to the database.
-     * @param  connection   connection to the database. Sometimes the caller already has a connection at hand.
-     * @param  geomLibrary  the factory to use for creating geometric objects.
-     * @param  tableNames   qualified name of the tables. Specified by users at construction time.
-     * @param  queries      additional resources associated to SQL queries. Specified by users at construction time.
-     * @param  customizer   user-specified modification to the features, or {@code null} if none.
-     * @param  listeners    where to send warnings.
-     * @return handler for the spatial database.
-     * @throws SQLException if a database error occurred while reading metadata.
-     * @throws DataStoreException if a logical error occurred while analyzing the database structure.
+     * @param  metadata    metadata to use for verifying which tables are present.
+     * @param  tableTypes  the "TABLE" and "VIEW" keywords for table types, with unsupported keywords omitted.
+     * @return names of the standard tables defined by the spatial schema.
      */
-    public static Database<?> create(final SQLStore store, final DataSource source, final Connection connection,
-            final GeometryLibrary geomLibrary, final GenericName[] tableNames, final ResourceDefinition[] queries,
-            final SchemaModifier customizer, final StoreListeners listeners)
-            throws Exception
-    {
-        final DatabaseMetaData metadata = connection.getMetaData();
-        final Geometries<?> g = Geometries.factory(geomLibrary);
-        final Dialect dialect = Dialect.guess(metadata);
-        final Database<?> db;
-        switch (dialect) {
-            case POSTGRESQL: db = new Postgres<>(source, connection, metadata, dialect, g, listeners); break;
-            default: {
-                db = new Database<>(source, metadata, dialect, g, listeners);
+    final Set<String> detectSpatialSchema(final DatabaseMetaData metadata, final String[] tableTypes) throws SQLException {
+        final String escape = metadata.getSearchStringEscape();
+        /*
+         * The following tables are defined by ISO 19125 / OGC Simple feature access part 2.
+         * Note that the standard specified those names in upper-case letters, which is also
+         * the default case specified by the SQL standard. However, some databases use lower
+         * cases instead.
+         */
+        String crsTable = null;
+        final var ignoredTables = new HashMap<String,Boolean>(8);
+        for (SpatialSchema convention : getPossibleSpatialSchemas(ignoredTables)) {
+            String geomTable;
+            crsTable  = convention.crsTable;
+            geomTable = convention.geometryColumns;
+            if (metadata.storesLowerCaseIdentifiers()) {
+                crsTable  = crsTable .toLowerCase(Locale.US).intern();
+                geomTable = geomTable.toLowerCase(Locale.US).intern();
+            } else if (metadata.storesUpperCaseIdentifiers()) {
+                crsTable  = crsTable .toUpperCase(Locale.US).intern();
+                geomTable = geomTable.toUpperCase(Locale.US).intern();
+            }
+            ignoredTables.put(crsTable,  Boolean.TRUE);
+            ignoredTables.put(geomTable, Boolean.TRUE);
+            /*
+             * Check if the database contains at least one "ignored" tables associated to `Boolean.TRUE`.
+             * If many tables are found, ensure that the catalog and schema names are the same. If this
+             * is not the case, no (catalog,schema) will be used and the search for spatial tables will
+             * rely on the database "search path".
+             */
+            boolean found = false;
+            boolean consistent = true;
+            String catalog = null, schema = null;
+            for (final Map.Entry<String,Boolean> entry : ignoredTables.entrySet()) {
+                if (entry.getValue()) {
+                    String table = SQLUtilities.escape(entry.getKey(), escape);
+                    try (ResultSet reflect = metadata.getTables(null, null, table, tableTypes)) {
+                        while (reflect.next()) {
+                            consistent &= consistent(catalog, catalog = reflect.getString(Reflection.TABLE_CAT));
+                            consistent &= consistent(schema,  schema  = reflect.getString(Reflection.TABLE_SCHEM));
+                            found = true;
+                        }
+                    }
+                }
+            }
+            if (found) {
+                spatialSchema = convention;
+                if (consistent) {
+                    catalogOfSpatialTables = catalog;
+                    schemaOfSpatialTables  = schema;
+                }
                 break;
             }
+            ignoredTables.remove(crsTable);
+            ignoredTables.remove(geomTable);
         }
-        db.analyze(store, connection, tableNames, queries, customizer);
-        return db;
+        /*
+         * Get the columns for CRS definitions. At least one column should exist for CRS encoded in WKT1 format.
+         * Some schemas have additional columns for optional encodings, for example a separated column for WKT2.
+         * The preference order will be defined by the `CRSEncoding` enumeration order.
+         */
+        if (spatialSchema != null) {
+            final String schema = SQLUtilities.escape(schemaOfSpatialTables, escape);
+            final String table  = SQLUtilities.escape(crsTable, escape);
+            for (Map.Entry<CRSEncoding, String> entry : spatialSchema.crsDefinitionColumn.entrySet()) {
+                String column = entry.getValue();
+                if (metadata.storesLowerCaseIdentifiers()) {
+                    column = column.toLowerCase(Locale.US);
+                }
+                column = SQLUtilities.escape(column, escape);
+                try (ResultSet reflect = metadata.getColumns(catalogOfSpatialTables, schema, table, column)) {
+                    if (reflect.next()) {
+                        crsEncodings.add(entry.getKey());
+                    }
+                }
+            }
+        }
+        return ignoredTables.keySet();
     }
 
     /**
@@ -323,79 +399,28 @@ public class Database<G> extends Syntax  {
      *       The pattern can use {@code '_'} and {@code '%'} wildcards characters.</li>
      * </ul>
      *
-     * @param  store       the data store for which we are creating a model. Used only in case of error.
-     * @param  connection  connection to the database. Sometimes the caller already has a connection at hand.
-     * @param  tableNames  qualified name of the tables. Specified by users at construction time.
-     * @param  queries     additional resources associated to SQL queries. Specified by users at construction time.
-     * @param  customizer  user-specified modification to the features, or {@code null} if none.
+     * @param  store               the data store for which we are creating a model. Used only in case of error.
+     * @param  analyzer            the opaque temporary object used for analyzing the database schema.
+     * @param  tableNames          qualified name of the tables. Specified by users at construction time.
+     * @param  queries             additional resources associated to SQL queries. Specified by users at construction time.
+     * @param  customizer          user-specified modification to the features, or {@code null} if none.
+     * @param  spatialInformation  statements for fetching SRID, geometry types, <i>etc.</i>
      * @throws SQLException if a database error occurred while reading metadata.
      * @throws DataStoreException if a logical error occurred while analyzing the database structure.
      */
-    private void analyze(final SQLStore store, final Connection connection, final GenericName[] tableNames,
-                         final ResourceDefinition[] queries, final SchemaModifier customizer) throws Exception
+    public final void analyze(final SQLStore store, final Analyzer analyzer, final GenericName[] tableNames,
+                              final ResourceDefinition[] queries, final SchemaModifier customizer,
+                              final InfoStatements spatialInformation) throws Exception
     {
-        final DatabaseMetaData metadata = connection.getMetaData();
-        final String[] tableTypes = getTableTypes(metadata);
-        /*
-         * The following tables are defined by ISO 19125 / OGC Simple feature access part 2.
-         * Note that the standard specified those names in upper-case letters, which is also
-         * the default case specified by the SQL standard. However, some databases use lower
-         * cases instead.
-         */
-        String tableCRS  = InfoStatements.SPATIAL_REF_SYS;
-        String tableGeom = InfoStatements.GEOMETRY_COLUMNS;
-        if (metadata.storesLowerCaseIdentifiers()) {
-            tableCRS  = tableCRS .toLowerCase(Locale.US).intern();
-            tableGeom = tableGeom.toLowerCase(Locale.US).intern();
+        if (spatialSchema != null) {
+            analyzer.spatialInformation = spatialInformation;
         }
-        final Map<String,Boolean> ignoredTables = new HashMap<>(8);
-        ignoredTables.put(tableCRS,  Boolean.TRUE);
-        ignoredTables.put(tableGeom, Boolean.TRUE);
-        addIgnoredTables(ignoredTables);
-        isSpatial = hasTable(metadata, tableTypes, ignoredTables);
-        /*
-         * Collect the names of all tables specified by user, ignoring the tables
-         * used for database internal working (for example by PostGIS).
-         */
-        final Analyzer analyzer = new Analyzer(this, connection, metadata, customizer);
-        final Set<TableReference> declared = new LinkedHashSet<>();
-        for (final GenericName tableName : tableNames) {
-            final String[] names = TableReference.splitName(tableName);
-            try (ResultSet reflect = metadata.getTables(names[2], names[1], names[0], tableTypes)) {
-                while (reflect.next()) {
-                    final String table = analyzer.getUniqueString(reflect, Reflection.TABLE_NAME);
-                    if (ignoredTables.containsKey(table)) {
-                        continue;
-                    }
-                    declared.add(new TableReference(
-                            analyzer.getUniqueString(reflect, Reflection.TABLE_CAT),
-                            analyzer.getUniqueString(reflect, Reflection.TABLE_SCHEM), table,
-                            analyzer.getUniqueString(reflect, Reflection.REMARKS)));
-                }
-            }
-        }
-        /*
-         * At this point we got the list of tables requested by the user. Now create the Table objects for each
-         * specified name. During this iteration, we may discover new tables to analyze because of dependencies
-         * (foreigner keys).
-         */
-        final List<Table> tableList;
-        tableList = new ArrayList<>(tableNames.length);
-        for (final TableReference reference : declared) {
-            // Adds only the table explicitly required by the user.
-            tableList.add(analyzer.table(reference, reference.getName(analyzer), null));
-        }
-        /*
-         * Add queries if any.
-         */
-        for (final ResourceDefinition resource : queries) {
-            // Optional value should always be present in this context.
-            tableList.add(analyzer.query(resource.getName(), resource.getQuery().get()));
-        }
+        analyzer.customizer = customizer;
+        final List<Table> tableList = analyzer.findFeatureTables(tableNames, queries);
         /*
          * At this point we finished to create the tables explicitly requested by the user.
          * Register all tables only at this point, because other tables (dependencies) may
-         * have been analyzed as a side-effect of above loop.
+         * have been analyzed as a side-effect of above method call.
          */
         for (final Table table : analyzer.finish()) {
             tablesByNames.add(store, table.featureType.getName(), table);
@@ -406,67 +431,11 @@ public class Database<G> extends Syntax  {
     }
 
     /**
-     * Returns the "TABLE" and "VIEW" keywords for table types, with unsupported keywords omitted.
+     * Helper method for checking if catalog or schema names are consistent.
+     * If an previous (old) name existed, the new name should be the same.
      */
-    private static String[] getTableTypes(final DatabaseMetaData metadata) throws SQLException {
-        final Set<String> types = new HashSet<>(4);
-        try (ResultSet reflect = metadata.getTableTypes()) {
-            while (reflect.next()) {
-               /*
-                 * Derby, HSQLDB and PostgreSQL uses the "TABLE" type, but H2 uses "BASE TABLE".
-                 */
-                final String type = reflect.getString(Reflection.TABLE_TYPE);
-                if ("TABLE".equalsIgnoreCase(type) || "VIEW".equalsIgnoreCase(type) || "BASE TABLE".equalsIgnoreCase(type)) {
-                    types.add(type);
-                }
-            }
-        }
-        return types.toArray(String[]::new);
-    }
-
-    /**
-     * Returns {@code true} if the database contains at least one specified tables associated to {@code Boolean.TRUE}.
-     * This method updates {@link #schemaOfSpatialTables} and {@link #catalogOfSpatialTables} for the tables found.
-     * If many occurrences of the same table are found, this method searches for a common pair
-     * of catalog and schema names. All tables should be in the same (catalog, schema) pair.
-     * If this is not the case, no (catalog,schema) will be used and the search for the tables
-     * will rely on the database "search path".
-     *
-     * @param  metadata    value of {@code connection.getMetaData()}.
-     * @param  tableTypes  value of {@link #getTableTypes(DatabaseMetaData)}.
-     * @param  tables      name of the table to search.
-     * @return whether the given table has been found.
-     */
-    private boolean hasTable(final DatabaseMetaData metadata, final String[] tableTypes, final Map<String,Boolean> tables)
-            throws SQLException
-    {
-        // `SimpleImmutableEntry` used as a way to store a (catalog,schema) pair of strings.
-        final FrequencySortedSet<SimpleImmutableEntry<String,String>> schemas = new FrequencySortedSet<>(true);
-        int count = 0;
-        for (final Map.Entry<String,Boolean> entry : tables.entrySet()) {
-            if (entry.getValue()) {
-                String name = entry.getKey();
-                boolean found = false;
-                try (ResultSet reflect = metadata.getTables(null, null, name, tableTypes)) {
-                    while (reflect.next()) {
-                        found = true;
-                        schemas.add(new SimpleImmutableEntry<>(
-                                reflect.getString(Reflection.TABLE_CAT),
-                                reflect.getString(Reflection.TABLE_SCHEM)));
-                    }
-                }
-                if (found) count++;
-            }
-        }
-        if (count == 0) {
-            return false;
-        }
-        final SimpleImmutableEntry<String,String> f = schemas.first();      // Most frequent pair.
-        if (schemas.frequency(f) == count) {
-            catalogOfSpatialTables = f.getKey();
-            schemaOfSpatialTables  = f.getValue();
-        }
-        return true;
+    private static boolean consistent(final String oldName, final String newName) {
+        return (oldName == null) || oldName.equals(newName);
     }
 
     /**
@@ -477,7 +446,13 @@ public class Database<G> extends Syntax  {
      * @param  builder   where to add information about the tables.
      * @throws SQLException if an error occurred while fetching table information.
      */
-    public final void listTables(final DatabaseMetaData metadata, final MetadataBuilder builder) throws SQLException {
+    public final void metadata(final DatabaseMetaData metadata, final MetadataBuilder builder) throws SQLException {
+        if (hasGeometry) {
+            builder.addSpatialRepresentation(SpatialRepresentationType.VECTOR);
+        }
+        if (hasRaster) {
+            builder.addSpatialRepresentation(SpatialRepresentationType.GRID);
+        }
         for (final Table table : tables) {
             builder.addFeatureType(table.featureType, table.countRows(metadata, false, false));
         }
@@ -507,14 +482,14 @@ public class Database<G> extends Syntax  {
     }
 
     /**
-     * Appends a call to a function defined in the spatial schema.
-     * The function name will be prefixed by catalog and schema name if applicable.
-     * The function will not be quoted.
+     * Appends a table or a call to a function defined in the spatial schema.
+     * The name will be prefixed by catalog and schema name if applicable.
+     * The name will not be quoted.
      *
-     * @param  sql       the SQL builder where to add the spatial function name.
-     * @param  function  the function to append.
+     * @param  sql   the SQL builder where to add the spatial table or function.
+     * @param  name  name of the table or function to append.
      */
-    public final void appendFunctionCall(final SQLBuilder sql, final String function) {
+    public final void formatTableName(final SQLBuilder sql, final String name) {
         final String schema = schemaOfSpatialTables;
         if (schema != null && !schema.isEmpty()) {
             final String catalog = catalogOfSpatialTables;
@@ -523,37 +498,60 @@ public class Database<G> extends Syntax  {
             }
             sql.appendIdentifier(schema).append('.');
         }
-        sql.append(function);
+        sql.append(name);
     }
 
     /**
-     * Returns {@code true} if this database is a spatial database.
-     * Tables such as "SPATIAL_REF_SYS" are used as sentinel values.
+     * Returns an identification of the table and column naming conventions.
+     * This is absent if the database is not spatial.
      *
-     * @return whether this database is a spatial database.
+     * @return an identification of the table and column naming conventions.
      */
-    public final boolean isSpatial() {
-        return isSpatial;
+    public final Optional<SpatialSchema> getSpatialSchema() {
+        return Optional.ofNullable(spatialSchema);
     }
 
     /**
-     * Returns {@code true} if this database contains at least one geometry column.
-     * This information can be used for metadata purpose.
+     * If a <abbr>CRS</abbr> is available in the cache for the given SRID, returns that <abbr>CRS</abbr>.
+     * Otherwise returns {@code null}. This method does not query the database.
      *
-     * @return whether at least one geometry column has been found.
+     * @param  srid  identifier of the <abbr>CRS</abbr> to get.
+     * @return the requested <abbr>CRS</abbr>, or {@code null} if not in the cache.
      */
-    public final boolean hasGeometry() {
-        return hasGeometry;
+    public final CoordinateReferenceSystem getCachedCRS(final int srid) {
+        return cacheOfCRS.get(srid);
     }
 
     /**
-     * Returns {@code true} if this database contains at least one raster column.
-     * This information can be used for metadata purpose.
+     * If a <abbr>SRID</abbr> is available in the cache for the given <abbr>CRS</abbr>, returns that SRID.
+     * Otherwise returns {@code null}. This method does not query the database.
      *
-     * @return whether at least one raster column has been found.
+     * @param  crs  the <abbr>CRS</abbr> for which to get the <abbr>SRID</abbr>.
+     * @return the <abbr>SRID</abbr> for the given <abbr>CRS</abbr>, or {@code null} if not in the cache.
      */
-    public final boolean hasRaster() {
-        return hasRaster;
+    public final int getCachedSRID(final CoordinateReferenceSystem crs) {
+        synchronized (cacheOfSRID) {
+            return cacheOfSRID.get(crs);
+        }
+    }
+
+    /**
+     * Returns a function for getting values from a geometry or geography column.
+     * This is a helper method for {@link #getMapping(Column)} implementations.
+     *
+     * @param  columnDefinition  information about the column to extract values from and expose through Java API.
+     * @return converter to the corresponding java type, or {@code null} if this class cannot find a mapping,
+     */
+    protected final ValueGetter<?> forGeometry(final Column columnDefinition) {
+        /*
+         * The geometry type should not be empty. But it may still happen if the "GEOMETRY_COLUMNS"
+         * table does not contain a line for the specified column. It is a server issue, but seems
+         * to happen sometimes.
+         */
+        final GeometryType type = columnDefinition.getGeometryType().orElse(GeometryType.GEOMETRY);
+        final Class<? extends G> geometryClass = geomLibrary.getGeometryClass(type).asSubclass(geomLibrary.rootClass);
+        return new GeometryGetter<>(geomLibrary, geometryClass, columnDefinition.getDefaultCRS().orElse(null),
+                                    getBinaryEncoding(columnDefinition));
     }
 
     /**
@@ -571,7 +569,7 @@ public class Database<G> extends Syntax  {
      */
     @SuppressWarnings("fallthrough")
     protected ValueGetter<?> getMapping(final Column columnDefinition) {
-        if ("geometry".equalsIgnoreCase(columnDefinition.typeName)) {
+        if (GeometryType.isKnown(columnDefinition.typeName)) {
             return forGeometry(columnDefinition);
         }
         switch (columnDefinition.type) {
@@ -620,6 +618,18 @@ public class Database<G> extends Syntax  {
     }
 
     /**
+     * Returns a mapping for {@link Types#JAVA_OBJECT} or unrecognized types. Some JDBC drivers wrap
+     * objects in implementation-specific classes, for example {@link org.postgresql.util.PGobject}.
+     * This method should be overwritten in database-specific subclasses for returning a value getter
+     * capable to unwrap the value.
+     *
+     * @return the default mapping for unknown or unrecognized types.
+     */
+    protected ValueGetter<Object> getDefaultMapping() {
+        return ValueGetter.AsObject.INSTANCE;
+    }
+
+    /**
      * Returns the type of components in SQL arrays stored in a column.
      * This method is invoked when {@link Column#type} = {@link Types#ARRAY}.
      * The default implementation returns {@link Types#OTHER} because JDBC
@@ -634,18 +644,6 @@ public class Database<G> extends Syntax  {
      */
     protected int getArrayComponentType(final Column columnDefinition) {
         return Types.OTHER;
-    }
-
-    /**
-     * Returns a mapping for {@link Types#JAVA_OBJECT} or unrecognized types. Some JDBC drivers wrap
-     * objects in implementation-specific classes, for example {@link org.postgresql.util.PGobject}.
-     * This method should be overwritten in database-specific subclasses for returning a value getter
-     * capable to unwrap the value.
-     *
-     * @return the default mapping for unknown or unrecognized types.
-     */
-    protected ValueGetter<Object> getDefaultMapping() {
-        return ValueGetter.AsObject.INSTANCE;
     }
 
     /**
@@ -676,46 +674,28 @@ public class Database<G> extends Syntax  {
     }
 
     /**
-     * Returns a function for getting values from a geometry or geography column.
-     * This is a helper method for {@link #getMapping(Column)} implementations.
+     * Returns the spatial schema conventions that may possibly be supported by this database.
+     * The default implementation returns all {@link SpatialSchema} enumeration values.
+     * Subclasses may restrict to a smaller set of possibilities.
      *
-     * @param  columnDefinition  information about the column to extract values from and expose through Java API.
-     * @return converter to the corresponding java type, or {@code null} if this class cannot find a mapping,
+     * <p>In addition, this method can declare in the supplied map which tables are used for describing
+     * the spatial schema. The default implementation does nothing because the entries to add depend on
+     * the {@link SpatialSchema}. For example, if Simple Features conventions are used, then the tables
+     * are {@code "SPATIAL_REF_SYS"} and {@code "GEOMETRY_COLUMNS"}. Subclasses can add other entries
+     * if they know in advance that they support only one convention, or that all the conventions that
+     * they support use the same table names. The table added to the map will be ignored when searching
+     * for feature tables.</p>
+     *
+     * <p>The values in the map tells whether the table can be used as a sentinel value for determining
+     * that the {@link SpatialSchema} enumeration value can be accepted.</p>
+     *
+     * @param  tables  where to add names of tables that describe the spatial schema.
+     * @return the spatial schema conventions that may be supported by this database.
+     *
+     * @see #getSpatialSchema()
      */
-    protected final ValueGetter<?> forGeometry(final Column columnDefinition) {
-        /*
-         * The geometry type should not be empty. But it may still happen if the "GEOMETRY_COLUMNS"
-         * table does not contain a line for the specified column. It is a server issue, but seems
-         * to happen sometimes.
-         */
-        final GeometryType type = columnDefinition.getGeometryType().orElse(GeometryType.GEOMETRY);
-        final Class<? extends G> geometryClass = geomLibrary.getGeometryClass(type).asSubclass(geomLibrary.rootClass);
-        return new GeometryGetter<>(geomLibrary, geometryClass, columnDefinition.getDefaultCRS().orElse(null),
-                                    getBinaryEncoding(columnDefinition));
-    }
-
-    /**
-     * Prepares a cache of statements about spatial information using the given connection.
-     * Statements will be created only when first needed.
-     *
-     * @param  connection  the connection to use for creating statements.
-     * @return a cache of prepared statements about spatial information.
-     */
-    protected InfoStatements createInfoStatements(final Connection connection) {
-        return new InfoStatements(this, connection);
-    }
-
-    /**
-     * Adds to the given map a list of tables to ignore when searching for feature tables.
-     * The given map already contains the {@code "SPATIAL_REF_SYS"} and {@code "GEOMETRY_COLUMNS"}
-     * entries when this method is invoked. The default implementation adds nothing.
-     *
-     * <p>Values tells whether the table can be used as a sentinel value for determining
-     * that this database {@linkplain #isSpatial is a spatial database}.</p>
-     *
-     * @param  ignoredTables  where to add names of tables to ignore.
-     */
-    protected void addIgnoredTables(final Map<String,Boolean> ignoredTables) {
+    protected SpatialSchema[] getPossibleSpatialSchemas(Map<String,Boolean> tables) {
+        return SpatialSchema.values();
     }
 
     /**
@@ -747,6 +727,17 @@ public class Database<G> extends Syntax  {
     }
 
     /**
+     * Prepares a cache of statements about spatial information using the given connection.
+     * Each statement in the returned object will be created only when first needed.
+     *
+     * @param  connection  the connection to use for creating statements.
+     * @return a cache of prepared statements about spatial information.
+     */
+    public InfoStatements createInfoStatements(final Connection connection) {
+        return new InfoStatements(this, connection);
+    }
+
+    /**
      * Sets the logger, class and method names of the given record, then logs it.
      * This method declares {@link SQLStore#components()} as the public source of the log.
      *
@@ -766,8 +757,10 @@ public class Database<G> extends Syntax  {
      */
     @Debug
     final void appendTo(final TreeTable.Node parent) {
-        for (final Table child : tables) {
-            child.appendTo(parent);
+        if (tables != null) {
+            for (final Table child : tables) {
+                child.appendTo(parent);
+            }
         }
     }
 
