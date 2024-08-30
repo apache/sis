@@ -91,8 +91,8 @@ import org.apache.sis.xml.NilObject;
 import org.opengis.util.CodeList;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.referencing.DefaultObjectDomain;
-import org.apache.sis.referencing.datum.AbstractDatum;
 import org.apache.sis.referencing.internal.Legacy;
+import org.apache.sis.referencing.datum.AbstractDatum;
 
 
 /**

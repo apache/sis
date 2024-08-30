@@ -19,6 +19,9 @@ package org.apache.sis.storage.gimi;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.util.GenericName;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -35,9 +38,7 @@ import org.apache.sis.storage.tiling.TileMatrix;
 import org.apache.sis.storage.tiling.TileMatrixSet;
 import org.apache.sis.storage.tiling.TiledResource;
 import org.apache.sis.util.iso.Names;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.referencing.operation.MathTransform;
-import org.opengis.util.GenericName;
+
 
 /**
  *

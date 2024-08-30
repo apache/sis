@@ -18,6 +18,7 @@ package org.apache.sis.storage.gimi.isobmff.iso14496_12;
 
 import org.apache.sis.storage.gimi.isobmff.Box;
 
+
 /**
  *
  * Container: File, ItemPropertyContainerBox, or OriginalFileTypeBox

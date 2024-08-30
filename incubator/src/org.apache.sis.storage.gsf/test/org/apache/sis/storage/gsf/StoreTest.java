@@ -16,5 +16,6 @@
  */
 package org.apache.sis.storage.gsf;
 
+
 public final class StoreTest {
 }

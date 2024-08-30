@@ -17,10 +17,10 @@
 package org.apache.sis.storage.gsf.specific;
 
 import java.lang.foreign.*;
-
 import static java.lang.foreign.ValueLayout.*;
 import org.apache.sis.storage.gsf.GSF;
 import org.apache.sis.storage.gsf.StructClass;
+
 
 /**
  *

@@ -54,10 +54,10 @@ import org.apache.sis.system.Modules;
 import org.apache.sis.storage.sql.SQLStore;
 import org.apache.sis.storage.sql.ResourceDefinition;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.util.Debug;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.collection.Cache;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
-import org.apache.sis.util.Debug;
 
 
 /**

@@ -21,6 +21,7 @@ import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.gimi.isobmff.Box;
 import org.apache.sis.storage.gimi.isobmff.BoxRegistry;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

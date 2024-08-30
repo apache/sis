@@ -40,15 +40,17 @@ import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.storage.StorageConnector;
 
-import org.apache.sis.feature.AbstractFeature;
-import org.apache.sis.feature.AbstractIdentifiedType;
-import org.apache.sis.feature.DefaultAttributeType;
-
+// Test dependencies
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+
+// Specific to the main branch:
+import org.apache.sis.feature.AbstractFeature;
+import org.apache.sis.feature.AbstractIdentifiedType;
+import org.apache.sis.feature.DefaultAttributeType;
 
 
 /**

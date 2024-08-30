@@ -19,6 +19,7 @@ package org.apache.sis.storage.gimi;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
+import org.opengis.util.GenericName;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.DataStoreException;
@@ -28,7 +29,7 @@ import org.apache.sis.storage.tiling.Tile;
 import org.apache.sis.storage.tiling.TileMatrix;
 import org.apache.sis.storage.tiling.TileStatus;
 import org.apache.sis.util.iso.Names;
-import org.opengis.util.GenericName;
+
 
 /**
  *

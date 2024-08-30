@@ -31,6 +31,7 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.geopackage.GpkgStore;
 
+// Test dependencies
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.TestInstance;

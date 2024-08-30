@@ -20,6 +20,7 @@ import java.io.IOException;
 import org.apache.sis.storage.gimi.isobmff.FullBox;
 import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 
+
 /**
  * From ISO/IEC 23001-17:2024 amendment 1
  *
