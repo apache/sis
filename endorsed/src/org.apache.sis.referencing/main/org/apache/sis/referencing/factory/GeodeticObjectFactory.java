@@ -1167,6 +1167,38 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     }
 
     /**
+     * Creates a dynamic vertical datum from an enumerated type value and a frame reference epoch.
+     * The arguments are the same as for the {@linkplain #createVerticalDatum(Map, VerticalDatumType)
+     * static datum}, with the addition of a mandatory frame reference epoch.
+     *
+     * @param  properties  name and other properties to give to the new object.
+     * @param  type        the type of this vertical datum (often geoidal).
+     * @param  epoch       the epoch to which the definition of the dynamic reference frame is referenced.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @see DefaultVerticalDatum.Dynamic#Dynamic(Map, VerticalDatumType, Temporal)
+     * @see GeodeticAuthorityFactory#createVerticalDatum(String)
+     *
+     * @since 1.5
+     *
+     * @deprecated As of ISO 19111:2019, the {@code VerticalDatumType} argument is replaced by {@code RealizationMethod}.
+     */
+    @Deprecated(since = "2.0")  // Temporary version number until this branch is released.
+    public VerticalDatum createVerticalDatum(final Map<String,?> properties,
+                                             final VerticalDatumType type,
+                                             final Temporal epoch)
+            throws FactoryException
+    {
+        final DefaultVerticalDatum datum;
+        try {
+            datum = new DefaultVerticalDatum.Dynamic(complete(properties), type, epoch);
+        } catch (IllegalArgumentException exception) {
+            throw new InvalidGeodeticParameterException(exception);
+        }
+        return unique("createVerticalDatum", datum);
+    }
+
+    /**
      * Creates a vertical coordinate system.
      * This coordinate system can be used with vertical and derived CRS.
      *

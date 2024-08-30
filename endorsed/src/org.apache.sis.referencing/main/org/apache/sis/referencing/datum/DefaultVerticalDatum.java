@@ -291,6 +291,22 @@ public class DefaultVerticalDatum extends AbstractDatum implements VerticalDatum
         }
 
         /**
+         * Creates a dynamic reference frame from the given properties.
+         * See super-class constructor for more information.
+         *
+         * @param  properties  the properties to be given to the identified object.
+         * @param  type        the type of this vertical datum.
+         * @param  epoch       the epoch to which the definition of the dynamic reference frame is referenced.
+         *
+         * @deprecated As of ISO 19111:2019, the {@code VerticalDatumType} argument is replaced by {@code RealizationMethod}.
+         */
+        @Deprecated(since = "2.0")  // Temporary version number until this branch is released.
+        public Dynamic(Map<String,?> properties, VerticalDatumType type, Temporal epoch) {
+            super(properties, type);
+            frameReferenceEpoch = Objects.requireNonNull(epoch);
+        }
+
+        /**
          * Creates a new datum with the same values as the specified datum, which must be dynamic.
          *
          * @param  datum   the datum to copy.
