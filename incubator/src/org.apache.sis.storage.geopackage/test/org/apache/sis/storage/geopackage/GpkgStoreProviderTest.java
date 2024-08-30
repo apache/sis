@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.geopackage;
 
+// Test dependencies
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 

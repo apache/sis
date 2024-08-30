@@ -18,6 +18,7 @@ package org.apache.sis.storage.gimi.internal;
 
 import java.util.Iterator;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

@@ -23,6 +23,7 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.tiling.Tile;
 import org.apache.sis.storage.tiling.TileStatus;
 
+
 /**
  * A tile item resource defined by a Grid Item.
  *

@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.opengis.metadata.Metadata;
+import org.opengis.parameter.ParameterValueGroup;
 import org.apache.sis.io.stream.ChannelDataInput;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.storage.Aggregate;
@@ -38,8 +40,7 @@ import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemInfo;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemInfoEntry;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.Meta;
 import org.apache.sis.storage.gimi.isobmff.iso23008_12.ImagePyramidEntityGroup;
-import org.opengis.metadata.Metadata;
-import org.opengis.parameter.ParameterValueGroup;
+
 
 /**
  *

@@ -21,6 +21,7 @@ import org.apache.sis.storage.gimi.isobmff.Box;
 import org.apache.sis.storage.gimi.isobmff.ISOBMFFReader;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.ItemFullProperty;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

@@ -20,9 +20,10 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import org.opengis.util.GenericName;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.storage.tiling.TileMatrix;
-import org.opengis.util.GenericName;
+
 
 /**
  * SortedMap of TileMatrix sorted by first axe resolution.

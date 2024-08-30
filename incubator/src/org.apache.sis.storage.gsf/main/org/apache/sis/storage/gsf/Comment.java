@@ -17,8 +17,8 @@
 package org.apache.sis.storage.gsf;
 
 import java.lang.foreign.*;
-
 import static java.lang.foreign.ValueLayout.*;
+
 
 /**
  *

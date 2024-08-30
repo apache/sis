@@ -26,6 +26,7 @@ import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.concurrent.atomic.AtomicReference;
 import java.lang.reflect.Constructor;
+import java.time.temporal.Temporal;
 import jakarta.xml.bind.JAXBException;
 import javax.measure.Unit;
 import javax.measure.quantity.Angle;
@@ -64,7 +65,6 @@ import org.apache.sis.io.wkt.Parser;
 import org.apache.sis.xml.XML;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import java.time.temporal.Temporal;
 import org.opengis.referencing.datum.DynamicReferenceFrame;
 
 
