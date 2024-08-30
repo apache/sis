@@ -41,6 +41,7 @@ import org.apache.sis.storage.base.Capability;
 import org.apache.sis.storage.base.StoreMetadata;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.parameter.ParameterBuilder;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.UnconvertibleObjectException;
 import static org.apache.sis.storage.sql.feature.Database.WILDCARD;
 
@@ -50,7 +51,7 @@ import static org.apache.sis.storage.sql.feature.Database.WILDCARD;
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.0
  */
 @StoreMetadata(formatName    = SQLStoreProvider.NAME,
@@ -92,14 +93,14 @@ public class SQLStoreProvider extends DataStoreProvider {
 
     /**
      * Description of the parameter providing the list of tables or views to include as resources in the
-     * {@link SQLStore}. At least one of {@code TABLES_PARAM} or {@link #QUERIES_PARAM} must be provided.
+     * {@link SimpleFeatureStore}. At least one of {@code TABLES_PARAM} or {@link #QUERIES_PARAM} must be provided.
      *
      * @since 1.1
      */
     public static final ParameterDescriptor<GenericName[]> TABLES_PARAM;
 
     /**
-     * Description of the parameter providing the queries to include as resources in the {@link SQLStore}.
+     * Description of the parameter providing the queries to include as resources in the {@link SimpleFeatureStore}.
      * Map keys are the resource names as {@link GenericName} or {@link String} instances.
      * Values are SQL statements (as {@link String} instances) to execute when the associated resource is requested.
      * At least one of {@link #TABLES_PARAM} or {@code QUERIES_PARAM} must be provided.
@@ -194,9 +195,10 @@ public class SQLStoreProvider extends DataStoreProvider {
                 return ProbeResult.SUPPORTED;
             } catch (SQLException e) {
                 final String state = e.getSQLState();
-                if (!"08001".equals(state) || !"3D000".equals(state)) {
-                    throw new CanNotProbeException(this, connector, e);
+                if (!("08001".equals(state) || "3D000".equals(state))) {
+                    throw new CanNotProbeException(this, connector, Exceptions.unwrap(e));
                 }
+                // SQL-client unable to establish SQL-connection, or invalid catalog name.
             }
         }
         return ProbeResult.UNSUPPORTED_STORAGE;
@@ -212,7 +214,7 @@ public class SQLStoreProvider extends DataStoreProvider {
      */
     @Override
     public DataStore open(final StorageConnector connector) throws DataStoreException {
-        return new SQLStore(this, connector, ResourceDefinition.table(WILDCARD));
+        return new SimpleFeatureStore(this, connector, ResourceDefinition.table(WILDCARD));
     }
 
     /**
@@ -229,7 +231,7 @@ public class SQLStoreProvider extends DataStoreProvider {
             final StorageConnector connector = new StorageConnector(p.getValue(SOURCE_PARAM));
             final GenericName[] tableNames = p.getValue(TABLES_PARAM);
             final Map<?,?> queries = p.getValue(QUERIES_PARAM);
-            return new SQLStore(this, connector, ResourceDefinition.wrap(tableNames, queries));
+            return new SimpleFeatureStore(this, connector, ResourceDefinition.wrap(tableNames, queries));
         } catch (ParameterNotFoundException | UnconvertibleObjectException e) {
             throw new IllegalOpenParameterException(e.getMessage(), e);
         }

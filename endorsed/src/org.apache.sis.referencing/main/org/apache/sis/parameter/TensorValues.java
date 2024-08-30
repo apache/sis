@@ -433,6 +433,8 @@ final class TensorValues<E> extends AbstractParameterDescriptor
 
     /**
      * Compares this object with the specified one for equality.
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
@@ -451,6 +453,8 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      * Invoked by {@link #hashCode()} for computing the hash code when first needed.
      *
      * @return {@inheritDoc}
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     protected long computeHashCode() {
@@ -463,6 +467,8 @@ final class TensorValues<E> extends AbstractParameterDescriptor
      *
      * @param  formatter  the formatter where to format the inner content of this WKT element.
      * @return {@code "ParameterGroup"}.
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     protected String formatTo(final Formatter formatter) {

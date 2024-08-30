@@ -60,13 +60,24 @@ public final class GeometryTypeTest extends TestCase {
     }
 
     /**
-     * Tests {@link GeometryType#forBinaryType(int)} and verifies {@link GeometryType#binaryType()} values.
+     * Tests {@link GeometryType#forBinaryType(int)}.
      */
     @Test
-    public void testBinaryType() {
-        for (final GeometryType type : GeometryType.values()) {
-            assertSame(type, GeometryType.forBinaryType(type.binaryType()), type.name());
-        }
+    public void testForBinaryType() {
+        assertSame(GeometryType.GEOMETRY,           GeometryType.forBinaryType( 0));
+        assertSame(GeometryType.POINT,              GeometryType.forBinaryType( 1));
+        assertSame(GeometryType.LINESTRING,         GeometryType.forBinaryType( 2));
+        assertSame(GeometryType.POLYGON,            GeometryType.forBinaryType( 3));
+        assertSame(GeometryType.MULTIPOINT,         GeometryType.forBinaryType( 4));
+        assertSame(GeometryType.MULTILINESTRING,    GeometryType.forBinaryType( 5));
+        assertSame(GeometryType.MULTIPOLYGON,       GeometryType.forBinaryType( 6));
+        assertSame(GeometryType.GEOMETRYCOLLECTION, GeometryType.forBinaryType( 7));
+        assertSame(GeometryType.CURVE,              GeometryType.forBinaryType(13));
+        assertSame(GeometryType.SURFACE,            GeometryType.forBinaryType(14));
+        assertSame(GeometryType.POLYHEDRALSURFACE,  GeometryType.forBinaryType(15));
+        assertSame(GeometryType.TRIANGLE,           GeometryType.forBinaryType(17));
+        assertSame(GeometryType.GEODESICSTRING,     GeometryType.forBinaryType(19));
+        assertSame(GeometryType.BREPSOLID,          GeometryType.forBinaryType(25));
     }
 
     /**
@@ -74,8 +85,8 @@ public final class GeometryTypeTest extends TestCase {
      */
     @Test
     public void testForName() {
-        assertSame(GeometryType.MULTIPOLYGON, GeometryType.forName("multi_Polygon"));
-        assertSame(GeometryType.MULTIPOLYGON, GeometryType.forName("MULTIPOLYGON"));
+        assertSame(GeometryType.MULTIPOLYGON,       GeometryType.forName("multi_Polygon"));
+        assertSame(GeometryType.MULTIPOLYGON,       GeometryType.forName("MULTIPOLYGON"));
         assertSame(GeometryType.GEOMETRYCOLLECTION, GeometryType.forName("GEOMETRY_COLLECTION"));
         assertSame(GeometryType.GEOMETRYCOLLECTION, GeometryType.forName("GeomCollection"));
     }

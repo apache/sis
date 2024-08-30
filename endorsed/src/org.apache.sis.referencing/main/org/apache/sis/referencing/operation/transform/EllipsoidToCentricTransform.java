@@ -742,9 +742,7 @@ next:   while (--numPts >= 0) {
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @return {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     protected int computeHashCode() {
@@ -756,7 +754,7 @@ next:   while (--numPts >= 0) {
     /**
      * Compares the specified object with this math transform for equality.
      *
-     * @return {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {

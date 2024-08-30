@@ -677,6 +677,8 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
      * @param  object  the object to compare with this transform.
      * @param  mode    ignored, can be {@code null}.
      * @return {@code true} if the given object is considered equals to this math transform.
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {
@@ -691,6 +693,8 @@ public class WraparoundTransform extends AbstractMathTransform implements Serial
      * Computes a hash code value for this transform.
      *
      * @return the hash code value.
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     protected int computeHashCode() {

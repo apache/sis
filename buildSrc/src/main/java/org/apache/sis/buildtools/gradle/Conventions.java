@@ -198,7 +198,8 @@ abstract class Conventions {
         }
         Files.createDirectories(target.getParent());
         try {
-            Files.createLink(target, source);
+            // `toRealPath()` is necessary, otherwise symbolic links are reproduced verbatim and become broken.
+            Files.createLink(target, source.toRealPath());
         } catch (UnsupportedOperationException e) {
             Files.copy(source, target, StandardCopyOption.COPY_ATTRIBUTES, StandardCopyOption.REPLACE_EXISTING);
         }

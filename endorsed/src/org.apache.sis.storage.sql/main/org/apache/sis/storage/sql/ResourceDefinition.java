@@ -22,19 +22,28 @@ import java.util.Optional;
 import org.opengis.util.NameSpace;
 import org.opengis.util.NameFactory;
 import org.opengis.util.GenericName;
+import org.apache.sis.storage.FeatureSet;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import static org.apache.sis.storage.sql.feature.Database.WILDCARD;
 
 
 /**
- * Definition of a resource (table, view or query) to include in a {@link SQLStore}.
+ * Definition of a resource (table, view or query) to include in a {@code SQLStore}.
+ * Each {@code ResourceDefinition} instance can specify a table or a group of tables
+ * (based on name pattern) to view as {@link FeatureSet} instances.
+ * A {@code ResourceDefinition} instance can also specify a query instead of a table.
+ *
+ * <p>{@code ResourceDefinition}s are given to the {@link SimpleFeatureStore} constructor,
+ * which implies that the tables to use are known in advance (e.g., hard-coded).
+ * If this is not the case, then the {@code ResourceDefinition}s can be provided
+ * later by overriding {@link SQLStore#readResourceDefinitions(DataAccess)} instead.</p>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  * @since   1.1
  */
-public final class ResourceDefinition {
+public class ResourceDefinition {
     /**
      * The namespace for table names, created when first needed.
      * Used for specifying the name separator, which is {@code '.'}.
@@ -42,7 +51,7 @@ public final class ResourceDefinition {
     private static volatile NameSpace tableNS;
 
     /**
-     * The table name or the query name.
+     * The name pattern of a table or a view, or an arbitrary query name.
      * This field has two meanings, depending on whether {@link #query} is null or not:
      *
      * <ul>
@@ -65,10 +74,21 @@ public final class ResourceDefinition {
     final String query;
 
     /**
-     * Creates a new definition.
+     * Creates a new description of a resource in a SQL database.
+     * If the {@code query} argument is null, then the {@code name} argument
+     * shall be the name pattern of a table or a view.
+     *
+     * @param  name  table, view or query name pattern. May contain {@code LIKE} wildcard characters.
+     * @return SQL query to execute for the resource, or {@code null} if the resource is a table or view.
+     *
+     * @see #table(String)
+     * @see #table(String, String, String)
+     * @see #query(String, String)
+     *
+     * @since 1.5
      */
-    private ResourceDefinition(final GenericName name, final String query) {
-        this.name  = name;
+    protected ResourceDefinition(final GenericName name, final String query) {
+        this.name  = Objects.requireNonNull(name);
         this.query = query;
     }
 
@@ -187,9 +207,8 @@ public final class ResourceDefinition {
     }
 
     /**
-     * Returns the name of the table, view or query to access as a resource.
-     * There is small differences in the way it is used depending on whether
-     * the resource is a table or a query:
+     * Returns the name pattern of the table, view or query to access as a resource.
+     * There is small differences in the way it is used depending on whether the resource is a table or a query:
      *
      * <ul>
      *   <li>If the resource is a table or a view, then this is the fully qualified name (including catalog and schema)
@@ -199,7 +218,7 @@ public final class ResourceDefinition {
      *       the query result.</li>
      * </ul>
      *
-     * @return the name of the table, view or query.
+     * @return the table or view name pattern, or an arbitrary query name.
      */
     public GenericName getName() {
         return name;
@@ -225,8 +244,8 @@ public final class ResourceDefinition {
         if (this == obj) {
             return true;
         }
-        if (obj instanceof ResourceDefinition) {
-            final ResourceDefinition other = (ResourceDefinition) obj;
+        if (obj != null && obj.getClass() == getClass()) {
+            final var other = (ResourceDefinition) obj;
             return name.equals(other.name) && Objects.equals(query, other.query);
         }
         return false;
@@ -249,7 +268,7 @@ public final class ResourceDefinition {
      */
     @Override
     public String toString() {
-        final StringBuilder b = new StringBuilder("Resource[\"").append(name).append('"');
+        final var b = new StringBuilder(getClass().getSimpleName()).append("[\"").append(name).append('"');
         if (query != null) {
             b.append(" = ").append(query);
         }

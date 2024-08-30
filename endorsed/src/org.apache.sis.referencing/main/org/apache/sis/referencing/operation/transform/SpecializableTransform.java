@@ -592,9 +592,12 @@ class SpecializableTransform extends AbstractMathTransform implements Serializab
             if (dstPts == null) {
                 dstPts = new double[dstInc];                    // Needed for checking if inside a sub-area.
                 dstOff = 0;
-            } else if (srcPts == dstPts && srcOff + srcInc > dstOff && srcOff < dstOff + dstInc) {
-                srcPts = Arrays.copyOfRange(srcPts, srcOff, srcInc);
-                srcOff = 0;
+            } else if (srcPts == dstPts) {
+                final int srcEnd = srcOff + srcInc;
+                if (srcEnd > dstOff && srcOff < dstOff + dstInc) {
+                    srcPts = Arrays.copyOfRange(srcPts, srcOff, srcEnd);
+                    srcOff = 0;
+                }
             }
             /*
              * Above 'srcPts' dhould keep the source coordinates unchanged even if the source and destination

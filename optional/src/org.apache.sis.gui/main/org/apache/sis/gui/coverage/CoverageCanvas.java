@@ -466,7 +466,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      *                   If non-null, the anchor must be associated to a CRS.
      * @throws RenderException if the objective CRS cannot be set to the given value.
      *
-     * @hidden
+     * @hidden because nothing new to said.
      */
     @Override
     public void setObjectiveCRS(final CoordinateReferenceSystem newValue, DirectPosition anchor) throws RenderException {
@@ -486,7 +486,7 @@ public class CoverageCanvas extends MapCanvasAWT {
      * @param  newValue  the grid geometry from which to get new canvas properties.
      * @throws RenderException if the given grid geometry cannot be converted to canvas properties.
      *
-     * @hidden
+     * @hidden because nothing new to said.
      */
     @Override
     public void setGridGeometry(final GridGeometry newValue) throws RenderException {

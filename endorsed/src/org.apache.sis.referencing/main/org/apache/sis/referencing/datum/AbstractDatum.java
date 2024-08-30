@@ -50,6 +50,7 @@ import static org.apache.sis.util.collection.Containers.property;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.opengis.metadata.extent.Extent;
 import org.apache.sis.referencing.internal.Legacy;
+import org.apache.sis.pending.geoapi.referencing.DynamicReferenceFrame;
 
 
 /**
@@ -390,6 +391,17 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     }
 
     /**
+     * Returns the frame reference epoch if this datum is dynamic, or {@code null} if this datum is static.
+     * This method is overridden with public access in Apache SIS {@code Dynamic} subclasses.
+     * The default implementation should be suitable for non-SIS implementations.
+     *
+     * @return the reference epoch if this datum is dynamic, or {@code null} if this datum is static.
+     */
+    Temporal getFrameReferenceEpoch() {
+        return (this instanceof DynamicReferenceFrame) ? ((DynamicReferenceFrame) this).getFrameReferenceEpoch() : null;
+    }
+
+    /**
      * Returns the date on which the datum definition was published.
      *
      * @return date on which the datum definition was published.
@@ -471,6 +483,12 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
      * {@linkplain #getAnchorDefinition() anchor definition}, {@linkplain #getAnchorEpoch() anchor epoch},
      * and the {@linkplain #getDomains() domains}.
      *
+     * <h4>Static versus dynamic datum</h4>
+     * If this datum implements the {@code DynamicReferenceFrame} interface, then the given object needs
+     * to also implement that interfaces and provide the same reference epoch for being considered equal.
+     * Conversely, if this datum does not implement {@code DynamicReferenceFrame}, then the given object
+     * also need to <em>not</em> implement that interface for being considered equal.
+     *
      * @param  object  the object to compare to {@code this}.
      * @param  mode    {@link ComparisonMode#STRICT STRICT} for performing a strict comparison, or
      *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
@@ -485,13 +503,24 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
         switch (mode) {
             case STRICT: {
                 final var that = (AbstractDatum) object;
-                return Objects.equals(anchorEpoch,      that.anchorEpoch) &&
-                       Objects.equals(anchorDefinition, that.anchorDefinition);
+                return Objects.equals(anchorEpoch,       that.anchorEpoch) &&
+                       Objects.equals(anchorDefinition,  that.anchorDefinition) &&
+                       Objects.equals(publicationDate,   that.publicationDate) &&
+                       Objects.equals(conventionalRS,    that.conventionalRS);
             }
             case BY_CONTRACT: {
-                final Datum that = (Datum) object;
-                return deepEquals(getRealizationEpoch(), that.getRealizationEpoch(), mode) &&
-                       deepEquals(getAnchorPoint(),      that.getAnchorPoint(),      mode);
+                if (!(object instanceof AbstractDatum)) {
+                    return getAnchorEpoch().isEmpty() &&
+                           getAnchorDefinition().isEmpty() &&
+                           getPublicationDate().isEmpty() &&
+                           getConventionalRS().isEmpty();
+                }
+                final var that = (AbstractDatum) object;
+                return compareDynamicReferenceFrames(that, mode) &&
+                       deepEquals(getAnchorEpoch(),      that.getAnchorEpoch(), mode) &&
+                       deepEquals(getAnchorDefinition(), that.getAnchorDefinition(), mode) &&
+                       deepEquals(getPublicationDate(),  that.getPublicationDate(), mode) &&
+                       deepEquals(getConventionalRS(),   that.getConventionalRS(), mode);
             }
             default: {
                 /*
@@ -504,6 +533,9 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
                  * and parameters. We extend this rule to datum as well.
                  */
                 final var that = (Datum) object;
+                if (!compareDynamicReferenceFrames(that, mode)) {
+                    return false;
+                }
                 final Boolean match = Identifiers.hasCommonIdentifier(getIdentifiers(), that.getIdentifiers());
                 if (match != null) {
                     return match;
@@ -515,16 +547,35 @@ public class AbstractDatum extends AbstractIdentifiedObject implements Datum {
     }
 
     /**
+     * Checks whether this datum and the other datum are both static or both dynamic.
+     * In the latter case, checks also whether the two datum have the same reference epoch.
+     *
+     * @param  that  the other datum to compare with this datum.
+     * @param  mode  the comparison mode.
+     * @return whether the two reference frames are equal in their static versus dynamic aspect.
+     */
+    private boolean compareDynamicReferenceFrames(final Datum that, final ComparisonMode mode) {
+        final Temporal frameReferenceEpoch = getFrameReferenceEpoch();
+        if (frameReferenceEpoch != null) {
+            return (that instanceof DynamicReferenceFrame) &&
+                    deepEquals(frameReferenceEpoch, ((DynamicReferenceFrame) that).getFrameReferenceEpoch(), mode);
+        } else {
+            return !(that instanceof DynamicReferenceFrame);
+        }
+    }
+
+    /**
      * Invoked by {@code hashCode()} for computing the hash code when first needed.
      * See {@link org.apache.sis.referencing.AbstractIdentifiedObject#computeHashCode()}
      * for more information.
      *
      * @return the hash code value. This value may change in any future Apache SIS version.
-     * @hidden because not useful.
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     protected long computeHashCode() {
-        return super.computeHashCode() + Objects.hash(anchorDefinition, anchorEpoch);
+        return super.computeHashCode() + Objects.hash(anchorDefinition, anchorEpoch, publicationDate, conventionalRS);
     }
 
     /**

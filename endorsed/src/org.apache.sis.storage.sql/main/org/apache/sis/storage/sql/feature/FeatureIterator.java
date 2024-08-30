@@ -27,7 +27,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.apache.sis.metadata.sql.privy.SQLBuilder;
 import org.apache.sis.storage.InternalDataStoreException;
-import org.apache.sis.util.collection.BackingStoreException;
 import org.apache.sis.util.collection.WeakValueHashMap;
 
 // Specific to the main branch:
@@ -85,7 +84,7 @@ final class FeatureIterator implements Spliterator<AbstractFeature>, AutoCloseab
 
     /**
      * A cache of statements for fetching spatial information such as geometry columns or SRID.
-     * This is non-null only if the {@linkplain Database#isSpatial() database is spatial}.
+     * This is non-null only if the {@linkplain Database#getSpatialSchema() database is spatial}.
      * The same instance is shared by all dependencies of this {@code FeatureIterator}.
      */
     private final InfoStatements spatialInformation;
@@ -118,7 +117,8 @@ final class FeatureIterator implements Spliterator<AbstractFeature>, AutoCloseab
             throws SQLException, InternalDataStoreException
     {
         adapter = table.adapter(connection);
-        spatialInformation = table.database.isSpatial() ? table.database.createInfoStatements(connection) : null;
+        spatialInformation = table.database.getSpatialSchema().isPresent()
+                ? table.database.createInfoStatements(connection) : null;
         String sql = adapter.sql;
         if (distinct || filter != null || sort != null || offset > 0 || count > 0) {
             final SQLBuilder builder = new SQLBuilder(table.database).append(sql);
@@ -217,10 +217,8 @@ final class FeatureIterator implements Spliterator<AbstractFeature>, AutoCloseab
     public boolean tryAdvance(final Consumer<? super AbstractFeature> action) {
         try {
             return fetch(action, false);
-        } catch (RuntimeException e) {
-            throw e;
         } catch (Exception e) {
-            throw new BackingStoreException(e);
+            throw FeatureStream.cannotExecute(e);
         }
     }
 
@@ -231,10 +229,8 @@ final class FeatureIterator implements Spliterator<AbstractFeature>, AutoCloseab
     public void forEachRemaining(final Consumer<? super AbstractFeature> action) {
         try {
             fetch(action, true);
-        } catch (RuntimeException e) {
-            throw e;
         } catch (Exception e) {
-            throw new BackingStoreException(e);
+            throw FeatureStream.cannotExecute(e);
         }
     }
 

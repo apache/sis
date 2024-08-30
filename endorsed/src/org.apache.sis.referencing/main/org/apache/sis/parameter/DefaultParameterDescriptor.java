@@ -444,6 +444,7 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      */
     @Override
     public Unit<?> getUnit() {
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Range<?> valueDomain = this.valueDomain;
         return (valueDomain instanceof MeasurementRange<?>) ? ((MeasurementRange<?>) valueDomain).unit() : null;
     }
@@ -528,6 +529,8 @@ public class DefaultParameterDescriptor<T> extends AbstractParameterDescriptor i
      * Invoked by {@link #hashCode()} for computing the hash code when first needed.
      *
      * @return {@inheritDoc}
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     protected long computeHashCode() {

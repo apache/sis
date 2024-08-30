@@ -384,9 +384,7 @@ public class InterpolatedTransform extends DatumShiftTransform {
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @return {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     protected int computeHashCode() {
@@ -399,6 +397,8 @@ public class InterpolatedTransform extends DatumShiftTransform {
      * @param  object  the object to compare with this transform.
      * @param  mode    the strictness level of the comparison. Default to {@link ComparisonMode#STRICT STRICT}.
      * @return {@code true} if the given object is considered equals to this math transform.
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {

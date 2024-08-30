@@ -120,6 +120,7 @@ module org.apache.sis.util {
             org.apache.sis.storage.geotiff,
             org.apache.sis.storage.earthobservation,
             org.apache.sis.portrayal,
+            org.apache.sis.storage.gsf,                 // In the "incubator" sub-project.
             org.apache.sis.cloud.aws,
             org.apache.sis.console,
             org.apache.sis.gui,                         // In the "optional" sub-project.

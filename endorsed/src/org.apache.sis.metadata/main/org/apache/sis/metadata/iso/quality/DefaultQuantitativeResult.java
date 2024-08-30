@@ -261,7 +261,7 @@ public class DefaultQuantitativeResult extends AbstractResult implements Quantit
      *
      * @return {@code true} if this metadata is empty.
      *
-     * @hidden
+     * @hidden because nothing new to said.
      */
     @Override
     public boolean isEmpty() {

@@ -576,6 +576,9 @@ public class AbstractIdentifiedObject extends FormattableObject implements Ident
      * The domain includes a scope (description of the primary purpose of this object) together
      * with a domain of validity (spatial and temporal extent in which the object can be used).
      *
+     * <div class="note"><b>Upcoming API change:</b>
+     * the type of collection elements may become {@code ObjectDomain} after the next GeoAPI release.</div>
+     *
      * @return scopes and domains of validity of this object.
      *
      * @since 1.4

@@ -25,6 +25,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
 import java.util.concurrent.atomic.AtomicReference;
+import java.time.temporal.Temporal;
 import java.lang.reflect.Constructor;
 import jakarta.xml.bind.JAXBException;
 import javax.measure.Unit;
@@ -682,9 +683,9 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     }
 
     /**
-     * Creates a geodetic reference frame from ellipsoid and (optionally) Bursa-Wolf parameters.
+     * Creates a static geodetic reference frame from ellipsoid and (optionally) Bursa-Wolf parameters.
      * Geodetic reference frame defines the location and orientation of an ellipsoid that approximates the shape of the earth.
-     * This datum can be used with geographic, geocentric and engineering CRS.
+     * This datum can be used with geographic and geocentric <abbr>CRS</abbr>.
      *
      * <h4>Dependencies</h4>
      * The components needed by this method can be created by the following methods:
@@ -715,6 +716,37 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
         final DefaultGeodeticDatum datum;
         try {
             datum = new DefaultGeodeticDatum(complete(properties), ellipsoid, primeMeridian);
+        } catch (IllegalArgumentException exception) {
+            throw new InvalidGeodeticParameterException(exception);
+        }
+        return unique("createGeodeticDatum", datum);
+    }
+
+    /**
+     * Creates a dynamic geodetic reference frame from ellipsoid and frame reference epoch.
+     * The arguments are the same as for the {@linkplain #createGeodeticDatum(Map, Ellipsoid,
+     * PrimeMeridian) static datum}, with the addition of a mandatory frame reference epoch.
+     *
+     * @param  properties     name and other properties to give to the new object.
+     * @param  ellipsoid      the ellipsoid to use in new geodetic reference frame.
+     * @param  primeMeridian  the prime meridian to use in new geodetic reference frame.
+     * @param  epoch          the epoch to which the definition of the dynamic reference frame is referenced.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @see DefaultGeodeticDatum.Dynamic#Dynamic(Map, Ellipsoid, PrimeMeridian, Temporal)
+     * @see GeodeticAuthorityFactory#createGeodeticDatum(String)
+     *
+     * @since 1.5
+     */
+    public GeodeticDatum createGeodeticDatum(final Map<String,?> properties,
+                                             final Ellipsoid     ellipsoid,
+                                             final PrimeMeridian primeMeridian,
+                                             final Temporal      epoch)
+            throws FactoryException
+    {
+        final DefaultGeodeticDatum datum;
+        try {
+            datum = new DefaultGeodeticDatum.Dynamic(complete(properties), ellipsoid, primeMeridian, epoch);
         } catch (IllegalArgumentException exception) {
             throw new InvalidGeodeticParameterException(exception);
         }
@@ -1068,9 +1100,8 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
     }
 
     /**
-     * Creates a vertical <abbr>CRS</abbr> from a reference frame.
-     * This is a shortcut for the {@linkplain #createVerticalCRS(Map, VerticalDatum, DefaultDatumEnsemble, VerticalCS)
-     * more generic method} without datum ensemble.
+     * Creates a static vertical datum from a realization method.
+     * The default implementation creates a {@link DefaultVerticalDatum} instance.
      *
      * @param  properties  name and other properties to give to the new object.
      *                     Available properties are {@linkplain ObjectFactory listed there}.
@@ -1104,6 +1135,35 @@ public class GeodeticObjectFactory extends AbstractFactory implements CRSFactory
         final DefaultVerticalDatum datum;
         try {
             datum = new DefaultVerticalDatum(complete(properties), type);
+        } catch (IllegalArgumentException exception) {
+            throw new InvalidGeodeticParameterException(exception);
+        }
+        return unique("createVerticalDatum", datum);
+    }
+
+    /**
+     * Creates a dynamic vertical datum from an enumerated type value and a frame reference epoch.
+     * The arguments are the same as for the {@linkplain #createVerticalDatum(Map, VerticalDatumType)
+     * static datum}, with the addition of a mandatory frame reference epoch.
+     *
+     * @param  properties  name and other properties to give to the new object.
+     * @param  type        the type of this vertical datum (often geoidal).
+     * @param  epoch       the epoch to which the definition of the dynamic reference frame is referenced.
+     * @throws FactoryException if the object creation failed.
+     *
+     * @see DefaultVerticalDatum.Dynamic#Dynamic(Map, VerticalDatumType, Temporal)
+     * @see GeodeticAuthorityFactory#createVerticalDatum(String)
+     *
+     * @since 1.5
+     */
+    public VerticalDatum createVerticalDatum(final Map<String,?> properties,
+                                             final VerticalDatumType type,
+                                             final Temporal epoch)
+            throws FactoryException
+    {
+        final DefaultVerticalDatum datum;
+        try {
+            datum = new DefaultVerticalDatum.Dynamic(complete(properties), type, epoch);
         } catch (IllegalArgumentException exception) {
             throw new InvalidGeodeticParameterException(exception);
         }

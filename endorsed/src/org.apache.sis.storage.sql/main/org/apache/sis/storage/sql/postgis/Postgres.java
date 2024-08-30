@@ -18,6 +18,8 @@ package org.apache.sis.storage.sql.postgis;
 
 import java.util.Map;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.sql.Types;
 import java.sql.JDBCType;
 import java.sql.Connection;
@@ -26,7 +28,6 @@ import java.sql.ResultSet;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import javax.sql.DataSource;
-import java.util.logging.Level;
 import org.opengis.geometry.Envelope;
 import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.storage.sql.feature.BinaryEncoding;
@@ -37,6 +38,7 @@ import org.apache.sis.storage.sql.feature.Database;
 import org.apache.sis.storage.sql.feature.ValueGetter;
 import org.apache.sis.storage.sql.feature.Resources;
 import org.apache.sis.storage.sql.feature.SelectionClauseWriter;
+import org.apache.sis.storage.sql.feature.SpatialSchema;
 import org.apache.sis.metadata.sql.privy.Dialect;
 import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.Version;
@@ -65,21 +67,23 @@ public final class Postgres<G> extends Database<G> {
     /**
      * Creates a new session for a PostGIS database.
      *
-     * @param  source       provider of (pooled) connections to the database.
-     * @param  connection   the connection to the database. Should be considered as read-only.
-     * @param  metadata     metadata about the database for which a session is created.
-     * @param  dialect      additional information not provided by {@code metadata}.
-     * @param  geomLibrary  the factory to use for creating geometric objects.
-     * @param  listeners    where to send warnings.
+     * @param  source         provider of (pooled) connections to the database.
+     * @param  metadata       metadata about the database for which a session is created.
+     * @param  dialect        additional information not provided by {@code metadata}.
+     * @param  geomLibrary    the factory to use for creating geometric objects.
+     * @param  contentLocale  the locale to use for international texts to write in the database, or {@code null} for default.
+     * @param  listeners      where to send warnings.
+     * @param  locks          the read/write locks, or {@code null} if none.
      * @throws SQLException if an error occurred while reading database metadata.
      */
-    public Postgres(final DataSource source, final Connection connection, final DatabaseMetaData metadata,
-                    final Dialect dialect, final Geometries<G> geomLibrary, final StoreListeners listeners)
+    public Postgres(final DataSource source, final DatabaseMetaData metadata, final Dialect dialect,
+                    final Geometries<G> geomLibrary, final Locale contentLocale, final StoreListeners listeners,
+                    final ReadWriteLock locks)
             throws SQLException
     {
-        super(source, metadata, dialect, geomLibrary, listeners);
+        super(source, metadata, dialect, geomLibrary, contentLocale, listeners, locks);
         Version version = null;
-        try (Statement st = connection.createStatement();
+        try (Statement st = metadata.getConnection().createStatement();
              ResultSet result = st.executeQuery("SELECT public.PostGIS_version();"))
         {
             while (result.next()) {
@@ -180,20 +184,28 @@ public final class Postgres<G> extends Database<G> {
      * @return a cache of prepared statements about spatial information.
      */
     @Override
-    protected InfoStatements createInfoStatements(final Connection connection) {
+    public InfoStatements createInfoStatements(final Connection connection) {
         return new ExtendedInfo(this, connection);
     }
 
     /**
-     * Adds to the given set a list of tables to ignore when searching for feature tables.
+     * Returns the spatial schema conventions that may possibly be supported by this database.
+     * The only value expected by PostGIS databases is {@link SpatialSchema#SIMPLE_FEATURE}.
+     * This method also completes the given map with additional tables describing the schema.
+     * Those tables shall be ignored when searching for feature tables.
      *
-     * @param  ignoredTables  where to add names of tables to ignore.
+     * <p>The values in the map tells whether the table can be used as a sentinel value for
+     * determining that the {@link SpatialSchema} enumeration value can be accepted.</p>
+     *
+     * @param  tables  where to add names of tables that describe the spatial schema.
+     * @return the spatial schema convention supported by this database.
      */
     @Override
-    protected void addIgnoredTables(final Map<String,Boolean> ignoredTables) {
+    protected SpatialSchema[] getPossibleSpatialSchemas(final Map<String,Boolean> ignoredTables) {
         ignoredTables.put("geography_columns", Boolean.TRUE);     // Postgis 1+
         ignoredTables.put("raster_columns",    Boolean.TRUE);     // Postgis 2
         ignoredTables.put("raster_overviews",  Boolean.FALSE);
+        return new SpatialSchema[] {SpatialSchema.SIMPLE_FEATURE};
     }
 
     /**

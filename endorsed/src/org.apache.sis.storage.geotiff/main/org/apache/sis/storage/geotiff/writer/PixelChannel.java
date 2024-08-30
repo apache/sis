@@ -47,6 +47,7 @@ abstract class PixelChannel implements WritableByteChannel {
      * Creates a buffer to use with this compression channel.
      * The buffer size, and whether the buffer should be direct or not,
      * depends on the decompression implementation.
+     * The byte order shall be set by the caller.
      */
     abstract ByteBuffer createBuffer();
 

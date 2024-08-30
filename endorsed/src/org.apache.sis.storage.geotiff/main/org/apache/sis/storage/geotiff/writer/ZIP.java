@@ -48,6 +48,7 @@ final class ZIP extends CompressionChannel {
 
     /**
      * Creates a buffer to use with this compression channel.
+     * The byte order shall be set by the caller.
      */
     @Override
     final ByteBuffer createBuffer() {

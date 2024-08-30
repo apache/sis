@@ -47,6 +47,7 @@ dependencies {
     api(files("../endorsed/build/classes/java/main/org.apache.sis.referencing"))
     api(files("../endorsed/build/classes/java/main/org.apache.sis.feature"))
     api(files("../endorsed/build/classes/java/main/org.apache.sis.storage"))
+    api(files("../endorsed/build/classes/java/main/org.apache.sis.storage.sql"))
 
     // Test dependencies
     testImplementation(tests.junit5)
@@ -56,6 +57,7 @@ dependencies {
      * in the global `settings.gradle.kts` because incubated modules are not released.
      */
     implementation(group = "org.antlr",       name = "antlr4-maven-plugin", version = "4.11.1")
+    implementation(group = "org.xerial",      name = "sqlite-jdbc",         version = "3.45.1.0")
     compileOnly   (group = "jakarta.servlet", name = "jakarta.servlet-api", version = "6.0.0")
     compileOnly   (group = "org.osgi",        name = "osgi.core",           version = "8.0.0")
     antlr         (group = "org.antlr",       name = "antlr4",              version = "4.11.1")
@@ -83,6 +85,7 @@ tasks.compileTestJava {
     srcDir.list().forEach {
         addRead(options.compilerArgs, it, "org.apache.sis.test.incubator,org.junit.jupiter.api")
     }
+    addExportForTests(options.compilerArgs)
 }
 
 /*
@@ -96,10 +99,37 @@ fun addRead(args : MutableList<String>, module : String, dependencies : String) 
 }
 
 /*
+ * Adds a JVM argument for making an internal package accessible to another module.
+ * This is for making internal packages accessible to JUnit or to some test classes
+ * defined in other modules.
+ */
+fun addExport(args : MutableList<String>, module : String, pkg : String, consumers : String) {
+    args.add("--add-exports")
+    args.add(module + '/' + pkg + '=' + consumers)
+}
+
+/*
+ * Add compiler and runtime options for patching the Apache SIS main modules with the test classes.
+ * The same options are required for both compiling and executing the tests.
+ */
+fun addExportForTests(args : MutableList<String>) {
+    /*
+     * Some test classes need access to more internal packages than requested by the main classes.
+     * The following lines may need to be edited when export statements are added or removed in a
+     * module-info.java file of main source code, or when a test class starts using or stop using
+     * an internal API.
+     */
+    // ――――――――――――― Module name ――――――――――――――――――――――― Package to export ―――――――――――――――
+    addExport(args, "org.apache.sis.feature",           "org.apache.sis.geometry.wrapper",
+                    "org.apache.sis.storage.geopackage")
+}
+
+/*
  * Discover and execute JUnit-based tests.
  */
 tasks.test {
     val args = mutableListOf("-enableassertions")
+    addExportForTests(args)
     setAllJvmArgs(args)
     testLogging {
         events("FAILED", "STANDARD_OUT", "STANDARD_ERROR")
@@ -125,6 +155,42 @@ publishing {
             pom {
                 name        = "Apache SIS Shapefile storage"
                 description = "Read and write files in the Shapefile format."
+            }
+        }
+        create<MavenPublication>("storage.gimi") {
+            var module = "org.apache.sis.storage.gimi"
+            groupId    = "org.apache.sis.storage"
+            artifactId = "sis-gimi"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS GIMI Coverage storage"
+                description = "Read files in ISOBMFF GIMI format."
+            }
+        }
+        create<MavenPublication>("storage.geopackage") {
+            var module = "org.apache.sis.storage.geopackage"
+            groupId    = "org.apache.sis.storage"
+            artifactId = "sis-geopackage"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS GeoPackage storage"
+                description = "Read and write files in the GeoPackage format."
+            }
+        }
+        create<MavenPublication>("storage.gsf") {
+            var module = "org.apache.sis.storage.gsf"
+            groupId    = "org.apache.sis.storage"
+            artifactId = "sis-gsf"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS LibGSF Panama binding"
+                description = "Read files in GSF format."
             }
         }
         create<MavenPublication>("storage.coveragejson") {

@@ -342,7 +342,7 @@ public class ScriptRunner implements AutoCloseable {
         if (!isCommentSupported) {
             addStatementToSkip("COMMENT\\s+ON\\s+.*");
         }
-        if (!dialect.supportsAlterTableWithAddConstraint) {
+        if (!dialect.supportsAlterTableWithAddConstraint()) {
             addStatementToSkip("ALTER\\s+TABLE\\s+\\w+\\s+ADD\\s+CONSTRAINT\\s+.*");
         }
     }
@@ -730,7 +730,7 @@ parseLine:  while (pos < length) {
             return 0;
         }
         String subSQL = currentSQL = CharSequences.trimWhitespaces(sql).toString();
-        if (!dialect.supportsTableInheritance && subSQL.startsWith("CREATE TABLE")) {
+        if (!dialect.supportsTableInheritance() && subSQL.startsWith("CREATE TABLE")) {
             final int s = sql.lastIndexOf("INHERITS");
             if (s >= 0 && isOutsideQuotes(sql, s+8, sql.length())) {             // 8 is the length of "INHERITS".
                 sql.setLength(CharSequences.skipTrailingWhitespaces(sql, 0, s));
@@ -742,7 +742,7 @@ parseLine:  while (pos < length) {
          * The scripts usually do not contain any SELECT statement. One exception is the creation
          * of geometry columns in a PostGIS database, which use "SELECT AddGeometryColumn(…)".
          */
-        if (subSQL.startsWith("SELECT ")) {
+        if (subSQL.startsWith(SQLBuilder.SELECT)) {
             statement.executeQuery(subSQL).close();
         } else {
             if (maxRowsPerInsert != Integer.MAX_VALUE && subSQL.startsWith("INSERT INTO")) {

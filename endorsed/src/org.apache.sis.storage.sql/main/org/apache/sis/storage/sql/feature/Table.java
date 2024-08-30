@@ -32,6 +32,7 @@ import org.apache.sis.metadata.sql.privy.Reflection;
 import org.apache.sis.metadata.sql.privy.SQLBuilder;
 import org.apache.sis.pending.jdk.JDK19;
 import org.apache.sis.util.Debug;
+import org.apache.sis.util.Exceptions;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import org.apache.sis.util.collection.TreeTable;
 import org.apache.sis.util.iso.DefaultNameSpace;
@@ -175,7 +176,7 @@ final class Table extends AbstractFeatureSet {
         importedKeys  = analyzer.getForeignerKeys(Relation.Direction.IMPORT);
         exportedKeys  = analyzer.getForeignerKeys(Relation.Direction.EXPORT);
         attributes    = analyzer.createAttributes();                 // Must be after `spec.getForeignerKeys(IMPORT)`.
-        primaryKey    = analyzer.createAssociations(exportedKeys);   // Must be after `spec.createAttributes(…)`.
+        primaryKey    = analyzer.createAssociations(exportedKeys);   // Must be after `spec.createAttributes()`.
         featureType   = analyzer.buildFeatureType();
         hasGeometry   = analyzer.hasGeometry;
         hasRaster     = analyzer.hasRaster;
@@ -344,7 +345,7 @@ final class Table extends AbstractFeatureSet {
             isEnvelopeAnalyzed = true;
             return Optional.ofNullable(database.getEstimatedExtent(name, attributes, recall));
         } catch (SQLException e) {
-            throw new DataStoreException(e);
+            throw new DataStoreException(e.getMessage(), Exceptions.unwrap(e));
         } else {
             return Optional.empty();
         }

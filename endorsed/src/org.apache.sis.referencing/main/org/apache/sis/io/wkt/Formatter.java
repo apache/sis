@@ -91,6 +91,7 @@ import org.apache.sis.xml.NilObject;
 import org.opengis.util.CodeList;
 import org.opengis.referencing.ReferenceIdentifier;
 import org.apache.sis.referencing.DefaultObjectDomain;
+import org.apache.sis.referencing.datum.AbstractDatum;
 import org.apache.sis.referencing.internal.Legacy;
 
 
@@ -889,8 +890,8 @@ public class Formatter implements Localized {
     private void appendForSubtypes(final IdentifiedObject object) {
         InternationalString anchor = null, scope = null;
         Extent area = null;
-        if (object instanceof Datum) {
-            anchor = ((Datum) object).getAnchorPoint();
+        if (object instanceof AbstractDatum) {
+            anchor = ((AbstractDatum) object).getAnchorPoint();
         } else if (!(object instanceof ReferenceSystem || object instanceof CoordinateOperation)) {
             return;
         }

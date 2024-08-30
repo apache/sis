@@ -23,6 +23,10 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
+import java.time.ZoneId;
+import java.time.Instant;
+import java.time.DateTimeException;
+import java.time.temporal.Temporal;
 import org.opengis.util.CodeList;
 import org.opengis.util.InternationalString;
 import org.opengis.metadata.Metadata;
@@ -40,7 +44,9 @@ import org.opengis.metadata.spatial.CellGeometry;
 import org.opengis.metadata.spatial.Georectified;
 import org.opengis.metadata.spatial.SpatialRepresentation;
 import org.opengis.metadata.spatial.GridSpatialRepresentation;
+import org.apache.sis.storage.event.StoreListeners;
 import org.apache.sis.util.collection.CodeListSet;
+import org.apache.sis.temporal.TemporalDate;
 
 // Specific to the main branch:
 import org.opengis.metadata.citation.ResponsibleParty;
@@ -49,7 +55,7 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
 
 /**
  * Helper methods for fetching metadata to be written by {@code DataStore} implementations.
- * This is not a general-purpose builder suitable for public API, since the methods provided
+ * This is not a general-purpose builder suitable for public API, because the methods provided
  * in this class are tailored for Apache SIS data store needs.
  * API of this class may change in any future SIS versions.
  *
@@ -58,6 +64,21 @@ import org.apache.sis.metadata.iso.DefaultMetadata;
  * @param  <T>  type of temporal objects.
  */
 public abstract class MetadataFetcher<T> {
+    /**
+     * Types of date to accept as a date of last update, in preference order.
+     */
+    private static final DateType[] LAST_UPDATE_TYPES = {
+            DateType.valueOf("LAST_UPDATE"),
+            DateType.valueOf("LAST_REVISION"),
+            DateType.REVISION,
+            DateType.valueOf("IN_FORCE"),
+            DateType.valueOf("RELEASED"),
+            DateType.valueOf("DISTRIBUTION"),
+            DateType.PUBLICATION,
+            DateType.valueOf("ADOPTED"),
+            DateType.CREATION
+    };
+
     /**
      * Title of the resource, or {@code null} if none.
      *
@@ -88,11 +109,24 @@ public abstract class MetadataFetcher<T> {
 
     /**
      * Dates when the resource has been created, or {@code null} if none.
-     * Limited to a singleton by default.
      *
      * <p>Path: {@code metadata/identificationInfo/citation/date}</p>
      */
     public List<T> creationDate;
+
+    /**
+     * Dates of the last update, or {@code null} if none.
+     * If there is no {@link DateType#LAST_UPDATE}, then this class fallbacks on {@link DateType#LAST_REVISION}.
+     * If there is no last revision, then this class fallbacks on {@link DateType#REVISION}, <i>etc.</i>
+     *
+     * @see #lastUpdate(Metadata)
+     */
+    public List<T> lastUpdate;
+
+    /**
+     * Type of the {@link #lastUpdate} values as an index in the {@link #LAST_UPDATE_TYPES} array.
+     */
+    private int lastUpdateType;
 
     /**
      * Unique identification of the measuring instrument, or {@code null} if none.
@@ -140,6 +174,7 @@ public abstract class MetadataFetcher<T> {
      */
     public MetadataFetcher(final Locale locale) {
         this.locale = locale;
+        lastUpdateType = LAST_UPDATE_TYPES.length;
     }
 
     /**
@@ -220,16 +255,22 @@ public abstract class MetadataFetcher<T> {
      *
      * @param  info  the resource citation date (not null).
      * @return whether to stop iteration after the given object.
+     *
+     * @see #lastUpdate(Metadata)
      */
     protected boolean accept(final CitationDate info) {
-        if (creationDate == null) {
-            if (info.getDateType() == DateType.CREATION) {
-                creationDate = List.of(convertDate(info.getDate()));
-            } else {
-                return false;       // Search another date.
-            }
+        final DateType type = info.getDateType();
+        if (type == DateType.CREATION) {
+            creationDate = addDate(creationDate, info, false);
         }
-        return true;
+        final int limit = LAST_UPDATE_TYPES.length - 1;
+        int i = Math.min(lastUpdateType, limit);
+        do if (LAST_UPDATE_TYPES[i].equals(type)) {
+            lastUpdate = addDate(lastUpdate, info, i < limit);
+            lastUpdateType = i;
+            break;
+        } while (--i >= 0);
+        return false;
     }
 
     /**
@@ -360,7 +401,7 @@ public abstract class MetadataFetcher<T> {
      * @return the collection where the string was added.
      */
     private static List<String> addString(List<String> target, String value) {
-        if (value != null && !(value = value.trim()).isEmpty()) {
+        if (value != null && !(value = value.trim()).isBlank()) {
             if (target == null) {
                 target = new ArrayList<>(2);        // We will usually have only one element.
             }
@@ -389,6 +430,28 @@ public abstract class MetadataFetcher<T> {
     }
 
     /**
+     * Adds the given date in the given collection.
+     *
+     * @param  target  where to add the date, or {@code null} if not yet created.
+     * @param  value   the date to add, or {@code null} if none.
+     * @param  clear   whether to clear the list before to add the date.
+     * @return the collection where the date was added.
+     */
+    private List<T> addDate(List<T> target, final CitationDate value, final boolean clear) {
+        @SuppressWarnings("deprecation")
+        final Date date = value.getDate();
+        if (date != null) {
+            if (target == null) {
+                target = new ArrayList<>(2);        // We will usually have only one element.
+            } else if (clear) {
+                target.clear();
+            }
+            target.add(convertDate(date));
+        }
+        return target;
+    }
+
+    /**
      * Converts the given date into the object to store.
      * The {@code <T>} type may be for example {@code <String>}
      * with a string representation specified by the format implemented by the store.
@@ -397,4 +460,47 @@ public abstract class MetadataFetcher<T> {
      * @return subclass-dependent object representing the given date.
      */
     protected abstract T convertDate(final Date date);
+
+    /**
+     * Returns the first date of type {@link DateType#LAST_UPDATE}.
+     * If there is no last update, then this method fallbacks on {@link DateType#LAST_REVISION}.
+     * If there is no last revision, then this method fallbacks on {@link DateType#REVISION}, <i>etc.</i>
+     *
+     * @param  metadata  the metadata from which to get the date of last update.
+     * @param  zone      the timezone to use if the time is local, or {@code null} if none.
+     * @param  listeners where to report warnings, or {@code null} if none.
+     * @return date of last update, or {@code null} if none.
+     *
+     * @see #lastUpdate
+     */
+    public static Instant lastUpdate(final Metadata metadata, final ZoneId zone, final StoreListeners listeners) {
+        Temporal lastUpdate = null;
+        if (metadata != null) {
+            int lastUpdateType = LAST_UPDATE_TYPES.length;
+search:     for (Identification info : metadata.getIdentificationInfo()) {
+                final Citation citation = info.getCitation();
+                if (citation != null) {
+                    for (CitationDate date : citation.getDates()) {
+                        final DateType type = date.getDateType();
+                        for (int i = lastUpdateType; --i >= 0;) {
+                            if (LAST_UPDATE_TYPES[i].equals(type)) {
+                                lastUpdateType = i;
+                                lastUpdate = TemporalDate.toTemporal(date.getDate());
+                                if (i == 0) break search;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        try {
+            return TemporalDate.toInstant(lastUpdate, zone);
+        } catch (DateTimeException e) {
+            if (listeners == null) {
+                throw e;
+            }
+            listeners.warning(e);
+            return null;
+        }
+    }
 }

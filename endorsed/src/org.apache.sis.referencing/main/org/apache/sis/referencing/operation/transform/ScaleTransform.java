@@ -337,9 +337,7 @@ final class ScaleTransform extends AbstractLinearTransform implements ExtendedPr
     }
 
     /**
-     * {@inheritDoc}
-     *
-     * @return {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     protected int computeHashCode() {

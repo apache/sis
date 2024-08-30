@@ -276,7 +276,7 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
     }
 
     /**
-     * {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     protected int computeHashCode() {
@@ -286,6 +286,8 @@ final class ExponentialTransform1D extends AbstractMathTransform1D implements Se
 
     /**
      * Compares the specified object with this math transform for equality.
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     public boolean equals(final Object object, final ComparisonMode mode) {

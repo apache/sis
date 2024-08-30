@@ -102,10 +102,15 @@ public final class Generator {
     private final EnumMap<Element,String> info;
 
     /**
-     * The required dependencies as JPML module name.
+     * The required dependencies as JPMS module name.
      * Values are whether the dependency is optional.
      */
     private final Map<String,Boolean> requires;
+
+    /**
+     * Whether we detected that the module needs an EPSG license.
+     */
+    private boolean isEPSG;
 
     /**
      * Creates a new generator which will read and rewrite in the given buffer.
@@ -158,6 +163,9 @@ public final class Generator {
                     throw new SISBuildException("Tag not found: " + element.tag);
                 }
                 pom.replace(start, end, value);
+                if (element == Element.GROUB_ID) {
+                    isEPSG |= value.contains("non-free");
+                }
             }
         }
         final int start = pom.indexOf("${");
@@ -169,6 +177,42 @@ public final class Generator {
     }
 
     /**
+     * Returns the index at the beginning of the line containing the given keyword.
+     */
+    private int indexBefore(String keyword) {
+        final int start = pom.lastIndexOf("\n", pom.lastIndexOf(keyword)) + 1;
+        if (start <= 0) {
+            throw new SISBuildException("Bad pom.xml template.");
+        }
+        return start;
+    }
+
+    /**
+     * Adds the EPSG license if this module is for a non-free module.
+     * The license is inserted just before the dependencies.
+     */
+    private void addLicensesIfEPSG() {
+        if (isEPSG) {
+            pom.insert(indexBefore("<dependencies>"),
+                """
+                    <licenses>
+                        <license>
+                            <name>EPSG terms of use</name>
+                            <url>https://epsg.org/terms-of-use.html</url>
+                            <distribution>manual</distribution>
+                        </license>
+                        <license>
+                            <name>Apache License, Version 2.0</name>
+                            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+                            <distribution>repo</distribution>
+                        </license>
+                    </licenses>
+
+                """);
+        }
+    }
+
+    /**
      * Adds the given dependencies at the end of the {@code pom.xml}.
      * An initial POM must have been written by {@link #rewritePOM()}.
      * Dependencies must have been collected by {@link #findUsedDependencies(MavenArtifactSet)} first.
@@ -176,10 +220,7 @@ public final class Generator {
      * @param  dependencies  the project dependencies to add.
      */
     private void addDependencies(final Map<String,Dependency> dependencies) {
-        final int start = pom.lastIndexOf("\n", pom.lastIndexOf("</dependencies>")) + 1;
-        if (start <= 0) {
-            throw new SISBuildException("Bad pom.xml template.");
-        }
+        final int start = indexBefore("</dependencies>");
         final String suffix = pom.substring(start);
         pom.setLength(start);
         for (final Map.Entry<String,Boolean> entry : requires.entrySet()) {
@@ -227,6 +268,7 @@ public final class Generator {
         final var g = new Generator(xml.asString());
         g.parseOriginalPOM();
         g.rewritePOM();
+        g.addLicensesIfEPSG();
         try {
             g.findUsedDependencies(pub.getArtifacts());
             g.addDependencies(Dependency.jpms(project, subProjects));

@@ -31,12 +31,11 @@ import java.sql.Statement;
 import org.apache.sis.filter.Optimization;
 import org.apache.sis.metadata.sql.privy.SQLBuilder;
 import org.apache.sis.util.ArgumentChecks;
+import org.apache.sis.util.privy.Strings;
 import org.apache.sis.util.stream.DeferredStream;
 import org.apache.sis.util.stream.PaginedStream;
 import org.apache.sis.filter.privy.SortByComparator;
-import org.apache.sis.util.privy.Strings;
 import org.apache.sis.storage.DataStoreException;
-import org.apache.sis.util.collection.BackingStoreException;
 
 // Specific to the main branch:
 import org.apache.sis.filter.Filter;
@@ -327,6 +326,7 @@ final class FeatureStream extends DeferredStream<AbstractFeature> {
         if (selection != null && !selection.isEmpty()) {
             sql.append(" WHERE ").append(selection.toString());
         }
+        lock(table.database.transactionLocks);
         try (Connection connection = getConnection()) {
             makeReadOnly(connection);
             try (Statement st = connection.createStatement();
@@ -338,7 +338,9 @@ final class FeatureStream extends DeferredStream<AbstractFeature> {
                 }
             }
         } catch (SQLException e) {
-            throw new BackingStoreException(e);
+            throw cannotExecute(e);
+        } finally {
+            unlock();
         }
         return Math.max(super.count() - offset, 0);
     }
@@ -366,7 +368,7 @@ final class FeatureStream extends DeferredStream<AbstractFeature> {
      * @param  connection  the connection to configure.
      */
     private void makeReadOnly(final Connection connection) throws SQLException {
-        if (table.database.dialect.supportsReadOnlyUpdate) {
+        if (table.database.dialect.supportsReadOnlyUpdate()) {
             connection.setReadOnly(true);
         }
         /*
@@ -395,6 +397,7 @@ final class FeatureStream extends DeferredStream<AbstractFeature> {
         final String filter = (selection != null && !selection.isEmpty()) ? selection.toString() : null;
         selection = null;             // Let the garbage collector do its work.
 
+        lock(table.database.transactionLocks);
         final Connection connection = getConnection();
         setCloseHandler(connection);  // Executed only if `FeatureIterator` creation fails, discarded later otherwise.
         makeReadOnly(connection);

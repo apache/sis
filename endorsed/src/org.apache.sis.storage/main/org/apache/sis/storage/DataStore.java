@@ -94,7 +94,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      *
      * @see #getDisplayName()
      */
-    private final String name;
+    private final String displayName;
 
     /**
      * The locale to use for formatting warnings.
@@ -115,10 +115,10 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      */
     @SuppressWarnings("this-escape")    // `this` appears in a cyclic graph.
     protected DataStore() {
-        provider  = null;
-        name      = null;
-        locale    = Locale.getDefault(Locale.Category.DISPLAY);
-        listeners = new StoreListeners(null, this);
+        provider    = null;
+        displayName = null;
+        locale      = Locale.getDefault(Locale.Category.DISPLAY);
+        listeners   = new StoreListeners(null, this);
     }
 
     /**
@@ -134,10 +134,10 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      */
     @SuppressWarnings("this-escape")    // `this` appears in a cyclic graph. Should not be accessible before completion.
     protected DataStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
-        this.provider  = provider;
-        this.name      = connector.getStorageName();
-        this.locale    = Locale.getDefault(Locale.Category.DISPLAY);
-        this.listeners = new StoreListeners(connector.getOption(DataOptionKey.PARENT_LISTENERS), this);
+        this.provider    = provider;
+        this.displayName = connector.getStorageName();
+        this.locale      = Locale.getDefault(Locale.Category.DISPLAY);
+        this.listeners   = new StoreListeners(connector.getOption(DataOptionKey.PARENT_LISTENERS), this);
         /*
          * Above locale is NOT OptionKey.LOCALE because we are not talking about the same locale.
          * The one in this DataStore is for warning and exception messages, not for parsing data.
@@ -165,7 +165,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
                         final boolean hidden) throws DataStoreException
     {
         this.provider = provider;
-        name = connector.getStorageName();
+        displayName = connector.getStorageName();
         final StoreListeners forwardTo;
         if (parent != null) {
             locale = parent.locale;
@@ -283,7 +283,7 @@ public abstract class DataStore implements Resource, Localized, AutoCloseable {
      * @since 0.8
      */
     public String getDisplayName() {
-        return name;
+        return displayName;
     }
 
     /**

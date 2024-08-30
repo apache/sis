@@ -558,6 +558,8 @@ next:   for (final CoordinateSystemAxis axis : axes) {
      *                 {@link ComparisonMode#IGNORE_METADATA IGNORE_METADATA} for comparing only
      *                 properties relevant to coordinate transformations.
      * @return {@code true} if both objects are equal.
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     @SuppressWarnings({"AssertWithSideEffects", "fallthrough"})
@@ -603,6 +605,8 @@ next:   for (final CoordinateSystemAxis axis : axes) {
      * for more information.
      *
      * @return the hash code value. This value may change in any future Apache SIS version.
+     *
+     * @hidden because nothing new to said.
      */
     @Override
     protected long computeHashCode() {

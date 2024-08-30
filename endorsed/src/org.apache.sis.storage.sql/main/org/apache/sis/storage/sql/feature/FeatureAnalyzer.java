@@ -80,7 +80,7 @@ abstract class FeatureAnalyzer {
      * If the primary key use more than one column, then is the class of an array;
      * it may be an array of primitive type.
      *
-     * <p>This field is computed as a side-effect of {@link #createAttributes(FeatureTypeBuilder)}.</p>
+     * <p>This field is computed as a side-effect of {@link #createAttributes()}.</p>
      *
      * @see PrimaryKey#valueClass
      */
@@ -190,7 +190,6 @@ abstract class FeatureAnalyzer {
      * The values of those properties are singletons. By contrast, the associations in {@code EXPORT} direction
      * are multi-valued.</p>
      *
-     * @param  feature  the builder where to add attributes and associations.
      * @return the columns for attribute values (not including associations).
      * @throws SQLException if an error occurred while fetching information from the database.
      * @throws DataStoreException if a logical error occurred while analyzing the relations.

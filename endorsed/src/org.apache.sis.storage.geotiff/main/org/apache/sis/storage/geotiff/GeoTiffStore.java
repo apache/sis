@@ -208,8 +208,10 @@ public class GeoTiffStore extends DataStore implements Aggregate {
      * @param  provider   the factory that created this {@code DataStore} instance, or {@code null} if unspecified.
      * @param  connector  information about the storage (URL, stream, <i>etc</i>).
      * @throws DataStoreException if an error occurred while opening the GeoTIFF file.
+     *
+     * @since 1.5
      */
-    public GeoTiffStore(final GeoTiffStoreProvider provider, final StorageConnector connector) throws DataStoreException {
+    public GeoTiffStore(final DataStoreProvider provider, final StorageConnector connector) throws DataStoreException {
         this(null, provider, connector, false);
     }
 
@@ -243,7 +245,7 @@ public class GeoTiffStore extends DataStore implements Aggregate {
         this.hidden = hidden;
 
         @SuppressWarnings("LocalVariableHidesMemberVariable")
-        final SchemaModifier customizer = connector.getOption(SchemaModifier.OPTION);
+        final SchemaModifier customizer = connector.getOption(SchemaModifier.OPTION_KEY);
         this.customizer = (customizer != null) ? customizer : SchemaModifier.DEFAULT;
 
         @SuppressWarnings("LocalVariableHidesMemberVariable")

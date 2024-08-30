@@ -312,7 +312,7 @@ next:   do {
     }
 
     /**
-     * {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     @SuppressWarnings("CloneDoesntCallSuperClone")

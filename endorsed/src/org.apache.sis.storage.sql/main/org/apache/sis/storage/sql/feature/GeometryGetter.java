@@ -126,8 +126,8 @@ final class GeometryGetter<G, V extends G> extends ValueGetter<V> {
             final int     flags        = wkb[3];
             final boolean bigEndian    = (flags & 0b000001) == 0;
             final int     envelopeType = (flags & 0b001110) >> 1;
-            final boolean isEmpty      = (flags & 0b010000) != 0;
-            final boolean extendedType = (flags & 0b100000) != 0;
+        //  final boolean isEmpty      = (flags & 0b010000) != 0;
+        //  final boolean extendedType = (flags & 0b100000) != 0;
             buffer.order(bigEndian ? ByteOrder.BIG_ENDIAN : ByteOrder.LITTLE_ENDIAN);
             gpkgSrid = buffer.getInt(Integer.BYTES);
             // Skip header and envelope.

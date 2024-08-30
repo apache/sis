@@ -29,6 +29,7 @@ import org.apache.sis.util.privy.Constants;
 /**
  * Implementation-neutral description of the type of geometry.
  * The name of each enumeration value is the name in WKT format.
+ * The ordinal value is the binary code, ignoring thousands.
  *
  * @author  Martin Desruisseaux (Geomatys)
  *
@@ -40,7 +41,7 @@ public enum GeometryType {
      *
      * @see Geometries#rootClass
      */
-    GEOMETRY("Geometry"),
+    GEOMETRY("Geometry", false),
 
     /**
      * Zero-dimensional geometry containing a single point.
@@ -49,7 +50,7 @@ public enum GeometryType {
      *
      * @see Geometries#pointClass
      */
-    POINT("Point"),
+    POINT("Point", false),
 
     /**
      * Sequence of points connected by straight, non-self intersecting line pieces.
@@ -57,7 +58,7 @@ public enum GeometryType {
      *
      * @see Geometries#polylineClass
      */
-    LINESTRING("LineString"),
+    LINESTRING("LineString", false),
 
     /**
      * Geometry with a positive area (two-dimensional).
@@ -65,33 +66,136 @@ public enum GeometryType {
      *
      * @see Geometries#polygonClass
      */
-    POLYGON("Polygon"),
+    POLYGON("Polygon", false),
 
     /**
      * Set of points.
      */
-    MULTIPOINT("MultiPoint"),
+    MULTIPOINT("MultiPoint", true),
 
     /**
-     * Set of linestrings.
+     * Set of line strings.
      */
-    MULTILINESTRING("MultiLineString"),
+    MULTILINESTRING("MultiLineString", true),
 
     /**
      * Set of polygons.
      */
-    MULTIPOLYGON("MultiPolygon"),
+    MULTIPOLYGON("MultiPolygon", true),
 
     /**
      * Set of geometries of any type except other geometry collection.
      */
-    GEOMETRYCOLLECTION("GeometryCollection");
+    GEOMETRYCOLLECTION("GeometryCollection", true),
+
+    /**
+     * Curve with circular interpolation between points.
+     */
+    CIRCULARSTRING("CircularString", false),
+
+    /**
+     * Contiguous curves such that adjacent curves are joined at their end points.
+     */
+    COMPOUNDCURVE("CompoundCurve", true),
+
+    /**
+     * Planar surface consisting of a single patch.
+     */
+    CURVEPOLYGON("CurvePolygon", false),
+
+    /**
+     * Geometry collection made of curves.
+     */
+    MULTICURVE("MultiCurve", true),
+
+    /**
+     * Geometry collection made of surfaces.
+     */
+    MULTISURFACE("MultiSurface", true),
+
+    /**
+     * 1-dimensional geometry usually stored as a sequence of points.
+     * The subtype specifies the form of the interpolation between points.
+     */
+    CURVE("Curve", false),
+
+    /**
+     * 2-dimensional geometry associated with one exterior ring and zero or more interior rings.
+     */
+    SURFACE("Surface", false),
+
+    /**
+     * Surface composed of contiguous surfaces connected along their common boundary.
+     */
+    POLYHEDRALSURFACE("PolyhedralSurface", true),
+
+    /**
+     * Polyhedral surface composed only of triangles.
+     */
+    TIN("Tin", true),
+
+    /**
+     * Polygon with exactly four points (the last point being the same as the first point).
+     */
+    TRIANGLE("Triangle", false),
+
+    /**
+     * A circular curve in which the last point is the same as the first point.
+     */
+    CIRCLE("Circle", false),
+
+    /**
+     * Curve for the shortest distance on a sphere or ellipsoid.
+     */
+    GEODESICSTRING("GeodesicString", false),
+
+    /**
+     * Elliptical curve.
+     */
+    ELLIPTICALCURVE("EllipticalCurve", false),
+
+    /**
+     * Nurbs curve.
+     */
+    NURBSCURVE("NurbsCurve", false),
+
+    /**
+     * Clothoid.
+     */
+    CLOTHOID("Clothoid", false),
+
+    /**
+     * Curve describing a spiral.
+     */
+    SPIRALCURVE("SpiralCurve", false),
+
+    /**
+     * Surface made of other surfaces.
+     */
+    COMPOUNDSURFACE("CompoundSurface", true),
+
+    /**
+     * Brep solid.
+     */
+    BREPSOLID("BrepSolid", false);
+
+    /**
+     * All enumeration values, fetched at construction time for avoiding array copies.
+     */
+    private static final GeometryType[] VALUES = values();
 
     /**
      * Camel-case name of this geometry type.
      * The upper-case variant of this name is equal to {@link #name()}.
      */
     public final String name;
+
+    /**
+     * Whether this geometry type is some sort of collection.
+     * Some of those types are {@link #MULTIPOINT}, {@link #MULTILINESTRING},
+     * {@link #MULTIPOLYGON} or {@link #GEOMETRYCOLLECTION}.
+     */
+    public final boolean isCollection;
 
     /**
      * The geometry types as ISO 19103 type names, created when first needed.
@@ -111,9 +215,11 @@ public enum GeometryType {
      * Creates a new enumeration value.
      *
      * @param  name  camel-case name of the geometry.
+     * @param  isCollection  whether this geometry type is some sort of collection.
      */
-    private GeometryType(final String name) {
+    private GeometryType(final String name, final boolean isCollection) {
         this.name = name;
+        this.isCollection = isCollection;
         typeNames = new EnumMap<>(GeometryLibrary.class);
     }
 
@@ -167,14 +273,22 @@ public enum GeometryType {
     }
 
     /**
-     * Returns {@code true} if this geometry type is some sort of collection.
-     * Those types are {@link #MULTIPOINT}, {@link #MULTILINESTRING},
-     * {@link #MULTIPOLYGON} or {@link #GEOMETRYCOLLECTION}.
+     * Returns the enumeration value for the given WKB type, or {@code null} if unknown.
+     * Types for geometries having <var>Z</var> and <var>M</var> are replaced by 2D types.
      *
-     * @return whether this geometry type is some kind of collections.
+     * @param  type  WKB geometry type.
+     * @return enumeration value for the given type, or {@code null} if the given type is not recognized.
+     *
+     * @see #binaryType()
      */
-    public final boolean isCollection() {
-        return ordinal() >= MULTIPOINT.ordinal();
+    public static GeometryType forBinaryType(int type) {
+        if (type >= 1000 && type < 4000) {
+            type %= 1000;
+        }
+        if (type >= 0 && type < VALUES.length) {
+            return VALUES[type];
+        }
+        return null;
     }
 
     /**
@@ -204,31 +318,17 @@ public enum GeometryType {
     }
 
     /**
-     * Returns the enumeration value for the given WKB type, or {@code null} if unknown.
-     * Types for geometries having <var>Z</var> and <var>M</var> are replaced by 2D types.
+     * Returns {@code true} if the given name is one of the enumerated geometry types, ignoring case.
      *
-     * @param  type  WKB geometry type.
-     * @return enumeration value for the given type, or {@code null} if the given type is not recognized.
-     *
-     * @see #binaryType()
+     * @param  name  the name to test.
+     * @return whether the given name is one of the enumerated geometry types, ignoring case.
      */
-    public static GeometryType forBinaryType(int type) {
-        if (type >= 1000 && type < 4000) {
-            type %= 1000;
+    public static boolean isKnown(final String name) {
+        for (GeometryType value : VALUES) {
+            if (value.name().equalsIgnoreCase(name)) {
+                return true;
+            }
         }
-        switch (type) {
-            default: return null;
-            case 0:  return GEOMETRY;
-            case 1:  return POINT;
-            case 2:  return LINESTRING;
-            case 3:  return POLYGON;
-            case 4:  return MULTIPOINT;
-            case 5:  return MULTILINESTRING;
-            case 6:  return MULTIPOLYGON;
-            case 7:  return GEOMETRYCOLLECTION;
-        //  case 13: return CURVE;
-        //  case 14: return SURFACE;
-        //  case 15: return POLYHEDRALSURFACE;
-        }
+        return false;
     }
 }

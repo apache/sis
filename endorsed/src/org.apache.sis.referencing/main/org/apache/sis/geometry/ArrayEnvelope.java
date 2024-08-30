@@ -428,7 +428,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     }
 
     /**
-     * {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override                                       // Must also be overridden in SubEnvelope
     public double getLower(final int dimension) throws IndexOutOfBoundsException {
@@ -436,7 +436,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     }
 
     /**
-     * {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override                                       // Must also be overridden in SubEnvelope
     public double getUpper(final int dimension) throws IndexOutOfBoundsException {
@@ -445,7 +445,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     }
 
     /**
-     * {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     public double getMinimum(final int dimension) throws IndexOutOfBoundsException {
@@ -459,7 +459,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     }
 
     /**
-     * {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     public double getMaximum(final int dimension) throws IndexOutOfBoundsException {
@@ -473,7 +473,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     }
 
     /**
-     * {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     public double getMedian(final int dimension) throws IndexOutOfBoundsException {
@@ -488,7 +488,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     }
 
     /**
-     * {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     public double getSpan(final int dimension) throws IndexOutOfBoundsException {
@@ -501,7 +501,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     }
 
     /**
-     * {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     public boolean isEmpty() {
@@ -524,7 +524,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     }
 
     /**
-     * {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override                                       // Must also be overridden in SubEnvelope
     public boolean isAllNaN() {
@@ -538,7 +538,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     }
 
     /**
-     * {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override                                       // Must also be overridden in SubEnvelope
     public int hashCode() {
@@ -559,7 +559,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     }
 
     /**
-     * {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override                                       // Must also be overridden in SubEnvelope
     public boolean equals(final Object object) {
@@ -580,7 +580,7 @@ scanNumber: while ((i += Character.charCount(c)) < length) {
     }
 
     /**
-     * {@inheritDoc}
+     * @hidden because nothing new to said.
      */
     @Override
     public String toString() {
