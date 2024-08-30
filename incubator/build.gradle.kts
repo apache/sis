@@ -139,6 +139,8 @@ fun addExportForTests(args : MutableList<String>) {
  */
 tasks.test {
     val args = mutableListOf("-enableassertions")
+    args.add("--enable-native-access")
+    args.add("org.apache.sis.storage.gdal")
     addExportForTests(args)
     addExport(args, "org.apache.sis.cql", "org.apache.sis.cql", "ALL-UNNAMED")
     setAllJvmArgs(args)
@@ -202,6 +204,19 @@ publishing {
             pom {
                 name        = "Apache SIS GeoPackage storage"
                 description = "Read and write files in the GeoPackage format."
+            }
+        }
+        create<MavenPublication>("storage.gdal") {
+            var module = "org.apache.sis.storage.gdal"
+            groupId    = "org.apache.sis.storage"
+            artifactId = "sis-gdal"
+            artifact(layout.buildDirectory.file("libs/${module}.jar"))
+            artifact(layout.buildDirectory.file("docs/${module}-sources.jar")) {classifier = "sources"}
+            artifact(layout.buildDirectory.file("docs/${module}-javadoc.jar")) {classifier = "javadoc"}
+            pom {
+                name        = "Apache SIS storage using GDAL through Panama"
+                description = "Read and write files using the GDAL library. " +
+                              "This module assumes that GDAL is pre-installed."
             }
         }
         create<MavenPublication>("storage.gsf") {

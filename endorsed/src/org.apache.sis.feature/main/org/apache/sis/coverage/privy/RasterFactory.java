@@ -239,7 +239,7 @@ public final class RasterFactory extends Static {
             case DataBuffer.TYPE_INT:    buffer = IntBuffer   .wrap(((DataBufferInt)    data).getData(bank)); break;
             case DataBuffer.TYPE_FLOAT:  buffer = FloatBuffer .wrap(((DataBufferFloat)  data).getData(bank)); break;
             case DataBuffer.TYPE_DOUBLE: buffer = DoubleBuffer.wrap(((DataBufferDouble) data).getData(bank)); break;
-            default: throw new AssertionError();
+            default: throw new IllegalArgumentException();
         }
         final int lower = data.getOffsets()[bank];
         final int upper = lower + data.getSize();

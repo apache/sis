@@ -34,6 +34,7 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.coverage.privy.RangeArgument;
+import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.RasterLoadingStrategy;
@@ -105,7 +106,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      * @see TiledGridCoverage#rasters
      * @see TiledGridCoverage.AOI#getCachedTile()
      */
-    private final WeakValueHashMap<CacheKey, Raster> rasters;
+    private final WeakValueHashMap<CacheKey, Raster> rasters = new WeakValueHashMap<>(CacheKey.class);
 
     /**
      * Whether all tiles should be loaded at {@code read(…)} method call or deferred to a later time.
@@ -119,13 +120,23 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
     /**
      * Creates a new resource.
      *
+     * @param  parent  the parent resource, or {@code null} if none.
+     */
+    protected TiledGridResource(final Resource parent) {
+        super(parent);
+    }
+
+    /**
+     * Creates a new resource.
+     *
      * @param  parent  listeners of the parent resource, or {@code null} if none.
      *         This is usually the listeners of the {@link org.apache.sis.storage.DataStore}
      *         that created this resource.
+     * @param  hidden  {@code false} if this resource shall use its own {@link StoreListeners}
+     *         with the specified parent, or {@code true} for using {@code parentListeners} directly.
      */
-    protected TiledGridResource(final StoreListeners parent) {
-        super(parent, false);
-        rasters = new WeakValueHashMap<>(CacheKey.class);
+    protected TiledGridResource(final StoreListeners parent, final boolean hidden) {
+        super(parent, hidden);
     }
 
     /**

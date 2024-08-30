@@ -20,12 +20,14 @@ import java.util.Map;
 import java.util.Locale;
 import java.io.IOException;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.image.DataBuffer;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.MultiPixelPackedSampleModel;
 import java.awt.image.RenderedImage;
 import java.awt.image.Raster;
+import java.awt.image.WritableRaster;
 import static java.lang.Math.addExact;
 import static java.lang.Math.subtractExact;
 import static java.lang.Math.multiplyExact;
@@ -35,6 +37,7 @@ import static java.lang.Math.decrementExact;
 import static java.lang.Math.toIntExact;
 import static java.lang.Math.floorDiv;
 import org.opengis.util.GenericName;
+import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.DisjointExtentException;
@@ -224,6 +227,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
         tmcOfFirstTile      = new long[dimension];
         tileStrides         = new int [dimension];
         final int[] subSize = new int [dimension];
+
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         long indexOfFirstTile = 0;
         int  tileStride       = 1;
@@ -300,6 +304,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * @param  dimension   dimension of the coordinate.
      * @return coordinate in this {@code TiledGridCoverage} as if no subsampling was applied.
      * @throws ArithmeticException if the coordinate cannot be represented as a long integer.
+     *
+     * @see #toFullResolution(Rectangle)
      */
     private long toFullResolution(final long coordinate, final int dimension) {
         return addExact(multiplyExact(coordinate, subsampling[dimension]), subsamplingOffsets[dimension]);
@@ -536,14 +542,14 @@ public abstract class TiledGridCoverage extends GridCoverage {
                 final int count   = subtractExact(tileUpper[i], lower);
                 indexInTileVector = addExact(indexInTileVector, multiplyExact(tileStrides[i], lower));
                 tileCountInQuery  = multiplyExact(tileCountInQuery, count);
-                tileOffsetFull[i] = multiplyFull(offsetAOI[i], subsampling[i]);
+                tileOffsetFull[i] = multiplyFull(offsetAOI[i], getSubsampling(i));
                 /*
                  * Following is the pixel coordinate after the last pixel in current dimension.
                  * This is not stored; the intent is to get a potential `ArithmeticException`
                  * now instead of in a call to `next()` during iteration. A negative value
                  * would mean that the AOI does not intersect the region requested by user.
                  */
-                final int max = addExact(offsetAOI[i], multiplyExact(tileSize[i], count));
+                final int max = addExact(offsetAOI[i], multiplyExact(getTileSize(i), count));
                 assert max > Math.max(offsetAOI[i], 0) : max;
             }
             this.tileCountInQuery = tileCountInQuery;
@@ -571,7 +577,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
                 if (s > base) {
                     lower[i] = s;
                     // Use of `ceilDiv(…)` is for consistency with `getTileOrigin(int)`.
-                    offset[i] = addExact(offset[i], ceilDiv(multiplyExact(s - base, tileSize[i]), subsampling[i]));
+                    offset[i] = addExact(offset[i], ceilDiv(multiplyExact(s - base, getTileSize(i)), getSubsampling(i)));
                 }
             }
             final int[] upper = this.tileUpper.clone();
@@ -599,6 +605,34 @@ public abstract class TiledGridCoverage extends GridCoverage {
                 coordinate[i] = Math.addExact(tmcOfFirstTile[i], tmcInSubset[i]);
             }
             return coordinate;
+        }
+
+        /**
+         * Returns the extent of this tile in units of the full coverage resource (without subsampling).
+         * This method is a generalization to <var>n</var> dimensions of the rectangle computed by the
+         * following code:
+         *
+         * {@snippet lang="java" :
+         *     WritableRaster tile = createRaster();
+         *     Rectangle bounds = tile.getBounds();
+         *     toFullResolution(bounds);                // Convert in-place.
+         * }
+         *
+         * @return extent of this tile in units of the full coverage resource.
+         *
+         * @see #toFullResolution(Rectangle)
+         */
+        public final GridExtent getExtentInSource() {
+            final int dimension = tileOffsetFull.length;
+            final var    axes  = new DimensionNameType[dimension];
+            final long[] lower = new long[dimension];
+            final long[] upper = new long[dimension];
+            for (int i=0; i<dimension; i++) {
+                lower[i] = toFullResolution(getTileOrigin(i), i);
+                upper[i] = Math.addExact(lower[i], getTileSize(i));
+                axes [i] = readExtent.getAxisType(i).orElse(null);
+            }
+            return new GridExtent(axes, lower, upper, true);
         }
 
         /**
@@ -682,7 +716,24 @@ public abstract class TiledGridCoverage extends GridCoverage {
              * At first the index values seem inconsistent, but after we discard the tiles where
              * `getRegionInsideTile(…)` returns `false` they become consistent.
              */
-            return toIntExact(ceilDiv(tileOffsetFull[dimension], subsampling[dimension]));
+            return toIntExact(ceilDiv(tileOffsetFull[dimension], getSubsampling(dimension)));
+        }
+
+        /**
+         * Creates an initially empty raster for the tile at the current iterator position.
+         * The sample model is {@link #model} and the minimum <var>x</var> and <var>y</var>
+         * coordinates are the values returned by {@link #getTileOrigin(int)} for dimensions
+         * of two-dimensional slices.
+         *
+         * <p>The raster is <em>not</em> filled with {@link #fillValue}.
+         * Filling, if needed, should be done by the caller.</p>
+         *
+         * @return a newly created, initially empty raster.
+         */
+        public WritableRaster createRaster() {
+            final int x = getTileOrigin(X_DIMENSION);
+            final int y = getTileOrigin(Y_DIMENSION);
+            return Raster.createWritableRaster(model, new Point(x, y));
         }
 
         /**
@@ -714,13 +765,13 @@ public abstract class TiledGridCoverage extends GridCoverage {
             for (int i=0; i<tmcInSubset.length; i++) {
                 indexInTileVector += tileStrides[i];
                 if (++tmcInSubset[i] < tileUpper[i]) {
-                    tileOffsetFull[i] += tileSize[i];
+                    tileOffsetFull[i] += getTileSize(i);
                     break;
                 }
                 // Rewind to index for tileLower[i].
                 indexInTileVector -= (tmcInSubset[i] - tileLower[i]) * tileStrides[i];
                 tmcInSubset   [i]  = tileLower[i];
-                tileOffsetFull[i]  = multiplyFull(offsetAOI[i], subsampling[i]);
+                tileOffsetFull[i]  = multiplyFull(offsetAOI[i], getSubsampling(i));
             }
             return true;
         }
@@ -796,7 +847,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
         public boolean getRegionInsideTile(final long[] lower, final long[] upper, final int[] subsampling, int dimension) {
             System.arraycopy(coverage.subsampling, 0, subsampling, 0, dimension);
             while (--dimension >= 0) {
-                final int  tileSize  = coverage.tileSize[dimension];
+                final int  tileSize  = coverage.getTileSize(dimension);
                 final long tileIndex = addExact(coverage.tmcOfFirstTile[dimension], tmcInSubset[dimension]);
                 final long tileBase  = multiplyExact(tileIndex, tileSize);
                 /*
@@ -905,4 +956,22 @@ public abstract class TiledGridCoverage extends GridCoverage {
      *         (too many exception types to list them all).
      */
     protected abstract Raster[] readTiles(AOI iterator) throws IOException, DataStoreException;
+
+    /**
+     * Converts raster coordinate from this {@code TiledGridCoverage} coordinate space to full resolution.
+     * This method removes the subsampling effect. Note that since this {@code TiledGridCoverage} uses the
+     * same coordinate space as {@link TiledGridResource}, the converted coordinates should be valid in
+     * the full resource as well.
+     *
+     * @param  bounds  the rectangle to convert. Will be modified in-place.
+     * @throws ArithmeticException if the coordinate cannot be represented as an integer.
+     *
+     * @see AOI#getExtentInSource()
+     */
+    protected final void toFullResolution(final Rectangle bounds) {
+        bounds.x      = Math.toIntExact(toFullResolution(bounds.x, X_DIMENSION));
+        bounds.y      = Math.toIntExact(toFullResolution(bounds.y, Y_DIMENSION));
+        bounds.width  = Math.multiplyExact(bounds.width,  subsampling[X_DIMENSION]);
+        bounds.height = Math.multiplyExact(bounds.height, subsampling[Y_DIMENSION]);
+    }
 }

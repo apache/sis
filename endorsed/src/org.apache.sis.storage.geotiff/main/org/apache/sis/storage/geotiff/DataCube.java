@@ -63,7 +63,7 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
      * @param  reader  information about the input stream to read, the metadata and the character encoding.
      */
     DataCube(final Reader reader) {
-        super(reader.store.listeners());
+        super(reader.store);
         this.reader = reader;
     }
 
