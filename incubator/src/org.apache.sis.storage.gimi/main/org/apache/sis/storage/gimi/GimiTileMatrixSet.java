@@ -18,13 +18,14 @@ package org.apache.sis.storage.gimi;
 
 import java.util.Optional;
 import java.util.SortedMap;
+import org.opengis.geometry.Envelope;
+import org.opengis.referencing.crs.CoordinateReferenceSystem;
+import org.opengis.util.GenericName;
 import org.apache.sis.storage.gimi.internal.ScaleSortedMap;
 import org.apache.sis.storage.gimi.internal.StringUtilities;
 import org.apache.sis.storage.tiling.TileMatrix;
 import org.apache.sis.storage.tiling.TileMatrixSet;
-import org.opengis.geometry.Envelope;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
-import org.opengis.util.GenericName;
+
 
 /**
  *

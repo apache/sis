@@ -18,6 +18,7 @@ package org.apache.sis.storage.gimi.isobmff.iso14496_10;
 
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.SingleItemTypeReference;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

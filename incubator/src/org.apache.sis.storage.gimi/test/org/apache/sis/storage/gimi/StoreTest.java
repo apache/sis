@@ -16,5 +16,6 @@
  */
 package org.apache.sis.storage.gimi;
 
+
 public final class StoreTest {
 }

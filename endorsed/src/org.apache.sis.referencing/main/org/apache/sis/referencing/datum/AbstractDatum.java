@@ -47,8 +47,8 @@ import static org.apache.sis.util.Utilities.deepEquals;
 import static org.apache.sis.util.collection.Containers.property;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.referencing.datum.DynamicReferenceFrame;
 import org.opengis.metadata.Identifier;
+import org.opengis.referencing.datum.DynamicReferenceFrame;
 
 // Specific to the geoapi-4.0 branch:
 import org.opengis.annotation.UML;

@@ -41,10 +41,10 @@ import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.IllegalNameException;
 import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.storage.sql.ResourceDefinition;
 import org.apache.sis.storage.sql.postgis.Postgres;
 import org.apache.sis.metadata.sql.privy.Dialect;
 import org.apache.sis.metadata.sql.privy.Reflection;
-import org.apache.sis.storage.sql.ResourceDefinition;
 import org.apache.sis.util.iso.DefaultNameFactory;
 import org.apache.sis.util.resources.ResourceInternationalString;
 

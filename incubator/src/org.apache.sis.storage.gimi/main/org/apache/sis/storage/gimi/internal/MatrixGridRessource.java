@@ -23,6 +23,7 @@ import java.awt.image.RenderedImage;
 import java.awt.image.SampleModel;
 import java.io.IOException;
 import java.util.logging.Logger;
+import org.opengis.util.GenericName;
 import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.storage.DataStoreException;
@@ -31,7 +32,7 @@ import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.base.TiledGridCoverage;
 import org.apache.sis.storage.base.TiledGridResource;
 import org.apache.sis.storage.tiling.TileMatrix;
-import org.opengis.util.GenericName;
+
 
 /**
  *

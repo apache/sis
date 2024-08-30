@@ -22,6 +22,7 @@ import static java.lang.foreign.MemoryLayout.PathElement.*;
 import org.apache.sis.storage.gsf.GSF;
 import org.apache.sis.storage.gsf.StructClass;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

@@ -53,8 +53,8 @@ import static org.apache.sis.util.ArgumentChecks.ensureNonNullElement;
 import static org.apache.sis.referencing.privy.WKTUtilities.toFormattable;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
-import org.opengis.referencing.datum.DynamicReferenceFrame;
 import org.opengis.metadata.Identifier;
+import org.opengis.referencing.datum.DynamicReferenceFrame;
 
 
 /**

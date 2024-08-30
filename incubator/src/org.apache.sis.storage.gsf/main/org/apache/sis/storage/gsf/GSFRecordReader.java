@@ -29,6 +29,7 @@ import java.util.stream.StreamSupport;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.util.privy.AbstractIterator;
 
+
 /**
  *
  * @author Johann Sorel (Geomatys)

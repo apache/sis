@@ -21,6 +21,7 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.StoreResource;
 
+
 /**
  * Unknown item type.
  *

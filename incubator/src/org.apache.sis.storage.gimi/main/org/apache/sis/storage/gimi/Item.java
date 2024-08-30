@@ -34,6 +34,7 @@ import org.apache.sis.storage.gimi.isobmff.iso14496_12.Meta;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.PrimaryItem;
 import org.apache.sis.storage.gimi.isobmff.iso14496_12.SingleItemTypeReference;
 
+
 /**
  * Regroup properties of a single item in the file.
  *
