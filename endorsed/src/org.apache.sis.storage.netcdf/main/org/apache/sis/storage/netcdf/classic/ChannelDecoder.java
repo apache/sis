@@ -961,7 +961,7 @@ public final class ChannelDecoder extends Decoder {
              * from grid coordinates to CRS coordinates). For each key there is usually only one value, but
              * more complicated netCDF files (e.g. using two-dimensional localisation grids) also exist.
              */
-            final Map<DimensionInfo, List<VariableInfo>> dimToAxes = new IdentityHashMap<>();
+            final var dimToAxes = new IdentityHashMap<DimensionInfo, Set<VariableInfo>>();
             for (final VariableInfo variable : variables) {
                 switch (variable.getRole()) {
                     case COVERAGE:
@@ -1011,7 +1011,7 @@ nextVar:    for (final VariableInfo variable : variables) {
                 for (int i=variable.dimensions.length; --i >= 0;) {                     // Reverse of netCDF order.
                     final DimensionInfo dimension = variable.dimensions[i];
                     if (usedDimensions.add(dimension)) {
-                        final List<VariableInfo> axis = dimToAxes.get(dimension);       // Should have only 1 element.
+                        final Set<VariableInfo> axis = dimToAxes.get(dimension);       // Should have only 1 element.
                         if (axis == null) {
                             continue nextVar;
                         }

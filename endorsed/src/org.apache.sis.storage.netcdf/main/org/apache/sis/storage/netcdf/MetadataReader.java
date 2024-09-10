@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.Map;
 import java.util.LinkedHashSet;
 import java.util.LinkedHashMap;
-import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.io.IOException;
@@ -862,23 +861,39 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
 
     /**
      * Adds information about all netCDF variables. This is the {@code <mdb:contentInfo>} element in XML.
-     * This method groups variables by their domains, i.e. variables having the same set of axes are grouped together.
+     * This method groups variables by their domains, i.e. variables having the same set of axes, ignoring order,
+     * are grouped together. Variables having only a subset of axes are also grouped together with the variables
+     * having more dimension.
+     *
+     * <p><b>Example:</b> a netCDF file may contain variables for both static and dynamic phenomenons.
+     * The dynamic phenomenons are associated to (<var>x</var>, <var>y</var>, <var>t</var>) axes,
+     * while the static phenomenons have only the (<var>x</var>, <var>y</var>) axes.
+     * But we still want to group them together. Not doing so appear to be confusing.</p>
      */
     private void addContentInfo() {
         /*
          * Prepare a list of features and coverages, but without writing metadata now.
          * We differ metadata writing for giving us a chance to group related contents.
          */
-        final Set<Dimension> features = new LinkedHashSet<>();
-        final Map<List<String>, List<Variable>> coverages = new LinkedHashMap<>(4);
+        final var features  = new LinkedHashSet<Dimension>();
+        final var coverages = new LinkedHashMap<Set<String>, List<Variable>>();
         for (final Variable variable : decoder.getVariables()) {
             if (VariableRole.isCoverage(variable)) {
-                final List<org.apache.sis.storage.netcdf.base.Dimension> dimensions = variable.getGridDimensions();
+                final var dimensions = variable.getGridDimensions();
                 final String[] names = new String[dimensions.size()];
                 for (int i=0; i<names.length; i++) {
                     names[i] = dimensions.get(i).getName();
                 }
-                CollectionsExt.addToMultiValuesMap(coverages, Arrays.asList(names), variable);
+                coverages.computeIfAbsent(Set.of(names), (key) -> {
+                    for (Map.Entry<Set<String>, List<Variable>> entry : coverages.entrySet()) {
+                        final Set<String> previous = entry.getKey();
+                        if (previous.containsAll(key) || key.containsAll(previous)) {
+                            // Share with all keys that are subset or superset.
+                            return entry.getValue();
+                        }
+                    }
+                    return new ArrayList<>();
+                }).add(variable);
                 hasGridCoverages = true;
             } else if (variable.getRole() == VariableRole.FEATURE_PROPERTY) {
                 /*
@@ -901,6 +916,7 @@ split:  while ((start = CharSequences.skipLeadingWhitespaces(value, start, lengt
                 addFeatureType(decoder.nameFactory.createLocalName(decoder.namespace, name), feature.length());
             }
         }
+        newFeatureTypes();   // See Javadoc about confusing ordering.
         final String processingLevel = stringValue(PROCESSING_LEVEL);
         for (final List<Variable> group : coverages.values()) {
             /*

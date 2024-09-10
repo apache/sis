@@ -17,6 +17,7 @@
 package org.apache.sis.storage.sql.feature;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashMap;
@@ -34,7 +35,6 @@ import org.apache.sis.geometry.wrapper.Geometries;
 import org.apache.sis.util.CharSequences;
 import org.apache.sis.util.Classes;
 import org.apache.sis.util.Numbers;
-import org.apache.sis.util.privy.CollectionsExt;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
 import org.opengis.feature.FeatureType;
@@ -44,6 +44,9 @@ import org.opengis.feature.FeatureType;
  * Defines an application schema inferred from an SQL database (query, table, etc.).
  * This is used by {@link Analyzer} for creating {@link Table} instances.
  * A view or a custom query is considered as a "virtual" table.
+ *
+ * <p>Instances of this class are created temporarily when starting the analysis
+ * of a database structure, and discarded after the analysis is finished.</p>
  *
  * <h2>Side effects</h2>
  * Methods shall be invoked as below, in that order. The order is important because some
@@ -171,7 +174,7 @@ abstract class FeatureAnalyzer {
      */
     final void addForeignerKeys(Relation relation) {
         for (final String column : relation.getOwnerColumns()) {
-            CollectionsExt.addToMultiValuesMap(foreignerKeys, column, relation);
+            foreignerKeys.computeIfAbsent(column, (key) -> new ArrayList<>()).add(relation);
             relation = null;       // Only the first column will be associated.
         }
     }

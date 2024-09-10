@@ -848,4 +848,9 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         if (c == 0) c = name.compareTo(other.name);                 // Should not happen, but we are paranoiac.
         return c;
     }
+
+    /*
+     * Do not override `Object.equals(Object)` and `Object.hashCode()`,
+     * because variables are used as keys by `GridMapping.forVariable(…)`.
+     */
 }

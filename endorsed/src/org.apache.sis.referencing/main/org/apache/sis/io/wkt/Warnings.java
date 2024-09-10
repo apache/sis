@@ -17,11 +17,9 @@
 package org.apache.sis.io.wkt;
 
 import java.util.Locale;
-import java.util.List;
 import java.util.Set;
 import java.util.Map;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Iterator;
@@ -69,7 +67,7 @@ import org.apache.sis.util.resources.Vocabulary;
  * </ul>
  *
  * @author  Martin Desruisseaux (Geomatys)
- * @version 1.4
+ * @version 1.5
  *
  * @see WKTFormat#getWarnings()
  *
@@ -134,7 +132,7 @@ public final class Warnings implements Localized, Serializable {
      * @see AbstractParser#ignoredElements
      */
     @SuppressWarnings("serial")                             // Various serializable implementations.
-    private Map<String, List<String>> ignoredElements;
+    private Map<String, Set<String>> ignoredElements;
 
     /**
      * {@code true} if {@link #publish()} has been invoked.
@@ -148,7 +146,7 @@ public final class Warnings implements Localized, Serializable {
      * @param isParsing        {@code false} if formatting, or {@code true} if parsing.
      * @param ignoredElements  the {@link AbstractParser#ignoredElements} map, or an empty map (cannot be null).
      */
-    Warnings(final Locale locale, final boolean isParsing, final Map<String, List<String>> ignoredElements) {
+    Warnings(final Locale locale, final boolean isParsing, final Map<String, Set<String>> ignoredElements) {
         this.errorLocale     = locale;
         this.isParsing       = isParsing;
         this.ignoredElements = ignoredElements;
@@ -198,7 +196,7 @@ public final class Warnings implements Localized, Serializable {
      */
     final void publish() {
         if (!published) {
-            ignoredElements = ignoredElements.isEmpty() ? Collections.emptyMap() : new LinkedHashMap<>(ignoredElements);
+            ignoredElements = Map.copyOf(ignoredElements);
             published = true;
         }
     }
@@ -313,7 +311,7 @@ public final class Warnings implements Localized, Serializable {
      * @param  element  the keyword of the unknown element.
      * @return the keywords of elements where the given unknown element was found.
      */
-    public Collection<String> getUnknownElementLocations(final String element) {
+    public Set<String> getUnknownElementLocations(final String element) {
         return ignoredElements.get(element);
     }
 
@@ -377,7 +375,7 @@ public final class Warnings implements Localized, Serializable {
         if (!ignoredElements.isEmpty()) {
             final Vocabulary vocabulary = Vocabulary.forLocale(locale);
             buffer.append(lineSeparator).append(" • ").append(resources.getString(Messages.Keys.UnknownElementsInText));
-            for (final Map.Entry<String, List<String>> entry : ignoredElements.entrySet()) {
+            for (final Map.Entry<String, Set<String>> entry : ignoredElements.entrySet()) {
                 buffer.append(lineSeparator).append("    ‣ ").append(vocabulary.getString(Vocabulary.Keys.Quoted_1, entry.getKey()));
                 String separator = vocabulary.getString(Vocabulary.Keys.InBetweenWords);
                 for (final String p : entry.getValue()) {

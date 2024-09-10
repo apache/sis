@@ -1310,7 +1310,7 @@ public abstract class Variable extends Node {
     }
 
     /*
-     * Do not override Object.equals(Object) and Object.hashCode(),
-     * because Variables are used as keys by GridMapping.forVariable(…).
+     * Do not override `Object.equals(Object)` and `Object.hashCode()`,
+     * because variables are used as keys by `GridMapping.forVariable(…)`.
      */
 }

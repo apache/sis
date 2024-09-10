@@ -746,61 +746,58 @@ public final class CollectionsExt extends Static {
     }
 
     /**
-     * Adds a value in a pseudo multi-values map. The multi-values map is simulated by a map of lists.
-     * The map can be initially empty - lists will be created as needed.
+     * Adds a value in a pseudo multi-values map. The multi-values map is simulated by a map of sets.
+     * The map can be initially empty: sets will be created as needed, with an optimization for the
+     * common case where the majority of keys are associated to exactly one value.
+     * Null values are accepted.
      *
      * @param  <K>    the type of key elements in the map.
-     * @param  <V>    the type of value elements in the lists.
+     * @param  <V>    the type of value elements in the sets.
      * @param  map    the multi-values map where to add an element.
      * @param  key    the key of the element to add. Can be null if the given map supports null keys.
      * @param  value  the value of the element to add. Can be null.
-     * @return the list where the given value has been added. May be unmodifiable.
+     * @return the set where the given value has been added. May be unmodifiable.
      */
-    public static <K,V> List<V> addToMultiValuesMap(final Map<K,List<V>> map, final K key, final V value) {
-        final List<V> singleton = Collections.singletonList(value);
-        List<V> values = map.put(key, singleton);
-        if (values == null) {
-            return singleton;               // This is the most common case.
-        }
-        if (values.size() <= 1) {
-            values = new ArrayList<>(values);
-        }
-        if (map.put(key, values) != singleton) {
-            throw new ConcurrentModificationException();
-        }
-        values.add(value);
-        return values;
+    public static <K,V> Set<V> addToMultiValuesMap(final Map<K,Set<V>> map, final K key, final V value) {
+        return map.merge(key, Collections.singleton(value), (values, singleton) -> {
+            final Set<V> dest = (values.size() > 1) ? values : new LinkedHashSet<>(values);
+            return dest.addAll(singleton) ? dest : values;
+        });
     }
 
     /**
-     * Removes a value in a pseudo multi-values map. The multi-values map is simulated by a map of lists.
-     * If more than one occurrence of the given value is found in the list, only the first occurrence is
-     * removed. If the list become empty after this method call, that list is removed from the map.
+     * Removes a value in a pseudo multi-values map. The multi-values map is simulated by a map of sets.
+     * If the set become empty after this method call, that set is removed from the map and this method
+     * returns the empty set.
      *
      * @param  <K>    the type of key elements in the map.
      * @param  <V>    the type of value elements in the lists.
      * @param  map    the multi-values map where to remove an element.
      * @param  key    the key of the element to remove. Can be null if the given map supports null keys.
      * @param  value  the value of the element to remove. Can be null.
-     * @return list of remaining elements after the removal, or {@code null} if no list is mapped to the given key.
+     * @return set of remaining elements after the removal, or {@code null} if no set is mapped to the given key.
      */
-    public static <K,V> List<V> removeFromMultiValuesMap(final Map<K,List<V>> map, final K key, final V value) {
-        List<V> values = map.get(key);
-        if (values != null) {
-            final boolean isEmpty;
-            switch (values.size()) {
-                case 0:  isEmpty = true; break;
-                case 1:  isEmpty = Objects.equals(value, values.get(0)); break;
-                default: isEmpty = values.remove(value) && values.isEmpty(); break;
-            }
-            if (isEmpty) {
-                if (map.remove(key) != values) {
-                    throw new ConcurrentModificationException();
+    public static <K,V> Set<V> removeFromMultiValuesMap(final Map<K,Set<V>> map, final K key, final V value) {
+        final Set<V> remaining = map.compute(key, (k, values) -> {
+            if (values != null) {
+                final boolean isEmpty;
+                switch (values.size()) {
+                    case 0:  isEmpty = true; break;
+                    case 1:  isEmpty = values.contains(value); break;
+                    default: isEmpty = values.remove(value) && values.isEmpty(); break;
                 }
-                values = Collections.emptyList();
+                if (isEmpty) {
+                    return Collections.emptySet();
+                }
+            }
+            return values;
+        });
+        if (remaining != null && remaining.isEmpty()) {
+            if (map.remove(key) != remaining) {
+                throw new ConcurrentModificationException();
             }
         }
-        return values;
+        return remaining;
     }
 
     /**

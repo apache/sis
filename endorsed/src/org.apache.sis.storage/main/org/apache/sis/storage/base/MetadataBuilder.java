@@ -716,7 +716,10 @@ public class MetadataBuilder {
      * If there is no pending feature description, then invoking this method has no effect.
      * If new feature descriptions are added after this method call, they will be stored in a new element.
      *
-     * <p>This method does not need to be invoked unless a new "feature catalog description" node is desired.</p>
+     * <p>This method does not need to be invoked unless a new "feature catalog description" node is desired.
+     * It may also be useful when switching from writing feature types to writing coverage descriptions,
+     * because both classes appear under the same "content information" node.
+     * Invoking this method may avoid confusing ordering of those elements.</p>
      */
     public final void newFeatureTypes() {
         if (featureDescription != null) {
@@ -732,7 +735,10 @@ public class MetadataBuilder {
      * If new coverage descriptions are added after this method call, they will be stored in a new element.
      *
      * <p>This method does not need to be invoked unless a new "coverage description" node is desired,
-     * or the {@code electromagnetic} flag needs to be set to {@code true}.</p>
+     * or the {@code electromagnetic} flag needs to be set to {@code true}. It may also be useful when
+     * switching from writing coverage descriptions to writing feature types,
+     * because both classes appear under the same "content information" node.
+     * Invoking this method may avoid confusing ordering of those elements.</p>
      *
      * @param  electromagnetic  {@code true} if the next {@code CoverageDescription} to create
      *         will be a description of measurements in the electromagnetic spectrum.

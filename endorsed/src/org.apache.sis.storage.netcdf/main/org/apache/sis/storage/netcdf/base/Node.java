@@ -304,4 +304,10 @@ public abstract class Node extends NamedElement {
     protected final void error(final Class<?> caller, final String method, final Exception exception, final short key, final Object... arguments) {
         warning(decoder.listeners, caller, method, exception, errors(), key, arguments);
     }
+
+    /*
+     * Do not override `equals(Object)` and `hashCode()`. Some subclasses are
+     * used in `HashSet` and the identity comparison is well suited for them.
+     * For example, `Variable` is used as keys in `GridMapping.forVariable(…)`.
+     */
 }

@@ -102,7 +102,7 @@ public class TableReference {
 
     /**
      * Returns {@code true} if the given object is a {@code TableReference} with equal table, schema and catalog names.
-     * All other properties that may be defined in subclasses (column names, action on delete, etc.) are ignored; this
+     * All other properties that may be defined in subclasses (column names, action on delete, etc.) are ignored. This
      * method is <strong>not</strong> for testing if two {@link Relation} are fully equal. The purpose of this method
      * is only to use {@code TableReference} as keys in a {@code HashSet} for remembering full coordinates of tables
      * that may need to be analyzed later.
