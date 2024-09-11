@@ -369,6 +369,7 @@ final class VariableWrapper extends org.apache.sis.storage.netcdf.base.Variable 
     /**
      * Returns the single value or vector of values for the given attribute, or {@code null} if none.
      * The returned value can be an instance of {@link String}, {@link Number}, {@link Vector} or {@code String[]}.
+     * The search is case-insensitive.
      *
      * @param  attributeName  the name of the attribute for which to get the values.
      * @return value(s) for the named attribute, or {@code null} if none.

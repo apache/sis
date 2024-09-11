@@ -457,8 +457,7 @@ final class GridMapping {
                 if (c.length == 6) {
                     gridToCRS = new AffineTransform2D(c[1], c[4], c[2], c[5], c[0], c[3]);         // X_DIMENSION, Y_DIMENSION
                 } else {
-                    canNotCreate(mapping, message, new DataStoreContentException(
-                            Errors.forLocale(mapping.getLocale())
+                    canNotCreate(mapping, message, new DataStoreContentException(mapping.errors()
                                   .getString(Errors.Keys.UnexpectedArrayLength_2, 6, c.length)));
                 }
             }
@@ -519,9 +518,9 @@ final class GridMapping {
      * The WKT is presumed to use the GDAL flavor of WKT 1, and warnings are redirected to decoder listeners.
      */
     private static CoordinateReferenceSystem createFromWKT(final Node node, final String wkt) throws ParseException {
-        final WKTFormat f = new WKTFormat(Decoder.DATA_LOCALE, TimeZone.getTimeZone(node.decoder.getTimeZone()));
+        final var f = new WKTFormat(Decoder.DATA_LOCALE, TimeZone.getTimeZone(node.decoder.getTimeZone()));
         f.setConvention(org.apache.sis.io.wkt.Convention.WKT1_COMMON_UNITS);
-        final CoordinateReferenceSystem crs = (CoordinateReferenceSystem) f.parseObject(wkt);
+        final var crs = (CoordinateReferenceSystem) f.parseObject(wkt);
         final Warnings warnings = f.getWarnings();
         if (warnings != null) {
             final LogRecord record = new LogRecord(Level.WARNING, warnings.toString());
@@ -643,8 +642,8 @@ final class GridMapping {
                 explicitG2C = implicitG2C;
             } else try {
                 int count = 0;
-                MathTransform[] components = new MathTransform[3];
-                final TransformSeparator sep = new TransformSeparator(implicitG2C, variable.decoder.getMathTransformFactory());
+                var components = new MathTransform[3];
+                final var sep = new TransformSeparator(implicitG2C, variable.decoder.getMathTransformFactory());
                 if (firstAffectedCoordinate != 0) {
                     sep.addTargetDimensionRange(0, firstAffectedCoordinate);
                     components[count++] = sep.separate();

@@ -202,11 +202,11 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
             final List<GridCacheValue> linearizations, final Matrix reorderGridToCRS)
             throws DataStoreException, FactoryException, IOException
     {
-        final List<CRSBuilder<?,?>> builders = new ArrayList<>(4);
+        final var builders = new ArrayList<CRSBuilder<?,?>>(4);
         for (final Axis axis : grid.getAxes(decoder)) {
             dispatch(builders, axis);
         }
-        final SingleCRS[] components = new SingleCRS[builders.size()];
+        final var components = new SingleCRS[builders.size()];
         for (int i=0; i < components.length; i++) {
             components[i] = builders.get(i).build(decoder, true);
         }
@@ -240,11 +240,11 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
     static CoordinateReferenceSystem assemble(final Decoder decoder, final Iterable<Variable> axes, final SingleCRS[] time)
             throws DataStoreException, FactoryException, IOException
     {
-        final List<CRSBuilder<?,?>> builders = new ArrayList<>(4);
+        final var builders = new ArrayList<CRSBuilder<?,?>>(4);
         for (final Variable axis : axes) {
             dispatch(builders, new Axis(axis));
         }
-        final SingleCRS[] components = new SingleCRS[builders.size()];
+        final var components = new SingleCRS[builders.size()];
         int n = 0;
         for (final CRSBuilder<?, ?> cb : builders) {
             final SingleCRS c = cb.build(decoder, false);
@@ -310,7 +310,7 @@ abstract class CRSBuilder<D extends Datum, CS extends CoordinateSystem> {
          * block below fixes it.
          */
         if (addTo == Projected.class) {
-previous:   for (int i=components.size(); --i >= 0;) {
+previous:   for (int i = components.size(); --i >= 0;) {
                 final CRSBuilder<?,?> replace = components.get(i);
                 for (final Axis a : replace.axes) {
                     if (a.abbreviation != 'h') {
@@ -377,7 +377,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
              * By contrast, `DataStoreContentException` would be treated as a fatal error.
              */
             final Variable axis = getFirstAxis().coordinates;
-            throw new FactoryException(axis.resources().getString(Resources.Keys.UnexpectedAxisCount_4,
+            throw new FactoryException(axis.decoder.resources().getString(Resources.Keys.UnexpectedAxisCount_4,
                     axis.getFilename(), getClass().getSimpleName(), dimension, NamedElement.listNames(axes, dimension, ", ")));
         }
         /*
@@ -475,7 +475,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
             // Fallback if the coordinate system is not predefined.
             final StringJoiner joiner = new StringJoiner(" ");
             final CSFactory csFactory = decoder.getCSFactory();
-            final CoordinateSystemAxis[] iso = new CoordinateSystemAxis[dimension];
+            final var iso = new CoordinateSystemAxis[dimension];
             for (int i=0; i<iso.length; i++) {
                 final Axis axis = axes[i];
                 joiner.add(axis.getName());
@@ -528,7 +528,7 @@ previous:   for (int i=components.size(); --i >= 0;) {
     final Integer epsgCandidateCS(final Unit<?> defaultUnit) {
         Unit<?> unit = getFirstAxis().getUnit();
         if (unit == null) unit = defaultUnit;
-        final AxisDirection[] directions = new AxisDirection[dimension];
+        final var directions = new AxisDirection[dimension];
         for (int i=0; i<directions.length; i++) {
             directions[i] = axes[i].direction;
         }

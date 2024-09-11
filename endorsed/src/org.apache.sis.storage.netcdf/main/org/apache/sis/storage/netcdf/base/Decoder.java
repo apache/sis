@@ -27,7 +27,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.Level;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.temporal.Temporal;
 import java.io.IOException;
@@ -199,7 +198,10 @@ public abstract class Decoder extends ReferencingFactoryContainer {
      * @throws DataStoreException if an error occurred while interpreting the netCDF file content.
      */
     public final void applyOtherConventions() throws IOException, DataStoreException {
-        HYCOM.convert(this, getVariables());
+        final var t = new VariableTransformer(this);
+        for (Variable variable : getVariables()) {
+            t.analyze(variable);
+        }
     }
 
     /**
@@ -328,7 +330,7 @@ public abstract class Decoder extends ReferencingFactoryContainer {
      * @param  value  the illegal value.
      * @param  e      the exception, or {@code null} if none.
      */
-    final void illegalAttributeValue(final String name, final String value, final NumberFormatException e) {
+    final void illegalAttributeValue(final String name, final String value, final Exception e) {
         listeners.warning(resources().getString(Resources.Keys.IllegalAttributeValue_3, getFilename(), name, value), e);
     }
 
@@ -355,7 +357,7 @@ public abstract class Decoder extends ReferencingFactoryContainer {
      *
      * @return the timezone for dates.
      */
-    public ZoneId getTimeZone() {
+    public ZoneOffset getTimeZone() {
         return ZoneOffset.UTC;
     }
 
@@ -440,7 +442,7 @@ public abstract class Decoder extends ReferencingFactoryContainer {
      * @throws DataStoreException if a logical error occurred.
      */
     public final List<CoordinateReferenceSystem> getReferenceSystemInfo() throws IOException, DataStoreException {
-        final List<CoordinateReferenceSystem> list = new ArrayList<>();
+        final var list = new ArrayList<CoordinateReferenceSystem>();
         for (final Variable variable : getVariables()) {
             final GridMapping m = GridMapping.forVariable(variable);
             if (m != null) {
@@ -453,7 +455,7 @@ public abstract class Decoder extends ReferencingFactoryContainer {
          * Consequently, if such information is present, grid CRS may be inaccurate.
          */
         if (list.isEmpty()) {
-            final List<Exception> warnings = new ArrayList<>();     // For internal usage by Grid.
+            final var warnings = new ArrayList<Exception>();    // For internal usage by Grid.
             for (final Grid grid : getGridCandidates()) {
                 addIfNotPresent(list, grid.getCoordinateReferenceSystem(this, warnings, null, null));
             }
@@ -530,7 +532,7 @@ public abstract class Decoder extends ReferencingFactoryContainer {
      *
      * @return the localized error resource bundle.
      */
-    final Resources resources() {
+    public final Resources resources() {
         return Resources.forLocale(getLocale());
     }
 

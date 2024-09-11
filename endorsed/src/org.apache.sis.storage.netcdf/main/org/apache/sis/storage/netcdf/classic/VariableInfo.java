@@ -62,7 +62,7 @@ import org.apache.sis.math.Vector;
 /**
  * Description of a variable found in a netCDF file.
  * The natural ordering of {@code VariableInfo} is the order in which the variables appear in the stream of bytes
- * that make the netCDF file. Reading variables in natural order reduces the number of channel seek operations.
+ * that makes the netCDF file. Reading variables in natural order reduces the number of channel seek operations.
  *
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
@@ -218,7 +218,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
                     offsetToNextRecord = Math.multiplyExact(offsetToNextRecord, dim.length());
                 } else if (i != 0) {
                     // Unlimited dimension, if any, must be first in a netCDF 3 classic format.
-                    throw new DataStoreContentException(getLocale(), Decoder.FORMAT_NAME, input.filename, null);
+                    throw new DataStoreContentException(decoder.getLocale(), Decoder.FORMAT_NAME, input.filename, null);
                 }
             }
             reader = new HyperRectangleReader(dataType.number, input);
@@ -228,7 +228,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
         }
         /*
          * If the value that we computed ourselves does not match the value declared in the netCDF file,
-         * maybe for some reason the writer used a different layout.  For example, maybe it inserted some
+         * maybe for some reason the writer used a different layout. For example, maybe it inserted some
          * additional padding.
          */
         if (size != -1) {                           // Maximal unsigned value, means possible overflow.
@@ -249,21 +249,23 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
          * as its dimension. But the "_CoordinateAxisType" attribute is often used for making explicit that a
          * variable is an axis. We check that case before to check variable name.
          */
-        isCoordinateSystemAxis = (dimensions.length == 1 || dimensions.length == 2) && (getAxisType() != null);
-        /*
-         * If the "_CoordinateAliasForDimension" attribute is defined, then its value will be used
-         * instead of the variable name when determining if the variable is a coordinate system axis.
-         * "_CoordinateVariableAlias" seems to be a legacy attribute name for the same purpose.
-         */
-        if (!isCoordinateSystemAxis && dimensions.length == 1) {
-            Object value = getAttributeValue(_Coordinate.AliasForDimension, "_coordinatealiasfordimension");
-            if (value == null) {
-                value = getAttributeValue("_CoordinateVariableAlias", "_coordinatevariablealias");
+        if (dimensions.length == 1 || dimensions.length == 2) {
+            isCoordinateSystemAxis = (getAxisType() != null);
+            if (!isCoordinateSystemAxis && (dimensions.length == 1 || dataType == DataType.CHAR)) {
+                /*
+                 * If the "_CoordinateAliasForDimension" attribute is defined, then its value will be used
+                 * instead of the variable name when determining if the variable is a coordinate system axis.
+                 * "_CoordinateVariableAlias" seems to be a legacy attribute name for the same purpose.
+                 */
+                Object value = getAttributeValue(_Coordinate.AliasForDimension, "_coordinatealiasfordimension");
                 if (value == null) {
-                    value = name;
+                    value = getAttributeValue("_CoordinateVariableAlias", "_coordinatevariablealias");
+                    if (value == null) {
+                        value = name;
+                    }
                 }
+                isCoordinateSystemAxis = dimensions[0].name.equals(value);
             }
-            isCoordinateSystemAxis = dimensions[0].name.equals(value);
         }
         /*
          * Rewrite the enumeration names as an array for avoiding to parse the string if this information
@@ -736,7 +738,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
             subsampling = new long[dimension];
             Arrays.fill(subsampling, 1);
         }
-        final Region region = new Region(size, lower, upper, subsampling);
+        final var region = new Region(size, lower, upper, subsampling);
         /*
          * If this variable uses the unlimited dimension, we have to skip the records of all other unlimited variables
          * before to reach the next record of this variable.  Current implementation can do that only if the number of
@@ -835,7 +837,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * Returns the error message for an unknown data type.
      */
     private String unknownType() {
-        return resources().getString(Resources.Keys.UnsupportedDataType_3, getFilename(), name, dataType);
+        return decoder.resources().getString(Resources.Keys.UnsupportedDataType_3, getFilename(), name, dataType);
     }
 
     /**

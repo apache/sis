@@ -592,6 +592,7 @@ public final class ChannelDecoder extends Decoder {
         if (allDimensions == null) {
             throw malformedHeader();        // May happen if readDimensions(…) has not been invoked.
         }
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final VariableInfo[] variables = new VariableInfo[nelems];
         for (int j=0; j<nelems; j++) {
             final String name = readName();
@@ -965,8 +966,7 @@ public final class ChannelDecoder extends Decoder {
             for (final VariableInfo variable : variables) {
                 switch (variable.getRole()) {
                     case COVERAGE:
-                    case DISCRETE_COVERAGE:
-                    {
+                    case DISCRETE_COVERAGE: {
                         // If Convention.roleOf(…) overwrote the value computed by VariableInfo,
                         // remember the new value for avoiding to ask again in next loops.
                         variable.isCoordinateSystemAxis = false;
@@ -984,9 +984,9 @@ public final class ChannelDecoder extends Decoder {
              * For each variable, get its list of axes. More than one variable may have the same list of axes,
              * so we remember the previously created instances in order to share the grid geometry instances.
              */
-            final Set<VariableInfo> axes = new LinkedHashSet<>(8);
-            final Set<DimensionInfo> usedDimensions = new HashSet<>(8);
-            final Map<GridInfo,GridInfo> shared = new LinkedHashMap<>();
+            final var axes = new LinkedHashSet<VariableInfo>(8);
+            final var usedDimensions = new HashSet<DimensionInfo>(8);
+            final var shared = new LinkedHashMap<GridInfo,GridInfo>();
 nextVar:    for (final VariableInfo variable : variables) {
                 if (variable.isCoordinateSystemAxis || variable.dimensions.length == 0) {
                     continue;
@@ -1072,7 +1072,7 @@ nextVar:    for (final VariableInfo variable : variables) {
      */
     @Override
     public String toString() {
-        final StringBuilder buffer = new StringBuilder();
+        final var buffer = new StringBuilder();
         buffer.append("SIS driver: “").append(getFilename()).append('”');
         if (!input.channel.isOpen()) {
             buffer.append(" (closed)");

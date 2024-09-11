@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage.netcdf.base;
 
-import java.util.Locale;
 import java.util.Collection;
 import org.apache.sis.math.Vector;
 import org.apache.sis.math.DecimalFunctions;
@@ -253,30 +252,12 @@ public abstract class Node extends NamedElement {
     }
 
     /**
-     * Returns the locale to use for warnings and error messages.
-     *
-     * @return the locale for warnings and error messages.
-     */
-    protected final Locale getLocale() {
-        return decoder.listeners.getLocale();
-    }
-
-    /**
-     * Returns the resources to use for warnings or error messages.
-     *
-     * @return the resources for the locales specified to the decoder.
-     */
-    protected final Resources resources() {
-        return Resources.forLocale(getLocale());
-    }
-
-    /**
      * Returns the resources to use for error messages.
      *
      * @return the resources for error messages using the locales specified to the decoder.
      */
     final Errors errors() {
-        return Errors.forLocale(getLocale());
+        return Errors.forLocale(decoder.getLocale());
     }
 
     /**
