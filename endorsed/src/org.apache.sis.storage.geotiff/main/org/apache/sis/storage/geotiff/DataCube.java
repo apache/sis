@@ -121,10 +121,10 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
 
     /**
      * Returns the number of components per pixel in the image stored in GeoTIFF file.
-     * This the same value as the one returned by {@code getSampleModel().getNumBands()},
+     * This the same value as the one returned by {@code getSampleModel(null).getNumBands()},
      * and is also the size of the collection returned by {@link #getSampleDimensions()}.
      *
-     * @see #getSampleModel()
+     * @see #getSampleModel(int[])
      * @see SampleModel#getNumBands()
      */
     abstract int getNumBands();
@@ -201,7 +201,7 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
      *       a multiple of 8.
      */
     private boolean canReadDirect(final Subset subset) throws DataStoreException {
-        final SampleModel model = getSampleModel();
+        final SampleModel model = getSampleModel(null);
         int b = model.getNumBands();
         if (b != 1 && !(model instanceof BandedSampleModel)) {              // First condition (see Javadoc).
             if (!subset.isXContiguous()) {                                  // Exception to first consition.

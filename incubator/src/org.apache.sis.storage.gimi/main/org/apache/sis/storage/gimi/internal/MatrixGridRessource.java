@@ -67,13 +67,19 @@ public abstract class MatrixGridRessource extends TiledGridResource {
     }
 
     @Override
-    protected SampleModel getSampleModel() throws DataStoreException {
+    protected SampleModel getSampleModel(int[] bands) throws DataStoreException {
+        if (bands != null) {
+            return null;
+        }
         initialize();
         return sampleModel;
     }
 
     @Override
-    protected ColorModel getColorModel() throws DataStoreException {
+    protected ColorModel getColorModel(int[] bands) throws DataStoreException {
+        if (bands != null) {
+            return null;
+        }
         initialize();
         return colorModel;
     }

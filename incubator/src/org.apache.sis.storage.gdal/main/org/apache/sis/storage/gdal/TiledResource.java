@@ -18,6 +18,7 @@ package org.apache.sis.storage.gdal;
 
 import java.util.Map;
 import java.util.List;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Optional;
@@ -104,17 +105,25 @@ final class TiledResource extends TiledGridResource {
     private List<SampleDimension> sampleDimensions;
 
     /**
-     * The color model, created when first requested.
+     * Indices of the {@linkplain #bands} selected for creating {@link #colorModel} and {@link #sampleModel}.
+     * A null value means that all bands are used.
+     */
+    private int[] selectedBandIndices;
+
+    /**
+     * The color model for the bands specified by {@link #selectedBandIndices}, created when first requested.
+     * This model is recreated when {@link #selectedBandIndices} changed.
      *
-     * @see #getColorModel()
+     * @see #getColorModel(int[])
      */
     private ColorModel colorModel;
 
     /**
-     * The sample model, created when first requested.
-     * Its size is the tile size with no sub-sampling.
+     * The sample model for the bands specified by {@link #selectedBandIndices}, created when first requested.
+     * All sample models shall have the size of the tile size with no sub-sampling.
+     * This model is recreated when {@link #selectedBandIndices} changed.
      *
-     * @see #getSampleModel()
+     * @see #getSampleModel(int[])
      */
     private SampleModel sampleModel;
 
@@ -334,14 +343,25 @@ final class TiledResource extends TiledGridResource {
 
     /**
      * Creates the color model and sample model.
+     *
+     * @param  bandIndices  indices of the selected bands.
      */
-    private void createColorAndSampleModel() throws DataStoreException {
+    private void createColorAndSampleModel(final int[] bandIndices) throws DataStoreException {
+        final Band[] selectedBands;
+        if (bandIndices == null) {
+            selectedBands = bands;
+        } else {
+            selectedBands = new Band[bandIndices.length];
+            for (int i=0; i<bandIndices.length; i++) {
+                selectedBands[i] = bands[bandIndices[i]];
+            }
+        }
         final GDAL gdal = parent.getProvider().GDAL();
         int[] palette = null;
         int paletteIndex = 0;
         int alpha = -1, red = -1, green = -1, blue = -1, gray = -1;
-        for (int i=0; i < bands.length; i++) {
-            final Band band = bands[i];
+        for (int i=0; i < selectedBands.length; i++) {
+            final Band band = selectedBands[i];
             switch (band.getColorInterpretation(gdal)) {
                 case ALPHA:     if (alpha < 0) alpha = i; break;
                 case RED:       if (red   < 0) red   = i; break;
@@ -370,15 +390,15 @@ final class TiledResource extends TiledGridResource {
             // TODO: needs custom color model if too many bands, or if order is not (A)RGB.
         } else if (palette != null) {
             visibleBand = paletteIndex;
-            colorModel = ColorModelFactory.createIndexColorModel(bands.length, visibleBand, palette, true, -1);
+            colorModel = ColorModelFactory.createIndexColorModel(selectedBands.length, visibleBand, palette, true, -1);
         } else {
             visibleBand = Math.max(gray, 0);
-            final Band band = bands[visibleBand];
+            final Band band = selectedBands[visibleBand];
             final double min = band.getValue(gdal.getRasterMinimum, MemorySegment.NULL);
             final double max = band.getValue(gdal.getRasterMaximum, MemorySegment.NULL);
-            colorModel = ColorModelFactory.createGrayScale(dataType.imageType, bands.length, visibleBand, min, max);
+            colorModel = ColorModelFactory.createGrayScale(dataType.imageType, selectedBands.length, visibleBand, min, max);
         }
-        sampleModel = new BandedSampleModel(dataType.imageType, width, height, bands.length);
+        sampleModel = new BandedSampleModel(dataType.imageType, width, height, selectedBands.length);
         /*
          * Also compute the fill value here because the current method needs the visible band.
          * TODO: we should compute the fill value for all bands instead, and move this code to
@@ -386,21 +406,22 @@ final class TiledResource extends TiledGridResource {
          */
         try (final Arena arena = Arena.ofConfined()) {
             final MemorySegment flag = arena.allocate(ValueLayout.JAVA_INT);
-            final double value = bands[visibleBand].getValue(gdal.getRasterNoDataValue, flag);
+            final double value = selectedBands[visibleBand].getValue(gdal.getRasterNoDataValue, flag);
             if (value != 0 && Band.isTrue(flag)) {
                 fillValue = value;
             }
         }
+        selectedBandIndices = bandIndices;
     }
 
     /**
      * Returns the Java2D color model for rendering images.
      */
     @Override
-    protected ColorModel getColorModel() throws DataStoreException {
+    protected ColorModel getColorModel(final int[] bandIndices) throws DataStoreException {
         synchronized (getSynchronizationLock()) {
-            if (colorModel == null) {
-                createColorAndSampleModel();
+            if (colorModel == null || !Arrays.equals(bandIndices, selectedBandIndices)) {
+                createColorAndSampleModel(bandIndices);
             }
             return colorModel;
         }
@@ -411,10 +432,10 @@ final class TiledResource extends TiledGridResource {
      * The raster size is the {@linkplain #getTileSize() tile size} as stored in the resource.
      */
     @Override
-    protected SampleModel getSampleModel() throws DataStoreException {
+    protected SampleModel getSampleModel(final int[] bandIndices) throws DataStoreException {
         synchronized (getSynchronizationLock()) {
-            if (sampleModel == null) {
-                createColorAndSampleModel();
+            if (sampleModel == null || !Arrays.equals(bandIndices, selectedBandIndices)) {
+                createColorAndSampleModel(bandIndices);
             }
             return sampleModel;
         }
@@ -429,7 +450,7 @@ final class TiledResource extends TiledGridResource {
     protected Number getFillValue() throws DataStoreException {
         synchronized (getSynchronizationLock()) {
             if (fillValue == null) {
-                createColorAndSampleModel();
+                createColorAndSampleModel(null);
             }
             return fillValue;
         }

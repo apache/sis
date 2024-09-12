@@ -18,6 +18,7 @@ package org.apache.sis.storage.base;
 
 import java.util.List;
 import java.util.Arrays;
+import java.util.Objects;
 import java.awt.image.DataBuffer;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
@@ -33,12 +34,14 @@ import org.apache.sis.coverage.grid.GridDerivation;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
+import org.apache.sis.coverage.privy.ColorModelFactory;
 import org.apache.sis.coverage.privy.RangeArgument;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.RasterLoadingStrategy;
 import org.apache.sis.storage.event.StoreListeners;
+import org.apache.sis.measure.NumberRange;
 import org.apache.sis.util.ArraysExt;
 import org.apache.sis.util.collection.WeakValueHashMap;
 import static org.apache.sis.storage.base.TiledGridCoverage.X_DIMENSION;
@@ -52,6 +55,29 @@ import org.opengis.coverage.CannotEvaluateException;
  * Base class of grid coverage resource storing data in tiles.
  * The word "tile" is used for simplicity but can be understood
  * as "chunk" in a <var>n</var>-dimensional generalization.
+ * Subclasses need to implement the following methods:
+ *
+ * <ul>
+ *   <li>{@link #getGridGeometry()}</li>
+ *   <li>{@link #getSampleDimensions()}</li>
+ *   <li>{@link #getTileSize()}</li>
+ *   <li>{@link #getSampleModel(int[])} (optional but recommended)</li>
+ *   <li>{@link #getColorModel(int[])} (optional but recommended)</li>
+ *   <li>{@link #read(GridGeometry, int...)}</li>
+ * </ul>
+ *
+ * The read method can be implemented simply as below:
+ *
+ * {@snippet lang="java" :
+ *     @Override
+ *     public GridCoverage read(GridGeometry domain, int... ranges) throws DataStoreException {
+ *         synchronized (getSynchronizationLock()) {
+ *             var subset = new Subset(domain, ranges);
+ *             var result = new MySubclassOfTiledGridCoverage(this, subset);
+ *             return preload(result);
+ *         }
+ *     }
+ *     }
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
@@ -141,7 +167,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
 
     /**
      * Returns the size of tiles in this resource.
-     * The length of the returned array is the number of dimensions.
+     * The length of the returned array is the number of dimensions, which must be 2 or more.
      *
      * @return the size of tiles (in pixels) in this resource.
      * @throws DataStoreException if an error occurred while fetching the tile size.
@@ -166,7 +192,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      * @throws DataStoreException if an error occurred while fetching the sample model.
      */
     protected int getAtomSize(final int dim) throws DataStoreException {
-        return (dim == 0) ? TiledGridCoverage.getPixelsPerElement(getSampleModel()) : 1;
+        return (dim == 0) ? TiledGridCoverage.getPixelsPerElement(getSampleModel(null)) : 1;
     }
 
     /**
@@ -176,7 +202,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      *
      * <ul class="verbose">
      *   <li>If {@code false}, then {@link TiledGridCoverage#model} will expect the same {@link DataBuffer}
-     *       than the one expected by the {@linkplain #getSampleModel() sample model of this resource}.
+     *       than the one expected by the {@linkplain #getSampleModel(int[]) sample model of this resource}.
      *       All bands will be loaded but the coverage sample model will ignore the bands that were not
      *       enumerated in the {@code range} argument. This strategy is convenient when skipping bands
      *       at reading time is difficult.</li>
@@ -197,33 +223,86 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      * @see RangeArgument#select(SampleModel, boolean)
      */
     protected boolean getDissociableBands() throws DataStoreException {
-        return getSampleModel() instanceof ComponentSampleModel;
+        return getSampleModel(null) instanceof ComponentSampleModel;
     }
 
     /**
-     * Returns the Java2D sample model describing pixel type and layout for all bands.
-     * The raster size is the {@linkplain #getTileSize() tile size} as stored in the resource.
+     * Returns the Java2D sample model describing pixel type and layout for the specified bands.
+     * The raster size shall be the two first dimensions of the {@linkplain #getTileSize() tile size}.
+     * This is the size of tiles as stored in the resource, i.e. ignoring sub-sampling.
      *
-     * <h4>Multi-dimensional data cube</h4>
-     * If this resource has more than 2 dimensions, then this model is for the two first ones (usually horizontal).
-     * The images for all levels in additional dimensions shall use the same sample model.
+     * <p>If the {@code bands} argument is {@code null}, then this method <em>shall</em> return the sample model
+     * for all bands and cannot return {@code null}. If the {@code bands} argument is non-null, then this method
+     * <em>may</em> compute the sample model for the specified bands, or return {@code null} for instructing the
+     * caller to derive the sample model from {@code getSampleModel(null)}.</p>
      *
-     * <h4>Performance note</h4>
-     * Implementation should return a cached value, because this method may be invoked many times.
+     * <h4>Implementation note</h4>
+     * The default implementation creates a sample model compatible with the {@linkplain #getColorModel(int[])
+     * color model} if available, or otherwise defaults to a {@link BandedSampleModel} which stores samples as
+     * floating point values. This is okay for prototyping, but it is recommended to override this method with
+     * a simple model that better matches the data. A simple implementation can be as below:
      *
-     * @return the sample model for tiles at full resolution with all their bands.
+     * {@snippet lang="java" :
+     *     private SampleModel sampleModel;
+     *
+     *     @Override
+     *     protected SampleModel getSampleModel(int[] bands) throws DataStoreException {
+     *         if (bands != null) {
+     *             return null;
+     *         }
+     *         synchronized (getSynchronizationLock()) {
+     *             if (sampleModel == null) {
+     *                 sampleModel = ...;   // Compute and cache, because requested many times.
+     *             }
+     *             return sampleModel;
+     *         }
+     *     }
+     *     }
+     *
+     * @param  bands  indices (not necessarily in increasing order) of desired bands, or {@code null} for all bands.
+     * @return the sample model for tiles at full resolution with the specified bands.
+     *         Shall be non-null if {@code bands} is null (i.e. the caller is requesting the main sample model).
      * @throws DataStoreException if an error occurred during sample model construction.
      */
-    protected abstract SampleModel getSampleModel() throws DataStoreException;
+    protected SampleModel getSampleModel(final int[] bands) throws DataStoreException {
+        final int[] tileSize = getTileSize();
+        final int width  = tileSize[X_DIMENSION];
+        final int height = tileSize[Y_DIMENSION];
+        final ColorModel colors = getColorModel(bands);
+        if (colors != null) {
+            return colors.createCompatibleSampleModel(width, height);
+        }
+        int numBands = (bands != null) ? bands.length : getSampleDimensions().size();
+        return new BandedSampleModel(DataBuffer.TYPE_FLOAT, width, height, numBands);
+    }
 
     /**
      * Returns the Java2D color model for rendering images, or {@code null} if none.
-     * The color model shall be compatible with the sample model returned by {@link #getSampleModel()}.
+     * The color model shall be compatible with the sample model returned by {@link #getSampleModel(int[])}.
      *
-     * @return a color model compatible with {@link #getSampleModel()}, or {@code null} if none.
+     * <p>The default implementation returns a gray scale color model if there is only one band
+     * to show and the range of the {@linkplain #getSampleDimensions() sample dimension} is known.
+     * OTherwise, this method returns {@code null}.
+     * This is okay for prototyping, but it is recommended to override.</p>
+     *
+     * @param  bands  indices (not necessarily in increasing order) of desired bands, or {@code null} for all bands.
+     * @return a color model compatible with {@link #getSampleModel(int[])}, or {@code null} if none.
      * @throws DataStoreException if an error occurred during color model construction.
      */
-    protected abstract ColorModel getColorModel() throws DataStoreException;
+    protected ColorModel getColorModel(final int[] bands) throws DataStoreException {
+        final List<SampleDimension> sd = getSampleDimensions();
+        if ((bands != null && bands.length == 1) || sd.size() == 1) {
+            NumberRange<?> range = sd.get((bands != null) ? bands[0] : 0).getSampleRange().orElse(null);
+            if (range != null) {
+                final double min = range.getMinDouble();
+                final double max = range.getMaxDouble();
+                if (Double.isFinite(min) && Double.isFinite(max)) {
+                    return ColorModelFactory.createGrayScale(DataBuffer.TYPE_FLOAT, 1, 0, min, max);
+                }
+            }
+        }
+        return null;
+    }
 
     /**
      * Returns the value to use for filling empty spaces in rasters,
@@ -400,30 +479,39 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
              * If user has specified bands in a different order, that change of band order will
              * be handled by the `SampleModel`, not in `includedBands` array.
              */
-            @SuppressWarnings("LocalVariableHidesMemberVariable")
-            int[] includedBands = null;
+            @SuppressWarnings("LocalVariableHidesMemberVariable") int[]       includedBands       = null;
+            @SuppressWarnings("LocalVariableHidesMemberVariable") SampleModel modelForBandSubset  = null;
+            @SuppressWarnings("LocalVariableHidesMemberVariable") ColorModel  colorsForBandSubset = null;
             boolean loadAllBands = rangeIndices.isIdentity();
             if (!loadAllBands) {
                 bands = Arrays.asList(rangeIndices.select(bands));
                 loadAllBands = !getDissociableBands();
                 if (!loadAllBands) {
                     sharedCache = false;
-                    includedBands = new int[rangeIndices.getNumBands()];
-                    for (int i=0; i<includedBands.length; i++) {
-                        includedBands[i] = rangeIndices.getSourceIndex(i);
+                    if (!rangeIndices.hasAllBands) {
+                        includedBands = new int[rangeIndices.getNumBands()];
+                        for (int i=0; i<includedBands.length; i++) {
+                            includedBands[i] = rangeIndices.getSourceIndex(i);
+                        }
+                        assert ArraysExt.isSorted(includedBands, true);
                     }
-                    assert ArraysExt.isSorted(includedBands, true);
-                    if (rangeIndices.hasAllBands) {
-                        assert ArraysExt.isRange(0, includedBands);
-                        includedBands = null;
-                    }
+                    // Same as `includedBands`, but in the order requested by the user.
+                    int[] requestedBands = rangeIndices.getSelectedBands();
+                    modelForBandSubset   = getSampleModel(requestedBands);
+                    colorsForBandSubset  = getColorModel (requestedBands);
                 }
+            }
+            if (modelForBandSubset == null) {
+                modelForBandSubset = rangeIndices.select(getSampleModel(null), loadAllBands);
+            }
+            if (colorsForBandSubset == null) {
+                colorsForBandSubset = rangeIndices.select(getColorModel(null));
             }
             this.domain              = domain;
             this.ranges              = bands;
             this.includedBands       = includedBands;
-            this.modelForBandSubset  = rangeIndices.select(getSampleModel(), loadAllBands);
-            this.colorsForBandSubset = rangeIndices.select(getColorModel());
+            this.modelForBandSubset  = Objects.requireNonNull(modelForBandSubset);
+            this.colorsForBandSubset = colorsForBandSubset;
             this.fillValue           = getFillValue();
             /*
              * All `TiledGridCoverage` instances can share the same cache if they read all tiles fully.

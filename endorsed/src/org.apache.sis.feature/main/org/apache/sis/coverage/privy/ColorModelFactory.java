@@ -505,7 +505,7 @@ public final class ColorModelFactory {
             cm = new ComponentColorModel(cs, false, true, Transparency.OPAQUE, dataType);
             // Note: `ComponentColorModel` does not work well with negative values.
         } else {
-            final ScaledColorSpace cs = new ScaledColorSpace(numComponents, visibleBand, minimum, maximum);
+            final var cs = new ScaledColorSpace(numComponents, visibleBand, minimum, maximum);
             cm = new ScaledColorModel(cs, dataType);
         }
         return unique(cm);

@@ -425,14 +425,14 @@ final class ImageFileDirectory extends DataCube {
      * The image sample model, created when first needed. The raster size is the tile size.
      * Sample models with different size and number of bands can be derived from this model.
      *
-     * @see #getSampleModel()
+     * @see #getSampleModel(int[])
      */
     private SampleModel sampleModel;
 
     /**
      * The image color model, created when first needed.
      *
-     * @see #getColorModel()
+     * @see #getColorModel(int[])
      */
     private ColorModel colorModel;
 
@@ -1592,12 +1592,15 @@ final class ImageFileDirectory extends DataCube {
      *
      * @see SampleModel#createCompatibleSampleModel(int, int)
      * @see SampleModel#createSubsetSampleModel(int[])
-     * @see #getColorModel()
+     * @see #getColorModel(int[])
      * @see #getTileSize()
      */
     @Override
-    protected SampleModel getSampleModel() throws DataStoreContentException {
+    protected SampleModel getSampleModel(final int[] bands) throws DataStoreContentException {
         assert Thread.holdsLock(getSynchronizationLock());
+        if (bands != null) {
+            return null;    // Let `TileGridResource` derive a model itself.
+        }
         if (sampleModel == null) {
             RuntimeException error = null;
             final DataType type = getDataType();
@@ -1637,7 +1640,7 @@ final class ImageFileDirectory extends DataCube {
      * The number of dimensions is always 2 for {@code ImageFileDirectory}.
      *
      * @see #getExtent()
-     * @see #getSampleModel()
+     * @see #getSampleModel(int[])
      */
     @Override
     protected int[] getTileSize() {
@@ -1690,13 +1693,16 @@ final class ImageFileDirectory extends DataCube {
      *
      * @throws DataStoreContentException if the data type is not supported.
      *
-     * @see #getSampleModel()
+     * @see #getSampleModel(int[])
      */
     @Override
-    protected ColorModel getColorModel() throws DataStoreContentException {
+    protected ColorModel getColorModel(final int[] bands) throws DataStoreContentException {
         assert Thread.holdsLock(getSynchronizationLock());
+        if (bands != null) {
+            return null;    // Let `TileGridResource` derive a model itself.
+        }
         if (colorModel == null) {
-            final SampleModel sm  = getSampleModel();
+            final SampleModel sm  = getSampleModel(null);
             final int dataType    = sm.getDataType();
             final int visibleBand = 0;      // May be configurable in a future version.
             short missing = 0;              // Non-zero if there is a warning about missing information.

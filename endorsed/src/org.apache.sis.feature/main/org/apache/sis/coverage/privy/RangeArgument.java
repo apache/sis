@@ -24,8 +24,6 @@ import java.awt.image.RasterFormatException;
 import org.opengis.metadata.spatial.DimensionNameType;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
-import org.apache.sis.coverage.privy.ColorModelFactory;
-import org.apache.sis.coverage.privy.SampleModelFactory;
 import org.apache.sis.feature.internal.Resources;
 import org.apache.sis.util.ArgumentChecks;
 import org.apache.sis.util.ArraysExt;
