@@ -73,7 +73,7 @@ class ProjectiveTransform extends AbstractLinearTransform implements ExtendedPre
      * An additional column is appended after the translation column.
      * That column contains a denominator inferred from fractional values found on the row.
      * All elements in the matrix row shall be multiplied by that denominator.
-     * The intend is to increase the chances that matrix elements are integer values.
+     * The intent is to increase the chances that matrix elements are integer values.
      * If no fractional value is found, the default denominator value is 1.
      */
     private final double[] elt;

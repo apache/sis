@@ -100,8 +100,15 @@ final class TiledDeferredImage extends BatchComputedImage {
      */
     @Override
     protected Raster[] computeTiles(final Rectangle tiles) throws Exception {
-        final TiledGridCoverage.AOI aoi = iterator.subset(new int[] {tiles.x, tiles.y},
-                new int[] {Math.addExact(tiles.x, tiles.width), Math.addExact(tiles.y, tiles.height)});
+        final TiledGridCoverage.AOI aoi = iterator.subset(
+                new int[] {
+                    tiles.x,
+                    tiles.y
+                },
+                new int[] {
+                    Math.addExact(tiles.x, tiles.width),
+                    Math.addExact(tiles.y, tiles.height)
+                });
         return aoi.getCoverage().readTiles(aoi);
     }
 }

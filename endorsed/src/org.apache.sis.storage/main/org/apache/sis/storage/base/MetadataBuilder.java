@@ -92,7 +92,6 @@ import org.apache.sis.metadata.privy.Merger;
 import org.apache.sis.referencing.NamedIdentifier;
 import org.apache.sis.referencing.privy.AxisDirections;
 import org.apache.sis.geometry.AbstractEnvelope;
-import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.AbstractResource;
 import org.apache.sis.storage.AbstractFeatureSet;
 import org.apache.sis.storage.AbstractGridCoverageResource;
@@ -842,8 +841,6 @@ public class MetadataBuilder {
      * @param  resource   the resource for which to add metadata.
      * @param  listeners  the listeners to notify in case of warning, or {@code null} if none.
      * @throws DataStoreException if an error occurred while reading metadata from the data store.
-     *
-     * @see #addTitleOrIdentifier(Resource)
      */
     public final void addDefaultMetadata(final AbstractResource resource, final StoreListeners listeners) throws DataStoreException {
         // Note: title is mandatory in ISO metadata, contrarily to the identifier.

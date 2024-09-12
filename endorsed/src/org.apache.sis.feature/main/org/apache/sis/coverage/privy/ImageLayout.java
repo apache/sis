@@ -62,7 +62,7 @@ public class ImageLayout {
     public static final ImageLayout DEFAULT = new ImageLayout(null, false);
 
     /**
-     * Same as {@link #DEFAULT}, but makes image size an integer number of tiles.
+     * Same as {@link #DEFAULT}, but can modify the image size for forcing it to an integer number of tiles.
      */
     public static final ImageLayout SIZE_ADJUST = new ImageLayout(null, true);
 

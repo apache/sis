@@ -261,6 +261,8 @@ public final class ColorModelBuilder {
             if (!categories.isEmpty()) {
                 boolean isUndefined = true;
                 boolean missingNodata = true;
+
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
                 ColorsForRange[] entries = new ColorsForRange[categories.size()];
                 for (int i=0; i<entries.length; i++) {
                     final var range = new ColorsForRange(categories.get(i), colors, inheritedColors);
@@ -420,6 +422,8 @@ public final class ColorModelBuilder {
          */
         source = target.forConvertedValues(true);
         final List<Category> categories = target.getCategories();
+
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final ColorsForRange[] entries = new ColorsForRange[categories.size()];
         for (int i=0; i<entries.length; i++) {
             final Category category = categories.get(i);
@@ -491,6 +495,7 @@ public final class ColorModelBuilder {
          * If a source SampleDimension has been specified, verify if it provides a transfer function that we can
          * use directly. If this is the case, use the existing transfer function instead of inventing our own.
          */
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         ColorsForRange[] entries = this.entries;
 reuse:  if (source != null) {
             target = source.forConvertedValues(false);

@@ -80,7 +80,7 @@ public class GestureFollower extends CanvasFollower implements EventHandler<Mous
     };
 
     /**
-     * The effect applied on the cursor. The intend is to make it more visible if the cursor color
+     * The effect applied on the cursor. The intent is to make it more visible if the cursor color
      * is close to the color of features rendered on the map.
      */
     private static final DropShadow CURSOR_EFFECT = new DropShadow(BlurType.ONE_PASS_BOX, Color.DEEPPINK, 5, 0, 0, 0);

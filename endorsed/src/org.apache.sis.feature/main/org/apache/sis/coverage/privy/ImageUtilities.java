@@ -570,7 +570,7 @@ public final class ImageUtilities extends Static {
      * <h4>Implementation note</h4>
      * This method performs its calculation using <em>tile grid offset</em> instead of minimum coordinate
      * values because the former does not assume that image coordinates start at the beginning of first tile.
-     * The intend is to be consistent with {@link #pixelToTileX(RenderedImage, int)}.
+     * The intent is to be consistent with {@link #pixelToTileX(RenderedImage, int)}.
      *
      * @param  image   the image containing tiles.
      * @param  pixels  the pixel coordinates for which to get tile indices.
@@ -604,7 +604,7 @@ public final class ImageUtilities extends Static {
      * <h4>Implementation note</h4>
      * This method performs its calculation using <em>tile grid offset</em> instead of minimum coordinate
      * values because the former does not assume that image coordinates start at the beginning of first tile.
-     * The intend is to be consistent with {@link #tileToPixelX(RenderedImage, int)}.
+     * The intent is to be consistent with {@link #tileToPixelX(RenderedImage, int)}.
      *
      * @param  image  the image containing tiles.
      * @param  tiles  the tile indices for which to get pixel coordinates.

@@ -166,7 +166,7 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
      * If non-null, this value will be replaced by {@link Float#NaN} at reading time.
      *
      * <div class="note"><b>Rational:</b>
-     * the intend is to handle the image as if it was already converted to the units of measurement.
+     * the intent is to handle the image as if it was already converted to the units of measurement.
      * Our netCDF reader does the same thing, and we want a consistent behavior of coverage readers.
      * </div>
      *

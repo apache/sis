@@ -80,27 +80,4 @@ final class TiledCoverage extends TiledGridCoverage {
             return result;
         }
     }
-
-    /**
-     * Transfers (reads or writes) sample values between <abbr>GDAL</abbr> raster and Java2D raster for all bands.
-     * The full area of the Java2D raster is transferred. It may corresponds to a sub-area of the GDAL raster.
-     *
-     * <h4>Prerequisites</h4>
-     * <ul>
-     *   <li>The Java2D raster shall use a {@link java.awt.image.ComponentSampleModel}.</li>
-     *   <li>In read mode, the given raster shall be an instance of {@link WritableRaster}.</li>
-     * </ul>
-     *
-     * @param  gdal    set of handles for invoking <abbr>GDAL</abbr> functions.
-     * @param  rwFlag  {@link OpenFlag#READ} or {@link OpenFlag#WRITE}.
-     * @param  aoi     region of the image to read or write. (0,0) is the upper-left pixel.
-     * @param  raster  the Java2D raster where to store of fetch the values to read or write.
-     * @throws ClassCastException if a prerequisite about expected classes is not true.
-     * @throws DataStoreException if <var>GDAL</var> reported a warning or fatal error.
-     */
-    private void transfer(final GDAL gdal, final int rwFlag, final Rectangle aoi, final Raster raster)
-            throws DataStoreException
-    {
-
-    }
 }

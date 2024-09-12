@@ -154,7 +154,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      * However, in multi-pixels packed sample model (e.g. bilevel image with 8 pixels per byte),
      * it is difficult to start reading an image at <var>x</var> location other than a byte boundary.
      * By declaring an "atom" size of 8 sample values in dimension X, the {@link Subset} constructor
-     * will ensure than the sub-region to read starts at a byte boundary when reading a bilevel image.
+     * will ensure that the sub-region to read starts at a byte boundary when reading a bilevel image.
      *
      * <p>The default implementation returns the {@linkplain TiledGridCoverage#getPixelsPerElement()
      * number of pixels per data element} for dimension X and returns 1 for all other dimensions.</p>
@@ -178,7 +178,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      *       than the one expected by the {@linkplain #getSampleModel() sample model of this resource}.
      *       All bands will be loaded but the coverage sample model will ignore the bands that were not
      *       enumerated in the {@code range} argument. This strategy is convenient when skipping bands
-     *       at reading time is hard.</li>
+     *       at reading time is difficult.</li>
      *   <li>If {@code true}, then {@link TiledGridCoverage#model} will have its band indices and bit masks
      *       "compressed" for making them consecutive. For example if the {@code range} argument specifies that
      *       the bands to read are {1, 3, 4, 6}, then after "compression" band indices become {0, 1, 2, 3}.
@@ -186,7 +186,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      * </ul>
      *
      * <p>The default implementation returns {@code true} if the sample model is a {@link ComponentSampleModel}
-     * and {@code false} if all other cases, because skipping bands in a packed sample model is more difficult
+     * and {@code false} in all other cases, because skipping bands in a packed sample model is more difficult
      * to implement.</p>
      *
      * @return {@code true} if the reader can load only the requested bands and skip other bands, or
@@ -237,7 +237,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
 
     /**
      * Parameters that describe the resource subset to be accepted by the {@link TiledGridCoverage} constructor.
-     * This is a temporary class used only for transferring information from {@link TiledGridResource}.
+     * Instances of this class are temporary and used only for transferring information from {@link TiledGridResource}.
      * This class does not perform I/O operations.
      */
     public final class Subset {
@@ -399,6 +399,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
              * If user has specified bands in a different order, that change of band order will
              * be handled by the `SampleModel`, not in `includedBands` array.
              */
+            @SuppressWarnings("LocalVariableHidesMemberVariable")
             int[] includedBands = null;
             boolean loadAllBands = rangeIndices.isIdentity();
             if (!loadAllBands) {

@@ -116,7 +116,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
 
     /**
      * Size of all tiles in the domain of this {@code TiledGridCoverage}, without clipping and subsampling.
-     * All coverages created from the same {@link TiledGridResource} have the same tile size values.
+     * All coverages created from the same {@link TiledGridResource} shall have the same tile size values.
      * The length of this array is the number of dimensions in the source {@link GridExtent}.
      * This is often {@value #BIDIMENSIONAL} but can also be more.
      */
@@ -208,7 +208,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
     private final boolean deferredTileReading;
 
     /**
-     * Creates a new tiled grid coverage. All parameters should have been validated before this call.
+     * Creates a new tiled grid coverage.
      *
      * @param  subset  description of the {@link TiledGridResource} subset to cover.
      * @throws ArithmeticException if the number of tiles overflows 32 bits integer arithmetic.
@@ -828,9 +828,9 @@ public abstract class TiledGridCoverage extends GridCoverage {
         }
 
         /**
-         * Returns the coordinate of the pixel to read <em>inside</em> the tile, ignoring subsampling.
+         * Returns the coordinates of the pixel to read <em>inside</em> the tile, ignoring subsampling.
          * The tile upper-left corner is assumed (0,0). Consequently, the lower coordinates are usually
-         * (0,0) and the upper coordinates are usually the tile size, but those value may be different
+         * (0,0) and the upper coordinates are usually the tile size, but those values may be different
          * if the enclosing {@link TiledGridCoverage} contains only one (potentially big) tile.
          * In that case, the reading process is more like untiled image reading.
          *
