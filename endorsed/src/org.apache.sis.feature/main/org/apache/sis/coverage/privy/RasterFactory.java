@@ -230,7 +230,7 @@ public final class RasterFactory extends Static {
      * @param  bank  bank index of the data array to wrap.
      * @return buffer wrapping the data array of the specified bank.
      */
-    public static Buffer createBuffer(final DataBuffer data, final int bank) {
+    public static Buffer wrapAsBuffer(final DataBuffer data, final int bank) {
         Buffer buffer;
         switch (data.getDataType()) {
             case DataBuffer.TYPE_BYTE:   buffer = ByteBuffer  .wrap(((DataBufferByte)   data).getData(bank)); break;

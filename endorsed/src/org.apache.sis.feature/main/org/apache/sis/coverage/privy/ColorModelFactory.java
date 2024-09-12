@@ -617,7 +617,7 @@ public final class ColorModelFactory {
      * {@code true}  for color model used with {@link java.awt.image.SinglePixelPackedSampleModel}, and
      * {@code false} for color model used with {@link java.awt.image.BandedSampleModel}.
      *
-     * @param  bitsPerSample  number of bits per sample, between 1 and 8 inclusive.
+     * @param  bitsPerSample  number of bits per sample, between 1 and 8 (packed) or 32 (banded) inclusive.
      * @param  packed         whether sample values are packed in a single element.
      * @param  hasAlpha       whether the color model should have an alpha channel.
      * @return the color model.
@@ -626,10 +626,10 @@ public final class ColorModelFactory {
         if ((hasAlpha & packed) && bitsPerSample == Byte.SIZE) {
             return ColorModel.getRGBdefault();
         }
-        ArgumentChecks.ensureBetween("bitsPerSample", 1, Byte.SIZE, bitsPerSample);
-        final int mask = (1 << bitsPerSample) - 1;
+        ArgumentChecks.ensureBetween("bitsPerSample", 1, packed ? Byte.SIZE : Integer.SIZE, bitsPerSample);
         final ColorModel cm;
         if (packed) {
+            final int mask = (1 << bitsPerSample) - 1;
             cm = new DirectColorModel((hasAlpha ? 4 : 3) * bitsPerSample,
                     mask << (bitsPerSample * 2),        // Red
                     mask <<  bitsPerSample,             // Green

@@ -599,7 +599,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
          *
          * @return current iterator tile position in original coverage resource.
          */
-        public final long[] getPositionInSource() {
+        public final long[] getTileCoordinatesInSource() {
             final long[] coordinate = new long[tmcOfFirstTile.length];
             for (int i = 0; i < coordinate.length; i++) {
                 coordinate[i] = Math.addExact(tmcOfFirstTile[i], tmcInSubset[i]);

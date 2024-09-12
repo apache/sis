@@ -316,7 +316,7 @@ public final class RangeArgument {
      * @return bands selected by user, in user-specified order.
      */
     public SampleDimension[] select(final List<? extends SampleDimension> sourceBands) {
-        final SampleDimension[] bands = new SampleDimension[getNumBands()];
+        final var bands = new SampleDimension[getNumBands()];
         for (int i=0; i<bands.length; i++) {
             bands[getTargetIndex(i)] = sourceBands.get(getSourceIndex(i));
         }
@@ -357,7 +357,7 @@ public final class RangeArgument {
         if (view) {
             return model.createSubsetSampleModel(bands);
         } else {
-            final SampleModelFactory factory = new SampleModelFactory(model);
+            final var factory = new SampleModelFactory(model);
             factory.subsetAndCompress(bands);
             return factory.build();
         }

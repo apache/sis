@@ -144,28 +144,29 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      * The length of the returned array is the number of dimensions.
      *
      * @return the size of tiles (in pixels) in this resource.
+     * @throws DataStoreException if an error occurred while fetching the tile size.
      */
-    protected abstract int[] getTileSize();
+    protected abstract int[] getTileSize() throws DataStoreException;
 
     /**
      * Returns the number of sample values in an indivisible element of a tile.
      * An element is a primitive type such as {@code byte}, {@code int} or {@code float}.
-     * This value is usually 1 because each sample value is usually stored in a separated element.
+     * This value is usually 1 when each sample value is stored in a separated element.
      * However, in multi-pixels packed sample model (e.g. bilevel image with 8 pixels per byte),
      * it is difficult to start reading an image at <var>x</var> location other than a byte boundary.
-     * By declaring an "atom" size of 8 sample values in dimension X, the {@link Subset} constructor
-     * will ensure that the sub-region to read starts at a byte boundary when reading a bilevel image.
+     * By declaring an "atom" size of 8 sample values in dimension 0 (<var>x</var>), the {@link Subset}
+     * constructor will ensure that the sub-region to read starts at a byte boundary when reading a bilevel image.
      *
      * <p>The default implementation returns the {@linkplain TiledGridCoverage#getPixelsPerElement()
-     * number of pixels per data element} for dimension X and returns 1 for all other dimensions.</p>
+     * number of pixels per data element} for dimension 0 and returns 1 for all other dimensions.</p>
      *
-     * @param  xdim  {@code true} for the size on <var>x</var> dimension, {@code false} for any other dimension.
+     * @param  dim  the dimension: 0 for <var>x</var>, 1 for <var>y</var>, <i>etc.</i>
      * @return indivisible number of sample values to read in the specified dimension. Must be ≥ 1.
      *         This is in units of sample values (may be bits, bytes, floats, <i>etc</i>).
      * @throws DataStoreException if an error occurred while fetching the sample model.
      */
-    protected int getAtomSize(final boolean xdim) throws DataStoreException {
-        return xdim ? TiledGridCoverage.getPixelsPerElement(getSampleModel()) : 1;
+    protected int getAtomSize(final int dim) throws DataStoreException {
+        return (dim == 0) ? TiledGridCoverage.getPixelsPerElement(getSampleModel()) : 1;
     }
 
     /**
@@ -359,8 +360,8 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
                  * Note that it is possible to disable this restriction in a single dimension, typically the X one
                  * when reading a TIFF image using strips instead of tiles.
                  */
-                final int atomSizeX = getAtomSize(true);
-                final int atomSizeY = getAtomSize(false);
+                final int atomSizeX = getAtomSize(0);
+                final int atomSizeY = getAtomSize(1);
                 int tileWidth   = tileSize[X_DIMENSION];
                 int tileHeight  = tileSize[Y_DIMENSION];
                 if (tileWidth  >= sourceExtent.getSize(X_DIMENSION)) {tileWidth  = atomSizeX; sharedCache = false;}
@@ -516,7 +517,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      * Current implementation does not support immediate loading if the data cube has more than 2 dimensions.
      * Non-immediate loading allows users to specify two-dimensional slices.
      */
-    private boolean supportImmediateLoading() {
+    private boolean supportImmediateLoading() throws DataStoreException {
         return getTileSize().length == TiledGridCoverage.BIDIMENSIONAL;
     }
 

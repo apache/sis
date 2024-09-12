@@ -61,12 +61,8 @@ public abstract class MatrixGridRessource extends TiledGridResource {
     }
 
     @Override
-    protected int[] getTileSize() {
-        try {
-            initialize();
-        } catch (DataStoreException ex) {
-            throw new RuntimeException(ex);
-        }
+    protected int[] getTileSize() throws DataStoreException {
+        initialize();
         return tileSize.clone();
     }
 
@@ -124,7 +120,7 @@ public abstract class MatrixGridRessource extends TiledGridResource {
                     if (tile != null) {
                         result[iterator.getIndexInResultArray()] = tile;
                     } else {
-                        long[] tileCoord = iterator.getPositionInSource();
+                        long[] tileCoord = iterator.getTileCoordinatesInSource();
                         final RenderedImage image = getTileImage(tileCoord);
                         result[iterator.getIndexInResultArray()] = image instanceof BufferedImage ? ((BufferedImage)image).getRaster() : image.getData();
                     }

@@ -265,7 +265,7 @@ final class Band {
         final var model    = (ComponentSampleModel) raster.getSampleModel();   // See prerequisites in Javadoc.
         final var data     = raster.getDataBuffer();
         final int dataSize = DataBuffer.getDataTypeSize(data.getDataType()) / Byte.SIZE;
-        final var buffer   = RasterFactory.createBuffer(data, model.getBankIndices()[band]);
+        final var buffer   = RasterFactory.wrapAsBuffer(data, model.getBankIndices()[band]);
         buffer.position(model.getOffset(raster.getMinX() - raster.getSampleModelTranslateX(),
                                         raster.getMinY() - raster.getSampleModelTranslateY(), band));
         final int err;
