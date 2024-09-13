@@ -189,18 +189,25 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * The sample model for all rasters. The width and height of this sample model are the two first elements
      * of {@link #tileSize} divided by subsampling and clipped to the domain. If user requested to read only
      * a subset of the bands, then this sample model is already the subset.
+     *
+     * @see TiledGridResource#getSampleModel(int[])
      */
     protected final SampleModel model;
 
     /**
      * The Java2D color model for images rendered from this coverage.
+     *
+     * @see TiledGridResource#getColorModel(int[])
      */
     protected final ColorModel colors;
 
     /**
-     * The value to use for filling empty spaces in rasters, or {@code null} if zero.
+     * The values to use for filling empty spaces in rasters, or {@code null} if zero in all bands.
+     * If non-null, the array length is equal to the number of bands.
+     *
+     * @see TiledGridResource#getFillValues(int[])
      */
-    protected final Number fillValue;
+    protected final Number[] fillValues;
 
     /**
      * Whether the reading of tiles is deferred to {@link RenderedImage#getTile(int, int)} time.
@@ -251,10 +258,10 @@ public abstract class TiledGridCoverage extends GridCoverage {
         if (model.getWidth() != subSize[X_DIMENSION] || model.getHeight() != subSize[Y_DIMENSION]) {
             model = model.createCompatibleSampleModel(subSize[X_DIMENSION], subSize[Y_DIMENSION]);
         }
-        this.model     = model;
-        this.colors    = subset.colorsForBandSubset;
-        this.fillValue = subset.fillValue;
-        forceTileSize  = subSize[X_DIMENSION] * subsampling[X_DIMENSION] == tileSize[X_DIMENSION];
+        this.model      = model;
+        this.colors     = subset.colorsForBandSubset;
+        this.fillValues = subset.fillValues;
+        forceTileSize   = subSize[X_DIMENSION] * subsampling[X_DIMENSION] == tileSize[X_DIMENSION];
     }
 
     /**
@@ -725,7 +732,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * coordinates are the values returned by {@link #getTileOrigin(int)} for dimensions
          * of two-dimensional slices.
          *
-         * <p>The raster is <em>not</em> filled with {@link #fillValue}.
+         * <p>The raster is <em>not</em> filled with {@link #fillValues}.
          * Filling, if needed, should be done by the caller.</p>
          *
          * @return a newly created, initially empty raster.

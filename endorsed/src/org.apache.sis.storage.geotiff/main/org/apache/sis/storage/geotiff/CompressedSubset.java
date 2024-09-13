@@ -105,6 +105,7 @@ final class CompressedSubset extends DataSubset {
      * @param  rasters  potentially shared cache of rasters read by this {@code DataSubset}.
      * @throws ArithmeticException if the number of tiles overflows 32 bits integer arithmetic.
      */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     CompressedSubset(final DataCube source, final TiledGridResource.Subset subset) throws DataStoreException {
         super(source, subset);
         scanlineStride    = multiplyFull(getTileSize(X_DIMENSION), sourcePixelStride);
@@ -216,6 +217,7 @@ final class CompressedSubset extends DataSubset {
                         sourcePixelStride, getTileSize(X_DIMENSION), chunksPerRow, samplesPerChunk, skipAfterChunks,
                         pixelsPerElement, dataType);
         }
+        @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Inflater inflater = this.inflater;
         final int      capacity = getBankCapacity(pixelsPerElement);
         final Buffer[] banks    = new Buffer[numBanks];
@@ -243,7 +245,7 @@ final class CompressedSubset extends DataSubset {
             }
             inflater.skip(head);                        // Last iteration without the trailing `skip(…)` calls.
             inflater.uncompressRow();
-            fillRemainingRows(bank.flip());
+            fillRemainingRows(bank.flip(), b);
             banks[b] = bank;
         }
         return createWritableRaster(RasterFactory.wrap(dataType, banks), location);

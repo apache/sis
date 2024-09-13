@@ -19,11 +19,13 @@ package org.apache.sis.storage.base;
 import java.util.List;
 import java.util.Arrays;
 import java.util.Objects;
+import java.lang.reflect.Array;
 import java.awt.image.DataBuffer;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.ComponentSampleModel;
+import java.awt.image.IndexColorModel;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
 import java.awt.image.RasterFormatException;
@@ -35,7 +37,9 @@ import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.GridRoundingMode;
 import org.apache.sis.coverage.privy.ColorModelFactory;
+import org.apache.sis.coverage.privy.ImageUtilities;
 import org.apache.sis.coverage.privy.RangeArgument;
+import org.apache.sis.image.DataType;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.AbstractGridCoverageResource;
 import org.apache.sis.storage.DataStoreException;
@@ -222,7 +226,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      *
      * @see RangeArgument#select(SampleModel, boolean)
      */
-    protected boolean getDissociableBands() throws DataStoreException {
+    protected boolean canSeparateBands() throws DataStoreException {
         return getSampleModel(null) instanceof ComponentSampleModel;
     }
 
@@ -305,15 +309,44 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
     }
 
     /**
-     * Returns the value to use for filling empty spaces in rasters,
-     * or {@code null} if none, not different than zero or not valid for the target data type.
-     * This value is used if a tile contains less pixels than expected.
-     * The zero value is excluded because tiles are already initialized to zero by default.
+     * Returns the values to use for filling empty spaces in rasters, with one value per band.
+     * The returned array can be {@code null} if there is no fill value, or if the fill values
+     * are not different than zero, or are not valid for the image data type.
      *
-     * @return the value to use for filling empty spaces in rasters.
+     * <p>Fill values are used when a tile contains less pixels than expected.
+     * A null array is a shortcut for skipping the filling of new tiles,
+     * because new tiles are already initialized with zero values by default.</p>
+     *
+     * <p>The default implementation returns an array of {@link DataType#fillValue()} except
+     * for the {@linkplain IndexColorModel#getTransparentPixel() transparent pixel} if any.
+     * If the array would contain only zero values, the default implementation returns null.</p>
+     *
+     * @param  bands  indices (not necessarily in increasing order) of desired bands, or {@code null} for all bands.
+     * @return the value to use for filling empty spaces in each band, or {@code null} for defaulting to zero.
      * @throws DataStoreException if an error occurred while fetching filling information.
      */
-    protected abstract Number getFillValue() throws DataStoreException;
+    protected Number[] getFillValues(final int[] bands) throws DataStoreException {
+        final SampleModel model = getSampleModel(bands);
+        final var dataType = DataType.forDataBufferType(model.getDataType());
+        IndexColorModel icm = null;
+check:  if (dataType.isInteger()) {
+            final ColorModel colors = getColorModel(bands);
+            if (colors instanceof IndexColorModel) {
+                icm = (IndexColorModel) colors;
+                if (icm.getTransparentPixel() > 0) {
+                    break check;
+                }
+            }
+            return null;
+        }
+        final Number fill = dataType.fillValue();
+        final var fillValues = (Number[]) Array.newInstance(fill.getClass(), model.getNumBands());
+        Arrays.fill(fillValues, fill);
+        if (icm != null) {
+            fillValues[ImageUtilities.getVisibleBand(icm)] = icm.getTransparentPixel();
+        }
+        return fillValues;
+    }
 
     /**
      * Parameters that describe the resource subset to be accepted by the {@link TiledGridCoverage} constructor.
@@ -395,10 +428,10 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
         final ColorModel colorsForBandSubset;
 
         /**
-         * Value to use for filling empty spaces in rasters, or {@code null} if none,
+         * Values to use for filling empty spaces in rasters, or {@code null} if none,
          * not different than zero or not valid for the target data type.
          */
-        final Number fillValue;
+        final Number[] fillValues;
 
         /**
          * Cache to use for tiles loaded by the {@link TiledGridCoverage}.
@@ -477,15 +510,16 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
             /*
              * Get the bands selected by user in strictly increasing order of source band index.
              * If user has specified bands in a different order, that change of band order will
-             * be handled by the `SampleModel`, not in `includedBands` array.
+             * be handled by the `SampleModel`, not by the `includedBands` array.
              */
+            int[] requestedBands = null;          // Same as `includedBands` but in user-specified order.
             @SuppressWarnings("LocalVariableHidesMemberVariable") int[]       includedBands       = null;
             @SuppressWarnings("LocalVariableHidesMemberVariable") SampleModel modelForBandSubset  = null;
             @SuppressWarnings("LocalVariableHidesMemberVariable") ColorModel  colorsForBandSubset = null;
             boolean loadAllBands = rangeIndices.isIdentity();
             if (!loadAllBands) {
                 bands = Arrays.asList(rangeIndices.select(bands));
-                loadAllBands = !getDissociableBands();
+                loadAllBands = !canSeparateBands();
                 if (!loadAllBands) {
                     sharedCache = false;
                     if (!rangeIndices.hasAllBands) {
@@ -495,8 +529,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
                         }
                         assert ArraysExt.isSorted(includedBands, true);
                     }
-                    // Same as `includedBands`, but in the order requested by the user.
-                    int[] requestedBands = rangeIndices.getSelectedBands();
+                    requestedBands = rangeIndices.getSelectedBands();
                     modelForBandSubset   = getSampleModel(requestedBands);
                     colorsForBandSubset  = getColorModel (requestedBands);
                 }
@@ -512,7 +545,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
             this.includedBands       = includedBands;
             this.modelForBandSubset  = Objects.requireNonNull(modelForBandSubset);
             this.colorsForBandSubset = colorsForBandSubset;
-            this.fillValue           = getFillValue();
+            this.fillValues          = getFillValues(requestedBands);
             /*
              * All `TiledGridCoverage` instances can share the same cache if they read all tiles fully.
              * If they read only sub-regions or apply subsampling, then they will need their own cache.

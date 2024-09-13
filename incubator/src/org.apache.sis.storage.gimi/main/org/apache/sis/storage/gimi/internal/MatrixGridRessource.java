@@ -85,11 +85,6 @@ public abstract class MatrixGridRessource extends TiledGridResource {
     }
 
     @Override
-    protected Number getFillValue() throws DataStoreException {
-        return Double.NaN;
-    }
-
-    @Override
     public GridGeometry getGridGeometry() throws DataStoreException {
         return getTileMatrix().getTilingScheme().upsample(getTileSize());
     }

@@ -34,6 +34,7 @@ import java.lang.foreign.MemorySegment;
 import org.opengis.util.GenericName;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.privy.AffineTransform2D;
+import org.apache.sis.referencing.privy.ExtendedPrecisionMatrix;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -128,11 +129,12 @@ final class TiledResource extends TiledGridResource {
     private SampleModel sampleModel;
 
     /**
-     * The fill value, fetched when first requested.
+     * The fill values, fetched when first requested. An array of length 0 is used as a sentinel
+     * value meaning that the array has been computed and the result is {@code null}.
      *
-     * @see #getFillValue()
+     * @see #getFillValues(int[])
      */
-    private Number fillValue;
+    private Number[] fillValues;
 
     /**
      * Creates a new instance as a child of the given data set.
@@ -342,7 +344,26 @@ final class TiledResource extends TiledGridResource {
     }
 
     /**
+     * Always return {@code true} because <abbr>GDAL</abbr> provides a band-oriented <abbr>API</abbr>,
+     * where each band can always be accessed separately from other bands.
+     */
+    @Override
+    protected final boolean canSeparateBands() {
+        return true;
+    }
+
+    /**
+     * Always returns 1, because the complexity of reading only a sub-region is handled by <abbr>GDAL</abbr>.
+     */
+    @Override
+    protected final int getAtomSize(int dim) {
+        return 1;
+    }
+
+    /**
      * Creates the color model and sample model.
+     * This method uses cached values if the {@code bandIndices} argument is
+     * equal to the values given the last time that this method has been invoked.
      *
      * @param  bandIndices  indices of the selected bands.
      */
@@ -383,34 +404,19 @@ final class TiledResource extends TiledGridResource {
              * for all number of bands from 2 to 15.
              */
         }
-        int visibleBand = -1;
         if ((red | green | blue) >= 0) {
-            visibleBand = Math.min(Math.min(red, green), blue);
             colorModel = ColorModelFactory.createRGB(dataType.numBits, false, alpha >= 0);
             // TODO: needs custom color model if too many bands, or if order is not (A)RGB.
         } else if (palette != null) {
-            visibleBand = paletteIndex;
-            colorModel = ColorModelFactory.createIndexColorModel(selectedBands.length, visibleBand, palette, true, -1);
+            colorModel = ColorModelFactory.createIndexColorModel(selectedBands.length, paletteIndex, palette, true, -1);
         } else {
-            visibleBand = Math.max(gray, 0);
-            final Band band = selectedBands[visibleBand];
+            gray = Math.max(gray, 0);
+            final Band band = selectedBands[gray];
             final double min = band.getValue(gdal.getRasterMinimum, MemorySegment.NULL);
             final double max = band.getValue(gdal.getRasterMaximum, MemorySegment.NULL);
-            colorModel = ColorModelFactory.createGrayScale(dataType.imageType, selectedBands.length, visibleBand, min, max);
+            colorModel = ColorModelFactory.createGrayScale(dataType.imageType, selectedBands.length, gray, min, max);
         }
         sampleModel = new BandedSampleModel(dataType.imageType, width, height, selectedBands.length);
-        /*
-         * Also compute the fill value here because the current method needs the visible band.
-         * TODO: we should compute the fill value for all bands instead, and move this code to
-         * the `getFillValue()` method.
-         */
-        try (final Arena arena = Arena.ofConfined()) {
-            final MemorySegment flag = arena.allocate(ValueLayout.JAVA_INT);
-            final double value = selectedBands[visibleBand].getValue(gdal.getRasterNoDataValue, flag);
-            if (value != 0 && Band.isTrue(flag)) {
-                fillValue = value;
-            }
-        }
         selectedBandIndices = bandIndices;
     }
 
@@ -442,17 +448,35 @@ final class TiledResource extends TiledGridResource {
     }
 
     /**
-     * Returns the value to use for filling empty spaces in rasters,
-     * or {@code null} if none, not different than zero or not valid for the target data type.
+     * Returns the values to use for filling empty spaces in rasters, with one value per band.
+     * The returned array can be {@code null} if the fill values are not different than zero.
      * The zero value is excluded because tiles are already initialized to zero by default.
      */
     @Override
-    protected Number getFillValue() throws DataStoreException {
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    protected Number[] getFillValues(final int[] bandIndices) throws DataStoreException {
         synchronized (getSynchronizationLock()) {
-            if (fillValue == null) {
-                createColorAndSampleModel(null);
+            if (fillValues == null) {
+                @SuppressWarnings("LocalVariableHidesMemberVariable")
+                final var fillValues = new Number[] {(bandIndices != null) ? bandIndices.length : bands.length};
+                final GDAL gdal = parent.getProvider().GDAL();
+                boolean hasNonZero = false;
+                try (final Arena arena = Arena.ofConfined()) {
+                    final MemorySegment flag = arena.allocate(ValueLayout.JAVA_INT);
+                    for (int i=0; i<fillValues.length; i++) {
+                        final int b = (bandIndices != null) ? bandIndices[i] : i;
+                        final double value = bands[b].getValue(gdal.getRasterNoDataValue, flag);
+                        hasNonZero |= (value != 0);
+                        if (!Band.isTrue(flag)) {
+                            hasNonZero = false;
+                            break;
+                        }
+                    }
+                }
+                // Use `ExtendedPrecisionMatrix.CREATE_ZERO` as an arbitrary zero-length array.
+                this.fillValues = hasNonZero ? fillValues : ExtendedPrecisionMatrix.CREATE_ZERO;
             }
-            return fillValue;
+            return (fillValues.length != 0) ? fillValues : null;
         }
     }
 

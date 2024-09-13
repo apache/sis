@@ -396,7 +396,12 @@ class DataSubset extends TiledGridCoverage implements Localized {
                             final Raster r;
                             if (isEmpty) {
                                 if (emptyTiles == null) {
-                                    emptyTiles = TilePlaceholder.filled(model, (fillValue != null) ? fillValue : 0);
+                                    Number[] values = fillValues;
+                                    if (values == null) {
+                                        values = new Number[model.getNumBands()];
+                                        Arrays.fill(values, 0);
+                                    }
+                                    emptyTiles = TilePlaceholder.filled(model, values);
                                 }
                                 r = emptyTiles.create(origin);
                             } else {
@@ -508,9 +513,9 @@ class DataSubset extends TiledGridCoverage implements Localized {
          * If that assumption was not true, we would have to adjust `capacity`, `lower[0]` and `upper[0]`
          * (we may do that as an optimization in a future version).
          */
-        final HyperRectangleReader hr = new HyperRectangleReader(ImageUtilities.toNumberEnum(type.toDataBufferType()), input());
-        final Region region = new Region(size, lower, upper, subsampling);
-        final Buffer[] banks = new Buffer[numBanks];
+        final var hr     = new HyperRectangleReader(ImageUtilities.toNumberEnum(type.toDataBufferType()), input());
+        final var region = new Region(size, lower, upper, subsampling);
+        final var banks  = new Buffer[numBanks];
         for (int b=0; b<numBanks; b++) {
             if (b < byteCounts.length && length > byteCounts[b]) {
                 throw new DataStoreContentException(source.reader.resources().getString(
@@ -519,7 +524,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
             hr.setOrigin(offsets[b]);
             assert model.getSampleSize(b) == sampleSize;                        // See above comment.
             final Buffer bank = hr.readAsBuffer(region, getBankCapacity(1));
-            fillRemainingRows(bank);
+            fillRemainingRows(bank, b);
             banks[b] = bank;
         }
         final DataBuffer buffer = RasterFactory.wrap(type, banks);
@@ -532,15 +537,28 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * capacity if the current tile is smaller than the expected tile size (e.g. last tile is truncated).
      *
      * @param  bank  the buffer where to fill remaining rows.
+     * @param  band  index of the band to fill. Same as bank index in the particular case of {@code DataSubset} class.
      */
-    final void fillRemainingRows(final Buffer bank) {
-        if (fillValue != null) {
+    final void fillRemainingRows(final Buffer bank, final int band) {
+        if (fillValues != null) {
             final int limit    = bank.limit();
             final int capacity = bank.capacity();   // Equals `this.capacity` except for packed sample model.
             if (limit != capacity) {
-                Vector.create(bank.limit(capacity), ImageUtilities.isUnsignedType(model))
-                      .fill(limit, capacity, fillValue);
-                bank.limit(capacity);
+                final Vector v = Vector.create(bank.limit(capacity), ImageUtilities.isUnsignedType(model));
+                final Number f = fillValues[band];
+                /*
+                 * If all values are the same, we can delegate (indirectly) to an `Arrays.fill(…)` method.
+                 * Also, if the raster stores each band in a separated bank (banded sample model),
+                 * we have only one value to set in the given bank.
+                 */
+                if (ArraysExt.allEquals(fillValues, f) || model instanceof BandedSampleModel) {
+                    v.fill(limit, capacity, f);
+                } else {
+                    // Slow fallback for interleaved sample models.
+                    for (int i=limit; i<capacity; i++) {
+                        v.set(i, fillValues[i % fillValues.length]);
+                    }
+                }
             }
         }
     }

@@ -170,11 +170,12 @@ abstract class DataCube extends TiledGridResource implements ResourceOnFileSyste
      * Our netCDF reader does the same thing, and we want a consistent behavior of coverage readers.
      * </div>
      *
-     * If this method returns a non-null value, then {@link #getFillValue()} should return NaN.
+     * If this method returns a non-null value, then {@link #getFillValues(int[])} should return
+     * an array of NaN.
      *
      * @return value to be replaced by NaN at reading time, or {@code null} if none.
      *
-     * @see #getFillValue()
+     * @see #getFillValues(int[])
      */
     abstract Number getReplaceableFillValue();
 

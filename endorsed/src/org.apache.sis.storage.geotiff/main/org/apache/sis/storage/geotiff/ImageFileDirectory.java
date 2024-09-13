@@ -1778,13 +1778,21 @@ final class ImageFileDirectory extends DataCube {
     }
 
     /**
-     * Returns the value to use for filling empty spaces in the raster, or {@code null} if none,
+     * Returns the values to use for filling empty spaces in the raster, or {@code null} if none,
      * not different than zero or not valid for the target data type.
      * The zero value is excluded because tiles are already initialized to zero by default.
      */
     @Override
-    protected Number getFillValue() {
-        return (sampleFormat != FLOAT) ? getFillValue(false) : Double.NaN;
+    protected Number[] getFillValues(final int[] bands) {
+        final Number fill;
+        if (sampleFormat == FLOAT) {
+            fill = Double.NaN;
+        } else if ((fill = getFillValue(false)) == null) {
+            return null;
+        }
+        final var values = new Number[(bands != null) ? bands.length : getNumBands()];
+        Arrays.fill(values, fill);
+        return values;
     }
 
     /**
