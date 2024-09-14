@@ -43,7 +43,7 @@ import org.apache.sis.util.logging.Logging;
  * @author  Quentin Bialota (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class GDAL extends NativeFunctions implements Runnable {
+final class GDAL extends NativeFunctions {
     /**
      * The global instance, created when first needed.
      * This field shall be read and updated in a synchronized block.

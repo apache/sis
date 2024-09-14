@@ -54,6 +54,7 @@ import org.apache.sis.storage.base.ResourceOnFileSystem;
 import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.util.iso.DefaultNameFactory;
+import org.apache.sis.system.Cleaners;
 
 
 /**
@@ -159,7 +160,7 @@ public class GDALStore extends DataStore implements Aggregate, ResourceOnFileSys
         path     = connector.getStorageAs(Path.class);
         location = connector.commit(URI.class, GDALStoreProvider.NAME);
         opener   = Opener.read(provider, Opener.toURL(location, path), drivers);
-        closer   = GDALStoreProvider.CLEANERS.register(this, opener);   // Must do now in case of exception before completion.
+        closer   = Cleaners.SHARED.register(this, opener);      // Must do now in case of exception before completion.
         handle   = opener.handle;
     }
 
@@ -180,7 +181,7 @@ public class GDALStore extends DataStore implements Aggregate, ResourceOnFileSys
         location = parent.location;
         factory  = parent.factory;
         opener   = Opener.read(getProvider(), url, driver);
-        closer   = GDALStoreProvider.CLEANERS.register(this, opener);   // Must do now in case of exception before completion.
+        closer   = Cleaners.SHARED.register(this, opener);      // Must do now in case of exception before completion.
         handle   = opener.handle;
     }
 

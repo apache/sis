@@ -21,7 +21,6 @@ import java.util.Optional;
 import java.util.logging.Logger;
 import java.util.function.Function;
 import java.time.LocalDate;
-import java.lang.ref.Cleaner;
 import java.nio.file.Path;
 import org.opengis.parameter.ParameterDescriptor;
 import org.opengis.parameter.ParameterDescriptorGroup;
@@ -41,6 +40,7 @@ import org.apache.sis.io.stream.InternalOptionKey;
 import org.apache.sis.parameter.ParameterBuilder;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.setup.OptionKey;
+import org.apache.sis.system.Cleaners;
 import org.apache.sis.util.Version;
 import org.apache.sis.util.collection.TreeTable;
 
@@ -117,13 +117,6 @@ public class GDALStoreProvider extends DataStoreProvider {
     private LibraryStatus status;
 
     /**
-     * Actions to execute on garbage-collection of {@link GDALStore} or {@code GDALStoreProvider}.
-     *
-     * @todo Move in a package shared by the rest of Apache SIS.
-     */
-    static final Cleaner CLEANERS = Cleaner.create();
-
-    /**
      * Creates a new provider which will load the <abbr>GDAL</abbr> library from the default library path.
      */
     public GDALStoreProvider() {
@@ -139,7 +132,7 @@ public class GDALStoreProvider extends DataStoreProvider {
      */
     @SuppressWarnings("this-escape")
     public GDALStoreProvider(final Path library) {
-        CLEANERS.register(this, nativeFunctions = GDAL.load(library));
+        Cleaners.SHARED.register(this, nativeFunctions = GDAL.load(library));
         status = LibraryStatus.LOADED;
     }
 

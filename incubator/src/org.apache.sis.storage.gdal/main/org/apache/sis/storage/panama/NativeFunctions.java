@@ -18,6 +18,7 @@ package org.apache.sis.storage.panama;
 
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.concurrent.Callable;
 import java.lang.foreign.Arena;
 import java.lang.foreign.Linker;
 import java.lang.foreign.SymbolLookup;
@@ -35,7 +36,7 @@ import java.lang.reflect.UndeclaredThrowableException;
  *
  * @author  Martin Desruisseaux (Geomatys)
  */
-public abstract class NativeFunctions implements Runnable {
+public abstract class NativeFunctions implements Runnable, Callable<Object> {
     /**
      * Name of the library which has been loaded, for information purposes.
      */
@@ -168,6 +169,17 @@ public abstract class NativeFunctions implements Runnable {
         if (arena != null) {
             arena.close();
         }
+    }
+
+    /**
+     * Synonymous of {@link #run()}, used in shutdown hook.
+     *
+     * @return {@code null}.
+     */
+    @Override
+    public final Object call() {
+        run();
+        return null;
     }
 
     /**

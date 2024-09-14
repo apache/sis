@@ -26,6 +26,7 @@ import java.util.function.Function;
 import java.lang.foreign.Arena;
 import java.lang.foreign.SymbolLookup;
 import org.apache.sis.storage.DataStoreException;
+import org.apache.sis.system.Shutdown;
 import org.apache.sis.util.Exceptions;
 
 
@@ -162,7 +163,7 @@ create: try {
              *
              * TODO: unregister if the library had a fatal error and should not be used anymore.
              */
-            Runtime.getRuntime().addShutdownHook(new Thread(instance));
+            Shutdown.register(instance);
         } catch (IllegalCallerException e) {
             error  = e;
             status = LibraryStatus.UNAUTHORIZED;
