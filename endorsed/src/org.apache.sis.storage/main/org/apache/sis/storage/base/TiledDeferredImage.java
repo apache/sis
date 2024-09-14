@@ -45,7 +45,7 @@ final class TiledDeferredImage extends BatchComputedImage {
      * Iterator over tiles. The iterator position should not be modified;
      * instead subsets of this iterator will be created when needed.
      */
-    private final TiledGridCoverage.AOI iterator;
+    private final TiledGridCoverage.TileIterator iterator;
 
     /**
      * Creates a new tiled image.
@@ -55,7 +55,7 @@ final class TiledDeferredImage extends BatchComputedImage {
      * @param properties  image properties, or {@code null} if none.
      */
     TiledDeferredImage(final int[] imageSize, final int[] tileLower,
-                       final Map<String,Object> properties, final TiledGridCoverage.AOI iterator)
+                       final Map<String,Object> properties, final TiledGridCoverage.TileIterator iterator)
     {
         super(iterator.getCoverage().model, properties);
         this.width    = imageSize[TiledGridCoverage.X_DIMENSION];
@@ -100,7 +100,7 @@ final class TiledDeferredImage extends BatchComputedImage {
      */
     @Override
     protected Raster[] computeTiles(final Rectangle tiles) throws Exception {
-        final TiledGridCoverage.AOI aoi = iterator.subset(
+        final TiledGridCoverage.TileIterator aoi = iterator.subset(
                 new int[] {
                     tiles.x,
                     tiles.y

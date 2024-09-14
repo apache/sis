@@ -113,17 +113,18 @@ public abstract class MatrixGridRessource extends TiledGridResource {
         }
 
         @Override
-        protected Raster[] readTiles(AOI iterator) throws IOException, DataStoreException {
+        protected Raster[] readTiles(final TileIterator iterator) throws IOException, DataStoreException {
             final Raster[] result = new Raster[iterator.tileCountInQuery];
             synchronized (MatrixGridRessource.this.getSynchronizationLock()) {
                 do {
                     final Raster tile = iterator.getCachedTile();
                     if (tile != null) {
-                        result[iterator.getIndexInResultArray()] = tile;
+                        result[iterator.getTileIndexInResultArray()] = tile;
                     } else {
-                        long[] tileCoord = iterator.getTileCoordinatesInSource();
+                        long[] tileCoord = iterator.getTileCoordinatesInResource();
                         final RenderedImage image = getTileImage(tileCoord);
-                        result[iterator.getIndexInResultArray()] = image instanceof BufferedImage ? ((BufferedImage)image).getRaster() : image.getData();
+                        result[iterator.getTileIndexInResultArray()] =
+                                (image instanceof BufferedImage) ? ((BufferedImage)image).getRaster() : image.getData();
                     }
                 } while (iterator.next());
             }

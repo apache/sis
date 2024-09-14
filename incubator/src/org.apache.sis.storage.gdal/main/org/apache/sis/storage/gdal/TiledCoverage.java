@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.awt.Rectangle;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
+import java.lang.foreign.Arena;
+import java.lang.foreign.MemorySegment;
 import org.opengis.util.GenericName;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.TiledGridCoverage;
@@ -58,6 +60,13 @@ final class TiledCoverage extends TiledGridCoverage {
     }
 
     /**
+     * Returns the length of tiles in bytes.
+     */
+    private long getTileLength() {
+        return Math.ceilDiv(Math.multiplyFull(model.getWidth(), model.getHeight()) * owner.dataType.numBits, Byte.SIZE);
+    }
+
+    /**
      * Returns all tiles in the given area of interest. Tile indices (0,0) locates the tile in the upper-left corner
      * of this {@code TiledGridCoverage} (not necessarily the upper-left corner of the {@link TiledGridResource}).
      * The {@link Raster#getMinX()} and {@code getMinY()} coordinates of returned rasters
@@ -65,21 +74,29 @@ final class TiledCoverage extends TiledGridCoverage {
      *
      * @param  iterator  an iterator over the tiles that intersect the Area Of Interest specified by user.
      * @return tiles decoded from the {@link TiledGridResource}.
+     * @throws ArithmeticException if an integer overflow occurred.
      */
     @Override
-    protected Raster[] readTiles(final AOI iterator) throws IOException, DataStoreException {
+    protected Raster[] readTiles(final TileIterator iterator) throws IOException, DataStoreException {
         synchronized (owner.getSynchronizationLock()) {
-            final var result = new Raster[iterator.tileCountInQuery];
-            try {
+            final Band[] bands  = owner.bands(includedBands);
+            final GDAL   gdal   = owner.parent.getProvider().GDAL();
+            final var    result = new WritableRaster[iterator.tileCountInQuery];
+            try (Arena arena = Arena.ofConfined()) {
+                final MemorySegment transferBuffer = arena.allocate(getTileLength());
                 do {
                     final WritableRaster tile = iterator.createRaster();
-                    final Rectangle bounds = tile.getBounds();
-                    toFullResolution(bounds);
-                    owner.transfer(OpenFlag.READ, bounds, tile, includedBands);
-                    result[iterator.getIndexInResultArray()] = tile;
+                    final Rectangle target = iterator.getRegionInsideTile();
+                    target.x = Math.addExact(target.x, tile.getMinX());
+                    target.y = Math.addExact(target.y, tile.getMinY());
+                    final Rectangle source = pixelToResourceCoordinates(target);
+                    if (!Band.transfer(gdal, OpenFlag.READ, bands, owner.dataType, source, tile, target, transferBuffer)) {
+                        break;      // Exception will be thrown by `throwOnFailure(…)`
+                    }
+                    result[iterator.getTileIndexInResultArray()] = tile;
                 } while (iterator.next());
             } finally {
-                ErrorHandler.report(owner.parent, "read");      // Public caller of this method.
+                ErrorHandler.throwOnFailure(owner.parent, "read");      // Public caller of this method.
             }
             return result;
         }

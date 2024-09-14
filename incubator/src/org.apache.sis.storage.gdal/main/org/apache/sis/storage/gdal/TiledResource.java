@@ -23,11 +23,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Optional;
 import java.awt.Dimension;
-import java.awt.Rectangle;
 import java.awt.image.ColorModel;
 import java.awt.image.SampleModel;
 import java.awt.image.BandedSampleModel;
-import java.awt.image.Raster;
 import java.lang.foreign.Arena;
 import java.lang.foreign.ValueLayout;
 import java.lang.foreign.MemorySegment;
@@ -364,6 +362,24 @@ final class TiledResource extends TiledGridResource {
     }
 
     /**
+     * Returns the bands in the given indices.
+     *
+     * @param  bandIndices  indices of the selected bands, or {@code null} for all bands.
+     * @return specified bands. May be a reference to internal array: do not modify.
+     */
+    @SuppressWarnings("ReturnOfCollectionOrArrayField")
+    final Band[] bands(final int[] bandIndices) {
+        if (bandIndices == null) {
+            return bands;
+        }
+        var selectedBands = new Band[bandIndices.length];
+        for (int i=0; i<bandIndices.length; i++) {
+            selectedBands[i] = bands[bandIndices[i]];
+        }
+        return selectedBands;
+    }
+
+    /**
      * Creates the color model and sample model.
      * This method stores the results in {@link #sampleModel} and {@link #colorModel},
      * which are used by the callers as a cache when the {@code bandIndices} argument
@@ -373,18 +389,10 @@ final class TiledResource extends TiledGridResource {
      * through the {@link Subset} constructor. Therefore, this method relies on the
      * error handling setup by {@code read(…)}.
      *
-     * @param  bandIndices  indices of the selected bands.
+     * @param  bandIndices  indices of the selected bands, or {@code null} for all bands.
      */
     private void createColorAndSampleModel(final int[] bandIndices) throws DataStoreException {
-        final Band[] selectedBands;
-        if (bandIndices == null) {
-            selectedBands = bands;
-        } else {
-            selectedBands = new Band[bandIndices.length];
-            for (int i=0; i<bandIndices.length; i++) {
-                selectedBands[i] = bands[bandIndices[i]];
-            }
-        }
+        final Band[] selectedBands = bands(bandIndices);
         final GDAL gdal = parent.getProvider().GDAL();
         int[] palette = null;
         int paletteIndex = 0;
@@ -506,37 +514,6 @@ final class TiledResource extends TiledGridResource {
     @Override
     protected final int[] getTileSize() {
         return new int[] {tileWidth, tileHeight};
-    }
-
-    /**
-     * Transfers (reads or writes) sample values between <abbr>GDAL</abbr> raster and Java2D raster.
-     * The full area of the Java2D raster is transferred. It may corresponds to a sub-area of the GDAL raster.
-     *
-     * <h4>Prerequisites</h4>
-     * <ul>
-     *   <li>The Java2D raster shall use a {@link ComponentSampleModel}.</li>
-     *   <li>In read mode, the given raster shall be an instance of {@link WritableRaster}.</li>
-     * </ul>
-     *
-     * @param  rwFlag       {@link OpenFlag#READ} or {@link OpenFlag#WRITE}.
-     * @param  aoi          region of the image to read or write. (0,0) is the upper-left pixel.
-     * @param  raster       the Java2D raster where to store of fetch the values to read or write.
-     * @param  bandIndices  bands of sample values in the Java2D raster, or {@code null} for all.
-     * @return whether the operation was successful according <abbr>GDAL</abbr>.
-     * @throws ClassCastException if an above-documented prerequisite is not true.
-     * @throws DataStoreException if <var>GDAL</var> reported a warning or fatal error.
-     */
-    final boolean transfer(final int rwFlag, final Rectangle aoi, final Raster raster, final int[] bandIndices)
-            throws DataStoreException
-    {
-        final GDAL gdal = parent.getProvider().GDAL();
-        final int n = (bandIndices != null) ? bandIndices.length : bands.length;
-        boolean success = true;
-        for (int i=0; i<n; i++) {
-            final Band band = bands[(bandIndices != null) ? bandIndices[i] : i];
-            success &= band.transfer(gdal, rwFlag, this, aoi, raster, i);
-        }
-        return success;
     }
 
     /**

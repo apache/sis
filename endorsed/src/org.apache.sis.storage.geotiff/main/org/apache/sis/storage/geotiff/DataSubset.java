@@ -62,7 +62,7 @@ import static org.apache.sis.pending.jdk.JDK18.ceilDiv;
  * <h2>Cell Coordinates</h2>
  * When there is no subsampling, {@code DataSubset} uses the same cell coordinates as {@link DataCube}.
  * When there is a subsampling, cell coordinates in this subset are divided by the subsampling factors.
- * Conversion is done by {@link #toFullResolution(long, int)}.
+ * Conversion is done by {@link #pixelToResourceCoordinate(long, int)}.
  *
  * <h2>Tile Matrix Coordinates</h2>
  * In each {@code DataSubset}, indices of tiles starts at (0, 0, …). This class does not use
@@ -237,7 +237,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      */
     private static final class Tile extends Snapshot implements Comparable<Tile> {
         /**
-         * Value of {@link DataSubset#tileOffsets} at index {@link #indexInTileVector}.
+         * Value of {@link DataSubset#tileOffsets} at index {@link #getTileIndexInResource()}.
          * If pixel data are stored in different planes ("banks" in Java2D terminology),
          * then current implementation takes only the offset of the first bank to read.
          * This field contains the value that we want in increasing order.
@@ -256,7 +256,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
          */
         Tile(final AOI domain, final Vector tileOffsets, final int[] includedBanks, final int numTiles) {
             super(domain);
-            int p = indexInTileVector;
+            int p = getTileIndexInResource();
             if (includedBanks != null) {
                 p += includedBanks[0] * numTiles;
             }
@@ -275,7 +275,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
         final void notifyInputChannel(final Vector tileOffsets, final Vector tileByteCounts,
                                       int b, final int numTiles, final ChannelDataInput input)
         {
-            b = indexInTileVector + b * numTiles;
+            b = getTileIndexInResource() + b * numTiles;
             final long offset = tileOffsets.longValue(b);
             final long length = tileByteCounts.longValue(b);
             input.rangeOfInterest(offset, Numerics.saturatingAdd(offset, length));
@@ -292,7 +292,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
          */
         final void copyTileInfo(final Vector source, final long[] target, final int[] includedBanks, final int numTiles) {
             for (int j=0; j<target.length; j++) {
-                final int i = indexInTileVector + numTiles * (includedBanks != null ? includedBanks[j] : j);
+                final int i = getTileIndexInResource() + numTiles * (includedBanks != null ? includedBanks[j] : j);
                 target[j] = source.longValue(i);
             }
         }
@@ -324,7 +324,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      */
     @Override
     @SuppressWarnings("try")
-    protected final Raster[] readTiles(final AOI iterator) throws IOException, DataStoreException {
+    protected final Raster[] readTiles(final TileIterator iterator) throws IOException, DataStoreException {
         /*
          * Prepare an array for all tiles to be returned. Tiles that are already in memory will be stored
          * in this array directly. Other tiles will be declared in the `missings` array and loaded later.
@@ -341,7 +341,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
             do {
                 final Raster tile = iterator.getCachedTile();
                 if (tile != null) {
-                    result[iterator.getIndexInResultArray()] = tile;
+                    result[iterator.getTileIndexInResultArray()] = tile;
                 } else {
                     /*
                      * Tile not yet loaded. Add to a queue of tiles to load later.
@@ -407,7 +407,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
                             } else {
                                 r = readSlice(offsets, byteCounts, lower, upper, subsampling, origin);
                             }
-                            result[tile.indexInResultArray] = tile.cache(r);
+                            result[tile.getTileIndexInResultArray()] = tile.cache(r);
                         } else {
                             needsCompaction = true;
                         }

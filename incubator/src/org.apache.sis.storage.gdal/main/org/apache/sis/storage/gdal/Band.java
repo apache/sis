@@ -17,6 +17,7 @@
 package org.apache.sis.storage.gdal;
 
 import java.util.List;
+import java.nio.Buffer;
 import java.awt.Rectangle;
 import java.awt.image.ComponentSampleModel;
 import java.awt.image.DataBuffer;
@@ -234,7 +235,7 @@ final class Band {
     }
 
     /**
-     * Transfers (reads or writes) sample values between <abbr>GDAL</abbr> raster and Java2D raster for one band.
+     * Transfers (reads or writes) sample values between <abbr>GDAL</abbr> raster and Java2D raster.
      * The full area of the Java2D raster is transferred. It may corresponds to a sub-area of the GDAL raster.
      *
      * <h4>Prerequisites</h4>
@@ -243,52 +244,70 @@ final class Band {
      *   <li>In read mode, the given raster shall be an instance of {@link WritableRaster}.</li>
      * </ul>
      *
-     * @param  gdal    set of handles for invoking <abbr>GDAL</abbr> functions.
-     * @param  rwFlag  {@link OpenFlag#READ} or {@link OpenFlag#WRITE}.
-     * @param  image   the <abbr>GDAL</abbr> raster which contains the band to read or write.
-     * @param  aoi     region of the image to read or write. (0,0) is the upper-left pixel.
-     * @param  raster  the Java2D raster where to store of fetch the values to read or write.
-     * @param  band    band of sample values in the Java2D raster.
-     * @return whether the operation was successful according <abbr>GDAL</abbr>.
+     * <h4>Alternatives</h4>
+     * {@code GDALReadBlock} would have been a more efficient method, but we do not use it because the actual
+     * tile size given to this method is sometime different than the natural block size of the data set.
+     * This difference happens when <abbr>GDAL</abbr> uses block size as width as the image and 1 row in height.
+     * Such block sizes are inefficient for Apache <abbr>SIS</abbr>, therefore we request a different size.
+     *
+     * <p>A yet more efficient approach would be to use {@code GDALRasterBlock::GetLockedBlockRef(…)}
+     * for copying the data from the cache without intermediate buffer. But the latter is C++ API.
+     * We cannot use it as of Java 22.</p>
+     *
+     * @param  gdal             set of handles for invoking <abbr>GDAL</abbr> functions.
+     * @param  readWriteFlags   {@link OpenFlag#READ} or {@link OpenFlag#WRITE}.
+     * @param  selectedBands    all bands to read, in the same order as they appear in the given Java2D raster.
+     * @param  resourceType     the <abbr>GDAL</abbr> data type of all specified bands, as stored in the resource.
+     * @param  resourceBounds   region to read or write in resource coordinates. (0,0) is the upper-left pixel.
+     * @param  raster           the Java2D raster where to store of fetch the values to read or write.
+     * @param  rasterBounds     region to write or read in raster coordinates.
+     * @param  transferBuffer   a temporary buffer used for copying data.
+     * @return whether  the operation was successful according <abbr>GDAL</abbr>.
      * @throws ClassCastException if an above-documented prerequisite is not true.
      * @throws DataStoreException if <var>GDAL</var> reported a warning or fatal error.
      */
-    final boolean transfer(final GDAL gdal, final int rwFlag,
-                           final TiledResource image, final Rectangle aoi,     // GDAL model
-                           final Raster raster, final int band)                // Java2D model
+    static boolean transfer(final GDAL          gdal,
+                            final int           readWriteFlags,
+                            final Band[]        selectedBands,
+                            final DataType      resourceType,
+                            final Rectangle     resourceBounds,
+                            final Raster        raster,
+                            final Rectangle     rasterBounds,
+                            final MemorySegment transferBuffer)
             throws DataStoreException
     {
-        if (rwFlag == OpenFlag.READ && !(raster instanceof WritableRaster)) {
+        if (readWriteFlags == OpenFlag.READ && !(raster instanceof WritableRaster)) {
             throw new ClassCastException();
         }
-        final var model    = (ComponentSampleModel) raster.getSampleModel();   // See prerequisites in Javadoc.
-        final var data     = raster.getDataBuffer();
-        final int dataSize = DataBuffer.getDataTypeSize(data.getDataType()) / Byte.SIZE;
-        final var buffer   = RasterFactory.wrapAsBuffer(data, model.getBankIndices()[band]);
-        buffer.position(model.getOffset(raster.getMinX() - raster.getSampleModelTranslateX(),
-                                        raster.getMinY() - raster.getSampleModelTranslateY(), band));
-        final int err;
-        try (Arena arena = Arena.ofConfined()) {
-            /*
-             * TODO: we wanted to use `MemorySegment.ofBuffer` but it does not work.
-             * We get an "IllegalArgumentException: Heap segment not allowed" error.
-             * For now we copy in a temporary array as a workaround, but it needs to
-             * be replaced by a call to GetLockedBlockRef.
-             */
-            MemorySegment tmp = arena.allocate(Math.multiplyFull(buffer.remaining(), dataSize));
-            err = (int) gdal.rasterIO.invokeExact(handle, rwFlag,
-                    aoi.x, aoi.y, aoi.width, aoi.height,
-                    tmp,
-                    raster.getWidth(),
-                    raster.getHeight(),
-                    image.dataType.forDataBufferType(data.getDataType()).ordinal(),
-                    Math.multiplyExact(dataSize, model.getPixelStride()),
-                    Math.multiplyExact(dataSize, model.getScanlineStride()));
-
-            MemorySegment.ofBuffer(buffer).copyFrom(tmp);
-        } catch (Throwable e) {
-            throw GDAL.propagate(e);
+        final var   sampleModel = (ComponentSampleModel) raster.getSampleModel();   // See prerequisites in Javadoc.
+        final var   dataBuffer  = raster.getDataBuffer();
+        final int   dataSize    = DataBuffer.getDataTypeSize(dataBuffer.getDataType()) / Byte.SIZE;
+        final int[] bankIndices = sampleModel.getBankIndices();
+        for (int i=0; i < selectedBands.length; i++) {
+            assert raster.getBounds().contains(rasterBounds) : rasterBounds;
+            final Buffer buffer = RasterFactory.wrapAsBuffer(dataBuffer, bankIndices[i])
+                    .position(sampleModel.getOffset(
+                            rasterBounds.x - raster.getSampleModelTranslateX(),
+                            rasterBounds.y - raster.getSampleModelTranslateY(), i));
+            final int err;
+            try {
+                assert transferBuffer.byteSize() >= Math.multiplyFull(rasterBounds.width, rasterBounds.height) * dataSize;
+                err = (int) gdal.rasterIO.invokeExact(selectedBands[i].handle, readWriteFlags,
+                        resourceBounds.x, resourceBounds.y, resourceBounds.width, resourceBounds.height,
+                        transferBuffer,
+                        rasterBounds.width,
+                        rasterBounds.height,
+                        resourceType.forDataBufferType(dataBuffer.getDataType()).ordinal(),
+                        Math.multiplyExact(dataSize, sampleModel.getPixelStride()),
+                        Math.multiplyExact(dataSize, sampleModel.getScanlineStride()));
+            } catch (Throwable e) {
+                throw GDAL.propagate(e);
+            }
+            if (!ErrorHandler.checkCPLErr(err)) {
+                return false;
+            }
+            MemorySegment.ofBuffer(buffer).copyFrom(transferBuffer);
         }
-        return ErrorHandler.checkCPLErr(err);
+        return true;
     }
 }
