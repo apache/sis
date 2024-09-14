@@ -158,22 +158,20 @@ final class Opener implements Runnable {
     /**
      * Invoked by {@link java.lang.ref.Cleaner} when the native resource is ready to be closed.
      * This method shall not be invoked explicitly. The {@code Cleaner} <abbr>API</abbr> ensures
-     * that this method will be invoked exactly once (except maybe on application termination).
+     * that this method will be invoked exactly once.
      */
     @Override
     public void run() {
         owner.tryGDAL("close").ifPresent((gdal) -> {
             final int err;
             try {
-                // The constructor verified that `close` is non-null.
                 err = (int) gdal.close.invokeExact(handle);
             } catch (Throwable e) {
                 throw GDAL.propagate(e);
             }
-            /*
-             * TODO: report the error, maybe in a ThreadLocal. We may need a Threadlocal
-             * anyway if we provide a error handle with CPLSetErrorHandler.
-             */
+            if (err != 0) {
+                ErrorHandler.errorOccurred(err);
+            }
         });
     }
 }

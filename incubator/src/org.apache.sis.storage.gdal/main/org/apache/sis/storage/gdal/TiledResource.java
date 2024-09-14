@@ -201,7 +201,6 @@ final class TiledResource extends TiledGridResource {
         try (Arena arena = Arena.ofConfined()) {
             final MemorySegment pnXSize = arena.allocate(ValueLayout.JAVA_INT, 2);
             final MemorySegment pnYSize = pnXSize.asSlice(Integer.BYTES);
-            gdal.errorReset();
             final int count = (int) gdal.getRasterCount.invokeExact(dataset);
             for (int i=0; i<count; i++) {
                 final var band = (MemorySegment) gdal.getRasterBand.invokeExact(dataset, i+1);
@@ -273,7 +272,7 @@ final class TiledResource extends TiledGridResource {
     @Override
     public GridGeometry getGridGeometry() throws DataStoreException {
         synchronized (getSynchronizationLock()) {
-            if (geometry == null) {
+            if (geometry == null) try {
                 final MemorySegment handle = parent.handle();          // Handle to the GDAL dataset.
                 final GDAL gdal = parent.getProvider().GDAL();
                 final CoordinateReferenceSystem crs = parent.parseCRS(gdal, "getGridGeometry");
@@ -293,7 +292,7 @@ final class TiledResource extends TiledGridResource {
                     } catch (Throwable e) {
                         throw GDAL.propagate(e);
                     }
-                    if (gdal.checkCPLErr(parent, "getGridGeometry", false, err)) {
+                    if (ErrorHandler.checkCPLErr(err)) {
                         gridToCRS = new AffineTransform2D(
                                 m.get(layout, Double.BYTES * 1),
                                 m.get(layout, Double.BYTES * 4),
@@ -314,6 +313,8 @@ final class TiledResource extends TiledGridResource {
                 } catch (NullPointerException | IllegalArgumentException e) {
                     throw new DataStoreReferencingException(e);
                 }
+            } finally {
+                ErrorHandler.report(parent, "getGridGeometry");
             }
             return geometry;
         }
@@ -328,7 +329,7 @@ final class TiledResource extends TiledGridResource {
     @SuppressWarnings("ReturnOfCollectionOrArrayField")   // Because unmodifable.
     public List<SampleDimension> getSampleDimensions() throws DataStoreException {
         synchronized (getSynchronizationLock()) {
-            if (sampleDimensions == null) {
+            if (sampleDimensions == null) try {
                 final GDAL gdal = parent.getProvider().GDAL();
                 final var sd = new SampleDimension[bands.length];
                 try (Arena arena = Arena.ofConfined()) {
@@ -338,6 +339,8 @@ final class TiledResource extends TiledGridResource {
                     }
                 }
                 sampleDimensions = List.of(sd);
+            } finally {
+                ErrorHandler.report(parent, "getSampleDimensions");
             }
             return sampleDimensions;
         }
@@ -362,8 +365,13 @@ final class TiledResource extends TiledGridResource {
 
     /**
      * Creates the color model and sample model.
-     * This method uses cached values if the {@code bandIndices} argument is
-     * equal to the values given the last time that this method has been invoked.
+     * This method stores the results in {@link #sampleModel} and {@link #colorModel},
+     * which are used by the callers as a cache when the {@code bandIndices} argument
+     * is equal to the values given the last time that this method has been invoked.
+     *
+     * All calls to this method should be indirect calls from {@link #read read(…)}
+     * through the {@link Subset} constructor. Therefore, this method relies on the
+     * error handling setup by {@code read(…)}.
      *
      * @param  bandIndices  indices of the selected bands.
      */
@@ -422,6 +430,9 @@ final class TiledResource extends TiledGridResource {
 
     /**
      * Returns the Java2D color model for rendering images.
+     * All calls to this method should be indirect calls from {@link #read read(…)}
+     * through the {@link Subset} constructor. Therefore, this method relies on the
+     * error handling setup by {@code read(…)}.
      */
     @Override
     protected ColorModel getColorModel(final int[] bandIndices) throws DataStoreException {
@@ -436,6 +447,10 @@ final class TiledResource extends TiledGridResource {
     /**
      * Returns the sample model for tiles at full resolution with all their bands.
      * The raster size is the {@linkplain #getTileSize() tile size} as stored in the resource.
+     *
+     * All calls to this method should be indirect calls from {@link #read read(…)} through the
+     * {@link Subset} constructor. Therefore, this method relies on the error handling setup by
+     * {@code read(…)}.
      */
     @Override
     protected SampleModel getSampleModel(final int[] bandIndices) throws DataStoreException {
@@ -451,6 +466,10 @@ final class TiledResource extends TiledGridResource {
      * Returns the values to use for filling empty spaces in rasters, with one value per band.
      * The returned array can be {@code null} if the fill values are not different than zero.
      * The zero value is excluded because tiles are already initialized to zero by default.
+     *
+     * All calls to this method should be indirect calls from {@link #read read(…)} through
+     * the {@link Subset} constructor. Therefore, this method relies on the error handling
+     * setup by {@code read(…)}.
      */
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")
@@ -503,18 +522,21 @@ final class TiledResource extends TiledGridResource {
      * @param  aoi          region of the image to read or write. (0,0) is the upper-left pixel.
      * @param  raster       the Java2D raster where to store of fetch the values to read or write.
      * @param  bandIndices  bands of sample values in the Java2D raster, or {@code null} for all.
+     * @return whether the operation was successful according <abbr>GDAL</abbr>.
      * @throws ClassCastException if an above-documented prerequisite is not true.
      * @throws DataStoreException if <var>GDAL</var> reported a warning or fatal error.
      */
-    final void transfer(final int rwFlag, final Rectangle aoi, final Raster raster, final int[] bandIndices)
+    final boolean transfer(final int rwFlag, final Rectangle aoi, final Raster raster, final int[] bandIndices)
             throws DataStoreException
     {
         final GDAL gdal = parent.getProvider().GDAL();
         final int n = (bandIndices != null) ? bandIndices.length : bands.length;
+        boolean success = true;
         for (int i=0; i<n; i++) {
             final Band band = bands[(bandIndices != null) ? bandIndices[i] : i];
-            band.transfer(gdal, rwFlag, this, aoi, raster, i);
+            success &= band.transfer(gdal, rwFlag, this, aoi, raster, i);
         }
+        return success;
     }
 
     /**
@@ -528,9 +550,13 @@ final class TiledResource extends TiledGridResource {
     @Override
     public GridCoverage read(final GridGeometry domain, final int... ranges) throws DataStoreException {
         synchronized (getSynchronizationLock()) {
-            final var subset = new Subset(domain, ranges);
-            final var result = new TiledCoverage(this, subset);
-            return preload(result);
+            try {
+                final var subset = new Subset(domain, ranges);
+                final var result = new TiledCoverage(this, subset);
+                return preload(result);
+            } finally {
+                ErrorHandler.report(parent, "read");
+            }
         }
     }
 }

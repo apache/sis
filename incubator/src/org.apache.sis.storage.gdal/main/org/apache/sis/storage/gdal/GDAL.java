@@ -228,31 +228,6 @@ final class GDAL extends NativeFunctions implements Runnable {
     final MethodHandle rasterIO;
 
     /**
-     * <abbr>GDAL</abbr> {@code void CPLErrorReset(void)}.
-     * Erase any traces of previous errors. Used to ensure that an error which has been
-     * recovered from  does not appear to be still in play with high level functions.
-     *
-     * @see #errorReset()
-     */
-    private final MethodHandle errorReset;
-
-    /**
-     * <abbr>GDAL</abbr> {@code CPLErr CPLGetLastErrorType(void)}.
-     * Fetches the last error type that hasn't been cleared by {@link #errorReset}.
-     *
-     * @see #checkCPLErr(GDALStore, String, boolean)
-     */
-    private final MethodHandle getLastErrorType;
-
-    /**
-     * <abbr>GDAL</abbr> {@code const char *CPLGetLastErrorMsg(void)}.
-     * Fetches the last error message that hasn't been cleared by {@link #errorReset}
-     *
-     * @todo Replace by a call to {@code CPLSetErrorHandler}.
-     */
-    final MethodHandle getLastErrorMsg;
-
-    /**
      * Creates the handles for all <abbr>GDAL</abbr> functions which will be needed.
      *
      * @param  loader  the object used for loading the library.
@@ -350,15 +325,12 @@ final class GDAL extends NativeFunctions implements Runnable {
                 ValueLayout.JAVA_INT,       // int nPixelSpace
                 ValueLayout.JAVA_INT));     // int nLineSpace
 
-        // Error handling
-        errorReset       = lookup(linker, "CPLErrorReset",       FunctionDescriptor.ofVoid());
-        getLastErrorType = lookup(linker, "CPLGetLastErrorType", FunctionDescriptor.of(ValueLayout.JAVA_INT));
-        getLastErrorMsg  = lookup(linker, "CPLGetLastErrorMsg",  FunctionDescriptor.of(ValueLayout.ADDRESS));
+        // Set error handling first in order to redirect initialization warnings.
+        setErrorHandler(linker, null);
 
         // Initialize GDAL after we found all functions.
         if (!invoke("GDALAllRegister")) {
-            final LogRecord record = new LogRecord(Level.WARNING, "Could not initialize GDAL.");
-            log("open", record);
+            log("open", new LogRecord(Level.WARNING, "Could not initialize GDAL."));
         }
     }
 
@@ -439,6 +411,41 @@ final class GDAL extends NativeFunctions implements Runnable {
     }
 
     /**
+     * Installs a function for redirecting <abbr>GDAL</abbr> errors to Apache <abbr>SIS</abbr> loggers.
+     * The handler is set by a call to {@code CPLErrorHandler CPLSetErrorHandler(CPLErrorHandler)} where
+     * {@code CPLErrorHandler} is {@code void (*CPLErrorHandler)(CPLErr, CPLErrorNum, const char*)}.
+     *
+     * <p><b>The error handler is valid only during the lifetime of the {@linkplain #arena() arena}.</b>
+     * The error handle shall be uninstalled before the arena is closed.</p>
+     *
+     * @param  linker  the linker to use. Should be {@link Linker#nativeLinker()}.
+     * @param  target  the function to set as an error handler, or {@link MemorySegment#NULL} for the GDAL default.
+     *                 If {@code null}, the function handle will be created by this method.
+     * @return the previous error handler, or {@link MemorySegment#NULL} it it was the <abbr>GDAL</abbr> default.
+     *
+     * @see #run()
+     * @see GDALStoreProvider#fatalError()
+     */
+    @SuppressWarnings("restricted")
+    private MemorySegment setErrorHandler(final Linker linker, MemorySegment target) {
+        final MemorySegment setter = symbols.find("CPLSetErrorHandler").orElse(null);
+        if (setter == null) {
+            return MemorySegment.NULL;
+        }
+        if (target == null) {
+            target = linker.upcallStub(ErrorHandler.getMethod(),
+                    FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT, ValueLayout.JAVA_INT, ValueLayout.ADDRESS), arena());
+        }
+        final MethodHandle handle = linker.downcallHandle(setter,
+                FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS));
+        try {
+            return (MemorySegment) handle.invokeExact(target);
+        } catch (Throwable e) {
+            throw propagate(e);
+        }
+    }
+
+    /**
      * Logs the given record as if was produced by the {@link GDALStoreProvider}, which is the public class.
      *
      * @param  caller  the method name to report as the caller.
@@ -490,99 +497,6 @@ final class GDAL extends NativeFunctions implements Runnable {
     }
 
     /**
-     * Resets the <abbr>GDAL</abbr> Common Portability Library (<abbr>CPL</abbr>) error code.
-     * This method should be invoked before functions returning a value other than {@code CPLErr}.
-     *
-     * @see #checkCPLErr(GDALStore, String, boolean, int)
-     */
-    final void errorReset() throws Throwable {
-        errorReset.invokeExact();
-    }
-
-    /**
-     * Handles the <abbr>GDAL</abbr> Common Portability Library error code of the last invoked function.
-     * This method assumes that no other <var>GDAL</var> function has been invoked since the last error.
-     *
-     * <h4>Race conditions</h4>
-     * <em>Despite synchronization, this method is not thread-safe.</em> If another {@code GDALStore}
-     * is performing an action concurrently, even on unrelated data, the GDAL message may be confusing.
-     *
-     * @param  caller     the store that performed a <abbr>GDAL</abbr> operation.
-     * @param  method     the {@code GDALStore} method executed, or null for throwing an exception instead of logging.
-     * @param  mandatory  whether a failure should throw an exception. If not, only a warning will be logged.
-     * @return whether the operation was successful, possibly with warnings.
-     * @throws DataStoreException if the error category is {@code CE_Failure} and {@code mandatory} is true,
-     *         or if the error category is {@code CE_Fatal} or higher.
-     *
-     * @see #errorReset()
-     */
-    final boolean checkCPLErr(final GDALStore caller, final String method, final boolean mandatory)
-            throws DataStoreException
-    {
-        final int err;
-        try {
-            err = (int) getLastErrorType.invokeExact();
-        } catch (Throwable e) {
-            throw propagate(e);
-        }
-        return checkCPLErr(caller, method, mandatory, err);
-    }
-
-    /**
-     * Handles a <abbr>GDAL</abbr> Common Portability Library error code ({@code CPLErr}).
-     * The possible values are:
-     *
-     * <ul>
-     *   <li>{@code CE_None}    = 0: No error or warning occurred.</li>
-     *   <li>{@code CE_Debug}   = 1: The result contains debug information that users can ignore.</li>
-     *   <li>{@code CE_Warning} = 2: The result contains informational warning.</li>
-     *   <li>{@code CE_Failure} = 3: The action failed.</li>
-     *   <li>{@code CE_Fatal}   = 4: A fatal error has occurred and <abbr>GDAL</abbr> should not be used anymore.
-     *       The default GDAL behavior is to report errors to {@code stderr} and to abort the application.</li>
-     * </ul>
-     *
-     * If the error level is debug or warning, a message is sent to the {@linkplain #listeners}.
-     * If the error level is failure or fatal, a {@link DataStoreException} is thrown.
-     *
-     * @param  caller     the store that performed a <abbr>GDAL</abbr> operation.
-     * @param  method     the {@code GDALStore} method executed.c
-     * @param  mandatory  whether a failure should throw an exception. If not, only a warning will be logged.
-     * @param  err        the {@code CPLErr} enumeration value returned by <abbr>GDAL</abbr>.
-     * @return whether the operation was successful, possibly with warnings.
-     * @throws DataStoreException if the error category is {@code CE_Failure} and {@code mandatory} is true,
-     *         or if the error category is {@code CE_Fatal} or higher.
-     *
-     * @see #errorReset()
-     */
-    final boolean checkCPLErr(final GDALStore caller, final String method, final boolean mandatory, final int err)
-            throws DataStoreException
-    {
-        final Level level;
-        switch (err) {
-            case 0: return true;
-            case 1: level = Level.FINE; break;
-            case 2: level = Level.WARNING; break;
-            case 3: level = mandatory ? null : Level.WARNING; break;
-            default: {
-                caller.getProvider().fatalError();
-                throw new DataStoreException("GDAL fatal error. Cannot use GDAL anymore.");
-            }
-        }
-        MemorySegment msg = null;
-        try {
-            msg = (MemorySegment) getLastErrorMsg.invokeExact();
-        } catch (Throwable e) {
-            throw propagate(e);
-        }
-        final String message = toString(msg);
-        if (level == null) {
-            throw new DataStoreException(message);
-        }
-        caller.warning(method, new LogRecord(level, message));
-        return err < 3;
-    }
-
-    /**
      * Unloads the <abbr>GDAL</abbr> library. If the arena is global,
      * then this method should not be invoked before <abbr>JVM</abbr> shutdown.
      * Otherwise, this method is invoked when {@link GDALStoreProvider} is garbage-collected.
@@ -590,6 +504,8 @@ final class GDAL extends NativeFunctions implements Runnable {
     @Override
     public void run() {
         try {
+            // Clear the error handler because the arena will be closed.
+            setErrorHandler(Linker.nativeLinker(), MemorySegment.NULL);
             invoke("GDALDestroy");
         } finally {
             super.run();

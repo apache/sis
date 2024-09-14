@@ -70,13 +70,17 @@ final class TiledCoverage extends TiledGridCoverage {
     protected Raster[] readTiles(final AOI iterator) throws IOException, DataStoreException {
         synchronized (owner.getSynchronizationLock()) {
             final var result = new Raster[iterator.tileCountInQuery];
-            do {
-                final WritableRaster tile = iterator.createRaster();
-                final Rectangle bounds = tile.getBounds();
-                toFullResolution(bounds);
-                owner.transfer(OpenFlag.READ, bounds, tile, includedBands);
-                result[iterator.getIndexInResultArray()] = tile;
-            } while (iterator.next());
+            try {
+                do {
+                    final WritableRaster tile = iterator.createRaster();
+                    final Rectangle bounds = tile.getBounds();
+                    toFullResolution(bounds);
+                    owner.transfer(OpenFlag.READ, bounds, tile, includedBands);
+                    result[iterator.getIndexInResultArray()] = tile;
+                } while (iterator.next());
+            } finally {
+                ErrorHandler.report(owner.parent, "read");      // Public caller of this method.
+            }
             return result;
         }
     }

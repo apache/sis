@@ -109,7 +109,6 @@ final class Band {
         boolean hasRange, hasNoData, convert;
         final MemorySegment names, uom;
         try {
-            gdal.errorReset();
             band    = (int)    gdal.getBandNumber       .invokeExact(handle);
             minimum = (double) gdal.getRasterMinimum    .invokeExact(handle, flag); hasRange  = isTrue(flag);
             maximum = (double) gdal.getRasterMaximum    .invokeExact(handle, flag); hasRange &= isTrue(flag);
@@ -121,7 +120,6 @@ final class Band {
         } catch (Throwable e) {
             throw GDAL.propagate(e);
         }
-        gdal.checkCPLErr(parent, "getSampleDimensions", false);
         /*
          * If a unit of measurement is given, we consider that the band is quantitative
          * even if the transfer function (scale and offset) was not specified. The GDAL
@@ -251,12 +249,13 @@ final class Band {
      * @param  aoi     region of the image to read or write. (0,0) is the upper-left pixel.
      * @param  raster  the Java2D raster where to store of fetch the values to read or write.
      * @param  band    band of sample values in the Java2D raster.
+     * @return whether the operation was successful according <abbr>GDAL</abbr>.
      * @throws ClassCastException if an above-documented prerequisite is not true.
      * @throws DataStoreException if <var>GDAL</var> reported a warning or fatal error.
      */
-    final void transfer(final GDAL gdal, final int rwFlag,
-                        final TiledResource image, final Rectangle aoi,     // GDAL model
-                        final Raster raster, final int band)                // Java2D model
+    final boolean transfer(final GDAL gdal, final int rwFlag,
+                           final TiledResource image, final Rectangle aoi,     // GDAL model
+                           final Raster raster, final int band)                // Java2D model
             throws DataStoreException
     {
         if (rwFlag == OpenFlag.READ && !(raster instanceof WritableRaster)) {
@@ -290,6 +289,6 @@ final class Band {
         } catch (Throwable e) {
             throw GDAL.propagate(e);
         }
-        gdal.checkCPLErr(image.parent, (rwFlag == OpenFlag.READ) ? "read" : "write", false, err);
+        return ErrorHandler.checkCPLErr(err);
     }
 }

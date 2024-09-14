@@ -220,6 +220,8 @@ public class GDALStore extends DataStore implements Aggregate, ResourceOnFileSys
             driver = (MemorySegment) gdal.getDatasetDriver.invokeExact(handle());
         } catch (Throwable e) {
             throw GDAL.propagate(e);
+        } finally {
+            ErrorHandler.throwOnFailure(this, "getDriver");
         }
         // Should never be null, but verify as a safety.
         return GDAL.isNull(driver) ? null : new Driver(getProvider(), driver);
@@ -305,19 +307,16 @@ public class GDALStore extends DataStore implements Aggregate, ResourceOnFileSys
     @Override
     @SuppressWarnings("ReturnOfCollectionOrArrayField")   // Because unmodifable.
     public synchronized Collection<? extends Resource> components() throws DataStoreException {
-        if (components == null) {
+        if (components == null) try {
             final GDAL gdal = getProvider().GDAL();
             final List<Subdataset> subdatasets = groupBySubset(gdal);
             if (subdatasets != null && !subdatasets.isEmpty()) {
                 components = subdatasets;
             } else {
-                final TiledResource[] rasters = TiledResource.groupBySizeAndType(this, gdal, handle);
-                if (gdal.checkCPLErr(this, "components", true)) {
-                    components = UnmodifiableArrayList.wrap(rasters);
-                } else {
-                    components = List.of();
-                }
+                components = UnmodifiableArrayList.wrap(TiledResource.groupBySizeAndType(this, gdal, handle));
             }
+        } finally {
+            ErrorHandler.throwOnFailure(this, "components");
         }
         return components;
     }
@@ -427,18 +426,15 @@ public class GDALStore extends DataStore implements Aggregate, ResourceOnFileSys
     final CoordinateReferenceSystem parseCRS(final GDAL gdal, final String caller) throws DataStoreException {
         MemorySegment result = null;
         try {
-            gdal.errorReset();
             result = (MemorySegment) gdal.getSpatialRef.invokeExact(handle());
         } catch (Throwable e) {
             throw GDAL.propagate(e);
         }
-        if (gdal.checkCPLErr(this, caller, false)) {
-            final String wkt = GDAL.toString(result);
-            if (wkt != null && !wkt.isBlank()) try {
-                return (CoordinateReferenceSystem) wktFormat().parseObject(wkt);
-            } catch (ParseException | ClassCastException e) {
-                warning(caller, "Cannot parse the CRS of " + getDisplayName(), e);
-            }
+        final String wkt = GDAL.toString(result);
+        if (wkt != null && !wkt.isBlank()) try {
+            return (CoordinateReferenceSystem) wktFormat().parseObject(wkt);
+        } catch (ParseException | ClassCastException e) {
+            warning(caller, "Cannot parse the CRS of " + getDisplayName(), e);
         }
         return null;
     }
@@ -487,12 +483,19 @@ public class GDALStore extends DataStore implements Aggregate, ResourceOnFileSys
      */
     @Override
     public void close() throws DataStoreException {
-        try {
-            listeners.close();      // Should never fail.
-        } finally {
-            synchronized (this) {
-                handle = null;
-                closer.clean();
+        final class Flush implements AutoCloseable {
+            @Override public void close() throws DataStoreException {
+                ErrorHandler.throwOnFailure(GDALStore.this, "close");
+            }
+        }
+        try (Flush _ = new Flush()) {
+            try {
+                listeners.close();
+            } finally {
+                synchronized (this) {
+                    handle = null;
+                    closer.clean();     // Important to always invoke, even if an exception occurred before.
+                }
             }
         }
     }

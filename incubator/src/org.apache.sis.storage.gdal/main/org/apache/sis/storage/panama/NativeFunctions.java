@@ -44,6 +44,8 @@ public abstract class NativeFunctions implements Runnable {
     /**
      * The arena used for loading the library, or {@code null} for the global arena.
      * This is the arena to close for unloading the library.
+     *
+     * @see #arena()
      */
     private final Arena arena;
 
@@ -61,6 +63,13 @@ public abstract class NativeFunctions implements Runnable {
         libraryName = loader.filename;
         arena       = loader.arena;
         symbols     = loader.symbols;
+    }
+
+    /**
+     * Returns the arena used for loading the library.
+     */
+    protected final Arena arena() {
+        return (arena != null) ? arena : Arena.global();
     }
 
     /**
