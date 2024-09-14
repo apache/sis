@@ -24,6 +24,7 @@ import java.lang.foreign.Arena;
 import java.lang.foreign.ValueLayout;
 import java.lang.foreign.MemorySegment;
 import org.apache.sis.util.privy.Constants;
+import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 
 
@@ -39,7 +40,7 @@ import org.apache.sis.storage.DataStoreException;
  * @author  Quentin Bialota (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class Opener implements Runnable {
+final class Opener implements Runnable, AutoCloseable {
     /**
      * Schemes of URLs to open with <var>GDAL</var> Virtual File Systems backed by <abbr>CURL</abbr>.
      */
@@ -153,6 +154,41 @@ final class Opener implements Runnable {
             array.setAtIndex(ValueLayout.ADDRESS, i, arena.allocateFrom(values[i]));
         }
         return array;
+    }
+
+    /**
+     * Returns a metadata item from the driver.
+     *
+     * @param  gdal  set of handles for invoking <abbr>GDAL</abbr> functions.
+     * @param  name  the key for the metadata item to fetch.
+     * @return the metadata given by the driver, or {@code null} if unspecified.
+     * @throws DataStoreException if an error occurred while invoking a <abbr>GDAL</abbr> function.
+     */
+    final String getMetadataItem(final GDAL gdal, final String name) throws DataStoreException {
+        try (var arena = Arena.ofConfined()) {
+            final MemorySegment driver = (MemorySegment) gdal.getDatasetDriver.invokeExact(handle);
+            if (!GDAL.isNull(driver)) {
+                MemorySegment n = arena.allocateFrom(name);
+                MemorySegment r = (MemorySegment) gdal.getMetadataItem.invokeExact(driver, n, MemorySegment.NULL);
+                return GDAL.toString(r);
+            }
+        } catch (Throwable e) {
+            throw GDAL.propagate(e);
+        } finally {
+            ErrorHandler.throwOnFailure(null, "probeContent");
+        }
+        return null;
+    }
+
+    /**
+     * Closes the <abbr>GDAL</abbr> data set. This method shall be invoked
+     * by {@link GDALStoreProvider#probeContent(StorageConnector)} only.
+     * {@link GDALStore} has its own close method.
+     */
+    @Override
+    public void close() throws DataStoreException {
+        run();
+        ErrorHandler.throwOnFailure(null, "probeContent");
     }
 
     /**

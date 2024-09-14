@@ -29,11 +29,13 @@ import org.apache.sis.coverage.grid.GridCoverage;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
 import org.apache.sis.coverage.grid.PixelInCell;
+import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.GridCoverageResource;
 import org.apache.sis.storage.Resource;
 import org.apache.sis.storage.DataStores;
 import org.apache.sis.storage.DataStoreProvider;
 import org.apache.sis.storage.StorageConnector;
+import org.apache.sis.storage.ProbeResult;
 
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -66,6 +68,25 @@ public final class GDALStoreTest {
     }
 
     /**
+     * Returns the storage connector to the test file to use as input.
+     */
+    private static StorageConnector input() {
+        return new StorageConnector(GDALStoreTest.class.getResource("test.tiff"));
+    }
+
+    /**
+     * Tests providing the MIME type of an image.
+     *
+     * @throws DataStoreException if any error occurred.
+     */
+    @Test
+    public void testProbeContent() throws DataStoreException {
+        final var provider = new GDALStoreProvider();
+        ProbeResult result = provider.probeContent(input());
+        assertEquals("image/tiff", result.getMimeType());
+    }
+
+    /**
      * Tests reading an indexed image. The test uses a small image with 1 band and indexed color palette.
      *
      * @throws Exception if any error occurred.
@@ -74,8 +95,7 @@ public final class GDALStoreTest {
     public void readIndexedImage() throws Exception {
         boolean foundGrid = false;
         boolean foundBand = false;
-        final var input = new StorageConnector(GDALStoreTest.class.getResource("test.tiff"));
-        try (GDALStore store = new GDALStore(new GDALStoreProvider(), input)) {
+        try (GDALStore store = new GDALStore(new GDALStoreProvider(), input())) {
             for (final Resource r : store.components()) {
                 assertFalse(foundGrid);
                 foundGrid = true;

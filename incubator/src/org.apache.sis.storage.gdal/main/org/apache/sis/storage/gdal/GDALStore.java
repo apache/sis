@@ -490,14 +490,45 @@ public class GDALStore extends DataStore implements Aggregate, ResourceOnFileSys
             }
         }
         try (Flush _ = new Flush()) {
+            closeRecursively();
+        }
+    }
+
+    /**
+     * Closes all child components (if any) recursively, then closes this data store.
+     */
+    private void closeRecursively() {
+        RuntimeException error = null;
+        try {
+            listeners.close();
+        } catch (RuntimeException e) {
+            error = e;      // Should not happen even if a listener threw an exception, but we want to be safe.
+        } finally {
             try {
-                listeners.close();
+                final List<? extends Resource> children;
+                synchronized (this) {
+                    children = components;
+                    components = null;
+                }
+                if (children != null) {
+                    for (Resource child : children) {
+                        if (child instanceof Subdataset) try {
+                            ((GDALStore) child).closeRecursively();
+                        } catch (RuntimeException e) {
+                            if (error == null) error = e;
+                            else error.addSuppressed(e);
+                        }
+                    }
+                }
             } finally {
                 synchronized (this) {
                     handle = null;
                     closer.clean();     // Important to always invoke, even if an exception occurred before.
                 }
             }
+        }
+        if (error != null) {
+            throw error;
         }
     }
 }

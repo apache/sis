@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.gdal;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -279,18 +280,17 @@ public class GDALStoreProvider extends DataStoreProvider {
      * @return a {@linkplain ProbeResult#isSupported() supported} status with the MIME type
      *         if the given storage seems to be readable by {@code GDALStore} instances.
      * @throws DataStoreException if an I/O error occurred.
-     *
-     * @todo Need to check whether GDAL library has been found.
-     * @todo Need better check. Does GDAL provides a probe API?
      */
     @Override
     public ProbeResult probeContent(final StorageConnector connector) throws DataStoreException {
-        final Path path = connector.getStorageAs(Path.class);
-        if (path != null) {
+        final URI url = connector.getStorageAs(URI.class);
+        if (url != null) {
             final GDAL gdal = tryGDAL("probeContent").orElse(null);
             if (gdal != null) {
-                final String mimeType = null;   // TODO
-                return new ProbeResult(true, mimeType, null);
+                try (Opener p = Opener.read(this, Opener.toURL(url, connector.getStorageAs(Path.class)))) {
+                    String mimeType = p.getMetadataItem(gdal, "DMD_MIMETYPE");
+                    return new ProbeResult(true, mimeType, null);
+                }
             }
         }
         return ProbeResult.UNSUPPORTED_STORAGE;
