@@ -199,7 +199,7 @@ final class MultiSourceLayout extends ImageLayout {
          * the combined image causes the computation of a single tile of each source image.
          */
         long cx, cy;        // A combination of tile size with alignment on the tile matrix grid.
-        cx = cy = (((long) Integer.MAX_VALUE) << Integer.SIZE) | ImageUtilities.DEFAULT_TILE_SIZE;
+        cx = cy = (((long) Integer.MAX_VALUE) << Integer.SIZE) | DEFAULT_TILE_SIZE;
         final var tileGridXOffset = new FrequencySortedSet<Integer>(true);
         final var tileGridYOffset = new FrequencySortedSet<Integer>(true);
         for (final RenderedImage source : sources) {

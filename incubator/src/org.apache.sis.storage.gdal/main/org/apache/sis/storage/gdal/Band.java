@@ -283,15 +283,23 @@ final class Band {
         final var   dataBuffer  = raster.getDataBuffer();
         final int   dataSize    = DataBuffer.getDataTypeSize(dataBuffer.getDataType()) / Byte.SIZE;
         final int[] bankIndices = sampleModel.getBankIndices();
+        /*
+         * The following assertions are critical: if those conditions are not true, it may crash the JVM.
+         * For that reason, we test them unconditionally instead of using the `assert` statement.
+         */
+        if (!raster.getBounds().contains(rasterBounds)) {
+            throw new AssertionError(rasterBounds);
+        }
+        if (transferBuffer.byteSize() < Math.multiplyFull(rasterBounds.width, rasterBounds.height) * dataSize) {
+            throw new AssertionError(rasterBounds);
+        }
         for (int i=0; i < selectedBands.length; i++) {
-            assert raster.getBounds().contains(rasterBounds) : rasterBounds;
             final Buffer buffer = RasterFactory.wrapAsBuffer(dataBuffer, bankIndices[i])
                     .position(sampleModel.getOffset(
                             rasterBounds.x - raster.getSampleModelTranslateX(),
                             rasterBounds.y - raster.getSampleModelTranslateY(), i));
             final int err;
             try {
-                assert transferBuffer.byteSize() >= Math.multiplyFull(rasterBounds.width, rasterBounds.height) * dataSize;
                 err = (int) gdal.rasterIO.invokeExact(selectedBands[i].handle, readWriteFlags,
                         resourceBounds.x, resourceBounds.y, resourceBounds.width, resourceBounds.height,
                         transferBuffer,

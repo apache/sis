@@ -36,7 +36,6 @@ import static java.lang.Math.floorDiv;
 import static java.lang.Math.toIntExact;
 import static java.lang.Math.multiplyFull;
 import org.apache.sis.feature.internal.Resources;
-import org.apache.sis.system.Configuration;
 import org.apache.sis.system.Modules;
 import org.apache.sis.util.Numbers;
 import org.apache.sis.util.Static;
@@ -53,20 +52,6 @@ import static org.apache.sis.util.privy.Numerics.COMPARISON_THRESHOLD;
  * @author  Martin Desruisseaux (Geomatys)
  */
 public final class ImageUtilities extends Static {
-    /**
-     * Default width and height of tiles, in pixels.
-     */
-    @Configuration
-    public static final int DEFAULT_TILE_SIZE = 256;
-
-    /**
-     * Suggested size for a tile cache in number of tiles. This value can be used for very simple caching mechanism,
-     * keeping the most recently used tiles up to 10 Mb of memory. This is not for sophisticated caching mechanism;
-     * instead the "real" caching should be done by {@link org.apache.sis.image.ComputedImage}.
-     */
-    @Configuration
-    public static final int SUGGESTED_TILE_CACHE_SIZE = 10 * (1024 * 1024) / (DEFAULT_TILE_SIZE * DEFAULT_TILE_SIZE);
-
     /**
      * The logger for operations on images and rasters.
      */

@@ -59,7 +59,7 @@ abstract class Transferer {
      * @see #prepareTransferRegion(Rectangle, int)
      */
     @Configuration
-    private static final int BUFFER_SIZE = 32 * ImageUtilities.DEFAULT_TILE_SIZE * Byte.SIZE;
+    private static final int BUFFER_SIZE = 32 * ImageLayout.DEFAULT_TILE_SIZE * Byte.SIZE;
 
     /**
      * The image tile from which to read sample values.

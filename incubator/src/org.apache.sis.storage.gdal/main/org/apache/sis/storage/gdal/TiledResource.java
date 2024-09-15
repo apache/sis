@@ -75,12 +75,14 @@ final class TiledResource extends TiledGridResource {
     private GridGeometry geometry;
 
     /**
-     * The image size in pixels.
+     * The image size in pixels. Considered as unsigned integers.
      */
     private final int width, height;
 
     /**
-     * The tile size in pixels.
+     * The tile size in pixels. This is the <abbr>GDAL</abbr> block size,
+     * unless the block size was too large in which case <abbr>SIS</abbr>
+     * selects a smaller size.
      *
      * @see #getTileSize()
      */
@@ -174,11 +176,21 @@ final class TiledResource extends TiledGridResource {
          * when the file format is not tiled. But that default can consume a lot of memory.
          */
         Dimension tileSize() {
-            if (tileWidth < width || tileHeight > 1) {
-                return new Dimension(tileWidth, tileHeight);
-            } else {
-                return ImageLayout.DEFAULT.suggestTileSize(width, height, true);
+            int w, h;
+            if ((w = tileWidth)  < 1 || Integer.compareUnsigned(w, width)  >= 0 ||
+                (h = tileHeight) < 1 || Integer.compareUnsigned(h, height) >= 0)
+            {
+                /*
+                 * If the tile size seems invalid or overflows the capacity of 32 bits integers,
+                 * we will derive a tile size from the image size. If the image size overflows,
+                 * use a default tile size.
+                 */
+                if ((w = width)  < 0) w = ImageLayout.DEFAULT_TILE_SIZE;
+                if ((h = height) < 0) h = ImageLayout.DEFAULT_TILE_SIZE;
+            } else if (Math.multiplyFull(w, h) <= ImageLayout.LARGE_TILE_SIZE) {
+                return new Dimension(w, h);
             }
+            return ImageLayout.DEFAULT.suggestTileSize(w, h, true);
         }
     }
 
