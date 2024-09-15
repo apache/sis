@@ -231,6 +231,7 @@ final class TiledResource extends TiledGridResource {
             var name = Vocabulary.formatInternational(Vocabulary.Keys.Image_1, count + 1);
             rasters[count++] = new TiledResource(parent, entry.getKey(), entry.getValue(), name);
         }
+        // Search for the main image and, if found, move it first.
         for (int i=0; i<count; i++) {
             final TiledResource main = rasters[i];
             if (main.width == mainWidth && main.height == mainHeight) {
@@ -432,7 +433,7 @@ final class TiledResource extends TiledGridResource {
             final double max = band.getValue(gdal.getRasterMaximum, MemorySegment.NULL);
             colorModel = ColorModelFactory.createGrayScale(dataType.imageType, selectedBands.length, gray, min, max);
         }
-        sampleModel = new BandedSampleModel(dataType.imageType, width, height, selectedBands.length);
+        sampleModel = new BandedSampleModel(dataType.imageType, tileWidth, tileHeight, selectedBands.length);
         selectedBandIndices = bandIndices;
     }
 

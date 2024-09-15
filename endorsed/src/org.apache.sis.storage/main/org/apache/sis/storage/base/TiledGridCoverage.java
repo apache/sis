@@ -663,19 +663,27 @@ public abstract class TiledGridCoverage extends GridCoverage {
         }
 
         /**
-         * Returns the coordinates of the pixels to read <em>inside</em> the tile, ignoring subsampling.
+         * Returns the coordinates of the pixels to read <em>inside</em> the tile.
          * The tile upper-left corner is assumed (0,0). Therefore, the lower coordinates computed by this
          * method are usually (0,0) and the rectangle size is usually the tile size, but those values may
          * be different if the enclosing {@link TiledGridCoverage} contains only one (potentially big) tile.
          * The rectangle may also be smaller when reading tiles on the last row or column of the tile matrix.
          *
+         * <p>If the {@code subsampled} argument is {@code false}, then this method returns coordinates
+         * relative to the tile in the originating {@link TiledGridResource}, i.e. without subsampling.
+         * If {@code subsampled} is {@code true}, then this method returns coordinates relative to the
+         * {@linkplain #createRaster() raster}, i.e. with {@linkplain #getSubsampling(int) subsampling}.
+         * Note that the {@linkplain Raster#getMinX() raster origin} still needs to be added to the
+         * {@linkplain Rectangle#getLocation() rectangle location} for obtaining coordinates in the raster space.</p>
+         *
+         * @param  subsampled  whether to return coordinates with subsampling applied.
          * @return pixel to read inside the tile, or {@code null} if the region is empty.
          * @throws ArithmeticException if the tile coordinates overflow 32 bits integer capacity.
          */
-        public Rectangle getRegionInsideTile() {
+        public Rectangle getRegionInsideTile(final boolean subsampled) {
             final long[] lower = new long[BIDIMENSIONAL];
             final long[] upper = new long[BIDIMENSIONAL];
-            if (getRegionInsideTile(lower, upper, null, BIDIMENSIONAL)) {
+            if (getRegionInsideTile(lower, upper, null, subsampled)) {
                 return new Rectangle(
                         toIntExact(lower[X_DIMENSION]),
                         toIntExact(lower[Y_DIMENSION]),
@@ -686,7 +694,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
         }
 
         /**
-         * Returns the coordinates of the pixels to read <em>inside</em> the tile, ignoring subsampling.
+         * Returns the coordinates of the pixels to read <em>inside</em> the tile.
          * The tile upper-left corner is assumed (0,0). Therefore, the lower coordinates computed by this
          * method are usually (0,0) and the upper coordinates are usually the tile size, but those values
          * may be different if the enclosing {@link TiledGridCoverage} contains only one (potentially big) tile.
@@ -697,15 +705,23 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * but is constant for all tiles regardless the subregion to read.
          * The same values can be obtained by {@link #getSubsampling(int)}.</p>
          *
-         * <p>This method is a generalization of {@link #getRegionInsideTile()} to any number of dimensions.</p>
+         * <p>If the {@code subsampled} argument is {@code false}, then this method returns coordinates
+         * relative to the tile in the originating {@link TiledGridResource}, i.e. without subsampling.
+         * If {@code subsampled} is {@code true}, then this method returns coordinates relative to the
+         * tile resulting from the read operation, i.e. with {@linkplain #getSubsampling(int) subsampling}.</p>
+         *
+         * <p>This method is a generalization of {@link #getRegionInsideTile(boolean)} to any number of dimensions.</p>
          *
          * @param  lower        a pre-allocated array where to store relative coordinates of the first pixel.
          * @param  upper        a pre-allocated array where to store relative coordinates after the last pixel.
          * @param  subsampling  a pre-allocated array where to store subsampling, or {@code null} if not needed.
-         * @param  dimension    number of elements to write in the {@code lower} and {@code upper} arrays.
+         * @param  subsampled   whether to return coordinates with subsampling applied.
          * @return {@code true} on success, or {@code false} if the tile is empty.
          */
-        public boolean getRegionInsideTile(final long[] lower, final long[] upper, final int[] subsampling, int dimension) {
+        public boolean getRegionInsideTile(final long[] lower, final long[] upper,
+                final int[] subsampling, final boolean subsampled)
+        {
+            int dimension = Math.min(lower.length, upper.length);
             final TiledGridCoverage coverage = getCoverage();
             if (subsampling != null) {
                 System.arraycopy(coverage.subsampling, 0, subsampling, 0, dimension);
@@ -749,6 +765,11 @@ public abstract class TiledGridCoverage extends GridCoverage {
                 if (dimension == X_DIMENSION && coverage.forceTileSize) {
                     limit = tileSize;
                 }
+                if (subsampled) {
+                    final int s = coverage.getSubsampling(dimension);
+                    offset /= s;        // Round toward 0 because we should not have negative coordinates.
+                    limit = (limit - 1) / s + 1;
+                }
                 lower[dimension] = offset;
                 upper[dimension] = limit;
             }
@@ -789,8 +810,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
         private final int[] offsetAOI;
 
         /**
-         * Pixel coordinates of current iterator position relative to the Area Of Interest specified by user.
-         * Those coordinates are in units of the full resolution image.
+         * Cell coordinates of current iterator position relative to the Area Of Interest specified by user.
+         * Those coordinates are in units of the coverage at full resolution.
          * Initial position is {@link #offsetAOI} multiplied by {@link #subsampling}.
          * This array is modified by calls to {@link #next()}.
          */
@@ -925,7 +946,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
              * to the next tile. The tile seems "too far", but it will either be discarded at a later step
              * (because of empty intersection with AOI) or compensated by the offset caused by subsampling.
              * At first the index values seem inconsistent, but after we discard the tiles where
-             * `getRegionInsideTile(…)` returns `false` they become consistent.
+             * `getRegionInsideTile(…)` returns `false`, they become consistent.
              */
             return toIntExact(ceilDiv(tileOffsetFull[dimension], getSubsampling(dimension)));
         }

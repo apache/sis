@@ -378,7 +378,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
                 try (Closeable finisher  = createInflater()) {
                     for (int i=0; i<numMissings; i++) {
                         final Tile tile = missings[i];
-                        if (tile.getRegionInsideTile(lower, upper, subsampling, BIDIMENSIONAL)) {
+                        if (tile.getRegionInsideTile(lower, upper, subsampling, false)) {
                             origin.x = tile.originX;
                             origin.y = tile.originY;
                             tile.copyTileInfo(tileOffsets,    offsets,    includedBanks, numTiles);

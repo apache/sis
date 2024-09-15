@@ -86,12 +86,14 @@ final class TiledCoverage extends TiledGridCoverage {
                 final MemorySegment transferBuffer = arena.allocate(getTileLength());
                 do {
                     final WritableRaster tile = iterator.createRaster();
-                    final Rectangle target = iterator.getRegionInsideTile();
-                    target.x = Math.addExact(target.x, tile.getMinX());
-                    target.y = Math.addExact(target.y, tile.getMinY());
-                    final Rectangle source = pixelToResourceCoordinates(target);
-                    if (!Band.transfer(gdal, OpenFlag.READ, bands, owner.dataType, source, tile, target, transferBuffer)) {
-                        break;      // Exception will be thrown by `throwOnFailure(…)`
+                    final Rectangle target = iterator.getRegionInsideTile(true);
+                    if (target != null) {
+                        target.x = Math.addExact(target.x, tile.getMinX());
+                        target.y = Math.addExact(target.y, tile.getMinY());
+                        final Rectangle source = pixelToResourceCoordinates(target);
+                        if (!Band.transfer(gdal, OpenFlag.READ, bands, owner.dataType, source, tile, target, transferBuffer)) {
+                            break;      // Exception will be thrown by `throwOnFailure(…)`
+                        }
                     }
                     result[iterator.getTileIndexInResultArray()] = tile;
                 } while (iterator.next());
