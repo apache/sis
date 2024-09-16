@@ -17,7 +17,7 @@
 
 /**
  * Bridge to the <abbr>GDAL</abbr> library for reading rasters.
- * This package assumes that <abbr>GDAL</abbr> is preinstalled.
+ * This package assumes that <abbr>GDAL</abbr> 3.0 or later is preinstalled.
  * The <abbr>GDAL</abbr> C/C++ functions are invoked by using the {@link java.lang.foreign} package.
  * Running this package requires user's authorization to perform native accesses.
  * See the module Javadoc for more information.

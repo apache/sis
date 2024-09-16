@@ -126,7 +126,7 @@ final class Band {
          * even if the transfer function (scale and offset) was not specified. The GDAL
          * default when there is no scale/offset corresponds to the identity transform.
          */
-        final List<String> categories = GDAL.toStringArray(names);
+        final List<String> categories = GDAL.fromNullTerminatedStrings(names);
         final String symbol = GDAL.toString(uom);
         Unit<?> units = null;
         if (symbol != null && !symbol.isBlank()) try {
@@ -210,17 +210,21 @@ final class Band {
      */
     final int[] getARGB(final GDAL gdal) {
         try (Arena arena = Arena.ofConfined()) {
-            final MemorySegment colorEntry = arena.allocate(ValueLayout.JAVA_SHORT, 4);
+            final var layout = ValueLayout.JAVA_SHORT;
+            final MemorySegment colorEntry = arena.allocate(layout, 4);
             final var colors  = (MemorySegment) gdal.getRasterColorTable.invokeExact(handle);
             if (!GDAL.isNull(colors)) {
                 final int count = (int) gdal.getColorEntryCount.invokeExact(colors);
                 final int[] ARGB = new int[count];
                 for (int i=0; i<count; i++) {
                     final int err = (int) gdal.getColorEntryAsRGB.invokeExact(colors, i, colorEntry);
-                    final short c1 = colorEntry.get(ValueLayout.JAVA_SHORT, Short.BYTES * 0);   // gray, red, cyan or hue
-                    final short c2 = colorEntry.get(ValueLayout.JAVA_SHORT, Short.BYTES * 1);   // green, magenta, or lightness
-                    final short c3 = colorEntry.get(ValueLayout.JAVA_SHORT, Short.BYTES * 2);   // blue, yellow, or saturation
-                    final short c4 = colorEntry.get(ValueLayout.JAVA_SHORT, Short.BYTES * 3);   // alpha or blackband
+                    if (!ErrorHandler.checkCPLErr(err)) {
+                        return null;
+                    }
+                    final short c1 = colorEntry.getAtIndex(layout, 0);   // gray, red, cyan or hue
+                    final short c2 = colorEntry.getAtIndex(layout, 1);   // green, magenta, or lightness
+                    final short c3 = colorEntry.getAtIndex(layout, 2);   // blue, yellow, or saturation
+                    final short c4 = colorEntry.getAtIndex(layout, 3);   // alpha or blackband
                     ARGB[i] = (Short.toUnsignedInt(c4) << 24)
                             | (Short.toUnsignedInt(c1) << 16)
                             | (Short.toUnsignedInt(c2) <<  8)

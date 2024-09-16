@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.NoSuchElementException;
+import java.lang.foreign.Arena;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.lang.foreign.Linker;
@@ -89,6 +90,7 @@ final class GDAL extends NativeFunctions {
     /**
      * <abbr>GDAL</abbr> {@code GDALDatasetH GDALOpenEx(const char *pszFilename, …)}.
      * Opens a raster or vector file by invoking the open method of each driver in turn.
+     * Requires <abbr>GDAL</abbr> 2.0.
      */
     final MethodHandle open;
 
@@ -101,6 +103,12 @@ final class GDAL extends NativeFunctions {
     final MethodHandle close;
 
     /**
+     * <abbr>GDAL</abbr> {@code void VSIFree(void*)}, alias {@code CPLFree}.
+     * Releases memory allocated by <abbr>GDAL</abbr>.
+     */
+    final MethodHandle free;
+
+    /**
      * <abbr>GDAL</abbr> {@code GDALDriverH GDALGetDatasetDriver(GDALDatasetH)}.
      * Fetches the driver to which a dataset relates.
      */
@@ -109,11 +117,24 @@ final class GDAL extends NativeFunctions {
     /**
      * <abbr>GDAL</abbr> {@code OGRSpatialReferenceH GDALGetSpatialRef(GDALDatasetH)}.
      * Fetches the spatial reference for this dataset in <abbr>WKT</abbr> format.
-     *
-     * @todo Replace {@code "GDALGetProjectionRef"} by {@code "GDALGetSpatialRef"},
-     *       which returns {@code OGRSpatialReference}.
+     * Requires <abbr>GDAL</abbr> 3.0.
      */
-    final MethodHandle getSpatialRef;
+    final MethodHandle getSpatialRef, getGCPSpatialRef;
+
+    /**
+     * <abbr>GDAL</abbr> {@code OGRErr OSRExportToWktEx(OGRSpatialReferenceH, char** ppszResult, char** papszOption}.
+     * Convert a <abbr>SRS</abbr> into <abbr>WKT</abbr> format.
+     * The returned WKT string shall be freed with {@link #free}.
+     * Requires <abbr>GDAL</abbr> 3.0.
+     */
+    final MethodHandle exportToWkt;
+
+    /**
+     * <abbr>GDAL</abbr> {@code nt *OSRGetDataAxisToSRSAxisMapping(OGRSpatialReferenceH hSRS, int *pnCount)}.
+     * Return the data axis to SRS axis mapping.
+     * Requires <abbr>GDAL</abbr> 3.0.
+     */
+    final MethodHandle getDataAxisToCRSAxis;
 
     /**
      * <abbr>GDAL</abbr> {@code CPLErr GDALGetGeoTransform(GDALDatasetH, double*)}.
@@ -204,7 +225,7 @@ final class GDAL extends NativeFunctions {
     final MethodHandle getColorEntryCount;
 
     /**
-     * <abbr>GDAL</abbr> {@code GDALGetColorEntryAsRGB(GDALColorTableH, int, GDALColorEntry*)}.
+     * <abbr>GDAL</abbr> {@code int GDALGetColorEntryAsRGB(GDALColorTableH, int, GDALColorEntry*)}.
      * Fetches a table entry in RGB format.
      */
     final MethodHandle getColorEntryAsRGB;
@@ -240,16 +261,13 @@ final class GDAL extends NativeFunctions {
         final var acceptPointerReturnPointer = FunctionDescriptor.of(ValueLayout.ADDRESS,     ValueLayout.ADDRESS);
         final var acceptPointerReturnInt     = FunctionDescriptor.of(ValueLayout.JAVA_INT,    ValueLayout.ADDRESS);
         final var acceptTwoPtrsReturnDouble  = FunctionDescriptor.of(ValueLayout.JAVA_DOUBLE, ValueLayout.ADDRESS, ValueLayout.ADDRESS);
+        final var acceptTwoPtrsReturnPointer = FunctionDescriptor.of(ValueLayout.ADDRESS,     ValueLayout.ADDRESS, ValueLayout.ADDRESS);
         final Linker linker = Linker.nativeLinker();
 
         // For Driver and/or all major objects
         getName         = lookup(linker, "GDALGetDriverLongName",  acceptPointerReturnPointer);
         getIdentifier   = lookup(linker, "GDALGetDriverShortName", acceptPointerReturnPointer);
-        getMetadata     = lookup(linker, "GDALGetMetadata", FunctionDescriptor.of(
-                ValueLayout.ADDRESS,    // const char* (return type)
-                ValueLayout.ADDRESS,    // GDALMajorObject
-                ValueLayout.ADDRESS));  // const char* domain
-
+        getMetadata     = lookup(linker, "GDALGetMetadata",        acceptTwoPtrsReturnPointer);
         getMetadataItem = lookup(linker, "GDALGetMetadataItem", FunctionDescriptor.of(
                 ValueLayout.ADDRESS,    // const char* (return type)
                 ValueLayout.ADDRESS,    // GDALMajorObject
@@ -257,6 +275,7 @@ final class GDAL extends NativeFunctions {
                 ValueLayout.ADDRESS));  // const char* domain
 
         // For Opener
+        free  = lookup(linker, "VSIFree",    FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
         close = lookup(linker, "GDALClose",  acceptPointerReturnInt);
         open  = lookup(linker, "GDALOpenEx", FunctionDescriptor.of(ValueLayout.ADDRESS,
                 ValueLayout.ADDRESS,        // const char *pszFilename
@@ -267,7 +286,15 @@ final class GDAL extends NativeFunctions {
 
         // For all data set
         getDatasetDriver = lookup(linker, "GDALGetDatasetDriver", acceptPointerReturnPointer);
-        getSpatialRef    = lookup(linker, "GDALGetProjectionRef", acceptPointerReturnPointer);
+        getSpatialRef    = lookup(linker, "GDALGetSpatialRef",    acceptPointerReturnPointer);
+        getGCPSpatialRef = lookup(linker, "GDALGetGCPSpatialRef", acceptPointerReturnPointer);
+        exportToWkt      = lookup(linker, "OSRExportToWktEx",     FunctionDescriptor.of(
+                ValueLayout.JAVA_INT,       // CPLErr error code (return value)
+                ValueLayout.ADDRESS,        // OGRSpatialReferenceH
+                ValueLayout.ADDRESS,        // char **ppszWKT
+                ValueLayout.ADDRESS));      // const char *const *papszOptions
+
+        getDataAxisToCRSAxis = lookup(linker, "OSRGetDataAxisToSRSAxisMapping", acceptTwoPtrsReturnPointer);
 
         // For TiledResource (GDAL Raster)
         getGeoTransform = lookup(linker, "GDALGetGeoTransform", FunctionDescriptor.of(
@@ -482,7 +509,7 @@ final class GDAL extends NativeFunctions {
      * @return the results as strings, or {@code null} if the result was null.
      */
     @SuppressWarnings("restricted")
-    static List<String> toStringArray(MemorySegment result) {
+    static List<String> fromNullTerminatedStrings(MemorySegment result) {
         if (isNull(result)) {
             return null;
         }
@@ -494,6 +521,24 @@ final class GDAL extends NativeFunctions {
             items.add(item);
         }
         return items;
+    }
+
+    /**
+     * Returns a Java array of strings as a {@code NULL}-terminated array.
+     * This way to encode arrays of strings is specific to <abbr>GDAL</abbr>.
+     *
+     * @param  arena  the arena to use for memory allocation.
+     * @param  items  the Java strings to copy.
+     * @return the {@code NULL}-terminated array of string.
+     */
+    static MemorySegment toNullTerminatedStrings(final Arena arena, final String... items) {
+        final var layout = ValueLayout.ADDRESS;
+        final MemorySegment array = arena.allocate(layout, items.length + 1);
+        for (int i=0; i<items.length; i++) {
+            array.setAtIndex(layout, i, arena.allocateFrom(items[i]));
+        }
+        array.setAtIndex(layout, items.length, MemorySegment.NULL);
+        return array;
     }
 
     /**

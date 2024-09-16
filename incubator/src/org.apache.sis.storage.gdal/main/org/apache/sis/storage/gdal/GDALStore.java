@@ -23,7 +23,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
-import java.text.ParseException;
 import java.net.URI;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
@@ -37,7 +36,6 @@ import org.opengis.util.GenericName;
 import org.opengis.util.NameFactory;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
-import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.parameter.Parameters;
 import org.apache.sis.io.wkt.WKTFormat;
 import org.apache.sis.io.wkt.Convention;
@@ -342,7 +340,7 @@ public class GDALStore extends DataStore implements Aggregate, ResourceOnFileSys
         } catch (Throwable e) {
             throw GDAL.propagate(e);
         }
-        final List<String> all = GDAL.toStringArray(result);
+        final List<String> all = GDAL.fromNullTerminatedStrings(result);
         if (all != null) {
             final String driver = getDriverName(gdal);
             if (driver != null) {   // Should never be null.
@@ -407,37 +405,12 @@ public class GDALStore extends DataStore implements Aggregate, ResourceOnFileSys
      * Returns the object to use for parsing and formatting <abbr>CRS</abbr> definitions from/to <abbr>GDAL</abbr>.
      * This object must be used in a block synchronized on {@code this}.
      */
-    private WKTFormat wktFormat() {
+    final WKTFormat wktFormat() {
         if (wktFormat == null) {
             wktFormat = new WKTFormat(null, null);
             wktFormat.setConvention(Convention.WKT1_COMMON_UNITS);
         }
         return wktFormat;
-    }
-
-    /**
-     * Gets the <abbr>CRS</abbr> of the data set by parsing its <abbr>WKT</abbr> representation.
-     * This method must be invoked from a method synchronized on {@code this}.
-     *
-     * @param  gdal    set of handles for invoking <abbr>GDAL</abbr> functions.
-     * @param  caller  name of the {@code GDALStore} method invoking this method.
-     * @return the parsed <abbr>CRS</abbr>, or {@code null} if none.
-     * @throws DataStoreException if a fatal error occurred according <abbr>GDAL</abbr>.
-     */
-    final CoordinateReferenceSystem parseCRS(final GDAL gdal, final String caller) throws DataStoreException {
-        MemorySegment result = null;
-        try {
-            result = (MemorySegment) gdal.getSpatialRef.invokeExact(handle());
-        } catch (Throwable e) {
-            throw GDAL.propagate(e);
-        }
-        final String wkt = GDAL.toString(result);
-        if (wkt != null && !wkt.isBlank()) try {
-            return (CoordinateReferenceSystem) wktFormat().parseObject(wkt);
-        } catch (ParseException | ClassCastException e) {
-            warning(caller, "Cannot parse the CRS of " + getDisplayName(), e);
-        }
-        return null;
     }
 
     /**

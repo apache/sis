@@ -30,9 +30,12 @@ import java.lang.foreign.Arena;
 import java.lang.foreign.ValueLayout;
 import java.lang.foreign.MemorySegment;
 import org.opengis.util.GenericName;
+import org.opengis.referencing.operation.Matrix;
+import org.opengis.referencing.operation.MathTransform;
 import org.opengis.referencing.crs.CoordinateReferenceSystem;
 import org.apache.sis.referencing.privy.AffineTransform2D;
 import org.apache.sis.referencing.privy.ExtendedPrecisionMatrix;
+import org.apache.sis.referencing.operation.transform.MathTransforms;
 import org.apache.sis.coverage.SampleDimension;
 import org.apache.sis.coverage.grid.GridExtent;
 import org.apache.sis.coverage.grid.GridGeometry;
@@ -209,8 +212,9 @@ final class TiledResource extends TiledGridResource {
         final var bands = new LinkedHashMap<SizeAndType, ArrayList<Band>>();
         final int mainWidth, mainHeight;
         try (Arena arena = Arena.ofConfined()) {
-            final MemorySegment pnXSize = arena.allocate(ValueLayout.JAVA_INT, 2);
-            final MemorySegment pnYSize = pnXSize.asSlice(Integer.BYTES);
+            final var layout = ValueLayout.JAVA_INT;
+            final MemorySegment pnXSize = arena.allocate(layout, 2);
+            final MemorySegment pnYSize = pnXSize.asSlice(layout.byteSize());
             final int count = (int) gdal.getRasterCount.invokeExact(dataset);
             for (int i=0; i<count; i++) {
                 final var band = (MemorySegment) gdal.getRasterBand.invokeExact(dataset, i+1);
@@ -223,8 +227,8 @@ final class TiledResource extends TiledGridResource {
                 final int height = (int) gdal.getRasterBandYSize.invokeExact(band);
                 final int type   = (int) gdal.getRasterDataType .invokeExact(band);
                 gdal.getBlockSize.invokeExact(band, pnXSize, pnYSize);
-                int tileWidth  = pnXSize.get(ValueLayout.JAVA_INT, 0);
-                int tileHeight = pnYSize.get(ValueLayout.JAVA_INT, 0);
+                int tileWidth  = pnXSize.get(layout, 0);
+                int tileHeight = pnYSize.get(layout, 0);
                 var key = new SizeAndType(width, height, type, tileWidth, tileHeight);
                 bands.computeIfAbsent(key, (_) -> new ArrayList<Band>()).add(new Band(band));
             }
@@ -286,14 +290,20 @@ final class TiledResource extends TiledGridResource {
             if (geometry == null) try {
                 final MemorySegment handle = parent.handle();          // Handle to the GDAL dataset.
                 final GDAL gdal = parent.getProvider().GDAL();
-                final CoordinateReferenceSystem crs = parent.parseCRS(gdal, "getGridGeometry");
+                final var  srs  = SpatialRef.create(parent, gdal, handle);
+                final CoordinateReferenceSystem crs;
+                if (srs != null) {
+                    crs = srs.parseCRS("getGridGeometry");
+                } else {
+                    crs = null;
+                }
                 /*
                  * Note that the CRS may be null. Now get the "grid to CRS" transform,
                  * which may also be null if GDAL reported an error. We do not use the
                  * GDAL default, which is the identity transform. Instead, we keep the
                  * information that the transform is missing (null).
                  */
-                AffineTransform2D gridToCRS = null;
+                MathTransform gridToCRS = null;
                 try (final Arena arena = Arena.ofConfined()) {
                     final var layout = ValueLayout.JAVA_DOUBLE;
                     final MemorySegment m = arena.allocate(layout, 6);
@@ -305,20 +315,31 @@ final class TiledResource extends TiledGridResource {
                     }
                     if (ErrorHandler.checkCPLErr(err)) {
                         gridToCRS = new AffineTransform2D(
-                                m.get(layout, Double.BYTES * 1),
-                                m.get(layout, Double.BYTES * 4),
-                                m.get(layout, Double.BYTES * 2),
-                                m.get(layout, Double.BYTES * 5),
-                                m.get(layout, Double.BYTES * 0),
-                                m.get(layout, Double.BYTES * 3));
+                                m.getAtIndex(layout, 1),
+                                m.getAtIndex(layout, 4),
+                                m.getAtIndex(layout, 2),
+                                m.getAtIndex(layout, 5),
+                                m.getAtIndex(layout, 0),
+                                m.getAtIndex(layout, 3));
                     }
                 }
-                var extent = new GridExtent(Integer.toUnsignedLong(width),
-                                            Integer.toUnsignedLong(height));
+                /*
+                 * The axis order used by GDAL is not the axis order in the CRS definition.
+                 * GDAL provides a separated method for specifying the axis swapping.
+                 */
+                if (gridToCRS != null) {
+                    int dimension = (crs != null) ? crs.getCoordinateSystem().getDimension() : SpatialRef.BIDIMENSIONAL;
+                    final Matrix swap = srs.getDataToCRS(dimension);
+                    if (swap != null) {
+                        gridToCRS = MathTransforms.concatenate(gridToCRS, MathTransforms.linear(swap));
+                    }
+                }
                 /*
                  * According GDAL documentation, the upper left corner of the upper left pixel
                  * is at position (m[0], m[3]). Therefore, we have a "cell corner" convention.
                  */
+                var extent = new GridExtent(Integer.toUnsignedLong(width),
+                                            Integer.toUnsignedLong(height));
                 try {
                     geometry = new GridGeometry(extent, PixelInCell.CELL_CORNER, gridToCRS, crs);
                 } catch (NullPointerException | IllegalArgumentException e) {
