@@ -88,6 +88,12 @@ final class GDAL extends NativeFunctions {
     final MethodHandle getMetadataItem;
 
     /**
+     * <abbr>GDAL</abbr> {@code GDALDriverH GDALIdentifyDriver(const char *pszFilename, CSLConstList papszFileList)}.
+     * Identify the driver that can open a dataset.
+     */
+    final MethodHandle identifyDriver;
+
+    /**
      * <abbr>GDAL</abbr> {@code GDALDatasetH GDALOpenEx(const char *pszFilename, …)}.
      * Opens a raster or vector file by invoking the open method of each driver in turn.
      * Requires <abbr>GDAL</abbr> 2.0.
@@ -275,6 +281,7 @@ final class GDAL extends NativeFunctions {
                 ValueLayout.ADDRESS));  // const char* domain
 
         // For Opener
+        identifyDriver = lookup(linker, "GDALIdentifyDriver", acceptTwoPtrsReturnPointer);
         free  = lookup(linker, "VSIFree",    FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
         close = lookup(linker, "GDALClose",  acceptPointerReturnInt);
         open  = lookup(linker, "GDALOpenEx", FunctionDescriptor.of(ValueLayout.ADDRESS,
@@ -528,10 +535,13 @@ final class GDAL extends NativeFunctions {
      * This way to encode arrays of strings is specific to <abbr>GDAL</abbr>.
      *
      * @param  arena  the arena to use for memory allocation.
-     * @param  items  the Java strings to copy.
+     * @param  items  the Java strings to copy, or {@code null}.
      * @return the {@code NULL}-terminated array of string.
      */
     static MemorySegment toNullTerminatedStrings(final Arena arena, final String... items) {
+        if (items == null) {
+            return MemorySegment.NULL;
+        }
         final var layout = ValueLayout.ADDRESS;
         final MemorySegment array = arena.allocate(layout, items.length + 1);
         for (int i=0; i<items.length; i++) {

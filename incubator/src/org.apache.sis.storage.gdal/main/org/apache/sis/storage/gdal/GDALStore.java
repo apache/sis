@@ -153,13 +153,17 @@ public class GDALStore extends DataStore implements Aggregate, ResourceOnFileSys
             namespace = factory.createNameSpace(factory.createLocalName(null, filename), null);
         }
         final String[] drivers;
-        final Opener opener;
-        drivers  = connector.getOption(GDALStoreProvider.DRIVERS_OPTION_KEY);
-        path     = connector.getStorageAs(Path.class);
-        location = connector.commit(URI.class, GDALStoreProvider.NAME);
-        opener   = Opener.read(provider, Opener.toURL(location, path), drivers);
-        closer   = Cleaners.SHARED.register(this, opener);      // Must do now in case of exception before completion.
-        handle   = opener.handle;
+        drivers    = connector.getOption(GDALStoreProvider.DRIVERS_OPTION_KEY);
+        location   = connector.getStorageAs(URI.class);
+        path       = connector.getStorageAs(Path.class);
+        String url = connector.commit(String.class, GDALStoreProvider.NAME);
+        if (location != null) {
+            url = Opener.toURL(location, path);
+        }
+        Opener opener;
+        opener = new Opener(provider, url, drivers);
+        closer = Cleaners.SHARED.register(this, opener);    // Must do now in case of exception before completion.
+        handle = opener.handle;
     }
 
     /**
@@ -178,7 +182,7 @@ public class GDALStore extends DataStore implements Aggregate, ResourceOnFileSys
         path     = parent.path;
         location = parent.location;
         factory  = parent.factory;
-        opener   = Opener.read(getProvider(), url, driver);
+        opener   = new Opener(getProvider(), url, driver);
         closer   = Cleaners.SHARED.register(this, opener);      // Must do now in case of exception before completion.
         handle   = opener.handle;
     }
@@ -312,7 +316,7 @@ public class GDALStore extends DataStore implements Aggregate, ResourceOnFileSys
             if (subdatasets != null && !subdatasets.isEmpty()) {
                 components = subdatasets;
             } else {
-                components = UnmodifiableArrayList.wrap(TiledResource.groupBySizeAndType(this, gdal, handle));
+                components = UnmodifiableArrayList.wrap(TiledResource.groupBySizeAndType(this, gdal, handle()));
             }
         } finally {
             ErrorHandler.throwOnFailure(this, "components");
@@ -336,7 +340,7 @@ public class GDALStore extends DataStore implements Aggregate, ResourceOnFileSys
         final MemorySegment result;
         try (var arena = Arena.ofConfined()) {
             final MemorySegment domain = arena.allocateFrom("SUBDATASETS");
-            result = (MemorySegment) gdal.getMetadata.invokeExact(handle, domain);
+            result = (MemorySegment) gdal.getMetadata.invokeExact(handle(), domain);
         } catch (Throwable e) {
             throw GDAL.propagate(e);
         }

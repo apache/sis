@@ -21,9 +21,9 @@ import java.util.Locale;
 import java.net.URI;
 import java.nio.file.Path;
 import java.lang.foreign.Arena;
-import java.lang.foreign.ValueLayout;
 import java.lang.foreign.MemorySegment;
 import org.apache.sis.util.privy.Constants;
+import org.apache.sis.storage.ProbeResult;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.DataStoreException;
 
@@ -40,7 +40,7 @@ import org.apache.sis.storage.DataStoreException;
  * @author  Quentin Bialota (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-final class Opener implements Runnable, AutoCloseable {
+final class Opener implements Runnable {
     /**
      * Schemes of URLs to open with <var>GDAL</var> Virtual File Systems backed by <abbr>CURL</abbr>.
      */
@@ -54,10 +54,22 @@ final class Opener implements Runnable, AutoCloseable {
     private final GDALStoreProvider owner;
 
     /**
-     * Pointer to the <abbr>GDAL</abbr> object in native memory.
+     * Pointer to the <abbr>GDAL</abbr> object in native memory, or {@code null} if the file couldn't be opened.
      * This is a {@code GDALDatasetH} in the C/C++ <abbr>API</abbr>.
      */
     final MemorySegment handle;
+
+    /**
+     * Creates a new instance for read operations on the given file or <abbr>URL</abbr>.
+     *
+     * @param  owner           owner of the set of handles for invoking <abbr>GDAL</abbr> functions.
+     * @param  url             <abbr>URL</abbr> (<var>GDAL</var> syntax) of the data store to open.
+     * @param  allowedDrivers  short names (identifiers) of drivers that may be used, or {@code null} for any driver.
+     * @throws DataStoreException if <var>GDAL</var> cannot open the data set.
+     */
+    Opener(final GDALStoreProvider owner, final String url, final String... allowedDrivers) throws DataStoreException {
+        this(owner, url, new OpenFlag[] {OpenFlag.RASTER, OpenFlag.SHARED}, allowedDrivers, null, null);
+    }
 
     /**
      * Creates a new instance for the given file or <abbr>URL</abbr>.
@@ -72,7 +84,7 @@ final class Opener implements Runnable, AutoCloseable {
      * </table>
      *
      * @param  owner           owner of the set of handles for invoking <abbr>GDAL</abbr> functions.
-     * @param  url             <abbr>URL</abbr> for <var>GDAL</var> of the data store to open.
+     * @param  url             <abbr>URL</abbr> (<var>GDAL</var> syntax) of the data store to open.
      * @param  openFlags       open flags to give to <abbr>GDAL</abbr>.
      * @param  allowedDrivers  short names (identifiers) of drivers that may be used, or {@code null} for any driver.
      * @param  driverOptions   driver-dependent options, or {@code null} if none.
@@ -92,29 +104,12 @@ final class Opener implements Runnable, AutoCloseable {
             handle = (MemorySegment) gdal.open.invokeExact(
                     arena.allocateFrom(url),
                     OpenFlag.mask(openFlags),
-                    allocateStringArray(arena, allowedDrivers),
-                    allocateStringArray(arena, driverOptions),
-                    allocateStringArray(arena, siblingFiles));
+                    GDAL.toNullTerminatedStrings(arena, allowedDrivers),
+                    GDAL.toNullTerminatedStrings(arena, driverOptions),
+                    GDAL.toNullTerminatedStrings(arena, siblingFiles));
         } catch (Throwable e) {
             throw GDAL.propagate(e);
         }
-        if (GDAL.isNull(handle)) {
-            throw new DataStoreException();     // TODO: get message from GDAL.
-        }
-    }
-
-    /**
-     * Creates a new instance for read operations on the given file or <abbr>URL</abbr>.
-     *
-     * @param  owner           owner of the set of handles for invoking <abbr>GDAL</abbr> functions.
-     * @param  url             <abbr>URL</abbr> for <var>GDAL</var> of the data store to open.
-     * @param  allowedDrivers  short names (identifiers) of drivers that may be used, or {@code null} for any driver.
-     * @throws DataStoreException if <var>GDAL</var> cannot open the data set.
-     */
-    static Opener read(final GDALStoreProvider owner, final String url, final String... allowedDrivers)
-            throws DataStoreException
-    {
-        return new Opener(owner, url, new OpenFlag[] {OpenFlag.RASTER, OpenFlag.SHARED}, allowedDrivers, null, null);
     }
 
     /**
@@ -139,56 +134,42 @@ final class Opener implements Runnable, AutoCloseable {
     }
 
     /**
-     * Allocates memory for an array of strings.
+     * Returns the MIME type if the given storage appears to be supported by this data store.
      *
-     * @param  arena  the arena to allocate memory from.
-     * @param  values the array of strings to allocate memory for.
-     * @return the array of pointer, or {@link MemorySegment#NULL} if the array is {@code null} or empty.
-     */
-    private static MemorySegment allocateStringArray(final Arena arena, final String[] values) {
-        if (values == null || values.length == 0) {
-            return MemorySegment.NULL;
-        }
-        final MemorySegment array = arena.allocate(ValueLayout.ADDRESS, values.length);
-        for (int i=0; i < values.length; i++) {
-            array.setAtIndex(ValueLayout.ADDRESS, i, arena.allocateFrom(values[i]));
-        }
-        return array;
-    }
-
-    /**
-     * Returns a metadata item from the driver.
-     *
-     * @param  gdal  set of handles for invoking <abbr>GDAL</abbr> functions.
-     * @param  name  the key for the metadata item to fetch.
-     * @return the metadata given by the driver, or {@code null} if unspecified.
+     * @param  owner      the provider which is probing the file.
+     * @param  connector  information about the storage (URL, stream, <i>etc</i>).
+     * @return a support status with the MIME type, or {@code null} if the given URL is unrecognized.
      * @throws DataStoreException if an error occurred while invoking a <abbr>GDAL</abbr> function.
      */
-    final String getMetadataItem(final GDAL gdal, final String name) throws DataStoreException {
-        try (var arena = Arena.ofConfined()) {
-            final MemorySegment driver = (MemorySegment) gdal.getDatasetDriver.invokeExact(handle);
-            if (!GDAL.isNull(driver)) {
-                MemorySegment n = arena.allocateFrom(name);
-                MemorySegment r = (MemorySegment) gdal.getMetadataItem.invokeExact(driver, n, MemorySegment.NULL);
-                return GDAL.toString(r);
-            }
-        } catch (Throwable e) {
-            throw GDAL.propagate(e);
-        } finally {
-            ErrorHandler.throwOnFailure(null, "probeContent");
+    static ProbeResult probeContent(final GDALStoreProvider owner, final StorageConnector connector)
+            throws DataStoreException
+    {
+        String url;
+        final URI location = connector.getStorageAs(URI.class);
+        if (location != null) {
+            url = toURL(location, connector.getStorageAs(Path.class));
+        } else {
+            url = connector.getStorageAs(String.class);
         }
-        return null;
-    }
-
-    /**
-     * Closes the <abbr>GDAL</abbr> data set. This method shall be invoked
-     * by {@link GDALStoreProvider#probeContent(StorageConnector)} only.
-     * {@link GDALStore} has its own close method.
-     */
-    @Override
-    public void close() throws DataStoreException {
-        run();
-        ErrorHandler.throwOnFailure(null, "probeContent");
+        if (url != null) {
+            final GDAL gdal = owner.tryGDAL("probeContent").orElse(null);
+            if (gdal != null) {
+                try (var arena = Arena.ofConfined()) {
+                    final var driver = (MemorySegment) gdal.identifyDriver.invokeExact(
+                            arena.allocateFrom(url), MemorySegment.NULL);
+                    if (!GDAL.isNull(driver)) {
+                        MemorySegment mimeType = (MemorySegment) gdal.getMetadataItem.invokeExact(
+                                driver, arena.allocateFrom("DMD_MIMETYPE"), MemorySegment.NULL);
+                        return new ProbeResult(true, GDAL.toString(mimeType), null);
+                    }
+                } catch (Throwable e) {
+                    throw GDAL.propagate(e);
+                } finally {
+                    ErrorHandler.throwOnFailure(null, "probeContent");
+                }
+            }
+        }
+        return ProbeResult.UNSUPPORTED_STORAGE;
     }
 
     /**
@@ -198,16 +179,18 @@ final class Opener implements Runnable, AutoCloseable {
      */
     @Override
     public void run() {
-        owner.tryGDAL("close").ifPresent((gdal) -> {
-            final int err;
-            try {
-                err = (int) gdal.close.invokeExact(handle);
-            } catch (Throwable e) {
-                throw GDAL.propagate(e);
-            }
-            if (err != 0) {
-                ErrorHandler.errorOccurred(err);
-            }
-        });
+        if (handle != null) {
+            owner.tryGDAL("close").ifPresent((gdal) -> {
+                final int err;
+                try {
+                    err = (int) gdal.close.invokeExact(handle);
+                } catch (Throwable e) {
+                    throw GDAL.propagate(e);
+                }
+                if (err != 0) {
+                    ErrorHandler.errorOccurred(err);
+                }
+            });
+        }
     }
 }

@@ -16,7 +16,6 @@
  */
 package org.apache.sis.storage.gdal;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -283,17 +282,7 @@ public class GDALStoreProvider extends DataStoreProvider {
      */
     @Override
     public ProbeResult probeContent(final StorageConnector connector) throws DataStoreException {
-        final URI url = connector.getStorageAs(URI.class);
-        if (url != null) {
-            final GDAL gdal = tryGDAL("probeContent").orElse(null);
-            if (gdal != null) {
-                try (Opener p = Opener.read(this, Opener.toURL(url, connector.getStorageAs(Path.class)))) {
-                    String mimeType = p.getMetadataItem(gdal, "DMD_MIMETYPE");
-                    return new ProbeResult(true, mimeType, null);
-                }
-            }
-        }
-        return ProbeResult.UNSUPPORTED_STORAGE;
+        return Opener.probeContent(this, connector);
     }
 
     /**
