@@ -16,6 +16,7 @@
  */
 package org.apache.sis.storage.gdal;
 
+import java.nio.file.Path;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import org.opengis.util.GenericName;
@@ -156,6 +157,11 @@ public final class GDALStoreTest {
                     assertEquals(5, data.getElem(2000));    // Check a random value.
                 }
             }
+
+            // Check the file components
+            final Path[] paths = store.getComponentFiles();
+            assertEquals(1, paths.length);
+            assertEquals("test.tiff", paths[0].getFileName().toString());
         }
         assertTrue(foundGrid);
         assertTrue(foundBand);

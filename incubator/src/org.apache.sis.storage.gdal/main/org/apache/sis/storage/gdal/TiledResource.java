@@ -322,6 +322,7 @@ final class TiledResource extends TiledGridResource {
                                 m.getAtIndex(layout, 0),
                                 m.getAtIndex(layout, 3));
                     }
+                    // TODO: if above is not available, we could fallback on `GDALGCPsToGeoTransform`.
                 }
                 /*
                  * The axis order used by GDAL is not the axis order in the CRS definition.

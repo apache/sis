@@ -115,6 +115,19 @@ final class GDAL extends NativeFunctions {
     final MethodHandle free;
 
     /**
+     * <abbr>GDAL</abbr> {@code void CSLDestroy(char **papszStrList)}.
+     * Releases memory allocated by <abbr>GDAL</abbr> for a string list.
+     * It is safe to pass {@code NULL}.
+     */
+    final MethodHandle destroy;
+
+    /**
+     * <abbr>GDAL</abbr> {@code char **GDALGetFileList(GDALDatasetH)}.
+     * Fetch files forming dataset.
+     */
+    final MethodHandle getFileList;
+
+    /**
      * <abbr>GDAL</abbr> {@code GDALDriverH GDALGetDatasetDriver(GDALDatasetH)}.
      * Fetches the driver to which a dataset relates.
      */
@@ -270,7 +283,12 @@ final class GDAL extends NativeFunctions {
         final var acceptTwoPtrsReturnPointer = FunctionDescriptor.of(ValueLayout.ADDRESS,     ValueLayout.ADDRESS, ValueLayout.ADDRESS);
         final Linker linker = Linker.nativeLinker();
 
+        // Memory management
+        free    = lookup(linker, "VSIFree",    FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
+        destroy = lookup(linker, "CSLDestroy", FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
+
         // For Driver and/or all major objects
+        identifyDriver  = lookup(linker, "GDALIdentifyDriver",     acceptTwoPtrsReturnPointer);
         getName         = lookup(linker, "GDALGetDriverLongName",  acceptPointerReturnPointer);
         getIdentifier   = lookup(linker, "GDALGetDriverShortName", acceptPointerReturnPointer);
         getMetadata     = lookup(linker, "GDALGetMetadata",        acceptTwoPtrsReturnPointer);
@@ -281,8 +299,6 @@ final class GDAL extends NativeFunctions {
                 ValueLayout.ADDRESS));  // const char* domain
 
         // For Opener
-        identifyDriver = lookup(linker, "GDALIdentifyDriver", acceptTwoPtrsReturnPointer);
-        free  = lookup(linker, "VSIFree",    FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
         close = lookup(linker, "GDALClose",  acceptPointerReturnInt);
         open  = lookup(linker, "GDALOpenEx", FunctionDescriptor.of(ValueLayout.ADDRESS,
                 ValueLayout.ADDRESS,        // const char *pszFilename
@@ -291,7 +307,8 @@ final class GDAL extends NativeFunctions {
                 ValueLayout.ADDRESS,        // const char *const *papszOpenOptions
                 ValueLayout.ADDRESS));      // const char *const *papszSiblingFiles
 
-        // For all data set
+        // For all data sets
+        getFileList      = lookup(linker, "GDALGetFileList",      acceptPointerReturnPointer);
         getDatasetDriver = lookup(linker, "GDALGetDatasetDriver", acceptPointerReturnPointer);
         getSpatialRef    = lookup(linker, "GDALGetSpatialRef",    acceptPointerReturnPointer);
         getGCPSpatialRef = lookup(linker, "GDALGetGCPSpatialRef", acceptPointerReturnPointer);

@@ -66,11 +66,14 @@ final class SubdatasetList extends AbstractList<Subdataset> {
      *
      * @param  gdal      set of handles for invoking <abbr>GDAL</abbr> functions.
      * @param  parent    the data store which owns this list.
+     * @param  driver    name of the <abbr>GDAL</abbr> driver to use for opening the sub-datasets.
      * @param  metadata  the metadata items for the {@code "SUBDATASETS"} domain.
      */
-    SubdatasetList(final GDAL gdal, final GDALStore parent, final List<String> metadata) throws DataStoreException {
-        this.parent  = parent;
-        this.driver  = parent.getDriverName(gdal);
+    SubdatasetList(final GDAL gdal, final GDALStore parent, final String driver, final List<String> metadata)
+            throws DataStoreException
+    {
+        this.parent = parent;
+        this.driver = driver;
         /*
          * URLs of all sub-dataset, optionally associated to their descriptions.
          * Keys are metadata keys. Values at index 0 are the URLs. Values at index 1 are descriptions.

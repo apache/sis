@@ -17,16 +17,12 @@
 package org.apache.sis.storage.gdal;
 
 import java.util.List;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.net.URI;
-import java.io.IOException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.lang.ref.Cleaner;
 import java.lang.foreign.Arena;
@@ -238,7 +234,7 @@ public class GDALStore extends DataStore implements Aggregate, ResourceOnFileSys
      * @return name of the <abbr>GDAL</abbr> driver used for opening the file.
      * @throws DataStoreException if the driver name cannot be fetched.
      */
-    final String getDriverName(final GDAL gdal) throws DataStoreException {
+    private String getDriverName(final GDAL gdal) throws DataStoreException {
         try {
             var result = (MemorySegment) gdal.getDatasetDriver.invokeExact(handle());
             if (!GDAL.isNull(result)) {     // Paranoiac check.
@@ -270,6 +266,44 @@ public class GDALStore extends DataStore implements Aggregate, ResourceOnFileSys
             listeners.warning(e);
         }
         return Optional.ofNullable(param);
+    }
+
+    /**
+     * Returns an array of files believed to be part of this resource.
+     *
+     * @todo This method is often used for copying a resources from one location to another.
+     *       <abbr>GDAL</abbr> provides a {@code GDALCopyDatasetFiles} function for this purpose.
+     *       That function is not yet used by Apache <abbr>SIS</abbr>.
+     *
+     * @return files used by this resource, or an empty array if unknown.
+     * @throws DataStoreException if the list of files cannot be obtained.
+     */
+    @Override
+    public synchronized Path[] getComponentFiles() throws DataStoreException {
+        final GDAL gdal = getProvider().GDAL();
+        final List<String> files;
+        try {
+            final var list = (MemorySegment) gdal.getFileList.invokeExact(handle());
+            try {
+                files = GDAL.fromNullTerminatedStrings(list);
+            } finally {
+                gdal.destroy.invokeExact(list);
+            }
+        } catch (Throwable e) {
+            throw GDAL.propagate(e);
+        }
+        if (files == null || files.isEmpty()) {
+            return (path != null) ? new Path[] {path} : new Path[0];
+        }
+        final var paths = new Path[files.size()];
+        for (int i=0; i < paths.length; i++) {
+            var item = Path.of(files.get(i));
+            if (path != null) {
+                item = path.resolveSibling(item);
+            }
+            paths[i] = item;
+        }
+        return paths;
     }
 
     /**
@@ -348,61 +382,10 @@ public class GDALStore extends DataStore implements Aggregate, ResourceOnFileSys
         if (all != null) {
             final String driver = getDriverName(gdal);
             if (driver != null) {   // Should never be null.
-                return new SubdatasetList(gdal, this, all);
+                return new SubdatasetList(gdal, this, driver, all);
             }
         }
         return null;
-    }
-
-    /**
-     * Gets the paths to files potentially used by this resource.
-     * This method returns the path to the main file opened by the <abbr>GDAL</abbr> driver,
-     * and applies heuristic rules for guessing which other paths may be part of the format.
-     * Heuristic rules are used because <abbr>GDAL</abbr> provides no <abbr>API</abbr> for
-     * listing which files are used.
-     *
-     * @return files used by this resource, or an empty array if unknown.
-     * @throws DataStoreException if an error on the file system prevent the creation of the list.
-     */
-    @Override
-    public Path[] getComponentFiles() throws DataStoreException {
-        @SuppressWarnings("LocalVariableHidesMemberVariable")
-        final Path path = this.path;
-        if (path == null) {
-            return new Path[0];
-        }
-        final DirectoryStream.Filter<Path> filter;
-        switch (getDriver().getIdentifier()) {
-            default: {
-                return new Path[] {path};
-            }
-            case "AIG": {       // Arc/Info Binary Grid
-                // Special case: we must take "metadata.xml" and all "*.adf" in the folder.
-                filter = (Path entry) -> ("metadata.xml".equalsIgnoreCase(entry.getFileName().toString())
-                                          || "adf".equalsIgnoreCase(IOUtilities.extension(entry)));
-                break;
-            }
-            // TODO: list more case where we want the same default as GeoTIFF.
-            case "GTiff": {
-                // List all existing paths with the same file name but possibly with different suffixes.
-                final String filename = path.getFileName().toString();
-                final int s = filename.lastIndexOf('.');
-                final String base = (s >= 0) ? filename.substring(0, s+1) : filename;
-                filter = (Path entry) -> entry.getFileName().toString().startsWith(base);
-                break;
-            }
-        }
-        final var paths = new ArrayList<Path>();
-        paths.addFirst(path);
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(path.getParent(),
-                (entry) -> !entry.equals(path) && filter.accept(entry) && Files.isRegularFile(entry)))
-        {
-            stream.forEach(paths::add);
-        } catch (IOException ex) {
-            throw cannotExecute(ex);
-        }
-        // Ensure that the main path is first.
-        return paths.toArray(Path[]::new);
     }
 
     /**
