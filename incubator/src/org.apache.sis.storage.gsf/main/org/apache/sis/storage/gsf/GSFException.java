@@ -14,18 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.apache.sis.storage.gsf;
+
+import org.apache.sis.storage.DataStoreException;
 
 /**
- * LibGSF Panama binding.
  *
  * @author Johann Sorel (Geomatys)
  */
-module org.apache.sis.storage.gsf {
-    // Dependencies used in public API.
-    requires transitive org.apache.sis.referencing;
-    requires transitive org.apache.sis.storage;
-    requires transitive org.apache.sis.storage.gdal;
+public final class GSFException extends DataStoreException{
 
-    provides org.apache.sis.storage.DataStoreProvider
-            with org.apache.sis.storage.gsf.GSFStoreProvider;
+    public final int errorCode;
+
+    public GSFException(int code, String message) {
+        super(message + "(" + code + ")");
+        this.errorCode = code;
+    }
+
 }

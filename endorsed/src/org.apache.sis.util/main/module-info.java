@@ -146,6 +146,7 @@ module org.apache.sis.util {
             org.apache.sis.storage.sql,
             org.apache.sis.storage.netcdf,
             org.apache.sis.storage.gdal,                // In the "incubator" sub-project.
+            org.apache.sis.storage.gsf,                 // In the "incubator" sub-project.
             org.apache.sis.portrayal,
             org.apache.sis.console,
             org.apache.sis.webapp,                      // In the "incubator" sub-project.
