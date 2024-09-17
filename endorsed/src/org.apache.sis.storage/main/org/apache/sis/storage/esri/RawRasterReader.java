@@ -133,7 +133,7 @@ final class RawRasterReader extends HyperRectangleReader {
         final long[] fullSize;              // The number of sample values along each dimension.
         final long[] regionLower;           // Indices of the first value to read along each dimension.
         final long[] regionUpper;           // Indices after the last value to read along each dimension.
-        final int[]  subsampling;           // Subsampling along each dimension. Shall be greater than zero.
+        final long[] subsampling;           // Subsampling along each dimension. Shall be greater than zero.
         if (layout instanceof ComponentSampleModel) {
             final ComponentSampleModel cm = (ComponentSampleModel) layout;
             scanlineStride       = cm.getScanlineStride();
@@ -151,7 +151,7 @@ final class RawRasterReader extends HyperRectangleReader {
         regionUpper = fullSize.clone();
         if (domain == null) {
             domain = gridGeometry;
-            subsampling = new int[] {1, 1};
+            subsampling = new long[] {1, 1};
         } else {
             /*
              * Take in account the requested domain with the following restrictions:

@@ -107,8 +107,8 @@ final class CompressedSubset extends DataSubset {
     @SuppressWarnings("LocalVariableHidesMemberVariable")
     CompressedSubset(final DataCube source, final TiledGridResource.Subset subset) throws DataStoreException {
         super(source, subset);
-        scanlineStride     = sourcePixelStride * getTileSize(X_DIMENSION);
-        final int between  = sourcePixelStride * (getSubsampling(X_DIMENSION) - 1);
+        scanlineStride     = Math.multiplyExact(sourcePixelStride, getTileSize(X_DIMENSION));
+        final int between  = Math.multiplyExact(sourcePixelStride, Math.toIntExact(getSubsampling(X_DIMENSION) - 1));
         long afterLastBand = scanlineStride - sourcePixelStride;
         if (includedBands != null && sourcePixelStride > 1) {
             final int[] skips = new int[includedBands.length];
@@ -169,7 +169,7 @@ final class CompressedSubset extends DataSubset {
      * Computes the number of pixels to read in dimension <var>i</var>.
      * The arguments given to this method are the ones given to the {@code readSlice(…)} method.
      */
-    private static int pixelCount(final long[] lower, final long[] upper, final int[] subsampling, final int i) {
+    private static int pixelCount(final long[] lower, final long[] upper, final long[] subsampling, final int i) {
         final int n = toIntExact((upper[i] - lower[i] - 1) / subsampling[i] + 1);
         assert (n > 0) : n;
         return n;
@@ -188,13 +188,13 @@ final class CompressedSubset extends DataSubset {
      */
     @Override
     Raster readSlice(final long[] offsets, final long[] byteCounts, final long[] lower, final long[] upper,
-                     final int[] subsampling, final Point location) throws IOException, DataStoreException
+                     final long[] subsampling, final Point location) throws IOException, DataStoreException
     {
         final DataType dataType = getDataType();
         final int  width        = pixelCount(lower, upper, subsampling, X_DIMENSION);
         final int  height       = pixelCount(lower, upper, subsampling, Y_DIMENSION);
         final int  chunksPerRow = width * (targetPixelStride / samplesPerChunk);
-        final int  betweenRows  = subsampling[1] - 1;
+        final int  betweenRows  = Math.toIntExact(subsampling[1] - 1);
         final long head         = beforeFirstBand + sourcePixelStride * (lower[X_DIMENSION]);
         final long tail         = afterLastBand   - sourcePixelStride * (lower[X_DIMENSION] + (width-1)*subsampling[X_DIMENSION]);
         /*

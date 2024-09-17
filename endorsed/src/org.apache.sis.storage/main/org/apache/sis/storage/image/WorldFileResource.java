@@ -267,13 +267,13 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
                 if (domain == null) {
                     domain = gridGeometry;
                 } else {
-                    final GridDerivation gd = gridGeometry.derive().rounding(GridRoundingMode.ENCLOSING).subgrid(domain);
-                    final GridExtent extent = gd.getIntersection();
-                    final int[] subsampling = gd.getSubsampling();
-                    final int[] offsets     = gd.getSubsamplingOffsets();
-                    final int   subX        = subsampling[X_DIMENSION];
-                    final int   subY        = subsampling[Y_DIMENSION];
-                    final Rectangle region  = new Rectangle(
+                    final GridDerivation  gd = gridGeometry.derive().rounding(GridRoundingMode.ENCLOSING).subgrid(domain);
+                    final GridExtent  extent = gd.getIntersection();
+                    final long[] subsampling = gd.getSubsampling();
+                    final long[] offsets     = gd.getSubsamplingOffsets();
+                    final long   subX        = subsampling[X_DIMENSION];
+                    final long   subY        = subsampling[Y_DIMENSION];
+                    final Rectangle region   = new Rectangle(
                             toIntExact(extent.getLow (X_DIMENSION)),
                             toIntExact(extent.getLow (Y_DIMENSION)),
                             toIntExact(extent.getSize(X_DIMENSION)),
@@ -294,7 +294,9 @@ class WorldFileResource extends AbstractGridCoverageResource implements StoreRes
                     domain = gd.build();
                     GridExtent subExtent = domain.getExtent();
                     param.setSourceRegion(region);
-                    param.setSourceSubsampling(subX, subY,
+                    param.setSourceSubsampling(
+                            toIntExact(subX),
+                            toIntExact(subY),
                             toIntExact(subExtent.getLow(X_DIMENSION) * subX + offsets[X_DIMENSION] - region.x),
                             toIntExact(subExtent.getLow(Y_DIMENSION) * subY + offsets[Y_DIMENSION] - region.y));
                 }

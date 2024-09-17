@@ -478,9 +478,10 @@ final class VariableWrapper extends org.apache.sis.storage.netcdf.base.Variable 
      * @param  area         indices of cell values to read along each dimension, in "natural" order.
      * @param  subsampling  subsampling along each dimension, or {@code null} if none.
      * @return the data as a vector wrapping a Java array.
+     * @throws ArithmeticException if an argument exceeds the capacity of 32 bits integer.
      */
     @Override
-    public Vector read(final GridExtent area, final int[] subsampling) throws IOException, DataStoreException {
+    public Vector read(final GridExtent area, final long[] subsampling) throws IOException, DataStoreException {
         final Object array = readArray(area, subsampling);
         return Vector.create(array, variable.getDataType().isUnsigned());
     }
@@ -492,9 +493,10 @@ final class VariableWrapper extends org.apache.sis.storage.netcdf.base.Variable 
      * @param  area         indices of cell values to read along each dimension, in "natural" order.
      * @param  subsampling  subsampling along each dimension, or {@code null} if none.
      * @return the data as a list of {@link Number} or {@link String} instances.
+     * @throws ArithmeticException if an argument exceeds the capacity of 32 bits integer.
      */
     @Override
-    public List<?> readAnyType(final GridExtent area, final int[] subsampling) throws IOException, DataStoreException {
+    public List<?> readAnyType(final GridExtent area, final long[] subsampling) throws IOException, DataStoreException {
         final Object array = readArray(area, subsampling);
         final ucar.ma2.DataType type = variable.getDataType();
         if (type == ucar.ma2.DataType.CHAR && variable.getRank() >= STRING_DIMENSION) {
@@ -511,11 +513,12 @@ final class VariableWrapper extends org.apache.sis.storage.netcdf.base.Variable 
      * @param  area         indices of cell values to read along each dimension, in "natural" order.
      * @param  subsampling  subsampling along each dimension, or {@code null} if none.
      * @return the data as an array of a Java primitive type.
+     * @throws ArithmeticException if an argument exceeds the capacity of 32 bits integer.
      *
      * @see #read()
-     * @see #read(GridExtent, int[])
+     * @see #read(GridExtent, long[])
      */
-    private Object readArray(final GridExtent area, final int[] subsampling) throws IOException, DataStoreException {
+    private Object readArray(final GridExtent area, final long[] subsampling) throws IOException, DataStoreException {
         int n = area.getDimension();
         final int[] lower = new int[n];
         final int[] size  = new int[n];
@@ -526,7 +529,7 @@ final class VariableWrapper extends org.apache.sis.storage.netcdf.base.Variable 
             lower[j] = Math.toIntExact(area.getLow(i));
             size [j] = Math.toIntExact(area.getSize(i));
             if (sub != null) {
-                sub[j] = subsampling[i];
+                sub[j] = Math.toIntExact(subsampling[i]);
             }
         }
         final Array array;

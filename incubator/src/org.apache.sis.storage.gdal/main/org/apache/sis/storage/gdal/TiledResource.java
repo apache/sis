@@ -559,10 +559,10 @@ final class TiledResource extends TiledGridResource {
      * This is useful in particular with pyramided images read with potentially high subsampling values.
      */
     @Override
-    protected long[] getVirtualTileSize(final int[] subsampling) {
+    protected long[] getVirtualTileSize(final long[] subsampling) {
         return new long[] {
-            Math.multiplyFull(subsampling[0], tileWidth),
-            Math.multiplyFull(subsampling[1], tileHeight)
+            Math.multiplyExact(subsampling[0], tileWidth),
+            Math.multiplyExact(subsampling[1], tileHeight)
         };
     }
 

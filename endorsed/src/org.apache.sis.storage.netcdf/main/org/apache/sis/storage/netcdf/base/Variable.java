@@ -1050,7 +1050,7 @@ public abstract class Variable extends Node {
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    public abstract Vector read(GridExtent area, int[] subsampling) throws IOException, DataStoreException;
+    public abstract Vector read(GridExtent area, long[] subsampling) throws IOException, DataStoreException;
 
     /**
      * Reads a subsampled sub-area of the variable and returns them as a list of any object.
@@ -1063,7 +1063,7 @@ public abstract class Variable extends Node {
      * @throws DataStoreException if a logical error occurred.
      * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
-    public abstract List<?> readAnyType(GridExtent area, int[] subsampling) throws IOException, DataStoreException;
+    public abstract List<?> readAnyType(GridExtent area, long[] subsampling) throws IOException, DataStoreException;
 
     /**
      * Reads all the data for this variable and returns them as an array of a Java primitive type.

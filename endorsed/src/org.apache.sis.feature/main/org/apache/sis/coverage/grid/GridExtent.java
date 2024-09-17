@@ -1414,7 +1414,9 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      *
      * @since 1.1
      */
-    public GridExtent insertDimension(final int index, final DimensionNameType axisType, final long low, long high, final boolean isHighIncluded) {
+    public GridExtent insertDimension(final int index, final DimensionNameType axisType,
+                                      final long low, long high, final boolean isHighIncluded)
+    {
         final int dimension = getDimension();
         Objects.checkIndex(index, dimension+1);
         if (!isHighIncluded) {
@@ -1599,7 +1601,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * @throws ArithmeticException if resizing this extent to the given size overflows {@code long} capacity.
      *
      * @see #getSize(int)
-     * @see GridDerivation#subgrid(GridExtent, int...)
+     * @see GridDerivation#subgrid(GridExtent, long...)
      */
     public GridExtent resize(final long... sizes) {
         final int m = getDimension();
@@ -1652,18 +1654,19 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * If the array is shorter, missing values default to 1 (i.e. samplings in unspecified dimensions are unchanged).
      * If the array is longer, extraneous values are ignored.
      *
-     * @param  periods  the subsampling. Length shall be equal to the number of dimension and all values shall be greater than zero.
+     * @param  periods  the subsampling factors for each dimension of this grid extent.
      * @return the subsampled extent, or {@code this} if subsampling results in the same extent.
      * @throws IllegalArgumentException if a period is not greater than zero.
      *
-     * @see GridDerivation#subgrid(GridExtent, int...)
+     * @see GridDerivation#subgrid(GridExtent, long...)
+     * @since 1.5
      */
-    public GridExtent subsample(final int... periods) {
+    public GridExtent subsample(final long... periods) {
         final int m = getDimension();
         final int length = Math.min(m, periods.length);
         final GridExtent sub = new GridExtent(this);
         for (int i=0; i<length; i++) {
-            final int s = periods[i];
+            final long s = periods[i];
             if (s > 1) {
                 final int j = i + m;
                 long low  = coordinates[i];
@@ -1672,7 +1675,7 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
                     throw new ArithmeticException(Errors.format(Errors.Keys.IntegerOverflow_1, Long.SIZE));
                 }
                 long r = Long.divideUnsigned(size, s);
-                if (r*s == size) r--;                   // Make inclusive if the division did not already rounded toward 0.
+                if (r*s == size) r--;   // Make inclusive if the division did not already rounded toward 0.
                 sub.coordinates[i] = low /= s;
                 sub.coordinates[j] = low + r;
             } else if (s <= 0) {
@@ -1681,6 +1684,22 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             }
         }
         return Arrays.equals(coordinates, sub.coordinates) ? this : sub;
+    }
+
+    /**
+     * Creates a new subsampled grid extent (32-bits version).
+     * See {@link #subsample(long...)} for details.
+     *
+     * @param  periods  the subsampling factors for each dimension of this grid extent.
+     * @return the subsampled extent, or {@code this} if subsampling results in the same extent.
+     * @throws IllegalArgumentException if a period is not greater than zero.
+     *
+     * @deprecated Use the version with {@code long} integers instead of {@code int}.
+     * Small overviews of large images require large subsampling factors.
+     */
+    @Deprecated(since="1.5")
+    public GridExtent subsample(final int[] periods) {
+        return subsample(ArraysExt.copyAsLongs(periods));
     }
 
     /**
@@ -1695,20 +1714,20 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
      * If the array is shorter, missing values default to 1 (i.e. samplings in unspecified dimensions are unchanged).
      * If the array is longer, extraneous values are ignored.
      *
-     * @param  periods  the upsampling. Length shall be equal to the number of dimension and all values shall be greater than zero.
+     * @param  periods  the upsampling factors for each dimension of this grid extent.
      * @return the upsampled extent, or {@code this} if upsampling results in the same extent.
      * @throws IllegalArgumentException if a period is not greater than zero.
      * @throws ArithmeticException if the upsampled extent overflows the {@code long} capacity.
      *
-     * @see GridGeometry#upsample(int...)
-     * @since 1.3
+     * @see GridGeometry#upsample(long...)
+     * @since 1.5
      */
-    public GridExtent upsample(final int... periods) {
+    public GridExtent upsample(final long... periods) {
         final int m = getDimension();
         final int length = Math.min(m, periods.length);
         final GridExtent sub = new GridExtent(this);
         for (int i=0; i<length; i++) {
-            final int s = periods[i];
+            final long s = periods[i];
             if (s > 1) {
                 final int j = i + m;
                 sub.coordinates[i] = Math.multiplyExact(coordinates[i], s);
@@ -1719,6 +1738,24 @@ public class GridExtent implements GridEnvelope, LenientComparable, Serializable
             }
         }
         return Arrays.equals(coordinates, sub.coordinates) ? this : sub;
+    }
+
+    /**
+     * Creates a new upsampled grid extent (32-bits version).
+     * See {@link #upsample(long...)} for details.
+     *
+     * @param  periods  the upsampling factors for each dimension of this grid extent.
+     * @return the upsampled extent, or {@code this} if upsampling results in the same extent.
+     * @throws IllegalArgumentException if a period is not greater than zero.
+     * @throws ArithmeticException if the upsampled extent overflows the {@code long} capacity.
+     * @since 1.3
+     *
+     * @deprecated Use the version with {@code long} integers instead of {@code int}.
+     * Small overviews of large images require large subsampling factors.
+     */
+    @Deprecated(since="1.5")
+    public GridExtent upsample(final int[] periods) {
+        return upsample(ArraysExt.copyAsLongs(periods));
     }
 
     /**

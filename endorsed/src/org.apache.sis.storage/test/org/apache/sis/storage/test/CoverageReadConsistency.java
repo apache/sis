@@ -304,7 +304,7 @@ public abstract class CoverageReadConsistency<S extends DataStore> extends TestC
      * @param  high         pre-allocated array where to write the upper grid coordinates, inclusive.
      * @param  subsampling  pre-allocated array where to write the subsampling.
      */
-    private GridGeometry randomDomain(final GridGeometry gg, final long[] low, final long[] high, final int[] subsampling) {
+    private GridGeometry randomDomain(final GridGeometry gg, final long[] low, final long[] high, final long[] subsampling) {
         final GridExtent fullExtent = gg.getExtent();
         final int dimension = fullExtent.getDimension();
         for (int d=0; d<dimension; d++) {
@@ -357,8 +357,8 @@ public abstract class CoverageReadConsistency<S extends DataStore> extends TestC
         final int    dimension   = gg.getDimension();
         final long[] low         = new long[dimension];
         final long[] high        = new long[dimension];
-        final int [] subsampling = new int [dimension];
-        final int [] subOffsets  = new int [dimension];
+        final long[] subsampling = new long[dimension];
+        final long[] subOffsets  = new long[dimension];
         final int    numBands    = resource.getSampleDimensions().size();
         /*
          * We will collect statistics on execution time only if the
@@ -504,7 +504,7 @@ nextSlice:  for (;;) {
      * @return pixel iterator over requested area, or {@code null} if unavailable.
      */
     private static PixelIterator iterator(final GridCoverage coverage, long[] sliceMin, long[] sliceMax,
-            final int[] subsampling, final int[] subOffsets, final boolean allowSubsampling)
+            final long[] subsampling, final long[] subOffsets, final boolean allowSubsampling)
     {
         if (coverage == null) {
             return null;
@@ -538,8 +538,8 @@ nextSlice:  for (;;) {
          * and set the offset to the complement.
          */
         if (allowSubsampling) {
-            final int subX = subsampling[0];
-            final int subY = subsampling[1];
+            final int subX = StrictMath.toIntExact(subsampling[0]);
+            final int subY = StrictMath.toIntExact(subsampling[1]);
             if (subX > image.getTileWidth() || subY > image.getTileHeight()) {
                 return null;        // `SubsampledImage` does not support this case.
             }

@@ -91,14 +91,14 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      * Each key shall be unique within its enclosing {@link TiledGridResource} instance.
      */
     static final class CacheKey {
-        /** Index in a row-major array of tiles. */ private final int   indexInTileVector;
-        /** Bands in strictly increasing order.  */ private final int[] includedBands;
-        /** Subsampling factors at read time.    */ private final int[] subsampling;
-        /** Remainder of subsampling divisions.  */ private final int[] subsamplingOffsets;
+        /** Index in a row-major array of tiles. */ private final int    indexInTileVector;
+        /** Bands in strictly increasing order.  */ private final int[]  includedBands;
+        /** Subsampling factors at read time.    */ private final long[] subsampling;
+        /** Remainder of subsampling divisions.  */ private final long[] subsamplingOffsets;
 
         /** Creates a key with given arrays hold be reference (no copy). */
         CacheKey(final int indexInTileVector, final int[] includedBands,
-                 final int[] subsampling, final int[] subsamplingOffsets)
+                 final long[] subsampling, final long[] subsamplingOffsets)
         {
             this.indexInTileVector  = indexInTileVector;
             this.includedBands      = includedBands;
@@ -197,7 +197,7 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
      * @return the size of tiles (in pixels) in this resource.
      * @throws DataStoreException if an error occurred while fetching the tile size.
      */
-    protected long[] getVirtualTileSize(int[] subsampling) throws DataStoreException {
+    protected long[] getVirtualTileSize(long[] subsampling) throws DataStoreException {
         return ArraysExt.copyAsLongs(getTileSize());
     }
 
@@ -425,19 +425,19 @@ check:  if (dataType.isInteger()) {
          * This array contains the factors by which to divide {@link TiledGridResource}
          * cell coordinates in order to obtain {@link TiledGridCoverage} cell coordinates.
          */
-        final int[] subsampling;
+        final long[] subsampling;
 
         /**
          * Remainder of the divisions of {@link TiledGridResource} cell coordinates by subsampling factors.
          */
-        final int[] subsamplingOffsets;
+        final long[] subsamplingOffsets;
 
         /**
          * Size of tiles (or chunks) in the resource, without clipping and subsampling.
          * May be a virtual tile size (i.e., tiles larger than the real tiles) if the
          * resource can easily coalesce many tiles in a single read operation.
          *
-         * @see #getVirtualTileSize(int[])
+         * @see #getVirtualTileSize(long[])
          */
         final long[] virtualTileSize;
 
@@ -488,8 +488,8 @@ check:  if (dataType.isInteger()) {
             if (domain == null) {
                 domain             = gridGeometry;
                 readExtent         = sourceExtent;
-                subsamplingOffsets = new int[gridGeometry.getDimension()];
-                subsampling        = new int[subsamplingOffsets.length];
+                subsamplingOffsets = new long[gridGeometry.getDimension()];
+                subsampling        = new long[subsamplingOffsets.length];
                 Arrays.fill(subsampling, 1);
             } else {
                 /*
@@ -499,33 +499,28 @@ check:  if (dataType.isInteger()) {
                  * Note that it is possible to disable this restriction in a single dimension, typically the X one
                  * when reading a TIFF image using strips instead of tiles.
                  */
-                final int atomSizeX = getAtomSize(0);
-                final int atomSizeY = getAtomSize(1);
-                int tileWidth   = tileSize[X_DIMENSION];
-                int tileHeight  = tileSize[Y_DIMENSION];
-                if (tileWidth  >= sourceExtent.getSize(X_DIMENSION)) {tileWidth  = atomSizeX; sharedCache = false;}
-                if (tileHeight >= sourceExtent.getSize(Y_DIMENSION)) {tileHeight = atomSizeY; sharedCache = false;}
-                /*
-                 * Note: if we allow X_DIMENSION and Y_DIMENSION to be anything in the future, then
-                 * BIDIMENSIONAL must become `max(xDim, yDim) + 1` and array must be initialized to 1.
-                 */
-                final int[] chunkSize  = new int[TiledGridCoverage.BIDIMENSIONAL];
-                chunkSize[X_DIMENSION] = tileWidth;
-                chunkSize[Y_DIMENSION] = tileHeight;
-                /*
-                 * Maximal subsampling supported. We put no restriction if subsamplig can occur anywhere
-                 * ("atome size" of 1) and disable subsampling otherwise for avoiding code complexity.
-                 */
-                final int[] maximumSubsampling = new int[chunkSize.length];
-                Arrays.fill(maximumSubsampling, Integer.MAX_VALUE);
-                if (atomSizeX != 1) maximumSubsampling[X_DIMENSION] = 1;
-                if (atomSizeY != 1) maximumSubsampling[Y_DIMENSION] = 1;
+                final var chunkSize = new int [tileSize.length];
+                final var maxSubsmp = new long[tileSize.length];
+                for (int i=0; i < tileSize.length; i++) {
+                    final int atomSize = getAtomSize(i);
+                    int span = tileSize[i];
+                    if (span >= sourceExtent.getSize(i)) {
+                        span = atomSize;
+                        sharedCache = false;
+                    }
+                    /*
+                     * We put no restriction on the maximum subsampling if subsamplig can occur anywhere
+                     * ("atome size" of 1) and disable subsampling otherwise for avoiding code complexity.
+                     */
+                    maxSubsmp[i] = (atomSize == 1) ? Long.MAX_VALUE : 1;
+                    chunkSize[i] = (i == X_DIMENSION || i == Y_DIMENSION) ? span : 1;
+                }
                 /*
                  * Build the domain in units of subsampled pixels, and get the same extent (`readExtent`)
                  * without subsampling, i.e. in units of cells of the original grid resource.
                  */
                 final GridDerivation target = gridGeometry.derive().chunkSize(chunkSize)
-                            .maximumSubsampling(maximumSubsampling)
+                            .maximumSubsampling(maxSubsmp)
                             .rounding(GridRoundingMode.ENCLOSING)
                             .subgrid(domain);
 

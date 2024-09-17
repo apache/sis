@@ -663,7 +663,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      */
     @Override
-    public Vector read(final GridExtent area, final int[] subsampling) throws IOException, DataStoreException {
+    public Vector read(final GridExtent area, final long[] subsampling) throws IOException, DataStoreException {
         return Vector.create(readArray(area, subsampling), dataType.isUnsigned);
     }
 
@@ -676,7 +676,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @return the data as a list of {@link Number} or {@link String} instances.
      */
     @Override
-    public List<?> readAnyType(final GridExtent area, final int[] subsampling) throws IOException, DataStoreException {
+    public List<?> readAnyType(final GridExtent area, final long[] subsampling) throws IOException, DataStoreException {
         final Object array = readArray(area, subsampling);
         if (dataType == DataType.CHAR && dimensions.length >= STRING_DIMENSION) {
             return createStringList(array, area);
@@ -696,9 +696,9 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
      * @throws ArithmeticException if the size of the variable exceeds {@link Integer#MAX_VALUE}, or other overflow occurs.
      *
      * @see #read()
-     * @see #read(GridExtent, int[])
+     * @see #read(GridExtent, long[])
      */
-    private Object readArray(final GridExtent area, int[] subsampling) throws IOException, DataStoreException {
+    private Object readArray(final GridExtent area, long[] subsampling) throws IOException, DataStoreException {
         if (reader == null) {
             throw new DataStoreContentException(unknownType());
         }
@@ -733,7 +733,7 @@ final class VariableInfo extends Variable implements Comparable<VariableInfo> {
             }
         }
         if (subsampling == null) {
-            subsampling = new int[dimension];
+            subsampling = new long[dimension];
             Arrays.fill(subsampling, 1);
         }
         final Region region = new Region(size, lower, upper, subsampling);

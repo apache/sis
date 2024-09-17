@@ -57,7 +57,7 @@ public final class HyperRectangleReaderTest extends TestCase {
     /**
      * Subsampling values to use for the test.
      */
-    private final int[] subsampling = new int[size.length];
+    private final long[] subsampling = new long[size.length];
 
     /**
      * The reader to test for an hyper-cube of {@code short} values, created by {@link #initialize(Random, boolean)}.
@@ -151,10 +151,10 @@ public final class HyperRectangleReaderTest extends TestCase {
     private void verifyRegionRead() throws IOException {
         final short[] data = (short[]) reader.read(new Region(size, lower, upper, subsampling));
         int p = 0;
-        final int s3 = subsampling[3];
-        final int s2 = subsampling[2];
-        final int s1 = subsampling[1];
-        final int s0 = subsampling[0];
+        final long s3 = subsampling[3];
+        final long s2 = subsampling[2];
+        final long s1 = subsampling[1];
+        final long s0 = subsampling[0];
         for (long i3=lower[3]; i3<upper[3]; i3 += s3) {
             for (long i2=lower[2]; i2<upper[2]; i2 += s2) {
                 for (long i1=lower[1]; i1<upper[1]; i1 += s1) {

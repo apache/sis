@@ -31,7 +31,6 @@ import java.awt.image.WritableRaster;
 import static java.lang.Math.addExact;
 import static java.lang.Math.subtractExact;
 import static java.lang.Math.multiplyExact;
-import static java.lang.Math.multiplyFull;
 import static java.lang.Math.incrementExact;
 import static java.lang.Math.decrementExact;
 import static java.lang.Math.toIntExact;
@@ -175,7 +174,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * @see #getSubsampling(int)
      * @see #pixelToResourceCoordinate(long, int)
      */
-    private final int[] subsampling, subsamplingOffsets;
+    private final long[] subsampling, subsamplingOffsets;
 
     /**
      * Indices of {@link TiledGridResource} bands which have been retained for
@@ -277,7 +276,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
         this.model      = model;
         this.colors     = subset.colorsForBandSubset;
         this.fillValues = subset.fillValues;
-        forceTileSize   = multiplyFull(subSize[X_DIMENSION], subsampling[X_DIMENSION]) == virtualTileSize[X_DIMENSION];
+        forceTileSize   = multiplyExact(subsampling[X_DIMENSION], subSize[X_DIMENSION]) == virtualTileSize[X_DIMENSION];
     }
 
     /**
@@ -315,7 +314,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * @param  dimension  dimension for which to get subsampling.
      * @return subsampling as a value ≥ 1.
      */
-    protected final int getSubsampling(final int dimension) {
+    protected final long getSubsampling(final int dimension) {
         return subsampling[dimension];
     }
 
@@ -726,7 +725,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * @return {@code true} on success, or {@code false} if the tile is empty.
          */
         public boolean getRegionInsideTile(final long[] lower, final long[] upper,
-                final int[] subsampling, final boolean subsampled)
+                final long[] subsampling, final boolean subsampled)
         {
             int dimension = Math.min(lower.length, upper.length);
             final TiledGridCoverage coverage = getCoverage();
@@ -760,7 +759,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
                      * number of white squares in tiles (4,3,3,4 in the above example),
                      * except when there is only 1 tile to read in which case offset is tolerated.
                      */
-                    final int s = coverage.getSubsampling(dimension);
+                    final long s = coverage.getSubsampling(dimension);
                     offset %= s;
                     if (offset != 0) {
                         offset += s;
@@ -773,7 +772,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
                     limit = tileSize;
                 }
                 if (subsampled) {
-                    final int s = coverage.getSubsampling(dimension);
+                    final long s = coverage.getSubsampling(dimension);
                     offset /= s;        // Round toward 0 because we should not have negative coordinates.
                     limit = (limit - 1) / s + 1;
                 }
@@ -850,7 +849,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
                 final int count   = subtractExact(tileUpper[i], lower);
                 indexInTileVector = addExact(indexInTileVector, multiplyExact(tileStrides[i], lower));
                 tileCountInQuery  = multiplyExact(tileCountInQuery, count);
-                tileOffsetFull[i] = multiplyFull(offsetAOI[i], getSubsampling(i));
+                tileOffsetFull[i] = multiplyExact(getSubsampling(i), offsetAOI[i]);
                 /*
                  * Following is the pixel coordinate after the last pixel in current dimension.
                  * This is not stored; the intent is to get a potential `ArithmeticException`
@@ -871,26 +870,26 @@ public abstract class TiledGridCoverage extends GridCoverage {
          * extra indices are ignored and missing indices are inherited from this AOI.
          * This method is independent to the iterator position of this {@code AOI}.
          *
-         * @param  tileLower  indices (relative to enclosing {@code TiledGridCoverage}) of the upper-left tile to read.
-         * @param  tileUpper  indices (relative to enclosing {@code TiledGridCoverage}) after the bottom-right tile to read.
+         * @param  firstTile  indices (relative to enclosing {@code TiledGridCoverage}) of the upper-left tile to read.
+         * @param  endTile    indices (relative to enclosing {@code TiledGridCoverage}) after the bottom-right tile to read.
          * @return a new {@code TileIterator} instance for the specified sub-region.
          */
-        public TileIterator subset(final int[] tileLower, final int[] tileUpper) {
-            final int[] offset = this.offsetAOI.clone();
-            final int[] lower  = this.tileLower.clone();
-            for (int i = Math.min(tileLower.length, lower.length); --i >= 0;) {
+        public TileIterator subset(final int[] firstTile, final int[] endTile) {
+            final int[] offset = offsetAOI.clone();
+            final int[] lower  = tileLower.clone();
+            for (int i = Math.min(firstTile.length, lower.length); --i >= 0;) {
                 final int base = lower[i];
-                final int s = tileLower[i];
+                final int s = firstTile[i];
                 if (s > base) {
                     lower[i] = s;
                     // Use of `ceilDiv(…)` is for consistency with `getTileOrigin(int)`.
-                    long origin = ceilDiv(multiplyExact(s - base, getTileSize(i)), getSubsampling(i));
-                    offset[i] = toIntExact(addExact(offset[i], origin));
+                    long origin = ceilDiv(multiplyExact(getTileSize(i), s - base), getSubsampling(i));
+                    offset[i] = toIntExact(addExact(origin, offset[i]));
                 }
             }
-            final int[] upper = this.tileUpper.clone();
-            for (int i = Math.min(tileUpper.length, upper.length); --i >= 0;) {
-                upper[i] = Math.max(lower[i], Math.min(upper[i], tileUpper[i]));
+            final int[] upper = tileUpper.clone();
+            for (int i = Math.min(endTile.length, upper.length); --i >= 0;) {
+                upper[i] = Math.max(lower[i], Math.min(upper[i], endTile[i]));
             }
             return new TileIterator(lower, upper, offset, offset.length);
         }
@@ -994,7 +993,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
                 // Rewind to index for tileLower[i].
                 indexInTileVector -= (tmcInSubset[i] - tileLower[i]) * tileStrides[i];
                 tmcInSubset   [i]  = tileLower[i];
-                tileOffsetFull[i]  = multiplyFull(offsetAOI[i], getSubsampling(i));
+                tileOffsetFull[i]  = multiplyExact(getSubsampling(i), offsetAOI[i]);
             }
             return true;
         }
@@ -1141,7 +1140,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
         return new Rectangle(
                 toIntExact(pixelToResourceCoordinate(bounds.x, X_DIMENSION)),
                 toIntExact(pixelToResourceCoordinate(bounds.y, Y_DIMENSION)),
-                multiplyExact(bounds.width,  subsampling[X_DIMENSION]),
-                multiplyExact(bounds.height, subsampling[Y_DIMENSION]));
+                toIntExact(multiplyExact(subsampling[X_DIMENSION], bounds.width)),
+                toIntExact(multiplyExact(subsampling[Y_DIMENSION], bounds.height)));
     }
 }

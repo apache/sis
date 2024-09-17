@@ -104,7 +104,7 @@ public final class Region {
      * @throws ArithmeticException if the size of the region to read exceeds {@link Integer#MAX_VALUE},
      *                             or the total hyper-cube size exceeds {@link Long#MAX_VALUE}.
      */
-    public Region(final long[] sourceSize, final long[] regionLower, final long[] regionUpper, final int[] subsampling) {
+    public Region(final long[] sourceSize, final long[] regionLower, final long[] regionUpper, final long[] subsampling) {
         final int dimension = sourceSize.length;
         targetSize = new int[dimension];
         skips = new long[dimension + 1];
@@ -112,7 +112,7 @@ public final class Region {
         long stride   = 1;
         long skip     = 0;
         for (int i=0; i<dimension;) {
-            final int  step  = subsampling[i];
+            final long step  = subsampling[i];
             final long lower = regionLower[i];
             final long count = ceilDiv(subtractExact(regionUpper[i], lower), step);
             final long upper = addExact(lower, incrementExact(multiplyExact(count-1, step)));

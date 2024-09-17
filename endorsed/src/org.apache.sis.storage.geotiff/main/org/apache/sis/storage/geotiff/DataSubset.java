@@ -370,7 +370,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
                  */
                 final long[] lower       = new long[BIDIMENSIONAL];   // Coordinates of the first pixel to read relative to the tile.
                 final long[] upper       = new long[BIDIMENSIONAL];   // Coordinates after the last pixel to read relative to the tile.
-                final int[]  subsampling = new int [BIDIMENSIONAL];
+                final long[] subsampling = new long[BIDIMENSIONAL];
                 final Point  origin      = new Point();
                 final long[] offsets     = new long[numBanks];
                 final long[] byteCounts  = new long[numBanks];
@@ -483,7 +483,7 @@ class DataSubset extends TiledGridCoverage implements Localized {
      * @see DataCube#canReadDirect(TiledGridResource.Subset)
      */
     Raster readSlice(final long[] offsets, final long[] byteCounts, final long[] lower, final long[] upper,
-                     final int[] subsampling, final Point location) throws IOException, DataStoreException
+                     final long[] subsampling, final Point location) throws IOException, DataStoreException
     {
         final DataType type = getDataType();
         final int sampleSize = type.size();     // Assumed same as `SampleModel.getSampleSize(…)` by preconditions.
