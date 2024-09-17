@@ -22,7 +22,6 @@ import java.nio.Buffer;
 import java.awt.Point;
 import java.awt.image.Raster;
 import static java.lang.Math.toIntExact;
-import static java.lang.Math.multiplyFull;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.TiledGridResource;
 import org.apache.sis.storage.geotiff.inflater.Inflater;
@@ -53,7 +52,7 @@ final class CompressedSubset extends DataSubset {
      * <em>first</em> pixel in a row. For computing the actual number of sample values to skip,
      * the number of sample values read or skipped before the last pixel must be subtracted.
      */
-    private final int afterLastBand;
+    private final long afterLastBand;
 
     /**
      * Number of sample values to skip after a chunk has been read, or {@code null} if none.
@@ -108,9 +107,9 @@ final class CompressedSubset extends DataSubset {
     @SuppressWarnings("LocalVariableHidesMemberVariable")
     CompressedSubset(final DataCube source, final TiledGridResource.Subset subset) throws DataStoreException {
         super(source, subset);
-        scanlineStride    = multiplyFull(getTileSize(X_DIMENSION), sourcePixelStride);
-        final int between = sourcePixelStride * (getSubsampling(X_DIMENSION) - 1);
-        int afterLastBand = sourcePixelStride * (getTileSize(X_DIMENSION) - 1);
+        scanlineStride     = sourcePixelStride * getTileSize(X_DIMENSION);
+        final int between  = sourcePixelStride * (getSubsampling(X_DIMENSION) - 1);
+        long afterLastBand = scanlineStride - sourcePixelStride;
         if (includedBands != null && sourcePixelStride > 1) {
             final int[] skips = new int[includedBands.length];
             final int m = skips.length - 1;
@@ -213,9 +212,18 @@ final class CompressedSubset extends DataSubset {
         final int pixelsPerElement = getPixelsPerElement();                 // Always ≥ 1 and usually = 1.
         assert (head % pixelsPerElement) == 0 : head;
         if (inflater == null) {
-            inflater = Inflater.create(source.listeners(), input(), source.getCompression(), source.getPredictor(),
-                        sourcePixelStride, getTileSize(X_DIMENSION), chunksPerRow, samplesPerChunk, skipAfterChunks,
-                        pixelsPerElement, dataType);
+            inflater = Inflater.create(
+                    source.listeners(),                   // Object where to report warnings.
+                    input(),                              // The source of data to decompress.
+                    source.getCompression(),              // The compression method.
+                    source.getPredictor(),                // The mathematical operator to apply after decompression.
+                    sourcePixelStride,                    // Number of sample values per pixel in the source image.
+                    toIntExact(getTileSize(X_DIMENSION)), // Number of pixels in a row of source image.
+                    chunksPerRow,                         // Number of pixels per row in target image.
+                    samplesPerChunk,                      // Number of sample values per pixel.
+                    skipAfterChunks,                      // Number of sample values to skip between pixels.
+                    pixelsPerElement,                     // Number of pixels per primitive element (for packed.
+                    dataType);                            // Primitive type used for storing data elements in the bank.
         }
         @SuppressWarnings("LocalVariableHidesMemberVariable")
         final Inflater inflater = this.inflater;

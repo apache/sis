@@ -552,6 +552,21 @@ final class TiledResource extends TiledGridResource {
     }
 
     /**
+     * Returns virtual tile size to use during read operations. From the point of view of this class,
+     * pretending that tiles have a size different than their real size is easy because <abbr>GDAL</abbr>
+     * does the hard work of reading only the relevant parts of the real tiles. Therefore, we compensate
+     * subsampling with larger virtual size for avoiding that subsampled tiles become too small.
+     * This is useful in particular with pyramided images read with potentially high subsampling values.
+     */
+    @Override
+    protected long[] getVirtualTileSize(final int[] subsampling) {
+        return new long[] {
+            Math.multiplyFull(subsampling[0], tileWidth),
+            Math.multiplyFull(subsampling[1], tileHeight)
+        };
+    }
+
+    /**
      * Loads a subset of the grid coverage represented by this resource.
      * The actual loading may be deferred until a tile is requested for the first time.
      *

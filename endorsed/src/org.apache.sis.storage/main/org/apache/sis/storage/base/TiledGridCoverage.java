@@ -99,7 +99,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
     private final GridExtent readExtent;
 
     /**
-     * Whether to force the {@link #readExtent} tile intersection to the {@link #tileSize}.
+     * Whether to force the {@link #readExtent} tile intersection to the {@link #virtualTileSize}.
      * This is relevant only for the last column of tile matrix, because those tiles may be truncated
      * if the image size is not a multiple of tile size. It is usually necessary to read those tiles
      * fully anyway because otherwise, the pixels read from the storage would not be aligned with the
@@ -124,14 +124,19 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * The length of this array is the number of dimensions in the source {@link GridExtent}.
      * This is often {@value #BIDIMENSIONAL} but can also be more.
      *
+     * <p>The tile size may be virtual if the {@link TiledGridResource} subclass decided to coalesce
+     * many real tiles in bigger virtual tiles. This is sometime useful when a subsampling is applied,
+     * for avoiding that the subsampled tiles become too small.
+     * This strategy may be convenient when coalescing is easy.</p>
+     *
      * @see #getTileSize(int)
      */
-    private final int[] tileSize;
+    private final long[] virtualTileSize;
 
     /**
      * Values by which to multiply each tile coordinates for obtaining the index in the tile vector.
-     * The length of this array is the same as {@link #tileSize}. All coverages created from the same
-     * {@link TiledGridResource} have the same stride values.
+     * The length of this array is the same as {@link #virtualTileSize}. All coverages created from
+     * the same {@link TiledGridResource} have the same stride values.
      */
     private final int[] tileStrides;
 
@@ -198,8 +203,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
 
     /**
      * The sample model for all rasters. The width and height of this sample model are the two first elements
-     * of {@link #tileSize} divided by subsampling and clipped to the domain. If user requested to read only
-     * a subset of the bands, then this sample model is already the subset.
+     * of {@link #virtualTileSize} divided by subsampling and clipped to the domain.
+     * If user requested to read only a subset of the bands, then this sample model is already the subset.
      *
      * @see TiledGridResource#getSampleModel(int[])
      */
@@ -241,7 +246,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
         subsamplingOffsets  = subset.subsamplingOffsets;
         includedBands       = subset.includedBands;
         rasters             = subset.cache;
-        tileSize            = subset.tileSize;
+        virtualTileSize     = subset.virtualTileSize;
         tmcOfFirstTile      = new long[dimension];
         tileStrides         = new int [dimension];
         final int[] subSize = new int [dimension];
@@ -250,10 +255,10 @@ public abstract class TiledGridCoverage extends GridCoverage {
         long indexOfFirstTile = 0;
         int  tileStride       = 1;
         for (int i=0; i<dimension; i++) {
-            final int ts      = tileSize[i];
+            final long ts     = virtualTileSize[i];
             tmcOfFirstTile[i] = floorDiv(readExtent.getLow(i), ts);
             tileStrides[i]    = tileStride;
-            subSize[i]        = (int) Math.min(((ts-1) / subsampling[i]) + 1, extent.getSize(i));
+            subSize[i]        = toIntExact(Math.min(((ts-1) / subsampling[i]) + 1, extent.getSize(i)));
             indexOfFirstTile  = addExact(indexOfFirstTile, multiplyExact(tmcOfFirstTile[i], tileStride));
             int tileCount     = toIntExact(ceilDiv(subset.sourceExtent.getSize(i), ts));
             tileStride        = multiplyExact(tileCount, tileStride);
@@ -272,7 +277,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
         this.model      = model;
         this.colors     = subset.colorsForBandSubset;
         this.fillValues = subset.fillValues;
-        forceTileSize   = subSize[X_DIMENSION] * subsampling[X_DIMENSION] == tileSize[X_DIMENSION];
+        forceTileSize   = multiplyFull(subSize[X_DIMENSION], subsampling[X_DIMENSION]) == virtualTileSize[X_DIMENSION];
     }
 
     /**
@@ -294,12 +299,14 @@ public abstract class TiledGridCoverage extends GridCoverage {
 
     /**
      * Returns the size of all tiles in the domain of this {@code TiledGridCoverage}, without clipping and subsampling.
+     * It may be a virtual tile size if the {@link TiledGridResource} subclass decided to coalesce many real tiles into
+     * fewer bigger virtual tiles.
      *
      * @param  dimension  dimension for which to get tile size.
      * @return tile size in the given dimension, without clipping and subsampling.
      */
-    protected final int getTileSize(final int dimension) {
-        return tileSize[dimension];
+    protected final long getTileSize(final int dimension) {
+        return virtualTileSize[dimension];
     }
 
     /**
@@ -358,7 +365,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * @throws ArithmeticException if the coordinate cannot be represented as an integer.
      */
     private long toResourceTileMatrixCoordinate(final long coordinate, final int dimension) {
-        return floorDiv(pixelToResourceCoordinate(coordinate, dimension), tileSize[dimension]);
+        return floorDiv(pixelToResourceCoordinate(coordinate, dimension), virtualTileSize[dimension]);
     }
 
     /**
@@ -452,8 +459,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
                     }
                 }
                 // Lower and upper coordinates in subsampled image, rounded to integer number of tiles and clipped to available data.
-                final long lower = /* inclusive */Math.max(resourceToPixelCoordinate(/* inclusive */multiplyExact(tileLo, tileSize[i]),  i), min);
-                final long upper = incrementExact(Math.min(resourceToPixelCoordinate(decrementExact(multiplyExact(tileUp, tileSize[i])), i), max));
+                final long lower = /* inclusive */Math.max(resourceToPixelCoordinate(/* inclusive */multiplyExact(tileLo, virtualTileSize[i]),  i), min);
+                final long upper = incrementExact(Math.min(resourceToPixelCoordinate(decrementExact(multiplyExact(tileUp, virtualTileSize[i])), i), max));
                 imageSize[i] = toIntExact(subtractExact(upper, lower));
                 offsetAOI[i] = toIntExact(subtractExact(lower, aoiMin));
                 tileLower[i] = toIntExact(subtractExact(tileLo, tmcOfFirstTile[i]));
@@ -727,7 +734,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
                 System.arraycopy(coverage.subsampling, 0, subsampling, 0, dimension);
             }
             while (--dimension >= 0) {
-                final int  tileSize  = coverage.getTileSize(dimension);
+                final long tileSize  = coverage.getTileSize(dimension);
                 final long tileIndex = addExact(coverage.tmcOfFirstTile[dimension], tmcInSubset[dimension]);
                 final long tileBase  = multiplyExact(tileIndex, tileSize);
                 /*
@@ -850,7 +857,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
                  * now instead of in a call to `next()` during iteration. A negative value
                  * would mean that the AOI does not intersect the region requested by user.
                  */
-                final int max = addExact(offsetAOI[i], multiplyExact(getTileSize(i), count));
+                final long max = addExact(offsetAOI[i], multiplyExact(getTileSize(i), count));
                 assert max > Math.max(offsetAOI[i], 0) : max;
             }
             this.tileCountInQuery = tileCountInQuery;
@@ -877,7 +884,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
                 if (s > base) {
                     lower[i] = s;
                     // Use of `ceilDiv(…)` is for consistency with `getTileOrigin(int)`.
-                    offset[i] = addExact(offset[i], ceilDiv(multiplyExact(s - base, getTileSize(i)), getSubsampling(i)));
+                    long origin = ceilDiv(multiplyExact(s - base, getTileSize(i)), getSubsampling(i));
+                    offset[i] = toIntExact(addExact(offset[i], origin));
                 }
             }
             final int[] upper = this.tileUpper.clone();

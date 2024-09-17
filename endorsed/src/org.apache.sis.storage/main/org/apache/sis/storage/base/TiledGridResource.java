@@ -171,12 +171,35 @@ public abstract class TiledGridResource extends AbstractGridCoverageResource {
 
     /**
      * Returns the size of tiles in this resource.
-     * The length of the returned array is the number of dimensions, which must be 2 or more.
+     * The length of the returned array is the number of dimensions,
+     * which must be {@value TiledGridCoverage#BIDIMENSIONAL} or more.
      *
      * @return the size of tiles (in pixels) in this resource.
      * @throws DataStoreException if an error occurred while fetching the tile size.
      */
     protected abstract int[] getTileSize() throws DataStoreException;
+
+    /**
+     * Returns the tile size to use for a read operation using the given subsampling.
+     * The default implementation returns the real tile size, as returned by {@link #getTileSize()}.
+     * Subclasses may override if it is easy for them to read many tiles as if they were a single tile.
+     * Such coalescing can be useful for avoiding that a read operation produces tiles that become too
+     * small after the subsampling.
+     *
+     * <p>Note that {@link TiledGridCoverage} aligns its {@link GridExtent} on the boundaries of "real" tiles
+     * (i.e. on tiles of the size returned by {@link #getTileSize()}), not on the boundaries of virtual tiles.
+     * Therefore, subclasses should override this method only if they are prepared to read regions covering a
+     * fraction of the virtual tiles. A simple and efficient strategy is to simply multiply {@code tileSize[i]}
+     * by {@code subsampling[i]} for each dimension <var>i</var> so that each virtual tile contains only whole
+     * real tiles.
+     *
+     * @param  subsampling  the subsampling which will be applied in a read operation.
+     * @return the size of tiles (in pixels) in this resource.
+     * @throws DataStoreException if an error occurred while fetching the tile size.
+     */
+    protected long[] getVirtualTileSize(int[] subsampling) throws DataStoreException {
+        return ArraysExt.copyAsLongs(getTileSize());
+    }
 
     /**
      * Returns the number of sample values in an indivisible element of a tile.
@@ -411,8 +434,12 @@ check:  if (dataType.isInteger()) {
 
         /**
          * Size of tiles (or chunks) in the resource, without clipping and subsampling.
+         * May be a virtual tile size (i.e., tiles larger than the real tiles) if the
+         * resource can easily coalesce many tiles in a single read operation.
+         *
+         * @see #getVirtualTileSize(int[])
          */
-        final int[] tileSize;
+        final long[] virtualTileSize;
 
         /**
          * The sample model for the bands to read (not the full set of bands in the resource).
@@ -456,7 +483,7 @@ check:  if (dataType.isInteger()) {
             final RangeArgument   rangeIndices = RangeArgument.validate(bands.size(), range, listeners);
             final GridGeometry    gridGeometry = getGridGeometry();
             sourceExtent = gridGeometry.getExtent();
-            tileSize = getTileSize();
+            final int[] tileSize = getTileSize();
             boolean sharedCache = true;
             if (domain == null) {
                 domain             = gridGeometry;
@@ -506,6 +533,13 @@ check:  if (dataType.isInteger()) {
                 readExtent         = target.getIntersection();
                 subsampling        = target.getSubsampling();
                 subsamplingOffsets = target.getSubsamplingOffsets();
+            }
+            /*
+             * Virtual tile size is usually the same as the real tile size.
+             */
+            virtualTileSize = getVirtualTileSize(subsampling);
+            for (int i=0; i < virtualTileSize.length; i++) {
+                virtualTileSize[i] = Math.min(sourceExtent.getSize(i), Math.max(tileSize[i], virtualTileSize[i]));
             }
             /*
              * Get the bands selected by user in strictly increasing order of source band index.
@@ -580,7 +614,7 @@ check:  if (dataType.isInteger()) {
                 return false;
             }
             for (int i = subsampling.length; --i >= 0;) {
-                if (subsampling[i] >= tileSize[i]) {
+                if (subsampling[i] >= virtualTileSize[i]) {
                     return false;
                 }
             }

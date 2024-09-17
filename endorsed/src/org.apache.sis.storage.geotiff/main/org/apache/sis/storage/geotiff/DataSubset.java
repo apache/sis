@@ -29,7 +29,6 @@ import java.awt.image.DataBufferDouble;
 import java.awt.image.Raster;
 import static java.lang.Math.subtractExact;
 import static java.lang.Math.multiplyExact;
-import static java.lang.Math.multiplyFull;
 import static java.lang.Math.toIntExact;
 import org.opengis.util.GenericName;
 import org.apache.sis.image.DataType;
@@ -497,7 +496,10 @@ class DataSubset extends TiledGridCoverage implements Localized {
          * This length is used only for verification purpose so it does not need to be exact.
          */
         final long length = ceilDiv(width * height * sourcePixelStride * sampleSize, Byte.SIZE);
-        final long[] size = new long[] {multiplyFull(sourcePixelStride, getTileSize(X_DIMENSION)), getTileSize(Y_DIMENSION)};
+        final long[] size = new long[] {
+            multiplyExact(getTileSize(X_DIMENSION), sourcePixelStride),
+                          getTileSize(Y_DIMENSION)
+        };
         /*
          * If we use an interleaved sample model, each "element" from `HyperRectangleReader` perspective is actually a
          * group of `sourcePixelStride` values. Note that in such case, we cannot handle subsampling on the first axis.
