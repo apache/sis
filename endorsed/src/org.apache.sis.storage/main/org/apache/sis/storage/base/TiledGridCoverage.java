@@ -64,7 +64,7 @@ import org.opengis.coordinate.MismatchedDimensionException;
  * <h2>Cell coordinates</h2>
  * When there is no subsampling, this coverage uses the same cell coordinates as the originating resource.
  * When there is a subsampling, cell coordinates in this coverage are divided by the subsampling factors.
- * Conversions are done by {@link #pixelToResourceCoordinates(Rectangle)}.
+ * Conversions are done by {@link #coverageToResourceCoordinate(long, int)}.
  *
  * <p><b>DEsign note:</b> {@code TiledGridCoverage} use the same cell coordinates as the originating
  * {@link TiledGridResource} (when no subsampling) because those two classes use {@code long} integers.
@@ -95,7 +95,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * This is the intersection between user-specified domain and the source
      * {@link TiledGridResource} domain, expanded to an integer number of tiles.
      */
-    private final GridExtent readExtent;
+    protected final GridExtent readExtent;
 
     /**
      * Whether to force the {@link #readExtent} tile intersection to the {@link #virtualTileSize}.
@@ -148,7 +148,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
     /**
      * The Tile Matrix Coordinates (<abbr>TMC</abbr>) that tile (0,0) of this coverage
      * would have in the originating {@code TiledGridResource}.
-     * This is the value to subtract from tile indices computed from pixel coordinates.
+     * This is the value to subtract from tile indices computed from cell coordinates.
      *
      * <p>The current implementation assumes that the tile (0,0) in the resource starts
      * at cell coordinates (0,0) of the resource.</p>
@@ -159,7 +159,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
     private final long[] tmcOfFirstTile;
 
     /**
-     * Conversion from pixel coordinates in this (potentially subsampled) coverage
+     * Conversion from cell coordinates in this (potentially subsampled) coverage
      * to cell coordinates in the originating resource coverage at full resolution.
      * The conversion from (<var>x</var>, <var>y</var>) to (<var>x′</var>, <var>y′</var>) is as below,
      * where <var>s</var> are subsampling factors and <var>t</var> are subsampling offsets:
@@ -172,7 +172,7 @@ public abstract class TiledGridCoverage extends GridCoverage {
      * This transform maps {@linkplain org.apache.sis.coverage.grid.PixelInCell#CELL_CORNER pixel corners}.
      *
      * @see #getSubsampling(int)
-     * @see #pixelToResourceCoordinate(long, int)
+     * @see #coverageToResourceCoordinate(long, int)
      */
     private final long[] subsampling, subsamplingOffsets;
 
@@ -321,50 +321,58 @@ public abstract class TiledGridCoverage extends GridCoverage {
     /**
      * Converts a cell coordinate from this coverage to the {@code TiledGridResource} coordinate space.
      * This method removes the subsampling effect, i.e. returns the coordinate that we would have if this
-     * coverage was at full resolution. Such unsampled {@code TiledGridCoverage} uses the same coordinates
-     * as the originating {@link TiledGridResource}.
-     *
-     * <p>This method uses the "pixel" word for simplicity and because this method is used mostly
-     * for the first two dimensions, but "pixel" should be understood as "grid coverage cell".</p>
+     * coverage was at full resolution. When there is no subsampling, {@code TiledGridCoverage} uses the
+     * same coordinates as the originating {@link TiledGridResource}.
      *
      * @param  coordinate  coordinate in this {@code TiledGridCoverage} domain.
-     * @param  dimension   dimension of the coordinate.
+     * @param  dimension   the dimension of the coordinate to convert.
      * @return coordinate in this {@code TiledGridResource} with no subsampling applied.
      * @throws ArithmeticException if the coordinate cannot be represented as a long integer.
-     *
-     * @see #pixelToResourceCoordinates(Rectangle)
      */
-    private long pixelToResourceCoordinate(final long coordinate, final int dimension) {
+    protected final long coverageToResourceCoordinate(final long coordinate, final int dimension) {
         return addExact(multiplyExact(coordinate, subsampling[dimension]), subsamplingOffsets[dimension]);
     }
 
     /**
      * Converts a cell coordinate from {@link TiledGridResource} space to {@code TiledGridCoverage} coordinate.
-     * This is the converse of {@link #pixelToResourceCoordinate(long, int)}.
+     * This method is the converse of {@link #coverageToResourceCoordinate(long, int)}.
      * Note that there is a possible accuracy lost.
      *
      * @param  coordinate  coordinate in the {@code TiledGridResource} domain.
-     * @param  dimension   dimension of the coordinate.
+     * @param  dimension   the dimension of the coordinate to convert.
      * @return coordinates in this subsampled {@code TiledGridCoverage} domain.
      * @throws ArithmeticException if the coordinate cannot be represented as a long integer.
      */
-    private long resourceToPixelCoordinate(final long coordinate, final int dimension) {
+    private long resourceToCoverageCoordinate(final long coordinate, final int dimension) {
         return floorDiv(subtractExact(coordinate, subsamplingOffsets[dimension]), subsampling[dimension]);
+    }
+
+    /**
+     * Converts a tile index from the <abbr>TMC</abbr> of this coverage to a cell coordinate in the originating resource.
+     * Note that the computation (like all methods in this class) uses the <em>virtual</em> tile size.
+     * This is usually the same as the real tile size, but not always.
+     *
+     * @param  tileIndex  tile index from the <abbr>TMC</abbr> of this coverage.
+     * @param  dimension  the dimension of the coordinate to convert.
+     * @return cell coordinate of the tile lower coordinate in the originating resource.
+     */
+    final long coverageTileToResourceCell(final long tileIndex, final int dimension) {
+        return multiplyExact(addExact(tileIndex, tmcOfFirstTile[dimension]), virtualTileSize[dimension]);
     }
 
     /**
      * Converts a cell coordinate from this {@code TiledGridCoverage} coordinate space to
      * the Tile Matrix Coordinate (<abbr>TMC</abbr>) of the tile which contains that cell.
-     * The <abbr>TMC</abbr> is relative to the full {@link TiledGridResource},
+     * The returned <abbr>TMC</abbr> is relative to the full {@link TiledGridResource},
      * i.e. without subtraction of {@link #tmcOfFirstTile}.
      *
      * @param  coordinate  coordinates in this {@code TiledGridCoverage} domain.
-     * @param  dimension   dimension of the coordinate.
+     * @param  dimension   the dimension of the coordinate to convert.
      * @return Tile Matrix Coordinate (TMC) of the tile which contains the specified cell.
      * @throws ArithmeticException if the coordinate cannot be represented as an integer.
      */
-    private long toResourceTileMatrixCoordinate(final long coordinate, final int dimension) {
-        return floorDiv(pixelToResourceCoordinate(coordinate, dimension), virtualTileSize[dimension]);
+    private long coverageCellToResourceTile(final long coordinate, final int dimension) {
+        return floorDiv(coverageToResourceCoordinate(coordinate, dimension), virtualTileSize[dimension]);
     }
 
     /**
@@ -412,6 +420,25 @@ public abstract class TiledGridCoverage extends GridCoverage {
     }
 
     /**
+     * Returns the two-dimensional slice of the given grid extent, converted to 32-bits integers.
+     * By default, the <var>x</var> axis is the grid dimension at index 0 and the <var>y</var> axis
+     * is the grid dimension at index 1. Other dimensions are ignored.
+     *
+     * @param  extent  the grid extent to slice, or {@code null}.
+     * @return two-dimensional slice of the given extent, or {@code null} if the given extent was null.
+     * @throws ArithmeticException if the extent exceeds the capacity of 32-bits integers.
+     */
+    protected final Rectangle bidimensional(final GridExtent extent) {
+        if (extent == null) {
+            return null;
+        }
+        return new Rectangle(toIntExact(extent.getLow (X_DIMENSION)),
+                             toIntExact(extent.getLow (Y_DIMENSION)),
+                             toIntExact(extent.getSize(X_DIMENSION)),
+                             toIntExact(extent.getSize(Y_DIMENSION)));
+    }
+
+    /**
      * Returns a two-dimensional slice of grid data as a rendered image.
      *
      * @param  sliceExtent  a subspace of this grid coverage, or {@code null} for the whole image.
@@ -446,8 +473,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
                 final long max    = available  .getHigh(i);     // Highest valid coordinate, inclusive.
                 final long aoiMin = sliceExtent.getLow (i);     // Requested coordinate in subsampled image.
                 final long aoiMax = sliceExtent.getHigh(i);
-                final long tileUp = incrementExact(toResourceTileMatrixCoordinate(Math.min(aoiMax, max), i));
-                final long tileLo =                toResourceTileMatrixCoordinate(Math.max(aoiMin, min), i);
+                final long tileUp = incrementExact(coverageCellToResourceTile(Math.min(aoiMax, max), i));
+                final long tileLo =                coverageCellToResourceTile(Math.max(aoiMin, min), i);
                 if (tileUp <= tileLo) {
                     final String message = Errors.forLocale(getLocale())
                             .getString(Errors.Keys.IllegalRange_2, aoiMin, aoiMax);
@@ -458,8 +485,8 @@ public abstract class TiledGridCoverage extends GridCoverage {
                     }
                 }
                 // Lower and upper coordinates in subsampled image, rounded to integer number of tiles and clipped to available data.
-                final long lower = /* inclusive */Math.max(resourceToPixelCoordinate(/* inclusive */multiplyExact(tileLo, virtualTileSize[i]),  i), min);
-                final long upper = incrementExact(Math.min(resourceToPixelCoordinate(decrementExact(multiplyExact(tileUp, virtualTileSize[i])), i), max));
+                final long lower = /* inclusive */Math.max(resourceToCoverageCoordinate(/* inclusive */multiplyExact(tileLo, virtualTileSize[i]),  i), min);
+                final long upper = incrementExact(Math.min(resourceToCoverageCoordinate(decrementExact(multiplyExact(tileUp, virtualTileSize[i])), i), max));
                 imageSize[i] = toIntExact(subtractExact(upper, lower));
                 offsetAOI[i] = toIntExact(subtractExact(lower, aoiMin));
                 tileLower[i] = toIntExact(subtractExact(tileLo, tmcOfFirstTile[i]));
@@ -812,12 +839,13 @@ public abstract class TiledGridCoverage extends GridCoverage {
         /**
          * Pixel coordinates to assign to the upper-left corner of the region to render, with subsampling applied.
          * This is the difference between the region requested by user and the region which will be rendered.
+         * This is often 0 or negative. May be positive if the image has been clipped.
          */
         private final int[] offsetAOI;
 
         /**
          * Cell coordinates of current iterator position relative to the Area Of Interest specified by user.
-         * Those coordinates are in units of the coverage at full resolution.
+         * Those coordinates are in units of the coverage at full resolution (except for the translation).
          * Initial position is {@link #offsetAOI} multiplied by {@link #subsampling}.
          * This array is modified by calls to {@link #next()}.
          */
@@ -903,31 +931,93 @@ public abstract class TiledGridCoverage extends GridCoverage {
         }
 
         /**
-         * Returns the extent of the current tile in units of the full coverage resource (without subsampling).
-         * This method is a generalization to <var>n</var> dimensions of the rectangle computed by the
-         * following code:
+         * Returns the extent of the full region to read (all tiles) in units of the originating resource.
+         * The returned extent does not change during the iteration process (this method is not available
+         * in {@link Snapshot} for that reason). This method is typically invoked only at the beginning of
+         * the iteration process, when knowing in advance the full read region allows some optimizations.
          *
-         * {@snippet lang="java" :
-         *     WritableRaster tile = createRaster();
-         *     Rectangle target = tile.getBounds();
-         *     Rectangle source = pixelToResourceCoordinates(bounds);
-         * }
+         * <p>The returned region is based on the user's request in her/his call to {@link #render(GridExtent)},
+         * but is not necessarily identical. The render method may have expanded or clipped the user's request.</p>
          *
-         * @return extent of this tile in units of the full coverage resource.
-         *
-         * @see #pixelToResourceCoordinates(Rectangle)
+         * @return extent of all tiles to be traversed by this iterator, in units of the originating resource.
          */
-        public final GridExtent getTileExtentInResource() {
-            final int dimension = tileOffsetFull.length;
+        public GridExtent getFullRegionInResourceCoordinates() {
+            final int dimension = tileLower.length;
             final var    axes  = new DimensionNameType[dimension];
             final long[] lower = new long[dimension];
             final long[] upper = new long[dimension];
             for (int i=0; i<dimension; i++) {
-                lower[i] = pixelToResourceCoordinate(getTileOrigin(i), i);
-                upper[i] = addExact(lower[i], getTileSize(i));
                 axes [i] = readExtent.getAxisType(i).orElse(null);
+                lower[i] = Math.max(coverageTileToResourceCell(tileLower[i], i),   readExtent.getLow(i));
+                upper[i] = Math.min(coverageTileToResourceCell(tileUpper[i], i)-1, readExtent.getHigh(i));
             }
-            return new GridExtent(axes, lower, upper, false);
+            return new GridExtent(axes, lower, upper, true);
+        }
+
+        /**
+         * Converts the given cell coordinate from the originating resource to the pixel coordinate.
+         * The destination coordinate system is the coordinate system of the {@link RenderedImage}
+         * to be rendered. Note that the top-left corner of the image is not necessarily (0,0).
+         *
+         * @param  coordinate  pixel coordinate in the {@link RenderedImage} coordinate system.
+         * @param  dimension   the dimension of the coordinate to convert.
+         * @return cell coordinate in the {@link TiledGridResource} coordinate system.
+         */
+        public long resourceToImage(long coordinate, final int dimension) {
+            coordinate = Math.subtractExact(coordinate, coverageTileToResourceCell(tileLower[dimension], dimension));
+            coordinate = Math.floorDiv(coordinate, getSubsampling(dimension));
+            coordinate = Math.addExact(coordinate, offsetAOI[dimension]);
+            return coordinate;
+        }
+
+        /**
+         * Converts the given pixel coordinate to the coordinate in the originating resource.
+         * The source coordinate system is the coordinate system of the {@link RenderedImage}
+         * to be rendered. Note that the top-left corner of the image is not necessarily (0,0).
+         *
+         * @param  coordinate  pixel coordinate in the {@link RenderedImage} coordinate system.
+         * @param  dimension   the dimension of the coordinate to convert.
+         * @return cell coordinate in the {@link TiledGridResource} coordinate system.
+         */
+        public long imageToResource(long coordinate, final int dimension) {
+            coordinate = subtractExact(coordinate, offsetAOI[dimension]);       // (0,0) at image origin instead of AOI.
+            coordinate = multiplyExact(coordinate, getSubsampling(dimension));  // Full resolution, like in the resource.
+            coordinate = addExact(coordinate, coverageTileToResourceCell(tileLower[dimension], dimension));
+            return coordinate;
+        }
+
+        /**
+         * Converts cell coordinates from the originating resource to pixel coordinates.
+         *
+         * @param  bounds  the coordinates to convert.
+         * @return the converted coordinates.
+         * @throws ArithmeticException if the result cannot be expressed as 32-bits integers.
+         */
+        public Rectangle resourceToImage(final Rectangle bounds) {
+            long x, y;      // Convenience for casting `int` to `long`.
+            final var r = new Rectangle();
+            r.x      = toIntExact(resourceToImage(x = bounds.x,      X_DIMENSION));
+            r.y      = toIntExact(resourceToImage(y = bounds.y,      Y_DIMENSION));
+            r.width  = toIntExact(resourceToImage(x + bounds.width,  X_DIMENSION) - r.x);
+            r.height = toIntExact(resourceToImage(y + bounds.height, Y_DIMENSION) - r.y);
+            return r;
+        }
+
+        /**
+         * Converts cell coordinates from pixel coordinates to the originating resource.
+         *
+         * @param  bounds  the coordinates to convert.
+         * @return the converted coordinates.
+         * @throws ArithmeticException if the result cannot be expressed as 32-bits integers.
+         */
+        public Rectangle imageToResource(final Rectangle bounds) {
+            long x, y;      // Convenience for casting `int` to `long`.
+            final var r = new Rectangle();
+            r.x      = toIntExact(imageToResource(x = bounds.x,      X_DIMENSION));
+            r.y      = toIntExact(imageToResource(y = bounds.y,      Y_DIMENSION));
+            r.width  = toIntExact(imageToResource(x + bounds.width,  X_DIMENSION) - r.x);
+            r.height = toIntExact(imageToResource(y + bounds.height, Y_DIMENSION) - r.y);
+            return r;
         }
 
         /**
@@ -1120,27 +1210,4 @@ public abstract class TiledGridCoverage extends GridCoverage {
      *         (too many exception types to list them all).
      */
     protected abstract Raster[] readTiles(TileIterator iterator) throws IOException, DataStoreException;
-
-    /**
-     * Converts raster coordinate from this coverage to {@code TiledGridResource} coordinate space.
-     * This method removes the subsampling effect, i.e. returns the coordinates that we would have if this
-     * coverage was at full resolution. Such unsampled {@code TiledGridCoverage} uses the same coordinates
-     * as the originating {@link TiledGridResource}.
-     *
-     * <p>This method uses the "pixel" word for simplicity and because this method is used for
-     * the two-dimensional case, but "pixel" should be understood as "grid coverage cell".</p>
-     *
-     * @param  bounds  the rectangle to convert.
-     * @return the converted rectangle.
-     * @throws ArithmeticException if the coordinate cannot be represented as an integer.
-     *
-     * @see TileIterator#getTileExtentInResource()
-     */
-    protected final Rectangle pixelToResourceCoordinates(final Rectangle bounds) {
-        return new Rectangle(
-                toIntExact(pixelToResourceCoordinate(bounds.x, X_DIMENSION)),
-                toIntExact(pixelToResourceCoordinate(bounds.y, Y_DIMENSION)),
-                toIntExact(multiplyExact(subsampling[X_DIMENSION], bounds.width)),
-                toIntExact(multiplyExact(subsampling[Y_DIMENSION], bounds.height)));
-    }
 }

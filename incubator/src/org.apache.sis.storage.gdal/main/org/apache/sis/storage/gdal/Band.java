@@ -266,7 +266,7 @@ final class Band {
      * @param  raster           the Java2D raster where to store of fetch the values to read or write.
      * @param  rasterBounds     region to write or read in raster coordinates.
      * @param  transferBuffer   a temporary buffer used for copying data.
-     * @return whether  the operation was successful according <abbr>GDAL</abbr>.
+     * @return whether the operation was successful according <abbr>GDAL</abbr>.
      * @throws ClassCastException if an above-documented prerequisite is not true.
      * @throws DataStoreException if <var>GDAL</var> reported a warning or fatal error.
      */
@@ -283,10 +283,13 @@ final class Band {
         if (readWriteFlags == OpenFlag.READ && !(raster instanceof WritableRaster)) {
             throw new ClassCastException();
         }
-        final var   sampleModel = (ComponentSampleModel) raster.getSampleModel();   // See prerequisites in Javadoc.
-        final var   dataBuffer  = raster.getDataBuffer();
-        final int   dataSize    = DataBuffer.getDataTypeSize(dataBuffer.getDataType()) / Byte.SIZE;
-        final int[] bankIndices = sampleModel.getBankIndices();
+        final var   dataBuffer     = raster.getDataBuffer();
+        final var   rasterType     = resourceType.forDataBufferType(dataBuffer.getDataType());
+        final int   dataSize       = DataBuffer.getDataTypeSize(dataBuffer.getDataType()) / Byte.SIZE;
+        final var   sampleModel    = (ComponentSampleModel) raster.getSampleModel();   // See prerequisites in Javadoc.
+        final int   pixelStride    = Math.multiplyExact(dataSize, sampleModel.getPixelStride());
+        final int   scanlineStride = Math.multiplyExact(dataSize, sampleModel.getScanlineStride());
+        final int[] bankIndices    = sampleModel.getBankIndices();
         /*
          * The following assertions are critical: if those conditions are not true, it may crash the JVM.
          * For that reason, we test them unconditionally instead of using the `assert` statement.
@@ -304,14 +307,19 @@ final class Band {
                             rasterBounds.y - raster.getSampleModelTranslateY(), i));
             final int err;
             try {
-                err = (int) gdal.rasterIO.invokeExact(selectedBands[i].handle, readWriteFlags,
-                        resourceBounds.x, resourceBounds.y, resourceBounds.width, resourceBounds.height,
-                        transferBuffer,
-                        rasterBounds.width,
-                        rasterBounds.height,
-                        resourceType.forDataBufferType(dataBuffer.getDataType()).ordinal(),
-                        Math.multiplyExact(dataSize, sampleModel.getPixelStride()),
-                        Math.multiplyExact(dataSize, sampleModel.getScanlineStride()));
+                err = (int) gdal.rasterIO.invokeExact(
+                        selectedBands[i].handle,
+                        readWriteFlags,         // Either GF_Read to read a region of data, or GF_Write to write a region of data.
+                        resourceBounds.x,       // First column of the region to be accessed. Zero to start from the left side.
+                        resourceBounds.y,       // First row of the region to be accessed. Zero to start from the top.
+                        resourceBounds.width,   // The width of the region of the band to be accessed in pixels.
+                        resourceBounds.height,  // The height of the region of the band to be accessed in lines.
+                        transferBuffer,         // The buffer into which the data is read, or from which it is written.
+                        rasterBounds.width,     // The width of the region of the Java2D raster to be accessed.
+                        rasterBounds.height,    // The height of the region of the Java2D raster to be accessed.
+                        rasterType.ordinal(),   // The type of the pixel values in the destinaton image.
+                        pixelStride,            // The byte offset from the start of one pixel to the start of the next pixel.
+                        scanlineStride);        // The byte offset from the start of one scanline to the start of the next.
             } catch (Throwable e) {
                 throw GDAL.propagate(e);
             }
@@ -321,5 +329,40 @@ final class Band {
             MemorySegment.ofBuffer(buffer).copyFrom(transferBuffer);
         }
         return true;
+    }
+
+    /**
+     * Advise driver of upcoming read requests. Contrarily to the above {@code read(…)} method which receives
+     * a rectangle for one tile at a time, the rectangle received by this method is for all tiles to be read.
+     *
+     * @param  gdal             set of handles for invoking <abbr>GDAL</abbr> functions.
+     * @param  resourceBounds   region to read in resource coordinates. (0,0) is the upper-left pixel.
+     * @param  imageBounds      region to write in image coordinates (may cover more than one tile).
+     * @param  imageType       the <abbr>GDAL</abbr> data type of the destination raster.
+     * @return whether the operation was successful according <abbr>GDAL</abbr>.
+     * @throws DataStoreException if <var>GDAL</var> reported a warning or fatal error.
+     */
+    final boolean adviseRead(final GDAL      gdal,
+                             final Rectangle resourceBounds,
+                             final Rectangle imageBounds,       // Not the same as `rasterBounds`.
+                             final DataType  imageType)
+            throws DataStoreException
+    {
+        final int err;
+        try {
+            err = (int) gdal.adviseRead.invokeExact(
+                    handle,
+                    resourceBounds.x,       // First column of the region to be accessed. Zero to start from the left side.
+                    resourceBounds.y,       // First row of the region to be accessed. Zero to start from the top.
+                    resourceBounds.width,   // The width of the region of the band to be accessed in pixels.
+                    resourceBounds.height,  // The height of the region of the band to be accessed in lines.
+                    imageBounds.width,      // The width of the destination image.
+                    imageBounds.height,     // The height of the destination image.
+                    imageType.ordinal(),    // The type of the pixel values in the destinaton image.
+                    MemorySegment.NULL);    // A list of name=value strings with special control options.
+        } catch (Throwable e) {
+            throw GDAL.propagate(e);
+        }
+        return ErrorHandler.checkCPLErr(err);
     }
 }

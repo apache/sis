@@ -23,6 +23,7 @@ import java.awt.image.WritableRaster;
 import java.lang.foreign.Arena;
 import java.lang.foreign.MemorySegment;
 import org.opengis.util.GenericName;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.base.TiledGridCoverage;
 import org.apache.sis.storage.base.TiledGridResource;
@@ -78,20 +79,37 @@ final class TiledCoverage extends TiledGridCoverage {
      */
     @Override
     protected Raster[] readTiles(final TileIterator iterator) throws IOException, DataStoreException {
+        Rectangle resourceBounds = bidimensional(iterator.getFullRegionInResourceCoordinates());
+        Rectangle imageBounds;
+        try {
+            imageBounds = iterator.resourceToImage(resourceBounds);
+        } catch (ArithmeticException e) {
+            // Ignore, this is used only as a hint.
+            Logging.ignorableException(GDALStoreProvider.LOGGER, GDALStore.class, "read", e);
+            imageBounds = null;
+        }
         synchronized (owner.getSynchronizationLock()) {
-            final Band[] bands  = owner.bands(includedBands);
-            final GDAL   gdal   = owner.parent.getProvider().GDAL();
-            final var    result = new WritableRaster[iterator.tileCountInQuery];
+            final Band[]   bands      = owner.bands(includedBands);
+            final GDAL     gdal       = owner.parent.getProvider().GDAL();
+            final var      result     = new WritableRaster[iterator.tileCountInQuery];
+            final DataType rasterType = owner.dataType.forDataBufferType(model.getDataType());
+            if (imageBounds != null) {
+                // Give a chance to the GDAL driver to prepare itself for the reading of all tiles in the AOI.
+                for (final Band band : bands) {
+                    if (!band.adviseRead(gdal, resourceBounds, imageBounds, rasterType)) break;
+                }
+            }
             try (Arena arena = Arena.ofConfined()) {
                 final MemorySegment transferBuffer = arena.allocate(getTileLength());
                 do {
                     final WritableRaster tile = iterator.createRaster();
-                    final Rectangle target = iterator.getRegionInsideTile(true);
-                    if (target != null) {
-                        target.x = Math.addExact(target.x, tile.getMinX());
-                        target.y = Math.addExact(target.y, tile.getMinY());
-                        final Rectangle source = pixelToResourceCoordinates(target);
-                        if (!Band.transfer(gdal, OpenFlag.READ, bands, owner.dataType, source, tile, target, transferBuffer)) {
+                    final Rectangle rasterBounds = iterator.getRegionInsideTile(true);
+                    if (rasterBounds != null) {
+                        rasterBounds.x += tile.getMinX();
+                        rasterBounds.y += tile.getMinY();
+                        resourceBounds = iterator.imageToResource(rasterBounds);
+                        assert (imageBounds == null) || imageBounds.contains(rasterBounds) : rasterBounds + " not in " + imageBounds;
+                        if (!Band.transfer(gdal, OpenFlag.READ, bands, owner.dataType, resourceBounds, tile, rasterBounds, transferBuffer)) {
                             break;      // Exception will be thrown by `throwOnFailure(…)`
                         }
                     }

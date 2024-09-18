@@ -21,20 +21,20 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.NoSuchElementException;
-import java.lang.foreign.Arena;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.lang.foreign.Arena;
 import java.lang.foreign.Linker;
 import java.lang.foreign.ValueLayout;
 import java.lang.foreign.SymbolLookup;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.FunctionDescriptor;
 import java.lang.invoke.MethodHandle;
+import org.apache.sis.util.logging.Logging;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.panama.LibraryLoader;
 import org.apache.sis.storage.panama.LibraryStatus;
 import org.apache.sis.storage.panama.NativeFunctions;
-import org.apache.sis.util.logging.Logging;
 
 
 /**
@@ -268,6 +268,12 @@ final class GDAL extends NativeFunctions {
     final MethodHandle rasterIO;
 
     /**
+     * <abbr>GDAL</abbr> {@code CPLErr GDALRasterAdviseRead(GDALRasterBandH hRBand, ...)}.
+     * Advise driver of upcoming read requests.
+     */
+    final MethodHandle adviseRead;
+
+    /**
      * Creates the handles for all <abbr>GDAL</abbr> functions which will be needed.
      *
      * @param  loader  the object used for loading the library.
@@ -375,6 +381,18 @@ final class GDAL extends NativeFunctions {
                 ValueLayout.JAVA_INT,       // GDALDataType eBDataType
                 ValueLayout.JAVA_INT,       // int nPixelSpace
                 ValueLayout.JAVA_INT));     // int nLineSpace
+
+        adviseRead = lookup(linker, "GDALRasterAdviseRead", FunctionDescriptor.of(
+                ValueLayout.JAVA_INT,       // CPLErr error code (return value)
+                ValueLayout.ADDRESS,        // GDALRasterBandH hRBand
+                ValueLayout.JAVA_INT,       // int nDSXOff
+                ValueLayout.JAVA_INT,       // int nDSYOff
+                ValueLayout.JAVA_INT,       // int nDSXSize
+                ValueLayout.JAVA_INT,       // int nDSYSize
+                ValueLayout.JAVA_INT,       // int nBXSize
+                ValueLayout.JAVA_INT,       // int nBYSize
+                ValueLayout.JAVA_INT,       // GDALDataType eBDataType
+                ValueLayout.ADDRESS));      // CSLConstList papszOptions
 
         // Set error handling first in order to redirect initialization warnings.
         setErrorHandler(linker, null);
