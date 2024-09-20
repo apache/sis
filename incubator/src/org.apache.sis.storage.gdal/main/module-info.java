@@ -53,7 +53,9 @@ module org.apache.sis.storage.gdal {
     requires transitive org.apache.sis.storage;
 
     exports org.apache.sis.storage.gdal;
-    exports org.apache.sis.storage.panama;
+
+    exports org.apache.sis.storage.panama to
+            org.apache.sis.storage.gsf;                 // In the "incubator" sub-project.
 
     provides org.apache.sis.storage.DataStoreProvider
             with org.apache.sis.storage.gdal.GDALStoreProvider;
