@@ -44,7 +44,6 @@ import org.apache.sis.storage.DataStoreClosedException;
 import org.apache.sis.storage.InternalDataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.MetadataBuilder;
-import org.apache.sis.storage.base.ResourceOnFileSystem;
 import org.apache.sis.storage.base.URIDataStore;
 import org.apache.sis.util.privy.UnmodifiableArrayList;
 import org.apache.sis.util.iso.DefaultNameFactory;
@@ -60,7 +59,7 @@ import org.apache.sis.system.Cleaners;
  * @version 1.5
  * @since   1.5
  */
-public class GDALStore extends DataStore implements Aggregate, ResourceOnFileSystem {
+public class GDALStore extends DataStore implements Aggregate {
     /**
      * The {@link GDALStoreProvider#LOCATION} parameter value, or {@code null} if none.
      *
@@ -71,7 +70,7 @@ public class GDALStore extends DataStore implements Aggregate, ResourceOnFileSys
     /**
      * Path of the file opened by this data store, or {@code null} if none.
      *
-     * @see #getComponentFiles()
+     * @see #getFileSet()
      */
     private final Path path;
 
@@ -154,7 +153,7 @@ public class GDALStore extends DataStore implements Aggregate, ResourceOnFileSys
         path       = connector.getStorageAs(Path.class);
         String url = connector.commit(String.class, GDALStoreProvider.NAME);
         if (location != null) {
-            url = Opener.toURL(location, path);
+            url = Opener.toURL(location, path, true);
         }
         Opener opener;
         opener = new Opener(provider, url, drivers);
@@ -275,11 +274,11 @@ public class GDALStore extends DataStore implements Aggregate, ResourceOnFileSys
      *       <abbr>GDAL</abbr> provides a {@code GDALCopyDatasetFiles} function for this purpose.
      *       That function is not yet used by Apache <abbr>SIS</abbr>.
      *
-     * @return files used by this resource, or an empty array if unknown.
+     * @return files used by this resource, or an empty value if unknown.
      * @throws DataStoreException if the list of files cannot be obtained.
      */
     @Override
-    public synchronized Path[] getComponentFiles() throws DataStoreException {
+    public synchronized Optional<FileSet> getFileSet() throws DataStoreException {
         final GDAL gdal = getProvider().GDAL();
         final List<String> files;
         try {
@@ -292,18 +291,23 @@ public class GDALStore extends DataStore implements Aggregate, ResourceOnFileSys
         } catch (Throwable e) {
             throw GDAL.propagate(e);
         }
-        if (files == null || files.isEmpty()) {
-            return (path != null) ? new Path[] {path} : new Path[0];
-        }
-        final var paths = new Path[files.size()];
-        for (int i=0; i < paths.length; i++) {
-            var item = Path.of(files.get(i));
-            if (path != null) {
-                item = path.resolveSibling(item);
+        final FileSet fs;
+        if (files != null && !files.isEmpty()) {
+            final var paths = new Path[files.size()];
+            for (int i=0; i < paths.length; i++) {
+                var item = Path.of(files.get(i));
+                if (path != null) {
+                    item = path.resolveSibling(item);
+                }
+                paths[i] = item;
             }
-            paths[i] = item;
+            fs = getDriver().new FileList(paths, path, location);
+        } else if (path != null) {
+            fs = new FileSet(path);
+        } else {
+            return Optional.empty();
         }
-        return paths;
+        return Optional.of(fs);
     }
 
     /**

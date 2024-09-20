@@ -94,6 +94,18 @@ final class GDAL extends NativeFunctions {
     final MethodHandle identifyDriver;
 
     /**
+     * <abbr>GDAL</abbr> {@code CPLErr GDALCopyDatasetFiles(GDALDriverH, const char *pszNewName, const char *pszOldName)}.
+     * Copy the files of a dataset.
+     */
+    final MethodHandle copyDataset;
+
+    /**
+     * <abbr>GDAL</abbr> {@code CPLErr GDALDeleteDataset(GDALDriverH, const char*)}.
+     * Delete named dataset.
+     */
+    final MethodHandle deleteDataset;
+
+    /**
      * <abbr>GDAL</abbr> {@code GDALDatasetH GDALOpenEx(const char *pszFilename, …)}.
      * Opens a raster or vector file by invoking the open method of each driver in turn.
      * Requires <abbr>GDAL</abbr> 2.0.
@@ -303,6 +315,17 @@ final class GDAL extends NativeFunctions {
                 ValueLayout.ADDRESS,    // GDALMajorObject
                 ValueLayout.ADDRESS,    // const char* name
                 ValueLayout.ADDRESS));  // const char* domain
+
+        copyDataset = lookup(linker, "GDALCopyDatasetFiles", FunctionDescriptor.of(
+                ValueLayout.JAVA_INT,   // CPLErr (return type)
+                ValueLayout.ADDRESS,    // GDALDriverH
+                ValueLayout.ADDRESS,    // const char* pszNewName
+                ValueLayout.ADDRESS));  // const char* pszOldName
+
+        deleteDataset = lookup(linker, "GDALDeleteDataset", FunctionDescriptor.of(
+                ValueLayout.JAVA_INT,   // CPLErr (return type)
+                ValueLayout.ADDRESS,    // GDALDriverH
+                ValueLayout.ADDRESS));  // const char* pszName
 
         // For Opener
         close = lookup(linker, "GDALClose",  acceptPointerReturnInt);

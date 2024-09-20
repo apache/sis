@@ -19,6 +19,9 @@ package org.apache.sis.storage.esri;
 import java.util.List;
 import java.awt.image.Raster;
 import java.awt.image.RenderedImage;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import org.opengis.metadata.Metadata;
 import org.opengis.metadata.extent.GeographicBoundingBox;
 import org.apache.sis.coverage.Category;
@@ -31,6 +34,7 @@ import org.apache.sis.storage.ProbeResult;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import org.apache.sis.test.TestCase;
+import static org.apache.sis.test.Assertions.assertMultilinesEquals;
 import static org.apache.sis.test.TestUtilities.getSingleton;
 
 // Specific to the geoapi-3.1 and geoapi-4.0 branches:
@@ -44,6 +48,11 @@ import org.opengis.metadata.identification.Identification;
  */
 public final class AsciiGridStoreTest extends TestCase {
     /**
+     * Filename of the test file.
+     */
+    private static final String FILENAME = "grid.asc";
+
+    /**
      * Creates a new test case.
      */
     public AsciiGridStoreTest() {
@@ -53,7 +62,7 @@ public final class AsciiGridStoreTest extends TestCase {
      * Returns a storage connector with the URL to the test data.
      */
     private static StorageConnector testData() {
-        return new StorageConnector(AsciiGridStoreTest.class.getResource("grid.asc"));
+        return new StorageConnector(AsciiGridStoreTest.class.getResource(FILENAME));
     }
 
     /**
@@ -70,7 +79,7 @@ public final class AsciiGridStoreTest extends TestCase {
     }
 
     /**
-     * Tests the metadata of the {@code "grid.asc"} file. This test reads only the header.
+     * Tests the metadata of the {@value #FILENAME} file. This test reads only the header.
      * It should not test sample dimensions or pixel values, because doing so read the full
      * image and is the purpose of {@link #testRead()}.
      *
@@ -105,7 +114,7 @@ public final class AsciiGridStoreTest extends TestCase {
     }
 
     /**
-     * Tests reading a few values from the {@code "grid.asc"} file.
+     * Tests reading a few values from the {@value #FILENAME} file.
      *
      * @throws DataStoreException if an error occurred while reading the file.
      */
@@ -134,6 +143,50 @@ public final class AsciiGridStoreTest extends TestCase {
              * Verify that the coverage is cached.
              */
             assertSame(coverage, store.read(null, null));
+        }
+    }
+
+    /**
+     * Tests {@link AsciiGridStore#getFileSet()}. Since {@link AsciiGridStore} inherits
+     * the default implementation, this is actually a test of {@code Resource.FileSet}.
+     *
+     * @throws DataStoreException if an error occurred while fetching the list of files.
+     * @throws IOException if an error occurred while copying the file.
+     */
+    @Test
+    public void testFileSet() throws DataStoreException, IOException {
+        AsciiGridStore.FileSet fileset;
+        try (AsciiGridStore store = new AsciiGridStore(null, testData(), true)) {
+            fileset = store.getFileSet().orElseThrow();
+        }
+        final Path source = fileset.getPaths().iterator().next();
+        assertEquals(FILENAME, source.getFileName().toString());
+        /*
+         * Tests the copy operation in a temporary directory.
+         * This is using the default implementation of `FileSet.copy(…)`,
+         */
+        final Path dir = Files.createTempDirectory("sis-");
+        Path target = null;
+        try {
+            target = fileset.copy(dir);
+            assertEquals(dir, target.getParent());
+            assertEquals(FILENAME, target.getFileName().toString());
+            assertMultilinesEquals(Files.readString(source), Files.readString(target));
+            /*
+             * In order to test the delete operation, we need to open a new data store on the file
+             * that we just copied. Otherwise, `fileset.delete()` would delete the original file.
+             */
+            try (AsciiGridStore store = new AsciiGridStore(null,  new StorageConnector(target), true)) {
+                fileset = store.getFileSet().orElseThrow();
+            }
+            fileset.delete();
+            assertTrue(Files.notExists(target));
+            target = null;
+        } finally {
+            if (target != null) {
+                Files.deleteIfExists(target);
+            }
+            Files.deleteIfExists(dir);
         }
     }
 }

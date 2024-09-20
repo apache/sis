@@ -19,6 +19,7 @@ package org.apache.sis.gui.dataset;
 import java.awt.Desktop;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.io.File;
 import java.nio.file.Path;
 import java.net.URL;
@@ -32,7 +33,6 @@ import javafx.scene.input.ClipboardContent;
 import org.apache.sis.gui.internal.ExceptionReporter;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.Resource;
-import org.apache.sis.storage.base.ResourceOnFileSystem;
 import org.apache.sis.storage.base.URIDataStoreProvider;
 import org.apache.sis.io.stream.IOUtilities;
 
@@ -141,26 +141,27 @@ final class PathAction implements EventHandler<ActionEvent> {
          * This list of files will usually be ignored and only the `file` text will be pasted,
          * but it depends on the application where files will be pasted.
          */
-        List<File> files = null;
-        if (resource instanceof ResourceOnFileSystem) try {
-            final Path[] components = ((ResourceOnFileSystem) resource).getComponentFiles();
-            if (components != null) {
-                files = new ArrayList<>(components.length);
-                for (final Path p : components) try {
-                    if (p != null) files.add(p.toFile());
-                } catch (UnsupportedOperationException e) {
-                    // Ignore and try to add other components.
-                }
-            }
+        Collection<Path> components = null;
+        try {
+            components = resource.getFileSet().map(Resource.FileSet::getPaths).orElse(null);
         } catch (DataStoreException e) {
             ResourceTree.unexpectedException("copy", e);
+        }
+        List<File> files = null;
+        if (components != null) {
+            files = new ArrayList<>(components.size());
+            for (final Path p : components) try {
+                if (p != null) files.add(p.toFile());
+            } catch (UnsupportedOperationException e) {
+                // Ignore and try to add other components.
+            }
         } else if (file instanceof File) {
             files = List.of((File) file);
         }
         /*
          * Put in the clipboard all information that we could get.
          */
-        final ClipboardContent content = new ClipboardContent();
+        final var content = new ClipboardContent();
         content.putString(file.toString());
         if (files != null) content.putFiles(files);
         if (uri   != null) content.putUrl(uri.toString());

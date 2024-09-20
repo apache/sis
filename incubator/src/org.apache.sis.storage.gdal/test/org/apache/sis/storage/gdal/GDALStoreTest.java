@@ -16,7 +16,10 @@
  */
 package org.apache.sis.storage.gdal;
 
+import java.util.Collection;
 import java.nio.file.Path;
+import java.nio.file.Files;
+import java.io.IOException;
 import java.awt.image.DataBuffer;
 import java.awt.image.RenderedImage;
 import org.opengis.util.GenericName;
@@ -50,6 +53,11 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public final class GDALStoreTest {
     /**
+     * Name of the test file.
+     */
+    private static final String FILENAME = "test.tiff";
+
+    /**
      * Creates a new test case.
      */
     public GDALStoreTest() {
@@ -72,7 +80,7 @@ public final class GDALStoreTest {
      * Returns the storage connector to the test file to use as input.
      */
     private static StorageConnector input() {
-        return new StorageConnector(GDALStoreTest.class.getResource("test.tiff"));
+        return new StorageConnector(GDALStoreTest.class.getResource(FILENAME));
     }
 
     /**
@@ -159,11 +167,54 @@ public final class GDALStoreTest {
             }
 
             // Check the file components
-            final Path[] paths = store.getComponentFiles();
-            assertEquals(1, paths.length);
-            assertEquals("test.tiff", paths[0].getFileName().toString());
+            final Collection<Path> paths = store.getFileSet().orElseThrow().getPaths();
+            assertEquals(1, paths.size());
+            assertEquals(FILENAME, paths.iterator().next().getFileName().toString());
         }
         assertTrue(foundGrid);
         assertTrue(foundBand);
+    }
+
+    /**
+     * Tests {@link GDALStore#getFileSet()}.
+     *
+     * @throws DataStoreException if an error occurred while fetching the list of files.
+     * @throws IOException if an error occurred while copying the file.
+     */
+    @Test
+    public void testFileSet() throws DataStoreException, IOException {
+        final var provider = new GDALStoreProvider();
+        GDALStore.FileSet fileset;
+        try (GDALStore store = new GDALStore(provider, input())) {
+            fileset = store.getFileSet().orElseThrow();
+        }
+        final Path source = fileset.getPaths().iterator().next();
+        assertEquals(FILENAME, source.getFileName().toString());
+        /*
+         * Tests the copy operation in a temporary directory.
+         */
+        final Path dir = Files.createTempDirectory("sis-");
+        Path target = null;
+        try {
+            target = fileset.copy(dir);
+            assertEquals(dir, target.getParent());
+            assertEquals(FILENAME, target.getFileName().toString());
+            assertArrayEquals(Files.readAllBytes(source), Files.readAllBytes(target));
+            /*
+             * In order to test the delete operation, we need to open a new data store on the file
+             * that we just copied. Otherwise, `fileset.delete()` would delete the original file.
+             */
+            try (GDALStore store = new GDALStore(provider, new StorageConnector(target))) {
+                fileset = store.getFileSet().orElseThrow();
+            }
+            fileset.delete();
+            assertTrue(Files.notExists(target));
+            target = null;
+        } finally {
+            if (target != null) {
+                Files.deleteIfExists(target);
+            }
+            Files.deleteIfExists(dir);
+        }
     }
 }

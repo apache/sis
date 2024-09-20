@@ -67,7 +67,7 @@ import org.apache.sis.xml.privy.ExceptionSimplifier;
  * @author  Johann Sorel (Geomatys)
  * @author  Martin Desruisseaux (Geomatys)
  */
-public abstract class URIDataStore extends DataStore implements StoreResource, ResourceOnFileSystem {
+public abstract class URIDataStore extends DataStore implements StoreResource {
     /**
      * The {@link DataStoreProvider#LOCATION} parameter value, or {@code null} if none.
      */
@@ -76,7 +76,7 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
     /**
      * The {@link #location} as a path, or {@code null} if none or if the URI cannot be converted to a path.
      *
-     * @see #getComponentFiles()
+     * @see #getFileSet()
      */
     protected final Path locationAsPath;
 
@@ -177,21 +177,27 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
     }
 
     /**
-     * Returns the main and metadata locations as {@code Path} components, or an empty array if none.
+     * Returns the main and metadata locations as {@code Path} components, or an empty value if none.
      * The default implementation returns the storage specified at construction time converted to a
-     * {@link Path} if such conversion was possible, or an empty array otherwise. The array may also
+     * {@link Path} if such conversion was possible, or an empty value otherwise. The set may also
      * contains the path to the {@linkplain DataOptionKey#METADATA_PATH auxiliary metadata file}.
      *
-     * @return the URI to component files as paths, or an empty array if unknown.
+     * @return the URI to component files as paths, or an empty value if unknown.
      * @throws DataStoreException if an error occurred while getting the paths.
      */
     @Override
-    public Path[] getComponentFiles() throws DataStoreException {
+    public Optional<FileSet> getFileSet() throws DataStoreException {
+        final Path[] paths;
         try {
-            final var paths = new Path[] {locationAsPath, getMetadataPath()};
-            return ArraysExt.resize(paths, ArraysExt.removeDuplicated(paths, ArraysExt.removeNulls(paths)));
+            paths = new Path[] {locationAsPath, getMetadataPath()};
         } catch (IOException e) {
             throw new DataStoreException(e);
+        }
+        final int count = ArraysExt.removeDuplicated(paths, ArraysExt.removeNulls(paths));
+        if (count != 0) {
+            return Optional.of(new FileSet(ArraysExt.resize(paths, count)));
+        } else {
+            return Optional.empty();
         }
     }
 
@@ -510,12 +516,15 @@ public abstract class URIDataStore extends DataStore implements StoreResource, R
      */
     protected final void deleteAuxiliaryFile(final String extension) throws DataStoreException, IOException {
         String previous = null;
-        for (Path path : getComponentFiles()) {
-            final String base = getBaseFilename(path);
-            if (!base.equals(previous)) {
-                previous = base;
-                path = path.resolveSibling(base.concat(extension));
-                Files.deleteIfExists(path);
+        final Optional<FileSet> files = getFileSet();
+        if (files.isPresent()) {
+            for (Path path : files.get().getPaths()) {
+                final String base = getBaseFilename(path);
+                if (!base.equals(previous)) {
+                    previous = base;
+                    path = path.resolveSibling(base.concat(extension));
+                    Files.deleteIfExists(path);
+                }
             }
         }
     }

@@ -117,9 +117,10 @@ final class Opener implements Runnable {
      *
      * @param  location  URL to the file to open (mandatory).
      * @param  path      URL as a path on the file system, or {@code null} if none.
-     * @return <abbr>URL</abbr> for <var>GDAL</var>.
+     * @param  fallback  whether to use a fallback value if the URI is not recognized.
+     * @return <abbr>URL</abbr> for <var>GDAL</var>. May be {@code null} if unrecognized and no fallback is used.
      */
-    static String toURL(final URI location, final Path path) {
+    static String toURL(final URI location, final Path path, final boolean fallback) {
         String url;
         final String scheme = location.getScheme();
         if (path != null && "file".equalsIgnoreCase(scheme)) {
@@ -128,6 +129,8 @@ final class Opener implements Runnable {
             url = location.toString();
             if (scheme != null && VSICURL.contains(scheme.toLowerCase(Locale.US))) {
                 url = "/vsicurl/".concat(url);
+            } else if (!fallback) {
+                return null;
             }
         }
         return url;
@@ -147,7 +150,7 @@ final class Opener implements Runnable {
         String url;
         final URI location = connector.getStorageAs(URI.class);
         if (location != null) {
-            url = toURL(location, connector.getStorageAs(Path.class));
+            url = toURL(location, connector.getStorageAs(Path.class), true);
         } else {
             url = connector.getStorageAs(String.class);
         }

@@ -24,7 +24,6 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.StorageConnector;
 import org.apache.sis.storage.base.MetadataBuilder;
-import org.apache.sis.storage.base.ResourceOnFileSystem;
 import org.apache.sis.storage.base.URIDataStore;
 import org.opengis.metadata.Metadata;
 import org.opengis.parameter.ParameterValueGroup;
@@ -33,7 +32,7 @@ import org.opengis.parameter.ParameterValueGroup;
  *
  * @author Johann Sorel (Geomatys)
  */
-public final class GSFStore extends DataStore implements ResourceOnFileSystem {
+public final class GSFStore extends DataStore {
     /**
      * The {@link GSFStoreProvider#LOCATION} parameter value, or {@code null} if none.
      *
@@ -43,7 +42,7 @@ public final class GSFStore extends DataStore implements ResourceOnFileSystem {
     /**
      * Path of the file opened by this data store, or {@code null} if none.
      *
-     * @see #getComponentFiles()
+     * @see #getFileSet()
      */
     private final Path path;
     /**
@@ -92,8 +91,8 @@ public final class GSFStore extends DataStore implements ResourceOnFileSystem {
     }
 
     @Override
-    public Path[] getComponentFiles() throws DataStoreException {
-        return new Path[]{path};
+    public Optional<FileSet> getFileSet() throws DataStoreException {
+        return Optional.of(new FileSet(path));
     }
 
     @Override

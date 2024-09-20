@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.io.Closeable;
 import java.io.IOException;
@@ -445,11 +446,11 @@ loop:   for (int convention=0;; convention++) {
     /**
      * Returns paths to the main file together with auxiliary files.
      *
-     * @return paths to the main file and auxiliary files, or an empty array if unknown.
+     * @return paths to the main file and auxiliary files, or an empty value if unknown.
      * @throws DataStoreException if the URI cannot be converted to a {@link Path}.
      */
     @Override
-    public synchronized Path[] getComponentFiles() throws DataStoreException {
+    public Optional<FileSet> getFileSet() throws DataStoreException {
         if (suffixWLD == null) try {
             getGridGeometry(MAIN_IMAGE);                // Will compute `suffixWLD` as a side effect.
         } catch (URISyntaxException | IOException e) {

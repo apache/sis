@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.util.Locale;
+import java.util.Optional;
 import java.io.IOException;
 import java.io.FileNotFoundException;
 import java.nio.file.NoSuchFileException;
@@ -86,7 +87,7 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
     /**
      * The filename extension of {@code "*.stx"} and {@code "*.clr"} files.
      *
-     * @see #getComponentFiles()
+     * @see #getFileSet()
      */
     static final String STX = "stx", CLR = "clr";
 
@@ -132,11 +133,11 @@ abstract class RasterStore extends PRJDataStore implements GridCoverageResource 
     /**
      * Returns the {@linkplain #location} as a {@code Path} component together with auxiliary files.
      *
-     * @return the main file and auxiliary files as paths, or an empty array if unknown.
+     * @return the main file and auxiliary files as paths, or an empty value if unknown.
      * @throws DataStoreException if the URI cannot be converted to a {@link Path}.
      */
     @Override
-    public Path[] getComponentFiles() throws DataStoreException {
+    public Optional<FileSet> getFileSet() throws DataStoreException {
         return listComponentFiles(PRJ, STX, CLR);
     }
 

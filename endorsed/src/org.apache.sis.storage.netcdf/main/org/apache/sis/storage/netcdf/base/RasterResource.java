@@ -35,7 +35,6 @@ import org.apache.sis.storage.DataStore;
 import org.apache.sis.storage.DataStoreException;
 import org.apache.sis.storage.DataStoreContentException;
 import org.apache.sis.storage.Resource;
-import org.apache.sis.storage.base.ResourceOnFileSystem;
 import org.apache.sis.storage.base.MetadataBuilder;
 import org.apache.sis.storage.base.StoreResource;
 import org.apache.sis.util.Numbers;
@@ -68,7 +67,7 @@ import org.apache.sis.storage.netcdf.internal.Resources;
  * @author  Johann Sorel (Geomatys)
  * @author  Alexis Manin (Geomatys)
  */
-public final class RasterResource extends AbstractGridCoverageResource implements StoreResource, ResourceOnFileSystem {
+public final class RasterResource extends AbstractGridCoverageResource implements StoreResource {
     /**
      * Words used in standard (preferred) or long (if no standard) variable names which suggest
      * that the variable is a component of a vector. Those words are used in heuristic rules
@@ -159,7 +158,7 @@ public final class RasterResource extends AbstractGridCoverageResource implement
     /**
      * Path to the netCDF file for information purpose, or {@code null} if unknown.
      *
-     * @see #getComponentFiles()
+     * @see #getFileSet()
      */
     private final Path location;
 
@@ -739,11 +738,11 @@ public final class RasterResource extends AbstractGridCoverageResource implement
     }
 
     /**
-     * Gets the paths to files used by this resource, or an empty array if unknown.
+     * Gets the paths to files used by this resource, or an empty value if unknown.
      */
     @Override
-    public Path[] getComponentFiles() {
-        return (location != null) ? new Path[] {location} : new Path[0];
+    public final Optional<FileSet> getFileSet() {
+        return (location != null) ? Optional.of(new FileSet(location)) : Optional.empty();
     }
 
     /**

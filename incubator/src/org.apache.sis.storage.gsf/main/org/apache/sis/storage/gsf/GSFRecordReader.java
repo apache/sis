@@ -45,7 +45,7 @@ public final class GSFRecordReader implements AutoCloseable {
 
     public GSFRecordReader(GSFStore store) throws DataStoreException {
         this.store = store;
-        this.file = store.getComponentFiles()[0];
+        this.file = store.getFileSet().orElseThrow().getPaths().iterator().next();
         this.gsf = store.getProvider().GSF();
         this.arena = Arena.ofShared();
 
