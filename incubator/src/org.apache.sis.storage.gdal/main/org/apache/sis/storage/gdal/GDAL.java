@@ -24,7 +24,6 @@ import java.util.NoSuchElementException;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.lang.foreign.Arena;
-import java.lang.foreign.Linker;
 import java.lang.foreign.ValueLayout;
 import java.lang.foreign.SymbolLookup;
 import java.lang.foreign.MemorySegment;
@@ -92,18 +91,6 @@ final class GDAL extends NativeFunctions {
      * Identify the driver that can open a dataset.
      */
     final MethodHandle identifyDriver;
-
-    /**
-     * <abbr>GDAL</abbr> {@code CPLErr GDALCopyDatasetFiles(GDALDriverH, const char *pszNewName, const char *pszOldName)}.
-     * Copy the files of a dataset.
-     */
-    final MethodHandle copyDataset;
-
-    /**
-     * <abbr>GDAL</abbr> {@code CPLErr GDALDeleteDataset(GDALDriverH, const char*)}.
-     * Delete named dataset.
-     */
-    final MethodHandle deleteDataset;
 
     /**
      * <abbr>GDAL</abbr> {@code GDALDatasetH GDALOpenEx(const char *pszFilename, …)}.
@@ -299,37 +286,25 @@ final class GDAL extends NativeFunctions {
         final var acceptPointerReturnInt     = FunctionDescriptor.of(ValueLayout.JAVA_INT,    ValueLayout.ADDRESS);
         final var acceptTwoPtrsReturnDouble  = FunctionDescriptor.of(ValueLayout.JAVA_DOUBLE, ValueLayout.ADDRESS, ValueLayout.ADDRESS);
         final var acceptTwoPtrsReturnPointer = FunctionDescriptor.of(ValueLayout.ADDRESS,     ValueLayout.ADDRESS, ValueLayout.ADDRESS);
-        final Linker linker = Linker.nativeLinker();
 
         // Memory management
-        free    = lookup(linker, "VSIFree",    FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
-        destroy = lookup(linker, "CSLDestroy", FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
+        free    = lookup("VSIFree",    FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
+        destroy = lookup("CSLDestroy", FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
 
         // For Driver and/or all major objects
-        identifyDriver  = lookup(linker, "GDALIdentifyDriver",     acceptTwoPtrsReturnPointer);
-        getName         = lookup(linker, "GDALGetDriverLongName",  acceptPointerReturnPointer);
-        getIdentifier   = lookup(linker, "GDALGetDriverShortName", acceptPointerReturnPointer);
-        getMetadata     = lookup(linker, "GDALGetMetadata",        acceptTwoPtrsReturnPointer);
-        getMetadataItem = lookup(linker, "GDALGetMetadataItem", FunctionDescriptor.of(
+        identifyDriver  = lookup("GDALIdentifyDriver",     acceptTwoPtrsReturnPointer);
+        getName         = lookup("GDALGetDriverLongName",  acceptPointerReturnPointer);
+        getIdentifier   = lookup("GDALGetDriverShortName", acceptPointerReturnPointer);
+        getMetadata     = lookup("GDALGetMetadata",        acceptTwoPtrsReturnPointer);
+        getMetadataItem = lookup("GDALGetMetadataItem", FunctionDescriptor.of(
                 ValueLayout.ADDRESS,    // const char* (return type)
                 ValueLayout.ADDRESS,    // GDALMajorObject
                 ValueLayout.ADDRESS,    // const char* name
                 ValueLayout.ADDRESS));  // const char* domain
 
-        copyDataset = lookup(linker, "GDALCopyDatasetFiles", FunctionDescriptor.of(
-                ValueLayout.JAVA_INT,   // CPLErr (return type)
-                ValueLayout.ADDRESS,    // GDALDriverH
-                ValueLayout.ADDRESS,    // const char* pszNewName
-                ValueLayout.ADDRESS));  // const char* pszOldName
-
-        deleteDataset = lookup(linker, "GDALDeleteDataset", FunctionDescriptor.of(
-                ValueLayout.JAVA_INT,   // CPLErr (return type)
-                ValueLayout.ADDRESS,    // GDALDriverH
-                ValueLayout.ADDRESS));  // const char* pszName
-
         // For Opener
-        close = lookup(linker, "GDALClose",  acceptPointerReturnInt);
-        open  = lookup(linker, "GDALOpenEx", FunctionDescriptor.of(ValueLayout.ADDRESS,
+        close = lookup("GDALClose",  acceptPointerReturnInt);
+        open  = lookup("GDALOpenEx", FunctionDescriptor.of(ValueLayout.ADDRESS,
                 ValueLayout.ADDRESS,        // const char *pszFilename
                 ValueLayout.JAVA_INT,       // unsigned int nOpenFlags
                 ValueLayout.ADDRESS,        // const char *const *papszAllowedDrivers
@@ -337,60 +312,60 @@ final class GDAL extends NativeFunctions {
                 ValueLayout.ADDRESS));      // const char *const *papszSiblingFiles
 
         // For all data sets
-        getFileList      = lookup(linker, "GDALGetFileList",      acceptPointerReturnPointer);
-        getDatasetDriver = lookup(linker, "GDALGetDatasetDriver", acceptPointerReturnPointer);
-        getSpatialRef    = lookup(linker, "GDALGetSpatialRef",    acceptPointerReturnPointer);
-        getGCPSpatialRef = lookup(linker, "GDALGetGCPSpatialRef", acceptPointerReturnPointer);
-        exportToWkt      = lookup(linker, "OSRExportToWktEx",     FunctionDescriptor.of(
+        getFileList      = lookup("GDALGetFileList",      acceptPointerReturnPointer);
+        getDatasetDriver = lookup("GDALGetDatasetDriver", acceptPointerReturnPointer);
+        getSpatialRef    = lookup("GDALGetSpatialRef",    acceptPointerReturnPointer);
+        getGCPSpatialRef = lookup("GDALGetGCPSpatialRef", acceptPointerReturnPointer);
+        exportToWkt      = lookup("OSRExportToWktEx",     FunctionDescriptor.of(
                 ValueLayout.JAVA_INT,       // CPLErr error code (return value)
                 ValueLayout.ADDRESS,        // OGRSpatialReferenceH
                 ValueLayout.ADDRESS,        // char **ppszWKT
                 ValueLayout.ADDRESS));      // const char *const *papszOptions
 
-        getDataAxisToCRSAxis = lookup(linker, "OSRGetDataAxisToSRSAxisMapping", acceptTwoPtrsReturnPointer);
+        getDataAxisToCRSAxis = lookup("OSRGetDataAxisToSRSAxisMapping", acceptTwoPtrsReturnPointer);
 
         // For TiledResource (GDAL Raster)
-        getGeoTransform = lookup(linker, "GDALGetGeoTransform", FunctionDescriptor.of(
+        getGeoTransform = lookup("GDALGetGeoTransform", FunctionDescriptor.of(
                 ValueLayout.JAVA_INT,       // CPLErr error code (return value)
                 ValueLayout.ADDRESS,        // GDALDataSetH dataset
                 ValueLayout.ADDRESS));      // double *padfTransform
 
-        getRasterXSize     = lookup(linker, "GDALGetRasterXSize",     acceptPointerReturnInt);
-        getRasterYSize     = lookup(linker, "GDALGetRasterYSize",     acceptPointerReturnInt);
-        getRasterCount     = lookup(linker, "GDALGetRasterCount",     acceptPointerReturnInt);
-        getRasterBandXSize = lookup(linker, "GDALGetRasterBandXSize", acceptPointerReturnInt);
-        getRasterBandYSize = lookup(linker, "GDALGetRasterBandYSize", acceptPointerReturnInt);
-        getRasterBand      = lookup(linker, "GDALGetRasterBand", FunctionDescriptor.of(
+        getRasterXSize     = lookup("GDALGetRasterXSize",     acceptPointerReturnInt);
+        getRasterYSize     = lookup("GDALGetRasterYSize",     acceptPointerReturnInt);
+        getRasterCount     = lookup("GDALGetRasterCount",     acceptPointerReturnInt);
+        getRasterBandXSize = lookup("GDALGetRasterBandXSize", acceptPointerReturnInt);
+        getRasterBandYSize = lookup("GDALGetRasterBandYSize", acceptPointerReturnInt);
+        getRasterBand      = lookup("GDALGetRasterBand", FunctionDescriptor.of(
                 ValueLayout.ADDRESS,        // GDALRasterBandH (return value)
                 ValueLayout.ADDRESS,        // GDALDataSetH dataset
                 ValueLayout.JAVA_INT));     // Band index, starting with 1.
 
         // For Band
-        getBandNumber          = lookup(linker, "GDALGetBandNumber",                acceptPointerReturnInt);
-        getColorInterpretation = lookup(linker, "GDALGetRasterColorInterpretation", acceptPointerReturnInt);
-        getRasterDataType      = lookup(linker, "GDALGetRasterDataType",            acceptPointerReturnInt);
-        getRasterMinimum       = lookup(linker, "GDALGetRasterMinimum",             acceptTwoPtrsReturnDouble);
-        getRasterMaximum       = lookup(linker, "GDALGetRasterMaximum",             acceptTwoPtrsReturnDouble);
-        getRasterNoDataValue   = lookup(linker, "GDALGetRasterNoDataValue",         acceptTwoPtrsReturnDouble);
-        getRasterScale         = lookup(linker, "GDALGetRasterScale",               acceptTwoPtrsReturnDouble);
-        getRasterOffset        = lookup(linker, "GDALGetRasterOffset",              acceptTwoPtrsReturnDouble);
-        getRasterUnitType      = lookup(linker, "GDALGetRasterUnitType",            acceptPointerReturnPointer);
-        getRasterCategoryNames = lookup(linker, "GDALGetRasterCategoryNames",       acceptPointerReturnPointer);
-        getRasterColorTable    = lookup(linker, "GDALGetRasterColorTable",          acceptPointerReturnPointer);
-        getColorEntryCount     = lookup(linker, "GDALGetColorEntryCount",           acceptPointerReturnInt);
-        getColorEntryAsRGB     = lookup(linker, "GDALGetColorEntryAsRGB", FunctionDescriptor.of(
+        getBandNumber          = lookup("GDALGetBandNumber",                acceptPointerReturnInt);
+        getColorInterpretation = lookup("GDALGetRasterColorInterpretation", acceptPointerReturnInt);
+        getRasterDataType      = lookup("GDALGetRasterDataType",            acceptPointerReturnInt);
+        getRasterMinimum       = lookup("GDALGetRasterMinimum",             acceptTwoPtrsReturnDouble);
+        getRasterMaximum       = lookup("GDALGetRasterMaximum",             acceptTwoPtrsReturnDouble);
+        getRasterNoDataValue   = lookup("GDALGetRasterNoDataValue",         acceptTwoPtrsReturnDouble);
+        getRasterScale         = lookup("GDALGetRasterScale",               acceptTwoPtrsReturnDouble);
+        getRasterOffset        = lookup("GDALGetRasterOffset",              acceptTwoPtrsReturnDouble);
+        getRasterUnitType      = lookup("GDALGetRasterUnitType",            acceptPointerReturnPointer);
+        getRasterCategoryNames = lookup("GDALGetRasterCategoryNames",       acceptPointerReturnPointer);
+        getRasterColorTable    = lookup("GDALGetRasterColorTable",          acceptPointerReturnPointer);
+        getColorEntryCount     = lookup("GDALGetColorEntryCount",           acceptPointerReturnInt);
+        getColorEntryAsRGB     = lookup("GDALGetColorEntryAsRGB", FunctionDescriptor.of(
                 ValueLayout.JAVA_INT,
                 ValueLayout.ADDRESS,
                 ValueLayout.JAVA_INT,
                 ValueLayout.ADDRESS));
 
         // Band I/O
-        getBlockSize = lookup(linker, "GDALGetBlockSize", FunctionDescriptor.ofVoid(
+        getBlockSize = lookup("GDALGetBlockSize", FunctionDescriptor.ofVoid(
                 ValueLayout.ADDRESS,        // GDALRasterBandH
                 ValueLayout.ADDRESS,        // int *pnXSize
                 ValueLayout.ADDRESS));      // int *pnYSize
 
-        rasterIO = lookup(linker, "GDALRasterIO", FunctionDescriptor.of(
+        rasterIO = lookup("GDALRasterIO", FunctionDescriptor.of(
                 ValueLayout.JAVA_INT,       // CPLErr error code (return value)
                 ValueLayout.ADDRESS,        // GDALRasterBandH hRBand
                 ValueLayout.JAVA_INT,       // GDALRWFlag eRWFlag
@@ -405,7 +380,7 @@ final class GDAL extends NativeFunctions {
                 ValueLayout.JAVA_INT,       // int nPixelSpace
                 ValueLayout.JAVA_INT));     // int nLineSpace
 
-        adviseRead = lookup(linker, "GDALRasterAdviseRead", FunctionDescriptor.of(
+        adviseRead = lookup("GDALRasterAdviseRead", FunctionDescriptor.of(
                 ValueLayout.JAVA_INT,       // CPLErr error code (return value)
                 ValueLayout.ADDRESS,        // GDALRasterBandH hRBand
                 ValueLayout.JAVA_INT,       // int nDSXOff
@@ -418,11 +393,11 @@ final class GDAL extends NativeFunctions {
                 ValueLayout.ADDRESS));      // CSLConstList papszOptions
 
         // Set error handling first in order to redirect initialization warnings.
-        setErrorHandler(linker, null);
+        setErrorHandler(null);
 
         // Initialize GDAL after we found all functions.
         if (!invoke("GDALAllRegister")) {
-            log("open", new LogRecord(Level.WARNING, "Could not initialize GDAL."));
+            log(GDAL.class, "<init>", new LogRecord(Level.WARNING, "Could not initialize GDAL."));
         }
     }
 
@@ -446,7 +421,7 @@ final class GDAL extends NativeFunctions {
             if (global != null) {
                 if (GDALStoreProvider.LOGGER.isLoggable(Level.CONFIG)) {
                     global.version("--version").ifPresent((version) -> {
-                        log("open", new LogRecord(Level.CONFIG, version));
+                        log(GDAL.class, "<init>", new LogRecord(Level.CONFIG, version));
                     });
                 }
             }
@@ -492,12 +467,13 @@ final class GDAL extends NativeFunctions {
     /**
      * Same as {@link #global}, but logs a warning instead of throwing an exception in case of error.
      *
-     * @param  caller  the name of the method which is invoking this method.
+     * @param  classe  the class which is invoking this method (for logging purpose).
+     * @param  method  the name of the method which is invoking this method (for logging purpose).
      * @return handles to native functions needed by this module, or empty if not available.
      */
-    static synchronized Optional<GDAL> tryGlobal(final String caller) {
+    static synchronized Optional<GDAL> tryGlobal(final Class<?> classe, final String method) {
         if (globalStatus == null) {
-            load(true).getError(GDALStoreProvider.NAME).ifPresent((record) -> log(caller, record));
+            load(true).getError(GDALStoreProvider.NAME).ifPresent((record) -> log(classe, method, record));
         }
         return Optional.ofNullable(global);
     }
@@ -510,7 +486,6 @@ final class GDAL extends NativeFunctions {
      * <p><b>The error handler is valid only during the lifetime of the {@linkplain #arena() arena}.</b>
      * The error handle shall be uninstalled before the arena is closed.</p>
      *
-     * @param  linker  the linker to use. Should be {@link Linker#nativeLinker()}.
      * @param  target  the function to set as an error handler, or {@link MemorySegment#NULL} for the GDAL default.
      *                 If {@code null}, the function handle will be created by this method.
      * @return the previous error handler, or {@link MemorySegment#NULL} it it was the <abbr>GDAL</abbr> default.
@@ -519,7 +494,7 @@ final class GDAL extends NativeFunctions {
      * @see GDALStoreProvider#fatalError()
      */
     @SuppressWarnings("restricted")
-    private MemorySegment setErrorHandler(final Linker linker, MemorySegment target) {
+    private MemorySegment setErrorHandler(MemorySegment target) {
         final MemorySegment setter = symbols.find("CPLSetErrorHandler").orElse(null);
         if (setter == null) {
             return MemorySegment.NULL;
@@ -540,11 +515,12 @@ final class GDAL extends NativeFunctions {
     /**
      * Logs the given record as if was produced by the {@link GDALStoreProvider}, which is the public class.
      *
-     * @param  caller  the method name to report as the caller.
+     * @param  classe  the class which is invoking this method (for logging purpose).
+     * @param  method  the name of the method which is invoking this method (for logging purpose).
      * @param  record  the error to log.
      */
-    private static void log(final String caller, final LogRecord record) {
-        Logging.completeAndLog(GDALStoreProvider.LOGGER, GDALStoreProvider.class, caller, record);
+    private static void log(final Class<?> classe, final String method, final LogRecord record) {
+        Logging.completeAndLog(GDALStoreProvider.LOGGER, classe, method, record);
     }
 
     /**
@@ -561,7 +537,7 @@ final class GDAL extends NativeFunctions {
      * @return the <abbr>GDAL</abbr> version, or a message saying that the library was not found.
      */
     final Optional<String> version(final String request) {
-        return invokeGetString(Linker.nativeLinker(), "GDALVersionInfo", request);
+        return invokeGetString("GDALVersionInfo", request);
     }
 
     /**
@@ -618,7 +594,7 @@ final class GDAL extends NativeFunctions {
     public void run() {
         try {
             // Clear the error handler because the arena will be closed.
-            setErrorHandler(Linker.nativeLinker(), MemorySegment.NULL);
+            setErrorHandler(MemorySegment.NULL);
             invoke("GDALDestroy");
         } finally {
             super.run();

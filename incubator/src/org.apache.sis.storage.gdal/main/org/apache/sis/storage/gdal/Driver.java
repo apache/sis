@@ -18,13 +18,14 @@ package org.apache.sis.storage.gdal;
 
 import java.util.List;
 import java.util.AbstractList;
+import java.util.Arrays;
+import java.util.Optional;
 import java.util.Objects;
 import java.net.URI;
 import java.nio.file.Path;
 import java.io.IOException;
 import java.lang.foreign.Arena;
 import java.lang.foreign.FunctionDescriptor;
-import java.lang.foreign.Linker;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
 import java.lang.invoke.MethodHandle;
@@ -171,15 +172,35 @@ public final class Driver {
 
     /**
      * List of files of a <abbr>GDAL</abbr> data set, together with methods for copying or deleting them.
+     * The list of files is fetched in advance by the caller because the list needs to stay available after
+     * {@link GDALStore} has been closed. This class overrides the {@link #copy(Path)} and {@link #delete()}
+     * methods for delegating the operation to <abbr>GDAL</abbr> when possible. If not possible, this class
+     * fallbacks on the default Java implementation.
      */
     final class FileList extends Resource.FileSet {
-        /** Location of the data store as a path. */
+        /**
+         * Location of the data store as a path. It should be the first element of {@link #getPaths()},
+         * but is stored anyway because we have no guarantee that <abbr>GDAL</abbr> includes that file
+         * or puts it first in its list of files. May be {@code null} if not available.
+         *
+         * @see GDALStore#path
+         */
         private final Path path;
 
-        /** Location of the data store as a URL. */
+        /**
+         * Location of the data store as a <abbr>URL</abbr>. Should never be null.
+         *
+         * @see GDALStore#location
+         */
         private final URI location;
 
-        /** Creates a new file set for the given files. */
+        /**
+         * Creates a new {@code FileSet} for the given files.
+         *
+         * @param  paths     the files to be returned by {@link #getPaths()}.
+         * @param  path      the main file, or {@code null} if not available.
+         * @param  location  location of the data store as a <abbr>URL</abbr>.
+         */
         FileList(final Path[] paths, final Path path, final URI location) {
             super(paths);
             this.path = path;
@@ -187,81 +208,77 @@ public final class Driver {
         }
 
         /**
-         * Returns the URL (<abbr>GDAL</abbr> syntax) to the data set.
-         */
-        private String getURL() {
-            return Opener.toURL(location, path, true);
-        }
-
-        /**
-         * Copies the files to the given directory. The source should be an <abbr>URL</abbr> recognized
-         * by <abbr>GDAL</abbr> because {@code FileList} can be returned only by {@link GDALStore}.
-         * However, the destination could be a pure-Java file system.
+         * Copies the files to the given directory. The source should be a <abbr>URL</abbr> recognized
+         * by <abbr>GDAL</abbr> because this {@code FileList} can be returned only by {@link GDALStore}.
+         * However, the destination directory given in argument to this method may be a Java file system.
+         * In the latter case, this method delegates on the Java implementation instead of <abbr>GDAL</abbr>.
          */
         @Override
         public Path copy(final Path destDir) throws IOException {
-            final Path   dest   = destDir.resolve(path.getFileName());
-            final String target = Opener.toURL(dest.toUri(), dest, false);
-            if (target != null) try {
-                copyDataSet(getURL(), target);
-                return dest;
-            } catch (DataStoreException e) {
-                throw new IOException(e);
-            } else {
-                return super.copy(destDir);
+            final Path   file   = destDir.resolve(path.getFileName());
+            final String target = Opener.toURL(file.toUri(), file, false);
+            if (target != null && invoke("copy", "GDALCopyDatasetFiles", target)) {
+                return file;
+            }
+            return super.copy(destDir);
+        }
+
+        /**
+         * Deletes the files of the data set. This method delegates to <abbr>GDAL</abbr>,
+         * but fallbacks on Java code if the <abbr>GDAL</abbr> function fails.
+         */
+        @Override
+        public void delete() throws IOException {
+            if (!invoke("delete", "GDALDeleteDataset", null)) {
+                super.delete();
             }
         }
 
         /**
-         * Deletes the files of the data set.
+         * Optionally invokes the <abbr>GDAL</abbr> function for copying or deleting a data set.
+         * We fetch the method handle in this method rather than in the {@link GDAL} class
+         * because those methods should be rarely needed, and also because they are optional.
+         * The <abbr>GDAL</abbr> functions handled by this method are:
+         * <ul>
+         *   <li>{@code CPLErr GDALCopyDatasetFiles(GDALDriverH, const char *pszNewName, const char *pszOldName)}</li>
+         *   <li>{@code CPLErr GDALDeleteDataset(GDALDriverH, const char*)}</li>
+         * </ul>
+         *
+         * @param  caller    name of the Java method invoking this method, for logging purpose only.
+         * @param  function  name of the <abbr>GDAL</abbr> function to invoke.
+         * @param  target    the target directory if invoking the copy function, or null for the delete function.
+         * @return whether the operation has been successful.
          */
-        @Override
-        public void delete() throws IOException {
-            try {
-                deleteDataSet(getURL());
-            } catch (DataStoreException e) {
-                throw new IOException(e);
+        @SuppressWarnings("restricted")
+        private boolean invoke(final String caller, final String function, final String target) {
+            Optional<MethodHandle> method = owner.tryGDAL(Driver.class, caller).flatMap((gdal) -> {
+                return gdal.symbols.find(function).map((address) -> {
+                    var signature = new ValueLayout[(target != null) ? 3 : 2];
+                    Arrays.fill(signature, ValueLayout.ADDRESS);
+                    return gdal.linker.downcallHandle(address, FunctionDescriptor.of(ValueLayout.JAVA_INT, signature));
+                });
+            });
+            if (method.isEmpty()) {
+                return false;
             }
+            /*
+             * In both "GDALCopyDatasetFiles" and "GDALDeleteDataset" function, the driver
+             * handle is the first argument and the dataset URL is the last argument.
+             */
+            final String url = Opener.toURL(location, path, true);
+            final int err;
+            try (var arena = Arena.ofConfined()) {
+                final var source = arena.allocateFrom(url);
+                if (target != null) {
+                    err = (int) method.get().invokeExact(handle, arena.allocateFrom(target), source);
+                } else {
+                    err = (int) method.get().invokeExact(handle, source);
+                }
+            } catch (Throwable e) {
+                throw GDAL.propagate(e);
+            }
+            return err == 0;
         }
-    }
-
-    /**
-     * Copies the files of a data set managed by this driver.
-     * It is caller responsibility to ensure that this driver is the correct one for the data set to copy.
-     * No {@link GDALStore} should be opened on the source at the time that this method is invoked.
-     *
-     * @param  source  path or <abbr>URL</abbr> (<abbr>GDAL</abbr> syntax) of the main file of the data set to copy.
-     * @param  target  path or <abbr>URL</abbr> (<abbr>GDAL</abbr> syntax) of the desired target file.
-     * @throws DataStoreException if an error occurred while invoking a <abbr>GDAL</abbr> function.
-     */
-    public void copyDataSet(final String source, final String target) throws DataStoreException {
-        final int err;
-        final var gdal = owner.GDAL().copyDataset;
-        try (var arena = Arena.ofConfined()) {
-            err = (int) gdal.invokeExact(handle, arena.allocateFrom(target), arena.allocateFrom(source));
-        } catch (Throwable e) {
-            throw GDAL.propagate(e);
-        }
-        ErrorHandler.checkCPLErr(err);
-    }
-
-    /**
-     * Deletes the files of a data set managed by this driver.
-     * It is caller responsibility to ensure that this driver is the correct one for the data set to delete.
-     * No {@link GDALStore} should be opened on the data set when this method is invoked.
-     *
-     * @param  dataset  path or <abbr>URL</abbr> (<abbr>GDAL</abbr> syntax) of the main file of the data set to delete.
-     * @throws DataStoreException if an error occurred while invoking a <abbr>GDAL</abbr> function.
-     */
-    public void deleteDataSet(final String dataset) throws DataStoreException {
-        final int err;
-        final var gdal = owner.GDAL().deleteDataset;
-        try (var arena = Arena.ofConfined()) {
-            err = (int) gdal.invokeExact(handle, arena.allocateFrom(dataset));
-        } catch (Throwable e) {
-            throw GDAL.propagate(e);
-        }
-        ErrorHandler.checkCPLErr(err);
     }
 
     /**
@@ -313,11 +330,10 @@ public final class Driver {
         if (gdal == null || (address = gdal.symbols.find("GDALGetDriver").orElse(null)) == null) {
             return List.of();
         }
-        final Linker linker = Linker.nativeLinker();
         @SuppressWarnings("restricted")
-        final MethodHandle getDriver = linker.downcallHandle(address,
+        final MethodHandle getDriver = gdal.linker.downcallHandle(address,
                 FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.JAVA_INT));
-        final int count = gdal.invokeGetInt(linker, "GDALGetDriverCount").orElse(0);
+        final int count = gdal.invokeGetInt("GDALGetDriverCount").orElse(0);
         return new AbstractList<Driver>() {
             /** Returns the number of drivers. */
             @Override public int size() {

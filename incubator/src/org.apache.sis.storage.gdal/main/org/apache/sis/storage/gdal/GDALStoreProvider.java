@@ -154,12 +154,13 @@ public class GDALStoreProvider extends DataStoreProvider {
      * Tries to load <abbr>GDAL</abbr> if not already done, without throwing an exception in case of error.
      * Instead, the error is logged and {@code null} is returned. This is used for probing.
      *
-     * @param  caller  the name of the method which is invoking this method.
+     * @param  classe  the class which is invoking this method (for logging purpose).
+     * @param  method  the name of the method which is invoking this method (for logging purpose).
      * @return the set of native functions, or {@code null} if not available.
      */
-    final synchronized Optional<GDAL> tryGDAL(final String caller) {
+    final synchronized Optional<GDAL> tryGDAL(final Class<?> classe, final String method) {
         if (status == null) {
-            return GDAL.tryGlobal(caller);
+            return GDAL.tryGlobal(classe, method);
         }
         return Optional.ofNullable(nativeFunctions);
     }
@@ -196,7 +197,7 @@ public class GDALStoreProvider extends DataStoreProvider {
      * @return the version information computed from the string provided by GDAL.
      */
     private <V> Optional<V> version(final String caller, final String request, final Function<String, V> mapper) {
-        return tryGDAL(caller).flatMap((gdal) -> gdal.version(request)).map(mapper);
+        return tryGDAL(GDALStoreProvider.class, caller).flatMap((gdal) -> gdal.version(request)).map(mapper);
     }
 
     /**
@@ -237,7 +238,7 @@ public class GDALStoreProvider extends DataStoreProvider {
      * @return all <abbr>GDAL</abbr> drivers, or an empty list if the <abbr>GDAL</abbr> library has not been found.
      */
     public List<Driver> getDrivers() {
-        return Driver.list(this, tryGDAL("getDrivers").orElse(null));
+        return Driver.list(this, tryGDAL(GDALStoreProvider.class, "getDrivers").orElse(null));
     }
 
     /**
@@ -257,7 +258,7 @@ public class GDALStoreProvider extends DataStoreProvider {
      * @throws DataStoreException if an error occurred while querying <abbr>GDAL</abbr> metadata.
      */
     public TreeTable configuration() throws DataStoreException {
-        return Driver.configuration(this, tryGDAL("configuration").orElse(null));
+        return Driver.configuration(this, tryGDAL(GDALStoreProvider.class, "configuration").orElse(null));
     }
 
     /**

@@ -56,6 +56,12 @@ public abstract class NativeFunctions implements Runnable, Callable<Object> {
     public final SymbolLookup symbols;
 
     /**
+     * The linker to use for fetching method handles from the {@linkplain #symbols}.
+     * In current version, this is always {@link Linker#nativeLinker()}.
+     */
+    public final Linker linker;
+
+    /**
      * Creates a new set of handles to native functions.
      *
      * @param  loader  the object used for loading the library.
@@ -64,6 +70,7 @@ public abstract class NativeFunctions implements Runnable, Callable<Object> {
         libraryName = loader.filename;
         arena       = loader.arena;
         symbols     = loader.symbols;
+        linker      = Linker.nativeLinker();
     }
 
     /**
@@ -77,14 +84,13 @@ public abstract class NativeFunctions implements Runnable, Callable<Object> {
      * Returns the method handler for the <abbr>GDAL</abbr> function of given name and signature.
      * This is a convenience method for initialization of fields in subclasses.
      *
-     * @param  linker     {@link Linker#nativeLinker()} (should be fetched only once).
      * @param  function   name of the C/C++ <abbr>GDAL</abbr> function to invoke.
      * @param  signature  type of arguments and return type.
      * @return method handler for the <abbr>GDAL</abbr> function.
      * @throws IllegalArgumentException if the given function has not been found.
      */
     @SuppressWarnings("restricted")
-    protected final MethodHandle lookup(final Linker linker, final String function, final FunctionDescriptor signature) {
+    protected final MethodHandle lookup(final String function, final FunctionDescriptor signature) {
         return symbols.find(function).map((method) -> linker.downcallHandle(method, signature)).orElseThrow();
     }
 
@@ -93,16 +99,14 @@ public abstract class NativeFunctions implements Runnable, Callable<Object> {
      * This method should be used only for rarely invoked C/C++ functions, because it fetches the
      * method handler and create a confined arena on every calls.
      *
-     * @param  linker    {@link Linker#nativeLinker()} (should be fetched only once).
      * @param  function  name of the C/C++ <abbr>GDAL</abbr> function to invoke.
      * @param  arg       the argument.
      * @return whether the return value, or empty if the method was not found or returned {@code null}.
      */
-    protected final Optional<String> invokeGetString(final Linker linker, final String function, final String arg) {
+    protected final Optional<String> invokeGetString(final String function, final String arg) {
         return symbols.find(function).map((method) -> {
-            final MethodHandle handle = lookup(linker, function,
-                    FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS));
-            final MemorySegment result;
+            MethodHandle handle = lookup(function, FunctionDescriptor.of(ValueLayout.ADDRESS, ValueLayout.ADDRESS));
+            MemorySegment result;
             try (Arena local = Arena.ofConfined()) {
                 result = (MemorySegment) handle.invokeExact(local.allocateFrom(arg));
             } catch (Throwable e) {
@@ -115,14 +119,13 @@ public abstract class NativeFunctions implements Runnable, Callable<Object> {
     /**
      * Invokes a C/C++ function which expects no argument and returns an integer.
      * This method should be used only for rarely invoked C/C++ functions,
-     * because it fetches the method handler on every calls.
+     * because it fetches the method handle on every calls.
      *
-     * @param  linker    {@link Linker#nativeLinker()} (should be fetched only once).
      * @param  function  name of the C/C++ <abbr>GDAL</abbr> function to invoke.
      * @return whether the return value, or empty if the method was not found.
      */
     @SuppressWarnings("restricted")
-    public final OptionalInt invokeGetInt(final Linker linker, final String function) {
+    public final OptionalInt invokeGetInt(final String function) {
         final Optional<MemorySegment> method = symbols.find(function);
         if (method.isEmpty()) {
             return OptionalInt.empty();
@@ -140,7 +143,7 @@ public abstract class NativeFunctions implements Runnable, Callable<Object> {
     /**
      * Invokes a C/C++ function which expects no argument and returns no value.
      * This method should be used only for rarely invoked C/C++ functions,
-     * because it fetches the linker and method handler on every calls.
+     * because it fetches the method handle on every calls.
      *
      * @param  function  name of the C/C++ <abbr>GDAL</abbr> function to invoke.
      * @return whether the function has been found and executed.
@@ -151,7 +154,7 @@ public abstract class NativeFunctions implements Runnable, Callable<Object> {
         if (method.isEmpty()) {
             return false;
         }
-        final MethodHandle handle = Linker.nativeLinker().downcallHandle(method.get(), FunctionDescriptor.ofVoid());
+        final MethodHandle handle = linker.downcallHandle(method.get(), FunctionDescriptor.ofVoid());
         try {
             handle.invokeExact();
         } catch (Throwable e) {

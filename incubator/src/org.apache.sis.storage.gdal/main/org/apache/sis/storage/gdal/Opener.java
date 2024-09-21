@@ -155,14 +155,14 @@ final class Opener implements Runnable {
             url = connector.getStorageAs(String.class);
         }
         if (url != null) {
-            final GDAL gdal = owner.tryGDAL("probeContent").orElse(null);
+            final GDAL gdal = owner.tryGDAL(GDALStoreProvider.class, "probeContent").orElse(null);
             if (gdal != null) {
                 try (var arena = Arena.ofConfined()) {
-                    final var driver = (MemorySegment) gdal.identifyDriver.invokeExact(
-                            arena.allocateFrom(url), MemorySegment.NULL);
+                    var strPtr = arena.allocateFrom(url);
+                    var driver = (MemorySegment) gdal.identifyDriver.invokeExact(strPtr, MemorySegment.NULL);
                     if (!GDAL.isNull(driver)) {
-                        MemorySegment mimeType = (MemorySegment) gdal.getMetadataItem.invokeExact(
-                                driver, arena.allocateFrom("DMD_MIMETYPE"), MemorySegment.NULL);
+                        strPtr = arena.allocateFrom("DMD_MIMETYPE");
+                        var mimeType = (MemorySegment) gdal.getMetadataItem.invokeExact(driver, strPtr, MemorySegment.NULL);
                         return new ProbeResult(true, GDAL.toString(mimeType), null);
                     }
                 } catch (Throwable e) {
@@ -183,7 +183,7 @@ final class Opener implements Runnable {
     @Override
     public void run() {
         if (handle != null) {
-            owner.tryGDAL("close").ifPresent((gdal) -> {
+            owner.tryGDAL(GDALStore.class, "close").ifPresent((gdal) -> {
                 final int err;
                 try {
                     err = (int) gdal.close.invokeExact(handle);

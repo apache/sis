@@ -19,7 +19,6 @@ package org.apache.sis.storage.gsf;
 import java.lang.foreign.AddressLayout;
 import java.lang.foreign.Arena;
 import java.lang.foreign.FunctionDescriptor;
-import java.lang.foreign.Linker;
 import java.lang.foreign.MemoryLayout;
 import java.lang.foreign.MemorySegment;
 import java.lang.foreign.ValueLayout;
@@ -687,7 +686,6 @@ public class GSF extends NativeFunctions {
      */
     private GSF(final LibraryLoader<GSF> loader) {
         super(loader);
-        final Linker linker = Linker.nativeLinker();
 
         final FunctionDescriptor p = FunctionDescriptor.of(GSF.C_POINTER);
         final FunctionDescriptor i_i = FunctionDescriptor.of(GSF.C_INT, GSF.C_INT);
@@ -696,39 +694,39 @@ public class GSF extends NativeFunctions {
         final FunctionDescriptor i_p_p_p = FunctionDescriptor.of(GSF.C_INT, GSF.C_POINTER, GSF.C_POINTER, GSF.C_POINTER);
         final FunctionDescriptor i_i_p = FunctionDescriptor.of(GSF.C_INT, GSF.C_INT, GSF.C_POINTER);
 
-        gsfOpen                                 = lookup(linker, "gsfOpen",                                 FunctionDescriptor.of(GSF.C_INT, GSF.C_POINTER, GSF.C_INT, GSF.C_POINTER));
-        gsfOpenBuffered                         = lookup(linker, "gsfOpenBuffered",                         FunctionDescriptor.of(GSF.C_INT, GSF.C_POINTER, GSF.C_INT, GSF.C_POINTER, GSF.C_INT));
-        gsfClose                                = lookup(linker, "gsfClose",                                i_i);
-        gsfSeek                                 = lookup(linker, "gsfSeek",                                 i_i_i);
-        gsfRead                                 = lookup(linker, "gsfRead",                                 FunctionDescriptor.of(GSF.C_INT, GSF.C_INT, GSF.C_INT, GSF.C_POINTER, GSF.C_POINTER, GSF.C_POINTER, GSF.C_INT));
-        gsfWrite                                = lookup(linker, "gsfWrite",                                FunctionDescriptor.of(GSF.C_INT, GSF.C_INT, GSF.C_POINTER, GSF.C_POINTER));
-        gsfLoadScaleFactor                      = lookup(linker, "gsfLoadScaleFactor",                      FunctionDescriptor.of(GSF.C_INT, GSF.C_POINTER, GSF.C_INT, GSF.C_CHAR, GSF.C_DOUBLE, GSF.C_INT));
-        gsfGetScaleFactor                       = lookup(linker, "gsfGetScaleFactor",                       FunctionDescriptor.of(GSF.C_INT, GSF.C_INT, GSF.C_INT, GSF.C_POINTER, GSF.C_POINTER, GSF.C_POINTER));
-        gsfFree                                 = lookup(linker, "gsfFree",                                 FunctionDescriptor.ofVoid(GSF.C_POINTER));
-        gsfPrintError                           = lookup(linker, "gsfPrintError",                           p);
-        gsfIntError                             = lookup(linker, "gsfIntError",                             FunctionDescriptor.of(GSF.C_INT));
-        gsfStringError                          = lookup(linker, "gsfStringError",                          p);
-        gsfIndexTime                            = lookup(linker, "gsfIndexTime",                            FunctionDescriptor.of(GSF.C_INT, GSF.C_INT, GSF.C_INT, GSF.C_INT, GSF.C_POINTER, GSF.C_POINTER));
-        gsfPercent                              = lookup(linker, "gsfPercent",                              i_i);
-        gsfGetNumberRecords                     = lookup(linker, "gsfGetNumberRecords",                     i_i_i);
-        gsfCopyRecords                          = lookup(linker, "gsfCopyRecords",                          i_p_p);
-        gsfPutMBParams                          = lookup(linker, "gsfPutMBParams",                          FunctionDescriptor.of(GSF.C_INT, GSF.C_POINTER, GSF.C_POINTER, GSF.C_INT, GSF.C_INT));
-        gsfGetMBParams                          = lookup(linker, "gsfGetMBParams",                          i_p_p_p);
-        gsfGetSwathBathyBeamWidths              = lookup(linker, "gsfGetSwathBathyBeamWidths",              i_p_p_p);
-        gsfIsStarboardPing                      = lookup(linker, "gsfIsStarboardPing",                      FunctionDescriptor.of(GSF.C_INT, GSF.C_POINTER));
-        gsfLoadDepthScaleFactorAutoOffset       = lookup(linker, "gsfLoadDepthScaleFactorAutoOffset",       FunctionDescriptor.of(GSF.C_INT, GSF.C_POINTER, GSF.C_INT, GSF.C_INT, GSF.C_DOUBLE, GSF.C_DOUBLE, GSF.C_POINTER, GSF.C_CHAR, GSF.C_DOUBLE));
-        gsfGetSwathBathyArrayMinMax             = lookup(linker, "gsfGetSwathBathyArrayMinMax",             FunctionDescriptor.of(GSF.C_INT, GSF.C_POINTER, GSF.C_INT, GSF.C_POINTER, GSF.C_POINTER));
-        gsfGetSonarTextName                     = lookup(linker, "gsfGetSonarTextName",                     FunctionDescriptor.of(GSF.C_POINTER, GSF.C_POINTER));
-        gsfFileSupportsRecalculateXYZ           = lookup(linker, "gsfFileSupportsRecalculateXYZ",           i_i_p);
-        gsfFileSupportsRecalculateTPU           = lookup(linker, "gsfFileSupportsRecalculateTPU",           i_i_p);
-        gsfFileSupportsRecalculateNominalDepth  = lookup(linker, "gsfFileSupportsRecalculateNominalDepth",  i_i_p);
-        gsfFileContainsMBAmplitude              = lookup(linker, "gsfFileContainsMBAmplitude",              i_i_p);
-        gsfFileContainsMBImagery                = lookup(linker, "gsfFileContainsMBImagery",                i_i_p);
-        gsfIsNewSurveyLine                      = lookup(linker, "gsfIsNewSurveyLine",                      FunctionDescriptor.of(GSF.C_INT, GSF.C_INT, GSF.C_POINTER, GSF.C_DOUBLE, GSF.C_POINTER));
-        gsfInitializeMBParams                   = lookup(linker, "gsfInitializeMBParams",                   p);
-        gsfStat                                 = lookup(linker, "gsfStat",                                 i_p_p);
-        gsfGetPositionDestination               = lookup(linker, "gsfGetPositionDestination",               FunctionDescriptor.of(GSF.C_POINTER, Position.LAYOUT, PositionOffsets.LAYOUT, GSF.C_DOUBLE, GSF.C_DOUBLE));
-        gsfGetPositionOffsets                   = lookup(linker, "gsfGetPositionOffsets",                   FunctionDescriptor.of(GSF.C_POINTER, Position.LAYOUT, Position.LAYOUT, GSF.C_DOUBLE, GSF.C_DOUBLE));
+        gsfOpen                                 = lookup("gsfOpen",                                 FunctionDescriptor.of(GSF.C_INT, GSF.C_POINTER, GSF.C_INT, GSF.C_POINTER));
+        gsfOpenBuffered                         = lookup("gsfOpenBuffered",                         FunctionDescriptor.of(GSF.C_INT, GSF.C_POINTER, GSF.C_INT, GSF.C_POINTER, GSF.C_INT));
+        gsfClose                                = lookup("gsfClose",                                i_i);
+        gsfSeek                                 = lookup("gsfSeek",                                 i_i_i);
+        gsfRead                                 = lookup("gsfRead",                                 FunctionDescriptor.of(GSF.C_INT, GSF.C_INT, GSF.C_INT, GSF.C_POINTER, GSF.C_POINTER, GSF.C_POINTER, GSF.C_INT));
+        gsfWrite                                = lookup("gsfWrite",                                FunctionDescriptor.of(GSF.C_INT, GSF.C_INT, GSF.C_POINTER, GSF.C_POINTER));
+        gsfLoadScaleFactor                      = lookup("gsfLoadScaleFactor",                      FunctionDescriptor.of(GSF.C_INT, GSF.C_POINTER, GSF.C_INT, GSF.C_CHAR, GSF.C_DOUBLE, GSF.C_INT));
+        gsfGetScaleFactor                       = lookup("gsfGetScaleFactor",                       FunctionDescriptor.of(GSF.C_INT, GSF.C_INT, GSF.C_INT, GSF.C_POINTER, GSF.C_POINTER, GSF.C_POINTER));
+        gsfFree                                 = lookup("gsfFree",                                 FunctionDescriptor.ofVoid(GSF.C_POINTER));
+        gsfPrintError                           = lookup("gsfPrintError",                           p);
+        gsfIntError                             = lookup("gsfIntError",                             FunctionDescriptor.of(GSF.C_INT));
+        gsfStringError                          = lookup("gsfStringError",                          p);
+        gsfIndexTime                            = lookup("gsfIndexTime",                            FunctionDescriptor.of(GSF.C_INT, GSF.C_INT, GSF.C_INT, GSF.C_INT, GSF.C_POINTER, GSF.C_POINTER));
+        gsfPercent                              = lookup("gsfPercent",                              i_i);
+        gsfGetNumberRecords                     = lookup("gsfGetNumberRecords",                     i_i_i);
+        gsfCopyRecords                          = lookup("gsfCopyRecords",                          i_p_p);
+        gsfPutMBParams                          = lookup("gsfPutMBParams",                          FunctionDescriptor.of(GSF.C_INT, GSF.C_POINTER, GSF.C_POINTER, GSF.C_INT, GSF.C_INT));
+        gsfGetMBParams                          = lookup("gsfGetMBParams",                          i_p_p_p);
+        gsfGetSwathBathyBeamWidths              = lookup("gsfGetSwathBathyBeamWidths",              i_p_p_p);
+        gsfIsStarboardPing                      = lookup("gsfIsStarboardPing",                      FunctionDescriptor.of(GSF.C_INT, GSF.C_POINTER));
+        gsfLoadDepthScaleFactorAutoOffset       = lookup("gsfLoadDepthScaleFactorAutoOffset",       FunctionDescriptor.of(GSF.C_INT, GSF.C_POINTER, GSF.C_INT, GSF.C_INT, GSF.C_DOUBLE, GSF.C_DOUBLE, GSF.C_POINTER, GSF.C_CHAR, GSF.C_DOUBLE));
+        gsfGetSwathBathyArrayMinMax             = lookup("gsfGetSwathBathyArrayMinMax",             FunctionDescriptor.of(GSF.C_INT, GSF.C_POINTER, GSF.C_INT, GSF.C_POINTER, GSF.C_POINTER));
+        gsfGetSonarTextName                     = lookup("gsfGetSonarTextName",                     FunctionDescriptor.of(GSF.C_POINTER, GSF.C_POINTER));
+        gsfFileSupportsRecalculateXYZ           = lookup("gsfFileSupportsRecalculateXYZ",           i_i_p);
+        gsfFileSupportsRecalculateTPU           = lookup("gsfFileSupportsRecalculateTPU",           i_i_p);
+        gsfFileSupportsRecalculateNominalDepth  = lookup("gsfFileSupportsRecalculateNominalDepth",  i_i_p);
+        gsfFileContainsMBAmplitude              = lookup("gsfFileContainsMBAmplitude",              i_i_p);
+        gsfFileContainsMBImagery                = lookup("gsfFileContainsMBImagery",                i_i_p);
+        gsfIsNewSurveyLine                      = lookup("gsfIsNewSurveyLine",                      FunctionDescriptor.of(GSF.C_INT, GSF.C_INT, GSF.C_POINTER, GSF.C_DOUBLE, GSF.C_POINTER));
+        gsfInitializeMBParams                   = lookup("gsfInitializeMBParams",                   p);
+        gsfStat                                 = lookup("gsfStat",                                 i_p_p);
+        gsfGetPositionDestination               = lookup("gsfGetPositionDestination",               FunctionDescriptor.of(GSF.C_POINTER, Position.LAYOUT, PositionOffsets.LAYOUT, GSF.C_DOUBLE, GSF.C_DOUBLE));
+        gsfGetPositionOffsets                   = lookup("gsfGetPositionOffsets",                   FunctionDescriptor.of(GSF.C_POINTER, Position.LAYOUT, Position.LAYOUT, GSF.C_DOUBLE, GSF.C_DOUBLE));
     }
 
     public Arena getArena() {
