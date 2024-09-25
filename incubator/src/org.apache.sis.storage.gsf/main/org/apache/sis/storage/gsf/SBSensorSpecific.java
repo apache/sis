@@ -17,10 +17,10 @@
 package org.apache.sis.storage.gsf;
 
 import java.lang.foreign.*;
-import org.apache.sis.storage.gsf.specific.BDBSpecific;
-import org.apache.sis.storage.gsf.specific.EchotracSpecific;
-import org.apache.sis.storage.gsf.specific.MGD77Specific;
-import org.apache.sis.storage.gsf.specific.NOSHDBSpecific;
+import org.apache.sis.storage.gsf.specific.BDB;
+import org.apache.sis.storage.gsf.specific.Echotrac;
+import org.apache.sis.storage.gsf.specific.MGD77;
+import org.apache.sis.storage.gsf.specific.NOSHDB;
 
 
 /**
@@ -30,18 +30,18 @@ import org.apache.sis.storage.gsf.specific.NOSHDBSpecific;
 public final class SBSensorSpecific extends StructClass {
 
 
-    private static final GroupLayout LAYOUT_GSFECHOTRACSPECIFIC;
-    private static final GroupLayout LAYOUT_GSFBATHY2000SPECIFIC;
-    private static final GroupLayout LAYOUT_GSFMGD77SPECIFIC;
-    private static final GroupLayout LAYOUT_GSFBDBSPECIFIC;
-    private static final GroupLayout LAYOUT_GSFNOSHDBSPECIFIC;
+    private static final GroupLayout LAYOUT_GSFECHOTRAC;
+    private static final GroupLayout LAYOUT_GSFBATHY2000;
+    private static final GroupLayout LAYOUT_GSFMGD77;
+    private static final GroupLayout LAYOUT_GSFBDB;
+    private static final GroupLayout LAYOUT_GSFNOSHDB;
 
     static final GroupLayout LAYOUT = MemoryLayout.unionLayout(
-        LAYOUT_GSFECHOTRACSPECIFIC = EchotracSpecific.LAYOUT.withName("gsfEchotracSpecific"),
-        LAYOUT_GSFBATHY2000SPECIFIC = EchotracSpecific.LAYOUT.withName("gsfBathy2000Specific"),
-        LAYOUT_GSFMGD77SPECIFIC = MGD77Specific.LAYOUT.withName("gsfMGD77Specific"),
-        LAYOUT_GSFBDBSPECIFIC = BDBSpecific.LAYOUT.withName("gsfBDBSpecific"),
-        LAYOUT_GSFNOSHDBSPECIFIC = NOSHDBSpecific.LAYOUT.withName("gsfNOSHDBSpecific")
+        LAYOUT_GSFECHOTRAC = Echotrac.LAYOUT.withName("gsfEchotracSpecific"),
+        LAYOUT_GSFBATHY2000 = Echotrac.LAYOUT.withName("gsfBathy2000Specific"),
+        LAYOUT_GSFMGD77 = MGD77.LAYOUT.withName("gsfMGD77Specific"),
+        LAYOUT_GSFBDB = BDB.LAYOUT.withName("gsfBDBSpecific"),
+        LAYOUT_GSFNOSHDB = NOSHDB.LAYOUT.withName("gsfNOSHDBSpecific")
     ).withName("t_gsfSBSensorSpecific");
 
     SBSensorSpecific(MemorySegment struct) {
@@ -60,7 +60,7 @@ public final class SBSensorSpecific extends StructClass {
      * }
      */
     public MemorySegment gsfEchotracSpecific() {
-        return struct.asSlice(0, LAYOUT_GSFECHOTRACSPECIFIC.byteSize());
+        return struct.asSlice(0, LAYOUT_GSFECHOTRAC.byteSize());
     }
 
     /**
@@ -70,7 +70,7 @@ public final class SBSensorSpecific extends StructClass {
      * }
      */
     public MemorySegment gsfBathy2000Specific() {
-        return struct.asSlice(0, LAYOUT_GSFBATHY2000SPECIFIC.byteSize());
+        return struct.asSlice(0, LAYOUT_GSFBATHY2000.byteSize());
     }
 
     /**
@@ -80,7 +80,7 @@ public final class SBSensorSpecific extends StructClass {
      * }
      */
     public MemorySegment gsfMGD77Specific() {
-        return struct.asSlice(0, LAYOUT_GSFMGD77SPECIFIC.byteSize());
+        return struct.asSlice(0, LAYOUT_GSFMGD77.byteSize());
     }
 
     /**
@@ -90,7 +90,7 @@ public final class SBSensorSpecific extends StructClass {
      * }
      */
     public MemorySegment gsfBDBSpecific() {
-        return struct.asSlice(0, LAYOUT_GSFBDBSPECIFIC.byteSize());
+        return struct.asSlice(0, LAYOUT_GSFBDB.byteSize());
     }
 
     /**
@@ -100,6 +100,6 @@ public final class SBSensorSpecific extends StructClass {
      * }
      */
     public MemorySegment gsfNOSHDBSpecific() {
-        return struct.asSlice(0, LAYOUT_GSFNOSHDBSPECIFIC.byteSize());
+        return struct.asSlice(0, LAYOUT_GSFNOSHDB.byteSize());
     }
 }
